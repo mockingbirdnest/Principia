@@ -11,9 +11,9 @@
 #include "google/protobuf/repeated_field.h"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
-#include "physics/trajectory.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -81,7 +81,7 @@ class Ephemeris {
   // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   virtual void FlowWithAdaptiveStep(
-      not_null<Trajectory<Frame>*> const trajectory,
+      not_null<DiscreteTrajectory<Frame>*> const trajectory,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -92,7 +92,7 @@ class Ephemeris {
   // passed at construction is used with the given |step|.  If |t > t_max()|,
   // calls |Prolong(t)| beforehand.
   virtual void FlowWithFixedStep(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Time const& step,
       Instant const& t);
 
@@ -121,7 +121,7 @@ class Ephemeris {
       typename NewtonianMotionEquation::SystemState const& state);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories);
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -165,7 +165,7 @@ class Ephemeris {
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
   void ComputeMasslessBodiesGravitationalAccelerations(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,

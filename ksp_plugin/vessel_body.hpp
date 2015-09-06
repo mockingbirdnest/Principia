@@ -37,27 +37,28 @@ inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-inline Trajectory<Barycentric> const& Vessel::history() const {
+inline DiscreteTrajectory<Barycentric> const& Vessel::history() const {
   CHECK(is_synchronized());
   return *history_;
 }
 
-inline not_null<Trajectory<Barycentric>*> Vessel::mutable_history() {
+inline not_null<DiscreteTrajectory<Barycentric>*> Vessel::mutable_history() {
   CHECK(is_synchronized());
   return history_.get();
 }
 
-inline Trajectory<Barycentric> const& Vessel::prolongation() const {
+inline DiscreteTrajectory<Barycentric> const& Vessel::prolongation() const {
   CHECK(is_initialized());
   return *prolongation_;
 }
 
-inline not_null<Trajectory<Barycentric>*> Vessel::mutable_prolongation() {
+inline not_null<DiscreteTrajectory<Barycentric>*>
+Vessel::mutable_prolongation() {
   CHECK(is_initialized());
   return prolongation_;
 }
 
-inline std::vector<not_null<Trajectory<Barycentric>*>> const&
+inline std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const&
 Vessel::flight_plan() const {
   CHECK(is_initialized());
   return flight_plan_;
@@ -67,7 +68,7 @@ inline bool Vessel::has_flight_plan() const {
   return !flight_plan_.empty();
 }
 
-inline Trajectory<Barycentric> const& Vessel::prediction() const {
+inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
   CHECK(has_prediction());
   return *prediction_;
 }
@@ -90,7 +91,7 @@ inline void Vessel::CreateProlongation(
   CHECK(!is_synchronized());
   CHECK(!is_initialized());
   CHECK(owned_prolongation_ == nullptr);
-  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>();
+  owned_prolongation_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   owned_prolongation_->Append(time, degrees_of_freedom);
   prolongation_ = owned_prolongation_.get();
 }
@@ -99,7 +100,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   CHECK(!is_synchronized());
-  history_ = std::make_unique<Trajectory<Barycentric>>();
+  history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->NewFork(time);
   owned_prolongation_.reset();
@@ -133,7 +134,8 @@ inline void Vessel::UpdateFlightPlan(
   flight_plan_.back()->Append(prolongation().last().time(),
                               prolongation().last().degrees_of_freedom());
   for (auto const& manœuvre : manœuvres_) {
-    not_null<Trajectory<Barycentric>*> coast_trajectory = flight_plan_.back();
+    not_null<DiscreteTrajectory<Barycentric>*> coast_trajectory =
+        flight_plan_.back();
     ephemeris->FlowWithAdaptiveStep(coast_trajectory,
                                     prediction_length_tolerance,
                                     prediction_speed_tolerance,
@@ -141,7 +143,8 @@ inline void Vessel::UpdateFlightPlan(
                                     manœuvre->initial_time());
     flight_plan_.emplace_back(
         coast_trajectory->NewFork(coast_trajectory->last().time()));
-    not_null<Trajectory<Barycentric>*> burn_trajectory = flight_plan_.back();
+    not_null<DiscreteTrajectory<Barycentric>*> burn_trajectory =
+        flight_plan_.back();
     burn_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
     ephemeris->FlowWithAdaptiveStep(burn_trajectory,
                                     prolongation_length_tolerance,
@@ -160,7 +163,7 @@ inline void Vessel::UpdateFlightPlan(
 
 inline void Vessel::DeleteFlightPlan() {
   if (has_flight_plan()) {
-    Trajectory<Barycentric>* flight_plan_root = flight_plan_.front();
+    DiscreteTrajectory<Barycentric>* flight_plan_root = flight_plan_.front();
     flight_plan_.clear();
     history_->DeleteFork(&flight_plan_root);
   }
@@ -217,15 +220,16 @@ inline std::unique_ptr<Vessel> Vessel::ReadFromMessage(
   // information.
   if (message.has_history_and_prolongation()) {
     vessel->history_ =
-        Trajectory<Barycentric>::ReadFromMessage(
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history_and_prolongation().history());
     vessel->prolongation_ =
-        Trajectory<Barycentric>::ReadPointerFromMessage(
+        DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
             message.history_and_prolongation().prolongation(),
             vessel->history_.get());
   } else if (message.has_owned_prolongation()) {
     vessel->owned_prolongation_ =
-        Trajectory<Barycentric>::ReadFromMessage(message.owned_prolongation());
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(
+            message.owned_prolongation());
     vessel->prolongation_ = vessel->owned_prolongation_.get();
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";

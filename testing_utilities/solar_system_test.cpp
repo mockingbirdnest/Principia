@@ -37,9 +37,9 @@ class SolarSystemTest : public testing::Test {
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
   Length SemiMajorAxis(MassiveBody const& primary_body,
-                       Trajectory<ICRFJ2000Ecliptic> const& primary,
+                       DiscreteTrajectory<ICRFJ2000Ecliptic> const& primary,
                        MassiveBody const& secondary_body,
-                       Trajectory<ICRFJ2000Ecliptic> const& secondary) {
+                       DiscreteTrajectory<ICRFJ2000Ecliptic> const& secondary) {
     GravitationalParameter const μ = primary_body.gravitational_parameter() +
                                      secondary_body.gravitational_parameter();
     RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const primary_secondary =
@@ -59,9 +59,9 @@ class SolarSystemTest : public testing::Test {
   // around the primary.
   Length LaplaceSphereRadiusRadius(
       MassiveBody const& primary_body,
-      Trajectory<ICRFJ2000Ecliptic> const& primary,
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& primary,
       MassiveBody const& secondary_body,
-      Trajectory<ICRFJ2000Ecliptic> const& secondary) {
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& secondary) {
     // Assuming secondary.mass << primary.mass.
     return SemiMajorAxis(primary_body, primary, secondary_body, secondary) *
         std::pow(secondary_body.mass() /
@@ -77,12 +77,12 @@ class SolarSystemTest : public testing::Test {
       double excentricity,
       double relative_error,
       MassiveBody const& tertiary_body,
-      Trajectory<ICRFJ2000Ecliptic> const& tertiary,
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& tertiary,
       MassiveBody const& secondary_body,
-      Trajectory<ICRFJ2000Ecliptic> const& secondary,
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& secondary,
       std::experimental::optional<MassiveBody const&> const& primary_body,
-      std::experimental::optional<Trajectory<ICRFJ2000Ecliptic> const&> const
-          primary,
+      std::experimental::optional<
+          DiscreteTrajectory<ICRFJ2000Ecliptic> const&> const primary,
       std::string message) {
     GravitationalParameter const μ =
         tertiary_body.gravitational_parameter() +
@@ -115,9 +115,9 @@ class SolarSystemTest : public testing::Test {
       double excentricity,
       double relative_error,
       MassiveBody const& tertiary_body,
-      Trajectory<ICRFJ2000Ecliptic> const& tertiary,
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& tertiary,
       MassiveBody const& secondary_body,
-      Trajectory<ICRFJ2000Ecliptic> const& secondary,
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& secondary,
       std::string message) {
     TestStronglyBoundOrbit(excentricity,
                            relative_error,

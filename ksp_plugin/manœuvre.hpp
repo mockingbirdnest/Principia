@@ -1,14 +1,14 @@
 ﻿#pragma once
 
 #include "geometry/named_quantities.hpp"
-#include "physics/trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
 using geometry::Instant;
 using geometry::Vector;
-using physics::Trajectory;
+using physics::DiscreteTrajectory;
 using quantities::Force;
 using quantities::Mass;
 using quantities::Speed;
@@ -64,7 +64,9 @@ class Manœuvre {
   Instant time_of_half_Δv() const;
 
   // Intensity and timing must have been set.
-  typename Trajectory<Frame>::IntrinsicAcceleration acceleration() const;
+  typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
+  acceleration() const;
+
  private:
   Vector<double, Frame> const direction_;
   Speed const effective_exhaust_velocity_;

@@ -1,5 +1,6 @@
 ﻿#include "ksp_plugin/manœuvre.hpp"
 
+#include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
@@ -8,6 +9,7 @@
 
 namespace principia {
 
+using geometry::Frame;
 using quantities::Pow;
 using si::Kilo;
 using si::Kilogram;

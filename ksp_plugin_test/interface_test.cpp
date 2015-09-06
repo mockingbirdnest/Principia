@@ -445,6 +445,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
 
   EXPECT_CALL(*plugin_,
               RenderedPrediction(
+                  kVesselGUID,
                   check_not_null(transforms),
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
@@ -453,6 +454,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
       .WillOnce(Return(rendered_trajectory));
   LineAndIterator* line_and_iterator =
       principia__RenderedPrediction(plugin_.get(),
+                                    kVesselGUID,
                                     transforms,
                                     kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
@@ -550,10 +552,6 @@ TEST_F(InterfaceTest, LineAndIterator) {
 }
 
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
-  EXPECT_CALL(*plugin_, set_predicted_vessel(kVesselGUID));
-  principia__set_predicted_vessel(plugin_.get(), kVesselGUID);
-  EXPECT_CALL(*plugin_, clear_predicted_vessel());
-  principia__clear_predicted_vessel(plugin_.get());
   EXPECT_CALL(*plugin_, set_prediction_length(42 * Second));
   principia__set_prediction_length(plugin_.get(), 42);
   EXPECT_CALL(*plugin_, set_prediction_length_tolerance(1729 * Metre));

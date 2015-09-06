@@ -390,7 +390,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
       RenderTrajectory(vessel.body(),
                        transforms->first_on_or_after(
                            vessel.prediction(),
-                           *vessel.prediction().fork_time()),
+                           *vessel.prediction().ForkTime()),
                        transforms,
                        sun_world_position);
   return result;
@@ -404,13 +404,13 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
   CHECK(!initializing_); 
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   CHECK_GT(vessel.flight_plan().size(), plan_phase);
-  Trajectory<Barycentric> const& prediction =
+  DiscreteTrajectory<Barycentric> const& prediction =
       *vessel.flight_plan()[plan_phase];
   RenderedTrajectory<World> result =
       RenderTrajectory(vessel.body(),
                        transforms->first_on_or_after(
                            prediction,
-                           *CHECK_NOTNULL(prediction.fork_time())),
+                           *CHECK_NOTNULL(prediction.ForkTime())),
                        transforms,
                        sun_world_position);
   return result;
@@ -527,12 +527,12 @@ Vector<double, World> Plugin::VesselTangent(
   auto const actual_it =
       transforms->first_on_or_after(vessel.prolongation(),
                                     vessel.prolongation().last().time());
-  Trajectory<Rendering> intermediate_trajectory;
+  DiscreteTrajectory<Rendering> intermediate_trajectory;
   intermediate_trajectory.Append(actual_it.time(),
                                  actual_it.degrees_of_freedom());
   auto const intermediate_it = transforms->second(current_time_,
                                                   intermediate_trajectory);
-  Trajectory<Barycentric> apparent_trajectory;
+  DiscreteTrajectory<Barycentric> apparent_trajectory;
   apparent_trajectory.Append(intermediate_it.time(),
                              intermediate_it.degrees_of_freedom());
   return Normalize(
@@ -937,7 +937,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 
 RenderedTrajectory<World> Plugin::RenderTrajectory(
     not_null<Body const*> const body,
-    Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
+    DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
+        actual_it,
     not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
@@ -948,13 +949,13 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
           OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory;
+  DiscreteTrajectory<Rendering> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
 
   // Then build the apparent trajectory using the second transform.
-  Trajectory<Barycentric> apparent_trajectory;
+  DiscreteTrajectory<Barycentric> apparent_trajectory;
   for (auto intermediate_it =
            transforms->second(current_time_, intermediate_trajectory);
        !intermediate_it.at_end();

@@ -4,7 +4,6 @@
 
 #include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/mobile_interface.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -15,6 +14,7 @@
 namespace principia {
 
 using base::not_null;
+using base::make_not_null_unique;
 using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;

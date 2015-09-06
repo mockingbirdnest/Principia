@@ -18,8 +18,8 @@
 #include "ksp_plugin/vessel.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/trajectory.hpp"
 #include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -36,9 +36,9 @@ using geometry::Rotation;
 using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::FrameField;
-using physics::Trajectory;
 using physics::Transforms;
 using quantities::Angle;
 using si::Hour;
@@ -316,7 +316,7 @@ class Plugin {
       std::map<Index, std::unique_ptr<MassiveBody const>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
-  using Trajectories = std::vector<not_null<Trajectory<Barycentric>*>>;
+  using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
 
   // This constructor should only be used during deserialization.
   // |unsynchronized_vessels_| is initialized consistently.  All vessels are
@@ -396,7 +396,8 @@ class Plugin {
   // from the trajectory of |body| starting at |actual_it|.
   RenderedTrajectory<World> RenderTrajectory(
       not_null<Body const*> const body,
-      Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
+      DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
+          actual_it,
       not_null<RenderingTransforms*>const transforms,
       Position<World> const& sun_world_position) const;
 

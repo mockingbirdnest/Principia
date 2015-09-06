@@ -44,9 +44,6 @@
     <ClInclude Include="physics_bubble.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mobile_interface.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="manœuvre.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

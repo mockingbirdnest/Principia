@@ -51,9 +51,9 @@
 #include "physics/body.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
-#include "physics/trajectory.hpp"
 #include "physics/transforms.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -77,9 +77,9 @@ using quantities::Time;
 using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MasslessBody;
-using physics::Trajectory;
 using physics::Transforms;
 using si::AstronomicalUnit;
 using si::Hour;
@@ -137,12 +137,12 @@ std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
     not_null<Transforms<World1, World2, World1>*> const transforms,
-    Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
+    DiscreteTrajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<World2> intermediate_trajectory;
+  DiscreteTrajectory<World2> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
@@ -196,12 +196,12 @@ void BM_TransformsBodyCentredNonRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory;
-  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
-                                           probe_velocity,
-                                           Δt,
-                                           steps,
-                                           &probe_trajectory);
+  DiscreteTrajectory<World1> probe_trajectory;
+  FillLinearTrajectory<World1, DiscreteTrajectory>(probe_initial_position,
+                                                   probe_velocity,
+                                                   Δt,
+                                                   steps,
+                                                   &probe_trajectory);
 
   auto transforms = Transforms<World1, World2, World1>::
       BodyCentredNonRotating(earth, earth_trajectory, earth_trajectory);
@@ -274,12 +274,12 @@ void BM_TransformsBarycentricRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory;
-  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
-                                           probe_velocity,
-                                           Δt,
-                                           steps,
-                                           &probe_trajectory);
+  DiscreteTrajectory<World1> probe_trajectory;
+  FillLinearTrajectory<World1, DiscreteTrajectory>(probe_initial_position,
+                                                   probe_velocity,
+                                                   Δt,
+                                                   steps,
+                                                   &probe_trajectory);
 
   auto transforms = Transforms<World1, World2, World1>::
       BarycentricRotating(earth,

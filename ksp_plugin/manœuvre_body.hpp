@@ -108,7 +108,7 @@ Time Manœuvre<Frame>::time_to_half_Δv() const {
 }
 
 template <typename Frame>
-typename Trajectory<Frame>::IntrinsicAcceleration
+typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
     Manœuvre<Frame>::acceleration() const {
   return [
     direction = this->direction(),

@@ -79,8 +79,9 @@ class PhysicsBubble {
   std::vector<not_null<Vessel*>> vessels() const;
   RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass(
       not_null<Vessel const*> const vessel) const;
-  Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
-  not_null<Trajectory<Barycentric>*> mutable_centre_of_mass_trajectory() const;
+  DiscreteTrajectory<Barycentric> const& centre_of_mass_trajectory() const;
+  not_null<DiscreteTrajectory<Barycentric>*>
+  mutable_centre_of_mass_trajectory() const;
 
   void WriteToMessage(
       std::function<std::string(not_null<Vessel const*>)> const guid,
@@ -109,7 +110,7 @@ class PhysicsBubble {
     // TODO(egg): these fields should be |std::optional| when that becomes a
     // thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
-    std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
+    std::unique_ptr<DiscreteTrajectory<Barycentric>> centre_of_mass_trajectory;
     std::unique_ptr<std::map<not_null<Vessel const*> const,
                              RelativeDegreesOfFreedom<Barycentric>>>
         from_centre_of_mass;
