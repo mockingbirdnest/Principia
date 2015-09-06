@@ -102,7 +102,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_synchronized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->NewFork(time);
+  prolongation_ = history_->NewForkWithCopy(time);
   owned_prolongation_.reset();
 }
 
@@ -111,7 +111,7 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
-  prolongation_ = history_->NewFork(time);
+  prolongation_ = history_->NewForkWithCopy(time);
 }
 
 inline void Vessel::UpdateFlightPlan(
@@ -128,7 +128,7 @@ inline void Vessel::UpdateFlightPlan(
   }
   DeleteFlightPlan();
   flight_plan_.emplace_back(
-      mutable_history()->NewFork(history().last().time()));
+      mutable_history()->NewForkWithCopy(history().last().time()));
   // If prolongation has no additional points this will do nothing (although it
   // might warn).
   flight_plan_.back()->Append(prolongation().last().time(),
@@ -142,7 +142,7 @@ inline void Vessel::UpdateFlightPlan(
                                     integrator,
                                     manœuvre->initial_time());
     flight_plan_.emplace_back(
-        coast_trajectory->NewFork(coast_trajectory->last().time()));
+        coast_trajectory->NewForkWithCopy(coast_trajectory->last().time()));
     not_null<DiscreteTrajectory<Barycentric>*> burn_trajectory =
         flight_plan_.back();
     burn_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
@@ -152,7 +152,7 @@ inline void Vessel::UpdateFlightPlan(
                                     integrator,
                                     manœuvre->final_time());
     flight_plan_.emplace_back(
-        burn_trajectory->NewFork(burn_trajectory->last().time()));
+        burn_trajectory->NewForkWithCopy(burn_trajectory->last().time()));
   }
   ephemeris->FlowWithAdaptiveStep(flight_plan_.back(),
                                   prediction_length_tolerance,
@@ -180,7 +180,7 @@ inline void Vessel::UpdatePrediction(
     return;
   }
   DeletePrediction();
-  prediction_ = mutable_history()->NewFork(history().last().time());
+  prediction_ = mutable_history()->NewForkWithCopy(history().last().time());
   // If prolongation has no additional points this will do nothing (although it
   // might warn).
   prediction_->Append(prolongation().last().time(),

@@ -120,6 +120,21 @@ std::list<Instant> DiscreteTrajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
+not_null<DiscreteTrajectory<Frame>*>
+DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
+  auto const fork = NewFork(time);
+
+  // May be at |end()|.
+  auto timeline_it = timeline_.find(time);
+
+  // Copy the tail of the trajectory in the child object.
+  if (timeline_it != timeline_.end()) {
+    fork->timeline_.insert(++timeline_it, timeline_.end());
+  }
+  return fork;
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
@@ -133,6 +148,27 @@ void DiscreteTrajectory<Frame>::Append(
                                    time,
                                    degrees_of_freedom);
   CHECK(timeline_.end() == ++it) << "Append out of order";
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
+  DeleteAllForksAfter(time);
+
+  // Get an iterator denoting the first entry with time > |time|.  Remove that
+  // entry and all the entries that follow it.  This preserve any entry with
+  // time == |time|.
+  auto const it = timeline_.upper_bound(time);
+  timeline_.erase(it, timeline_.end());
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  DeleteAllForksBefore(time);
+
+  // Get an iterator denoting the first entry with time > |time|.  Remove all
+  // the entries that precede it.  This removes any entry with time == |time|.
+  auto it = timeline_.upper_bound(time);
+  timeline_.erase(timeline_.begin(), it);
 }
 
 template<typename Frame>
@@ -278,18 +314,6 @@ DiscreteTrajectory<Frame>::timeline_upper_bound(Instant const& time) const {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::timeline_erase(TimelineConstIterator begin,
-                                               TimelineConstIterator end) {
-  timeline_.erase(begin, end);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::timeline_insert(TimelineConstIterator begin,
-                                                TimelineConstIterator end) {
-  timeline_.insert(begin, end);
-}
-
-template<typename Frame>
 bool DiscreteTrajectory<Frame>::timeline_empty() const {
   return timeline_.empty();
 }
@@ -308,32 +332,17 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   }
 }
 
-// TODO(phl): The deserialization of the children tree should be moved to
-// Forkable.  But this cannot be done while Forkable copies the timeline after
-// the fork point.
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message) {
-  auto timeline_it = message.timeline().begin();
-  for (serialization::Trajectory::Litter const& litter : message.children()) {
-    Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
-    for (;
-         timeline_it != message.timeline().end() &&
-         Instant::ReadFromMessage(timeline_it->instant()) <= fork_time;
-         ++timeline_it) {
-      Append(Instant::ReadFromMessage(timeline_it->instant()),
-             DegreesOfFreedom<Frame>::ReadFromMessage(
-                 timeline_it->degrees_of_freedom()));
-    }
-    for (serialization::Trajectory const& child : litter.trajectories()) {
-      NewFork(fork_time)->FillSubTreeFromMessage(child);
-    }
-  }
-  for (; timeline_it != message.timeline().end(); ++timeline_it) {
+  for (auto timeline_it = message.timeline().begin();
+       timeline_it != message.timeline().end();
+       ++timeline_it) {
     Append(Instant::ReadFromMessage(timeline_it->instant()),
            DegreesOfFreedom<Frame>::ReadFromMessage(
                timeline_it->degrees_of_freedom()));
   }
+  Forkable<DiscreteTrajectory>::FillSubTreeFromMessage(message);
 }
 
 }  // namespace physics

@@ -55,6 +55,7 @@ message OblateBody {
   required Multivector axis = 2;
 }
 
+// TODO(phl): Rename to DiscreteTrajectory.
 message Trajectory {
   message InstantaneousDegreesOfFreedom {
     required Point instant = 1;
