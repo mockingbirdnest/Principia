@@ -332,32 +332,17 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   }
 }
 
-// TODO(phl): The deserialization of the children tree should be moved to
-// Forkable.  But this cannot be done while Forkable copies the timeline after
-// the fork point.
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message) {
-  auto timeline_it = message.timeline().begin();
-  for (serialization::Trajectory::Litter const& litter : message.children()) {
-    Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
-    for (;
-         timeline_it != message.timeline().end() &&
-         Instant::ReadFromMessage(timeline_it->instant()) <= fork_time;
-         ++timeline_it) {
-      Append(Instant::ReadFromMessage(timeline_it->instant()),
-             DegreesOfFreedom<Frame>::ReadFromMessage(
-                 timeline_it->degrees_of_freedom()));
-    }
-    for (serialization::Trajectory const& child : litter.trajectories()) {
-      NewFork(fork_time)->FillSubTreeFromMessage(child);
-    }
-  }
-  for (; timeline_it != message.timeline().end(); ++timeline_it) {
+  for (auto timeline_it = message.timeline().begin();
+       timeline_it != message.timeline().end();
+       ++timeline_it) {
     Append(Instant::ReadFromMessage(timeline_it->instant()),
            DegreesOfFreedom<Frame>::ReadFromMessage(
                timeline_it->degrees_of_freedom()));
   }
+  Forkable<DiscreteTrajectory>::FillSubTreeFromMessage(message);
 }
 
 }  // namespace physics

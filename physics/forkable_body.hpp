@@ -346,5 +346,16 @@ void Forkable<Tr4jectory>::WriteSubTreeToMessage(
   }
 }
 
+template<typename Tr4jectory>
+void Forkable<Tr4jectory>::FillSubTreeFromMessage(
+    serialization::Trajectory const& message) {
+  for (serialization::Trajectory::Litter const& litter : message.children()) {
+    Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
+    for (serialization::Trajectory const& child : litter.trajectories()) {
+      NewFork(fork_time)->FillSubTreeFromMessage(child);
+    }
+  }
+}
+
 }  // namespace physics
 }  // namespace principia

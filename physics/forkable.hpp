@@ -161,6 +161,8 @@ class Forkable {
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message) const;
 
+  void FillSubTreeFromMessage(serialization::Trajectory const& message);
+
  private:
   // There may be several forks starting from the same time, hence the multimap.
   using Children = std::multimap<Instant, Tr4jectory>;
