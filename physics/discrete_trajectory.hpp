@@ -111,6 +111,16 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
+  // Removes all data for times (strictly) greater than |time|, as well as all
+  // child trajectories forked at times (strictly) greater than |time|.  |time|
+  // must be at or after the fork time, if any.
+  void ForgetAfter(Instant const& time);
+
+  // Removes all data for times less than or equal to |time|, as well as all
+  // child trajectories forked at times less than or equal to |time|.  This
+  // trajectory must be a root.
+  void ForgetBefore(Instant const& time);
+
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
   using IntrinsicAcceleration =
@@ -190,8 +200,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
                             Instant const& time) const override;
   TimelineConstIterator timeline_upper_bound(
                             Instant const& time) const override;
-  void timeline_erase(TimelineConstIterator begin,
-                      TimelineConstIterator end) override;
   void timeline_insert(TimelineConstIterator begin,
                        TimelineConstIterator end) override;
   bool timeline_empty() const override;

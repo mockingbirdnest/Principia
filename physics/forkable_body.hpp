@@ -51,38 +51,25 @@ void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
 }
 
 template<typename Tr4jectory>
-void Forkable<Tr4jectory>::ForgetAfter(Instant const& time) {
-  // Each of these blocks gets an iterator denoting the first entry with
-  // time > |time|.  It then removes that entry and all the entries that follow
-  // it.  This preserve any entry with time == |time|.
-  {
-    auto const it = timeline_upper_bound(time);
-    CHECK(is_root() || time >= *ForkTime())
-        << "ForgetAfter before the fork time";
-    timeline_erase(it, timeline_end());
-  }
-  {
-    auto const it = children_.upper_bound(time);
-    children_.erase(it, children_.end());
-  }
+void Forkable<Tr4jectory>::DeleteAllForksAfter(Instant const& time) {
+  // Get an iterator denoting the first entry with time > |time|.  Remove that
+  // entry and all the entries that follow it.  This preserve any entry with
+  // time == |time|.
+  CHECK(is_root() || time >= *ForkTime())
+      << "DeleteAllForksAfter before the fork time";
+  auto const it = children_.upper_bound(time);
+  children_.erase(it, children_.end());
 }
 
 template<typename Tr4jectory>
-void Forkable<Tr4jectory>::ForgetBefore(Instant const& time) {
-  // Check that this is a root.
-  CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
-  // Each of these blocks gets an iterator denoting the first entry with
-  // time > |time|.  It then removes that all the entries that precede it.  This
-  // removes any entry with time == |time|.
-  {
-    auto it = timeline_upper_bound(time);
-    timeline_erase(timeline_begin(), it);
-  }
-  {
-    auto it = children_.upper_bound(time);
-    children_.erase(children_.begin(), it);
-  }
+void Forkable<Tr4jectory>::DeleteAllForksBefore(Instant const& time) {
+  CHECK(is_root()) << "DeleteAllForksBefore on a nonroot trajectory";
+  // Get an iterator denoting the first entry with time > |time|.  Remove all
+  // the entries that precede it.  This removes any entry with time == |time|.
+  auto it = children_.upper_bound(time);
+  children_.erase(children_.begin(), it);
 }
+
 template<typename Tr4jectory>
 bool Forkable<Tr4jectory>::is_root() const {
   return parent_ == nullptr;
