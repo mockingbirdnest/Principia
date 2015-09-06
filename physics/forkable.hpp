@@ -55,6 +55,7 @@ class Forkable {
   // |*trajectory|.
   void DeleteFork(not_null<Tr4jectory**> const trajectory);
 
+  //TODO(phl): protected
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.
   void DeleteAllForksAfter(Instant const& time);
