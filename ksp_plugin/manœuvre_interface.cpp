@@ -6,6 +6,7 @@
 namespace principia {
 
 using constants::StandardGravity;
+using geometry::RadiusLatitudeLongitude;
 using si::Degree;
 using si::Kilogram;
 using si::Metre;
@@ -22,26 +23,6 @@ XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
-// Returns a unit vector pointing in the direction defined by |right_ascension|
-// and |declination|, assuming the reference system is as follows:
-// xy-plane: plane of the Earth's mean equator at the reference epoch
-// x-axis  : out along ascending node of instantaneous plane of the Earth's
-//           orbit and the Earth's mean equator at the reference epoch
-// z-axis  : along the Earth mean north pole at the reference epoch
-Vector<double, Barycentric> Direction(Angle const& right_ascension,
-                                      Angle const& declination) {
-  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
-  // An angle of 0 keeps {1, 0, 0} on the equator.
-  auto const decline = Rotation<Barycentric, Barycentric>(
-                           declination,
-                           Bivector<double, Barycentric>({0, -1, 0}));
-  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
-  auto const ascend = Rotation<Barycentric, Barycentric>(
-                          right_ascension,
-                          Bivector<double, Barycentric>({0, 0, 1}));
-  return ascend(decline(Vector<double, Barycentric>({1, 0, 0})));
-}
-
 }  // namespace
 
 Manœuvre<Barycentric>* principia__NewManœuvreIspByWeight(
@@ -54,7 +35,11 @@ Manœuvre<Barycentric>* principia__NewManœuvreIspByWeight(
       thrust * Newton,
       initial_mass * Kilogram,
       specific_impulse_by_weight * Second * StandardGravity,
-      Direction(right_ascension * Degree, declination * Degree)).release();
+      Vector<double, Barycentric>(
+          RadiusLatitudeLongitude(
+              1.0,
+              declination * Degree,
+              right_ascension * Degree).ToCartesian())).release();
 }
 
 double principia__thrust(Manœuvre<Barycentric> const* manœuvre) {
