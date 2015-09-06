@@ -120,6 +120,21 @@ std::list<Instant> DiscreteTrajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
+not_null<DiscreteTrajectory<Frame>*>
+DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
+  auto const fork = NewFork(time);
+
+  // May be at |end()|.
+  auto timeline_it = timeline_.find(time);
+
+  // Copy the tail of the trajectory in the child object.
+  if (timeline_it != timeline_.end()) {
+    fork->timeline_.insert(++timeline_it, timeline_.end());
+  }
+  return fork;
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {

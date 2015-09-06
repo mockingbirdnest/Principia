@@ -42,9 +42,8 @@ class Forkable {
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less
-  // than or equal to |time|, and is an exact copy of the current trajectory for
-  // times greater than |time|.  It may be changed independently from the
-  // parent trajectory for any time (strictly) greater than |time|.  The child
+  // than or equal to |time|.  It may be changed independently from the parent
+  // trajectory for any time (strictly) greater than |time|.  The child
   // trajectory is owned by its parent trajectory.  Deleting the parent
   // trajectory deletes all child trajectories.  |time| must be one of the times
   // of this trajectory, and must be at or after the fork time, if any.

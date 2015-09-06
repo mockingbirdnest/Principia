@@ -26,10 +26,6 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
   child_forkable.position_in_parent_children_ = child_it;
   child_forkable.position_in_parent_timeline_ = timeline_it;
 
-  // Copy the tail of the trajectory in the child object.
-  if (timeline_it != timeline_end()) {
-    child_forkable.timeline_insert(++timeline_it, timeline_end());
-  }
   return &child_forkable;
 }
 
