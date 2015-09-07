@@ -45,13 +45,31 @@ double principia__specific_impulse_by_weight(
          Second;
 }
 
+double principia__right_ascension(Manœuvre<Barycentric> const* manœuvre) {
+  return CHECK_NOTNULL(manœuvre)->
+             direction().coordinates().ToSpherical().longitude / Degree;
+}
+
+double principia__declination(Manœuvre<Barycentric> const* manœuvre) {
+  return CHECK_NOTNULL(manœuvre)->
+             direction().coordinates().ToSpherical().latitude / Degree;
+}
+
 void principia__set_duration(Manœuvre<Barycentric>* manœuvre,
                              double duration) {
   CHECK_NOTNULL(manœuvre)->set_duration(duration * Second);
 }
 
+double principia__duration(Manœuvre<Barycentric> const* manœuvre) {
+  return CHECK_NOTNULL(manœuvre)->duration() / Second;
+}
+
 void principia__set_Δv(Manœuvre<Barycentric>* manœuvre, double Δv) {
   CHECK_NOTNULL(manœuvre)->set_Δv(Δv * (Metre / Second));
+}
+
+double principia__Δv(Manœuvre<Barycentric> const* manœuvre) {
+  return CHECK_NOTNULL(manœuvre)->Δv() / (Metre / Second)
 }
 
 double principia__initial_time(Manœuvre<Barycentric> const* manœuvre) {
