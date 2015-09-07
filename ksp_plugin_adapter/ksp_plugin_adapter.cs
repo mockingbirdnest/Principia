@@ -75,6 +75,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
        1 << 26, 1 << 27, 1 << 28};
   [KSPField(isPersistant = true)]
   private int prediction_length_index_ = 0;
+  private int flight_plan_length_index_ = 0;
   private readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -96,6 +97,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool show_manœuvre_ = false;
 
   // TODO(egg): the manœuvre setting UI needs its own class.
+  bool node_at_initial_time_;
   string thrust_ = "1.0";
   string initial_mass_ = "100.0";
   string specific_impulse_by_weight_ = "1.0";
@@ -916,9 +918,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
-    ToggleableSection(name   : "Manœuvre",
+    ToggleableSection(name   : "Flight Plan",
                       show   : ref show_manœuvre_,
-                      render : ManœuvreSettings);
+                      render : FlightPlanSettings);
     ToggleableSection(name   : "KSP features",
                       show   : ref show_ksp_features_,
                       render : KSPFeatures);
@@ -1083,7 +1085,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "{0:0.00e0} s");
   }
 
-  private void ManœuvreSettings() {
+  private void FlightPlanSettings() {
+    bool dummy = false;
+    Selector(prediction_lengths_,
+             ref flight_plan_length_index_,
+             "Length",
+             ref dummy,
+             "{0:0.00e0} s");
     UnityEngine.GUILayout.BeginHorizontal();
     UnityEngine.GUILayout.Label(text    : "F = ",
                                 options : UnityEngine.GUILayout.Width(75));
@@ -1186,7 +1194,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               double.Parse(specific_impulse_by_weight_);
           double right_ascension = double.Parse(right_ascension_);
           double declination = double.Parse(declination_);
-          double Δv = double.Parse(Δv_);
+          double scalar_Δv = double.Parse(Δv_);
           double initial_time = double.Parse(initial_time_) +
                                 FlightGlobals.ActiveVessel.launchTime;
           if (initial_time <= Planetarium.GetUniversalTime()) {
@@ -1197,20 +1205,41 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      specific_impulse_by_weight,
                                                      right_ascension,
                                                      declination);
-            set_Δv(manœuvre, Δv);
+            set_Δv(manœuvre, scalar_Δv);
             set_initial_time(manœuvre, initial_time);
             if (ManœuvreCount(plugin_, active_vessel) > 0) {
               SetVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
             } else {
               InsertVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
             }
-            UpdateFlightPlan(plugin_, active_vessel);
+            UpdateFlightPlan(
+                plugin_,
+                active_vessel,
+                initial_time + prediction_lengths_[flight_plan_length_index_]);
+            ManeuverNode node;
+            FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Clear();
+            if (node_at_initial_time_) {
+              node = FlightGlobals.ActiveVessel.patchedConicSolver
+                         .AddManeuverNode(initial_time);
+            } else {
+              node = FlightGlobals.ActiveVessel.patchedConicSolver
+                         .AddManeuverNode(time_of_half_Δv(manœuvre));
+            }
+            node.DeltaV = (Vector3d)Δv(manœuvre);
           }
         // TODO(egg): instead of using the exception-throwing versions, use the
         // bool-returning versions, and give feedback.
         } catch (FormatException) {
         } catch (OverflowException) {}
       }
+    }
+    if (UnityEngine.GUILayout.Toggle(node_at_initial_time_,
+                                     "Node at initial time")) {
+      node_at_initial_time_ = true;
+    }
+    if (UnityEngine.GUILayout.Toggle(!node_at_initial_time_,
+                                     "Node at half-Δv")) {
+      node_at_initial_time_ = false;
     }
   }
 

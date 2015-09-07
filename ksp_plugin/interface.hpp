@@ -270,7 +270,8 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 
 extern "C" DLLEXPORT
 void principia__UpdateFlightPlan(Plugin const* const plugin,
-                                 char const* const vessel_guid);
+                                 char const* const vessel_guid,
+                                 double const last_time);
 
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.

@@ -283,7 +283,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void UpdateFlightPlan(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      double last_time);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
@@ -464,6 +465,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr set_initial_time(IntPtr manœuvre,
                                                 double initial_time);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__Δv",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ Δv(IntPtr manœuvre);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__time_of_half_Δv",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern double time_of_half_Δv(IntPtr manœuvre);
 }
 
 }  // namespace ksp_plugin_adapter

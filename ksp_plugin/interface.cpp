@@ -499,8 +499,10 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 }
 
 void principia__UpdateFlightPlan(Plugin const* const plugin,
-                                 char const* const vessel_guid) {
-  CHECK_NOTNULL(plugin)->UpdateFlightPlan(vessel_guid);
+                                 char const* const vessel_guid,
+                                 double const last_time) {
+  CHECK_NOTNULL(plugin)->UpdateFlightPlan(vessel_guid,
+                                          Instant(last_time * Second));
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(

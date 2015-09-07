@@ -336,12 +336,13 @@ void Plugin::UpdatePrediction(GUID const & vessel_guid) const {
       prediction_speed_tolerance_);
 }
 
-void Plugin::UpdateFlightPlan(GUID const & vessel_guid) const {
+void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
+                              Instant const& last_time) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
       ephemeris_.get(),
       prediction_integrator_,
-      current_time_ + prediction_length_,
+      last_time,
       prediction_length_tolerance_,
       prediction_speed_tolerance_,
       prolongation_length_tolerance_,
