@@ -224,8 +224,8 @@ class Ephemeris {
   std::vector<typename NewtonianMotionEquation::SystemState>
       intermediate_states_;
 
-  int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;
+  int number_of_spherical_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
 };
