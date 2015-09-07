@@ -74,5 +74,9 @@ void principia__set_time_of_half_Δv(Manœuvre<Barycentric>* manœuvre,
       set_time_of_half_Δv(Instant(time_of_half_Δv * Second));
 }
 
+double principia__final_time(Manœuvre<Barycentric> const* manœuvre) {
+  return (CHECK_NOTNULL(manœuvre)->final_time() - Instant()) / Second;
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -495,7 +495,8 @@ void principia__InsertVesselManœuvre(Plugin const* const plugin,
 
 XYZ principia__ManœuvreΔv(Plugin const* plugin,
                           Manœuvre<Barycentric> const* manœuvre) {
-  return CHECK_NOTNULL(plugin)->ManœuvreΔv(*CHECK_NOTNULL(manœuvre));
+  return ToXYZ((CHECK_NOTNULL(plugin)->ManœuvreΔv(*CHECK_NOTNULL(manœuvre)) /
+                    (Metre / Second)).coordinates());
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,

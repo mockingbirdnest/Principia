@@ -42,5 +42,8 @@ extern "C" DLLEXPORT
 void principia__set_time_of_half_Δv(Manœuvre<Barycentric>* manœuvre,
                                     double time_of_half_Δv);
 
+extern "C" DLLEXPORT
+double principia__final_time(Manœuvre<Barycentric> const* manœuvre);
+
 }  // namespace ksp_plugin
 }  // namespace principia

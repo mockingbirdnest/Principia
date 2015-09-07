@@ -1195,7 +1195,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               double.Parse(specific_impulse_by_weight_);
           double right_ascension = double.Parse(right_ascension_);
           double declination = double.Parse(declination_);
-          double scalar_Δv = double.Parse(Δv_);
+          double Δv = double.Parse(Δv_);
           double initial_time =
               double.Parse(initial_time_) + active_vessel.launchTime;
           if (initial_time <= Planetarium.GetUniversalTime()) {
@@ -1206,7 +1206,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      specific_impulse_by_weight,
                                                      right_ascension,
                                                      declination);
-            set_Δv(manœuvre, scalar_Δv);
+            set_Δv(manœuvre, Δv);
             set_initial_time(manœuvre, initial_time);
 
             active_vessel.patchedConicSolver.maneuverNodes.Clear();
@@ -1215,7 +1215,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                       : time_of_half_Δv(manœuvre);
             ManeuverNode node =
                 active_vessel.patchedConicSolver.AddManeuverNode(node_time);
-            node.OnGizmoUpdated((Vector3d)Δv(manœuvre), node_time);
+            Vector3d stock_velocity_at_node_time =
+                active_vessel.orbit.getOrbitalVelocityAtUT(node_time).xzy;
+            Vector3d stock_displacement_from_parent_at_node_time =
+                active_vessel.orbit.getRelativePositionAtUT(node_time).xzy;
+            UnityEngine.Quaternion stock_frenet_frame_to_world =
+                UnityEngine.Quaternion.LookRotation(
+                    stock_velocity_at_node_time,
+                    Vector3d.Cross(
+                        stock_velocity_at_node_time,
+                        stock_displacement_from_parent_at_node_time));
+            node.OnGizmoUpdated(
+                UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
+                    (Vector3d)ManœuvreΔv(plugin_, manœuvre),
+                node_time);
 
             if (ManœuvreCount(plugin_, active_vessel_id) > 0) {
               SetVesselManœuvre(plugin_, active_vessel_id, 0, ref manœuvre);

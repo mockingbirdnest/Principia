@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include <type_traits>
 
@@ -243,30 +243,30 @@ extern "C" DLLEXPORT
 void CDECL principia__DeleteTransforms(RenderingTransforms** const transforms);
 
 extern "C" DLLEXPORT
-int principia__ManúuvreCount(Plugin const* const plugin,
+int principia__Man≈ìuvreCount(Plugin const* const plugin,
                              char const* const vessel_guid);
 
 extern "C" DLLEXPORT
-Manúuvre<Barycentric> const* principia__VesselManúuvre(
+Man≈ìuvre<Barycentric> const* principia__VesselMan≈ìuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const index);
 
 extern "C" DLLEXPORT
-void principia__SetVesselManúuvre(Plugin const* const plugin,
+void principia__SetVesselMan≈ìuvre(Plugin const* const plugin,
                                   char const* const vessel_guid,
                                   int const index,
-                                  Manúuvre<Barycentric> const** manúuvre);
+                                  Man≈ìuvre<Barycentric> const** man≈ìuvre);
 
 extern "C" DLLEXPORT
-void principia__InsertVesselManúuvre(Plugin const* const plugin,
+void principia__InsertVesselMan≈ìuvre(Plugin const* const plugin,
                                      char const* const vessel_guid,
                                      int const index,
-                                     Manúuvre<Barycentric> const** manúuvre);
+                                     Man≈ìuvre<Barycentric> const** man≈ìuvre);
 
 extern "C" DLLEXPORT
-XYZ principia__Manúuvre?v(Plugin const* plugin,
-                          Manúuvre<Barycentric> const* manúuvre);
+XYZ principia__Man≈ìuvreŒîv(Plugin const* plugin,
+                          Man≈ìuvre<Barycentric> const* man≈ìuvre);
 
 extern "C" DLLEXPORT
 void principia__UpdatePrediction(Plugin const* const plugin,

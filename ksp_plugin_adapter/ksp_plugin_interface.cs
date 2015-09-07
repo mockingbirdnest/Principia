@@ -467,14 +467,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                 double initial_time);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__Δv",
+             EntryPoint        = "principia__ManœuvreΔv",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ Δv(IntPtr manœuvre);
+  private static extern XYZ ManœuvreΔv(IntPtr plugin, IntPtr manœuvre);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__time_of_half_Δv",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern double time_of_half_Δv(IntPtr manœuvre);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__final_time",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern double final_time(IntPtr manœuvre);
 }
 
 }  // namespace ksp_plugin_adapter
