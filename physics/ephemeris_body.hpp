@@ -383,31 +383,58 @@ template<typename Frame>
 Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
     not_null<MassiveBody const*> const body,
     Instant const& t) {
+  bool const body_is_oblate = body->is_oblate();
+
   // |other_bodies| is |bodies_| without |body|.  Index 0 in |positions| and
   // |accelerations| corresponds to |body|, the other indices to |other_bodies|.
   std::vector<not_null<MassiveBody const*>> other_bodies;
   std::vector<Position<Frame>> positions;
-  std::vector<Vector<Acceleration, Frame>>* accelerations(bodies_.size);
+  std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size);
 
   // Make room for |body|.
   positions.resize(1);
 
   // Fill |bodies| and evaluate the |positions|.
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   for (int i = 0; i < bodies_.size(); ++i) {
     auto const& other_body = bodies_[i];
     auto const& other_body_trajectory = trajectories_[i];
     if (other_body.get() == body) {
-      positions[0] = other_body_trajectory->EvaluatePosition(t);
+      positions[0] = other_body_trajectory->EvaluatePosition(t, &hints[i]);
     } else {
-      other_bodies.push_back(other_body);
-      positions.push_back(other_body_trajectory->EvaluatePosition(t));
+      other_bodies.push_back(other_body.get());
+      positions.push_back(
+          other_body_trajectory->EvaluatePosition(t, &hints[i]));
     }
   }
 
-  ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
-      *body /*body1*/, 0 /*b1*/,
-      other_bodies /*bodies2*/, 1 /*b2_begin*/, positions.size() /*b2_end*/,
-      positions, &accelerations);
+  if (body_is_oblate) {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        true /*body1_is_oblate*/,
+        xxx>(
+        *body /*body1*/, 0 /*b1*/,
+        other_bodies /*bodies2*/, 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        true /*body1_is_oblate*/,
+        xxx>(
+        *body /*body1*/, 0 /*b1*/,
+        other_bodies /*bodies2*/, 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+  } else {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        false /*body1_is_oblate*/,
+        xxx>(
+        *body /*body1*/, 0 /*b1*/,
+        other_bodies /*bodies2*/, 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        false /*body1_is_oblate*/,
+        xxx>(
+        *body /*body1*/, 0 /*b1*/,
+        other_bodies /*bodies2*/, 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+  }
 
   return -acceleration[0];
 }
