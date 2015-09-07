@@ -32,7 +32,7 @@ extern "C" DLLEXPORT
 void principia__set_duration(Manœuvre<Barycentric>* manœuvre,
                              double duration);
 extern "C" DLLEXPORT
-void principia__set_Δv(Manœuvre<Barycentric> const* manœuvre, double Δv);
+void principia__set_Δv(Manœuvre<Barycentric>* manœuvre, double Δv);
 
 extern "C" DLLEXPORT
 double principia__initial_time(Manœuvre<Barycentric> const* manœuvre);
