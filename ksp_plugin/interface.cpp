@@ -493,6 +493,11 @@ void principia__InsertVesselManœuvre(Plugin const* const plugin,
                                               TakeOwnership(manœuvre));
 }
 
+void principia__DeleteVesselManœuvres(Plugin const* const plugin,
+                                      char const* const vessel_guid) {
+  CHECK_NOTNULL(plugin)->DeleteVesselManœuvres(vessel_guid);
+}
+
 XYZ principia__ManœuvreΔv(Plugin const* plugin,
                           Manœuvre<Barycentric> const* manœuvre) {
   return ToXYZ((CHECK_NOTNULL(plugin)->ManœuvreΔv(*CHECK_NOTNULL(manœuvre)) /

@@ -206,6 +206,7 @@ class Plugin {
       GUID const& vessel_guid,
       int const index,
       not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const;
+  void DeleteVesselManœuvres(GUID const& vessel_guid) const;
 
   Velocity<WorldSun> ManœuvreΔv(Manœuvre<Barycentric> const& manœuvre) const;
 
