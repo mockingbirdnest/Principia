@@ -207,6 +207,8 @@ class Plugin {
       int const index,
       not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const;
 
+  Velocity<WorldSun> ManœuvreΔv(Manœuvre<Barycentric> const& manœuvre) const;
+
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
   void UpdateFlightPlan(GUID const& vessel_guid,

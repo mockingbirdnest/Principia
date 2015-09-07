@@ -1183,10 +1183,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "Update",
             options : UnityEngine.GUILayout.Width(100))) {
-        if (FlightGlobals.ActiveVessel != null &&
-            PluginRunning() &&
-            has_vessel(plugin_, FlightGlobals.ActiveVessel.id.ToString())) {
-          string active_vessel = FlightGlobals.ActiveVessel.id.ToString();
+      if (FlightGlobals.ActiveVessel != null &&
+          PluginRunning() &&
+          has_vessel(plugin_, FlightGlobals.ActiveVessel.id.ToString())) {
+        Vessel active_vessel = FlightGlobals.ActiveVessel;
+        string active_vessel_id = FlightGlobals.ActiveVessel.id.ToString();
         try {
           double thrust = double.Parse(thrust_);
           double initial_mass = double.Parse(initial_mass_);
@@ -1195,8 +1196,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           double right_ascension = double.Parse(right_ascension_);
           double declination = double.Parse(declination_);
           double scalar_Δv = double.Parse(Δv_);
-          double initial_time = double.Parse(initial_time_) +
-                                FlightGlobals.ActiveVessel.launchTime;
+          double initial_time =
+              double.Parse(initial_time_) + active_vessel.launchTime;
           if (initial_time <= Planetarium.GetUniversalTime()) {
             // TODO(egg): give some feedback.
           } else {
@@ -1207,25 +1208,24 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      declination);
             set_Δv(manœuvre, scalar_Δv);
             set_initial_time(manœuvre, initial_time);
-            if (ManœuvreCount(plugin_, active_vessel) > 0) {
-              SetVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+
+            active_vessel.patchedConicSolver.maneuverNodes.Clear();
+            double node_time =
+                node_at_initial_time_ ? initial_time
+                                      : time_of_half_Δv(manœuvre);
+            ManeuverNode node =
+                active_vessel.patchedConicSolver.AddManeuverNode(node_time);
+            node.OnGizmoUpdated((Vector3d)Δv(manœuvre), node_time);
+
+            if (ManœuvreCount(plugin_, active_vessel_id) > 0) {
+              SetVesselManœuvre(plugin_, active_vessel_id, 0, ref manœuvre);
             } else {
-              InsertVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+              InsertVesselManœuvre(plugin_, active_vessel_id, 0, ref manœuvre);
             }
             UpdateFlightPlan(
                 plugin_,
-                active_vessel,
+                active_vessel_id,
                 initial_time + prediction_lengths_[flight_plan_length_index_]);
-            ManeuverNode node;
-            FlightGlobals.ActiveVessel.patchedConicSolver.maneuverNodes.Clear();
-            if (node_at_initial_time_) {
-              node = FlightGlobals.ActiveVessel.patchedConicSolver
-                         .AddManeuverNode(initial_time);
-            } else {
-              node = FlightGlobals.ActiveVessel.patchedConicSolver
-                         .AddManeuverNode(time_of_half_Δv(manœuvre));
-            }
-            node.DeltaV = (Vector3d)Δv(manœuvre);
           }
         // TODO(egg): instead of using the exception-throwing versions, use the
         // bool-returning versions, and give feedback.

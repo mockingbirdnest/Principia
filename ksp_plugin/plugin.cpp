@@ -326,6 +326,11 @@ void Plugin::InsertVesselManœuvre(
                                       std::move(manœuvre));
 }
 
+Velocity<WorldSun> Plugin::ManœuvreΔv(
+    Manœuvre<Barycentric> const& manœuvre) const {
+  return BarycentricToWorldSun()(manœuvre.direction() * manœuvre.Δv());
+}
+
 void Plugin::UpdatePrediction(GUID const & vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(

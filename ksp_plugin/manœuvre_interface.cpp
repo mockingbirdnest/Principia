@@ -15,16 +15,6 @@ using si::Second;
 
 namespace ksp_plugin {
 
-namespace {
-
-// TODO(egg): bad code replication! bad!
-
-XYZ ToXYZ(R3Element<double> const& r3_element) {
-  return {r3_element.x, r3_element.y, r3_element.z};
-}
-
-}  // namespace
-
 Manœuvre<Barycentric>* principia__NewManœuvreIspByWeight(
     double thrust,
     double initial_mass,
@@ -53,12 +43,6 @@ double principia__specific_impulse_by_weight(
   return (CHECK_NOTNULL(manœuvre)->effective_exhaust_velocity() /
           StandardGravity) /
          Second;
-}
-
-XYZ principia__Δv(Manœuvre<Barycentric> const* manœuvre) {
-  CHECK_NOTNULL(manœuvre);
-  return ToXYZ((manœuvre->direction() * manœuvre->Δv() /
-                (Metre / Second)).coordinates());
 }
 
 void principia__set_duration(Manœuvre<Barycentric>* manœuvre,

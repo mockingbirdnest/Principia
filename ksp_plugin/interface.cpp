@@ -493,6 +493,11 @@ void principia__InsertVesselManœuvre(Plugin const* const plugin,
                                               TakeOwnership(manœuvre));
 }
 
+XYZ principia__ManœuvreΔv(Plugin const* plugin,
+                          Manœuvre<Barycentric> const* manœuvre) {
+  return CHECK_NOTNULL(plugin)->ManœuvreΔv(*CHECK_NOTNULL(manœuvre));
+}
+
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid) {
   CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);

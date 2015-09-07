@@ -26,9 +26,6 @@ double principia__specific_impulse_by_weight(
     Manœuvre<Barycentric> const* manœuvre);
 
 extern "C" DLLEXPORT
-XYZ principia__Δv(Manœuvre<Barycentric> const* manœuvre);
-
-extern "C" DLLEXPORT
 void principia__set_duration(Manœuvre<Barycentric>* manœuvre,
                              double duration);
 extern "C" DLLEXPORT
