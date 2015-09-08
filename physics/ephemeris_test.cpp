@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -21,6 +22,8 @@
 
 namespace principia {
 
+using astronomy::LunarDistance;
+using astronomy::SolarMass;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
@@ -28,6 +31,7 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Pow;
 using quantities::Sqrt;
+using si::AstronomicalUnit;
 using si::Kilogram;
 using si::Metre;
 using si::Milli;
@@ -48,6 +52,8 @@ class EphemerisTest : public testing::Test {
  protected:
   using EarthMoonOrbitPlane = Frame<serialization::Frame::TestTag,
                                     serialization::Frame::TEST, true>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST1, true>;
 
   void SetUpEarthMoonSystem(
       not_null<std::vector<not_null<std::unique_ptr<MassiveBody const>>>*> const
@@ -752,7 +758,7 @@ TEST_F(EphemerisTest, Serialization) {
 }
 
 // The gravitational acceleration on at elephant located at the pole.
-TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
+TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Position<EarthMoonOrbitPlane> const reference_position;
   Length const kDistance = 6356.8 * Kilo(Metre);
   Time const kDuration = 1 * Second;
@@ -821,6 +827,59 @@ TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
                           -9.832 * SIUnit<Acceleration>()), 3.2E-3);
   EXPECT_THAT(elephant_accelerations.back().coordinates().z,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+}
+
+TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
+  Time const kDuration = 1 * Second;
+  double const kJ2 = 1E6;
+
+  auto const b0 = new OblateBody<World>(1 * SolarMass,
+                                        kJ2,
+                                        1 * LunarDistance,
+                                        Vector<double, World>({0, 0, 1}));
+
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<World>> initial_state;
+  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b0));
+  bodies.emplace_back(std::make_unique<MassiveBody>(2 * SolarMass));
+  bodies.emplace_back(std::make_unique<MassiveBody>(3 * SolarMass));
+  bodies.emplace_back(std::make_unique<MassiveBody>(4 * SolarMass));
+
+  Velocity<World> const v({0 * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>()});
+  Position<World> const q0(
+      Vector<Length, World>({0 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             0 * AstronomicalUnit}));
+  Position<World> const q1(
+      Vector<Length, World>({1 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             0 * AstronomicalUnit}));
+  Position<World> const q2(
+      Vector<Length, World>({1 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             1 * AstronomicalUnit}));
+  Position<World> const q3(
+      Vector<Length, World>({0 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             1 * AstronomicalUnit}));
+  initial_state.emplace_back(q0, v);
+  initial_state.emplace_back(q1, v);
+  initial_state.emplace_back(q2, v);
+  initial_state.emplace_back(q3, v);
+
+  Ephemeris<World>
+      ephemeris(std::move(bodies),
+                initial_state,
+                t0_,
+                McLachlanAtela1992Order5Optimal<Position<World>>(),
+                kDuration / 100,
+                5 * Milli(Metre));
+  ephemeris.Prolong(t0_ + kDuration);
+
+  Vector<Acceleration, World> acceleration =
+      ephemeris.ComputeGravitationalAcceleration(b0, t0_);
 }
 
 }  // namespace physics

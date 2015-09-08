@@ -422,14 +422,14 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
         true /*body2_is_oblate*/>(
         *body /*body1*/, 0 /*b1*/,
         other_oblate_bodies /*bodies2*/,
-        1 /*b2_begin*/, other_oblate_bodies.size() /*b2_end*/,
+        1 /*b2_begin*/, other_oblate_bodies.size() + 1 /*b2_end*/,
         positions, &accelerations);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         true /*body1_is_oblate*/,
         false /*body2_is_oblate*/>(
         *body /*body1*/, 0 /*b1*/,
         other_spherical_bodies /*bodies2*/,
-        other_oblate_bodies.size() /*b2_begin*/, bodies_.size() /*b2_end*/,
+        other_oblate_bodies.size() + 1/*b2_begin*/, bodies_.size() /*b2_end*/,
         positions, &accelerations);
   } else {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
