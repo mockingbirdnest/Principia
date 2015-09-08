@@ -69,7 +69,7 @@ void principia__set_Δv(Manœuvre<Barycentric>* manœuvre, double Δv) {
 }
 
 double principia__Δv(Manœuvre<Barycentric> const* manœuvre) {
-  return CHECK_NOTNULL(manœuvre)->Δv() / (Metre / Second)
+  return CHECK_NOTNULL(manœuvre)->Δv() / (Metre / Second);
 }
 
 double principia__initial_time(Manœuvre<Barycentric> const* manœuvre) {

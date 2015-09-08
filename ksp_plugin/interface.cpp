@@ -495,7 +495,7 @@ void principia__InsertVesselManœuvre(Plugin const* const plugin,
 
 void principia__ClearVesselManœuvres(Plugin const* const plugin,
                                      char const* const vessel_guid) {
-  CHECK_NOTNULL(plugin)->DeleteVesselManœuvres(vessel_guid);
+  CHECK_NOTNULL(plugin)->ClearVesselManœuvres(vessel_guid);
 }
 
 XYZ principia__ManœuvreΔv(Plugin const* plugin,

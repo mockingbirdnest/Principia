@@ -19,8 +19,8 @@ internal class QuantityInputField {
                                       out double value,
                                       out string status);
 
-  DoubleToString to_string;
-  StringToDouble to_double;
+  DoubleToString to_string_;
+  StringToDouble to_double_;
 
   private static bool ParseDouble(string text,
                                   out double value,
@@ -48,9 +48,11 @@ internal class QuantityInputField {
                             string unit,
                             DoubleToString to_string,
                             StringToDouble to_double) {
+    to_string_ = to_string;
+    to_double_ = to_double;
     label_ = label;
     value_ = value;
-    text_ = to_string(value);
+    text_ = to_string_(value);
     old_text_ = text_;
     unit_ = unit;
   }
@@ -70,7 +72,7 @@ internal class QuantityInputField {
     }
     set {
       value_ = value;
-      text_ = to_string(value_);
+      text_ = to_string_(value_);
       old_text_ = text_;
       status_ = "";
     }
@@ -79,9 +81,9 @@ internal class QuantityInputField {
   public void ReadValue() {
     if (old_text_ != text_) {
       double parsed_value;
-      if (to_double(text_, out parsed_value, out status_)) {
+      if (to_double_(text_, out parsed_value, out status_)) {
         value = parsed_value;
-        text_ = to_string(parsed_value);
+        text_ = to_string_(parsed_value);
         old_text_ = text_;
       } else {
         status_ = "";

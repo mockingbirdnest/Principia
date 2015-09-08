@@ -39,7 +39,7 @@ struct R3Element {
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
   // the equator, and the z-axis as the north pole.
-  SphericalCoordinates<Scalar> ToSpherical();
+  SphericalCoordinates<Scalar> ToSpherical() const;
 
   // Modifies |*r3_element| so as to make it orthogonal to |*this|, using the
   // modified Gram-Schmidt algorithm.  Fails if |*this| is zero.
