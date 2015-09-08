@@ -326,7 +326,7 @@ void Plugin::InsertVesselManœuvre(
                                       std::move(manœuvre));
 }
 
-void Plugin::DeleteVesselManœuvres(GUID const& vessel_guid) const {
+void Plugin::ClearVesselManœuvres(GUID const& vessel_guid) const {
   find_vessel_by_guid_or_die(vessel_guid)->mutable_manœuvres()->clear();
 }
 

@@ -265,8 +265,8 @@ void principia__InsertVesselManœuvre(Plugin const* const plugin,
                                      Manœuvre<Barycentric> const** manœuvre);
 
 extern "C" DLLEXPORT
-void principia__DeleteVesselManœuvres(Plugin const* const plugin,
-                                      char const* const vessel_guid);
+void principia__ClearVesselManœuvres(Plugin const* const plugin,
+                                     char const* const vessel_guid);
 
 extern "C" DLLEXPORT
 XYZ principia__ManœuvreΔv(Plugin const* plugin,

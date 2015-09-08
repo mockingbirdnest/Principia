@@ -493,8 +493,8 @@ void principia__InsertVesselManœuvre(Plugin const* const plugin,
                                               TakeOwnership(manœuvre));
 }
 
-void principia__DeleteVesselManœuvres(Plugin const* const plugin,
-                                      char const* const vessel_guid) {
+void principia__ClearVesselManœuvres(Plugin const* const plugin,
+                                     char const* const vessel_guid) {
   CHECK_NOTNULL(plugin)->DeleteVesselManœuvres(vessel_guid);
 }
 

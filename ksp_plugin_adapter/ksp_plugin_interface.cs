@@ -272,9 +272,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       ref IntPtr manœuvre);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteVesselManœuvre",
+             EntryPoint        = "principia__ClearVesselManœuvres",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteVesselManœuvre(
+  internal static extern void ClearVesselManœuvres(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 

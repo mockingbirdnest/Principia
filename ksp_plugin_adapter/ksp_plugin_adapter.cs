@@ -84,6 +84,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int history_length_index_ = 10;
 
   [KSPField(isPersistant = true)]
+  bool node_at_initial_time_ = false;
+  private List<ManœuvrePlanner> manœuvres_;
+
+  [KSPField(isPersistant = true)]
   private bool show_reference_frame_selection_ = true;
   [KSPField(isPersistant = true)]
   private bool show_prediction_settings_ = true;
@@ -146,6 +150,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     Log.InitGoogleLogging();
+    manœuvres_ = new List<ManœuvrePlanner>();
   }
 
   ~PrincipiaPluginAdapter() {
@@ -1082,74 +1087,71 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref dummy,
              "{0:0.00e0} s");
-    if (UnityEngine.GUILayout.Button(
-            text    : "Auto",
-            options : UnityEngine.GUILayout.Width(100)) &&
-        FlightGlobals.fetch.activeVessel != null) {
-      Vessel active_vessel = FlightGlobals.fetch.activeVessel;
-      ModuleEngines[] active_engines =
-          (from part in active_vessel.parts
-           select (from PartModule module in part.Modules
-                   where module is ModuleEngines &&
-                         (module as ModuleEngines).EngineIgnited
-                   select module as ModuleEngines))
-              .SelectMany(x => x)
-              .ToArray();
-      Vector3d reference_direction = active_vessel.ReferenceTransform.up;
-      double[] thrusts =
-          (from engine in active_engines
-           select engine.maxThrust * 1000 *
-                  (from transform in engine.thrustTransforms
-                   select Vector3d.Dot(reference_direction,
-                                       -transform.forward)).Average())
-              .ToArray();
-      double total_thrust = thrusts.Sum();
-      thrust_ = total_thrust.ToString();
 
-      // This would use zip if we had 4.0 or later.  We loop for now.
-      double Σ_f_over_i_sp = 0;
-      for (int i = 0; i < active_engines.Count(); ++i) {
-        Σ_f_over_i_sp += thrusts[i] /
-                         active_engines[i].atmosphereCurve.Evaluate(0);
+    if (FlightGlobals.ActiveVessel != null &&
+        PluginRunning() &&
+        has_vessel(plugin_, FlightGlobals.ActiveVessel.id.ToString())) {
+      node_at_initial_time_ =
+          UnityEngine.GUILayout.Toggle(node_at_initial_time_,
+                                       "Node for first burn");
+
+     Vessel active_vessel = FlightGlobals.ActiveVessel;
+     string active_vessel_guid = active_vessel.id.ToString();
+
+      if (UnityEngine.GUILayout.Button(
+              text    : "Compute",
+              options : UnityEngine.GUILayout.Width(100))) {
+        ClearVesselManœuvres(plugin_, active_vessel_guid);
+        for (int i = 0; i < manœuvres_.Count; ++i) {
+          IntPtr manœuvre = manœuvres_[i].ComputeManœuvre();
+          InsertVesselManœuvre(plugin_, active_vessel_guid, i, ref manœuvre);
+        }
+        UpdateFlightPlan(
+            plugin_,
+            active_vessel_guid,
+            Planetarium.GetUniversalTime() +
+                prediction_lengths_[flight_plan_length_index_]);
       }
-      specific_impulse_by_weight_ = (total_thrust / Σ_f_over_i_sp).ToString();
 
-      initial_mass_ = (active_vessel.GetTotalMass() * 1000).ToString();
-    }
-    UnityEngine.GUILayout.BeginHorizontal();
-    if (UnityEngine.GUILayout.Button(
-            text    : "Update",
+      if (UnityEngine.GUILayout.Button(
+          text    : "Insert Manœuvre",
+          options : UnityEngine.GUILayout.Width(100))) {
+        manœuvres_.Insert(0, new ManœuvrePlanner(active_vessel, null));
+        if (manœuvres_.Count > 0) {
+          manœuvres_[1].previous = manœuvres_[0];
+        }
+      }
+
+      for (int i = 0; i < manœuvres_.Count; ++i) {
+        manœuvres_[i].Render();
+        if (UnityEngine.GUILayout.Button(
+            text    : "Delete Previous",
             options : UnityEngine.GUILayout.Width(100))) {
-      if (FlightGlobals.ActiveVessel != null &&
-          PluginRunning() &&
-          has_vessel(plugin_, FlightGlobals.ActiveVessel.id.ToString())) {
-        Vessel active_vessel = FlightGlobals.ActiveVessel;
-        string active_vessel_id = FlightGlobals.ActiveVessel.id.ToString();
-        try {
-          double thrust = double.Parse(thrust_);
-          double initial_mass = double.Parse(initial_mass_);
-          double specific_impulse_by_weight =
-              double.Parse(specific_impulse_by_weight_);
-          double right_ascension = double.Parse(right_ascension_);
-          double declination = double.Parse(declination_);
-          double Δv = double.Parse(Δv_);
-          double initial_time =
-              double.Parse(initial_time_) + active_vessel.launchTime;
-          if (initial_time <= Planetarium.GetUniversalTime()) {
-            // TODO(egg): give some feedback.
-          } else {
-            IntPtr manœuvre = NewManœuvreIspByWeight(thrust,
-                                                     initial_mass,
-                                                     specific_impulse_by_weight,
-                                                     right_ascension,
-                                                     declination);
-            set_Δv(manœuvre, Δv);
-            set_initial_time(manœuvre, initial_time);
+          manœuvres_.RemoveAt(i);
+          if (manœuvres_.Count > i) {
+            manœuvres_[i].previous = i == 0 ? null : manœuvres_[i - 1];
+          }
+          --i;
+        }
+        if (UnityEngine.GUILayout.Button(
+            text    : "Insert Manœuvre",
+            options : UnityEngine.GUILayout.Width(100))) {
+          manœuvres_.Insert(
+              i + 1,
+              new ManœuvrePlanner(active_vessel,
+                                  i == 0 ? null : manœuvres_[i - 1]));
+          if (manœuvres_.Count > i + 2) {
+            manœuvres_[i + 2].previous = manœuvres_[i + 1];
+          }
+        }
+      }
 
-            active_vessel.patchedConicSolver.maneuverNodes.Clear();
-            double node_time =
-                node_at_initial_time_ ? initial_time
-                                      : time_of_half_Δv(manœuvre);
+      if (node_at_initial_time_ &&
+          FlightPlanSize(plugin_, active_vessel_guid) > 0) {
+        IntPtr manœuvre = VesselManœuvre(plugin_, active_vessel_guid, 0);
+
+        active_vessel.patchedConicSolver.maneuverNodes.Clear();
+            double node_time = initial_time(manœuvre);
             ManeuverNode node =
                 active_vessel.patchedConicSolver.AddManeuverNode(node_time);
             Vector3d stock_velocity_at_node_time =
@@ -1166,30 +1168,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                 UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
                     (Vector3d)ManœuvreΔv(plugin_, manœuvre),
                 node_time);
-
-            if (ManœuvreCount(plugin_, active_vessel_id) > 0) {
-              SetVesselManœuvre(plugin_, active_vessel_id, 0, ref manœuvre);
-            } else {
-              InsertVesselManœuvre(plugin_, active_vessel_id, 0, ref manœuvre);
-            }
-            UpdateFlightPlan(
-                plugin_,
-                active_vessel_id,
-                initial_time + prediction_lengths_[flight_plan_length_index_]);
-          }
-        // TODO(egg): instead of using the exception-throwing versions, use the
-        // bool-returning versions, and give feedback.
-        } catch (FormatException) {
-        } catch (OverflowException) {}
       }
-    }
-    if (UnityEngine.GUILayout.Toggle(node_at_initial_time_,
-                                     "Node at initial time")) {
-      node_at_initial_time_ = true;
-    }
-    if (UnityEngine.GUILayout.Toggle(!node_at_initial_time_,
-                                     "Node at half-Δv")) {
-      node_at_initial_time_ = false;
     }
   }
 
