@@ -96,5 +96,9 @@ double principia__final_time(Manœuvre<Barycentric> const* manœuvre) {
   return (CHECK_NOTNULL(manœuvre)->final_time() - Instant()) / Second;
 }
 
+double principia__final_mass(Manœuvre<Barycentric> const* manœuvre) {
+  return CHECK_NOTNULL(manœuvre)->final_mass() / Kilogram;
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

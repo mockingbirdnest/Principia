@@ -39,7 +39,7 @@ internal class QuantityInputField {
                             string unit) : this(label,
                             value,
                             unit,
-                            (x => x.ToString()),
+                            (x => x.ToString("0.000")),
                             ParseDouble) {}
 
 
@@ -58,12 +58,17 @@ internal class QuantityInputField {
   }
 
   public void Render() {
-    UnityEngine.GUILayout.Label(label_, UnityEngine.GUILayout.Width(75));
+    var old_alignment = UnityEngine.GUI.skin.textField.alignment;
+    UnityEngine.GUI.skin.textField.alignment =
+        UnityEngine.TextAnchor.MiddleRight;
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(label_, UnityEngine.GUILayout.Width(40));
     text_ = UnityEngine.GUILayout.TextField(text_,
-                                            UnityEngine.GUILayout.Width(200));
-    UnityEngine.GUILayout.Label(unit_, UnityEngine.GUILayout.Width(75));
-    UnityEngine.GUILayout.Label(status_, UnityEngine.GUILayout.Width(75));
+                                            UnityEngine.GUILayout.Width(100));
+    UnityEngine.GUILayout.Label(unit_, UnityEngine.GUILayout.Width(100));
+    // UnityEngine.GUILayout.Label(status_, UnityEngine.GUILayout.Width());
     UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUI.skin.textField.alignment = old_alignment;
   }
 
   public double value {
@@ -120,7 +125,7 @@ internal class ManœuvrePlanner {
     right_ascension_input_  = new QuantityInputField("α", 0, "°");
     declination_input_      = new QuantityInputField("δ", 0, "°");
     Δv_input_               = new QuantityInputField("Δv", 1, "m/s");
-    initial_time_input_     = new QuantityInputField("t_0", 0,
+    initial_time_input_     = new QuantityInputField("t_0", vessel.launchTime,
                                                      "s after launch",
                                                      InitialTimeToString,
                                                      ParseInitialTime);
@@ -140,19 +145,28 @@ internal class ManœuvrePlanner {
     initial_time_input_.value = PrincipiaPluginAdapter.initial_time(manœuvre);
 
     duration_ = PrincipiaPluginAdapter.duration(manœuvre);
-    final_time_ = PrincipiaPluginAdapter.duration(manœuvre);
+    final_time_ = PrincipiaPluginAdapter.final_time(manœuvre);
+    final_mass_ = PrincipiaPluginAdapter.final_mass(manœuvre);
   }
 
   internal void Render() {
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.BeginVertical();
     thrust_input_.Render();
     specific_impulse_input_.Render();
+    initial_mass_input_.Render();
+    right_ascension_input_.Render();
+    declination_input_.Render();
+    Δv_input_.Render();
+    initial_time_input_.Render();
+    UnityEngine.GUILayout.EndVertical();
+    UnityEngine.GUILayout.BeginVertical();
     if (UnityEngine.GUILayout.Button(
             text    : "Auto Engines",
             options : UnityEngine.GUILayout.Width(100)) &&
         FlightGlobals.fetch.activeVessel != null) {
       AutoEngines();
     }
-    initial_mass_input_.Render();
     if (UnityEngine.GUILayout.Button(
             text    : "Auto Mass",
             options : UnityEngine.GUILayout.Width(100)) &&
@@ -163,35 +177,35 @@ internal class ManœuvrePlanner {
         initial_mass_input_.value = vessel_.GetTotalMass() * 1000;
       }
     }
-    right_ascension_input_.Render();
-    declination_input_.Render();
-    Δv_input_.Render();
-    initial_time_input_.Render();
     UnityEngine.GUILayout.BeginHorizontal();
     var old_alignment = UnityEngine.GUI.skin.textArea.alignment;
     UnityEngine.GUI.skin.textArea.alignment =
         UnityEngine.TextAnchor.MiddleRight;
-    UnityEngine.GUILayout.Label(text    : "Burn duration:",
-                                options : UnityEngine.GUILayout.Width(150));
+    UnityEngine.GUILayout.Label(text    : "Duration",
+                                options : UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.TextArea(
-        text    : duration_.ToString() + " s",
-        options : UnityEngine.GUILayout.Width(75));
+        text    : duration_.ToString("0.000") + " s",
+        options : UnityEngine.GUILayout.Width(100));
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "Burn start countdown",
-                                options : UnityEngine.GUILayout.Width(150));
+    UnityEngine.GUILayout.Label(text    : "Burn start ",
+                                options : UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.TextArea(
-        (initial_time_input_.value -
-         Planetarium.GetUniversalTime()).ToString("+0.000;-0.000") + " s",
-        UnityEngine.GUILayout.Width(75));
-    UnityEngine.GUILayout.Label(text    : "Burn end countdown",
-                                options : UnityEngine.GUILayout.Width(150));
+        (Planetarium.GetUniversalTime() -
+         initial_time_input_.value).ToString("+0.000;-0.000") + " s",
+        UnityEngine.GUILayout.Width(100));
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "Burn end ",
+                                options : UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.TextArea(
-        (final_time_ -
-         Planetarium.GetUniversalTime()).ToString("+0.000;-0.000") + " s",
-        UnityEngine.GUILayout.Width(75));
+        (Planetarium.GetUniversalTime() -
+         final_time_).ToString("+0.000;-0.000") + " s",
+        UnityEngine.GUILayout.Width(100));
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUI.skin.textArea.alignment = old_alignment;
+    UnityEngine.GUILayout.EndVertical();
+    UnityEngine.GUILayout.EndHorizontal();
   }
 
   internal IntPtr ComputeManœuvre() {
@@ -204,13 +218,14 @@ internal class ManœuvrePlanner {
     initial_time_input_.ReadValue();
 
     IntPtr manœuvre = PrincipiaPluginAdapter.NewManœuvreIspByWeight(
-        thrust_input_.value,
-        initial_time_input_.value,
-        specific_impulse_input_.value,
-        right_ascension_input_.value,
-        declination_input_.value);
+       thrust                     : thrust_input_.value,
+       initial_mass               : initial_mass_input_.value,
+       specific_impulse_by_weight : specific_impulse_input_.value,
+       right_ascension            : right_ascension_input_.value,
+       declination                : declination_input_.value);
     PrincipiaPluginAdapter.set_Δv(manœuvre, Δv_input_.value);
-    PrincipiaPluginAdapter.set_initial_time(manœuvre, initial_time_input_.value);
+    PrincipiaPluginAdapter.set_initial_time(manœuvre,
+                                            initial_time_input_.value);
 
     Load(manœuvre);
     return manœuvre;
@@ -268,7 +283,7 @@ internal class ManœuvrePlanner {
   }
 
   private string InitialTimeToString(double value) {
-    return (value - vessel_.launchTime).ToString();
+    return (value - vessel_.launchTime).ToString("0.000");
   }
 }
 

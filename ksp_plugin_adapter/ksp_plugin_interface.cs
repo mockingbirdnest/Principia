@@ -494,6 +494,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   internal static extern double final_time(IntPtr manœuvre);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__final_mass",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern double final_mass(IntPtr manœuvre);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__thrust",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern double thrust(IntPtr manœuvre);

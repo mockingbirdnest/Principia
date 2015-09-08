@@ -697,8 +697,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           patch_rendering.visible = false;
         }
       }
-      if (rendered_trajectory_ == null || rendered_prediction_ == null) {
-        ResetRenderedTrajectory();
+      if (rendered_trajectory_ == null || rendered_prediction_ == null ||
+          rendered_flight_plan_ == null) {
+        ResetRenderedTrajectory(0);
       }
       IntPtr trajectory_iterator = IntPtr.Zero;
       trajectory_iterator = RenderedVesselTrajectory(
@@ -717,6 +718,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                   (XYZ)Planetarium.fetch.Sun.position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
                                   rendered_prediction_);
+      }
+
+      int flight_plan_size =
+          FlightPlanSize(plugin_, active_vessel.id.ToString());
+
+      if (rendered_flight_plan_.Count() != flight_plan_size) {
+        ResetRenderedTrajectory(flight_plan_size);
       }
 
       for (int i = 0;
@@ -778,7 +786,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     vector_line.minDrawIndex = new_min_draw_index;
   }
 
-  private void ResetRenderedTrajectory() {
+  private void ResetRenderedTrajectory(int flight_plan_size) {
     DestroyRenderedTrajectory();
     rendered_trajectory_ = new VectorLine(
         lineName     : "rendered_trajectory_",
@@ -804,7 +812,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_prediction_.vectorObject.renderer.castShadows = false;
     rendered_prediction_.vectorObject.renderer.receiveShadows = false;
     rendered_prediction_.layer = 31;
-    rendered_flight_plan_ = new VectorLine[3];
+    rendered_flight_plan_ = new VectorLine[flight_plan_size];
     for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
       rendered_flight_plan_[i] =
           new VectorLine(
@@ -1107,15 +1115,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           InsertVesselManœuvre(plugin_, active_vessel_guid, i, ref manœuvre);
         }
         UpdateFlightPlan(
-            plugin_,
-            active_vessel_guid,
-            Planetarium.GetUniversalTime() +
+            plugin_, active_vessel_guid,
+            (manœuvres_.Count > 0
+                 ? final_time(VesselManœuvre(plugin_, active_vessel_guid,
+                                             manœuvres_.Count - 1))
+                 : current_time(plugin_)) +
                 prediction_lengths_[flight_plan_length_index_]);
       }
 
       if (UnityEngine.GUILayout.Button(
           text    : "Insert Manœuvre",
-          options : UnityEngine.GUILayout.Width(100))) {
+          options : UnityEngine.GUILayout.Width(150))) {
         manœuvres_.Insert(0, new ManœuvrePlanner(active_vessel, null));
         if (manœuvres_.Count > 0) {
           manœuvres_[1].previous = manœuvres_[0];
@@ -1126,7 +1136,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         manœuvres_[i].Render();
         if (UnityEngine.GUILayout.Button(
             text    : "Delete Previous",
-            options : UnityEngine.GUILayout.Width(100))) {
+            options : UnityEngine.GUILayout.Width(150))) {
           manœuvres_.RemoveAt(i);
           if (manœuvres_.Count > i) {
             manœuvres_[i].previous = i == 0 ? null : manœuvres_[i - 1];
@@ -1135,12 +1145,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         }
         if (UnityEngine.GUILayout.Button(
             text    : "Insert Manœuvre",
-            options : UnityEngine.GUILayout.Width(100))) {
+            options : UnityEngine.GUILayout.Width(150))) {
           manœuvres_.Insert(
               i + 1,
-              new ManœuvrePlanner(active_vessel,
-                                  i == 0 ? null : manœuvres_[i - 1]));
-          if (manœuvres_.Count > i + 2) {
+              new ManœuvrePlanner(active_vessel, manœuvres_[i]));
+          if (manœuvres_.Count > + 2) {
             manœuvres_[i + 2].previous = manœuvres_[i + 1];
           }
         }
@@ -1314,7 +1323,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void ResetPlugin() {
     Cleanup();
     SetRotatingFrameThresholds();
-    ResetRenderedTrajectory();
+    ResetRenderedTrajectory(0);
     plugin_construction_ = DateTime.Now;
     if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
