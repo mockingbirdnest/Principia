@@ -448,7 +448,7 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
         positions, &accelerations);
   }
 
-  return -accelerations[0];
+  return accelerations[0];
 }
 
 template<typename Frame>

@@ -11,6 +11,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -24,6 +25,7 @@ namespace principia {
 
 using astronomy::LunarDistance;
 using astronomy::SolarMass;
+using constants::GravitationalConstant;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
@@ -833,7 +835,12 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const kDuration = 1 * Second;
   double const kJ2 = 1E6;
 
-  auto const b0 = new OblateBody<World>(1 * SolarMass,
+  Mass const m0 = 1 * SolarMass;
+  Mass const m1 = 2 * SolarMass;
+  Mass const m2 = 3 * SolarMass;
+  Mass const m3 = 4 * SolarMass;
+
+  auto const b0 = new OblateBody<World>(m0,
                                         kJ2,
                                         1 * LunarDistance,
                                         Vector<double, World>({0, 0, 1}));
@@ -841,9 +848,9 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b0));
-  bodies.emplace_back(std::make_unique<MassiveBody>(2 * SolarMass));
-  bodies.emplace_back(std::make_unique<MassiveBody>(3 * SolarMass));
-  bodies.emplace_back(std::make_unique<MassiveBody>(4 * SolarMass));
+  bodies.emplace_back(std::make_unique<MassiveBody>(m1));
+  bodies.emplace_back(std::make_unique<MassiveBody>(m2));
+  bodies.emplace_back(std::make_unique<MassiveBody>(m3));
 
   Velocity<World> const v({0 * SIUnit<Speed>(),
                            0 * SIUnit<Speed>(),
@@ -878,8 +885,17 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                 5 * Milli(Metre));
   ephemeris.Prolong(t0_ + kDuration);
 
-  Vector<Acceleration, World> acceleration =
+  Vector<Acceleration, World> actual_acceleration =
       ephemeris.ComputeGravitationalAcceleration(b0, t0_);
+
+  LOG(ERROR)<<bodies.size();
+  Vector<Acceleration, World> expected_acceleration_no_j2 =
+      GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
+                               m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
+                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm()));
+
+  EXPECT_THAT(actual_acceleration,
+              AlmostEquals(expected_acceleration_no_j2, 0, 1));
 }
 
 }  // namespace physics
