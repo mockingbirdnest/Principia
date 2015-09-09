@@ -834,6 +834,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const kDuration = 1 * Second;
   double const kJ2 = 1E6;
+  Length const kRadius = 1 * LunarDistance;
 
   Mass const m0 = 1 * SolarMass;
   Mass const m1 = 2 * SolarMass;
@@ -842,7 +843,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 
   auto const b0 = new OblateBody<World>(m0,
                                         kJ2,
-                                        1 * LunarDistance,
+                                        kRadius,
                                         Vector<double, World>({0, 0, 1}));
   auto const b1 = new MassiveBody(m1);
   auto const b2 = new MassiveBody(m2);
@@ -890,49 +891,57 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 
   Vector<Acceleration, World> actual_acceleration0 =
       ephemeris.ComputeGravitationalAcceleration(b0, t0_);
-
   // No J2 because as the code is written the J2 force of a non-oblate body on
   // a spherical one is neglected (Noether's Theorem, anyone?).
   Vector<Acceleration, World> expected_acceleration0 =
       GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
                                m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
                                m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm()));
-
   EXPECT_THAT(actual_acceleration0,
               AlmostEquals(expected_acceleration0, 0, 1));
 
   Vector<Acceleration, World> actual_acceleration1 =
       ephemeris.ComputeGravitationalAcceleration(b1, t0_);
-
   Vector<Acceleration, World> expected_acceleration1 =
       GravitationalConstant * (m0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
                                m2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
-                               m3 * (q3 - q1) / Pow<3>((q3 - q1).Norm()));
-
+                               m3 * (q3 - q1) / Pow<3>((q3 - q1).Norm())) +
+      Vector<Acceleration, World>(
+          {-1.5 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
+               Pow<4>((q0 - q1).Norm()),
+           0 * SIUnit<Acceleration>(),
+           0 * SIUnit<Acceleration>()});
   EXPECT_THAT(actual_acceleration1,
-              AlmostEquals(expected_acceleration1, 0, 1));
+              AlmostEquals(expected_acceleration1, 0, 2));
 
   Vector<Acceleration, World> actual_acceleration2 =
       ephemeris.ComputeGravitationalAcceleration(b2, t0_);
-
   Vector<Acceleration, World> expected_acceleration2 =
       GravitationalConstant * (m0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
                                m1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
-                               m3 * (q3 - q2) / Pow<3>((q3 - q2).Norm()));
-
+                               m3 * (q3 - q2) / Pow<3>((q3 - q2).Norm())) +
+      Vector<Acceleration, World>(
+          {(9 / Sqrt(512)) * GravitationalConstant * m0 *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm()),
+           0 * SIUnit<Acceleration>(),
+           (-3 / Sqrt(512)) * GravitationalConstant * m0 *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
               AlmostEquals(expected_acceleration2, 0, 1));
 
   Vector<Acceleration, World> actual_acceleration3 =
       ephemeris.ComputeGravitationalAcceleration(b3, t0_);
-
   Vector<Acceleration, World> expected_acceleration3 =
       GravitationalConstant * (m0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
                                m1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
-                               m2 * (q2 - q3) / Pow<3>((q2 - q3).Norm()));
-
+                               m2 * (q2 - q3) / Pow<3>((q2 - q3).Norm())) +
+      Vector<Acceleration, World>(
+          {0 * SIUnit<Acceleration>(),
+           0 * SIUnit<Acceleration>(),
+           3 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
+               Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration3,
-              AlmostEquals(expected_acceleration3, 0, 1));
+              AlmostEquals(expected_acceleration3, 0, 2));
 }
 
 }  // namespace physics
