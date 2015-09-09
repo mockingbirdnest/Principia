@@ -891,8 +891,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 
   Vector<Acceleration, World> actual_acceleration0 =
       ephemeris.ComputeGravitationalAcceleration(b0, t0_);
-  // No J2 because as the code is written the J2 force of a non-oblate body on
-  // a spherical one is neglected (Noether's Theorem, anyone?).
+  // No J2 because as the code is written the J2 force of a spherical body on an
+  // oblate one is neglected (Noether's Theorem, anyone?).
   Vector<Acceleration, World> expected_acceleration0 =
       GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
                                m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
