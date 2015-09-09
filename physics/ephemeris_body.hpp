@@ -384,6 +384,7 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
     not_null<MassiveBody const*> const body,
     Instant const& t) {
   bool const body_is_oblate = body->is_oblate();
+  LOG(ERROR)<<body_is_oblate;
 
   // |other_xxx_bodies| is |xxx_bodies_| without |body|.  Index 0 in |positions|
   // and |accelerations| corresponds to |body|, the other indices to
