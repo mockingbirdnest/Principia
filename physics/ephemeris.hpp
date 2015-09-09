@@ -103,7 +103,8 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
       Instant const& t);
 
-  //TODO(phl):comment
+  // Returns the gravitational acceleration on the massive |body| at time |t|.
+  // |body| must be one of the bodies of this object.
   virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
       not_null<MassiveBody const*> const body,
       Instant const& t);
