@@ -408,12 +408,12 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
       other_oblate_bodies.push_back(other_body.get());
       positions.push_back(
           other_body_trajectory->EvaluatePosition(t, &hints[b]));
-   } else {
+    } else {
       CHECK(!other_body->is_oblate());
       other_spherical_bodies.push_back(other_body.get());
       positions.push_back(
           other_body_trajectory->EvaluatePosition(t, &hints[b]));
-   }
+    }
   }
 
   if (body_is_oblate) {
