@@ -10,6 +10,8 @@
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -21,6 +23,9 @@
 
 namespace principia {
 
+using astronomy::LunarDistance;
+using astronomy::SolarMass;
+using constants::GravitationalConstant;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
@@ -28,6 +33,7 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Pow;
 using quantities::Sqrt;
+using si::AstronomicalUnit;
 using si::Kilogram;
 using si::Metre;
 using si::Milli;
@@ -48,6 +54,8 @@ class EphemerisTest : public testing::Test {
  protected:
   using EarthMoonOrbitPlane = Frame<serialization::Frame::TestTag,
                                     serialization::Frame::TEST, true>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST1, true>;
 
   void SetUpEarthMoonSystem(
       not_null<std::vector<not_null<std::unique_ptr<MassiveBody const>>>*> const
@@ -752,7 +760,7 @@ TEST_F(EphemerisTest, Serialization) {
 }
 
 // The gravitational acceleration on at elephant located at the pole.
-TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
+TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Position<EarthMoonOrbitPlane> const reference_position;
   Length const kDistance = 6356.8 * Kilo(Metre);
   Time const kDuration = 1 * Second;
@@ -821,6 +829,119 @@ TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
                           -9.832 * SIUnit<Acceleration>()), 3.2E-3);
   EXPECT_THAT(elephant_accelerations.back().coordinates().z,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+}
+
+TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
+  Time const kDuration = 1 * Second;
+  double const kJ2 = 1E6;
+  Length const kRadius = 1 * LunarDistance;
+
+  Mass const m0 = 1 * SolarMass;
+  Mass const m1 = 2 * SolarMass;
+  Mass const m2 = 3 * SolarMass;
+  Mass const m3 = 4 * SolarMass;
+
+  auto const b0 = new OblateBody<World>(m0,
+                                        kJ2,
+                                        kRadius,
+                                        Vector<double, World>({0, 0, 1}));
+  auto const b1 = new MassiveBody(m1);
+  auto const b2 = new MassiveBody(m2);
+  auto const b3 = new MassiveBody(m3);
+
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<World>> initial_state;
+  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b0));
+  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b1));
+  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b2));
+  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b3));
+
+  Velocity<World> const v({0 * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>()});
+  Position<World> const q0(
+      Vector<Length, World>({0 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             0 * AstronomicalUnit}));
+  Position<World> const q1(
+      Vector<Length, World>({1 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             0 * AstronomicalUnit}));
+  Position<World> const q2(
+      Vector<Length, World>({1 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             1 * AstronomicalUnit}));
+  Position<World> const q3(
+      Vector<Length, World>({0 * AstronomicalUnit,
+                             0 * AstronomicalUnit,
+                             1 * AstronomicalUnit}));
+  initial_state.emplace_back(q0, v);
+  initial_state.emplace_back(q1, v);
+  initial_state.emplace_back(q2, v);
+  initial_state.emplace_back(q3, v);
+
+  Ephemeris<World>
+      ephemeris(std::move(bodies),
+                initial_state,
+                t0_,
+                McLachlanAtela1992Order5Optimal<Position<World>>(),
+                kDuration / 100,
+                5 * Milli(Metre));
+  ephemeris.Prolong(t0_ + kDuration);
+
+  Vector<Acceleration, World> actual_acceleration0 =
+      ephemeris.ComputeGravitationalAcceleration(b0, t0_);
+  // No J2 because as the code is written the J2 force of a spherical body on an
+  // oblate one is neglected (Noether's Theorem, anyone?).
+  Vector<Acceleration, World> expected_acceleration0 =
+      GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
+                               m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
+                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm()));
+  EXPECT_THAT(actual_acceleration0,
+              AlmostEquals(expected_acceleration0, 0, 1));
+
+  Vector<Acceleration, World> actual_acceleration1 =
+      ephemeris.ComputeGravitationalAcceleration(b1, t0_);
+  Vector<Acceleration, World> expected_acceleration1 =
+      GravitationalConstant * (m0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
+                               m2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
+                               m3 * (q3 - q1) / Pow<3>((q3 - q1).Norm())) +
+      Vector<Acceleration, World>(
+          {-1.5 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
+               Pow<4>((q0 - q1).Norm()),
+           0 * SIUnit<Acceleration>(),
+           0 * SIUnit<Acceleration>()});
+  EXPECT_THAT(actual_acceleration1,
+              AlmostEquals(expected_acceleration1, 0, 2));
+
+  Vector<Acceleration, World> actual_acceleration2 =
+      ephemeris.ComputeGravitationalAcceleration(b2, t0_);
+  Vector<Acceleration, World> expected_acceleration2 =
+      GravitationalConstant * (m0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
+                               m1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
+                               m3 * (q3 - q2) / Pow<3>((q3 - q2).Norm())) +
+      Vector<Acceleration, World>(
+          {(9 / Sqrt(512)) * GravitationalConstant * m0 *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm()),
+           0 * SIUnit<Acceleration>(),
+           (-3 / Sqrt(512)) * GravitationalConstant * m0 *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
+  EXPECT_THAT(actual_acceleration2,
+              AlmostEquals(expected_acceleration2, 0, 1));
+
+  Vector<Acceleration, World> actual_acceleration3 =
+      ephemeris.ComputeGravitationalAcceleration(b3, t0_);
+  Vector<Acceleration, World> expected_acceleration3 =
+      GravitationalConstant * (m0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
+                               m1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
+                               m2 * (q2 - q3) / Pow<3>((q2 - q3).Norm())) +
+      Vector<Acceleration, World>(
+          {0 * SIUnit<Acceleration>(),
+           0 * SIUnit<Acceleration>(),
+           3 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
+               Pow<4>((q0 - q1).Norm())});
+  EXPECT_THAT(actual_acceleration3,
+              AlmostEquals(expected_acceleration3, 0, 2));
 }
 
 }  // namespace physics

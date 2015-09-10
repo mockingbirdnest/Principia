@@ -52,7 +52,7 @@ class Ephemeris {
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
-      not_null<MassiveBody const*> body) const;
+      not_null<MassiveBody const*> const body) const;
 
   // Returns true if at least one of the trajectories is empty.
   virtual bool empty() const;
@@ -101,6 +101,12 @@ class Ephemeris {
   // |trajectory|.
   virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      Instant const& t);
+
+  // Returns the gravitational acceleration on the massive |body| at time |t|.
+  // |body| must be one of the bodies of this object.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      not_null<MassiveBody const*> const body,
       Instant const& t);
 
   virtual void WriteToMessage(
@@ -219,8 +225,8 @@ class Ephemeris {
   std::vector<typename NewtonianMotionEquation::SystemState>
       intermediate_states_;
 
-  int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;
+  int number_of_spherical_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
 };

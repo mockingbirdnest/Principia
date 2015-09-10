@@ -380,6 +380,78 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
 }
 
 template<typename Frame>
+Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+    not_null<MassiveBody const*> const body,
+    Instant const& t) {
+  bool const body_is_oblate = body->is_oblate();
+
+  // |other_xxx_bodies| is |xxx_bodies_| without |body|.  Index 0 in |positions|
+  // and |accelerations| corresponds to |body|, the other indices to
+  // |other_xxx_bodies|.
+  std::vector<not_null<MassiveBody const*>> other_oblate_bodies;
+  std::vector<not_null<MassiveBody const*>> other_spherical_bodies;
+  std::vector<Position<Frame>> positions;
+  std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
+
+  // Make room for |body|.
+  positions.resize(1);
+
+  // Fill |other_xxx_bodies| and evaluate the |positions|.
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  for (int b = 0; b < bodies_.size(); ++b) {
+    auto const& other_body = bodies_[b];
+    auto const& other_body_trajectory = trajectories_[b];
+    if (other_body.get() == body) {
+      positions[0] = other_body_trajectory->EvaluatePosition(t, &hints[b]);
+    } else if (b < number_of_oblate_bodies_) {
+      CHECK(other_body->is_oblate());
+      other_oblate_bodies.push_back(other_body.get());
+      positions.push_back(
+          other_body_trajectory->EvaluatePosition(t, &hints[b]));
+    } else {
+      CHECK(!other_body->is_oblate());
+      other_spherical_bodies.push_back(other_body.get());
+      positions.push_back(
+          other_body_trajectory->EvaluatePosition(t, &hints[b]));
+    }
+  }
+
+  if (body_is_oblate) {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        true /*body1_is_oblate*/,
+        true /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_oblate_bodies /*bodies2*/,
+        1 /*b2_begin*/, other_oblate_bodies.size() + 1 /*b2_end*/,
+        positions, &accelerations);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        true /*body1_is_oblate*/,
+        false /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_spherical_bodies /*bodies2*/,
+        other_oblate_bodies.size() + 1/*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+  } else {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        false /*body1_is_oblate*/,
+        true /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_oblate_bodies /*bodies2*/,
+        1 /*b2_begin*/, other_oblate_bodies.size() + 1 /*b2_end*/,
+        positions, &accelerations);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        false /*body1_is_oblate*/,
+        false /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_spherical_bodies /*bodies2*/,
+        other_oblate_bodies.size() + 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+  }
+
+  return accelerations[0];
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
