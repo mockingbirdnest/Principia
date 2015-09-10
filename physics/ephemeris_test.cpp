@@ -135,7 +135,9 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
   EXPECT_EQ(t0_ + std::numeric_limits<double>::infinity() * Second,
             ephemeris.t_min());
 
+  EXPECT_TRUE(ephemeris.empty());
   ephemeris.Prolong(t0_ + period);
+  EXPECT_FALSE(ephemeris.empty());
   EXPECT_EQ(t0_, ephemeris.t_min());
   EXPECT_LE(t0_ + period, ephemeris.t_max());
   Instant const t_max = ephemeris.t_max();
@@ -202,8 +204,8 @@ TEST_F(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
-// Test the behavior of ForgetAfter on the Earth-Moon system.
-TEST_F(EphemerisTest, ForgetAfter) {
+// Test the behavior of ForgetAfter and ForgetBefore on the Earth-Moon system.
+TEST_F(EphemerisTest, Forget) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
   Position<EarthMoonOrbitPlane> centre_of_mass;
@@ -252,6 +254,11 @@ TEST_F(EphemerisTest, ForgetAfter) {
   EXPECT_EQ(t_max, t0_ + 16 * period);
   EXPECT_EQ(t_max, earth_trajectory.t_max());
   EXPECT_EQ(t_max, moon_trajectory.t_max());
+
+  ephemeris.ForgetBefore(t0_ + 3 * period);
+  EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
+  EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
+  EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
 }
 
 // The Moon alone.  It moves in straight line.
@@ -842,7 +849,6 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
-  LOG(ERROR)<<elephant_accelerations.back().coordinates().z;
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * SIUnit<Acceleration>()), 4.9E-5);
 }
