@@ -217,7 +217,7 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
     trajectory_.push_back(t1_);
     FakeTrajectory* root = &trajectory_;
     trajectory_.DeleteFork(&root);
-  }, "'fork_time'.* non NULL");
+  }, "fork_time");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     FakeTrajectory* fork1 = trajectory_.NewFork(t1_);
@@ -427,7 +427,7 @@ TEST_F(ForkableTest, Root) {
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(&trajectory_, trajectory_.root());
   EXPECT_EQ(&trajectory_, fork->root());
-  EXPECT_EQ(nullptr, trajectory_.ForkTime());
+  EXPECT_EQ(std::experimental::nullopt, trajectory_.ForkTime());
   EXPECT_EQ(t2_, *fork->ForkTime());
 }
 
