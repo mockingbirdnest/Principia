@@ -10,6 +10,8 @@
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -47,8 +49,16 @@ using testing_utilities::SolarSystem;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::Ref;
 
 namespace physics {
+
+namespace {
+
+Length const kEarthPolarRadius = 6356.8 * Kilo(Metre);
+double const kEarthJ2 = 0.00108262545;
+
+}  // namespace
 
 class EphemerisTest : public testing::Test {
  protected:
@@ -120,13 +130,18 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
           period / 100,
           5 * Milli(Metre));
+  EXPECT_THAT(
+      ephemeris.planetary_integrator(),
+      Ref(McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>()));
 
   EXPECT_EQ(t0_ - std::numeric_limits<double>::infinity() * Second,
             ephemeris.t_max());
   EXPECT_EQ(t0_ + std::numeric_limits<double>::infinity() * Second,
             ephemeris.t_min());
 
+  EXPECT_TRUE(ephemeris.empty());
   ephemeris.Prolong(t0_ + period);
+  EXPECT_FALSE(ephemeris.empty());
   EXPECT_EQ(t0_, ephemeris.t_min());
   EXPECT_LE(t0_ + period, ephemeris.t_max());
   Instant const t_max = ephemeris.t_max();
@@ -193,8 +208,8 @@ TEST_F(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
-// Test the behavior of ForgetAfter on the Earth-Moon system.
-TEST_F(EphemerisTest, ForgetAfter) {
+// Test the behavior of ForgetAfter and ForgetBefore on the Earth-Moon system.
+TEST_F(EphemerisTest, Forget) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
   Position<EarthMoonOrbitPlane> centre_of_mass;
@@ -243,6 +258,11 @@ TEST_F(EphemerisTest, ForgetAfter) {
   EXPECT_EQ(t_max, t0_ + 16 * period);
   EXPECT_EQ(t_max, earth_trajectory.t_max());
   EXPECT_EQ(t_max, moon_trajectory.t_max());
+
+  ephemeris.ForgetBefore(t0_ + 3 * period);
+  EXPECT_EQ(t0_ + 3 * period, ephemeris.t_min());
+  EXPECT_EQ(t0_ + 3 * period, earth_trajectory.t_min());
+  EXPECT_EQ(t0_ + 3 * period, moon_trajectory.t_min());
 }
 
 // The Moon alone.  It moves in straight line.
@@ -762,18 +782,26 @@ TEST_F(EphemerisTest, Serialization) {
 // The gravitational acceleration on at elephant located at the pole.
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Position<EarthMoonOrbitPlane> const reference_position;
-  Length const kDistance = 6356.8 * Kilo(Metre);
   Time const kDuration = 1 * Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
-  Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  bodies.erase(bodies.begin() + 1);
-  initial_state.erase(initial_state.begin() + 1);
+  auto* earth = new OblateBody<EarthMoonOrbitPlane>(
+                        5.9721986E24 * Kilogram,
+                        kEarthJ2,
+                        kEarthPolarRadius,
+                        Vector<double, EarthMoonOrbitPlane>({0, 0, 1}));
+  Velocity<EarthMoonOrbitPlane> const v({0 * SIUnit<Speed>(),
+                                         0 * SIUnit<Speed>(),
+                                         0 * SIUnit<Speed>()});
+  Position<EarthMoonOrbitPlane> const q(
+      Vector<Length, EarthMoonOrbitPlane>({0 * AstronomicalUnit,
+                                           0 * AstronomicalUnit,
+                                           0 * AstronomicalUnit}));
 
-  MassiveBody const* const earth = bodies[0].get();
+  bodies.push_back(std::unique_ptr<MassiveBody const>(earth));
+  initial_state.emplace_back(q, v);
+
   Position<EarthMoonOrbitPlane> const earth_position =
       initial_state[0].position();
   Velocity<EarthMoonOrbitPlane> const earth_velocity =
@@ -793,7 +821,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   trajectory.Append(t0_,
                     DegreesOfFreedom<EarthMoonOrbitPlane>(
                         earth_position + Vector<Length, EarthMoonOrbitPlane>(
-                            {0 * Metre, kDistance, 0 * Metre}),
+                            {0 * Metre, 0 * Metre, kEarthPolarRadius}),
                         earth_velocity));
 
   ephemeris.FlowWithAdaptiveStep(&trajectory,
@@ -812,8 +840,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               AlmostEquals(kDuration * v_elephant, 0));
-  EXPECT_LT(RelativeError(elephant_positions.back().coordinates().y,
-                          kDistance), 8E-7);
+  EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
+                          kEarthPolarRadius), 8E-7);
 
   std::vector<Vector<Acceleration, EarthMoonOrbitPlane>> elephant_accelerations;
   for (auto const& t : trajectory.Times()) {
@@ -823,12 +851,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_accelerations.size(), Eq(8));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
-  // 9.832 m/s^2 is the nominal acceleration at the pole, but this elephant is
-  // very heavy so it gets 9.864 m/s^2.
-  EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().y,
-                          -9.832 * SIUnit<Acceleration>()), 3.2E-3);
-  EXPECT_THAT(elephant_accelerations.back().coordinates().z,
+  EXPECT_THAT(elephant_accelerations.back().coordinates().y,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+  EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
+                          -9.832 * SIUnit<Acceleration>()), 4.9E-5);
 }
 
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {

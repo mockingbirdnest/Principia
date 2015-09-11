@@ -60,6 +60,9 @@ class BodyTest : public testing::Test {
 using BodyDeathTest = BodyTest;
 
 TEST_F(BodyTest, MasslessSerializationSuccess) {
+  EXPECT_TRUE(massless_body_.is_massless());
+  EXPECT_FALSE(massless_body_.is_oblate());
+
   serialization::Body message;
   MasslessBody const* cast_massless_body;
   massless_body_.WriteToMessage(&message);
@@ -82,6 +85,9 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
 
 // The best serialization revenge.
 TEST_F(BodyTest, MassiveSerializationSuccess) {
+  EXPECT_FALSE(massive_body_.is_massless());
+  EXPECT_FALSE(massive_body_.is_oblate());
+
   serialization::Body message;
   MassiveBody const* cast_massive_body;
   massive_body_.WriteToMessage(&message);
@@ -103,6 +109,9 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
 }
 
 TEST_F(BodyTest, OblateSerializationSuccess) {
+  EXPECT_FALSE(oblate_body_.is_massless());
+  EXPECT_TRUE(oblate_body_.is_oblate());
+
   serialization::Body message;
   OblateBody<World> const* cast_oblate_body;
   oblate_body_.WriteToMessage(&message);
@@ -156,6 +165,8 @@ TEST_F(BodyTest, AllFrames) {
                  serialization::Frame::ALICE_WORLD>();
   TestOblateBody<serialization::Frame::PluginTag,
                  serialization::Frame::BARYCENTRIC>();
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::PRE_BOREL_BARYCENTRIC>();
   TestOblateBody<serialization::Frame::PluginTag,
                  serialization::Frame::RENDERING>();
   TestOblateBody<serialization::Frame::PluginTag,

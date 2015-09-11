@@ -133,8 +133,6 @@ class Forkable {
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
   virtual TimelineConstIterator timeline_lower_bound(
                                     Instant const& time) const = 0;
-  virtual TimelineConstIterator timeline_upper_bound(
-                                    Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
 
  protected:
