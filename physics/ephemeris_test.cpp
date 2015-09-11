@@ -49,6 +49,7 @@ using testing_utilities::SolarSystem;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::Ref;
 
 namespace physics {
 
@@ -129,6 +130,9 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
           period / 100,
           5 * Milli(Metre));
+  EXPECT_THAT(
+      ephemeris.planetary_integrator(),
+      Ref(McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>()));
 
   EXPECT_EQ(t0_ - std::numeric_limits<double>::infinity() * Second,
             ephemeris.t_max());
