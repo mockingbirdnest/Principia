@@ -1112,16 +1112,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         options    : UnityEngine.GUILayout.Width(100));
 
     var old_alignment = UnityEngine.GUI.skin.label.alignment;
-    UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.MiddleRight;
+    UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.UpperRight;
     UnityEngine.GUILayout.Label(
-        text       : slid_value.ToString("#,0.000", culture) + " m / s",
-        options    : UnityEngine.GUILayout.Width(120));
+        text       : slid_value.ToString("#,0.000", culture),
+        options    : UnityEngine.GUILayout.Width(100));
     UnityEngine.GUI.skin.label.alignment = old_alignment;
+    UnityEngine.GUILayout.Label(
+        text       : "m / s",
+        options    : UnityEngine.GUILayout.Width(50));
     if (!UnityEngine.Input.GetMouseButton(0)) {
       slider_position = 0;
     }
-    UnityEngine.GUI.skin.horizontalSlider.fixedHeight = 20;
-    UnityEngine.GUI.skin.horizontalSliderThumb.fixedHeight = 20;
+    UnityEngine.GUI.skin.horizontalSlider.fixedHeight = 21;
+    UnityEngine.GUI.skin.horizontalSliderThumb.fixedHeight = 21;
     slider_position = UnityEngine.GUILayout.HorizontalSlider(
         value      : slider_position,
         leftValue  : -1,

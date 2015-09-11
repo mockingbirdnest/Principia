@@ -5,7 +5,43 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
+
+using quantities::SpecificImpulse;
+
 namespace ksp_plugin {
+
+struct FlightPlanUI {};
+
+// The underlying persisted state of the UI for editing a single manoeuvre.
+struct ManœuvreEditor {
+  std::string name;
+
+  bool show_engine_config;
+  Force thrust;
+  std::string thrust_text_;
+  SpecificImpulse specific_impulse;
+  std::string specific_impulse_text_;
+
+  bool show_engine_mass;
+  bool use_final_mass_of_previous_burn;
+  Mass vehicle_mass;
+  std::string vehicle_mass_text_;
+
+  Instant initial_time;
+  // These manœuvres get moved when this one moves, keeping a constant time
+  // offset.
+  std::list<ManœuvreUI> dependent_manœuvres;
+
+  // Here we should have a transform together with a choice of frame field.
+
+  Velocity<Barycentric> Δv;
+  bool spherical;
+  std::string Δv_x_text;
+  std::string vehicle_mass_text_;
+  std::string vehicle_mass_text_;
+
+
+};
 
 // TODO(egg): that constructor is going to get annoying, set everything with
 // single-use mutators.
