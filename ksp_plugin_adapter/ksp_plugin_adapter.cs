@@ -1088,6 +1088,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "{0:0.00e0} s");
   }
 
+  double slid_value = 0;
+  float slider_position = 0;
+  DateTime last_slider_time;
+
   private void FlightPlanSettings() {
     bool dummy = false;
     Selector(prediction_lengths_,
@@ -1095,6 +1099,49 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref dummy,
              "{0:0.00e0} s");
+
+    CultureInfo culture = new CultureInfo("");
+    culture.NumberFormat.NumberGroupSeparator = "'";
+
+    UnityEngine.GUI.skin = null;
+
+    UnityEngine.GUILayout.BeginHorizontal();
+
+    UnityEngine.GUILayout.Label(
+        text       : "Total Δv:",
+        options    : UnityEngine.GUILayout.Width(100));
+
+    var old_alignment = UnityEngine.GUI.skin.label.alignment;
+    UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.MiddleRight;
+    UnityEngine.GUILayout.Label(
+        text       : slid_value.ToString("#,0.000", culture) + " m / s",
+        options    : UnityEngine.GUILayout.Width(120));
+    UnityEngine.GUI.skin.label.alignment = old_alignment;
+    if (!UnityEngine.Input.GetMouseButton(0)) {
+      slider_position = 0;
+    }
+    UnityEngine.GUI.skin.horizontalSlider.fixedHeight = 20;
+    UnityEngine.GUI.skin.horizontalSliderThumb.fixedHeight = 20;
+    slider_position = UnityEngine.GUILayout.HorizontalSlider(
+        value      : slider_position,
+        leftValue  : -1,
+        rightValue : 1,
+        options    : UnityEngine.GUILayout.ExpandWidth(true));
+    if (UnityEngine.GUILayout.Button("0", UnityEngine.GUILayout.Width(20))) {
+      slid_value = 0;
+    }
+    double log10_lower_rate = -3;
+    double log10_upper_rate = 3.5;
+    slid_value += Math.Sign(slider_position) *
+                  Math.Pow(10, log10_lower_rate +
+                                   (log10_upper_rate - log10_lower_rate) *
+                                       Math.Abs(slider_position)) *
+                  (System.DateTime.Now - last_slider_time).TotalSeconds;
+    last_slider_time = System.DateTime.Now;
+
+    UnityEngine.GUILayout.EndHorizontal();
+
+    UnityEngine.GUI.skin = HighLogic.Skin;
 
     if (FlightGlobals.ActiveVessel != null &&
         PluginRunning() &&
