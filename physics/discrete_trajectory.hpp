@@ -208,8 +208,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   TimelineConstIterator timeline_find(Instant const& time) const override;
   TimelineConstIterator timeline_lower_bound(
                             Instant const& time) const override;
-  TimelineConstIterator timeline_upper_bound(
-                            Instant const& time) const override;
   bool timeline_empty() const override;
 
  private:
