@@ -17,6 +17,7 @@ using si::Kilogram;
 using si::Metre;
 using si::Newton;
 using si::Second;
+using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
 using uk::Foot;
@@ -214,7 +215,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
                     Lt(3.25 * Kilo(Metre) / Second)));
 
   // From the Apollo 8 flight journal.
-  EXPECT_EQ(second_burn.Δv(), 10'519.6 * Foot / Second);
+  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_burn.Δv()),
+              Lt(20 * Metre / Second));
 }
 
 }  // namespace ksp_plugin
