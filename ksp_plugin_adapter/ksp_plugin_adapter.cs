@@ -49,7 +49,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_prediction_;
-  private VectorLine[] rendered_flight_plan_;
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
 
@@ -75,17 +74,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
        1 << 26, 1 << 27, 1 << 28};
   [KSPField(isPersistant = true)]
   private int prediction_length_index_ = 0;
-  private int flight_plan_length_index_ = 0;
   private readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
        1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
   [KSPField(isPersistant = true)]
   private int history_length_index_ = 10;
-
-  [KSPField(isPersistant = true)]
-  bool node_at_initial_time_ = false;
-  private List<ManœuvrePlanner> manœuvres_;
 
   [KSPField(isPersistant = true)]
   private bool show_reference_frame_selection_ = true;
@@ -97,8 +91,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool show_logging_settings_ = false;
   [KSPField(isPersistant = true)]
   private bool show_reset_button_ = false;
-  [KSPField(isPersistant = true)]
-  private bool show_manœuvre_ = false;
 
   [KSPField(isPersistant = true)]
   private int verbose_logging_ = 0;
@@ -150,7 +142,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     Log.InitGoogleLogging();
-    manœuvres_ = new List<ManœuvrePlanner>();
   }
 
   ~PrincipiaPluginAdapter() {
@@ -605,8 +596,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
           has_vessel(plugin_, active_vessel.id.ToString());
-      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       if (ready_to_draw_active_vessel_trajectory) {
+        set_predicted_vessel(plugin_, active_vessel.id.ToString());
         set_prediction_length_tolerance(
             plugin_,
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
@@ -616,8 +607,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
         set_prediction_length(plugin_,
                               prediction_lengths_[prediction_length_index_]);
-        UpdatePrediction(plugin_, active_vessel.id.ToString());
+      } else {
+        clear_predicted_vessel(plugin_);
       }
+      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       ForgetAllHistoriesBefore(
           plugin_,
           universal_time - history_lengths_[history_length_index_]);
@@ -697,9 +690,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           patch_rendering.visible = false;
         }
       }
-      if (rendered_trajectory_ == null || rendered_prediction_ == null ||
-          rendered_flight_plan_ == null) {
-        ResetRenderedTrajectory(0);
+      if (rendered_trajectory_ == null || rendered_prediction_ == null) {
+        ResetRenderedTrajectory();
       }
       IntPtr trajectory_iterator = IntPtr.Zero;
       trajectory_iterator = RenderedVesselTrajectory(
@@ -709,36 +701,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
-
-      if (HasPrediction(plugin_, active_vessel.id.ToString())) {
-        trajectory_iterator = RenderedPrediction(
-                                  plugin_,
-                                  active_vessel.id.ToString(),
-                                  transforms_,
-                                  (XYZ)Planetarium.fetch.Sun.position);
-        RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                  rendered_prediction_);
-      }
-
-      int flight_plan_size =
-          FlightPlanSize(plugin_, active_vessel.id.ToString());
-
-      if (rendered_flight_plan_.Count() != flight_plan_size) {
-        ResetRenderedTrajectory(flight_plan_size);
-      }
-
-      for (int i = 0;
-           i < FlightPlanSize(plugin_, active_vessel.id.ToString());
-           ++i) {
-        trajectory_iterator = RenderedFlightPlan(
-                                  plugin_,
-                                  active_vessel.id.ToString(),
-                                  i,
-                                  transforms_,
-                                  (XYZ)Planetarium.fetch.Sun.position);
-        RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                  rendered_flight_plan_[i]);
-      }
+      trajectory_iterator = RenderedPrediction(
+                                plugin_,
+                                transforms_,
+                                (XYZ)Planetarium.fetch.Sun.position);
+      RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                rendered_prediction_);
     } else {
       DestroyRenderedTrajectory();
     }
@@ -786,7 +754,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     vector_line.minDrawIndex = new_min_draw_index;
   }
 
-  private void ResetRenderedTrajectory(int flight_plan_size) {
+  private void ResetRenderedTrajectory() {
     DestroyRenderedTrajectory();
     rendered_trajectory_ = new VectorLine(
         lineName     : "rendered_trajectory_",
@@ -812,23 +780,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_prediction_.vectorObject.renderer.castShadows = false;
     rendered_prediction_.vectorObject.renderer.receiveShadows = false;
     rendered_prediction_.layer = 31;
-    rendered_flight_plan_ = new VectorLine[flight_plan_size];
-    for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
-      rendered_flight_plan_[i] =
-          new VectorLine(
-                  lineName     : "rendered_flight_plan_",
-                  linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
-                  lineMaterial : MapView.OrbitLinesMaterial,
-                  color        : (i % 2 == 0 ? XKCDColors.FrenchBlue
-                                             : XKCDColors.OrangeRed),
-                  width        : 5,
-                  lineType     : LineType.Discrete);
-      rendered_flight_plan_[i].vectorObject.transform.parent =
-          ScaledSpace.Instance.transform;
-      rendered_flight_plan_[i].vectorObject.renderer.castShadows = false;
-      rendered_flight_plan_[i].vectorObject.renderer.receiveShadows = false;
-      rendered_flight_plan_[i].layer = 31;
-    }
   }
 
   private void DestroyRenderedTrajectory() {
@@ -837,12 +788,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
     if (rendered_prediction_ != null) {
       Vector.DestroyLine(ref rendered_prediction_);
-    }
-    if (rendered_flight_plan_ != null) {
-      for(int i = 0; i < rendered_flight_plan_.Length; ++i) {
-        Vector.DestroyLine(ref rendered_flight_plan_[i]);
-      }
-      rendered_flight_plan_ = null;
     }
   }
 
@@ -921,9 +866,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
-    ToggleableSection(name   : "Flight Plan",
-                      show   : ref show_manœuvre_,
-                      render : FlightPlanSettings);
     ToggleableSection(name   : "KSP features",
                       show   : ref show_ksp_features_,
                       render : KSPFeatures);
@@ -1088,149 +1030,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "{0:0.00e0} s");
   }
 
-  double slid_value = 0;
-  float slider_position = 0;
-  DateTime last_slider_time;
-
-  private void FlightPlanSettings() {
-    bool dummy = false;
-    Selector(prediction_lengths_,
-             ref flight_plan_length_index_,
-             "Length",
-             ref dummy,
-             "{0:0.00e0} s");
-
-    CultureInfo culture = new CultureInfo("");
-    culture.NumberFormat.NumberGroupSeparator = "'";
-
-    UnityEngine.GUI.skin = null;
-
-    UnityEngine.GUILayout.BeginHorizontal();
-
-    UnityEngine.GUILayout.Label(
-        text       : "Total Δv:",
-        options    : UnityEngine.GUILayout.Width(100));
-
-    var old_alignment = UnityEngine.GUI.skin.label.alignment;
-    UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.UpperRight;
-    UnityEngine.GUILayout.Label(
-        text       : slid_value.ToString("#,0.000", culture),
-        options    : UnityEngine.GUILayout.Width(100));
-    UnityEngine.GUI.skin.label.alignment = old_alignment;
-    UnityEngine.GUILayout.Label(
-        text       : "m / s",
-        options    : UnityEngine.GUILayout.Width(50));
-    if (!UnityEngine.Input.GetMouseButton(0)) {
-      slider_position = 0;
-    }
-    UnityEngine.GUI.skin.horizontalSlider.fixedHeight = 21;
-    UnityEngine.GUI.skin.horizontalSliderThumb.fixedHeight = 21;
-    slider_position = UnityEngine.GUILayout.HorizontalSlider(
-        value      : slider_position,
-        leftValue  : -1,
-        rightValue : 1,
-        options    : UnityEngine.GUILayout.ExpandWidth(true));
-    if (UnityEngine.GUILayout.Button("0", UnityEngine.GUILayout.Width(20))) {
-      slid_value = 0;
-    }
-    double log10_lower_rate = -3;
-    double log10_upper_rate = 3.5;
-    slid_value += Math.Sign(slider_position) *
-                  Math.Pow(10, log10_lower_rate +
-                                   (log10_upper_rate - log10_lower_rate) *
-                                       Math.Abs(slider_position)) *
-                  (System.DateTime.Now - last_slider_time).TotalSeconds;
-    last_slider_time = System.DateTime.Now;
-
-    UnityEngine.GUILayout.EndHorizontal();
-
-    UnityEngine.GUI.skin = HighLogic.Skin;
-
-    if (FlightGlobals.ActiveVessel != null &&
-        PluginRunning() &&
-        has_vessel(plugin_, FlightGlobals.ActiveVessel.id.ToString())) {
-      node_at_initial_time_ =
-          UnityEngine.GUILayout.Toggle(node_at_initial_time_,
-                                       "Node for first burn");
-
-     Vessel active_vessel = FlightGlobals.ActiveVessel;
-     string active_vessel_guid = active_vessel.id.ToString();
-
-      if (UnityEngine.GUILayout.Button(
-              text    : "Compute",
-              options : UnityEngine.GUILayout.Width(100))) {
-        ClearVesselManœuvres(plugin_, active_vessel_guid);
-        for (int i = 0; i < manœuvres_.Count; ++i) {
-          IntPtr manœuvre = manœuvres_[i].ComputeManœuvre();
-          InsertVesselManœuvre(plugin_, active_vessel_guid, i, ref manœuvre);
-        }
-        UpdateFlightPlan(
-            plugin_, active_vessel_guid,
-            (manœuvres_.Count > 0
-                 ? final_time(VesselManœuvre(plugin_, active_vessel_guid,
-                                             manœuvres_.Count - 1))
-                 : current_time(plugin_)) +
-                prediction_lengths_[flight_plan_length_index_]);
-      }
-
-      if (UnityEngine.GUILayout.Button(
-          text    : "Insert Manœuvre",
-          options : UnityEngine.GUILayout.Width(150))) {
-        manœuvres_.Insert(0, new ManœuvrePlanner(active_vessel, null));
-        if (manœuvres_.Count > 0) {
-          manœuvres_[1].previous = manœuvres_[0];
-        }
-      }
-
-      for (int i = 0; i < manœuvres_.Count; ++i) {
-        manœuvres_[i].Render();
-        if (UnityEngine.GUILayout.Button(
-            text    : "Delete Previous",
-            options : UnityEngine.GUILayout.Width(150))) {
-          manœuvres_.RemoveAt(i);
-          if (manœuvres_.Count > i) {
-            manœuvres_[i].previous = i == 0 ? null : manœuvres_[i - 1];
-          }
-          --i;
-        }
-        if (UnityEngine.GUILayout.Button(
-            text    : "Insert Manœuvre",
-            options : UnityEngine.GUILayout.Width(150))) {
-          manœuvres_.Insert(
-              i + 1,
-              new ManœuvrePlanner(active_vessel, manœuvres_[i]));
-          if (manœuvres_.Count > + 2) {
-            manœuvres_[i + 2].previous = manœuvres_[i + 1];
-          }
-        }
-      }
-
-      if (node_at_initial_time_ &&
-          FlightPlanSize(plugin_, active_vessel_guid) > 0) {
-        IntPtr manœuvre = VesselManœuvre(plugin_, active_vessel_guid, 0);
-
-        active_vessel.patchedConicSolver.maneuverNodes.Clear();
-            double node_time = initial_time(manœuvre);
-            ManeuverNode node =
-                active_vessel.patchedConicSolver.AddManeuverNode(node_time);
-            Vector3d stock_velocity_at_node_time =
-                active_vessel.orbit.getOrbitalVelocityAtUT(node_time).xzy;
-            Vector3d stock_displacement_from_parent_at_node_time =
-                active_vessel.orbit.getRelativePositionAtUT(node_time).xzy;
-            UnityEngine.Quaternion stock_frenet_frame_to_world =
-                UnityEngine.Quaternion.LookRotation(
-                    stock_velocity_at_node_time,
-                    Vector3d.Cross(
-                        stock_velocity_at_node_time,
-                        stock_displacement_from_parent_at_node_time));
-            node.OnGizmoUpdated(
-                UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
-                    (Vector3d)ManœuvreΔv(plugin_, manœuvre),
-                node_time);
-      }
-    }
-  }
-
   private void KSPFeatures() {
     display_patched_conics_ =
         UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
@@ -1373,7 +1172,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void ResetPlugin() {
     Cleanup();
     SetRotatingFrameThresholds();
-    ResetRenderedTrajectory(0);
+    ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
     if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;

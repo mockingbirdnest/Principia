@@ -464,59 +464,6 @@ void principia__DeleteTransforms(RenderingTransforms** const transforms) {
   TakeOwnership(transforms);
 }
 
-int principia__ManœuvreCount(Plugin const* const plugin,
-                             char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->ManœuvreCount(vessel_guid);
-}
-
-Manœuvre<Barycentric> const* principia__VesselManœuvre(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const index) {
-  return &CHECK_NOTNULL(plugin)->VesselManœuvre(vessel_guid, index);
-}
-
-void principia__SetVesselManœuvre(Plugin const* const plugin,
-                                  char const* const vessel_guid,
-                                  int const index,
-                                  Manœuvre<Barycentric> const** manœuvre) {
-  CHECK_NOTNULL(plugin)->SetVesselManœuvre(vessel_guid,
-                                           index,
-                                           TakeOwnership(manœuvre));
-}
-
-void principia__InsertVesselManœuvre(Plugin const* const plugin,
-                                     char const* const vessel_guid,
-                                     int const index,
-                                     Manœuvre<Barycentric> const** manœuvre) {
-  CHECK_NOTNULL(plugin)->InsertVesselManœuvre(vessel_guid,
-                                              index,
-                                              TakeOwnership(manœuvre));
-}
-
-void principia__ClearVesselManœuvres(Plugin const* const plugin,
-                                     char const* const vessel_guid) {
-  CHECK_NOTNULL(plugin)->ClearVesselManœuvres(vessel_guid);
-}
-
-XYZ principia__ManœuvreΔv(Plugin const* plugin,
-                          Manœuvre<Barycentric> const* manœuvre) {
-  return ToXYZ((CHECK_NOTNULL(plugin)->ManœuvreΔv(*CHECK_NOTNULL(manœuvre)) /
-                    (Metre / Second)).coordinates());
-}
-
-void principia__UpdatePrediction(Plugin const* const plugin,
-                                 char const* const vessel_guid) {
-  CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
-}
-
-void principia__UpdateFlightPlan(Plugin const* const plugin,
-                                 char const* const vessel_guid,
-                                 double const last_time) {
-  CHECK_NOTNULL(plugin)->UpdateFlightPlan(vessel_guid,
-                                          Instant(last_time * Second));
-}
-
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <type_traits>
 
@@ -241,45 +241,6 @@ RenderingTransforms* CDECL principia__NewBarycentricRotatingTransforms(
 // takes ownership of |**transforms|.
 extern "C" DLLEXPORT
 void CDECL principia__DeleteTransforms(RenderingTransforms** const transforms);
-
-extern "C" DLLEXPORT
-int principia__ManœuvreCount(Plugin const* const plugin,
-                             char const* const vessel_guid);
-
-extern "C" DLLEXPORT
-Manœuvre<Barycentric> const* principia__VesselManœuvre(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const index);
-
-extern "C" DLLEXPORT
-void principia__SetVesselManœuvre(Plugin const* const plugin,
-                                  char const* const vessel_guid,
-                                  int const index,
-                                  Manœuvre<Barycentric> const** manœuvre);
-
-extern "C" DLLEXPORT
-void principia__InsertVesselManœuvre(Plugin const* const plugin,
-                                     char const* const vessel_guid,
-                                     int const index,
-                                     Manœuvre<Barycentric> const** manœuvre);
-
-extern "C" DLLEXPORT
-void principia__ClearVesselManœuvres(Plugin const* const plugin,
-                                     char const* const vessel_guid);
-
-extern "C" DLLEXPORT
-XYZ principia__ManœuvreΔv(Plugin const* plugin,
-                          Manœuvre<Barycentric> const* manœuvre);
-
-extern "C" DLLEXPORT
-void principia__UpdatePrediction(Plugin const* const plugin,
-                                 char const* const vessel_guid);
-
-extern "C" DLLEXPORT
-void principia__UpdateFlightPlan(Plugin const* const plugin,
-                                 char const* const vessel_guid,
-                                 double const last_time);
 
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
