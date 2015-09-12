@@ -208,7 +208,7 @@ PhysicsBubble::centre_of_mass_trajectory() const {
 not_null<DiscreteTrajectory<Barycentric>*>
 PhysicsBubble::mutable_centre_of_mass_trajectory() const {
   CHECK(!empty()) << "Empty bubble";
-  return &*current_->centre_of_mass_trajectory;
+  return current_->centre_of_mass_trajectory.get();
 }
 
 void PhysicsBubble::WriteToMessage(
