@@ -17,12 +17,6 @@
     <ClInclude Include="body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trajectory.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trajectory_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="degrees_of_freedom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -77,11 +71,20 @@
     <ClInclude Include="transforms_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="forkable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="forkable_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="trajectory_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="degrees_of_freedom_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -95,6 +98,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="transforms_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="forkable_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

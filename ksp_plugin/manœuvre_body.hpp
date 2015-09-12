@@ -12,24 +12,24 @@ using quantities::Sqrt;
 
 namespace ksp_plugin {
 
-template <typename Frame>
-Manœuvre<Frame>::Manœuvre(Force thrust,
-                          Mass initial_mass,
-                          Speed effective_exhaust_velocity,
-                          Vector<double, Frame> direction)
+template<typename Frame>
+Manœuvre<Frame>::Manœuvre(Force const& thrust,
+                          Mass const& initial_mass,
+                          SpecificImpulse const& specific_impulse,
+                          Vector<double, Frame> const& direction)
     : thrust_(thrust),
       initial_mass_(initial_mass),
-      effective_exhaust_velocity_(effective_exhaust_velocity),
+      specific_impulse_(specific_impulse),
       direction_(direction) {}
 
 template<typename Frame>
 Instant Manœuvre<Frame>::initial_time() const {
-  CHECK(initial_time_ != nullptr);
+  CHECK(initial_time_);
   return *initial_time_;
 }
 
 template<typename Frame>
-inline Instant Manœuvre<Frame>::time_of_half_Δv() const {
+Instant Manœuvre<Frame>::time_of_half_Δv() const {
   return initial_time() + time_to_half_Δv();
 }
 
@@ -39,8 +39,8 @@ Instant Manœuvre<Frame>::final_time() const {
 }
 
 template<typename Frame>
-void Manœuvre<Frame>::set_initial_time(Instant const & initial_time) {
-  initial_time_ = std::make_unique<Instant>(initial_time);
+void Manœuvre<Frame>::set_initial_time(Instant const& initial_time) {
+  initial_time_ = initial_time;
 }
 
 template <typename Frame>
@@ -49,26 +49,26 @@ void Manœuvre<Frame>::set_time_of_half_Δv(Instant const& time_of_half_Δv) {
 }
 
 template<typename Frame>
-inline Time Manœuvre<Frame>::duration() const {
-  CHECK(duration_ != nullptr);
+Time Manœuvre<Frame>::duration() const {
+  CHECK(duration_);
   return *duration_;
 }
 
 template<typename Frame>
-void Manœuvre<Frame>::set_duration(Time const & duration) {
-  duration_ = std::make_unique<Time>(duration);
+void Manœuvre<Frame>::set_duration(Time const& duration) {
+  duration_ = duration;
 }
 
 template<typename Frame>
 void Manœuvre<Frame>::set_Δv(Speed const& Δv) {
-  set_duration(initial_mass() * effective_exhaust_velocity() *
-               (1 - std::exp(-Δv / effective_exhaust_velocity())) / thrust());
+  set_duration(initial_mass() * specific_impulse() *
+               (1 - std::exp(-Δv / specific_impulse())) / thrust());
 }
 
 template<typename Frame>
 Speed Manœuvre<Frame>::Δv() const {
   // Циолко́вский's equation.
-  return effective_exhaust_velocity() * std::log(initial_mass() / final_mass());
+  return specific_impulse() * std::log(initial_mass() / final_mass());
 }
 
 template<typename Frame>
@@ -77,8 +77,8 @@ Vector<double, Frame> Manœuvre<Frame>::direction() const {
 }
 
 template<typename Frame>
-Speed Manœuvre<Frame>::effective_exhaust_velocity() const {
-  return effective_exhaust_velocity_;
+SpecificImpulse Manœuvre<Frame>::specific_impulse() const {
+  return specific_impulse_;
 }
 
 template<typename Frame>
@@ -93,7 +93,7 @@ Mass Manœuvre<Frame>::initial_mass() const {
 
 template<typename Frame>
 Variation<Mass> Manœuvre<Frame>::mass_flow() const {
-  return thrust() / effective_exhaust_velocity();
+  return thrust() / specific_impulse();
 }
 
 template<typename Frame>
@@ -103,24 +103,17 @@ Mass Manœuvre<Frame>::final_mass() const {
 
 template<typename Frame>
 Time Manœuvre<Frame>::time_to_half_Δv() const {
-  return effective_exhaust_velocity() * initial_mass() *
+  return specific_impulse() * initial_mass() *
          (1 - std::sqrt(final_mass() / initial_mass())) / thrust();
 }
 
-template <typename Frame>
-typename Trajectory<Frame>::IntrinsicAcceleration
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
     Manœuvre<Frame>::acceleration() const {
-  return [
-    direction = this->direction(),
-    initial_time = this->initial_time(),
-    final_time = this->final_time(),
-    thrust = this->thrust(),
-    initial_mass = this->initial_mass(),
-    mass_flow = this->mass_flow()
-  ](Instant const& time) -> Vector<Acceleration, Frame> {
-    if (time >= initial_time && time <= final_time) {
-      return direction * thrust /
-             (initial_mass - (time - initial_time) * mass_flow);
+  return [this](Instant const& time) -> Vector<Acceleration, Frame> {
+    if (time >= initial_time() && time <= final_time()) {
+      return direction() * thrust() /
+             (initial_mass() - (time - initial_time()) * mass_flow());
     } else {
       return Vector<Acceleration, Frame>();
     }

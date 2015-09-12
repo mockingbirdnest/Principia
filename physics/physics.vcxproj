@@ -36,7 +36,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>LLVM-vs2013</PlatformToolset>
+    <PlatformToolset>LLVM-vs2014</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -46,6 +46,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
@@ -62,6 +63,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
@@ -77,7 +79,7 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\llvm_compatibility.props" />
     <Import Project="..\include_solution.props" />
@@ -156,8 +158,12 @@
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
+    <ClInclude Include="discrete_trajectory.hpp" />
+    <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
     <ClInclude Include="ephemeris_body.hpp" />
+    <ClInclude Include="forkable.hpp" />
+    <ClInclude Include="forkable_body.hpp" />
     <ClInclude Include="frame_field.hpp" />
     <ClInclude Include="frame_field_body.hpp" />
     <ClInclude Include="massive_body.hpp" />
@@ -167,8 +173,6 @@
     <ClInclude Include="mock_ephemeris.hpp" />
     <ClInclude Include="oblate_body.hpp" />
     <ClInclude Include="oblate_body_body.hpp" />
-    <ClInclude Include="trajectory.hpp" />
-    <ClInclude Include="trajectory_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
@@ -176,8 +180,9 @@
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
+    <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
-    <ClCompile Include="trajectory_test.cpp" />
+    <ClCompile Include="forkable_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>

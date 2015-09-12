@@ -11,9 +11,9 @@
 #include "google/protobuf/repeated_field.h"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
-#include "physics/trajectory.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -52,7 +52,7 @@ class Ephemeris {
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
-      not_null<MassiveBody const*> body) const;
+      not_null<MassiveBody const*> const body) const;
 
   // Returns true if at least one of the trajectories is empty.
   virtual bool empty() const;
@@ -81,7 +81,7 @@ class Ephemeris {
   // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   virtual void FlowWithAdaptiveStep(
-      not_null<Trajectory<Frame>*> const trajectory,
+      not_null<DiscreteTrajectory<Frame>*> const trajectory,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -92,8 +92,21 @@ class Ephemeris {
   // passed at construction is used with the given |step|.  If |t > t_max()|,
   // calls |Prolong(t)| beforehand.
   virtual void FlowWithFixedStep(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Time const& step,
+      Instant const& t);
+
+  // Returns the gravitational acceleration on the massless body having the
+  // given |trajectory| at time |t|.  |t| must be one of the times of the
+  // |trajectory|.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      Instant const& t);
+
+  // Returns the gravitational acceleration on the massive |body| at time |t|.
+  // |body| must be one of the bodies of this object.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      not_null<MassiveBody const*> const body,
       Instant const& t);
 
   virtual void WriteToMessage(
@@ -121,7 +134,7 @@ class Ephemeris {
       typename NewtonianMotionEquation::SystemState const& state);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories);
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -159,13 +172,14 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
-  // Computes the acceleration exerted by the massive bodies in |bodies_| on a
-  // massless body.  The massless body may have an intrinsic acceleration
-  // described in its |trajectory| object.  The |hints| are passed to
+  // Computes the acceleration exerted by the massive bodies in |bodies_| on
+  // massless bodies.  The massless bodies are at the given |positions| and may
+  // have an intrinsic acceleration described in their |trajectories| object.
+  // The |hints| are passed to
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
   void ComputeMasslessBodiesGravitationalAccelerations(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
@@ -211,8 +225,8 @@ class Ephemeris {
   std::vector<typename NewtonianMotionEquation::SystemState>
       intermediate_states_;
 
-  int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;
+  int number_of_spherical_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
 };

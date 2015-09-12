@@ -9,6 +9,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/forkable.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/physics.pb.h"
 
@@ -24,22 +25,19 @@ using quantities::Speed;
 
 namespace physics {
 
-class Body;
+template<typename Frame>
+class DiscreteTrajectory;
 
 template<typename Frame>
-class Trajectory {
-  // There may be several forks starting from the same time, hence the multimap.
-  using Children = std::multimap<Instant, Trajectory>;
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+struct ForkableTraits<DiscreteTrajectory<Frame>> {
+  using TimelineConstIterator =
+      typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
+  static Instant const& time(TimelineConstIterator const it);
+};
 
-  // The two iterators denote entries in the containers of the parent.
-  // |timeline| is past the end if the fork happened at the fork point of the
-  // grandparent.  Note that this implies that the containers should not be
-  // swapped.
-  struct Fork {
-    typename Children::const_iterator children;
-    typename Timeline::const_iterator timeline;
-  };
+template<typename Frame>
+class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
  public:
   class NativeIterator;
@@ -51,22 +49,23 @@ class Trajectory {
   using Transform = std::function<DegreesOfFreedom<ToFrame>(
                         Instant const&,
                         DegreesOfFreedom<Frame> const&,
-                        not_null<Trajectory<Frame> const*> const)>;
+                        not_null<DiscreteTrajectory<Frame> const*> const)>;
 
-  // No transfer of ownership.  |body| must live longer than the trajectory as
-  // the trajectory holds a reference to it.  If |body| is oblate it must be
-  // expressed in the same frame as the trajectory.
-  explicit Trajectory(not_null<Body const*> const body);
-  ~Trajectory();
+  DiscreteTrajectory() = default;
+  ~DiscreteTrajectory() override;
 
-  Trajectory(Trajectory const&) = delete;
-  Trajectory(Trajectory&&) = delete;
-  Trajectory& operator=(Trajectory const&) = delete;
-  Trajectory& operator=(Trajectory&&) = delete;
+  DiscreteTrajectory(DiscreteTrajectory const&) = delete;
+  DiscreteTrajectory(DiscreteTrajectory&&) = delete;
+  DiscreteTrajectory& operator=(DiscreteTrajectory const&) = delete;
+  DiscreteTrajectory& operator=(DiscreteTrajectory&&) = delete;
 
   // Sets a callback to be run before this trajectory gets destroyed.
   void set_on_destroy(
-      std::function<void(not_null<Trajectory<Frame>const*> const)> on_destroy);
+      std::function<void(not_null<DiscreteTrajectory<Frame>const*> const)>
+          on_destroy);
+
+  // TODO(phl): Many/most of the iterator functions are obsolete.  Remove them
+  // and use the ones from Forkable.
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
@@ -102,11 +101,21 @@ class Trajectory {
       Transform<ToFrame> const& transform) const;
 
   // These functions return the series of positions/velocities/times for the
-  // trajectory of the body.  All three containers are guaranteed to have the
-  // same size.  These functions are O(|depth| + |length|).
+  // trajectory.  All three containers are guaranteed to have the same size.
+  // These functions are O(|depth| + |length|).
   std::map<Instant, Position<Frame>> Positions() const;
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
+
+  // Creates a new child trajectory forked at time |time|, and returns it.  The
+  // child trajectory shares its data with the current trajectory for times less
+  // than or equal to |time|, and is an exact copy of the current trajectory for
+  // times greater than |time|.  It may be changed independently from the
+  // parent trajectory for any time (strictly) greater than |time|.  The child
+  // trajectory is owned by its parent trajectory.  Deleting the parent
+  // trajectory deletes all child trajectories.  |time| must be one of the times
+  // of this trajectory, and must be at or after the fork time, if any.
+  not_null<DiscreteTrajectory<Frame>*> NewForkWithCopy(Instant const& time);
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -121,40 +130,6 @@ class Trajectory {
   // child trajectories forked at times less than or equal to |time|.  This
   // trajectory must be a root.
   void ForgetBefore(Instant const& time);
-
-  // Creates a new child trajectory forked at time |time|, and returns it.  The
-  // child trajectory shares its data with the current trajectory for times less
-  // than or equal to |time|, and is an exact copy of the current trajectory for
-  // times greater than |time|.  It may be changed independently from the
-  // parent trajectory for any time (strictly) greater than |time|.  The child
-  // trajectory is owned by its parent trajectory.  Calling ForgetAfter or
-  // ForgetBefore on the parent trajectory with an argument that causes the time
-  // |time| to be removed deletes the child trajectory.  Deleting the parent
-  // trajectory deletes all child trajectories.  |time| must be one of the times
-  // of this trajectory, and must be at or after the fork time, if any.  No
-  // transfer of ownership.
-  not_null<Trajectory*> NewFork(Instant const& time);
-
-  // Deletes the child trajectory denoted by |*fork|, which must be a pointer
-  // previously returned by NewFork for this object.  Nulls |*fork|.
-  void DeleteFork(not_null<Trajectory**> const fork);
-
-  // Returns true if this is a root trajectory.
-  bool is_root() const;
-
-  // Returns the root trajectory.
-  not_null<Trajectory const*> root() const;
-  not_null<Trajectory*> root();
-
-  // Returns the fork time for a nonroot trajectory and null for a root
-  // trajectory.
-  Instant const* fork_time() const;
-
-  // The body to which this trajectory pertains.  The body is cast to the type
-  // B.  An error occurs in debug mode if the cast fails.
-  template<typename B>
-  std::enable_if_t<std::is_base_of<Body, B>::value,
-                   not_null<B const*>> body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
@@ -187,104 +162,70 @@ class Trajectory {
       Instant const& time) const;
 
   // This trajectory must be a root.  The intrinsic acceleration is not
-  // serialized.  The body is not owned, and therefore is not serialized.
+  // serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
   // NOTE(egg): This should return a |not_null|, but we can't do that until
   // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
   // that requires a VS 2015 feature (rvalue references for |*this|).
-  static std::unique_ptr<Trajectory> ReadFromMessage(
-      serialization::Trajectory const& message,
-      not_null<Body const*> const body);
-
-  void WritePointerToMessage(
-      not_null<serialization::Trajectory::Pointer*> const message) const;
-
-  // |trajectory| must be a root.
-  static not_null<Trajectory*> ReadPointerFromMessage(
-      serialization::Trajectory::Pointer const& message,
-      not_null<Trajectory*> const trajectory);
-
-  // A base class for iterating over the timeline of a trajectory, taking forks
-  // into account.  Objects of this class cannot be created.
-  class Iterator {
-   public:
-    Iterator& operator++();
-    bool at_end() const;
-    Instant const& time() const;
-
-   protected:
-    using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
-    Iterator() = default;
-    // No transfer of ownership.
-    void InitializeFirst(not_null<Trajectory const*> const trajectory);
-    void InitializeOnOrAfter(Instant const& time,
-                             not_null<Trajectory const*> const trajectory);
-    void InitializeLast(not_null<Trajectory const*> const trajectory);
-    typename Timeline::const_iterator current() const;
-    not_null<Trajectory const*> trajectory() const;
-
-   private:
-    // Detects inconsistencies in the placement of |current_|.
-    bool current_is_misplaced() const;
-    // |ancestry_| has one more element than |forks_|.  The first element in
-    // |ancestry_| is the root.  There is no element in |forks_| for the root.
-    // It is therefore empty for a root trajectory.
-    typename Timeline::const_iterator current_;
-    std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
-    std::list<Fork> forks_;
-  };
+  static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
+      serialization::Trajectory const& message);
 
   // An iterator which returns the coordinates in the native frame of the
   // trajectory, i.e., |Frame|.
   class NativeIterator : public Iterator {
    public:
+    bool at_end() const;
+    Instant const& time() const;
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 
    private:
-    NativeIterator() = default;
-    friend class Trajectory;
+    explicit NativeIterator(Iterator it);
+    friend class DiscreteTrajectory;
   };
 
-  // An iterator which returns the coordinates in another frame.
+  // An iterator which returns the coordinates in another frame, |ToFrame|.
   template<typename ToFrame>
   class TransformingIterator : public Iterator {
    public:
+    bool at_end() const;
+    Instant const& time() const;
     DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
+
    private:
-    explicit TransformingIterator(Transform<ToFrame> const& transform);
+    TransformingIterator(Iterator it, Transform<ToFrame> transform);
     Transform<ToFrame> transform_;
-    friend class Trajectory;
+    friend class DiscreteTrajectory;
   };
 
+ protected:
+  // The API inherited from Forkable.
+  not_null<DiscreteTrajectory*> that() override;
+  not_null<DiscreteTrajectory const*> that() const override;
+
+  TimelineConstIterator timeline_begin() const override;
+  TimelineConstIterator timeline_end() const override;
+  TimelineConstIterator timeline_find(Instant const& time) const override;
+  TimelineConstIterator timeline_lower_bound(
+                            Instant const& time) const override;
+  bool timeline_empty() const override;
+
  private:
-  // A constructor for creating a child trajectory during forking.
-  Trajectory(not_null<Body const*> const body,
-             not_null<Trajectory*> const parent,
-             Fork const& fork);
-
-  // Returns the fork time of this trajectory, which must not be a root.
-  Instant const& ForkTime() const;
-
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message) const;
 
   void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
-  not_null<Body const*> const body_;
-
-  // Both of these members are null for a root trajectory.
-  std::unique_ptr<Fork> fork_;
-  Trajectory* const parent_;
-
-  Children children_;
   Timeline timeline_;
 
   std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;
 
-  std::function<void(not_null<Trajectory<Frame>const *> const)> on_destroy_;
+  std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
+      on_destroy_;
+
+  template<typename Tr4jectory>
+  friend class Forkable;
 
   // For using the private constructor in maps.
   template<typename, typename>
@@ -294,4 +235,4 @@ class Trajectory {
 }  // namespace physics
 }  // namespace principia
 
-#include "trajectory_body.hpp"
+#include "discrete_trajectory_body.hpp"

@@ -27,7 +27,7 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
   MOCK_METHOD5_T(FlowWithAdaptiveStep,
-                 void(not_null<Trajectory<Frame>*> const trajectory,
+                 void(not_null<DiscreteTrajectory<Frame>*> const trajectory,
                       Length const& length_integration_tolerance,
                       Speed const& speed_integration_tolerance,
                       AdaptiveStepSizeIntegrator<
@@ -35,7 +35,8 @@ class MockEphemeris : public Ephemeris<Frame> {
                       Instant const& t));
   MOCK_METHOD3_T(
       FlowWithFixedStep,
-      void(std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
+               trajectories,
            Time const& step,
            Instant const& t));
 

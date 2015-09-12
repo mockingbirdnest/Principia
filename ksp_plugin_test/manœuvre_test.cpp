@@ -1,21 +1,25 @@
 ﻿#include "ksp_plugin/manœuvre.hpp"
 
+#include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
+#include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
+using geometry::Frame;
 using quantities::Pow;
 using si::Kilo;
 using si::Kilogram;
 using si::Metre;
 using si::Newton;
 using si::Second;
-using testing_utilities::RelativeError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::RelativeError;
+using uk::Foot;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -31,10 +35,13 @@ class ManœuvreTest : public ::testing::Test {
 TEST_F(ManœuvreTest, TimedBurn) {
   Instant const t0 = Instant();
   Vector<double, World> e_y({0, 1, 0});
-  Manœuvre<World> manœuvre(1 * Newton, 2 * Kilogram, 1 * Metre / Second, e_y);
+  Manœuvre<World> manœuvre(1 * Newton /*thrust*/,
+                           2 * Kilogram /*initial_mass*/,
+                           1 * Newton * Second / Kilogram /*specific_impulse*/,
+                           e_y /*direction*/);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
-  EXPECT_EQ(1 * Metre / Second, manœuvre.effective_exhaust_velocity());
+  EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
   EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
@@ -64,10 +71,13 @@ TEST_F(ManœuvreTest, TimedBurn) {
 TEST_F(ManœuvreTest, TargetΔv) {
   Instant const t0 = Instant();
   Vector<double, World> e_y({0, 1, 0});
-  Manœuvre<World> manœuvre(1 * Newton, 2 * Kilogram, 1 * Metre / Second, e_y);
+  Manœuvre<World> manœuvre(1 * Newton /*thrust*/,
+                           2 * Kilogram /*initial_mass*/,
+                           1 * Newton * Second / Kilogram /*specific_impulse*/,
+                           e_y /*direction*/);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
-  EXPECT_EQ(1 * Metre / Second, manœuvre.effective_exhaust_velocity());
+  EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
   EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
@@ -202,6 +212,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   EXPECT_THAT(second_burn.Δv(),
               AllOf(Gt(3 * Kilo(Metre) / Second),
                     Lt(3.25 * Kilo(Metre) / Second)));
+
+  // From the Apollo 8 flight journal.
+  EXPECT_EQ(second_burn.Δv(), 10'519.6 * Foot / Second);
 }
 
 }  // namespace ksp_plugin

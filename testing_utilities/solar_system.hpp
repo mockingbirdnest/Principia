@@ -9,7 +9,8 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -19,7 +20,8 @@ namespace principia {
 using base::not_null;
 using geometry::Frame;
 using physics::DegreesOfFreedom;
-using physics::Trajectory;
+using physics::DiscreteTrajectory;
+using physics::MassiveBody;
 
 namespace testing_utilities {
 
@@ -126,7 +128,8 @@ class SolarSystem {
   Bodies massive_bodies();
 
   // This class retains ownership of the trajectories.
-  std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>> trajectories() const;
+  std::vector<not_null<DiscreteTrajectory<ICRFJ2000Ecliptic>*>>
+  trajectories() const;
 
   std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> initial_state() const;
 
@@ -143,8 +146,8 @@ class SolarSystem {
   explicit SolarSystem(Accuracy const accuracy);
 
   Bodies massive_bodies_;
-  std::vector<not_null<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>>
-      trajectories_;
+  std::vector<not_null<std::unique_ptr<
+      physics::DiscreteTrajectory<ICRFJ2000Ecliptic>>>> trajectories_;
 };
 
 }  // namespace testing_utilities

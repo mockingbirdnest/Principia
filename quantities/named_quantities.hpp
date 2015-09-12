@@ -32,6 +32,7 @@ using Order2ZonalCoefficient = Quotient<Exponentiation<Length, 5>,
                                         Exponentiation<Time, 2>>;
 
 // Astrodynamics
+using SpecificImpulse         = Quotient<Momentum, Mass>;
 using SpecificEnergy          = Quotient<Energy, Mass>;
 using SpecificAngularMomentum = Quotient<AngularMomentum, Mass>;
 

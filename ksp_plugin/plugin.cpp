@@ -329,7 +329,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
       RenderTrajectory(predicted_vessel_->body(),
                        transforms->first_on_or_after(
                            predicted_vessel_->prediction(),
-                           *predicted_vessel_->prediction().fork_time()),
+                           *predicted_vessel_->prediction().ForkTime()),
                        transforms,
                        sun_world_position);
   return result;
@@ -456,12 +456,12 @@ Vector<double, World> Plugin::VesselTangent(
   auto const actual_it =
       transforms->first_on_or_after(vessel.prolongation(),
                                     vessel.prolongation().last().time());
-  Trajectory<Rendering> intermediate_trajectory(vessel.body());
+  DiscreteTrajectory<Rendering> intermediate_trajectory;
   intermediate_trajectory.Append(actual_it.time(),
                                  actual_it.degrees_of_freedom());
   auto const intermediate_it = transforms->second(current_time_,
                                                   intermediate_trajectory);
-  Trajectory<Barycentric> apparent_trajectory(vessel.body());
+  DiscreteTrajectory<Barycentric> apparent_trajectory;
   apparent_trajectory.Append(intermediate_it.time(),
                              intermediate_it.degrees_of_freedom());
   return Normalize(
@@ -892,7 +892,8 @@ void Plugin::UpdatePredictions() {
 
 RenderedTrajectory<World> Plugin::RenderTrajectory(
     not_null<Body const*> const body,
-    Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
+    DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
+        actual_it,
     not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
@@ -903,13 +904,13 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
           OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory(body);
+  DiscreteTrajectory<Rendering> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
 
   // Then build the apparent trajectory using the second transform.
-  Trajectory<Barycentric> apparent_trajectory(body);
+  DiscreteTrajectory<Barycentric> apparent_trajectory;
   for (auto intermediate_it =
            transforms->second(current_time_, intermediate_trajectory);
        !intermediate_it.at_end();

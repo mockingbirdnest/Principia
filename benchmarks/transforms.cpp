@@ -33,6 +33,8 @@
 // BM_TransformsBarycentricRotating<true>/1000k_mean       1719766736 1712890980          1  // NOLINT(whitespace/line_length)
 // BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
+#include <optional.hpp>
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -49,9 +51,9 @@
 #include "physics/body.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
-#include "physics/trajectory.hpp"
 #include "physics/transforms.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -75,9 +77,9 @@ using quantities::Time;
 using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MasslessBody;
-using physics::Trajectory;
 using physics::Transforms;
 using si::AstronomicalUnit;
 using si::Hour;
@@ -135,29 +137,27 @@ std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
     not_null<Transforms<World1, World2, World1>*> const transforms,
-    Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
+    DiscreteTrajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<World2> intermediate_trajectory(body);
+  DiscreteTrajectory<World2> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
 
   // Then build the final result using the second transform.
-  std::unique_ptr<Position<World1>> last_position;  // std::optional.
+  std::experimental::optional<Position<World1>> last_position;
   for (auto it = transforms->second(intermediate_trajectory.last().time(),
                                     intermediate_trajectory);
        !it.at_end();
        ++it) {
     Position<World1> const& position = it.degrees_of_freedom().position();
-    if (last_position == nullptr) {
-      last_position = std::make_unique<Position<World1>>(position);
-    } else {
+    if (last_position) {
       result.emplace_back(*last_position, position);
-      *last_position = position;
     }
+    last_position = position;
   }
   return result;
 }
@@ -196,12 +196,12 @@ void BM_TransformsBodyCentredNonRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory(&probe);
-  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
-                                           probe_velocity,
-                                           Δt,
-                                           steps,
-                                           &probe_trajectory);
+  DiscreteTrajectory<World1> probe_trajectory;
+  FillLinearTrajectory<World1, DiscreteTrajectory>(probe_initial_position,
+                                                   probe_velocity,
+                                                   Δt,
+                                                   steps,
+                                                   &probe_trajectory);
 
   auto transforms = Transforms<World1, World2, World1>::
       BodyCentredNonRotating(earth, earth_trajectory, earth_trajectory);
@@ -274,12 +274,12 @@ void BM_TransformsBarycentricRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory(&probe);
-  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
-                                           probe_velocity,
-                                           Δt,
-                                           steps,
-                                           &probe_trajectory);
+  DiscreteTrajectory<World1> probe_trajectory;
+  FillLinearTrajectory<World1, DiscreteTrajectory>(probe_initial_position,
+                                                   probe_velocity,
+                                                   Δt,
+                                                   steps,
+                                                   &probe_trajectory);
 
   auto transforms = Transforms<World1, World2, World1>::
       BarycentricRotating(earth,

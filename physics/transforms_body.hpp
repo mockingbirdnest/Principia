@@ -140,7 +140,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           bool const cacheable,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
-          not_null<Trajectory<FromFrame> const*> const trajectory) ->
+          not_null<DiscreteTrajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
@@ -176,7 +176,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           Instant const last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
-          Trajectory<ThroughFrame> const* trajectory) ->
+          DiscreteTrajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
         to_centre_trajectory.EvaluateDegreesOfFreedom(last, &*to_centre_hint);
@@ -247,7 +247,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           bool const cacheable,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
-          not_null<Trajectory<FromFrame> const*> const trajectory) ->
+          not_null<DiscreteTrajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
@@ -309,7 +309,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           Instant const& last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
-          Trajectory<ThroughFrame> const* trajectory) ->
+          DiscreteTrajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
@@ -347,46 +347,50 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+typename DiscreteTrajectory<FromFrame>::
+template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
-    Trajectory<FromFrame> const& from_trajectory) {
-  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
-      std::bind(first_, false /*cacheable*/, _1, _2, _3);
+    DiscreteTrajectory<FromFrame> const& from_trajectory) {
+  typename DiscreteTrajectory<FromFrame>::template Transform<ThroughFrame> const
+      first = std::bind(first_, false /*cacheable*/, _1, _2, _3);
   return from_trajectory.first_with_transform(first);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+typename DiscreteTrajectory<FromFrame>::
+template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
-    not_null<Trajectory<FromFrame>*> const from_trajectory) {
+    not_null<DiscreteTrajectory<FromFrame>*> const from_trajectory) {
   // Make sure that the cache entry is deleted when the trajectory is deleted.
   from_trajectory->set_on_destroy(
-      [this](not_null<Trajectory<FromFrame>const*> const trajectory) {
+      [this](not_null<DiscreteTrajectory<FromFrame>const*> const trajectory) {
         first_cache_.Delete(trajectory);
       });
 
-  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
-      std::bind(first_, true /*cacheable*/, _1, _2, _3);
+  typename DiscreteTrajectory<FromFrame>::template Transform<ThroughFrame> const
+      first = std::bind(first_, true /*cacheable*/, _1, _2, _3);
   return from_trajectory->first_with_transform(first);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+typename DiscreteTrajectory<FromFrame>::
+template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
-    Trajectory<FromFrame> const& from_trajectory,
+    DiscreteTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
-  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
-      std::bind(first_, false /*cacheable*/, _1, _2, _3);
+  typename DiscreteTrajectory<FromFrame>::template Transform<ThroughFrame> const
+      first = std::bind(first_, false /*cacheable*/, _1, _2, _3);
   return from_trajectory.on_or_after_with_transform(time, first);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
+typename DiscreteTrajectory<ThroughFrame>::
+template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Instant const& last,
-    Trajectory<ThroughFrame> const& through_trajectory) {
-  typename Trajectory<ThroughFrame>::template Transform<ToFrame> second =
-      std::bind(second_, last, _1, _2, _3);
+    DiscreteTrajectory<ThroughFrame> const& through_trajectory) {
+  typename DiscreteTrajectory<ThroughFrame>::template Transform<ToFrame>
+      second = std::bind(second_, last, _1, _2, _3);
   return through_trajectory.first_with_transform(second);
 }
 
@@ -401,7 +405,7 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 bool
 Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
-Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
+Lookup(not_null<DiscreteTrajectory<Frame1> const*> const trajectory,
        Instant const& time,
        not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
   bool found = false;
@@ -425,7 +429,7 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
 Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
-    not_null<Trajectory<Frame1> const*> const trajectory,
+    not_null<DiscreteTrajectory<Frame1> const*> const trajectory,
        Instant const& time,
        DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
   cache_[trajectory].emplace(std::make_pair(time, degrees_of_freedom));
@@ -435,7 +439,7 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
 Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Delete(
-    not_null<Trajectory<Frame1> const*> const trajectory) {
+    not_null<DiscreteTrajectory<Frame1> const*> const trajectory) {
   cache_.erase(trajectory);
 }
 

@@ -1,4 +1,4 @@
-#include "trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 #include <functional>
 #include <list>
@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "body.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -14,9 +13,6 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/massive_body.hpp"
-#include "physics/massless_body.hpp"
-#include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -28,7 +24,6 @@ using geometry::Point;
 using geometry::R3Element;
 using geometry::Vector;
 using quantities::Length;
-using quantities::Mass;
 using quantities::Speed;
 using quantities::SIUnit;
 using si::Metre;
@@ -45,14 +40,13 @@ using ::testing::Ref;
 
 namespace physics {
 
-class TrajectoryTest : public testing::Test {
+class DiscreteTrajectoryTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
 
-  TrajectoryTest()
-      : massive_body_(MassiveBody(1 * SIUnit<Mass>())),
-        q1_(Position<World>(
+  DiscreteTrajectoryTest()
+      : q1_(Position<World>(
             Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}))),
         q2_(Position<World>(
             Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre}))),
@@ -82,14 +76,14 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(&massive_body_);
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(&massless_body_);
+    massive_trajectory_ = std::make_unique<DiscreteTrajectory<World>>();
+    massless_trajectory_ = std::make_unique<DiscreteTrajectory<World>>();
 
     transform_ = [](
         Instant const& t,
         DegreesOfFreedom<World> const& from_degrees_of_freedom,
-        Trajectory<World> const* actual_trajectory,
-        Trajectory<World> const* expected_trajectory) ->
+        DiscreteTrajectory<World> const* actual_trajectory,
+        DiscreteTrajectory<World> const* expected_trajectory) ->
         DegreesOfFreedom<World> {
       CHECK_EQ(expected_trajectory, actual_trajectory);
       return {Position<World>(
@@ -104,94 +98,43 @@ class TrajectoryTest : public testing::Test {
         std::bind(transform_, _1, _2, _3, massless_trajectory_.get());
   }
 
-  MassiveBody massive_body_;
-  MasslessBody massless_body_;
   Position<World> q1_, q2_, q3_, q4_;
   Velocity<World> p1_, p2_, p3_, p4_;
   DegreesOfFreedom<World> d1_, d2_, d3_, d4_;
   Instant t0_, t1_, t2_, t3_, t4_;
-  std::unique_ptr<Trajectory<World>> massive_trajectory_;
-  std::unique_ptr<Trajectory<World>> massless_trajectory_;
-  std::function<DegreesOfFreedom<World>(Instant const&,
-                                        DegreesOfFreedom<World> const&,
-                                        Trajectory<World> const*,
-                                        Trajectory<World> const*)> transform_;
-  Trajectory<World>::Transform<World> massive_transform_;
-  Trajectory<World>::Transform<World> massless_transform_;
+  std::unique_ptr<DiscreteTrajectory<World>> massive_trajectory_;
+  std::unique_ptr<DiscreteTrajectory<World>> massless_trajectory_;
+  std::function<DegreesOfFreedom<World>(
+      Instant const&,
+      DegreesOfFreedom<World> const&,
+      DiscreteTrajectory<World> const*,
+      DiscreteTrajectory<World> const*)> transform_;
+  DiscreteTrajectory<World>::Transform<World> massive_transform_;
+  DiscreteTrajectory<World>::Transform<World> massless_transform_;
 };
 
-using TrajectoryDeathTest = TrajectoryTest;
+using DiscreteTrajectoryDeathTest = DiscreteTrajectoryTest;
 
-TEST_F(TrajectoryDeathTest, Construction) {
-  using OtherWorld = Frame<serialization::Frame::TestTag,
-                           serialization::Frame::TEST2, true>;
-  EXPECT_DEATH({
-    OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
-                                1.0 /*j2*/,
-                                1 * SIUnit<Length>(),
-                                Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(&body);
-  }, "not in the same frame");
-}
-
-TEST_F(TrajectoryTest, Destruction) {
+TEST_F(DiscreteTrajectoryTest, Destruction) {
   int i = 1;
   {
-    Trajectory<World> massive_trajectory(&massive_body_);
+    DiscreteTrajectory<World> massive_trajectory;
   }
   EXPECT_EQ(1, i);
   {
-    Trajectory<World> massive_trajectory(&massive_body_);
+    DiscreteTrajectory<World> massive_trajectory;
     massive_trajectory.set_on_destroy(
-        [&i](not_null<Trajectory<World>const*> const) { ++i; });
+        [&i](not_null<DiscreteTrajectory<World>const*> const) { ++i; });
   }
   EXPECT_EQ(2, i);
 }
 
-TEST_F(TrajectoryDeathTest, AppendError) {
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t2_, d2_);
-    massive_trajectory_->Append(t1_, d1_);
-  }, "out of order");
-}
-
-TEST_F(TrajectoryTest, AppendAtExistingTime) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t1_, d1_);
-}
-
-TEST_F(TrajectoryTest, AppendSuccess) {
+TEST_F(DiscreteTrajectoryTest, NewForkWithCopySuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  std::map<Instant, Position<World>> const positions =
-      massive_trajectory_->Positions();
-  std::map<Instant, Velocity<World>> const velocities =
-      massive_trajectory_->Velocities();
-  std::list<Instant> const times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Eq(&massive_body_));
-}
-
-TEST_F(TrajectoryDeathTest, ForkError) {
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    massive_trajectory_->Append(t3_, d3_);
-    massive_trajectory_->NewFork(t2_);
-  }, "nonexistent time");
-}
-
-TEST_F(TrajectoryTest, ForkSuccess) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massive_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
   std::map<Instant, Position<World>> positions =
       massive_trajectory_->Positions();
@@ -205,7 +148,6 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -218,18 +160,18 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
-TEST_F(TrajectoryTest, ForkAtLast) {
+TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t3_);
-  not_null<Trajectory<World>*> const fork2 =
-      fork1->NewFork(fork1->last().time());
-  not_null<Trajectory<World>*> const fork3 =
-      fork2->NewFork(fork1->last().time());
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewForkWithCopy(t3_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      fork1->NewForkWithCopy(fork1->last().time());
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      fork2->NewForkWithCopy(fork1->last().time());
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
   EXPECT_EQ(t3_, fork1->last().time());
 
@@ -246,7 +188,6 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
-  EXPECT_EQ(t3_, *fork2->fork_time());
 
   std::vector<Instant> after;
   for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
@@ -268,7 +209,6 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
-  EXPECT_EQ(t3_, *fork2->fork_time());
 
   after.clear();
   for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
@@ -290,7 +230,6 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
-  EXPECT_EQ(t3_, *fork2->fork_time());
 
   after.clear();
   for (auto it = fork1->on_or_after(t3_); !it.at_end(); ++it) {
@@ -311,7 +250,6 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork3->last().time());
-  EXPECT_EQ(t3_, *fork3->fork_time());
 
   fork2->Append(t4_, d4_);
   after.clear();
@@ -334,101 +272,141 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_THAT(after, ElementsAre(t2_, t3_, t4_));
 }
 
-TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
-  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
-  fork2->ForgetAfter(t2_);
-  fork3->Append(t4_, d4_);
-
-  {
-    serialization::Trajectory::Pointer message;
-    massive_trajectory_->WritePointerToMessage(&message);
-    EXPECT_EQ(0, message.fork_size());
-    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
-                          message,
-                          massive_trajectory_.get());
-    EXPECT_EQ(massive_trajectory_.get(), trajectory);
-    auto it = trajectory->first();
-    EXPECT_EQ(it.time(), t1_);
-    ++it;
-    EXPECT_EQ(it.time(), t2_);
-    ++it;
-    EXPECT_EQ(it.time(), t3_);
-  }
-
-  {
-    serialization::Trajectory::Pointer message;
-    fork1->WritePointerToMessage(&message);
-    EXPECT_EQ(1, message.fork_size());
-    EXPECT_EQ(0, message.fork(0).children_distance());
-    EXPECT_EQ(1, message.fork(0).timeline_distance());
-    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
-                          message,
-                          massive_trajectory_.get());
-    EXPECT_EQ(fork1, trajectory);
-    auto it = trajectory->first();
-    EXPECT_EQ(it.time(), t1_);
-    ++it;
-    EXPECT_EQ(it.time(), t2_);
-    ++it;
-    EXPECT_EQ(it.time(), t3_);
-    ++it;
-    EXPECT_TRUE(it.at_end());
-  }
-
-  {
-    serialization::Trajectory::Pointer message;
-    fork2->WritePointerToMessage(&message);
-    EXPECT_EQ(1, message.fork_size());
-    EXPECT_EQ(1, message.fork(0).children_distance());
-    EXPECT_EQ(1, message.fork(0).timeline_distance());
-    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
-                          message,
-                          massive_trajectory_.get());
-    EXPECT_EQ(fork2, trajectory);
-    auto it = trajectory->first();
-    EXPECT_EQ(it.time(), t1_);
-    ++it;
-    EXPECT_EQ(it.time(), t2_);
-    ++it;
-    EXPECT_TRUE(it.at_end());
-  }
-
-  {
-    serialization::Trajectory::Pointer message;
-    fork3->WritePointerToMessage(&message);
-    EXPECT_EQ(1, message.fork_size());
-    EXPECT_EQ(2, message.fork(0).children_distance());
-    EXPECT_EQ(2, message.fork(0).timeline_distance());
-    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
-                          message,
-                          massive_trajectory_.get());
-    EXPECT_EQ(fork3, trajectory);
-    auto it = trajectory->first();
-    EXPECT_EQ(it.time(), t1_);
-    ++it;
-    EXPECT_EQ(it.time(), t2_);
-    ++it;
-    EXPECT_EQ(it.time(), t3_);
-    ++it;
-    EXPECT_EQ(it.time(), t4_);
-    ++it;
-    EXPECT_TRUE(it.at_end());
-  }
+TEST_F(DiscreteTrajectoryDeathTest, AppendError) {
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t2_, d2_);
+    massive_trajectory_->Append(t1_, d1_);
+  }, "out of order");
 }
 
-TEST_F(TrajectoryTest, PointerSerializationSuccess) {
+TEST_F(DiscreteTrajectoryTest, AppendAtExistingTime) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t1_, d1_);
+}
+
+TEST_F(DiscreteTrajectoryTest, AppendSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  std::map<Instant, Position<World>> const positions =
+      massive_trajectory_->Positions();
+  std::map<Instant, Velocity<World>> const velocities =
+      massive_trajectory_->Velocities();
+  std::list<Instant> const times = massive_trajectory_->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+}
+
+TEST_F(DiscreteTrajectoryTest, ForgetAfter) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  fork->Append(t4_, d4_);
+
+  fork->ForgetAfter(t3_ + (t4_ - t3_) / 2);
+  std::map<Instant, Position<World>> positions = fork->Positions();
+  std::map<Instant, Velocity<World>> velocities = fork->Velocities();
+  std::list<Instant> times = fork->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  fork->ForgetAfter(t2_);
+  positions = fork->Positions();
+  velocities = fork->Velocities();
+  times = fork->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_));
+  EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position());
+  EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity());
+  EXPECT_EQ(t2_, fork->last().time());
+
+  positions = massive_trajectory_->Positions();
+  velocities = massive_trajectory_->Velocities();
+  times = massive_trajectory_->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  massive_trajectory_->ForgetAfter(t1_);
+  positions = massive_trajectory_->Positions();
+  velocities = massive_trajectory_->Velocities();
+  times = massive_trajectory_->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_)));
+  EXPECT_THAT(times, ElementsAre(t1_));
+  // Don't use fork, it is dangling.
+}
+
+TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  fork->Append(t4_, d4_);
+
+  massive_trajectory_->ForgetBefore(t1_ + (t2_ - t1_) / 2);
+  std::map<Instant, Position<World>> positions =
+      massive_trajectory_->Positions();
+  std::map<Instant, Velocity<World>> velocities =
+      massive_trajectory_->Velocities();
+  std::list<Instant> times = massive_trajectory_->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t2_, t3_));
+  positions = fork->Positions();
+  velocities = fork->Velocities();
+  times = fork->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_),
+                                     testing::Pair(t4_, q4_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_),
+                                      testing::Pair(t4_, p4_)));
+  EXPECT_THAT(times, ElementsAre(t2_, t3_, t4_));
+
+  massive_trajectory_->ForgetBefore(t2_);
+  positions = massive_trajectory_->Positions();
+  velocities = massive_trajectory_->Velocities();
+  times = massive_trajectory_->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t3_));
+  // Don't use fork, it is dangling.
+}
+
+TEST_F(DiscreteTrajectoryTest, PointerSerializationSuccess) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      massive_trajectory_->NewForkWithCopy(t2_);
   fork2->Append(t4_, d4_);
-  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      massive_trajectory_->NewForkWithCopy(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory root;
   serialization::Trajectory::Pointer root_it;
@@ -437,44 +415,49 @@ TEST_F(TrajectoryTest, PointerSerializationSuccess) {
   massive_trajectory_->WritePointerToMessage(&root_it);
   fork2->WritePointerToMessage(&fork2_it);
   EXPECT_EQ(fork2,
-            Trajectory<World>::ReadPointerFromMessage(
+            DiscreteTrajectory<World>::ReadPointerFromMessage(
                 fork2_it,
                 massive_trajectory_.get()));
   EXPECT_EQ(massive_trajectory_.get(),
-            Trajectory<World>::ReadPointerFromMessage(
+            DiscreteTrajectory<World>::ReadPointerFromMessage(
                 root_it,
                 massive_trajectory_.get()));
-  not_null<std::unique_ptr<Trajectory<World>>> const massive_trajectory =
-      Trajectory<World>::ReadFromMessage(root, &massive_body_);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+      massive_trajectory = DiscreteTrajectory<World>::ReadFromMessage(root);
   EXPECT_EQ(massive_trajectory.get(),
-            Trajectory<World>::ReadPointerFromMessage(
+            DiscreteTrajectory<World>::ReadPointerFromMessage(
                 root_it, massive_trajectory.get()));
 }
 
-TEST_F(TrajectoryDeathTest, TrajectorySerializationError) {
+TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
+    not_null<DiscreteTrajectory<World>*> const fork =
+        massive_trajectory_->NewForkWithCopy(t1_);
     serialization::Trajectory message;
     fork->WriteToMessage(&message);
   }, "is_root");
 }
 
-TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
+TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewForkWithCopy(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      massive_trajectory_->NewForkWithCopy(t2_);
   fork2->Append(t4_, d4_);
-  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      massive_trajectory_->NewForkWithCopy(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
   serialization::Trajectory reference_message;
   massive_trajectory_->WriteToMessage(&message);
   massive_trajectory_->WriteToMessage(&reference_message);
-  not_null<std::unique_ptr<Trajectory<World>>> const deserialized_trajectory =
-      Trajectory<World>::ReadFromMessage(message, &massive_body_);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+      deserialized_trajectory =
+          DiscreteTrajectory<World>::ReadFromMessage(message);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message);
   EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
@@ -530,66 +513,13 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
       Eq(d4_));
 }
 
-TEST_F(TrajectoryDeathTest, DeleteForkError) {
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    Trajectory<World>* root = massive_trajectory_.get();
-    massive_trajectory_->DeleteFork(&root);
-  }, "'fork_time'.* non NULL");
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    Trajectory<World>* fork1 = massive_trajectory_->NewFork(t1_);
-    fork1->Append(t2_, d2_);
-    Trajectory<World>* fork2 = fork1->NewFork(t2_);
-    massive_trajectory_->DeleteFork(&fork2);
-  }, "not a child");
-}
-
-TEST_F(TrajectoryTest, DeleteForkSuccess) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  Trajectory<World>* fork2 = massive_trajectory_->NewFork(t2_);
-  fork1->Append(t4_, d4_);
-  massive_trajectory_->DeleteFork(&fork2);
-  EXPECT_EQ(nullptr, fork2);
-  std::map<Instant, Position<World>> positions =
-      massive_trajectory_->Positions();
-  std::map<Instant, Velocity<World>> velocities =
-      massive_trajectory_->Velocities();
-  std::list<Instant> times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
-  positions = fork1->Positions();
-  velocities = fork1->Velocities();
-  times = fork1->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_),
-                                     testing::Pair(t4_, q4_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_),
-                                      testing::Pair(t4_, p4_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
-  massive_trajectory_.reset();
-}
-
-TEST_F(TrajectoryDeathTest, LastError) {
+TEST_F(DiscreteTrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
     massive_trajectory_->last();
-  }, "Empty trajectory");
+  }, "parent_.*non NULL");
 }
 
-TEST_F(TrajectoryTest, LastSuccess) {
+TEST_F(DiscreteTrajectoryTest, LastSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
@@ -598,133 +528,7 @@ TEST_F(TrajectoryTest, LastSuccess) {
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
 }
 
-TEST_F(TrajectoryTest, Root) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
-  EXPECT_TRUE(massive_trajectory_->is_root());
-  EXPECT_FALSE(fork->is_root());
-  EXPECT_EQ(massive_trajectory_.get(), massive_trajectory_->root());
-  EXPECT_EQ(massive_trajectory_.get(), fork->root());
-  EXPECT_EQ(nullptr, massive_trajectory_->fork_time());
-  EXPECT_EQ(t2_, *fork->fork_time());
-}
-
-TEST_F(TrajectoryDeathTest, ForgetAfterError) {
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    massive_trajectory_->Append(t2_, d2_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
-    fork->ForgetAfter(t1_);
-  }, "before the fork time");
-}
-
-TEST_F(TrajectoryTest, ForgetAfterSuccess) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
-  fork->Append(t4_, d4_);
-
-  fork->ForgetAfter(t3_ + (t4_ - t3_) / 2);
-  std::map<Instant, Position<World>> positions = fork->Positions();
-  std::map<Instant, Velocity<World>> velocities = fork->Velocities();
-  std::list<Instant> times = fork->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-
-  fork->ForgetAfter(t2_);
-  positions = fork->Positions();
-  velocities = fork->Velocities();
-  times = fork->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_));
-  EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position());
-  EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t2_, fork->last().time());
-
-  positions = massive_trajectory_->Positions();
-  velocities = massive_trajectory_->Velocities();
-  times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-
-  massive_trajectory_->ForgetAfter(t1_);
-  positions = massive_trajectory_->Positions();
-  velocities = massive_trajectory_->Velocities();
-  times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_)));
-  EXPECT_THAT(times, ElementsAre(t1_));
-  // Don't use fork, it is dangling.
-}
-
-TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
-    fork->ForgetBefore(t1_);
-  }, "nonroot");
-}
-
-TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
-  fork->Append(t4_, d4_);
-
-  massive_trajectory_->ForgetBefore(t1_ + (t2_ - t1_) / 2);
-  std::map<Instant, Position<World>> positions =
-      massive_trajectory_->Positions();
-  std::map<Instant, Velocity<World>> velocities =
-      massive_trajectory_->Velocities();
-  std::list<Instant> times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t2_, t3_));
-  positions = fork->Positions();
-  velocities = fork->Velocities();
-  times = fork->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_),
-                                     testing::Pair(t4_, q4_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_),
-                                      testing::Pair(t4_, p4_)));
-  EXPECT_THAT(times, ElementsAre(t2_, t3_, t4_));
-
-  massive_trajectory_->ForgetBefore(t2_);
-  positions = massive_trajectory_->Positions();
-  velocities = massive_trajectory_->Velocities();
-  times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t3_));
-  // Don't use fork, it is dangling.
-}
-
-TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
-  EXPECT_DEATH({
-    massive_trajectory_->set_intrinsic_acceleration(
-        [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, "massive body");
+TEST_F(DiscreteTrajectoryDeathTest, IntrinsicAccelerationError) {
   EXPECT_DEATH({
     massless_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );
@@ -733,11 +537,12 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
   }, "already has.* acceleration");
 }
 
-TEST_F(TrajectoryTest, IntrinsicAccelerationSuccess) {
+TEST_F(DiscreteTrajectoryTest, IntrinsicAccelerationSuccess) {
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
 
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
@@ -784,18 +589,14 @@ TEST_F(TrajectoryTest, IntrinsicAccelerationSuccess) {
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
 }
 
-TEST_F(TrajectoryDeathTest, NativeIteratorError) {
+TEST_F(DiscreteTrajectoryDeathTest, NativeIteratorError) {
   EXPECT_DEATH({
-    Trajectory<World>::NativeIterator it = massive_trajectory_->last();
-  }, "Empty trajectory");
-  EXPECT_DEATH({
-    Trajectory<World>::NativeIterator it = massive_trajectory_->first();
-    ++it;
-  }, "beyond end");
+    DiscreteTrajectory<World>::NativeIterator it = massive_trajectory_->last();
+  }, "parent_.*non NULL");
 }
 
-TEST_F(TrajectoryTest, NativeIteratorSuccess) {
-  Trajectory<World>::NativeIterator it = massive_trajectory_->first();
+TEST_F(DiscreteTrajectoryTest, NativeIteratorSuccess) {
+  DiscreteTrajectory<World>::NativeIterator it = massive_trajectory_->first();
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
@@ -815,7 +616,8 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->first();
@@ -835,20 +637,15 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   EXPECT_TRUE(it.at_end());
 }
 
-TEST_F(TrajectoryDeathTest, TransformingIteratorError) {
+TEST_F(DiscreteTrajectoryDeathTest, TransformingIteratorError) {
   EXPECT_DEATH({
-    Trajectory<World>::TransformingIterator<World> it =
+    DiscreteTrajectory<World>::TransformingIterator<World> it =
         massive_trajectory_->last_with_transform(massive_transform_);
-  }, "Empty trajectory");
-  EXPECT_DEATH({
-    Trajectory<World>::TransformingIterator<World> it =
-        massive_trajectory_->first_with_transform(massive_transform_);
-    ++it;
-  }, "beyond end");
+  }, "parent_.*non NULL");
 }
 
-TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
-  Trajectory<World>::TransformingIterator<World> it =
+TEST_F(DiscreteTrajectoryTest, TransformingIteratorSuccess) {
+  DiscreteTrajectory<World>::TransformingIterator<World> it =
       massive_trajectory_->first_with_transform(massive_transform_);
   EXPECT_TRUE(it.at_end());
 
@@ -878,9 +675,10 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
-  Trajectory<World>::Transform<World> const fork_transform =
+  DiscreteTrajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
 
   it = fork->first_with_transform(fork_transform);
@@ -913,8 +711,9 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   EXPECT_TRUE(it.at_end());
 }
 
-TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
-  Trajectory<World>::NativeIterator it = massive_trajectory_->on_or_after(t0_);
+TEST_F(DiscreteTrajectoryTest, NativeIteratorOnOrAfterSuccess) {
+  DiscreteTrajectory<World>::NativeIterator it =
+      massive_trajectory_->on_or_after(t0_);
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
@@ -931,7 +730,8 @@ TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   it = massless_trajectory_->on_or_after(t4_);
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->on_or_after(t0_);
@@ -948,8 +748,8 @@ TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   EXPECT_TRUE(it.at_end());
 }
 
-TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
-  Trajectory<World>::TransformingIterator<World> it =
+TEST_F(DiscreteTrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
+  DiscreteTrajectory<World>::TransformingIterator<World> it =
       massive_trajectory_->on_or_after_with_transform(t0_, massive_transform_);
   EXPECT_TRUE(it.at_end());
 
@@ -976,9 +776,10 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
                                                         massless_transform_);
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
-  Trajectory<World>::Transform<World> const fork_transform =
+  DiscreteTrajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
 
   it = fork->on_or_after_with_transform(t0_, fork_transform);
