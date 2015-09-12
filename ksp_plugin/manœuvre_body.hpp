@@ -61,50 +61,50 @@ void Manœuvre<Frame>::set_duration(Time const& duration) {
 
 template<typename Frame>
 void Manœuvre<Frame>::set_Δv(Speed const& Δv) {
-  set_duration(initial_mass() * specific_impulse() *
-               (1 - std::exp(-Δv / specific_impulse())) / thrust());
+  set_duration(initial_mass_ * specific_impulse_ *
+               (1 - std::exp(-Δv / specific_impulse_)) / thrust_);
 }
 
 template<typename Frame>
 Speed Manœuvre<Frame>::Δv() const {
   // Циолко́вский's equation.
-  return specific_impulse() * std::log(initial_mass() / final_mass());
+  return specific_impulse_ * std::log(initial_mass_ / final_mass());
 }
 
 template<typename Frame>
-Vector<double, Frame> Manœuvre<Frame>::direction() const {
+Vector<double, Frame> const& Manœuvre<Frame>::direction() const {
   return direction_;
 }
 
 template<typename Frame>
-SpecificImpulse Manœuvre<Frame>::specific_impulse() const {
+SpecificImpulse const& Manœuvre<Frame>::specific_impulse() const {
   return specific_impulse_;
 }
 
 template<typename Frame>
-Force Manœuvre<Frame>::thrust() const {
+Force const& Manœuvre<Frame>::thrust() const {
   return thrust_;
 }
 
 template<typename Frame>
-Mass Manœuvre<Frame>::initial_mass() const {
+Mass const& Manœuvre<Frame>::initial_mass() const {
   return initial_mass_;
 }
 
 template<typename Frame>
 Variation<Mass> Manœuvre<Frame>::mass_flow() const {
-  return thrust() / specific_impulse();
+  return thrust_ / specific_impulse_;
 }
 
 template<typename Frame>
 Mass Manœuvre<Frame>::final_mass() const {
-  return initial_mass() - mass_flow() * duration();
+  return initial_mass_ - mass_flow() * duration();
 }
 
 template<typename Frame>
 Time Manœuvre<Frame>::time_to_half_Δv() const {
-  return specific_impulse() * initial_mass() *
-         (1 - std::sqrt(final_mass() / initial_mass())) / thrust();
+  return specific_impulse_ * initial_mass_*
+         (1 - std::sqrt(final_mass() / initial_mass_)) / thrust_;
 }
 
 template<typename Frame>
@@ -112,8 +112,8 @@ typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
     Manœuvre<Frame>::acceleration() const {
   return [this](Instant const& time) -> Vector<Acceleration, Frame> {
     if (time >= initial_time() && time <= final_time()) {
-      return direction() * thrust() /
-             (initial_mass() - (time - initial_time()) * mass_flow());
+      return direction_ * thrust_ /
+             (initial_mass_ - (time - initial_time()) * mass_flow());
     } else {
       return Vector<Acceleration, Frame>();
     }

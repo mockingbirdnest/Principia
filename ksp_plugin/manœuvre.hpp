@@ -30,16 +30,16 @@ class Manœuvre {
            Vector<double, Frame> const& direction);
   ~Manœuvre() = default;
 
-  Force thrust() const;
-  Mass initial_mass() const;
+  Force const& thrust() const;
+  Mass const& initial_mass() const;
   // Specific impulse by mass, because specific impulse by weight is insane.
   // This is defined as the ratio of thrust to mass flow.
   // If the burn is done with a single engine (in a vacuum), this will be its
   // exhaust velocity.  For several engines, this is the total thrust divided
   // by the sum of the individual mass flows (where each mass flow is the
   // individual thrust divided by the exhaust velocity).
-  SpecificImpulse specific_impulse() const;
-  Vector<double, Frame> direction() const;
+  SpecificImpulse const& specific_impulse() const;
+  Vector<double, Frame> const& direction() const;
 
   // Equivalent characterizations of intensity.  Only one of the mutators may be
   // called, and only once.
