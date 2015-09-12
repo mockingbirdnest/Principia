@@ -118,7 +118,11 @@ class PluginIntegrationTest : public testing::Test {
 TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
+#if defined(_DEBUG)
+  Time const δt = 2 * Second;
+#else
   Time const δt = 0.02 * Second;
+#endif
   Angle const planetarium_rotation = 42 * Radian;
   // We step for long enough that we will find a new segment.
   Instant t = initial_time_;
