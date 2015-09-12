@@ -416,11 +416,12 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
   CHECK_GT(vessel.flight_plan().size(), plan_phase);
   DiscreteTrajectory<Barycentric> const& prediction =
       *vessel.flight_plan()[plan_phase];
+  CHECK(prediction.ForkTime());
   RenderedTrajectory<World> result =
       RenderTrajectory(vessel.body(),
                        transforms->first_on_or_after(
                            prediction,
-                           *CHECK_NOTNULL(prediction.ForkTime())),
+                           *prediction.ForkTime()),
                        transforms,
                        sun_world_position);
   return result;
