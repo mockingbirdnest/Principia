@@ -169,8 +169,11 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 10 * Minute;
-#if !defined(_DEBUG)
+#if defined(_DEBUG)
+  Time const δt_short = 1 * Minute;
+#else
   Time const δt_short = 0.02 * Second;
+#endif
   Instant t = initial_time_ + δt_short;
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth.
@@ -180,12 +183,6 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
-#else
-  Instant t = initial_time_ + δt_long;
-  plugin_->AdvanceTime(t, 0 * Radian);  // This ensures the history is nonempty.
-  plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
-  t += δt_long;
-#endif
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin_->AdvanceTime(
         t,
@@ -250,11 +247,12 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
 #if defined(_DEBUG)
-  Time const duration = 1 * Day;
-  Instant t = initial_time_ + δt_long;
+  Time const duration = 12 * Hour;
+  Time const δt_short = 20 * Second;
 #else
-  Time const δt_short = 0.02 * Second;
   Time const duration = 20 * Day;
+  Time const δt_short = 0.02 * Second;
+#endif
   Instant t = initial_time_ + δt_short;
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth and Moon.
@@ -264,7 +262,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
-#endif
   for (; t < initial_time_ + duration; t += δt_long) {
     plugin_->AdvanceTime(
         t,
@@ -306,7 +303,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
     EXPECT_THAT(rendered_trajectory[i].end,
                 Eq(rendered_trajectory[i + 1].begin));
   }
-#if !defined(_DEBUG)
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
@@ -318,7 +314,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
             (rendered_trajectory[i].end -
                  rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
   }
-#endif
 }
 
 // The Enterprise D is a low orbit around a massive body with unit gravitational
