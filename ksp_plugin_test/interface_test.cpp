@@ -679,7 +679,6 @@ TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_THAT(Instant(current_time * Second), Eq(kUnixEpoch));
 }
 
-#if 0  // TODO(egg): Boring serialized plugin.
 TEST_F(InterfaceTest, SerializePlugin) {
   PullSerializer* serializer = nullptr;
   std::string const message_bytes =
@@ -713,7 +712,6 @@ TEST_F(InterfaceTest, DeserializePlugin) {
   EXPECT_EQ(Instant(), plugin->current_time());
   principia__DeletePlugin(&plugin);
 }
-#endif
 
 TEST_F(InterfaceDeathTest, SettersAndGetters) {
   // We use EXPECT_EXITs in this test to avoid interfering with the execution of

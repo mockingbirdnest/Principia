@@ -100,8 +100,9 @@ double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
   double magnitude = ParseDouble(s, &i);
   unit->clear();
   for (; i < s.length(); ++i) {
-    if (!std::isspace(s[i])) {
-      *unit += s[i];
+    unsigned char c = s[i];
+    if (!std::isspace(c)) {
+      *unit += c;
     }
   }
   return magnitude;

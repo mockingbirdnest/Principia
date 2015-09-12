@@ -4,6 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
+#include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -16,8 +17,10 @@ using si::Kilogram;
 using si::Metre;
 using si::Newton;
 using si::Second;
-using testing_utilities::RelativeError;
+using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::RelativeError;
+using uk::Foot;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -33,10 +36,13 @@ class ManœuvreTest : public ::testing::Test {
 TEST_F(ManœuvreTest, TimedBurn) {
   Instant const t0 = Instant();
   Vector<double, World> e_y({0, 1, 0});
-  Manœuvre<World> manœuvre(1 * Newton, 2 * Kilogram, 1 * Metre / Second, e_y);
+  Manœuvre<World> manœuvre(1 * Newton /*thrust*/,
+                           2 * Kilogram /*initial_mass*/,
+                           1 * Newton * Second / Kilogram /*specific_impulse*/,
+                           e_y /*direction*/);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
-  EXPECT_EQ(1 * Metre / Second, manœuvre.effective_exhaust_velocity());
+  EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
   EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
@@ -66,10 +72,13 @@ TEST_F(ManœuvreTest, TimedBurn) {
 TEST_F(ManœuvreTest, TargetΔv) {
   Instant const t0 = Instant();
   Vector<double, World> e_y({0, 1, 0});
-  Manœuvre<World> manœuvre(1 * Newton, 2 * Kilogram, 1 * Metre / Second, e_y);
+  Manœuvre<World> manœuvre(1 * Newton /*thrust*/,
+                           2 * Kilogram /*initial_mass*/,
+                           1 * Newton * Second / Kilogram /*specific_impulse*/,
+                           e_y /*direction*/);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
-  EXPECT_EQ(1 * Metre / Second, manœuvre.effective_exhaust_velocity());
+  EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
   EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
@@ -107,7 +116,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Instant const s_ivb_1st_ignition          = range_zero +    528.29 * Second;
   Instant const s_ivb_1st_90_percent_thrust = range_zero +    530.53 * Second;
   Instant const s_ivb_1st_eco               = range_zero +    684.98 * Second;
-  // Inititiate S-IVB Restart Sequence and Start of Time Base 6 (T6).
+  // Initiate S-IVB Restart Sequence and Start of Time Base 6 (T6).
   Instant const t6                          = range_zero +   9659.54 * Second;
   Instant const s_ivb_2nd_ignition          = range_zero + 10'237.79 * Second;
   Instant const s_ivb_2nd_90_percent_thrust = range_zero + 10'240.02 * Second;
@@ -204,6 +213,10 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   EXPECT_THAT(second_burn.Δv(),
               AllOf(Gt(3 * Kilo(Metre) / Second),
                     Lt(3.25 * Kilo(Metre) / Second)));
+
+  // From the Apollo 8 flight journal.
+  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_burn.Δv()),
+              Lt(20 * Metre / Second));
 }
 
 }  // namespace ksp_plugin
