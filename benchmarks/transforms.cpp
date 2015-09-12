@@ -1,5 +1,5 @@
 ﻿
-// .\release\benchmarks.exe --benchmark_filter=Transforms --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_filter=Transforms --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/06/15-22:32:50
 // Benchmark                                                 Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
