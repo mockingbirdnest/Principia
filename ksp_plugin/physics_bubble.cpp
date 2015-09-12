@@ -256,8 +256,10 @@ void PhysicsBubble::WriteToMessage(
       degrees_of_freedom.WriteToMessage(
           guid_and_degrees_of_freedom->mutable_degrees_of_freedom());
     }
+    CHECK(current_->displacement_correction);
     current_->displacement_correction->WriteToMessage(
         full_state->mutable_displacement_correction());
+    CHECK(current_->velocity_correction);
     current_->velocity_correction->WriteToMessage(
         full_state->mutable_velocity_correction());
   }
