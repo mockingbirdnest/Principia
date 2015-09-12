@@ -131,16 +131,15 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           << NAMED(&reference_celestial) << '\n'
           << NAMED(reference_celestial_world_position);
   CHECK(!empty()) << "Empty bubble";
-  if (current_->displacement_correction == nullptr) {
-    current_->displacement_correction =
-        std::make_unique<Displacement<World>>(
-          Identity<WorldSun, World>()(barycentric_to_world_sun(
-              current_->centre_of_mass_trajectory->
-                  last().degrees_of_freedom().position() -
-              reference_celestial.current_position(
-                  current_->centre_of_mass_trajectory->last().time()))) +
-          reference_celestial_world_position -
-              current_->centre_of_mass->position());
+  if (!current_->displacement_correction) {
+    current_->displacement_correction.emplace(
+        Identity<WorldSun, World>()(barycentric_to_world_sun(
+            current_->centre_of_mass_trajectory->
+                last().degrees_of_freedom().position() -
+            reference_celestial.current_position(
+                current_->centre_of_mass_trajectory->last().time()))) +
+        reference_celestial_world_position -
+            current_->centre_of_mass->position());
   }
   VLOG_AND_RETURN(1, *current_->displacement_correction);
 }
@@ -150,15 +149,14 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty()) << "Empty bubble";
-  if (current_->velocity_correction == nullptr) {
-    current_->velocity_correction =
-        std::make_unique<Velocity<World>>(
-            Identity<WorldSun, World>()(barycentric_to_world_sun(
-                current_->centre_of_mass_trajectory->
-                    last().degrees_of_freedom().velocity() -
-                reference_celestial.current_velocity(
-                    current_->centre_of_mass_trajectory->last().time()))) -
-            current_->centre_of_mass->velocity());
+  if (!current_->velocity_correction) {
+    current_->velocity_correction.emplace(
+        Identity<WorldSun, World>()(barycentric_to_world_sun(
+            current_->centre_of_mass_trajectory->
+                last().degrees_of_freedom().velocity() -
+            reference_celestial.current_velocity(
+                current_->centre_of_mass_trajectory->last().time()))) -
+        current_->centre_of_mass->velocity());
   }
   VLOG_AND_RETURN(1, *current_->velocity_correction);
 }
@@ -197,7 +195,7 @@ std::vector<not_null<Vessel*>> PhysicsBubble::vessels() const {
 RelativeDegreesOfFreedom<Barycentric> const&
 PhysicsBubble::from_centre_of_mass(not_null<Vessel const*> const vessel) const {
   CHECK(!empty()) << "Empty bubble";
-  CHECK(current_->from_centre_of_mass != nullptr);
+  CHECK(current_->from_centre_of_mass);
   return FindOrDie(*current_->from_centre_of_mass, vessel);
 }
 
@@ -258,9 +256,11 @@ void PhysicsBubble::WriteToMessage(
       degrees_of_freedom.WriteToMessage(
           guid_and_degrees_of_freedom->mutable_degrees_of_freedom());
     }
-    CHECK_NOTNULL(current_->displacement_correction.get())->WriteToMessage(
+    CHECK(current_->displacement_correction);
+    current_->displacement_correction->WriteToMessage(
         full_state->mutable_displacement_correction());
-    CHECK_NOTNULL(current_->velocity_correction.get())->WriteToMessage(
+    CHECK(current_->velocity_correction);
+    current_->velocity_correction->WriteToMessage(
         full_state->mutable_velocity_correction());
   }
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -297,14 +297,12 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
     bubble->current_ =
         std::make_unique<FullState>(std::move(preliminary_state));
     FullState* current = bubble->current_.get();
-    current->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
+    current->centre_of_mass.emplace(
         DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
     current->centre_of_mass_trajectory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             full_state.centre_of_mass_trajectory());
-    current->from_centre_of_mass =
-        std::make_unique<std::map<not_null<Vessel const*> const,
-                         RelativeDegreesOfFreedom<Barycentric>>>();
+    current->from_centre_of_mass.emplace();
     for (auto const& guid_and_degrees_of_freedom :
              full_state.from_centre_of_mass()) {
       current->from_centre_of_mass->insert(
@@ -313,14 +311,12 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
                              guid_and_degrees_of_freedom.
                                  degrees_of_freedom())));
     }
-    current->displacement_correction =
-        std::make_unique<Displacement<World>>(
-            Displacement<World>::ReadFromMessage(
-                full_state.displacement_correction()));
-    current->velocity_correction =
-        std::make_unique<Velocity<World>>(
-            Velocity<World>::ReadFromMessage(
-                full_state.velocity_correction()));
+    current->displacement_correction.emplace(
+        Displacement<World>::ReadFromMessage(
+            full_state.displacement_correction()));
+    current->velocity_correction.emplace(
+        Velocity<World>::ReadFromMessage(
+            full_state.velocity_correction()));
   }
   return bubble;
 }
@@ -342,8 +338,7 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
     not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
     centre_of_mass_calculator.Add(part->degrees_of_freedom(), part->mass());
   }
-  next->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
-                             centre_of_mass_calculator.Get());
+  next->centre_of_mass.emplace(centre_of_mass_calculator.Get());
   VLOG(1) << NAMED(*next->centre_of_mass);
 }
 
@@ -351,9 +346,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     BarycentricToWorldSun const& barycentric_to_world_sun,
     not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__;
-  next->from_centre_of_mass =
-      std::make_unique<std::map<not_null<Vessel const*> const,
-                                RelativeDegreesOfFreedom<Barycentric>>>();
+  next->from_centre_of_mass.emplace();
   VLOG(1) << NAMED(next->vessels.size());
   for (auto const& vessel_parts : next->vessels) {
     not_null<Vessel const*> const vessel = vessel_parts.first;
@@ -432,7 +425,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(current_time) << '\n'
           << NAMED(next_time) << '\n' << NAMED(common_parts);
   CHECK(!common_parts.empty());
-  CHECK(current_->velocity_correction != nullptr);
+  CHECK(current_->velocity_correction);
   BarycentreCalculator<Vector<Acceleration, World>, Mass>
       acceleration_calculator;
   Time const δt = next_time - current_time;

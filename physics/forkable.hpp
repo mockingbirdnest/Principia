@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional.hpp>
+
 #include <list>
 #include <map>
 #include <memory>
@@ -54,7 +56,7 @@ class Forkable {
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
-  Instant const* ForkTime() const;  // optional
+  std::experimental::optional<Instant> ForkTime() const;
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.
@@ -168,15 +170,14 @@ class Forkable {
   // Null for a root.
   Tr4jectory* parent_ = nullptr;
 
-  // TODO(phl): The following two iterators should be optional because we don't
-  // really have a good value for roots.
-
   // This iterator is never at |end()|.
-  typename Children::const_iterator position_in_parent_children_;
+  std::experimental::optional<typename Children::const_iterator>
+      position_in_parent_children_;
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
   // i.e. is the parent timeline's own fork time.
-  TimelineConstIterator position_in_parent_timeline_;
+  std::experimental::optional<TimelineConstIterator>
+      position_in_parent_timeline_;
 
   Children children_;
 };

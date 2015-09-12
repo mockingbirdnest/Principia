@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional.hpp>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -107,15 +109,14 @@ class PhysicsBubble {
     explicit FullState(
         PreliminaryState&& preliminary_state);  // NOLINT(build/c++11)
 
-    // TODO(egg): these fields should be |std::optional| when that becomes a
-    // thing.
-    std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
-    std::unique_ptr<DiscreteTrajectory<Barycentric>> centre_of_mass_trajectory;
-    std::unique_ptr<std::map<not_null<Vessel const*> const,
-                             RelativeDegreesOfFreedom<Barycentric>>>
-        from_centre_of_mass;
-    std::unique_ptr<Displacement<World>> displacement_correction;
-    std::unique_ptr<Velocity<World>> velocity_correction;
+    std::experimental::optional<DegreesOfFreedom<World>> centre_of_mass;
+    std::unique_ptr<
+        DiscreteTrajectory<Barycentric>> centre_of_mass_trajectory;
+    std::experimental::optional<
+        std::map<not_null<Vessel const*> const,
+                 RelativeDegreesOfFreedom<Barycentric>>> from_centre_of_mass;
+    std::experimental::optional<Displacement<World>> displacement_correction;
+    std::experimental::optional<Velocity<World>> velocity_correction;
   };
 
   // Computes the world degrees of freedom of the centre of mass of

@@ -8,8 +8,9 @@ namespace physics {
 template<typename Tr4jectory>
 void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   CHECK_NOTNULL(*trajectory);
-  Instant const* const fork_time = (*trajectory)->ForkTime();
-  CHECK_NOTNULL(fork_time);
+  std::experimental::optional<Instant> const fork_time =
+      (*trajectory)->ForkTime();
+  CHECK(fork_time);
   // Find the position of |*forkable| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
@@ -48,11 +49,11 @@ Forkable<Tr4jectory>::root() {
 }
 
 template<typename Tr4jectory>
-Instant const* Forkable<Tr4jectory>::ForkTime() const {
+std::experimental::optional<Instant> Forkable<Tr4jectory>::ForkTime() const {
   if (is_root()) {
-    return nullptr;
+    return std::experimental::nullopt;
   } else {
-    return &position_in_parent_children_->first;
+    return (*position_in_parent_children_)->first;
   }
 }
 
@@ -78,7 +79,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
     // There is a next child.  See if we reached its fork time.
     Instant const& current_time = ForkableTraits<Tr4jectory>::time(current_);
     not_null<Tr4jectory const*> child = *ancestry_it;
-    Instant child_fork_time = child->position_in_parent_children_->first;
+    Instant child_fork_time = (*child->position_in_parent_children_)->first;
     if (current_time == child_fork_time) {
       // We have reached the fork time of the next child.  There may be several
       // forks at that time so we must skip them until we find a fork that is at
@@ -90,7 +91,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
           break;
         }
         child = *ancestry_it;
-        child_fork_time = child->position_in_parent_children_->first;
+        child_fork_time = (*child->position_in_parent_children_)->first;
       } while (current_time == child_fork_time);
 
       CheckNormalizedIfEnd();
@@ -116,7 +117,7 @@ Forkable<Tr4jectory>::Iterator::operator--() {
     // ancestry and set |current_| to the fork point.  If the timeline is empty,
     // keep going until we find a non-empty one or the root.
     do {
-      current_ = ancestor->position_in_parent_timeline_;
+      current_ = *ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
       ancestry_.push_front(ancestor);
     } while (current_ == ancestor->timeline_end() &&
@@ -255,10 +256,10 @@ void Forkable<Tr4jectory>::WritePointerToMessage(
     auto const position_in_parent_children = position_in_parent_children_;
     auto const position_in_parent_timeline = position_in_parent_timeline_;
     ancestor = ancestor->parent_;
-    int const children_distance =
-        std::distance(ancestor->children_.begin(), position_in_parent_children);
-    int const timeline_distance =
-        std::distance(ancestor->timeline_begin(), position_in_parent_timeline);
+    int const children_distance = std::distance(ancestor->children_.begin(),
+                                                *position_in_parent_children);
+    int const timeline_distance = std::distance(ancestor->timeline_begin(),
+                                                *position_in_parent_timeline);
     auto* const fork_message = message->add_fork();
     fork_message->set_children_distance(children_distance);
     fork_message->set_timeline_distance(timeline_distance);
@@ -285,9 +286,9 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
 
 template<typename Tr4jectory>
 not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
-  Instant const* const fork_time = ForkTime();
+  std::experimental::optional<Instant> const fork_time = ForkTime();
   CHECK(timeline_find(time) != timeline_end() ||
-        (fork_time != nullptr && time == *fork_time))
+        (fork_time && time == *fork_time))
       << "NewFork at nonexistent time " << time;
 
   // May be at |timeline_end()| if |time| is the fork time of this object.
@@ -330,14 +331,12 @@ void Forkable<Tr4jectory>::DeleteAllForksBefore(Instant const& time) {
 template<typename Tr4jectory>
 void Forkable<Tr4jectory>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
-  Instant last_instant;  // optional.
-  bool is_first = true;
+  std::experimental::optional<Instant> last_instant;
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     Tr4jectory const& child = pair.second;
-    if (is_first || fork_time != last_instant) {
-      is_first = false;
+    if (!last_instant || fork_time != last_instant) {
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
