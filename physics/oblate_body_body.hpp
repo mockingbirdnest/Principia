@@ -42,6 +42,7 @@ OblateBody<Frame>::OblateBody(
     Vector<double, Frame> const& axis)
     : MassiveBody(gravitational_parameter),
       j2_(j2),
+      j2_over_μ_(j2_ / MassiveBody::gravitational_parameter()),
       axis_(axis) {
   CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate cannot have zero j2";
   CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
@@ -55,6 +56,7 @@ OblateBody<Frame>::OblateBody(
     Vector<double, Frame> const& axis)
     : MassiveBody(mass),
       j2_(j2),
+      j2_over_μ_(j2_ / gravitational_parameter()),
       axis_(axis) {
   CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate cannot have zero j2";
   CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
@@ -64,6 +66,12 @@ OblateBody<Frame>::OblateBody(
 template<typename Frame>
 Order2ZonalCoefficient const& OblateBody<Frame>::j2() const {
   return j2_;
+}
+
+template<typename Frame>
+Quotient<Order2ZonalCoefficient,
+         GravitationalParameter> const& OblateBody<Frame>::j2_over_μ() const {
+  return j2_over_μ_;
 }
 
 template<typename Frame>
