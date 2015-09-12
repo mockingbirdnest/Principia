@@ -68,7 +68,8 @@ class Manœuvre {
 
   // Intensity and timing must have been set.  The result is valid for until
   // |*this| is destroyed.
-  typename DiscreteTrajectory<Frame>::IntrinsicAcceleration acceleration() const;
+  typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
+  acceleration() const;
 
  private:
   Vector<double, Frame> const direction_;
