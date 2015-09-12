@@ -331,14 +331,12 @@ void Forkable<Tr4jectory>::DeleteAllForksBefore(Instant const& time) {
 template<typename Tr4jectory>
 void Forkable<Tr4jectory>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
-  Instant last_instant;  // optional.
-  bool is_first = true;
+  std::experimental::optional<Instant> last_instant;
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     Tr4jectory const& child = pair.second;
-    if (is_first || fork_time != last_instant) {
-      is_first = false;
+    if (!last_instant || fork_time != last_instant) {
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
