@@ -427,7 +427,7 @@ TEST_F(ForkableTest, Root) {
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(&trajectory_, trajectory_.root());
   EXPECT_EQ(&trajectory_, fork->root());
-  EXPECT_EQ(std::experimental::nullopt, trajectory_.ForkTime());
+  EXPECT_FALSE(trajectory_.ForkTime());
   EXPECT_EQ(t2_, *fork->ForkTime());
 }
 
