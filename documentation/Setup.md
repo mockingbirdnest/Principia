@@ -30,7 +30,7 @@ This project depends upon:
   protobuf library;
 - our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
   benchmark library;
-- our [fork](https://github.com/mockingbirdnest/Optional) of @akrzemi1's implementation of `std::experimental::optional` from the library fundamentals technical specification;
+- our [fork](https://github.com/mockingbirdnest/Optional) of @akrzemi1's implementation of `std::experimental::optional` from the library fundamentals Technical Specification;
 - parts of the Chromium codebase (for stack tracing support in glog on Windows),
   *modified according to the instructions below*.
 
