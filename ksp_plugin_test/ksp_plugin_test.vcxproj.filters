@@ -50,6 +50,9 @@
     <ClCompile Include="plugin_integration_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="manœuvre_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="pre_bourbaki.proto.hex">
