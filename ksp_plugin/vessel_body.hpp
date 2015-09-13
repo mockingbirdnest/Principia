@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "ksp_plugin/vessel.hpp"
 
@@ -77,12 +77,12 @@ inline bool Vessel::has_prediction() const {
   return prediction_ != nullptr;
 }
 
-inline Vessel::Manúuvres const& Vessel::manúuvres() const {
-  return manúuvres_;
+inline Vessel::Man≈ìuvres const& Vessel::man≈ìuvres() const {
+  return man≈ìuvres_;
 }
 
-inline not_null<Vessel::Manúuvres*> Vessel::mutable_manúuvres() {
-  return &manúuvres_;
+inline not_null<Vessel::Man≈ìuvres*> Vessel::mutable_man≈ìuvres() {
+  return &man≈ìuvres_;
 }
 
 inline void Vessel::CreateProlongation(
@@ -133,24 +133,24 @@ inline void Vessel::UpdateFlightPlan(
   // might warn).
   flight_plan_.back()->Append(prolongation().last().time(),
                               prolongation().last().degrees_of_freedom());
-  for (auto const& manúuvre : manúuvres_) {
+  for (auto const& man≈ìuvre : man≈ìuvres_) {
     not_null<DiscreteTrajectory<Barycentric>*> coast_trajectory =
         flight_plan_.back();
     ephemeris->FlowWithAdaptiveStep(coast_trajectory,
                                     prediction_length_tolerance,
                                     prediction_speed_tolerance,
                                     integrator,
-                                    manúuvre->initial_time());
+                                    man≈ìuvre->initial_time());
     flight_plan_.emplace_back(
         coast_trajectory->NewForkWithCopy(coast_trajectory->last().time()));
     not_null<DiscreteTrajectory<Barycentric>*> burn_trajectory =
         flight_plan_.back();
-    burn_trajectory->set_intrinsic_acceleration(manúuvre->acceleration());
+    burn_trajectory->set_intrinsic_acceleration(man≈ìuvre->acceleration());
     ephemeris->FlowWithAdaptiveStep(burn_trajectory,
                                     prolongation_length_tolerance,
                                     prolongation_speed_tolerance,
                                     integrator,
-                                    manúuvre->final_time());
+                                    man≈ìuvre->final_time());
     flight_plan_.emplace_back(
         burn_trajectory->NewForkWithCopy(burn_trajectory->last().time()));
   }
