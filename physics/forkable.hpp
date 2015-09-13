@@ -2,7 +2,7 @@
 
 #include <optional.hpp>
 
-#include <list>
+#include <deque>
 #include <map>
 #include <memory>
 
@@ -91,7 +91,7 @@ class Forkable {
     // |ancestry_| is never empty.  |current_| is an iterator in the timeline
     // for |ancestry_.front()|.  |current_| may be at end.
     TimelineConstIterator current_;
-    std::list<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
+    std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
     template<typename Tr4jectory>
     friend class Forkable;

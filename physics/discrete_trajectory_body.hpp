@@ -138,7 +138,10 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  if (!first().at_end() && last().time() == time) {
+  auto end = End();
+  auto const begin = Begin();
+  //TODO(phl): Empty?
+  if (begin != end && (--end).current()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
                  << ", time range = [" << Times().front() << ", "
                  << Times().back() << "]";
