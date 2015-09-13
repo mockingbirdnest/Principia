@@ -2,6 +2,8 @@
 
 #include "ksp_plugin/vessel.hpp"
 
+#include <vector>
+
 namespace principia {
 namespace ksp_plugin {
 

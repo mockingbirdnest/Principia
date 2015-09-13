@@ -1,10 +1,10 @@
-#pragma once
+Ôªø#pragma once
 
 #include <memory>
 #include <vector>
 
 #include "ksp_plugin/celestial.hpp"
-#include "ksp_plugin/manúuvre.hpp"
+#include "ksp_plugin/man≈ìuvre.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -25,8 +25,8 @@ namespace ksp_plugin {
 // Represents a KSP |Vessel|.
 class Vessel {
  public:
-  using Manúuvres =
-      std::vector<not_null<std::unique_ptr<Manúuvre<Barycentric> const>>>;
+  using Man≈ìuvres =
+      std::vector<not_null<std::unique_ptr<Man≈ìuvre<Barycentric> const>>>;
 
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
@@ -61,15 +61,16 @@ class Vessel {
   not_null<DiscreteTrajectory<Barycentric>*> mutable_prolongation();
 
   // Requires |is_initialized()|.
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const& flight_plan() const;
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const&
+  flight_plan() const;
   bool has_flight_plan() const;
 
   // Requires |has_prediction()|.
   DiscreteTrajectory<Barycentric> const& prediction() const;
   bool has_prediction() const;
 
-  Manúuvres const& manúuvres() const;
-  not_null<Manúuvres*> mutable_manúuvres();
+  Man≈ìuvres const& man≈ìuvres() const;
+  not_null<Man≈ìuvres*> mutable_man≈ìuvres();
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy
@@ -96,8 +97,8 @@ class Vessel {
   void ResetProlongation(Instant const& time);
 
   // Fills |flight_plan_| with predictions using the given |ephemeris| for
-  // successive manúuvres, with the given prediction tolerances for the coasting
-  // phases, and the given prolongation tolerances for the manúuvres.  Uses the
+  // successive man≈ìuvres, with the given prediction tolerances for the coasting
+  // phases, and the given prolongation tolerances for the man≈ìuvres.  Uses the
   // given |integrator|.
   // Deletes any pre-existing predictions.
   // Does nothing unless |is_synchronized()|, pending the removal of
@@ -158,10 +159,10 @@ class Vessel {
   // Child trajectory of |history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
   // Child trajectories of |history_|.  Each element is a child of the
-  // previous one, corresponding to successive manúuvres.  Trajectories at even
+  // previous one, corresponding to successive man≈ìuvres.  Trajectories at even
   // indices are burns, trajectories at odd indices are coast phases.
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> flight_plan_;
-  Manúuvres manúuvres_;
+  Man≈ìuvres man≈ìuvres_;
 };
 
 }  // namespace ksp_plugin

@@ -370,7 +370,7 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
     int const plan_phase,
     not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) {
-  CHECK(!initializing_); 
+  CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   CHECK_GT(vessel.flight_plan().size(), plan_phase);
   DiscreteTrajectory<Barycentric> const& prediction =
