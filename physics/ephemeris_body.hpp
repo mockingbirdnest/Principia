@@ -27,6 +27,7 @@ using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using quantities::Abs;
 using quantities::Exponentiation;
+using quantities::Quotient;
 using quantities::Time;
 using si::Day;
 using ::std::placeholders::_1;
@@ -46,24 +47,26 @@ Time const kMaxTimeBetweenIntermediateStates = 180 * Day;
 //
 // Where |r| is the norm of r and r.j is the inner product.
 template<typename Frame>
-FORCE_INLINE Vector<Acceleration, Frame>
-    Order2ZonalAcceleration(
-        OblateBody<Frame> const& body,
-        Displacement<Frame> const& r,
-        Exponentiation<Length, -2> const& one_over_r_squared,
-        Exponentiation<Length, -3> const& one_over_r_cubed) {
+FORCE_INLINE Vector<Quotient<Acceleration,
+                             GravitationalParameter>, Frame> Order2ZonalEffect(
+    OblateBody<Frame> const& body,
+    Displacement<Frame> const& r,
+    Exponentiation<Length, -2> const& one_over_r_squared,
+    Exponentiation<Length, -3> const& one_over_r_cubed) {
   Vector<double, Frame> const& axis = body.axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth =
-      body.j2() * one_over_r_cubed * one_over_r_squared;
-  Vector<Acceleration, Frame> const& axis_acceleration =
+      body.j2_over_μ() * one_over_r_cubed * one_over_r_squared;
+  Vector<Quotient<Acceleration,
+                  GravitationalParameter>, Frame> const axis_effect =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  Vector<Acceleration, Frame> const& radial_acceleration =
+  Vector<Quotient<Acceleration,
+                  GravitationalParameter>, Frame> const radial_effect =
       (j2_over_r_fifth *
            (-1.5 +
             7.5 * r_axis_projection *
                   r_axis_projection * one_over_r_squared)) * r;
-  return axis_acceleration + radial_acceleration;
+  return axis_effect + radial_effect;
 }
 
 // For mocking purposes.
@@ -701,27 +704,28 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
     if (body1_is_oblate || body2_is_oblate) {
       Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;
       if (body1_is_oblate) {
-        Vector<Acceleration, Frame> const order_2_zonal_acceleration1 =
-            Order2ZonalAcceleration<Frame>(
-                static_cast<OblateBody<Frame> const &>(body1),
-                Δq,
-                one_over_Δq_squared,
-                one_over_Δq_cubed);
-        (*accelerations)[b2] += order_2_zonal_acceleration1;
-        // Don't update |(*accelerations)[b1]| here: we exempt ourselves from
-        // Newton's third law because the oblate bodies are generally much
-        // bigger than the other bodies, so the ratio of the masses makes the
-        // opposite acceleration very small.
+        Vector<Quotient<Acceleration,
+                        GravitationalParameter>, Frame> const
+            order_2_zonal_effect1 =
+                Order2ZonalEffect<Frame>(
+                    static_cast<OblateBody<Frame> const&>(body1),
+                    Δq,
+                    one_over_Δq_squared,
+                    one_over_Δq_cubed);
+        acceleration_on_b1 -= μ2 * order_2_zonal_effect1;
+        acceleration_on_b2 += μ1 * order_2_zonal_effect1;
       }
       if (body2_is_oblate) {
-        Vector<Acceleration, Frame> const order_2_zonal_acceleration2 =
-            Order2ZonalAcceleration<Frame>(
-                static_cast<OblateBody<Frame> const&>(body2),
-                Δq,
-                one_over_Δq_squared,
-                one_over_Δq_cubed);
-        (*accelerations)[b1] -= order_2_zonal_acceleration2;
-        // Yet another exemption from Newton's third law.
+        Vector<Quotient<Acceleration,
+                        GravitationalParameter>, Frame> const
+            order_2_zonal_effect2 =
+                Order2ZonalEffect<Frame>(
+                    static_cast<OblateBody<Frame> const&>(body2),
+                    Δq,
+                    one_over_Δq_squared,
+                    one_over_Δq_cubed);
+        acceleration_on_b1 -= μ2 * order_2_zonal_effect2;
+        acceleration_on_b2 += μ1 * order_2_zonal_effect2;
       }
     }
   }
@@ -755,13 +759,15 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     if (body1_is_oblate) {
       Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;
-      Vector<Acceleration, Frame> const order_2_zonal_acceleration1 =
-          Order2ZonalAcceleration<Frame>(
-              static_cast<OblateBody<Frame> const &>(body1),
-              Δq,
-              one_over_Δq_squared,
-              one_over_Δq_cubed);
-      (*accelerations)[b2] += order_2_zonal_acceleration1;
+      Vector<Quotient<Acceleration,
+                      GravitationalParameter>, Frame> const
+          order_2_zonal_effect1 =
+              Order2ZonalEffect<Frame>(
+                  static_cast<OblateBody<Frame> const &>(body1),
+                  Δq,
+                  one_over_Δq_squared,
+                  one_over_Δq_cubed);
+      (*accelerations)[b2] += μ1 * order_2_zonal_effect1;
     }
   }
 }

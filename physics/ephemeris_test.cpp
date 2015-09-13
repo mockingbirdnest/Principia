@@ -585,11 +585,11 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
       {SolarSystem::kTitania, 1E-3},
       {SolarSystem::kTriton, 1E-4},
       {SolarSystem::kCharon, 1E-4},
-      {SolarSystem::kEuropa, 1E-4},
       {SolarSystem::kRhea, 1E-4},
       {SolarSystem::kTitan, 1E-4},
       {SolarSystem::kUmbriel, 1E-4},
       {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kEuropa, 1E-5},
       {SolarSystem::kGanymede, 1E-5},
       {SolarSystem::kIapetus, 1E-5},
       {SolarSystem::kMoon, 1E-5},  // What is this?
@@ -598,10 +598,10 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
       {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
       {SolarSystem::kVenus, 1E-7},
       {SolarSystem::kEarth, 1E-8},
-      {SolarSystem::kJupiter, 1E-8},
       {SolarSystem::kNeptune, 1E-8},
       {SolarSystem::kSaturn, 1E-8},
       {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kJupiter, 1E-9},
       {SolarSystem::kMars, 1E-9}};
   static std::map<SolarSystem::Index, double> const expected_position_error = {
       {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
@@ -611,7 +611,6 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
       {SolarSystem::kTethys, 1E-6},
       {SolarSystem::kAriel, 1E-7},
       {SolarSystem::kDione, 1E-7},
-      {SolarSystem::kEuropa, 1E-7},
       {SolarSystem::kIo, 1E-7},
       {SolarSystem::kMoon, 1E-7},
       {SolarSystem::kOberon, 1E-7},
@@ -621,15 +620,16 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
       {SolarSystem::kVenus, 1E-7},
       {SolarSystem::kCallisto, 1E-8},
       {SolarSystem::kEarth, 1E-8},
+      {SolarSystem::kEuropa, 1E-8},
       {SolarSystem::kGanymede, 1E-8},
       {SolarSystem::kIapetus, 1E-8},
-      {SolarSystem::kJupiter, 1E-8},
       {SolarSystem::kNeptune, 1E-8},
       {SolarSystem::kSaturn, 1E-8},
       {SolarSystem::kSun, 1E-8},
       {SolarSystem::kTriton, 1E-8},
       {SolarSystem::kUmbriel, 1E-8},
       {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kJupiter, 1E-9},
       {SolarSystem::kMars, 1E-9}};
   static std::map<SolarSystem::Index, double> const expected_velocity_error = {
       {SolarSystem::kAriel, 1E-3},
@@ -917,14 +917,18 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 
   Vector<Acceleration, World> actual_acceleration0 =
       ephemeris.ComputeGravitationalAcceleration(b0, t0_);
-  // No J2 because as the code is written the J2 force of a spherical body on an
-  // oblate one is neglected (Noether's Theorem, anyone?).
   Vector<Acceleration, World> expected_acceleration0 =
       GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
                                m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
-                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm()));
+                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
+      Vector<Acceleration, World>(
+          {(1.5 * m1 - (9 / Sqrt(512)) * m2) * GravitationalConstant *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm()),
+           0 * SIUnit<Acceleration>(),
+           (-3 * m3 + (3 / Sqrt(512)) * m2) * GravitationalConstant *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration0,
-              AlmostEquals(expected_acceleration0, 0, 1));
+              AlmostEquals(expected_acceleration0, 0, 3));
 
   Vector<Acceleration, World> actual_acceleration1 =
       ephemeris.ComputeGravitationalAcceleration(b1, t0_);
@@ -953,7 +957,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            (-3 / Sqrt(512)) * GravitationalConstant * m0 *
                Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
-              AlmostEquals(expected_acceleration2, 0, 1));
+              AlmostEquals(expected_acceleration2, 0, 2));
 
   Vector<Acceleration, World> actual_acceleration3 =
       ephemeris.ComputeGravitationalAcceleration(b3, t0_);

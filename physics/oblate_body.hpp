@@ -21,6 +21,7 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Order2ZonalCoefficient;
+using quantities::Quotient;
 
 namespace physics {
 
@@ -48,6 +49,10 @@ class OblateBody : public MassiveBody {
   // Returns the j2 coefficient.
   Order2ZonalCoefficient const& j2() const;
 
+  // Returns |j2 / μ|.
+  Quotient<Order2ZonalCoefficient,
+           GravitationalParameter> const& j2_over_μ() const;
+
   // Returns the axis passed at construction.
   Vector<double, Frame> const& axis() const;
 
@@ -72,6 +77,7 @@ class OblateBody : public MassiveBody {
 
  private:
   Order2ZonalCoefficient const j2_;
+  Quotient<Order2ZonalCoefficient, GravitationalParameter> const j2_over_μ_;
   Vector<double, Frame> const axis_;
 };
 
