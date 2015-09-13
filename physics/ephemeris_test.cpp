@@ -917,14 +917,18 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 
   Vector<Acceleration, World> actual_acceleration0 =
       ephemeris.ComputeGravitationalAcceleration(b0, t0_);
-  // No J2 because as the code is written the J2 force of a spherical body on an
-  // oblate one is neglected (Noether's Theorem, anyone?).
   Vector<Acceleration, World> expected_acceleration0 =
       GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
                                m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
-                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm()));
+                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
+      Vector<Acceleration, World>(
+          {(1.5 * m1 - (9 / Sqrt(512)) * m2) * GravitationalConstant *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm()),
+           0 * SIUnit<Acceleration>(),
+           (-3 * m3 + (3 / Sqrt(512)) * m2) * GravitationalConstant *
+               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration0,
-              AlmostEquals(expected_acceleration0, 0, 1));
+              AlmostEquals(expected_acceleration0, 0, 3));
 
   Vector<Acceleration, World> actual_acceleration1 =
       ephemeris.ComputeGravitationalAcceleration(b1, t0_);
@@ -953,7 +957,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            (-3 / Sqrt(512)) * GravitationalConstant * m0 *
                Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
-              AlmostEquals(expected_acceleration2, 0, 1));
+              AlmostEquals(expected_acceleration2, 0, 2));
 
   Vector<Acceleration, World> actual_acceleration3 =
       ephemeris.ComputeGravitationalAcceleration(b3, t0_);
