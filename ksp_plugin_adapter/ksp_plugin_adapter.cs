@@ -597,7 +597,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           draw_active_vessel_trajectory() &&
           has_vessel(plugin_, active_vessel.id.ToString());
       if (ready_to_draw_active_vessel_trajectory) {
-        set_predicted_vessel(plugin_, active_vessel.id.ToString());
         set_prediction_length_tolerance(
             plugin_,
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
@@ -607,10 +606,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
         set_prediction_length(plugin_,
                               prediction_lengths_[prediction_length_index_]);
-      } else {
-        clear_predicted_vessel(plugin_);
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
+      if (ready_to_draw_active_vessel_trajectory) {
+        UpdatePrediction(plugin_, active_vessel.id.ToString());
+      }
       ForgetAllHistoriesBefore(
           plugin_,
           universal_time - history_lengths_[history_length_index_]);
@@ -701,12 +701,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
-      trajectory_iterator = RenderedPrediction(
-                                plugin_,
-                                transforms_,
-                                (XYZ)Planetarium.fetch.Sun.position);
-      RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                rendered_prediction_);
+      if (HasPrediction(plugin_, active_vessel.id.ToString())) {
+        trajectory_iterator = RenderedPrediction(
+                                  plugin_,
+                                  active_vessel.id.ToString(),
+                                  transforms_,
+                                  (XYZ)Planetarium.fetch.Sun.position);
+        RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                  rendered_prediction_);
+      }
     } else {
       DestroyRenderedTrajectory();
     }

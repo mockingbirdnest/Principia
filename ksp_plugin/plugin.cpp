@@ -294,47 +294,6 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   return result;
 }
 
-int Plugin::ManœuvreCount(GUID const & vessel_guid) const {
-  CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid)->manœuvres().size();
-}
-
-Manœuvre<Barycentric> const& Plugin::VesselManœuvre(GUID const& vessel_guid,
-                                                    int const index) const {
-  CHECK(!initializing_);
-  return *find_vessel_by_guid_or_die(vessel_guid)->manœuvres()[index];
-}
-
-void Plugin::SetVesselManœuvre(
-    GUID const& vessel_guid,
-    int const index,
-    not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const {
-  CHECK(!initializing_);
-  Vessel& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_GT(vessel.manœuvres().size(), index);
-  (*vessel.mutable_manœuvres())[index] = std::move(manœuvre);
-}
-
-void Plugin::InsertVesselManœuvre(
-    GUID const& vessel_guid,
-    int const index,
-    not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const {
-  CHECK(!initializing_);
-  Vessel& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_GE(vessel.manœuvres().size(), index);
-  vessel.mutable_manœuvres()->emplace(vessel.manœuvres().begin() + index,
-                                      std::move(manœuvre));
-}
-
-void Plugin::ClearVesselManœuvres(GUID const& vessel_guid) const {
-  find_vessel_by_guid_or_die(vessel_guid)->mutable_manœuvres()->clear();
-}
-
-Velocity<WorldSun> Plugin::ManœuvreΔv(
-    Manœuvre<Barycentric> const& manœuvre) const {
-  return BarycentricToWorldSun()(manœuvre.direction() * manœuvre.Δv());
-}
-
 void Plugin::UpdatePrediction(GUID const & vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(

@@ -242,6 +242,10 @@ RenderingTransforms* CDECL principia__NewBarycentricRotatingTransforms(
 extern "C" DLLEXPORT
 void CDECL principia__DeleteTransforms(RenderingTransforms** const transforms);
 
+extern "C" DLLEXPORT
+void principia__UpdatePrediction(Plugin const* const plugin,
+                                 char const* const vessel_guid);
+
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
 // |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller

@@ -464,6 +464,11 @@ void principia__DeleteTransforms(RenderingTransforms** const transforms) {
   TakeOwnership(transforms);
 }
 
+void principia__UpdatePrediction(Plugin const* const plugin,
+                                 char const* const vessel_guid) {
+  CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
+}
+
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,

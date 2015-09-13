@@ -195,21 +195,6 @@ class Plugin {
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index const celestial_index) const;
 
-  int ManœuvreCount(GUID const& vessel_guid) const;
-  Manœuvre<Barycentric> const& VesselManœuvre(GUID const& vessel_guid,
-                                              int const index) const;
-  void SetVesselManœuvre(
-      GUID const& vessel_guid,
-      int const index,
-      not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const;
-  void InsertVesselManœuvre(
-      GUID const& vessel_guid,
-      int const index,
-      not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const;
-  void ClearVesselManœuvres(GUID const& vessel_guid) const;
-
-  Velocity<WorldSun> ManœuvreΔv(Manœuvre<Barycentric> const& manœuvre) const;
-
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
   void UpdateFlightPlan(GUID const& vessel_guid,
