@@ -130,10 +130,8 @@ std::vector<uint8_t> Digits() {
 
 void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   bool correct = true;
-  state.PauseTiming();
   std::vector<uint8_t> const input_bytes = Bytes();
   std::vector<uint8_t> const expected_digits = Digits();
-  state.ResumeTiming();
   while (state.KeepRunning()) {
     HexEncode(&state, &correct, input_bytes, expected_digits);
   }
@@ -160,10 +158,8 @@ void HexDecode(not_null<benchmark::State*> const state,
 
 void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   bool correct = true;
-  state.PauseTiming();
   std::vector<uint8_t> input_digits = Digits();
   std::vector<uint8_t> expected_bytes = Bytes();
-  state.ResumeTiming();
   while (state.KeepRunning()) {
     HexDecode(&state, &correct, input_digits, expected_bytes);
   }
