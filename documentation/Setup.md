@@ -12,21 +12,25 @@ dependencies.
 This directory should not contain any of the following subfolders:
 - `Principia`;
 - `KSP Assemblies`;
-- `Google`.
+- `Google`;
+- `Third Party`.
 
 This project depends upon:
 - the KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`,
   found in `<KSP directory>\KSP_Data\Managed`;
 - the Unity assembly `UnityEngine.dll`, found in
   `<KSP directory>\KSP_Data\Managed`;
-- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google glog
+- our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
   library;
-- our [fork](https://github.com/mockingbirdnest/gmock) of the Google gmock
+- our [fork](https://github.com/mockingbirdnest/googletest) of the Google googletest
   library;
-- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
+- our [fork](https://github.com/mockingbirdnest/googlemock) of the Google googlemock
+  library;
+- our [fork](https://github.com/mockingbirdnest/protobuf) of the Google
   protobuf library;
 - our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
   benchmark library;
+- our [fork](https://github.com/mockingbirdnest/Optional) of @akrzemi1's implementation of `std::experimental::optional` from the library fundamentals Technical Specification;
 - parts of the Chromium codebase (for stack tracing support in glog on Windows),
   *modified according to the instructions below*.
 
@@ -39,7 +43,8 @@ Copy these assemblies to the directory `<root>\KSP Assemblies`.
 In `<root>\Google`, run the following commands.
 ```powershell
 git clone "https://github.com/mockingbirdnest/glog.git"
-git clone "https://github.com/mockingbirdnest/gmock.git"
+git clone "https://github.com/mockingbirdnest/googletest.git"
+git clone "https://github.com/mockingbirdnest/googlemock.git"
 git clone "https://github.com/mockingbirdnest/protobuf.git"
 git clone "https://github.com/mockingbirdnest/benchmark.git"
 git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
@@ -53,28 +58,14 @@ git am "chromium.patch"
 rm "chromium.patch"
 cd ..
 ```
-
-###Building the Google libraries.
-In `<root>\Google`, run the following commands.  The replication of the protobuf
-build commands is *not* a mistake.
+###Downloading the third party libraries.
+In `<root>\Third Party`, run the following command.
 ```powershell
-$msbuild = join-path -path (Get-ItemProperty "HKLM:\software\Microsoft\MSBuild\ToolsVersions\14.0")."MSBuildToolsPath" -childpath "msbuild.exe"
-&$msbuild /t:Build /m /property:Configuration=Debug .\glog\google-glog.sln
-&$msbuild /t:Build /m /property:Configuration=Release .\glog\google-glog.sln
-&$msbuild /t:Build /m /property:Configuration=Debug .\gmock\msvc\2010\gmock.sln
-&$msbuild /t:Build /m /property:Configuration=Release .\gmock\msvc\2010\gmock.sln
-&$msbuild /t:Build /m /property:Configuration=Debug .\protobuf\vsprojects\protobuf.sln
-&$msbuild /t:Build /m /property:Configuration=Debug .\protobuf\vsprojects\protobuf.sln
-&$msbuild /t:Build /m /property:Configuration=Release .\protobuf\vsprojects\protobuf.sln
-&$msbuild /t:Build /m /property:Configuration=Release .\protobuf\vsprojects\protobuf.sln
-&$msbuild /t:Build /m /property:Configuration=Debug .\benchmark\msvc\google-benchmark.sln
-&$msbuild /t:Build /m /property:Configuration=Release .\benchmark\msvc\google-benchmark.sln
+git clone "https://github.com/mockingbirdnest/Optional.git"
 ```
 
-###Building Principia.
-In `<root>\Principia`, run the following commands.
+###Building.
+In `<root>`, run the following command.
 ```powershell
-$msbuild = join-path -path (Get-ItemProperty "HKLM:\software\Microsoft\MSBuild\ToolsVersions\14.0")."MSBuildToolsPath" -childpath "msbuild.exe"
-&$msbuild /t:Build /m /property:Configuration=Debug .\Principia.sln
-&$msbuild /t:Build /m /property:Configuration=Release .\Principia.sln
+.\Principia\rebuild_all_solutions.ps1
 ```

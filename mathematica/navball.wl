@@ -239,6 +239,107 @@ navballTexture[
   RasterSize->{1024,512}]
 
 
+halfMeridian[\[Lambda]0_,colour_,width_,height_,sgn_]:=
+ meridian[\[Lambda]0,colour,width,Sort[{sgn \[Pi]/36,sgn height}]]
+
+halfFullMeridian[\[Lambda]0_,colour_,width_,sgn_]:=
+ halfMeridian[\[Lambda]0,colour,width,\[Pi]/2,sgn]
+
+halfMeridians[markings_,prime_,anti_,sgn_]:=
+ Show[
+  halfMeridian[#,markings,.002,\[Pi]/4+\[Pi]/48,sgn]&/@
+   Range[-11\[Pi]/12,11\[Pi]/12,\[Pi]/12],
+  halfFullMeridian[0,prime,.03,sgn],
+  halfFullMeridian[-\[Pi],anti,.03,sgn],
+  halfFullMeridian[\[Pi],anti,.03,sgn],
+  halfFullMeridian[#,markings,.01,sgn]&/@
+   Range[-\[Pi],\[Pi],\[Pi]/4]]
+
+midMeridian[\[Lambda]0_,colour_,width_]:=
+ meridian[\[Lambda]0,colour,width,{-\[Pi]/36,\[Pi]/36}]
+
+midMeridians[markings_,prime_,anti_]:=
+ Show[
+  midMeridian[#,markings,.002]&/@
+   Range[-11\[Pi]/12,11\[Pi]/12,\[Pi]/12],
+  midMeridian[0,prime,.03],
+  midMeridian[-\[Pi],anti,.03],
+  midMeridian[\[Pi],anti,.03],
+  midMeridian[#,markings,.01]&/@
+   Range[-\[Pi],\[Pi],\[Pi]/4]]
+
+hemisphereParallels[markings_,sgn_]:=
+ {markings,
+  Thickness[3/1024],
+  (*Crosshairs along thick meridians*)
+  Table[
+   If[
+    Abs[y]!=\[Pi]/2&&y!=0,
+    thinParallel[{x,y},\[Pi]/48]],
+   {x,-\[Pi],\[Pi],\[Pi]/4},
+   {y,sgn \[Pi]/12,sgn \[Pi]/2,sgn \[Pi]/12}],
+  Table[
+   If[
+    Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,
+    thinParallel[{x,y},\[Pi]/120]],
+   {x,-\[Pi],\[Pi],\[Pi]/4},
+   {y,sgn \[Pi]/36,sgn \[Pi]/2,sgn \[Pi]/36}],
+  (*Crosshairs along thin meridians*)
+  Table[
+   If[
+    Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]!=\[Pi]/2&&y!=0,
+    thinParallel[{x,y},\[Pi]/96]],
+   {x,-\[Pi],\[Pi],\[Pi]/12},
+   {y,sgn \[Pi]/12,sgn \[Pi]/2,sgn \[Pi]/12}],
+  Table[
+   If[
+    Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,
+    thinParallel[{x,y},\[Pi]/240]],
+   {x,-\[Pi],\[Pi],\[Pi]/12},
+   {y,sgn \[Pi]/36,sgn \[Pi]/2,sgn \[Pi]/36}],
+  fullParallel[sgn \[Pi]/4],
+  fullParallel[sgn 17\[Pi]/36],
+  (*Polar caps*)
+  Rectangle[{-\[Pi],# \[Pi]/2},{\[Pi],#(\[Pi]/2-2.5\[Degree])}]&/@{sgn}};
+  
+latitudes[n_,s_,mn_,ms_]:=
+ Table[
+  If[
+   y!=0&&Cos[y]!=0&&
+    (Mod[x,\[Pi]/4]==\[Pi]/8&&Abs[y]<75\[Degree]||
+      Mod[x,\[Pi]/2]==\[Pi]/4&&Abs[y]>=75\[Degree]),
+   latitude[{x,y},n,s,If[y>0,mn,ms]]],
+  {x,-\[Pi],\[Pi],\[Pi]/8},
+  {y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}];
+
+hdg[{x_,y_},n_,s_,eq_,mn_,ms_,meq_]:=
+ bigMarking[
+  {x,y},
+  If[
+  x==0,
+  "N",
+  ToString[Mod[x,2\[Pi]]/\[Pi]*180]],
+  Which[y>0,mn,y<0,ms,y==0,meq],
+  Which[y>0,n,y<0,s,y==0,eq]]
+
+navballHalfTexture[n_,s_,eq_,mn_,ms_,meq_,prime_,anti_]:=
+ Rasterize[
+  Show[
+   background[n,s,eq],
+   halfMeridians[mn,prime,anti,1],
+   halfMeridians[ms,prime,anti,-1],
+   midMeridians[meq,prime,anti],
+   Graphics[
+    {hemisphereParallels[mn,1],
+     hemisphereParallels[ms,-1],
+     Thickness[3/1024], meq, fullParallel[0],
+     latitudes[n,s,mn,ms],
+     Table[
+      hdg[{x,y},n,s,eq,mn,ms,meq],
+      {x,-\[Pi],\[Pi],\[Pi]/4},
+      {y,-\[Pi]/4,\[Pi]/4,\[Pi]/4}]}]]]
+
+
 barycentric=
  navballTexture[
   Lighter@Purple,
