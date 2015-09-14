@@ -7,6 +7,7 @@
     <ClCompile>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatSpecificWarningsAsErrors>4714</TreatSpecificWarningsAsErrors>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
