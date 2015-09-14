@@ -15,8 +15,8 @@
 
 namespace principia {
 
-using physics::Ephemeris;
 using physics::DiscreteTrajectory;
+using physics::Ephemeris;
 using physics::MasslessBody;
 using quantities::GravitationalParameter;
 

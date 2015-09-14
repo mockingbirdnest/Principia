@@ -136,7 +136,7 @@ inline void Vessel::UpdateFlightPlan(
   flight_plan_.back()->Append(prolongation().last().time(),
                               prolongation().last().degrees_of_freedom());
   for (auto const& manœuvre : manœuvres_) {
-    not_null<DiscreteTrajectory<Barycentric>*> coast_trajectory =
+    not_null<DiscreteTrajectory<Barycentric>*> const coast_trajectory =
         flight_plan_.back();
     ephemeris->FlowWithAdaptiveStep(coast_trajectory,
                                     prediction_length_tolerance,
@@ -145,7 +145,7 @@ inline void Vessel::UpdateFlightPlan(
                                     manœuvre->initial_time());
     flight_plan_.emplace_back(
         coast_trajectory->NewForkWithCopy(coast_trajectory->last().time()));
-    not_null<DiscreteTrajectory<Barycentric>*> burn_trajectory =
+    not_null<DiscreteTrajectory<Barycentric>*> const burn_trajectory =
         flight_plan_.back();
     burn_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
     ephemeris->FlowWithAdaptiveStep(burn_trajectory,

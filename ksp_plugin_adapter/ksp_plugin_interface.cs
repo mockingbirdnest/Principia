@@ -250,7 +250,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__UpdatePrediction",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void UpdatePrediction(
+  private static extern void UpdatePrediction(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 

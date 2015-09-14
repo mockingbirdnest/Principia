@@ -294,7 +294,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   return result;
 }
 
-void Plugin::UpdatePrediction(GUID const & vessel_guid) const {
+void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
       ephemeris_.get(),
@@ -340,12 +340,12 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
                           sun_world_position);
 }
 
-int Plugin::FlightPlanSize(GUID const & vessel_guid) const {
+int Plugin::FlightPlanSize(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   return find_vessel_by_guid_or_die(vessel_guid)->flight_plan().size();
 }
 
-bool Plugin::HasPrediction(GUID const & vessel_guid) const {
+bool Plugin::HasPrediction(GUID const& vessel_guid) const {
   return find_vessel_by_guid_or_die(vessel_guid)->has_prediction();
 }
 
@@ -372,7 +372,7 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_GT(vessel.flight_plan().size(), plan_phase);
+  CHECK_LT(plan_phase, vessel.flight_plan().size());
   DiscreteTrajectory<Barycentric> const& prediction =
       *vessel.flight_plan()[plan_phase];
   CHECK(prediction.ForkTime());
