@@ -242,6 +242,10 @@ RenderingTransforms* CDECL principia__NewBarycentricRotatingTransforms(
 extern "C" DLLEXPORT
 void CDECL principia__DeleteTransforms(RenderingTransforms** const transforms);
 
+extern "C" DLLEXPORT
+void principia__UpdatePrediction(Plugin const* const plugin,
+                                 char const* const vessel_guid);
+
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
 // |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
@@ -255,8 +259,25 @@ LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
+bool principia__HasPrediction(Plugin const* const plugin,
+                              char const* const vessel_guid);
+
+extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedPrediction(
     Plugin* const plugin,
+    char const* vessel_guid,
+    RenderingTransforms* const transforms,
+    XYZ const sun_world_position);
+
+extern "C" DLLEXPORT
+int principia__FlightPlanSize(Plugin const* const plugin,
+                              char const* const vessel_guid);
+
+extern "C" DLLEXPORT
+LineAndIterator* CDECL principia__RenderedFlightPlan(
+    Plugin* const plugin,
+    char const* vessel_guid,
+    int const plan_phase,
     RenderingTransforms* const transforms,
     XYZ const sun_world_position);
 
@@ -286,13 +307,6 @@ bool CDECL principia__AtEnd(LineAndIterator* const line_and_iterator);
 extern "C" DLLEXPORT
 void CDECL principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator);
-
-extern "C" DLLEXPORT
-void CDECL principia__set_predicted_vessel(Plugin* const plugin,
-                                           char const* vessel_guid);
-
-extern "C" DLLEXPORT
-void CDECL principia__clear_predicted_vessel(Plugin* const plugin);
 
 extern "C" DLLEXPORT
 void CDECL principia__set_prediction_length(Plugin* const plugin,

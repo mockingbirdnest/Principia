@@ -594,13 +594,13 @@ TEST_F(PluginIntegrationTest, Prediction) {
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
-  plugin.set_predicted_vessel(satellite);
   plugin.set_prediction_length(2 * π * Second);
   plugin.set_prediction_length_tolerance(1 * Milli(Metre));
   plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
   plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
+  plugin.UpdatePrediction(satellite);
   RenderedTrajectory<World> rendered_prediction =
-      plugin.RenderedPrediction(transforms.get(), World::origin);
+      plugin.RenderedPrediction(satellite, transforms.get(), World::origin);
   EXPECT_EQ(14, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
     auto const& segment = rendered_prediction[i];
@@ -622,7 +622,6 @@ TEST_F(PluginIntegrationTest, Prediction) {
       AbsoluteError(rendered_prediction.back().end - World::origin,
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
-  plugin.clear_predicted_vessel();
 }
 
 }  // namespace ksp_plugin

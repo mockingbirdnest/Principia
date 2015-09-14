@@ -101,7 +101,7 @@ inline Scalar R3Element<Scalar>::Norm() const {
 }
 
 template<typename Scalar>
-SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() {
+SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
   SphericalCoordinates<Scalar> result;
   result.radius = Norm();
   result.latitude = ArcSin(z / result.radius);

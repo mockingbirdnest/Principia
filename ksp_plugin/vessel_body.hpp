@@ -1,6 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "ksp_plugin/vessel.hpp"
+
+#include <vector>
 
 namespace principia {
 namespace ksp_plugin {
@@ -58,18 +60,31 @@ Vessel::mutable_prolongation() {
   return prolongation_;
 }
 
-inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
+inline std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const&
+Vessel::flight_plan() const {
   CHECK(is_initialized());
-  return *CHECK_NOTNULL(prediction_);
+  return flight_plan_;
 }
 
-inline DiscreteTrajectory<Barycentric>* Vessel::mutable_prediction() {
-  CHECK(is_initialized());
-  return prediction_;
+inline bool Vessel::has_flight_plan() const {
+  return !flight_plan_.empty();
+}
+
+inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
+  CHECK(has_prediction());
+  return *prediction_;
 }
 
 inline bool Vessel::has_prediction() const {
   return prediction_ != nullptr;
+}
+
+inline Vessel::Manœuvres const& Vessel::manœuvres() const {
+  return manœuvres_;
+}
+
+inline not_null<Vessel::Manœuvres*> Vessel::mutable_manœuvres() {
+  return &manœuvres_;
 }
 
 inline void Vessel::CreateProlongation(
@@ -101,14 +116,88 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   prolongation_ = history_->NewForkWithCopy(time);
 }
 
-inline void Vessel::ForkPrediction() {
-  CHECK(prediction_ == nullptr);
-  prediction_ =
-      mutable_prolongation()->NewForkWithCopy(prolongation().last().time());
+inline void Vessel::UpdateFlightPlan(
+    not_null<Ephemeris<Barycentric>*> ephemeris,
+    AdaptiveStepSizeIntegrator<
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Instant const& last_time,
+    Length const& prediction_length_tolerance,
+    Speed const& prediction_speed_tolerance,
+    Length const& prolongation_length_tolerance,
+    Speed const& prolongation_speed_tolerance) {
+  if (!is_synchronized()) {
+    return;
+  }
+  DeleteFlightPlan();
+  flight_plan_.emplace_back(
+      mutable_history()->NewForkWithCopy(history().last().time()));
+  // If prolongation has no additional points this will do nothing (although it
+  // might warn).
+  flight_plan_.back()->Append(prolongation().last().time(),
+                              prolongation().last().degrees_of_freedom());
+  for (auto const& manœuvre : manœuvres_) {
+    not_null<DiscreteTrajectory<Barycentric>*> const coast_trajectory =
+        flight_plan_.back();
+    ephemeris->FlowWithAdaptiveStep(coast_trajectory,
+                                    prediction_length_tolerance,
+                                    prediction_speed_tolerance,
+                                    integrator,
+                                    manœuvre->initial_time());
+    flight_plan_.emplace_back(
+        coast_trajectory->NewForkWithCopy(coast_trajectory->last().time()));
+    not_null<DiscreteTrajectory<Barycentric>*> const burn_trajectory =
+        flight_plan_.back();
+    burn_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
+    ephemeris->FlowWithAdaptiveStep(burn_trajectory,
+                                    prolongation_length_tolerance,
+                                    prolongation_speed_tolerance,
+                                    integrator,
+                                    manœuvre->final_time());
+    flight_plan_.emplace_back(
+        burn_trajectory->NewForkWithCopy(burn_trajectory->last().time()));
+  }
+  ephemeris->FlowWithAdaptiveStep(flight_plan_.back(),
+                                  prediction_length_tolerance,
+                                  prediction_speed_tolerance,
+                                  integrator,
+                                  last_time);
+}
+
+inline void Vessel::DeleteFlightPlan() {
+  if (has_flight_plan()) {
+    DiscreteTrajectory<Barycentric>* flight_plan_root = flight_plan_.front();
+    flight_plan_.clear();
+    history_->DeleteFork(&flight_plan_root);
+  }
+}
+
+inline void Vessel::UpdatePrediction(
+    not_null<Ephemeris<Barycentric>*> ephemeris,
+    AdaptiveStepSizeIntegrator<
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Instant const& last_time,
+    Length const& prediction_length_tolerance,
+    Speed const& prediction_speed_tolerance) {
+  if (!is_synchronized()) {
+    return;
+  }
+  DeletePrediction();
+  prediction_ = mutable_history()->NewForkWithCopy(history().last().time());
+  // If prolongation has no additional points this will do nothing (although it
+  // might warn).
+  prediction_->Append(prolongation().last().time(),
+                      prolongation().last().degrees_of_freedom());
+  ephemeris->FlowWithAdaptiveStep(prediction_,
+                                  prediction_length_tolerance,
+                                  prediction_speed_tolerance,
+                                  integrator,
+                                  last_time);
 }
 
 inline void Vessel::DeletePrediction() {
-  prolongation_->DeleteFork(&prediction_);
+  if (has_prediction()) {
+    mutable_history()->DeleteFork(&prediction_);
+  }
 }
 
 inline void Vessel::WriteToMessage(

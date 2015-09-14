@@ -243,7 +243,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
-  UpdatePredictions();
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
@@ -295,6 +294,29 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   return result;
 }
 
+void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
+  CHECK(!initializing_);
+  find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
+      ephemeris_.get(),
+      prediction_integrator_,
+      current_time_ + prediction_length_,
+      prediction_length_tolerance_,
+      prediction_speed_tolerance_);
+}
+
+void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
+                              Instant const& last_time) const {
+  CHECK(!initializing_);
+  find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
+      ephemeris_.get(),
+      prediction_integrator_,
+      last_time,
+      prediction_length_tolerance_,
+      prediction_speed_tolerance_,
+      prolongation_length_tolerance_,
+      prolongation_speed_tolerance_);
+}
+
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     not_null<RenderingTransforms*> const transforms,
@@ -318,31 +340,50 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
                           sun_world_position);
 }
 
+int Plugin::FlightPlanSize(GUID const& vessel_guid) const {
+  CHECK(!initializing_);
+  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan().size();
+}
+
+bool Plugin::HasPrediction(GUID const& vessel_guid) const {
+  return find_vessel_by_guid_or_die(vessel_guid)->has_prediction();
+}
+
 RenderedTrajectory<World> Plugin::RenderedPrediction(
+    GUID const& vessel_guid,
     not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
-  if (!HasPredictions()) {
-    return RenderedTrajectory<World>();
-  }
+  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   RenderedTrajectory<World> result =
-      RenderTrajectory(predicted_vessel_->body(),
+      RenderTrajectory(vessel.body(),
                        transforms->first_on_or_after(
-                           predicted_vessel_->prediction(),
-                           *predicted_vessel_->prediction().ForkTime()),
+                           vessel.prediction(),
+                           *vessel.prediction().ForkTime()),
                        transforms,
                        sun_world_position);
   return result;
 }
 
-void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
-  clear_predicted_vessel();
-  predicted_vessel_ = find_vessel_by_guid_or_die(vessel_guid).get();
-}
-
-void Plugin::clear_predicted_vessel() {
-  DeletePredictions();
-  predicted_vessel_ = nullptr;
+RenderedTrajectory<World> Plugin::RenderedFlightPlan(
+    GUID const& vessel_guid,
+    int const plan_phase,
+    not_null<RenderingTransforms*> const transforms,
+    Position<World> const& sun_world_position) {
+  CHECK(!initializing_);
+  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  CHECK_LT(plan_phase, vessel.flight_plan().size());
+  DiscreteTrajectory<Barycentric> const& prediction =
+      *vessel.flight_plan()[plan_phase];
+  CHECK(prediction.ForkTime());
+  RenderedTrajectory<World> result =
+      RenderTrajectory(vessel.body(),
+                       transforms->first_on_or_after(
+                           prediction,
+                           *prediction.ForkTime()),
+                       transforms,
+                       sun_world_position);
+  return result;
 }
 
 void Plugin::set_prediction_length(Time const& t) {
@@ -661,20 +702,6 @@ bool Plugin::is_dirty(not_null<Vessel*> const vessel) const {
   return dirty_vessels_.count(vessel) > 0;
 }
 
-bool Plugin::has_predicted_vessel() const {
-  return predicted_vessel_ != nullptr;
-}
-
-bool Plugin::HasPredictions() const {
-  return has_predicted_vessel() && predicted_vessel_->has_prediction();
-}
-
-void Plugin::DeletePredictions() {
-  if (HasPredictions()) {
-    predicted_vessel_->DeletePrediction();
-  }
-}
-
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
@@ -875,18 +902,6 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           t,
           centre_of_mass + from_centre_of_mass);
     }
-  }
-}
-
-void Plugin::UpdatePredictions() {
-  DeletePredictions();
-  if (has_predicted_vessel()) {
-    predicted_vessel_->ForkPrediction();
-    ephemeris_->FlowWithAdaptiveStep(predicted_vessel_->mutable_prediction(),
-                                     prediction_length_tolerance_,
-                                     prediction_speed_tolerance_,
-                                     prediction_integrator_,
-                                     current_time_ + prediction_length_);
   }
 }
 
