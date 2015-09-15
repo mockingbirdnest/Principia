@@ -138,10 +138,11 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  auto end = End();
-  auto const begin = Begin();
-  //TODO(phl): Empty?
-  if (begin != end && (--end).current()->first == time) {
+  auto const fork_time = ForkTime();
+  CHECK(!fork_time || time > fork_time)
+      << "Append at " << time << " which is before fork time " << *fork_time;
+
+  if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
                  << ", time range = [" << Times().front() << ", "
                  << Times().back() << "]";
