@@ -355,13 +355,14 @@ void principia__DirectlyInsertOblateCelestial(
                               ParseSpeed(vz)})},
       std::make_unique<OblateBody<Barycentric>>(
           ParseGravitationalParameter(gravitational_parameter),
-          ParseDimensionless(j2),
-          ParseLength(reference_radius),
-          Vector<double, Barycentric>(
-              RadiusLatitudeLongitude(
-                  1.0,
-                  ParseAngle(axis_declination),
-                  ParseAngle(axis_right_ascension)).ToCartesian())));
+          OblateBody<Barycentric>::Parameters(
+              ParseDimensionless(j2),
+              ParseLength(reference_radius),
+              Vector<double, Barycentric>(
+                  RadiusLatitudeLongitude(
+                      1.0,
+                      ParseAngle(axis_declination),
+                      ParseAngle(axis_right_ascension)).ToCartesian()))));
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,

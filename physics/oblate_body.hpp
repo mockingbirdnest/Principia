@@ -8,6 +8,8 @@
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
+#include <optional.hpp>
+
 #include <vector>
 
 #include "geometry/grassmann.hpp"
@@ -30,20 +32,24 @@ class OblateBody : public MassiveBody {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  OblateBody(GravitationalParameter const& gravitational_parameter,
-             double const j2,
-             Length const& radius,
-             Vector<double, Frame> const& axis);
-  OblateBody(Mass const& mass,
-             double const j2,
-             Length const& radius,
-             Vector<double, Frame> const& axis);
-  OblateBody(GravitationalParameter const& gravitational_parameter,
-             Order2ZonalCoefficient const& j2,
-             Vector<double, Frame> const& axis);
-  OblateBody(Mass const& mass,
-             Order2ZonalCoefficient const& j2,
-             Vector<double, Frame> const& axis);
+  class Parameters {
+   public:
+    Parameters(double const j2,
+               Length const& radius,
+               Vector<double, Frame> const& axis);
+    Parameters(Order2ZonalCoefficient const& j2,
+               Vector<double, Frame> const& axis);
+
+   private:
+    std::experimental::optional<Order2ZonalCoefficient> j2_;
+    std::experimental::optional<
+        Quotient<Order2ZonalCoefficient, GravitationalParameter>> j2_over_μ_;
+    Vector<double, Frame> const axis_;
+    friend class OblateBody;
+  };
+
+  OblateBody(MassiveBody::Parameters const& massive_body_parameters,
+             Parameters const& parameters);
   ~OblateBody() = default;
 
   // Returns the j2 coefficient.
@@ -76,9 +82,7 @@ class OblateBody : public MassiveBody {
       serialization::MassiveBody const& message);
 
  private:
-  Order2ZonalCoefficient const j2_;
-  Quotient<Order2ZonalCoefficient, GravitationalParameter> const j2_over_μ_;
-  Vector<double, Frame> const axis_;
+  Parameters parameters_;
 };
 
 }  // namespace physics

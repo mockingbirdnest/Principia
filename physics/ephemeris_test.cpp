@@ -788,9 +788,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 
   auto* earth = new OblateBody<EarthMoonOrbitPlane>(
                         5.9721986E24 * Kilogram,
-                        kEarthJ2,
-                        kEarthPolarRadius,
-                        Vector<double, EarthMoonOrbitPlane>({0, 0, 1}));
+                        OblateBody<EarthMoonOrbitPlane>::Parameters(
+                            kEarthJ2,
+                            kEarthPolarRadius,
+                            Vector<double, EarthMoonOrbitPlane>({0, 0, 1})));
   Velocity<EarthMoonOrbitPlane> const v({0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>()});
@@ -868,9 +869,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Mass const m3 = 4 * SolarMass;
 
   auto const b0 = new OblateBody<World>(m0,
-                                        kJ2,
-                                        kRadius,
-                                        Vector<double, World>({0, 0, 1}));
+                                        OblateBody<World>::Parameters(
+                                            kJ2,
+                                            kRadius,
+                                            Vector<double, World>({0, 0, 1})));
   auto const b1 = new MassiveBody(m1);
   auto const b2 = new MassiveBody(m2);
   auto const b3 = new MassiveBody(m3);
@@ -928,7 +930,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            (-3 * m3 + (3 / Sqrt(512)) * m2) * GravitationalConstant *
                Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration0,
-              AlmostEquals(expected_acceleration0, 0, 3));
+              AlmostEquals(expected_acceleration0, 0, 5));
 
   Vector<Acceleration, World> actual_acceleration1 =
       ephemeris.ComputeGravitationalAcceleration(b1, t0_);
@@ -971,7 +973,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            3 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
                Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration3,
-              AlmostEquals(expected_acceleration3, 0, 2));
+              AlmostEquals(expected_acceleration3, 0, 4));
 }
 
 }  // namespace physics
