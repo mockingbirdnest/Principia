@@ -26,8 +26,9 @@ class MassiveBody : public Body {
   class Parameters {
    public:
     // The constructors are implicit on purpose.
-    Parameters(GravitationalParameter const& gravitational_parameter);
-    Parameters(Mass const& mass);
+    Parameters(
+        GravitationalParameter const& gravitational_parameter);  // NOLINT
+    Parameters(Mass const& mass);  // NOLINT(runtime/explicit)
 
    private:
     GravitationalParameter const gravitational_parameter_;
