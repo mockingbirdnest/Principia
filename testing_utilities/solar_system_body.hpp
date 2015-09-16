@@ -61,7 +61,8 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
       return make_not_null_unique<MassiveBody>(gravitational_parameter);
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
       return make_not_null_unique<OblateBody<ICRFJ2000Ecliptic>>(
-          gravitational_parameter, j2, radius, axis);
+          gravitational_parameter,
+          OblateBody<ICRFJ2000Ecliptic>::Parameters(j2, radius, axis));
     default:
       LOG(FATAL) << FUNCTION_SIGNATURE << "Unexpected accuracy "
                  << static_cast<int>(accuracy);

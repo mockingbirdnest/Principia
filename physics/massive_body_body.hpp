@@ -20,7 +20,7 @@ using geometry::ReadFrameFromMessage;
 
 namespace physics {
 
-inline MassiveBody::MassiveBody(
+inline MassiveBody::Parameters::Parameters(
     GravitationalParameter const& gravitational_parameter)
     : gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant) {
@@ -28,20 +28,22 @@ inline MassiveBody::MassiveBody(
       << "Massive body cannot have zero gravitational parameter";
 }
 
-inline MassiveBody::MassiveBody(Mass const& mass)
+inline MassiveBody::Parameters::Parameters(Mass const& mass)
     : gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass) {
-  CHECK_NE(mass, Mass())
-      << "Massive body cannot have zero mass";
+  CHECK_NE(mass, Mass()) << "Massive body cannot have zero mass";
 }
+
+inline MassiveBody::MassiveBody(Parameters const& parameters)
+    : parameters_(parameters) {}
 
 inline GravitationalParameter const&
 MassiveBody::gravitational_parameter() const {
-  return gravitational_parameter_;
+  return parameters_.gravitational_parameter_;
 }
 
 inline Mass const& MassiveBody::mass() const {
-  return mass_;
+  return parameters_.mass_;
 }
 
 inline bool MassiveBody::is_massless() const {
@@ -59,7 +61,7 @@ inline void MassiveBody::WriteToMessage(
 
 inline void MassiveBody::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
-  gravitational_parameter_.WriteToMessage(
+  parameters_.gravitational_parameter_.WriteToMessage(
       message->mutable_gravitational_parameter());
 }
 

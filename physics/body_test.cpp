@@ -28,8 +28,9 @@ class BodyTest : public testing::Test {
     auto const axis = Normalize(Vector<double, F>({-1, 2, 5}));
     auto const oblate_body =
         OblateBody<F>(17 * SIUnit<GravitationalParameter>(),
-                      163 * SIUnit<Order2ZonalCoefficient>(),
-                      axis);
+                      OblateBody<F>::Parameters(
+                          163 * SIUnit<Order2ZonalCoefficient>(),
+                          axis));
 
     serialization::Body message;
     OblateBody<F> const* cast_oblate_body;
@@ -53,8 +54,9 @@ class BodyTest : public testing::Test {
       MassiveBody(42 * SIUnit<GravitationalParameter>());
   OblateBody<World> oblate_body_ =
       OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
-                        163 * SIUnit<Order2ZonalCoefficient>(),
-                        axis_);
+                        OblateBody<World>::Parameters(
+                            163 * SIUnit<Order2ZonalCoefficient>(),
+                            axis_));
 };
 
 using BodyDeathTest = BodyTest;
