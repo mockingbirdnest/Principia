@@ -1,0 +1,110 @@
+﻿#include "physics/rotating_body.hpp"
+
+#include <algorithm>
+#include <vector>
+#include "quantities/constants.hpp"
+
+namespace principia {
+
+using constants::GravitationalConstant;
+
+namespace physics {
+
+namespace {
+double const kNormLow = 0.999;
+double const kNormHigh = 1.001;
+}  // namespace
+
+template<typename Frame>
+RotatingBody<Frame>::Parameters::Parameters(double const j2,
+                                            Length const& radius,
+                                            Vector<double, Frame> const& axis)
+    : j2_over_μ_(-j2 * radius * radius),
+      axis_(axis) {
+  CHECK_NE(j2, 0.0) << "Oblate body cannot have zero j2";
+  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
+  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
+}
+
+template<typename Frame>
+RotatingBody<Frame>::Parameters::Parameters(Order2ZonalCoefficient const& j2,
+                                            Vector<double, Frame> const& axis)
+    : j2_(j2),
+      axis_(axis) {
+  CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate body cannot have zero j2";
+  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
+  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
+}
+
+template<typename Frame>
+RotatingBody<Frame>::RotatingBody(
+    MassiveBody::Parameters const& massive_body_parameters,
+    Parameters const& parameters)
+    : MassiveBody(massive_body_parameters),
+      parameters_(parameters) {
+  if (parameters_.j2_) {
+    parameters_.j2_over_μ_ = *parameters_.j2_ / gravitational_parameter();
+  }
+  if (parameters_.j2_over_μ_) {
+    parameters_.j2_ = *parameters_.j2_over_μ_ * gravitational_parameter();
+  }
+}
+
+template<typename Frame>
+Vector<double, Frame> const& RotatingBody<Frame>::axis() const {
+  return parameters_.axis_;
+}
+
+template<typename Frame>
+bool RotatingBody<Frame>::is_massless() const {
+  return false;
+}
+
+template<typename Frame>
+bool RotatingBody<Frame>::is_oblate() const {
+  return false;
+}
+
+template<typename Frame>
+inline void RotatingBody<Frame>::WriteToMessage(
+    not_null<serialization::Body*> const message) const {
+  WriteToMessage(message->mutable_massive_body());
+}
+
+template<typename Frame>
+inline void RotatingBody<Frame>::WriteToMessage(
+    not_null<serialization::MassiveBody*> const message) const {
+  MassiveBody::WriteToMessage(message);
+  not_null<serialization::RotatingBody*> const rotating_body =
+      message->MutableExtension(serialization::RotatingBody::rotating_body);
+  Frame::WriteToMessage(rotating_body->mutable_frame());
+  parameters_.j2_->WriteToMessage(rotating_body->mutable_j2());
+  parameters_.axis_.WriteToMessage(rotating_body->mutable_axis());
+}
+
+
+template<typename Frame>
+not_null<std::unique_ptr<RotatingBody<Frame>>> RotatingBody<Frame>::ReadFromMessage(
+    serialization::Body const& message) {
+  CHECK(message.has_massive_body());
+  return ReadFromMessage(message.massive_body());
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<RotatingBody<Frame>>> RotatingBody<Frame>::ReadFromMessage(
+    serialization::MassiveBody const& message) {
+  CHECK(message.HasExtension(serialization::RotatingBody::rotating_body));
+  serialization::RotatingBody const& oblateness_information =
+      message.GetExtension(serialization::RotatingBody::rotating_body);
+  return std::make_unique<RotatingBody<Frame>>(
+      GravitationalParameter::ReadFromMessage(
+          message.gravitational_parameter()),
+      RotatingBody<Frame>::Parameters(
+          Order2ZonalCoefficient::ReadFromMessage(
+              oblateness_information.j2()),
+          Vector<double, Frame>::ReadFromMessage(
+              oblateness_information.axis())));
+}
+
+}  // namespace physics
+}  // namespace principia

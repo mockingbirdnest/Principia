@@ -2,8 +2,8 @@
 // The files containing the tree of of child classes of |Body| must be included
 // in the order of inheritance to avoid circular dependencies.  This class will
 // end up being reincluded as part of the implementation of its parent.
-#ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
-#include "physics/massive_body.hpp"
+#ifndef PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
+#include "physics/rotating_body.hpp"
 #else
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
@@ -21,14 +21,13 @@ namespace principia {
 using geometry::Vector;
 using quantities::GravitationalParameter;
 using quantities::Length;
-using quantities::Mass;
 using quantities::Order2ZonalCoefficient;
 using quantities::Quotient;
 
 namespace physics {
 
 template<typename Frame>
-class OblateBody : public MassiveBody {
+class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
@@ -91,4 +90,4 @@ class OblateBody : public MassiveBody {
 #include "physics/oblate_body_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
-#endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
+#endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
