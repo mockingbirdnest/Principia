@@ -23,8 +23,19 @@ class MassiveBody : public Body {
   // We use the gravitational parameter μ = G M in order not to accumulate
   // unit roundoffs from repeated multiplications by G.  The parameter must not
   // be zero.
-  explicit MassiveBody(GravitationalParameter const& gravitational_parameter);
-  explicit MassiveBody(Mass const& mass);
+  class Parameters {
+   public:
+    // The constructors are implicit on purpose.
+    Parameters(GravitationalParameter const& gravitational_parameter);
+    Parameters(Mass const& mass);
+
+   private:
+    GravitationalParameter const gravitational_parameter_;
+    Mass const mass_;
+    friend class MassiveBody;
+  };
+
+  explicit MassiveBody(Parameters const& parameters);
   ~MassiveBody() = default;
 
   // Returns the construction parameter.
@@ -54,8 +65,7 @@ class MassiveBody : public Body {
       serialization::MassiveBody const& message);
 
  private:
-  GravitationalParameter const gravitational_parameter_;
-  Mass const mass_;
+  Parameters const parameters_;
 };
 
 }  // namespace physics
