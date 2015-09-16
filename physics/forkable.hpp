@@ -2,7 +2,7 @@
 
 #include <optional.hpp>
 
-#include <list>
+#include <deque>
 #include <map>
 #include <memory>
 
@@ -91,7 +91,7 @@ class Forkable {
     // |ancestry_| is never empty.  |current_| is an iterator in the timeline
     // for |ancestry_.front()|.  |current_| may be at end.
     TimelineConstIterator current_;
-    std::list<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
+    std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
     template<typename Tr4jectory>
     friend class Forkable;
@@ -108,6 +108,8 @@ class Forkable {
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and ancestor is this object).
+  // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
+  // separate method.
   Iterator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;

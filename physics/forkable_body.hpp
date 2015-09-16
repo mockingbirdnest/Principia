@@ -167,8 +167,12 @@ Forkable<Tr4jectory>::Begin() const {
 template<typename Tr4jectory>
 typename Forkable<Tr4jectory>::Iterator
 Forkable<Tr4jectory>::End() const {
-  not_null<Tr4jectory const*> ancestor = that();
-  return Wrap(ancestor, ancestor->timeline_end());
+  not_null<Tr4jectory const*> const ancestor = that();
+  Iterator iterator;
+  iterator.ancestry_.push_front(ancestor);
+  iterator.current_ = ancestor->timeline_end();
+  iterator.CheckNormalizedIfEnd();
+  return iterator;
 }
 
 template<typename Tr4jectory>
