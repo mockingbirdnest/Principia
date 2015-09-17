@@ -1,4 +1,6 @@
-﻿#include "physics/oblate_body.hpp"
+﻿#pragma once
+
+#include "physics/oblate_body.hpp"
 
 #include <algorithm>
 #include <vector>

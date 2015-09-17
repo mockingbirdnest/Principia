@@ -14,6 +14,7 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -33,6 +34,7 @@ using geometry::Vector;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::OblateBody;
+using physics::RotatingBody;
 using quantities::Angle;
 using quantities::GravitationalParameter;
 using quantities::Pow;
@@ -43,6 +45,7 @@ using si::Degree;
 using si::Kilo;
 using si::Kilogram;
 using si::Metre;
+using si::Radian;
 using si::Second;
 
 namespace testing_utilities {
@@ -62,7 +65,9 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
       return make_not_null_unique<OblateBody<ICRFJ2000Ecliptic>>(
           gravitational_parameter,
-          OblateBody<ICRFJ2000Ecliptic>::Parameters(j2, radius, axis));
+          RotatingBody<ICRFJ2000Ecliptic>::Parameters(
+              0 * Radian, Instant(), axis * Radian / Second),
+          OblateBody<ICRFJ2000Ecliptic>::Parameters(j2, radius));
     default:
       LOG(FATAL) << FUNCTION_SIGNATURE << "Unexpected accuracy "
                  << static_cast<int>(accuracy);

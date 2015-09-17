@@ -3,6 +3,10 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -33,7 +37,7 @@ class BodyTest : public testing::Test {
     AngularVelocity<F> const angular_velocity =
         AngularVelocity<F>({-1 * Radian / Second,
                             2 * Radian / Second,
-                            5 * Radian / Second}));
+                            5 * Radian / Second});
     auto const oblate_body =
         OblateBody<F>(17 * SIUnit<GravitationalParameter>(),
                       RotatingBody<F>::Parameters(1 * Radian,
@@ -61,7 +65,7 @@ class BodyTest : public testing::Test {
   AngularVelocity<World> angular_velocity_ =
       AngularVelocity<World>({-1 * Radian / Second,
                               2 * Radian / Second,
-                              5 * Radian / Second}));
+                              5 * Radian / Second});
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
       MassiveBody(42 * SIUnit<GravitationalParameter>());
@@ -142,7 +146,8 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
           serialization::OblateBody::oblate_body);
   EXPECT_EQ(163, oblateness_information.j2().magnitude());
-  EXPECT_EQ(axis_, Direction::ReadFromMessage(oblateness_information.axis()));
+  EXPECT_EQ(Normalize(angular_velocity_),
+            Direction::ReadFromMessage(oblateness_information.axis()));
 
   // Direct deserialization.
   OblateBody<World> const oblate_body =

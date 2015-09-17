@@ -75,8 +75,8 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 #define OBLATE_BODY_TAG_VALUE_CASE(value)                                      \
   case serialization::Frame::value:                                            \
     return OblateBody<                                                         \
-                Frame<Tag, serialization::Frame::value, true>>::               \
-                ReadFromMessage(message)
+               Frame<Tag, serialization::Frame::value, true>>::                \
+               ReadFromMessage(message)
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {

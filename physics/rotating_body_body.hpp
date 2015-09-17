@@ -1,4 +1,6 @@
-﻿#include "physics/rotating_body.hpp"
+﻿#pragma once
+
+#include "physics/rotating_body.hpp"
 
 #include <algorithm>
 #include <vector>
