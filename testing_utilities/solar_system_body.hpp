@@ -57,7 +57,7 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
     GravitationalParameter const& gravitational_parameter,
     double const j2,
     Length const& radius,
-    Vector<double, ICRFJ2000Ecliptic> const& axis) {
+    Bivector<double, ICRFJ2000Ecliptic> const& axis) {
   switch (accuracy) {
     case SolarSystem::Accuracy::kMajorBodiesOnly:
     case SolarSystem::Accuracy::kMinorAndMajorBodies:
@@ -75,11 +75,11 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
   }
 }
 
-// Returns a unit vector pointing in the direction defined by |right_ascension|
-// and |declination|.
-Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
-                                           Angle const& declination) {
-  return Vector<double, ICRFJ2000Equator>(
+// Returns a unit bivector pointing in the direction defined by
+// |right_ascension| and |declination|.
+Bivector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
+                                             Angle const& declination) {
+  return Bivector<double, ICRFJ2000Equator>(
       RadiusLatitudeLongitude(1.0, declination, right_ascension).ToCartesian());
 }
 

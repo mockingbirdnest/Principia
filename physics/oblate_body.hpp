@@ -1,7 +1,7 @@
 ﻿
-// The files containing the tree of of child classes of |Body| must be included
-// in the order of inheritance to avoid circular dependencies.  This class will
-// end up being reincluded as part of the implementation of its parent.
+// The files containing the tree of child classes of |Body| must be included in
+// the order of inheritance to avoid circular dependencies.  This class will end
+// up being reincluded as part of the implementation of its parent.
 #ifndef PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 #include "physics/rotating_body.hpp"
 #else
@@ -41,6 +41,7 @@ class OblateBody : public RotatingBody<Frame> {
     std::experimental::optional<Order2ZonalCoefficient> j2_;
     std::experimental::optional<
         Quotient<Order2ZonalCoefficient, GravitationalParameter>> j2_over_μ_;
+    template<typename F>
     friend class OblateBody;
   };
 

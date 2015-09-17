@@ -1,7 +1,7 @@
 ﻿
-// The files containing the tree of of child classes of |Body| must be included
-// in the order of inheritance to avoid circular dependencies.  This class will
-// end up being reincluded as part of the implementation of its parent.
+// The files containing the tree of child classes of |Body| must be included in
+// the order of inheritance to avoid circular dependencies.  This class will end
+// up being reincluded as part of the implementation of its parent.
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #include "physics/body.hpp"
 #else
