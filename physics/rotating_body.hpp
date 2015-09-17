@@ -34,12 +34,12 @@ class RotatingBody : public MassiveBody {
   class Parameters {
    public:
     Parameters(Angle const& reference_angle,
-               Instant const& reference_time,
+               Instant const& reference_instant,
                AngularVelocity<Frame> const& angular_velocity);
 
    private:
     Angle const reference_angle_;
-    Instant const reference_time_;
+    Instant const reference_instant_;
     AngularVelocity<Frame> const angular_velocity_;
     template<typename F>
     friend class RotatingBody;

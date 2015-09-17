@@ -20,10 +20,10 @@ double const kNormHigh = 1.001;
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(
     Angle const& reference_angle,
-    Instant const& reference_time,
+    Instant const& reference_instant,
     AngularVelocity<Frame> const& angular_velocity)
     : reference_angle_(reference_angle),
-      reference_time_(reference_time),
+      reference_instant_(reference_instant),
       angular_velocity_(angular_velocity) {
   CHECK_NE(angular_velocity_.Norm(), 0.0)
       << "Rotating body cannot have zero angular velocity";
