@@ -5,6 +5,7 @@
 #include "physics/oblate_body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/rotating_body.hpp"
 
 namespace principia {
 namespace physics {
@@ -17,6 +18,7 @@ bool Body::is_compatible_with() const {
 
 inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
     serialization::Body const& message) {
+  //TODO(phl):serialization.
   if (message.has_massless_body()) {
     return MasslessBody::ReadFromMessage(message.massless_body());
   } else if (message.has_massive_body()) {

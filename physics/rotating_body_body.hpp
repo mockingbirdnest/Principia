@@ -16,24 +16,15 @@ double const kNormHigh = 1.001;
 }  // namespace
 
 template<typename Frame>
-RotatingBody<Frame>::Parameters::Parameters(double const j2,
-                                            Length const& radius,
-                                            Vector<double, Frame> const& axis)
-    : j2_over_μ_(-j2 * radius * radius),
-      axis_(axis) {
-  CHECK_NE(j2, 0.0) << "Oblate body cannot have zero j2";
-  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
-  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
-}
-
-template<typename Frame>
-RotatingBody<Frame>::Parameters::Parameters(Order2ZonalCoefficient const& j2,
-                                            Vector<double, Frame> const& axis)
-    : j2_(j2),
-      axis_(axis) {
-  CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate body cannot have zero j2";
-  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
-  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
+RotatingBody<Frame>::Parameters::Parameters(
+    Angle const& reference_angle,
+    Instant const& reference_time,
+    AngularVelocity<Frame> const& angular_velocity)
+    : reference_angle_(reference_angle),
+      reference_time_(reference_time),
+      angular_velocity_(angular_velocity) {
+  CHECK_NE(angular_velocity_.Norm(), 0.0)
+      << "Rotating body cannot have zero angular velocity";
 }
 
 template<typename Frame>
@@ -41,18 +32,11 @@ RotatingBody<Frame>::RotatingBody(
     MassiveBody::Parameters const& massive_body_parameters,
     Parameters const& parameters)
     : MassiveBody(massive_body_parameters),
-      parameters_(parameters) {
-  if (parameters_.j2_) {
-    parameters_.j2_over_μ_ = *parameters_.j2_ / gravitational_parameter();
-  }
-  if (parameters_.j2_over_μ_) {
-    parameters_.j2_ = *parameters_.j2_over_μ_ * gravitational_parameter();
-  }
-}
+      parameters_(parameters) {}
 
 template<typename Frame>
-Vector<double, Frame> const& RotatingBody<Frame>::axis() const {
-  return parameters_.axis_;
+AngularVelocity<Frame> const& RotatingBody<Frame>::angular_velocity() const {
+  return parameters_.angular_velocity_;
 }
 
 template<typename Frame>

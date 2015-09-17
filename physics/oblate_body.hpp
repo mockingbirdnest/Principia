@@ -33,21 +33,20 @@ class OblateBody : public RotatingBody<Frame> {
  public:
   class Parameters {
    public:
+    explicit Parameters(Order2ZonalCoefficient const& j2);
     Parameters(double const j2,
-               Length const& radius,
-               Vector<double, Frame> const& axis);
-    Parameters(Order2ZonalCoefficient const& j2,
-               Vector<double, Frame> const& axis);
+               Length const& radius);
 
    private:
     std::experimental::optional<Order2ZonalCoefficient> j2_;
     std::experimental::optional<
         Quotient<Order2ZonalCoefficient, GravitationalParameter>> j2_over_μ_;
-    Vector<double, Frame> const axis_;
     friend class OblateBody;
   };
 
   OblateBody(MassiveBody::Parameters const& massive_body_parameters,
+             typename RotatingBody<Frame>::Parameters const&
+                 rotating_body_parameters,
              Parameters const& parameters);
   ~OblateBody() = default;
 
@@ -82,6 +81,7 @@ class OblateBody : public RotatingBody<Frame> {
 
  private:
   Parameters parameters_;
+  Vector<double, Frame> const axis_;
 };
 
 }  // namespace physics

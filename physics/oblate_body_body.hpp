@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <vector>
+
 #include "quantities/constants.hpp"
 
 namespace principia {
@@ -10,38 +11,27 @@ using constants::GravitationalConstant;
 
 namespace physics {
 
-namespace {
-double const kNormLow = 0.999;
-double const kNormHigh = 1.001;
-}  // namespace
-
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
-                                          Length const& radius,
-                                          Vector<double, Frame> const& axis)
-    : j2_over_μ_(-j2 * radius * radius),
-      axis_(axis) {
+                                          Length const& radius)
+    : j2_over_μ_(-j2 * radius * radius) {
   CHECK_NE(j2, 0.0) << "Oblate body cannot have zero j2";
-  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
-  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
 }
 
 template<typename Frame>
-OblateBody<Frame>::Parameters::Parameters(Order2ZonalCoefficient const& j2,
-                                          Vector<double, Frame> const& axis)
-    : j2_(j2),
-      axis_(axis) {
+OblateBody<Frame>::Parameters::Parameters(Order2ZonalCoefficient const& j2)
+    : j2_(j2) {
   CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate body cannot have zero j2";
-  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
-  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
 }
 
 template<typename Frame>
 OblateBody<Frame>::OblateBody(
     MassiveBody::Parameters const& massive_body_parameters,
+    typename RotatingBody<Frame>::Parameters const& rotating_body_parameters,
     Parameters const& parameters)
-    : MassiveBody(massive_body_parameters),
-      parameters_(parameters) {
+    : RotatingBody(massive_body_parameters, rotating_body_parameters),
+      parameters_(parameters),
+      axis_(angular_velocity().Normalize()) {
   if (parameters_.j2_) {
     parameters_.j2_over_μ_ = *parameters_.j2_ / gravitational_parameter();
   }

@@ -18,6 +18,7 @@
 
 namespace principia {
 
+using geometry::AngularVelocity;
 using geometry::Instant;
 using geometry::Vector;
 using quantities::Angle;
@@ -34,14 +35,12 @@ class RotatingBody : public MassiveBody {
    public:
     Parameters(Angle const& reference_angle,
                Instant const& reference_time,
-               AngularFrequency const& ω,
-               Vector<double, Frame> const& axis);
+               AngularVelocity<Frame> const& angular_velocity);
 
    private:
     Angle const reference_angle_;
     Instant const reference_time_;
-    AngularFrequency const ω_;
-    Vector<double, Frame> const axis_;
+    AngularVelocity<Frame> const angular_velocity_;
     friend class RotatingBody;
   };
 
@@ -49,8 +48,8 @@ class RotatingBody : public MassiveBody {
                Parameters const& parameters);
   ~RotatingBody() = default;
 
-  // Returns the axis passed at construction.
-  Vector<double, Frame> const& axis() const;
+  // Returns the angular velocity passed at construction.
+  AngularVelocity<Frame> const& angular_velocity() const;
 
   // Returns false.
   bool is_massless() const override;

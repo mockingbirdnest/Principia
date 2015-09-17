@@ -1,13 +1,18 @@
 #include "physics/body.hpp"
 
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 
+using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::Normalize;
+using si::Radian;
+using si::Second;
 using ::testing::IsNull;
 using ::testing::NotNull;
 
@@ -25,12 +30,17 @@ class BodyTest : public testing::Test {
   void TestOblateBody() {
     using F = Frame<Tag, tag, true>;
 
-    auto const axis = Normalize(Vector<double, F>({-1, 2, 5}));
+    AngularVelocity<F> const angular_velocity =
+        AngularVelocity<F>({-1 * Radian / Second,
+                            2 * Radian / Second,
+                            5 * Radian / Second}));
     auto const oblate_body =
         OblateBody<F>(17 * SIUnit<GravitationalParameter>(),
+                      RotatingBody<F>::Parameters(1 * Radian,
+                                                  Instant(),
+                                                  angular_velocity),
                       OblateBody<F>::Parameters(
-                          163 * SIUnit<Order2ZonalCoefficient>(),
-                          axis));
+                          163 * SIUnit<Order2ZonalCoefficient>()));
 
     serialization::Body message;
     OblateBody<F> const* cast_oblate_body;
@@ -48,15 +58,20 @@ class BodyTest : public testing::Test {
     EXPECT_THAT(cast_oblate_body, NotNull());
   }
 
-  Direction axis_ = Normalize(Direction({-1, 2, 5}));
+  AngularVelocity<World> angular_velocity_ =
+      AngularVelocity<World>({-1 * Radian / Second,
+                              2 * Radian / Second,
+                              5 * Radian / Second}));
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
       MassiveBody(42 * SIUnit<GravitationalParameter>());
   OblateBody<World> oblate_body_ =
       OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
+                        RotatingBody<World>::Parameters(1 * Radian,
+                                                        Instant(),
+                                                        angular_velocity_),
                         OblateBody<World>::Parameters(
-                            163 * SIUnit<Order2ZonalCoefficient>(),
-                            axis_));
+                            163 * SIUnit<Order2ZonalCoefficient>()));
 };
 
 using BodyDeathTest = BodyTest;
