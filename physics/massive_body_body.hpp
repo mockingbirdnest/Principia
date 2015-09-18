@@ -74,9 +74,17 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 // This macro is a bit ugly, but trust me, it's better than the alternatives.
 #define ROTATING_BODY_TAG_VALUE_CASE(value)                                    \
   case serialization::Frame::value:                                            \
-    return RotatingBody<                                                       \
-               Frame<Tag, serialization::Frame::value, true>>::                \
-               ReadFromMessage(extension, parameters)
+    if (rotating_body_extension != nullptr) {                                  \
+      return RotatingBody<                                                     \
+                 Frame<Tag, serialization::Frame::value, true>>::              \
+                 ReadFromMessage(*rotating_body_extension, parameters);        \
+    } else {                                                                   \
+      CHECK_NOTNULL(pre_brouwer_oblate_body_extension);                        \
+      return OblateBody<                                                       \
+                 Frame<Tag, serialization::Frame::value, true>>::              \
+                 ReadFromMessage(                                              \
+                     *pre_brouwer_oblate_body_extension, parameters);          \
+    }
 
 //TODO(phl): Pre-Brouwer compatibility.
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
@@ -84,17 +92,32 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
   Parameters const parameters(GravitationalParameter::ReadFromMessage(
                                   message.gravitational_parameter()));
 
+  const google::protobuf::EnumValueDescriptor* enum_value_descriptor;
+  bool is_inertial = false;
+  serialization::RotatingBody const* rotating_body_extension = nullptr;
+  serialization::PreBrouwerOblateBody const* pre_brouwer_oblate_body_extension =
+      nullptr;
   if (message.HasExtension(serialization::RotatingBody::rotating_body)) {
-    serialization::RotatingBody const& extension =
-        message.GetExtension(serialization::RotatingBody::rotating_body);
-
-    const google::protobuf::EnumValueDescriptor* enum_value_descriptor;
-    bool is_inertial;
-    ReadFrameFromMessage(extension.frame(),
+    rotating_body_extension =
+        &message.GetExtension(serialization::RotatingBody::rotating_body);
+    ReadFrameFromMessage(rotating_body_extension->frame(),
                          &enum_value_descriptor,
                          &is_inertial);
     CHECK(is_inertial);
+  }
+  if (message.HasExtension(
+          serialization::PreBrouwerOblateBody::pre_brouwer_oblate_body)) {
+    pre_brouwer_oblate_body_extension =
+        &message.GetExtension(
+            serialization::PreBrouwerOblateBody::pre_brouwer_oblate_body);
+    ReadFrameFromMessage(pre_brouwer_oblate_body_extension->frame(),
+                         &enum_value_descriptor,
+                         &is_inertial);
+    CHECK(is_inertial);
+  }
 
+  if (rotating_body_extension != nullptr ||
+      pre_brouwer_oblate_body_extension != nullptr) {
     const google::protobuf::EnumDescriptor* enum_descriptor =
         enum_value_descriptor->type();
     {
