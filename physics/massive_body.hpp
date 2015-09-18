@@ -51,7 +51,7 @@ class MassiveBody : public Body {
 
   // Call the following |WriteToMessage|, which dispatches to the proper
   // subclass.
-  void WriteToMessage(not_null<serialization::Body*> message) const final;
+  void WriteToMessage(not_null<serialization::Body*> message) const override;
 
   // Must be overridden by each subclass and first call the same method of the
   // superclass.
@@ -62,8 +62,8 @@ class MassiveBody : public Body {
   // |OblateBody| extension is present in the message.  Use |reinterpret_cast|
   // afterwards as appropriate if the frame is known.
 
-  // |message.has_massless_body()| must be true.
-  static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(//TODO(phl):why?
+  // |message.has_massive_body()| must be true.
+  static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
 
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(

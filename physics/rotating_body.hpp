@@ -52,18 +52,19 @@ class RotatingBody : public MassiveBody {
   // Returns the angular velocity passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;
 
+  // Returnst the position at time |t|.
+  Angle AngleAt(Instant const& t) const;
+
   // Returns false.
   bool is_massless() const override;
 
   // Returns true.
   bool is_oblate() const override;
 
+  void WriteToMessage(not_null<serialization::Body*> message) const override;
+
   void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const override;
-
-  // Fails unless |message.has_massive_body()|.
-  static not_null<std::unique_ptr<RotatingBody<Frame>>> ReadFromMessage(
-      serialization::Body const& message);
 
   // Fails if the |RotatingBody| extension is absent from the message.
   static not_null<std::unique_ptr<RotatingBody<Frame>>> ReadFromMessage(

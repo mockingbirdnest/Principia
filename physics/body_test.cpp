@@ -31,35 +31,33 @@ class BodyTest : public testing::Test {
   using Direction = Vector<double, World>;
 
   template<typename Tag, Tag tag>
-  void TestOblateBody() {
+  void TestRotatingBody() {
     using F = Frame<Tag, tag, true>;
 
     AngularVelocity<F> const angular_velocity =
         AngularVelocity<F>({-1 * Radian / Second,
                             2 * Radian / Second,
                             5 * Radian / Second});
-    auto const oblate_body =
-        OblateBody<F>(17 * SIUnit<GravitationalParameter>(),
-                      RotatingBody<F>::Parameters(1 * Radian,
-                                                  Instant(),
-                                                  angular_velocity),
-                      OblateBody<F>::Parameters(
-                          163 * SIUnit<Order2ZonalCoefficient>()));
+    auto const rotating_body =
+        RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),
+                        RotatingBody<F>::Parameters(3 * Radian,
+                                                    Instant() + 4 * Second,
+                                                    angular_velocity));
 
     serialization::Body message;
-    OblateBody<F> const* cast_oblate_body;
-    oblate_body.WriteToMessage(&message);
+    RotatingBody<F> const* cast_rotating_body;
+    rotating_body.WriteToMessage(&message);
     EXPECT_TRUE(message.has_massive_body());
     EXPECT_FALSE(message.has_massless_body());
     EXPECT_TRUE(message.massive_body().HasExtension(
-                    serialization::OblateBody::oblate_body));
+                    serialization::RotatingBody::rotating_body));
 
     not_null<std::unique_ptr<MassiveBody const>> const massive_body =
         MassiveBody::ReadFromMessage(message);
-    EXPECT_EQ(oblate_body.gravitational_parameter(),
+    EXPECT_EQ(rotating_body.gravitational_parameter(),
               massive_body->gravitational_parameter());
-    cast_oblate_body = dynamic_cast<OblateBody<F> const*>(&*massive_body);
-    EXPECT_THAT(cast_oblate_body, NotNull());
+    cast_rotating_body = dynamic_cast<RotatingBody<F> const*>(&*massive_body);
+    EXPECT_THAT(cast_rotating_body, NotNull());
   }
 
   AngularVelocity<World> angular_velocity_ =
@@ -69,11 +67,18 @@ class BodyTest : public testing::Test {
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
       MassiveBody(42 * SIUnit<GravitationalParameter>());
+  RotatingBody<World> rotating_body_ =
+      RotatingBody<World>(17 * SIUnit<GravitationalParameter>(),
+                          RotatingBody<World>::Parameters(
+                              3 * Radian,
+                              Instant() + 4 * Second,
+                              angular_velocity_));
   OblateBody<World> oblate_body_ =
       OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
-                        RotatingBody<World>::Parameters(1 * Radian,
-                                                        Instant(),
-                                                        angular_velocity_),
+                        RotatingBody<World>::Parameters(
+                            3 * Radian,
+                            Instant() + 4 * Second,
+                            angular_velocity_),
                         OblateBody<World>::Parameters(
                             163 * SIUnit<Order2ZonalCoefficient>()));
 };
@@ -129,90 +134,139 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
             cast_massive_body->gravitational_parameter());
 }
 
-TEST_F(BodyTest, OblateSerializationSuccess) {
-  EXPECT_FALSE(oblate_body_.is_massless());
-  EXPECT_TRUE(oblate_body_.is_oblate());
+TEST_F(BodyTest, RotatingSerializationSuccess) {
+  EXPECT_FALSE(rotating_body_.is_massless());
+  EXPECT_TRUE(rotating_body_.is_oblate());
 
   serialization::Body message;
-  OblateBody<World> const* cast_oblate_body;
-  oblate_body_.WriteToMessage(&message);
+  RotatingBody<World> const* cast_rotating_body;
+  rotating_body_.WriteToMessage(&message);
   EXPECT_TRUE(message.has_massive_body());
   EXPECT_FALSE(message.has_massless_body());
-  EXPECT_TRUE(
-      message.massive_body().HasExtension(
-          serialization::OblateBody::oblate_body));
+  EXPECT_TRUE(message.massive_body().HasExtension(
+                  serialization::RotatingBody::rotating_body));
   EXPECT_EQ(17, message.massive_body().gravitational_parameter().magnitude());
-  serialization::OblateBody const oblateness_information =
+  serialization::RotatingBody const rotating_body_extension =
       message.massive_body().GetExtension(
-          serialization::OblateBody::oblate_body);
-  EXPECT_EQ(163, oblateness_information.j2().magnitude());
-  EXPECT_EQ(Normalize(angular_velocity_),
-            Direction::ReadFromMessage(oblateness_information.axis()));
-
-  // Direct deserialization.
-  OblateBody<World> const oblate_body =
-      *OblateBody<World>::ReadFromMessage(message);
-  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-            oblate_body.gravitational_parameter());
-  EXPECT_EQ(oblate_body_.j2(), oblate_body.j2());
-  EXPECT_EQ(oblate_body_.axis(), oblate_body.axis());
+          serialization::RotatingBody::rotating_body);
+  EXPECT_EQ(3, rotating_body_extension.reference_angle().magnitude());
+  EXPECT_EQ(4,
+            rotating_body_extension.reference_instant().scalar().magnitude());
+  EXPECT_EQ(angular_velocity_,
+            AngularVelocity<World>::ReadFromMessage(
+                rotating_body_extension.angular_velocity()));
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
       MassiveBody::ReadFromMessage(message);
-  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+  EXPECT_EQ(rotating_body_.gravitational_parameter(),
             massive_body->gravitational_parameter());
-  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
-  EXPECT_THAT(cast_oblate_body, NotNull());
-  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-            cast_oblate_body->gravitational_parameter());
-  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
+  cast_rotating_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
+  EXPECT_THAT(cast_rotating_body, NotNull());
+  EXPECT_EQ(rotating_body_.gravitational_parameter(),
+            cast_rotating_body->gravitational_parameter());
+  EXPECT_EQ(rotating_body_.angular_velocity(),
+            cast_rotating_body->angular_velocity());
+  EXPECT_EQ(rotating_body_.AngleAt(Instant()),
+            cast_rotating_body->AngleAt(Instant()));
 
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
-  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
-  EXPECT_THAT(cast_oblate_body, NotNull());
-  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-            cast_oblate_body->gravitational_parameter());
-  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
+  cast_rotating_body = dynamic_cast<OblateBody<World> const*>(&*body);
+  EXPECT_THAT(cast_rotating_body, NotNull());
+  EXPECT_EQ(rotating_body_.gravitational_parameter(),
+            cast_rotating_body->gravitational_parameter());
+  EXPECT_EQ(rotating_body_.angular_velocity(),
+            cast_rotating_body->angular_velocity());
+  EXPECT_EQ(rotating_body_.AngleAt(Instant()),
+            cast_rotating_body->AngleAt(Instant()));
 }
 
+//TEST_F(BodyTest, OblateSerializationSuccess) {
+//  EXPECT_FALSE(oblate_body_.is_massless());
+//  EXPECT_TRUE(oblate_body_.is_oblate());
+//
+//  serialization::Body message;
+//  OblateBody<World> const* cast_oblate_body;
+//  oblate_body_.WriteToMessage(&message);
+//  EXPECT_TRUE(message.has_massive_body());
+//  EXPECT_FALSE(message.has_massless_body());
+//  EXPECT_TRUE(
+//      message.massive_body().HasExtension(
+//          serialization::OblateBody::oblate_body));
+//  EXPECT_EQ(17, message.massive_body().gravitational_parameter().magnitude());
+//  serialization::OblateBody const oblateness_information =
+//      message.massive_body().GetExtension(
+//          serialization::OblateBody::oblate_body);
+//  EXPECT_EQ(163, oblateness_information.j2().magnitude());
+//  EXPECT_EQ(Normalize(angular_velocity_),
+//            Direction::ReadFromMessage(oblateness_information.axis()));
+//
+//  // Direct deserialization.
+//  OblateBody<World> const oblate_body =
+//      *OblateBody<World>::ReadFromMessage(message);
+//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+//            oblate_body.gravitational_parameter());
+//  EXPECT_EQ(oblate_body_.j2(), oblate_body.j2());
+//  EXPECT_EQ(oblate_body_.axis(), oblate_body.axis());
+//
+//  // Dispatching from |MassiveBody|.
+//  not_null<std::unique_ptr<MassiveBody const>> const massive_body =
+//      MassiveBody::ReadFromMessage(message);
+//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+//            massive_body->gravitational_parameter());
+//  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
+//  EXPECT_THAT(cast_oblate_body, NotNull());
+//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+//            cast_oblate_body->gravitational_parameter());
+//  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
+//  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
+//
+//  // Dispatching from |Body|.
+//  not_null<std::unique_ptr<Body const>> const body =
+//      Body::ReadFromMessage(message);
+//  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
+//  EXPECT_THAT(cast_oblate_body, NotNull());
+//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+//            cast_oblate_body->gravitational_parameter());
+//  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
+//  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
+//}
+
 TEST_F(BodyTest, AllFrames) {
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::ALICE_SUN>();
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::ALICE_WORLD>();
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::BARYCENTRIC>();
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::PRE_BOREL_BARYCENTRIC>();
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::RENDERING>();
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::WORLD>();
-  TestOblateBody<serialization::Frame::PluginTag,
-                 serialization::Frame::WORLD_SUN>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                   serialization::Frame::ALICE_SUN>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                   serialization::Frame::ALICE_WORLD>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                  serialization::Frame::BARYCENTRIC>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                   serialization::Frame::PRE_BOREL_BARYCENTRIC>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                   serialization::Frame::RENDERING>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                  serialization::Frame::WORLD>();
+  TestRotatingBody<serialization::Frame::PluginTag,
+                  serialization::Frame::WORLD_SUN>();
 
-  TestOblateBody<serialization::Frame::SolarSystemTag,
-                 serialization::Frame::ICRF_J2000_ECLIPTIC>();
-  TestOblateBody<serialization::Frame::SolarSystemTag,
-                 serialization::Frame::ICRF_J2000_EQUATOR>();
+  TestRotatingBody<serialization::Frame::SolarSystemTag,
+                  serialization::Frame::ICRF_J2000_ECLIPTIC>();
+  TestRotatingBody<serialization::Frame::SolarSystemTag,
+                  serialization::Frame::ICRF_J2000_EQUATOR>();
 
-  TestOblateBody<serialization::Frame::TestTag,
-                 serialization::Frame::TEST>();
-  TestOblateBody<serialization::Frame::TestTag,
-                 serialization::Frame::TEST1>();
-  TestOblateBody<serialization::Frame::TestTag,
-                 serialization::Frame::TEST2>();
-  TestOblateBody<serialization::Frame::TestTag,
-                 serialization::Frame::FROM>();
-  TestOblateBody<serialization::Frame::TestTag,
-                 serialization::Frame::THROUGH>();
-  TestOblateBody<serialization::Frame::TestTag,
-                 serialization::Frame::TO>();
+  TestRotatingBody<serialization::Frame::TestTag,
+                  serialization::Frame::TEST>();
+  TestRotatingBody<serialization::Frame::TestTag,
+                  serialization::Frame::TEST1>();
+  TestRotatingBody<serialization::Frame::TestTag,
+                   serialization::Frame::TEST2>();
+  TestRotatingBody<serialization::Frame::TestTag,
+                   serialization::Frame::FROM>();
+  TestRotatingBody<serialization::Frame::TestTag,
+                   serialization::Frame::THROUGH>();
+  TestRotatingBody<serialization::Frame::TestTag,
+                   serialization::Frame::TO>();
 }
 
 }  // namespace physics
