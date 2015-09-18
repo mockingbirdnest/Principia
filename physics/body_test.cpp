@@ -225,56 +225,58 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
 }
 
-//TEST_F(BodyTest, OblateSerializationSuccess) {
-//  EXPECT_FALSE(oblate_body_.is_massless());
-//  EXPECT_TRUE(oblate_body_.is_oblate());
-//
-//  serialization::Body message;
-//  OblateBody<World> const* cast_oblate_body;
-//  oblate_body_.WriteToMessage(&message);
-//  EXPECT_TRUE(message.has_massive_body());
-//  EXPECT_FALSE(message.has_massless_body());
-//  EXPECT_TRUE(
-//      message.massive_body().HasExtension(
-//          serialization::OblateBody::oblate_body));
-//  EXPECT_EQ(17, message.massive_body().gravitational_parameter().magnitude());
-//  serialization::OblateBody const oblateness_information =
-//      message.massive_body().GetExtension(
-//          serialization::OblateBody::oblate_body);
-//  EXPECT_EQ(163, oblateness_information.j2().magnitude());
-//  EXPECT_EQ(Normalize(angular_velocity_),
-//            Direction::ReadFromMessage(oblateness_information.axis()));
-//
-//  // Direct deserialization.
-//  OblateBody<World> const oblate_body =
-//      *OblateBody<World>::ReadFromMessage(message);
-//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-//            oblate_body.gravitational_parameter());
-//  EXPECT_EQ(oblate_body_.j2(), oblate_body.j2());
-//  EXPECT_EQ(oblate_body_.axis(), oblate_body.axis());
-//
-//  // Dispatching from |MassiveBody|.
-//  not_null<std::unique_ptr<MassiveBody const>> const massive_body =
-//      MassiveBody::ReadFromMessage(message);
-//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-//            massive_body->gravitational_parameter());
-//  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
-//  EXPECT_THAT(cast_oblate_body, NotNull());
-//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-//            cast_oblate_body->gravitational_parameter());
-//  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-//  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
-//
-//  // Dispatching from |Body|.
-//  not_null<std::unique_ptr<Body const>> const body =
-//      Body::ReadFromMessage(message);
-//  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
-//  EXPECT_THAT(cast_oblate_body, NotNull());
-//  EXPECT_EQ(oblate_body_.gravitational_parameter(),
-//            cast_oblate_body->gravitational_parameter());
-//  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-//  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
-//}
+TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
+  EXPECT_FALSE(oblate_body_.is_massless());
+  EXPECT_TRUE(oblate_body_.is_oblate());
+
+  // Serialize post-Brouwer.
+  serialization::Body post_brouwer_body;
+  oblate_body_.WriteToMessage(&post_brouwer_body);
+  serialization::MassiveBody const& post_brouwer_massive_body =
+     post_brouwer_body.massive_body();
+  serialization::RotatingBody const& post_brouwer_rotating_body =
+     post_brouwer_massive_body.GetExtension(
+        serialization::RotatingBody::rotating_body);
+  serialization::OblateBody const& post_brouwer_oblate_body =
+     post_brouwer_rotating_body.GetExtension(
+        serialization::OblateBody::oblate_body);
+
+  // Construct explicitly an equivalent pre-Brouwer message.
+  serialization::Body pre_brouwer_body;
+  serialization::MassiveBody* pre_brouwer_massive_body =
+      pre_brouwer_body.mutable_massive_body();
+  pre_brouwer_massive_body->mutable_gravitational_parameter()->CopyFrom(
+      post_brouwer_massive_body.gravitational_parameter());
+  serialization::PreBrouwerOblateBody* pre_brouwer_oblate_body =
+      pre_brouwer_massive_body->MutableExtension(
+          serialization::PreBrouwerOblateBody::pre_brouwer_oblate_body);
+  pre_brouwer_oblate_body->mutable_frame()->CopyFrom(
+      post_brouwer_rotating_body.frame());
+  pre_brouwer_oblate_body->mutable_j2()->CopyFrom(
+      post_brouwer_oblate_body.j2());
+  pre_brouwer_oblate_body->mutable_axis()->mutable_frame()->CopyFrom(
+      post_brouwer_rotating_body.angular_velocity().frame());
+  auto const normalized_angular_velocity = Normalize(angular_velocity_);
+  auto* const pre_brouwer_axis_r3_element =
+    pre_brouwer_oblate_body->mutable_axis()->mutable_vector();
+  pre_brouwer_axis_r3_element->mutable_x()->set_double_(
+      normalized_angular_velocity.coordinates().x);
+  pre_brouwer_axis_r3_element->mutable_y()->set_double_(
+      normalized_angular_velocity.coordinates().y);
+  pre_brouwer_axis_r3_element->mutable_z()->set_double_(
+      normalized_angular_velocity.coordinates().z);
+
+  // Deserialize both.
+  auto const post_brouwer = Body::ReadFromMessage(post_brouwer_body);
+  auto const pre_brouwer = Body::ReadFromMessage(pre_brouwer_body);
+  auto const* const cast_post_brouwer =
+      dynamic_cast<OblateBody<World> const*>(&*post_brouwer);
+  auto const* const cast_pre_brouwer =
+      dynamic_cast<OblateBody<World> const*>(&*pre_brouwer);
+  EXPECT_EQ(cast_post_brouwer->mass(), cast_pre_brouwer->mass());
+  EXPECT_EQ(cast_post_brouwer->axis(), cast_pre_brouwer->axis());
+  EXPECT_EQ(cast_post_brouwer->j2(), cast_pre_brouwer->j2());
+}
 
 TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::PluginTag,
