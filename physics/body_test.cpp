@@ -136,7 +136,7 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
 
 TEST_F(BodyTest, RotatingSerializationSuccess) {
   EXPECT_FALSE(rotating_body_.is_massless());
-  EXPECT_TRUE(rotating_body_.is_oblate());
+  EXPECT_FALSE(rotating_body_.is_oblate());
 
   serialization::Body message;
   RotatingBody<World> const* cast_rotating_body;
@@ -161,7 +161,7 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
       MassiveBody::ReadFromMessage(message);
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
             massive_body->gravitational_parameter());
-  cast_rotating_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
+  cast_rotating_body = dynamic_cast<RotatingBody<World> const*>(&*massive_body);
   EXPECT_THAT(cast_rotating_body, NotNull());
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
             cast_rotating_body->gravitational_parameter());
@@ -173,7 +173,7 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
-  cast_rotating_body = dynamic_cast<OblateBody<World> const*>(&*body);
+  cast_rotating_body = dynamic_cast<RotatingBody<World> const*>(&*body);
   EXPECT_THAT(cast_rotating_body, NotNull());
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
             cast_rotating_body->gravitational_parameter());
