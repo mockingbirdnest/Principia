@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 #include "physics/rotating_body.hpp"
 
@@ -9,15 +10,7 @@
 #include "quantities/constants.hpp"
 
 namespace principia {
-
-using constants::GravitationalConstant;
-
 namespace physics {
-
-namespace {
-double const kNormLow = 0.999;
-double const kNormHigh = 1.001;
-}  // namespace
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(

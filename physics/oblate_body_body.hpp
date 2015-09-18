@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 #include "physics/oblate_body.hpp"
 
@@ -6,10 +7,12 @@
 #include <vector>
 
 #include "quantities/constants.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 
-using constants::GravitationalConstant;
+using si::Radian;
+using si::Second;
 
 namespace physics {
 

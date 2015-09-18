@@ -86,13 +86,14 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
                      *pre_brouwer_oblate_body_extension, parameters);          \
     }
 
-//TODO(phl): Pre-Brouwer compatibility.
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
   Parameters const parameters(GravitationalParameter::ReadFromMessage(
                                   message.gravitational_parameter()));
 
-  const google::protobuf::EnumValueDescriptor* enum_value_descriptor;
+  // First see if we have an extension that has a frame and if so read the
+  // frame.  Need to take care of pre-Brouwer compatibility.
+  const google::protobuf::EnumValueDescriptor* enum_value_descriptor = nullptr;
   bool is_inertial = false;
   serialization::RotatingBody const* rotating_body_extension = nullptr;
   serialization::PreBrouwerOblateBody const* pre_brouwer_oblate_body_extension =
