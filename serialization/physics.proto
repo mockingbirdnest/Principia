@@ -41,15 +41,22 @@ message Ephemeris {
 
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
-  extensions 2000 to 2999;  // Last used: 2002.
+  extensions 2000 to 2999;  // Last used: 2003.
 }
 
 message MasslessBody {}
 
-//TODO(phl):Compatibility???
 message OblateBody {
+  extend RotatingBody {
+    optional OblateBody oblate_body = 2003;
+  }
+  required Frame frame = 1;
+  required Quantity j2 = 2;
+}
+
+message PreBrouwerOblateBody {
   extend MassiveBody {
-    optional OblateBody oblate_body = 2001;
+    optional PreBrouwerOblateBody pre_brouwer_oblate_body = 2001;
   }
   required Frame frame = 3;
   required Quantity j2 = 1;
