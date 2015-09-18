@@ -33,7 +33,8 @@ OblateBody<Frame>::OblateBody(
     Parameters const& parameters)
     : RotatingBody(massive_body_parameters, rotating_body_parameters),
       parameters_(parameters),
-      axis_(angular_velocity().Normalize()) {
+      axis_(
+          Vector<double, Frame>(Normalize(angular_velocity()).coordinates())) {
   if (parameters_.j2_) {
     parameters_.j2_over_μ_ = *parameters_.j2_ / gravitational_parameter();
   }
@@ -70,21 +71,13 @@ bool OblateBody<Frame>::is_oblate() const {
 
 template<typename Frame>
 inline void OblateBody<Frame>::WriteToMessage(
-    not_null<serialization::Body*> const message) const {
-  WriteToMessage(message->mutable_massive_body());
-}
-
-template<typename Frame>
-inline void OblateBody<Frame>::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
-  MassiveBody::WriteToMessage(message);
+  RotatingBody<Frame>::WriteToMessage(message);
   not_null<serialization::OblateBody*> const oblate_body =
-      message->MutableExtension(serialization::OblateBody::oblate_body);
-  Frame::WriteToMessage(oblate_body->mutable_frame());
+      message->MutableExtension(serialization::RotatingBody::rotating_body)->
+               MutableExtension(serialization::OblateBody::oblate_body);
   parameters_.j2_->WriteToMessage(oblate_body->mutable_j2());
-  parameters_.axis_.WriteToMessage(oblate_body->mutable_axis());
 }
-
 
 template<typename Frame>
 not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
@@ -95,18 +88,15 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
 
 template<typename Frame>
 not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
-    serialization::MassiveBody const& message) {
-  CHECK(message.HasExtension(serialization::OblateBody::oblate_body));
-  serialization::OblateBody const& oblateness_information =
-      message.GetExtension(serialization::OblateBody::oblate_body);
-  return std::make_unique<OblateBody<Frame>>(
-      GravitationalParameter::ReadFromMessage(
-          message.gravitational_parameter()),
-      OblateBody<Frame>::Parameters(
-          Order2ZonalCoefficient::ReadFromMessage(
-              oblateness_information.j2()),
-          Vector<double, Frame>::ReadFromMessage(
-              oblateness_information.axis())));
+      serialization::OblateBody const& message,
+      MassiveBody::Parameters const& massive_body_parameters,
+      typename RotatingBody<Frame>::Parameters const&
+          rotating_body_parameters) {
+  Parameters parameters(Order2ZonalCoefficient::ReadFromMessage(message.j2()));
+
+  return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
+                                             rotating_body_parameters,
+                                             parameters);
 }
 
 }  // namespace physics

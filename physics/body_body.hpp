@@ -18,7 +18,6 @@ bool Body::is_compatible_with() const {
 
 inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
     serialization::Body const& message) {
-  //TODO(phl):serialization.
   if (message.has_massless_body()) {
     return MasslessBody::ReadFromMessage(message.massless_body());
   } else if (message.has_massive_body()) {

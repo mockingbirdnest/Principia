@@ -67,8 +67,6 @@ class OblateBody : public RotatingBody<Frame> {
   // Returns true.
   bool is_oblate() const override;
 
-  void WriteToMessage(not_null<serialization::Body*> message) const override;
-
   void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const override;
 
@@ -78,7 +76,9 @@ class OblateBody : public RotatingBody<Frame> {
 
   // Fails if the |OblateBody| extension is absent from the message.
   static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
-      serialization::MassiveBody const& message);
+      serialization::OblateBody const& message,
+      MassiveBody::Parameters const& massive_body_parameters,
+      typename RotatingBody<Frame>::Parameters const& rotating_body_parameters);
 
  private:
   Parameters parameters_;
