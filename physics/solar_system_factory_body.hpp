@@ -3,10 +3,15 @@
 #include "physics/solar_system_factory.hpp"
 
 #include <fstream>
+#include <map>
+#include <set>
 
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
+#include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
@@ -14,6 +19,7 @@ namespace physics {
 
 void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
                                     std::string const& gravity_model_filename) {
+  // Parse the files.
   serialization::SolarSystemFile initial_state;
   std::ifstream initial_state_ifstream(initial_state_filename);
   CHECK(initial_state_ifstream.good());
@@ -21,6 +27,7 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
                                                &initial_state_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
                                             &initial_state));
+  CHECK(initial_state.has_initial_state());
 
   serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
@@ -29,6 +36,53 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
                                                &gravity_model_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&gravity_model_zcs,
                                             &gravity_model));
+  CHECK(gravity_model.has_gravity_model());
+
+  // Store the data in maps keyed by body name.
+  std::set<std::string> names;
+  std::map<std::string,
+           serialization::InitialState::Body const*> initial_state_map;
+  for (auto const& body : initial_state.initial_state().body()) {
+    names.insert(body.name());
+    auto const inserted =
+        initial_state_map.insert(std::make_pair(body.name(), &body));
+    CHECK(inserted.second);
+  }
+  std::map<std::string,
+           serialization::GravityModel::Body const*> gravity_model_map;
+  for (auto const& body : gravity_model.gravity_model().body()) {
+    names.insert(body.name());
+    auto const inserted =
+        gravity_model_map.insert(std::make_pair(body.name(), &body));
+    CHECK(inserted.second);
+  }
+
+  // Build bodies.
+  for (auto const& pair : gravity_model_map) {
+    std::string const& name = pair.first;
+    serialization::GravityModel::Body const* const body = pair.second;
+    std::unique_ptr<MassiveBody> massive_body;
+    CHECK(body->has_gravitational_parameter());
+    CHECK_EQ(body->has_j2(), body->has_reference_radius());
+    CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
+    MassiveBody::Parameters massive_body_parameters(
+                                body->gravitational_parameter());
+    if (body->has_axis_declination()) {
+      RotatingBody<>::Parameters rotating_body_parameters();
+      if (body->has_j2()) {
+        OblateBody<>::Parameters oblate_body_parameters(body->j2());
+        massive_body = std::make_unique<OblateBody<>>(massive_body_parameters,
+                                                      rotating_body_parameters,
+                                                      oblate_body_parameters);
+      } else {
+        massive_body = std::make_unique<RotatingBody<>>(
+                           massive_body_parameters,
+                           rotating_body_parameters);
+      }
+    } else {
+      massive_body = std::make_unique<MassiveBody>(massive_body_parameters);
+    }
+  }
 }
 
 }  // namespace physics
