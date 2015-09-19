@@ -98,6 +98,7 @@
     <None Include="query.f" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="gravity_model.proto.txt" />
     <Text Include="initial_state.proto.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

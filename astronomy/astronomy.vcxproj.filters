@@ -35,5 +35,8 @@
     <Text Include="initial_state.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="gravity_model.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
