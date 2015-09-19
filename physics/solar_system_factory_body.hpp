@@ -14,7 +14,7 @@ namespace physics {
 
 void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
                                     std::string const& gravity_model_filename) {
-  serialization::InitialState initial_state;
+  serialization::SolarSystemFile initial_state;
   std::ifstream initial_state_ifstream(initial_state_filename);
   CHECK(initial_state_ifstream.good());
   google::protobuf::io::IstreamInputStream initial_state_zcs(
@@ -22,7 +22,7 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
   CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
                                             &initial_state));
 
-  serialization::GravityModel gravity_model;
+  serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
   google::protobuf::io::IstreamInputStream gravity_model_zcs(

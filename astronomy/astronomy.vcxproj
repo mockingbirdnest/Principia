@@ -97,6 +97,9 @@
     <None Include="horizons.sh" />
     <None Include="query.f" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="initial_state.proto.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

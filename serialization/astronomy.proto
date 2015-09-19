@@ -26,5 +26,13 @@ message InitialState {
     required string vz = 7;
   }
   repeated string needs = 1;
-  repeated Body body = 2;
+  required int64 epoch = 2;
+  repeated Body body = 3;
+}
+
+message SolarSystemFile {
+  oneof file {
+    GravityModel gravity_model = 1;
+    InitialState initial_state = 2;
+  }
 }
