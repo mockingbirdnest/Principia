@@ -83,6 +83,12 @@
     <ClInclude Include="discrete_trajectory_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="rotating_body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rotating_body_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">

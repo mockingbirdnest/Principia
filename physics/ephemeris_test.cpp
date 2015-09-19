@@ -40,6 +40,7 @@ using si::Kilogram;
 using si::Metre;
 using si::Milli;
 using si::Minute;
+using si::Radian;
 using si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ICRFJ2000Ecliptic;
@@ -788,10 +789,16 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 
   auto* earth = new OblateBody<EarthMoonOrbitPlane>(
                         5.9721986E24 * Kilogram,
+                        RotatingBody<EarthMoonOrbitPlane>::Parameters(
+                            1 * Radian,
+                            t0_,
+                            AngularVelocity<EarthMoonOrbitPlane>({
+                                0 * Radian / Second,
+                                0 * Radian / Second,
+                                4 * Radian / Second})),
                         OblateBody<EarthMoonOrbitPlane>::Parameters(
                             kEarthJ2,
-                            kEarthPolarRadius,
-                            Vector<double, EarthMoonOrbitPlane>({0, 0, 1})));
+                            kEarthPolarRadius));
   Velocity<EarthMoonOrbitPlane> const v({0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>()});
@@ -869,10 +876,15 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Mass const m3 = 4 * SolarMass;
 
   auto const b0 = new OblateBody<World>(m0,
+                                        RotatingBody<World>::Parameters(
+                                            1 * Radian,
+                                            t0_,
+                                            AngularVelocity<World>({
+                                                0 * Radian / Second,
+                                                0 * Radian / Second,
+                                                4 * Radian / Second})),
                                         OblateBody<World>::Parameters(
-                                            kJ2,
-                                            kRadius,
-                                            Vector<double, World>({0, 0, 1})));
+                                            kJ2, kRadius));
   auto const b1 = new MassiveBody(m1);
   auto const b2 = new MassiveBody(m2);
   auto const b3 = new MassiveBody(m3);
