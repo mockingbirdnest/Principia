@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package principia.serialization;
+
+message GravityModel {
+  message Body {
+    required string name = 1;
+    required string gravitational_parameter = 2;
+    required string axis_right_ascension = 3;
+    required string axis_declination = 4;
+    required string j2 = 5;
+    required string reference_radius = 6;
+  }
+  repeated string needs = 1;
+  repeated Body body = 2;
+}
+
+message InitialState {
+  message Body {
+    required string name = 1;
+    required string x = 2;
+    required string y = 3;
+    required string z = 4;
+    required string vx = 5;
+    required string vy = 6;
+    required string vz = 7;
+  }
+  repeated string needs = 1;
+  repeated Body body = 2;
+}
