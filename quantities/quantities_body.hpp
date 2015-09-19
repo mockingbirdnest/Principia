@@ -5,9 +5,84 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace quantities {
+
+namespace {
+
+template<typename D>
+Quantity<D> ParseUnit(std::string const& s);
+
+template<>
+Length ParseUnit<Length::Dimensions>(std::string const& s) {
+  if (s == "m") {
+    return si::Metre;
+  } else if (s == "km") {
+    return si::Kilo(si::Metre);
+  } else if (s == "au") {
+    return si::AstronomicalUnit;
+  } else {
+    LOG(FATAL) << "Unsupported unit of length " << s;
+    base::noreturn();
+  }
+}
+
+template<>
+Speed ParseUnit<Speed::Dimensions>(std::string const& s) {
+  if (s == "m/s") {
+    return si::Metre / si::Second;
+  } else if (s == "km/s") {
+    return si::Kilo(si::Metre) / si::Second;
+  } else if (s == "km/d") {
+    return si::Kilo(si::Metre) / si::Day;
+  } else if (s == "au/d") {
+    return si::AstronomicalUnit / si::Day;
+  } else {
+    LOG(FATAL) << "Unsupported unit of speed " << s;
+    base::noreturn();
+  }
+}
+
+template<>
+Angle ParseUnit<Angle::Dimensions>(std::string const& s) {
+  if (s == "deg" || s == "°") {
+    return si::Degree;
+  } else if (s == "rad") {
+    return si::Radian;
+  } else {
+    LOG(FATAL) << "Unsupported unit of angle " << s;
+    base::noreturn();
+  }
+}
+
+template<>
+GravitationalParameter ParseUnit<GravitationalParameter::Dimensions>(
+    std::string const& s) {
+  if (s == "m^3/s^2") {
+    return Pow<3>(si::Metre) / Pow<2>(si::Second);
+  } else if (s == "km^3/s^2") {
+    return Pow<3>(si::Kilo(si::Metre)) / Pow<2>(si::Second);
+  } else if (s == "km^3/d^2") {
+    return Pow<3>(si::Kilo(si::Metre)) / Pow<2>(si::Day);
+  } else if (s == "au^3/d^2") {
+    return Pow<3>(si::AstronomicalUnit) / Pow<2>(si::Day);
+  } else {
+    LOG(FATAL) << "Unsupported unit of gravitational parameter " << s;
+    base::noreturn();
+  }
+}
+
+template<>
+double ParseUnit<double>(std::string const& s) {
+  CHECK(s.empty()) << s;
+  return 1;
+}
+
+}  // namespace
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
