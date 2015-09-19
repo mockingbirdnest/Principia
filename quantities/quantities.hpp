@@ -163,6 +163,8 @@ class Quantity {
   void WriteToMessage(not_null<serialization::Quantity*> const message) const;
   static Quantity ReadFromMessage(serialization::Quantity const& message);
 
+  static Quantity ParseFromString(std::string const& s);
+
  private:
   explicit Quantity(double const magnitude);
   double magnitude_;

@@ -277,6 +277,26 @@ Quantity<D> Quantity<D>::ReadFromMessage(
   return Quantity(message.magnitude());
 }
 
+template<typename D>
+Quantity<D> Quantity<D>::ParseFromString(std::string const& s) {
+  // Parse a double.
+  char* interpreted_end;
+  char const* const c_string = s.c_str();
+  double const magnitude = std::strtod(c_string, &interpreted_end);
+  int const interpreted = interpreted_end - c_string;
+  CHECK_LT(0, interpreted) << "invalid floating-point number " << s;
+
+  int const first_nonblank = s.find_first_not_of(' ', interpreted);
+  int const last_nonblank = s.find_last_not_of(' ');
+  std::string unit_string;
+  if (first_nonblank != std::string::npos) {
+    unit_string = s.substr(first_nonblank, last_nonblank - first_nonblank + 1);
+  }
+  
+  Quantity<D> const unit = ParseUnit<D>(unit_string));
+  return magnitude * unit;
+}
+
 // Multiplicative group
 
 template<typename D>
