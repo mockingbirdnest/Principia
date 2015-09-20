@@ -101,11 +101,9 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
       initial_state.initial_state().frame();
 
   // Store the data in maps keyed by body name.
-  std::set<std::string> names;
   std::map<std::string,
            serialization::InitialState::Body const*> initial_state_map;
   for (auto const& body : initial_state.initial_state().body()) {
-    names.insert(body.name());
     auto const inserted =
         initial_state_map.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
@@ -113,11 +111,20 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
   std::map<std::string,
            serialization::GravityModel::Body const*> gravity_model_map;
   for (auto const& body : gravity_model.gravity_model().body()) {
-    names.insert(body.name());
     auto const inserted =
         gravity_model_map.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
   }
+
+  // Check that the maps are consistent.
+  auto it1 = initial_state_map.begin();
+  auto it2 = gravity_model_map.begin();
+  for (; it1 != initial_state_map.end() && it2 != gravity_model_map.end();
+       ++it1, ++it2) {
+    CHECK_EQ(it1->first, it2->first);
+  }
+  CHECK(it1 == initial_state_map.end()) << it1->first;
+  CHECK(it2 == gravity_model_map.end()) << it2->first;
 
   // Build bodies.
   for (auto const& pair : gravity_model_map) {
