@@ -10,6 +10,9 @@
 #include "quantities/constants.hpp"
 
 namespace principia {
+
+using geometry::Exp;
+
 namespace physics {
 
 template<typename Frame>
@@ -41,6 +44,12 @@ Angle RotatingBody<Frame>::AngleAt(Instant const& t) const {
   return parameters_.reference_angle_ +
          (t - parameters_.reference_instant_) *
              parameters_.angular_velocity_.Norm();
+}
+
+template<typename Frame>
+Rotation<Frame, Frame> RotatingBody<Frame>::RotationAt(Instant const& t) const {
+  return Exp((t - parameters_.reference_instant_) *
+                 parameters_.angular_velocity_);
 }
 
 template<typename Frame>

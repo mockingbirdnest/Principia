@@ -19,6 +19,7 @@
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
+#include "quantities/parser.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -36,6 +37,7 @@ using geometry::RadiusLatitudeLongitude;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RotatingBody;
+using quantities::ParseQuantity;
 using quantities::Pow;
 using si::AstronomicalUnit;
 using si::Day;
@@ -85,98 +87,6 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
-}
-
-// Similar to std::stod, but uses LOG(FATAL) instead of exceptions.
-double ParseDouble(std::string const& s, not_null<std::size_t*> size) {
-  char* interpreted_end;
-  char const* const c_string = s.c_str();
-  double result = std::strtod(c_string, &interpreted_end);
-  *size = interpreted_end - c_string;
-  CHECK_GT(*size, 0) << "invalid floating-point number " << s;
-  return result;
-}
-
-double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
-  std::size_t i;
-  double magnitude = ParseDouble(s, &i);
-  unit->clear();
-  for (; i < s.length(); ++i) {
-    unsigned char c = s[i];
-    if (!std::isspace(c)) {
-      *unit += c;
-    }
-  }
-  return magnitude;
-}
-
-Length ParseLength(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "m") {
-    return magnitude * Metre;
-  } else if (unit == "km") {
-    return magnitude * Kilo(Metre);
-  } else if (unit == "au") {
-    return magnitude * AstronomicalUnit;
-  } else {
-    LOG(FATAL) << "unsupported unit of length " << unit;
-    base::noreturn();
-  }
-}
-
-Speed ParseSpeed(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "m/s") {
-    return magnitude * Metre / Second;
-  } else if (unit == "km/s") {
-    return magnitude * Kilo(Metre) / Second;
-  } else if (unit == "km/d") {
-    return magnitude * Kilo(Metre) / Day;
-  } else if (unit == "au/d") {
-    return magnitude * AstronomicalUnit / Day;
-  } else {
-    LOG(FATAL) << "unsupported unit of speed " << unit;
-    base::noreturn();
-  }
-}
-
-Angle ParseAngle(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "deg" || unit == "°") {
-    return magnitude * Degree;
-  } else if (unit == "rad") {
-    return magnitude * Radian;
-  } else {
-    LOG(FATAL) << "unsupported unit of angle " << unit;
-    base::noreturn();
-  }
-}
-
-GravitationalParameter ParseGravitationalParameter(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "m^3/s^2") {
-    return magnitude * Pow<3>(Metre) / Pow<2>(Second);
-  } else if (unit == "km^3/s^2") {
-    return magnitude * Pow<3>(Kilo(Metre)) / Pow<2>(Second);
-  } else if (unit == "km^3/d^2") {
-    return magnitude * Pow<3>(Kilo(Metre)) / Pow<2>(Day);
-  } else if (unit == "au^3/d^2") {
-    return magnitude * Pow<3>(AstronomicalUnit) / Pow<2>(Day);
-  } else {
-    LOG(FATAL) << "unsupported unit of gravitational parameter " << unit;
-    base::noreturn();
-  }
-}
-
-double ParseDimensionless(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  CHECK(unit.empty()) << unit;
-  return magnitude;
 }
 
 }  // namespace
@@ -319,14 +229,14 @@ void principia__DirectlyInsertMassiveCelestial(
           celestial_index,
           parent_index,
           {Barycentric::origin +
-               Displacement<Barycentric>({ParseLength(x),
-                                          ParseLength(y),
-                                          ParseLength(z)}),
-               Velocity<Barycentric>({ParseSpeed(vx),
-                                      ParseSpeed(vy),
-                                      ParseSpeed(vz)})},
+               Displacement<Barycentric>({ParseQuantity<Length>(x),
+                                          ParseQuantity<Length>(y),
+                                          ParseQuantity<Length>(z)}),
+               Velocity<Barycentric>({ParseQuantity<Speed>(vx),
+                                      ParseQuantity<Speed>(vy),
+                                      ParseQuantity<Speed>(vz)})},
           std::make_unique<MassiveBody>(
-              ParseGravitationalParameter(gravitational_parameter)));
+              ParseQuantity<GravitationalParameter>(gravitational_parameter)));
 }
 
 void principia__DirectlyInsertOblateCelestial(
@@ -349,26 +259,26 @@ void principia__DirectlyInsertOblateCelestial(
       celestial_index,
       parent_index,
       {Barycentric::origin +
-       Displacement<Barycentric>({ParseLength(x),
-                                  ParseLength(y),
-                                  ParseLength(z)}),
-       Velocity<Barycentric>({ParseSpeed(vx),
-                              ParseSpeed(vy),
-                              ParseSpeed(vz)})},
+       Displacement<Barycentric>({ParseQuantity<Length>(x),
+                                  ParseQuantity<Length>(y),
+                                  ParseQuantity<Length>(z)}),
+       Velocity<Barycentric>({ParseQuantity<Speed>(vx),
+                              ParseQuantity<Speed>(vy),
+                              ParseQuantity<Speed>(vz)})},
       std::make_unique<OblateBody<Barycentric>>(
-          ParseGravitationalParameter(gravitational_parameter),
+          ParseQuantity<GravitationalParameter>(gravitational_parameter),
           RotatingBody<Barycentric>::Parameters(
               0 * Radian,
               Instant(),
               Bivector<double, Barycentric>(
                   RadiusLatitudeLongitude(
                       1.0,
-                      ParseAngle(axis_declination),
-                      ParseAngle(axis_right_ascension)).ToCartesian()) *
-                  Radian / Second),
+                      ParseQuantity<Angle>(axis_declination),
+                      ParseQuantity<Angle>(axis_right_ascension)).
+                  ToCartesian()) * Radian / Second),
           OblateBody<Barycentric>::Parameters(
-              ParseDimensionless(j2),
-              ParseLength(reference_radius))));
+              ParseQuantity<double>(j2),
+              ParseQuantity<Length>(reference_radius))));
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,

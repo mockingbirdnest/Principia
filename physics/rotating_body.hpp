@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -20,6 +21,7 @@ namespace principia {
 
 using geometry::AngularVelocity;
 using geometry::Instant;
+using geometry::Rotation;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -33,6 +35,9 @@ class RotatingBody : public MassiveBody {
  public:
   class Parameters {
    public:
+    // |reference_angle| is the angle of the prime meridian at
+    // |reference_instant|.  |angular_velocity| gives the direction and speed of
+    // the rotation of the body.
     Parameters(Angle const& reference_angle,
                Instant const& reference_instant,
                AngularVelocity<Frame> const& angular_velocity);
@@ -52,8 +57,11 @@ class RotatingBody : public MassiveBody {
   // Returns the angular velocity passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;
 
-  // Returnst the position at time |t|.
+  // Returns the position at time |t|.
   Angle AngleAt(Instant const& t) const;
+
+  // Returns the rotation at time |t|.
+  Rotation<Frame, Frame> RotationAt(Instant const& t) const;
 
   // Returns false.
   bool is_massless() const override;
