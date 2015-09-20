@@ -26,10 +26,10 @@ using geometry::Trivector;
 using quantities::Length;
 using quantities::MagneticFlux;
 using quantities::Speed;
+using quantities::uk::Foot;
 using testing::Ne;
 using testing::Eq;
 using testing::Not;
-using uk::Foot;
 using cgs::Maxwell;
 
 namespace {

@@ -31,12 +31,12 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Minute;
 using quantities::si::Second;
+using quantities::uk::Furlong;
+using quantities::uk::Mile;
+using quantities::uk::Rod;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
-using uk::Furlong;
-using uk::Mile;
-using uk::Rod;
 using ::testing::Eq;
 
 namespace geometry {

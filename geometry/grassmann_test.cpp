@@ -36,12 +36,12 @@ using quantities::si::Day;
 using quantities::si::Metre;
 using quantities::si::Pascal;
 using quantities::si::Second;
+using quantities::uk::Foot;
+using quantities::uk::Furlong;
+using quantities::uk::Inch;
+using quantities::uk::Rod;
+using quantities::uk::admiralty::Fathom;
 using testing_utilities::AlmostEquals;
-using uk::admiralty::Fathom;
-using uk::Foot;
-using uk::Furlong;
-using uk::Inch;
-using uk::Rod;
 using ::testing::Eq;
 
 namespace geometry {
