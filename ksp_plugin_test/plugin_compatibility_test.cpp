@@ -23,10 +23,10 @@ using geometry::Bivector;
 using geometry::Trivector;
 using geometry::Vector;
 using quantities::Length;
-using si::Hour;
-using si::Metre;
-using si::Radian;
-using si::Second;
+using quantities::si::Hour;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 

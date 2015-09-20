@@ -4,7 +4,7 @@
 
 namespace principia {
 
-using si::Day;
+using quantities::si::Day;
 
 namespace geometry {
 

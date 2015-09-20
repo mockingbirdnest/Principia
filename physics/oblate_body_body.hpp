@@ -11,8 +11,8 @@
 
 namespace principia {
 
-using si::Radian;
-using si::Second;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace physics {
 

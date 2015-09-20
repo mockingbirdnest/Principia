@@ -11,8 +11,8 @@
 
 namespace principia {
 
-using si::Metre;
-using si::Second;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing_utilities::ULPDistance;
 
 namespace physics {

@@ -14,7 +14,7 @@
 namespace principia {
 namespace geometry {
 
-using si::Metre;
+using quantities::si::Metre;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 

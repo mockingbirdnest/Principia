@@ -29,7 +29,7 @@ using quantities::Abs;
 using quantities::Exponentiation;
 using quantities::Quotient;
 using quantities::Time;
-using si::Day;
+using quantities::si::Day;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;

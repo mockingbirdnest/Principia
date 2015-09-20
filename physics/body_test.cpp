@@ -15,8 +15,8 @@ namespace principia {
 using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::Normalize;
-using si::Radian;
-using si::Second;
+using quantities::si::Radian;
+using quantities::si::Second;
 using ::testing::IsNull;
 using ::testing::NotNull;
 

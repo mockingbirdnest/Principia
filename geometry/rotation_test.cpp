@@ -13,11 +13,12 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-namespace geometry {
 
-using si::Metre;
-using testing::Eq;
+using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
+using ::testing::Eq;
+
+namespace geometry {
 
 class RotationTest : public testing::Test {
  protected:

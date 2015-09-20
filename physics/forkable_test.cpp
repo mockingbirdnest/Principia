@@ -11,7 +11,7 @@
 namespace principia {
 
 using geometry::Instant;
-using si::Second;
+using quantities::si::Second;
 using ::testing::ElementsAre;
 
 namespace physics {

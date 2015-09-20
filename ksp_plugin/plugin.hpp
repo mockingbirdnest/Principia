@@ -41,10 +41,10 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Transforms;
 using quantities::Angle;
-using si::Hour;
-using si::Metre;
-using si::Milli;
-using si::Second;
+using quantities::si::Hour;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Second;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.

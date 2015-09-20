@@ -81,12 +81,12 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::Transforms;
-using si::AstronomicalUnit;
-using si::Hour;
-using si::Kilo;
-using si::Metre;
-using si::Radian;
-using si::Second;
+using quantities::si::AstronomicalUnit;
+using quantities::si::Hour;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace benchmarks {
 

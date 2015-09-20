@@ -40,13 +40,13 @@ using quantities::GravitationalParameter;
 using quantities::Pow;
 using quantities::SIUnit;
 using quantities::Time;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Kilogram;
-using si::Metre;
-using si::Radian;
-using si::Second;
+using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Kilo;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace testing_utilities {
 
