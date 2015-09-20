@@ -10,15 +10,39 @@ namespace quantities {
 
 namespace {
 
+template<typename T>
+using ParseUnitFunction = T(*)(std::string const& s);
+
+template<typename T, int exponent>
+Exponentiation<T, exponent> ParseExponentiationUnit(std::string const& s) {
+  int const first_carret = s.find('^');
+  int const last_nonblank = s.find_last_not_of(' ', first_carret - 1);
+  CHECK_NE(std::string::npos, last_nonblank);
+
+  char* interpreted_end;
+  const char* interpreted_begin = s.c_str() + first_carret + 1;
+  int const actual_exponent = std::strtol(interpreted_begin,
+                                          &interpreted_end,
+                                          10);
+  int const interpreted = interpreted_end - interpreted_begin;
+  CHECK_LT(0, interpreted) << "invalid exponent " << s;
+  CHECK_EQ(exponent, actual_exponent);
+
+  return Pow<exponent>(ParseUnit<T>(s.substr(0, last_nonblank + 1)));
+}
+
 template<typename QNumerator, typename QDenominator>
-Quotient<QNumerator, QDenominator> ParseQuotientUnit(std::string const& s) {
+Quotient<QNumerator, QDenominator> ParseQuotientUnit(
+    std::string const& s,
+    ParseUnitFunction<QNumerator> parse_numerator_unit,
+    ParseUnitFunction<QDenominator> parse_denominator_unit) {
   int const first_slash = s.find('/');
   int const first_nonblank = s.find_first_not_of(' ', first_slash + 1);
   CHECK_NE(std::string::npos, first_nonblank);
   int const last_nonblank = s.find_last_not_of(' ', first_slash - 1);
   CHECK_NE(std::string::npos, last_nonblank);
-  return ParseUnit<QNumerator>(s.substr(0, last_nonblank + 1)) /
-         ParseUnit<QDenominator>(s.substr(first_nonblank));
+  return parse_numerator_unit(s.substr(0, last_nonblank + 1)) /
+         parse_denominator_unit(s.substr(first_nonblank));
 }
 
 }  // namespace
@@ -45,18 +69,6 @@ Q ParseQuantity(std::string const& s) {
 }
 
 template<>
-Angle ParseUnit(std::string const& s) {
-  if (s == "deg" || s == "°") {
-    return si::Degree;
-  } else if (s == "rad") {
-    return si::Radian;
-  } else {
-    LOG(FATAL) << "Unsupported unit of angle " << s;
-    base::noreturn();
-  }
-}
-
-template<>
 Length ParseUnit(std::string const& s) {
   if (s == "m") {
     return si::Metre;
@@ -68,11 +80,6 @@ Length ParseUnit(std::string const& s) {
     LOG(FATAL) << "Unsupported unit of length " << s;
     base::noreturn();
   }
-}
-
-template<>
-Speed ParseUnit(std::string const& s) {
-  return ParseQuotientUnit<Length, Time>(s);
 }
 
 template<>
@@ -88,19 +95,27 @@ Time ParseUnit(std::string const& s) {
 }
 
 template<>
-GravitationalParameter ParseUnit(std::string const& s) {
-  if (s == "m^3/s^2") {
-    return Pow<3>(si::Metre) / Pow<2>(si::Second);
-  } else if (s == "km^3/s^2") {
-    return Pow<3>(si::Kilo(si::Metre)) / Pow<2>(si::Second);
-  } else if (s == "km^3/d^2") {
-    return Pow<3>(si::Kilo(si::Metre)) / Pow<2>(si::Day);
-  } else if (s == "au^3/d^2") {
-    return Pow<3>(si::AstronomicalUnit) / Pow<2>(si::Day);
+Angle ParseUnit(std::string const& s) {
+  if (s == "deg" || s == "°") {
+    return si::Degree;
+  } else if (s == "rad") {
+    return si::Radian;
   } else {
-    LOG(FATAL) << "Unsupported unit of gravitational parameter " << s;
+    LOG(FATAL) << "Unsupported unit of angle " << s;
     base::noreturn();
   }
+}
+
+template<>
+Speed ParseUnit(std::string const& s) {
+  return ParseQuotientUnit(s, &ParseUnit<Length>, &ParseUnit<Time>);
+}
+
+template<>
+GravitationalParameter ParseUnit(std::string const& s) {
+  return ParseQuotientUnit(s,
+                           &ParseExponentiationUnit<Length, 3>,
+                           &ParseExponentiationUnit<Time, 2>);
 }
 
 template<>
