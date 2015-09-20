@@ -173,6 +173,8 @@
     <ClInclude Include="mock_ephemeris.hpp" />
     <ClInclude Include="oblate_body.hpp" />
     <ClInclude Include="oblate_body_body.hpp" />
+    <ClInclude Include="rotating_body.hpp" />
+    <ClInclude Include="rotating_body_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
