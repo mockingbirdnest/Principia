@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 
+#include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
@@ -25,6 +26,8 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
+using astronomy::kSolarSystemBarycentre;
 using astronomy::LunarDistance;
 using astronomy::SolarMass;
 using constants::GravitationalConstant;
@@ -43,8 +46,6 @@ using si::Minute;
 using si::Radian;
 using si::Second;
 using testing_utilities::AlmostEquals;
-using testing_utilities::ICRFJ2000Ecliptic;
-using testing_utilities::kSolarSystemBarycentre;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystem;
 using ::testing::Eq;

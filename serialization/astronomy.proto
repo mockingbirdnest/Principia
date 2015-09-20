@@ -1,5 +1,7 @@
 syntax = "proto2";
 
+import "serialization/geometry.proto";
+
 package principia.serialization;
 
 message GravityModel {
@@ -12,7 +14,8 @@ message GravityModel {
     optional string reference_radius = 6;
   }
   repeated string needs = 1;
-  repeated Body body = 2;
+  required Frame.SolarSystemTag frame = 2;
+  repeated Body body = 3;
 }
 
 message InitialState {
@@ -26,8 +29,9 @@ message InitialState {
     required string vz = 7;
   }
   repeated string needs = 1;
-  required int64 epoch = 2;
-  repeated Body body = 3;
+  required Frame.SolarSystemTag frame = 2;
+  required int64 epoch = 3;
+  repeated Body body = 4;
 }
 
 message SolarSystemFile {

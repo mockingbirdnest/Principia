@@ -6,16 +6,62 @@
 #include <map>
 #include <set>
 
+#include "astronomy/frames.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
+#include "quantities/parser.hpp"
+#include "quantities/si.hpp"
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
+
+using quantities::ParseQuantity;
+using si::Radian;
+
 namespace physics {
+
+namespace {
+
+template<typename Frame>
+std::unique_ptr<MassiveBody> MakeMassiveBody(
+    serialization::GravityModel::Body const& body);
+
+template<typename Frame>
+std::unique_ptr<MassiveBody> MakeMassiveBody(
+    serialization::GravityModel::Body const& body) {
+  std::unique_ptr<MassiveBody> massive_body;
+  CHECK(body.has_gravitational_parameter());
+  CHECK_EQ(body.has_j2(), body.has_reference_radius());
+  CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
+  MassiveBody::Parameters massive_body_parameters(
+                              ParseQuantity<GravitationalParameter>(
+                                  body.gravitational_parameter()));
+  if (body.has_axis_declination()) {
+    RotatingBody<Frame>::Parameters rotating_body_parameters(0 * Radian,
+                                                             Instant(),);
+    if (body.has_j2()) {
+      OblateBody<Frame>::Parameters oblate_body_parameters(
+          ParseQuantity<double>(body.j2()),
+          ParseQuantity<Length>(body.reference_radius()));
+      massive_body = std::make_unique<OblateBody<Frame>>(
+                         massive_body_parameters,
+                         rotating_body_parameters,
+                         oblate_body_parameters);
+    } else {
+      massive_body = std::make_unique<RotatingBody<Frame>>(
+                         massive_body_parameters,
+                         rotating_body_parameters);
+    }
+  } else {
+    massive_body = std::make_unique<MassiveBody>(massive_body_parameters);
+  }
+}
+
+}  // namespace
 
 void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
                                     std::string const& gravity_model_filename) {
@@ -37,6 +83,12 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
   CHECK(google::protobuf::TextFormat::Parse(&gravity_model_zcs,
                                             &gravity_model));
   CHECK(gravity_model.has_gravity_model());
+
+  // We don't support using different frames in different files.
+  CHECK_EQ(gravity_model.gravity_model().frame(),
+           initial_state.initial_state().frame());
+  serialization::Frame::SolarSystemTag const frame =
+      initial_state.initial_state().frame();
 
   // Store the data in maps keyed by body name.
   std::set<std::string> names;
@@ -65,22 +117,13 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
     CHECK(body->has_gravitational_parameter());
     CHECK_EQ(body->has_j2(), body->has_reference_radius());
     CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
-    MassiveBody::Parameters massive_body_parameters(
-                                body->gravitational_parameter());
-    if (body->has_axis_declination()) {
-      RotatingBody<>::Parameters rotating_body_parameters();
-      if (body->has_j2()) {
-        OblateBody<>::Parameters oblate_body_parameters(body->j2());
-        massive_body = std::make_unique<OblateBody<>>(massive_body_parameters,
-                                                      rotating_body_parameters,
-                                                      oblate_body_parameters);
-      } else {
-        massive_body = std::make_unique<RotatingBody<>>(
-                           massive_body_parameters,
-                           rotating_body_parameters);
-      }
-    } else {
-      massive_body = std::make_unique<MassiveBody>(massive_body_parameters);
+    switch (frame) {
+      case serialization::Frame::ICRF_J2000_ECLIPTIC:
+        massive_body = MakeMassiveBody<astronomy::ICRFJ2000Ecliptic>(*body);
+        break;
+      case serialization::Frame::ICRF_J2000_EQUATOR:
+        massive_body = MakeMassiveBody<astronomy::ICRFJ2000Equator>(*body);
+        break;
     }
   }
 }
