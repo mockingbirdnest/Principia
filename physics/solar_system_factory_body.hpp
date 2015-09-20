@@ -33,70 +33,10 @@ using quantities::si::Second;
 
 namespace physics {
 
-namespace {
-
 template<typename Frame>
-DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
-    serialization::InitialState::Body const& body);
-
-template<typename Frame>
-std::unique_ptr<MassiveBody> MakeMassiveBody(
-    serialization::GravityModel::Body const& body);
-
-template<typename Frame>
-DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
-    serialization::InitialState::Body const& body) {
-  Position<Frame> const
-      position(Vector<Length, Frame>({ParseQuantity<Length>(body.x()),
-                                      ParseQuantity<Length>(body.y()),
-                                      ParseQuantity<Length>(body.z())}));
-  Velocity<Frame> const
-      velocity(Vector<Speed, Frame>({ParseQuantity<Speed>(body.vx()),
-                                     ParseQuantity<Speed>(body.vy()),
-                                     ParseQuantity<Speed>(body.vz())}));
-  return DegreesOfFreedom<Frame>(position, velocity);
-}
-
-template<typename Frame>
-std::unique_ptr<MassiveBody> MakeMassiveBody(
-    serialization::GravityModel::Body const& body) {
-  CHECK(body.has_gravitational_parameter());
-  CHECK_EQ(body.has_j2(), body.has_reference_radius());
-  CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
-  MassiveBody::Parameters massive_body_parameters(
-                              ParseQuantity<GravitationalParameter>(
-                                  body.gravitational_parameter()));
-  if (body.has_axis_declination()) {
-    RotatingBody<Frame>::Parameters
-        rotating_body_parameters(
-            0 * Radian,
-            Instant(),
-            Bivector<double, Frame>(
-                RadiusLatitudeLongitude(
-                    1.0,
-                    ParseQuantity<Angle>(body.axis_declination()),
-                    ParseQuantity<Angle>(body.axis_right_ascension())).
-                ToCartesian()) * Radian / Second);
-    if (body.has_j2()) {
-      OblateBody<Frame>::Parameters oblate_body_parameters(
-          ParseQuantity<double>(body.j2()),
-          ParseQuantity<Length>(body.reference_radius()));
-      return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
-                                                 rotating_body_parameters,
-                                                 oblate_body_parameters);
-    } else {
-      return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
-                                                   rotating_body_parameters);
-    }
-  } else {
-    return std::make_unique<MassiveBody>(massive_body_parameters);
-  }
-}
-
-}  // namespace
-
-void SolarSystemFactory::Initialize(std::string const& gravity_model_filename,
-                                    std::string const& initial_state_filename) {
+void SolarSystemFactory<Frame>::Initialize(
+    std::string const& gravity_model_filename,
+    std::string const& initial_state_filename) {
   // Parse the files.
   serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
@@ -116,11 +56,10 @@ void SolarSystemFactory::Initialize(std::string const& gravity_model_filename,
                                             &initial_state));
   CHECK(initial_state.has_initial_state());
 
-  // We don't support using different frames in different files.
-  CHECK_EQ(gravity_model.gravity_model().frame(),
-           initial_state.initial_state().frame());
-  serialization::Frame::SolarSystemTag const frame =
-      gravity_model.initial_state().frame();
+  // We don't support using a different frame that the one specified by the
+  // instance.
+  CHECK_EQ(Frame::tag, initial_state.initial_state().frame());
+  CHECK_EQ(Frame::tag, gravity_model.gravity_model().frame());
 
   // Store the data in maps keyed by body name.
   std::map<std::string,
@@ -152,36 +91,68 @@ void SolarSystemFactory::Initialize(std::string const& gravity_model_filename,
   for (auto const& pair : gravity_model_map) {
     std::string const& name = pair.first;
     serialization::GravityModel::Body const* const body = pair.second;
-    std::unique_ptr<MassiveBody> massive_body;
     CHECK(body->has_gravitational_parameter());
     CHECK_EQ(body->has_j2(), body->has_reference_radius());
     CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
-    switch (frame) {
-      case serialization::Frame::ICRF_J2000_ECLIPTIC:
-        massive_body = MakeMassiveBody<astronomy::ICRFJ2000Ecliptic>(*body);
-        break;
-      case serialization::Frame::ICRF_J2000_EQUATOR:
-        massive_body = MakeMassiveBody<astronomy::ICRFJ2000Equator>(*body);
-        break;
-    }
+    std::unique_ptr<MassiveBody> massive_body = MakeMassiveBody(*body);
   }
 
   // Build degrees of freedom.
   for (auto const& pair : initial_state_map) {
     std::string const& name = pair.first;
     serialization::InitialState::Body const* const body = pair.second;
-    switch (frame) {
-      case serialization::Frame::ICRF_J2000_ECLIPTIC: {
-        auto const degrees_of_freedom =
-            MakeDegreesOfFreedom<astronomy::ICRFJ2000Ecliptic>(*body);
-        break;
-      }
-      case serialization::Frame::ICRF_J2000_EQUATOR: {
-        auto const degrees_of_freedom =
-            MakeDegreesOfFreedom<astronomy::ICRFJ2000Equator>(*body);
-        break;
-      }
+    auto const degrees_of_freedom = MakeDegreesOfFreedom(*body);
+  }
+}
+
+template<typename Frame>
+DegreesOfFreedom<Frame> SolarSystemFactory<Frame>::MakeDegreesOfFreedom(
+    serialization::InitialState::Body const& body) {
+  Position<Frame> const
+      position = Frame::origin + 
+                 Vector<Length, Frame>({ParseQuantity<Length>(body.x()),
+                                        ParseQuantity<Length>(body.y()),
+                                        ParseQuantity<Length>(body.z())});
+  Velocity<Frame> const
+      velocity(Vector<Speed, Frame>({ParseQuantity<Speed>(body.vx()),
+                                     ParseQuantity<Speed>(body.vy()),
+                                     ParseQuantity<Speed>(body.vz())}));
+  return DegreesOfFreedom<Frame>(position, velocity);
+}
+
+template<typename Frame>
+std::unique_ptr<MassiveBody> SolarSystemFactory<Frame>::MakeMassiveBody(
+    serialization::GravityModel::Body const& body) {
+  CHECK(body.has_gravitational_parameter());
+  CHECK_EQ(body.has_j2(), body.has_reference_radius());
+  CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
+  MassiveBody::Parameters massive_body_parameters(
+                              ParseQuantity<GravitationalParameter>(
+                                  body.gravitational_parameter()));
+  if (body.has_axis_declination()) {
+    RotatingBody<Frame>::Parameters
+        rotating_body_parameters(
+            0 * Radian,
+            Instant(),
+            Bivector<double, Frame>(
+                RadiusLatitudeLongitude(
+                    1.0,
+                    ParseQuantity<Angle>(body.axis_declination()),
+                    ParseQuantity<Angle>(body.axis_right_ascension())).
+                ToCartesian()) * Radian / Second);
+    if (body.has_j2()) {
+      OblateBody<Frame>::Parameters oblate_body_parameters(
+          ParseQuantity<double>(body.j2()),
+          ParseQuantity<Length>(body.reference_radius()));
+      return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
+                                                 rotating_body_parameters,
+                                                 oblate_body_parameters);
+    } else {
+      return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
+                                                   rotating_body_parameters);
     }
+  } else {
+    return std::make_unique<MassiveBody>(massive_body_parameters);
   }
 }
 

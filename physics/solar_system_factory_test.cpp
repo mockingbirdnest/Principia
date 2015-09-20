@@ -1,5 +1,6 @@
 #include "physics/solar_system_factory.hpp"
 
+#include "astronomy/frames.hpp"
 #include "gtest/gtest.h"
 
 namespace principia {
@@ -7,7 +8,7 @@ namespace physics {
 
 class SolarSystemFactoryTest : public ::testing::Test {
  protected:
-  SolarSystemFactory factory_;
+  SolarSystemFactory<astronomy::ICRFJ2000Equator> factory_;
 };
 
 TEST_F(SolarSystemFactoryTest, Parse) {
