@@ -62,8 +62,6 @@
 
 namespace principia {
 
-using astronomy::EarthMass;
-using astronomy::JulianYear;
 using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -81,6 +79,8 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::Transforms;
+using quantities::astronomy::EarthMass;
+using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Hour;
 using quantities::si::Kilo;

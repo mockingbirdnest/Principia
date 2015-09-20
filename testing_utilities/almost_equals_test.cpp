@@ -17,7 +17,6 @@
 namespace principia {
 namespace testing_utilities {
 
-using bipm::Knot;
 using geometry::Bivector;
 using geometry::Quaternion;
 using geometry::R3Element;
@@ -26,6 +25,7 @@ using geometry::Trivector;
 using quantities::Length;
 using quantities::MagneticFlux;
 using quantities::Speed;
+using quantities::bipm::Knot;
 using quantities::uk::Foot;
 using testing::Ne;
 using testing::Eq;

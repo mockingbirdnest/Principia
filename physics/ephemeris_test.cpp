@@ -25,8 +25,6 @@
 
 namespace principia {
 
-using astronomy::LunarDistance;
-using astronomy::SolarMass;
 using constants::GravitationalConstant;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -35,6 +33,8 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Pow;
 using quantities::Sqrt;
+using quantities::astronomy::LunarDistance;
+using quantities::astronomy::SolarMass;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
