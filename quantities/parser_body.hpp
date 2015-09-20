@@ -10,6 +10,10 @@ namespace quantities {
 
 namespace {
 
+// The patterns that we parse here have the form:
+//    U^n/V^m
+//  when U and V are (final) unit names and n and m are integers.
+
 template<typename T>
 using ParseUnitFunction = T(*)(std::string const& s);
 
@@ -31,11 +35,11 @@ Exponentiation<T, exponent> ParseExponentiationUnit(std::string const& s) {
   return Pow<exponent>(ParseUnit<T>(s.substr(0, last_nonblank + 1)));
 }
 
-template<typename QNumerator, typename QDenominator>
-Quotient<QNumerator, QDenominator> ParseQuotientUnit(
+template<typename TNumerator, typename TDenominator>
+Quotient<TNumerator, TDenominator> ParseQuotientUnit(
     std::string const& s,
-    ParseUnitFunction<QNumerator> parse_numerator_unit,
-    ParseUnitFunction<QDenominator> parse_denominator_unit) {
+    ParseUnitFunction<TNumerator> parse_numerator_unit,
+    ParseUnitFunction<TDenominator> parse_denominator_unit) {
   int const first_slash = s.find('/');
   int const first_nonblank = s.find_first_not_of(' ', first_slash + 1);
   CHECK_NE(std::string::npos, first_nonblank);
@@ -47,8 +51,8 @@ Quotient<QNumerator, QDenominator> ParseQuotientUnit(
 
 }  // namespace
 
-template<typename Q>
-Q ParseQuantity(std::string const& s) {
+template<typename T>
+T ParseQuantity(std::string const& s) {
   // Parse a double.
   char* interpreted_end;
   char const* const c_string = s.c_str();
@@ -64,7 +68,7 @@ Q ParseQuantity(std::string const& s) {
     unit_string = s.substr(first_nonblank, last_nonblank - first_nonblank + 1);
   }
 
-  Q const unit = ParseUnit<Q>(unit_string);
+  T const unit = ParseUnit<T>(unit_string);
   return magnitude * unit;
 }
 
