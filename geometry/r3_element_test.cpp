@@ -16,14 +16,14 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
-using astronomy::Parsec;
 using bipm::Knot;
 using constants::SpeedOfLight;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::astronomy::JulianYear;
+using quantities::astronomy::Parsec;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;

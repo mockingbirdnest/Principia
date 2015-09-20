@@ -21,8 +21,6 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
-using astronomy::Parsec;
 using constants::SpeedOfLight;
 using quantities::Charge;
 using quantities::Length;
@@ -31,6 +29,8 @@ using quantities::Product;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::astronomy::JulianYear;
+using quantities::astronomy::Parsec;
 using quantities::si::Coulomb;
 using quantities::si::Day;
 using quantities::si::Metre;
