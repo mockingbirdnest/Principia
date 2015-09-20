@@ -8,6 +8,21 @@
 namespace principia {
 namespace quantities {
 
+namespace {
+
+template<typename QNumerator, typename QDenominator>
+Quotient<QNumerator, QDenominator> ParseQuotientUnit(std::string const& s) {
+  int const first_slash = s.find('/');
+  int const first_nonblank = s.find_first_not_of(' ', first_slash + 1);
+  CHECK_NE(std::string::npos, first_nonblank);
+  int const last_nonblank = s.find_last_not_of(' ', first_slash - 1);
+  CHECK_NE(std::string::npos, last_nonblank);
+  return ParseUnit<QNumerator>(s.substr(0, last_nonblank + 1)) /
+         ParseUnit<QDenominator>(s.substr(first_nonblank));
+}
+
+}  // namespace
+
 template<typename Q>
 Q ParseQuantity(std::string const& s) {
   // Parse a double.
@@ -30,6 +45,18 @@ Q ParseQuantity(std::string const& s) {
 }
 
 template<>
+Angle ParseUnit(std::string const& s) {
+  if (s == "deg" || s == "°") {
+    return si::Degree;
+  } else if (s == "rad") {
+    return si::Radian;
+  } else {
+    LOG(FATAL) << "Unsupported unit of angle " << s;
+    base::noreturn();
+  }
+}
+
+template<>
 Length ParseUnit(std::string const& s) {
   if (s == "m") {
     return si::Metre;
@@ -45,28 +72,17 @@ Length ParseUnit(std::string const& s) {
 
 template<>
 Speed ParseUnit(std::string const& s) {
-  if (s == "m/s") {
-    return si::Metre / si::Second;
-  } else if (s == "km/s") {
-    return si::Kilo(si::Metre) / si::Second;
-  } else if (s == "km/d") {
-    return si::Kilo(si::Metre) / si::Day;
-  } else if (s == "au/d") {
-    return si::AstronomicalUnit / si::Day;
-  } else {
-    LOG(FATAL) << "Unsupported unit of speed " << s;
-    base::noreturn();
-  }
+  return ParseQuotientUnit<Length, Time>(s);
 }
 
 template<>
-Angle ParseUnit(std::string const& s) {
-  if (s == "deg" || s == "°") {
-    return si::Degree;
-  } else if (s == "rad") {
-    return si::Radian;
+Time ParseUnit(std::string const& s) {
+  if (s == "s") {
+    return si::Second;
+  } else if (s == "d") {
+    return si::Day;
   } else {
-    LOG(FATAL) << "Unsupported unit of angle " << s;
+    LOG(FATAL) << "Unsupported unit of speed " << s;
     base::noreturn();
   }
 }
