@@ -7,6 +7,8 @@
 #include <set>
 
 #include "astronomy/frames.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
@@ -19,8 +21,11 @@
 
 namespace principia {
 
+using geometry::Bivector;
+using geometry::RadiusLatitudeLongitude;
 using quantities::ParseQuantity;
 using si::Radian;
+using si::Second;
 
 namespace physics {
 
@@ -33,7 +38,6 @@ std::unique_ptr<MassiveBody> MakeMassiveBody(
 template<typename Frame>
 std::unique_ptr<MassiveBody> MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
-  std::unique_ptr<MassiveBody> massive_body;
   CHECK(body.has_gravitational_parameter());
   CHECK_EQ(body.has_j2(), body.has_reference_radius());
   CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
@@ -41,23 +45,29 @@ std::unique_ptr<MassiveBody> MakeMassiveBody(
                               ParseQuantity<GravitationalParameter>(
                                   body.gravitational_parameter()));
   if (body.has_axis_declination()) {
-    RotatingBody<Frame>::Parameters rotating_body_parameters(0 * Radian,
-                                                             Instant(),);
+    RotatingBody<Frame>::Parameters
+        rotating_body_parameters(
+            0 * Radian,
+            Instant(),
+            Bivector<double, Frame>(
+                RadiusLatitudeLongitude(
+                    1.0,
+                    ParseQuantity<Angle>(body.axis_declination()),
+                    ParseQuantity<Angle>(body.axis_right_ascension())).
+                ToCartesian()) * Radian / Second);
     if (body.has_j2()) {
       OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
           ParseQuantity<Length>(body.reference_radius()));
-      massive_body = std::make_unique<OblateBody<Frame>>(
-                         massive_body_parameters,
-                         rotating_body_parameters,
-                         oblate_body_parameters);
+      return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
+                                                 rotating_body_parameters,
+                                                 oblate_body_parameters);
     } else {
-      massive_body = std::make_unique<RotatingBody<Frame>>(
-                         massive_body_parameters,
-                         rotating_body_parameters);
+      return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
+                                                   rotating_body_parameters);
     }
   } else {
-    massive_body = std::make_unique<MassiveBody>(massive_body_parameters);
+    return std::make_unique<MassiveBody>(massive_body_parameters);
   }
 }
 
