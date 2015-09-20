@@ -1,6 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "quantities/parser.hpp"
+
+#include <string>
 
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -93,14 +95,14 @@ Time ParseUnit(std::string const& s) {
   } else if (s == "d") {
     return si::Day;
   } else {
-    LOG(FATAL) << "Unsupported unit of speed " << s;
+    LOG(FATAL) << "Unsupported unit of time " << s;
     base::noreturn();
   }
 }
 
 template<>
 Angle ParseUnit(std::string const& s) {
-  if (s == "deg" || s == "�") {
+  if (s == "deg" || s == "°") {
     return si::Degree;
   } else if (s == "rad") {
     return si::Radian;

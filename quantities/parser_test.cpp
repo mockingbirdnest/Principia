@@ -1,4 +1,4 @@
-#include "quantities/parser.hpp"
+﻿#include "quantities/parser.hpp"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -37,6 +37,14 @@ TEST_F(ParserTest, SpacesSuccess) {
   EXPECT_EQ(1.23 * Metre / Second, ParseQuantity<Speed>("1.23 m/ s"));
   EXPECT_EQ(1.23 * Metre / Second, ParseQuantity<Speed>("1.23 m / s"));
   EXPECT_EQ(1.23 * Metre / Second, ParseQuantity<Speed>("1.23m/s"));
+  EXPECT_EQ(1.23 * Pow<3>(Metre) / Pow<2>(Second),
+            ParseQuantity<GravitationalParameter>("1.23 m ^ 3/s^2"));
+  EXPECT_EQ(1.23 * Pow<3>(Metre) / Pow<2>(Second),
+            ParseQuantity<GravitationalParameter>("1.23 m^3 / s^2"));
+  EXPECT_EQ(1.23 * Pow<3>(Metre) / Pow<2>(Second),
+            ParseQuantity<GravitationalParameter>("1.23 m ^ 3 / s ^ 2"));
+  EXPECT_EQ(1.23 * Pow<3>(Metre) / Pow<2>(Second),
+            ParseQuantity<GravitationalParameter>("1.23 m^ 3/s ^2"));
 }
 
 TEST_F(ParserDeathTest, SpacesError) {
@@ -58,6 +66,12 @@ TEST_F(ParserDeathTest, UnitError) {
   EXPECT_DEATH({
     ParseQuantity<Length>("1.23 nm");
   }, "Unsupported.*length");
+  EXPECT_DEATH({
+    ParseQuantity<Time>("1.23 hr");
+  }, "Unsupported.*time");
+  EXPECT_DEATH({
+    ParseQuantity<Angle>("1.23 grd");
+  }, "Unsupported.*angle");
 }
 
 TEST_F(ParserTest, ParseDouble) {
@@ -73,7 +87,7 @@ TEST_F(ParserTest, ParseLength) {
 
 TEST_F(ParserTest, ParseAngle) {
   EXPECT_EQ(1.23 * Degree, ParseQuantity<Angle>("1.23 deg"));
-  EXPECT_EQ(1.23 * Degree, ParseQuantity<Angle>("1.23 �"));
+  EXPECT_EQ(1.23 * Degree, ParseQuantity<Angle>("1.23 °"));
   EXPECT_EQ(1.23 * Radian, ParseQuantity<Angle>("1.23 rad"));
 }
 
