@@ -32,7 +32,7 @@ using geometry::Rotation;
 using geometry::Wedge;
 using quantities::AngularFrequency;
 using quantities::Pow;
-using si::Radian;
+using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;

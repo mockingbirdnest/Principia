@@ -26,6 +26,9 @@ using base::not_null;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
+using quantities::si::ArcMinute;
+using quantities::si::ArcSecond;
+using quantities::si::Degree;
 
 namespace testing_utilities {
 

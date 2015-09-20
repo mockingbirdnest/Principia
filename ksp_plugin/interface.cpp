@@ -39,14 +39,14 @@ using physics::OblateBody;
 using physics::RotatingBody;
 using quantities::ParseQuantity;
 using quantities::Pow;
-using si::AstronomicalUnit;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Metre;
-using si::Radian;
-using si::Second;
-using si::Tonne;
+using quantities::si::AstronomicalUnit;
+using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
+using quantities::si::Tonne;
 
 namespace ksp_plugin {
 

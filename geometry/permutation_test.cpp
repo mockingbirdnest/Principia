@@ -16,7 +16,7 @@
 namespace principia {
 
 using quantities::Length;
-using si::Metre;
+using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 

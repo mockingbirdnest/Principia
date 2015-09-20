@@ -22,8 +22,8 @@ namespace principia {
 namespace geometry {
 
 using quantities::Length;
-using si::Metre;
-using si::Radian;
+using quantities::si::Metre;
+using quantities::si::Radian;
 using testing::Contains;
 using testing::Eq;
 using testing::Lt;

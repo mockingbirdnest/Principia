@@ -16,27 +16,27 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
-using astronomy::Parsec;
-using bipm::Knot;
-using constants::SpeedOfLight;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
-using si::Day;
-using si::Degree;
-using si::Hour;
-using si::Kilo;
-using si::Metre;
-using si::Minute;
-using si::Second;
+using quantities::astronomy::JulianYear;
+using quantities::astronomy::Parsec;
+using quantities::bipm::Knot;
+using quantities::constants::SpeedOfLight;
+using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Hour;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Minute;
+using quantities::si::Second;
+using quantities::uk::Furlong;
+using quantities::uk::Mile;
+using quantities::uk::Rod;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
-using uk::Furlong;
-using uk::Mile;
-using uk::Rod;
 using ::testing::Eq;
 
 namespace geometry {

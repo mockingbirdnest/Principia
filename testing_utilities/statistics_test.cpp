@@ -14,8 +14,8 @@ namespace testing_utilities {
 using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
-using si::Metre;
-using si::Second;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing::Eq;
 
 class StatisticsTest : public testing::Test {

@@ -12,6 +12,12 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+
+using quantities::Cos;
+using quantities::Momentum;
+using quantities::SIUnit;
+using quantities::si::Radian;
+
 namespace benchmarks {
 
 #define TRIGGER_DEAD_CODE_ELIMINATION
@@ -24,10 +30,6 @@ std::size_t const kDimension = 100;
 
 inline void DimensionfulDiscreteCosineTransform(
     not_null<std::vector<quantities::Momentum>*> const result) {
-  using quantities::Cos;
-  using quantities::Momentum;
-  using quantities::SIUnit;
-  using si::Radian;
   std::vector<Momentum> input(kDimension);
   for (std::size_t i = 0; i < kDimension; ++i) {
     input[i] = i * SIUnit<Momentum>();

@@ -18,8 +18,8 @@ namespace principia {
 using geometry::Instant;
 using quantities::Length;
 using quantities::Speed;
-using si::Metre;
-using si::Second;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;

@@ -8,6 +8,10 @@
 
 namespace principia {
 
+using testing_utilities::AlmostEquals;
+
+namespace quantities {
+
 using si::AstronomicalUnit;
 using si::Day;
 using si::Degree;
@@ -15,9 +19,6 @@ using si::Kilo;
 using si::Metre;
 using si::Radian;
 using si::Second;
-using testing_utilities::AlmostEquals;
-
-namespace quantities {
 
 class ParserTest : public ::testing::Test {
 };

@@ -12,15 +12,15 @@ namespace principia {
 
 using geometry::Frame;
 using quantities::Pow;
-using si::Kilo;
-using si::Kilogram;
-using si::Metre;
-using si::Newton;
-using si::Second;
+using quantities::si::Kilo;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Newton;
+using quantities::si::Second;
+using quantities::uk::Foot;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
-using uk::Foot;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;

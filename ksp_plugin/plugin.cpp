@@ -37,9 +37,9 @@ using geometry::Sign;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Force;
-using si::Milli;
-using si::Minute;
-using si::Radian;
+using quantities::si::Milli;
+using quantities::si::Minute;
+using quantities::si::Radian;
 
 namespace {
 

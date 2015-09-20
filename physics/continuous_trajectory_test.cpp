@@ -21,7 +21,6 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
@@ -29,11 +28,12 @@ using numerics::ЧебышёвSeries;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Time;
-using si::Kilo;
-using si::Metre;
-using si::Milli;
-using si::Radian;
-using si::Second;
+using quantities::astronomy::JulianYear;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 
