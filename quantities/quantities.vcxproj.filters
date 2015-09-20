@@ -59,9 +59,18 @@
     <ClInclude Include="serialization_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="quantities_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

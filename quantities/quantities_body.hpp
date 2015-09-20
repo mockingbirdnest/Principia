@@ -5,84 +5,9 @@
 #include <string>
 
 #include "base/macros.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace quantities {
-
-namespace {
-
-template<typename D>
-Quantity<D> ParseUnit(std::string const& s);
-
-template<>
-Length ParseUnit<Length::Dimensions>(std::string const& s) {
-  if (s == "m") {
-    return si::Metre;
-  } else if (s == "km") {
-    return si::Kilo(si::Metre);
-  } else if (s == "au") {
-    return si::AstronomicalUnit;
-  } else {
-    LOG(FATAL) << "Unsupported unit of length " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-Speed ParseUnit<Speed::Dimensions>(std::string const& s) {
-  if (s == "m/s") {
-    return si::Metre / si::Second;
-  } else if (s == "km/s") {
-    return si::Kilo(si::Metre) / si::Second;
-  } else if (s == "km/d") {
-    return si::Kilo(si::Metre) / si::Day;
-  } else if (s == "au/d") {
-    return si::AstronomicalUnit / si::Day;
-  } else {
-    LOG(FATAL) << "Unsupported unit of speed " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-Angle ParseUnit<Angle::Dimensions>(std::string const& s) {
-  if (s == "deg" || s == "°") {
-    return si::Degree;
-  } else if (s == "rad") {
-    return si::Radian;
-  } else {
-    LOG(FATAL) << "Unsupported unit of angle " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-GravitationalParameter ParseUnit<GravitationalParameter::Dimensions>(
-    std::string const& s) {
-  if (s == "m^3/s^2") {
-    return Pow<3>(si::Metre) / Pow<2>(si::Second);
-  } else if (s == "km^3/s^2") {
-    return Pow<3>(si::Kilo(si::Metre)) / Pow<2>(si::Second);
-  } else if (s == "km^3/d^2") {
-    return Pow<3>(si::Kilo(si::Metre)) / Pow<2>(si::Day);
-  } else if (s == "au^3/d^2") {
-    return Pow<3>(si::AstronomicalUnit) / Pow<2>(si::Day);
-  } else {
-    LOG(FATAL) << "Unsupported unit of gravitational parameter " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-double ParseUnit<double>(std::string const& s) {
-  CHECK(s.empty()) << s;
-  return 1;
-}
-
-}  // namespace
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
@@ -350,26 +275,6 @@ Quantity<D> Quantity<D>::ReadFromMessage(
     serialization::Quantity const& message) {
   CHECK_EQ(D::representation, message.dimensions());
   return Quantity(message.magnitude());
-}
-
-template<typename D>
-Quantity<D> Quantity<D>::ParseFromString(std::string const& s) {
-  // Parse a double.
-  char* interpreted_end;
-  char const* const c_string = s.c_str();
-  double const magnitude = std::strtod(c_string, &interpreted_end);
-  int const interpreted = interpreted_end - c_string;
-  CHECK_LT(0, interpreted) << "invalid floating-point number " << s;
-
-  int const first_nonblank = s.find_first_not_of(' ', interpreted);
-  int const last_nonblank = s.find_last_not_of(' ');
-  std::string unit_string;
-  if (first_nonblank != std::string::npos) {
-    unit_string = s.substr(first_nonblank, last_nonblank - first_nonblank + 1);
-  }
-  
-  Quantity<D> const unit = ParseUnit<D>(unit_string));
-  return magnitude * unit;
 }
 
 // Multiplicative group

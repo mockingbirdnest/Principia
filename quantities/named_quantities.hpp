@@ -3,7 +3,6 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
-
 namespace quantities {
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
@@ -97,5 +96,6 @@ using LuminousEnergy   = Product<LuminousFlux, Time>;
 using Illuminance      = Quotient<LuminousFlux, Area>;
 using LuminousExposure = Product<Illuminance, Time>;
 using LuminousEfficacy = Quotient<LuminousFlux, RadiantFlux>;
+
 }  // namespace quantities
 }  // namespace principia
