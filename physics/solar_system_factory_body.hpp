@@ -95,18 +95,9 @@ std::unique_ptr<MassiveBody> MakeMassiveBody(
 
 }  // namespace
 
-void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
-                                    std::string const& gravity_model_filename) {
+void SolarSystemFactory::Initialize(std::string const& gravity_model_filename,
+                                    std::string const& initial_state_filename) {
   // Parse the files.
-  serialization::SolarSystemFile initial_state;
-  std::ifstream initial_state_ifstream(initial_state_filename);
-  CHECK(initial_state_ifstream.good());
-  google::protobuf::io::IstreamInputStream initial_state_zcs(
-                                               &initial_state_ifstream);
-  CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
-                                            &initial_state));
-  CHECK(initial_state.has_initial_state());
-
   serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
@@ -116,20 +107,22 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
                                             &gravity_model));
   CHECK(gravity_model.has_gravity_model());
 
+  serialization::SolarSystemFile initial_state;
+  std::ifstream initial_state_ifstream(initial_state_filename);
+  CHECK(initial_state_ifstream.good());
+  google::protobuf::io::IstreamInputStream initial_state_zcs(
+                                               &initial_state_ifstream);
+  CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
+                                            &initial_state));
+  CHECK(initial_state.has_initial_state());
+
   // We don't support using different frames in different files.
   CHECK_EQ(gravity_model.gravity_model().frame(),
            initial_state.initial_state().frame());
   serialization::Frame::SolarSystemTag const frame =
-      initial_state.initial_state().frame();
+      gravity_model.initial_state().frame();
 
   // Store the data in maps keyed by body name.
-  std::map<std::string,
-           serialization::InitialState::Body const*> initial_state_map;
-  for (auto const& body : initial_state.initial_state().body()) {
-    auto const inserted =
-        initial_state_map.insert(std::make_pair(body.name(), &body));
-    CHECK(inserted.second);
-  }
   std::map<std::string,
            serialization::GravityModel::Body const*> gravity_model_map;
   for (auto const& body : gravity_model.gravity_model().body()) {
@@ -137,34 +130,23 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
         gravity_model_map.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
   }
+  std::map<std::string,
+           serialization::InitialState::Body const*> initial_state_map;
+  for (auto const& body : initial_state.initial_state().body()) {
+    auto const inserted =
+        initial_state_map.insert(std::make_pair(body.name(), &body));
+    CHECK(inserted.second);
+  }
 
   // Check that the maps are consistent.
-  auto it1 = initial_state_map.begin();
-  auto it2 = gravity_model_map.begin();
-  for (; it1 != initial_state_map.end() && it2 != gravity_model_map.end();
+  auto it1 = gravity_model_map.begin();
+  auto it2 = initial_state_map.begin();
+  for (; it1 != gravity_model_map.end() && it2 != initial_state_map.end();
        ++it1, ++it2) {
     CHECK_EQ(it1->first, it2->first);
   }
-  CHECK(it1 == initial_state_map.end()) << it1->first;
-  CHECK(it2 == gravity_model_map.end()) << it2->first;
-
-  // Build degrees of freedom.
-  for (auto const& pair : initial_state_map) {
-    std::string const& name = pair.first;
-    serialization::InitialState::Body const* const body = pair.second;
-    switch (frame) {
-      case serialization::Frame::ICRF_J2000_ECLIPTIC: {
-        auto const degrees_of_freedom =
-            MakeDegreesOfFreedom<astronomy::ICRFJ2000Ecliptic>(*body);
-        break;
-      }
-      case serialization::Frame::ICRF_J2000_EQUATOR: {
-        auto const degrees_of_freedom =
-            MakeDegreesOfFreedom<astronomy::ICRFJ2000Equator>(*body);
-        break;
-      }
-    }
-  }
+  CHECK(it1 == gravity_model_map.end()) << it1->first;
+  CHECK(it2 == initial_state_map.end()) << it2->first;
 
   // Build bodies.
   for (auto const& pair : gravity_model_map) {
@@ -181,6 +163,24 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
       case serialization::Frame::ICRF_J2000_EQUATOR:
         massive_body = MakeMassiveBody<astronomy::ICRFJ2000Equator>(*body);
         break;
+    }
+  }
+
+  // Build degrees of freedom.
+  for (auto const& pair : initial_state_map) {
+    std::string const& name = pair.first;
+    serialization::InitialState::Body const* const body = pair.second;
+    switch (frame) {
+      case serialization::Frame::ICRF_J2000_ECLIPTIC: {
+        auto const degrees_of_freedom =
+            MakeDegreesOfFreedom<astronomy::ICRFJ2000Ecliptic>(*body);
+        break;
+      }
+      case serialization::Frame::ICRF_J2000_EQUATOR: {
+        auto const degrees_of_freedom =
+            MakeDegreesOfFreedom<astronomy::ICRFJ2000Equator>(*body);
+        break;
+      }
     }
   }
 }

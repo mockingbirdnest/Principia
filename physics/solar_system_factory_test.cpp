@@ -11,8 +11,8 @@ class SolarSystemFactoryTest : public ::testing::Test {
 };
 
 TEST_F(SolarSystemFactoryTest, Parse) {
-  factory_.Initialize(SOLUTION_DIR "astronomy\\initial_state.proto.txt",
-                      SOLUTION_DIR "astronomy\\gravity_model.proto.txt");
+  factory_.Initialize(SOLUTION_DIR "astronomy\\gravity_model.proto.txt",
+                      SOLUTION_DIR "astronomy\\initial_state.proto.txt");
 }
 
 }  // namespace physics

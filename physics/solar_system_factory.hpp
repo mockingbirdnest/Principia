@@ -7,8 +7,8 @@ namespace physics {
 
 class SolarSystemFactory {
  public:
-  void Initialize(std::string const& initial_state_filename,
-                  std::string const& gravity_model_filename);
+  void Initialize(std::string const& gravity_model_filename,
+                  std::string const& initial_state_filename);
 
 };
 
