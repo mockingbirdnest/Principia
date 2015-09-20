@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
@@ -21,6 +22,7 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
@@ -38,7 +40,6 @@ using quantities::si::AstronomicalUnit;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
-using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystem;
 using ::testing::AllOf;

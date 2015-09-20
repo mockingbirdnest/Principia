@@ -24,8 +24,8 @@ namespace principia {
 using geometry::Bivector;
 using geometry::RadiusLatitudeLongitude;
 using quantities::ParseQuantity;
-using si::Radian;
-using si::Second;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace physics {
 

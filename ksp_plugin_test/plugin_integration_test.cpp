@@ -4,12 +4,14 @@
 #include <limits>
 #include <vector>
 
+#include "astronomy/frames.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/solar_system.hpp"
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -21,7 +23,6 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::AstronomicalUnit;
 using testing_utilities::AbsoluteError;
-using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystem;
 using ::testing::AllOf;

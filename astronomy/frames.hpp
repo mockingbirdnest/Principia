@@ -4,6 +4,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -11,6 +12,9 @@ namespace principia {
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Position;
+using quantities::si::ArcMinute;
+using quantities::si::ArcSecond;
+using quantities::si::Degree;
 
 namespace astronomy {
 
@@ -43,7 +47,7 @@ using ICRFJ2000Equator =
 geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
     kEquatorialToEcliptic =
         geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
-            23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
+            23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
             geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
 
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;

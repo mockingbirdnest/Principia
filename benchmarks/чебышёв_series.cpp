@@ -31,6 +31,7 @@
 #include <random>
 #include <vector>
 
+#include "astronomy/frames.hpp"
 #include "quantities/si.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "testing_utilities/solar_system.hpp"
@@ -40,9 +41,9 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using numerics::ЧебышёвSeries;
 using quantities::si::Second;
-using testing_utilities::ICRFJ2000Ecliptic;
 
 namespace benchmarks {
 

@@ -53,6 +53,7 @@
 #include <memory>
 #include <vector>
 
+#include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
@@ -74,6 +75,7 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using base::not_null;
 using geometry::Position;
 using geometry::Quaternion;
@@ -90,7 +92,6 @@ using quantities::si::AstronomicalUnit;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
-using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::SolarSystem;
 
 namespace benchmarks {
