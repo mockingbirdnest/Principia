@@ -16,10 +16,10 @@ namespace principia {
 
 using quantities::Abs;
 using quantities::Length;
-using si::Centi;
-using si::Metre;
-using si::Milli;
-using si::Second;
+using quantities::si::Centi;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;

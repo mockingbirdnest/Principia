@@ -21,9 +21,6 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
-using astronomy::Parsec;
-using constants::SpeedOfLight;
 using quantities::Charge;
 using quantities::Length;
 using quantities::Pressure;
@@ -31,17 +28,20 @@ using quantities::Product;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
-using si::Coulomb;
-using si::Day;
-using si::Metre;
-using si::Pascal;
-using si::Second;
+using quantities::astronomy::JulianYear;
+using quantities::astronomy::Parsec;
+using quantities::constants::SpeedOfLight;
+using quantities::si::Coulomb;
+using quantities::si::Day;
+using quantities::si::Metre;
+using quantities::si::Pascal;
+using quantities::si::Second;
+using quantities::uk::Foot;
+using quantities::uk::Furlong;
+using quantities::uk::Inch;
+using quantities::uk::Rod;
+using quantities::uk::admiralty::Fathom;
 using testing_utilities::AlmostEquals;
-using uk::admiralty::Fathom;
-using uk::Foot;
-using uk::Furlong;
-using uk::Inch;
-using uk::Rod;
 using ::testing::Eq;
 
 namespace geometry {

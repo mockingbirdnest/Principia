@@ -6,6 +6,12 @@
 // Epochs for expressing instants of Temps Atomique International (or Terrestial
 // Time, which is parallel to it).
 namespace principia {
+
+using quantities::si::Day;
+using quantities::si::Hour;
+using quantities::si::Minute;
+using quantities::si::Second;
+
 namespace geometry {
 
 // |kJ2000| represents to the standard epoch J2000.0.
@@ -24,8 +30,8 @@ Instant const kJ2000;
 // Unix epoch, obtained by subtracting 30 years (including 7 leap years)
 // and the UTC time of day at J2000.0 from J2000.0.
 // +2000-01-01T00:00:00.000 (UTC)
-Instant const kUnixEpoch = kJ2000 - ((30 * 365 + 7) * si::Day + 11 * si::Hour +
-                                     58 * si::Minute + 55.816 * si::Second);
+Instant const kUnixEpoch = kJ2000 - ((30 * 365 + 7) * Day + 11 * Hour +
+                                     58 * Minute + 55.816 * Second);
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
 // days since -4712-01-01-T12:00:00.000 (Terrestrial Time, Julian calendar).

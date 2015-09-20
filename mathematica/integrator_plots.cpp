@@ -23,9 +23,7 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
 using base::not_null;
-using constants::GravitationalConstant;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
 using integrators::SRKNIntegrator;
@@ -36,12 +34,14 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Speed;
-using si::Minute;
-using si::Joule;
-using si::Kilogram;
-using si::Metre;
-using si::Radian;
-using si::Second;
+using quantities::astronomy::JulianYear;
+using quantities::constants::GravitationalConstant;
+using quantities::si::Minute;
+using quantities::si::Joule;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeGravitationalAcceleration;

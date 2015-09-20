@@ -14,7 +14,7 @@
 
 namespace principia {
 
-using constants::GravitationalConstant;
+using quantities::constants::GravitationalConstant;
 using geometry::Frame;
 using geometry::ReadFrameFromMessage;
 

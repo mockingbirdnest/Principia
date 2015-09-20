@@ -20,7 +20,7 @@ using geometry::Bivector;
 using geometry::R3Element;
 using geometry::Trivector;
 using geometry::Vector;
-using si::Metre;
+using quantities::si::Metre;
 using testing::AllOf;
 using testing::Eq;
 using testing::Gt;

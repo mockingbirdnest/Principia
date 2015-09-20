@@ -6,9 +6,9 @@
 
 namespace principia {
 
-using si::Kilogram;
-using si::Metre;
-using si::Second;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 

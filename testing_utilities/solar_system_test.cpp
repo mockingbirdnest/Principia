@@ -25,7 +25,7 @@ using quantities::Pow;
 using quantities::Quotient;
 using quantities::Speed;
 using quantities::Sqrt;
-using si::Radian;
+using quantities::si::Radian;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Ge;

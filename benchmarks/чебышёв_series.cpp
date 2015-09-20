@@ -41,7 +41,7 @@
 namespace principia {
 
 using numerics::ЧебышёвSeries;
-using si::Second;
+using quantities::si::Second;
 using testing_utilities::ICRFJ2000Ecliptic;
 
 namespace benchmarks {

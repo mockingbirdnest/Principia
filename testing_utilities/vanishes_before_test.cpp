@@ -13,8 +13,8 @@
 
 namespace principia {
 
-using bipm::Knot;
 using quantities::Speed;
+using quantities::bipm::Knot;
 using ::testing::Ne;
 
 namespace testing_utilities {
