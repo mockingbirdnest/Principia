@@ -158,6 +158,8 @@
     <ClInclude Include="elementary_functions_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="numbers.hpp" />
+    <ClInclude Include="parser.hpp" />
+    <ClInclude Include="parser_body.hpp" />
     <ClInclude Include="quantities.hpp" />
     <ClInclude Include="quantities_body.hpp" />
     <ClInclude Include="serialization.hpp" />
@@ -167,6 +169,7 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
   </ItemGroup>
   <ItemGroup>
