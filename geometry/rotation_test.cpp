@@ -14,6 +14,7 @@
 
 namespace principia {
 
+using quantities::si::Degree;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
@@ -38,8 +39,8 @@ class RotationTest : public testing::Test {
         e1_(Vector<double, World>(R3Element<double>({1, 0, 0}))),
         e2_(Vector<double, World>(R3Element<double>({0, 1, 0}))),
         e3_(Vector<double, World>(R3Element<double>({0, 0, 1}))),
-        rotation_a_(Rot(120 * si::Degree, Bivector<double, World>({1, 1, 1}))),
-        rotation_b_(Rot(90 * si::Degree, Bivector<double, World>({1, 0, 0}))),
+        rotation_a_(Rot(120 * Degree, Bivector<double, World>({1, 1, 1}))),
+        rotation_b_(Rot(90 * Degree, Bivector<double, World>({1, 0, 0}))),
         rotation_c_(Rot(R3x3Matrix({{0.5, 0.5 * sqrt(3), 0},
                                     {-0.5 * sqrt(3), 0.5, 0},
                                     {0, 0, 1}}))) {}

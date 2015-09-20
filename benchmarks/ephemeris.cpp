@@ -75,7 +75,6 @@
 namespace principia {
 
 using base::not_null;
-using bipm::NauticalMile;
 using geometry::Position;
 using geometry::Quaternion;
 using geometry::Rotation;
@@ -86,6 +85,7 @@ using physics::MasslessBody;
 using quantities::DebugString;
 using quantities::Sqrt;
 using quantities::astronomy::JulianYear;
+using quantities::bipm::NauticalMile;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Metre;
 using quantities::si::Milli;

@@ -12,11 +12,13 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-namespace geometry {
 
+using quantities::si::Degree;
 using quantities::si::Metre;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
+
+namespace geometry {
 
 class OrthogonalMapTest : public testing::Test {
  protected:
@@ -34,13 +36,13 @@ class OrthogonalMapTest : public testing::Test {
                 1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<quantities::Length, World>(4.0 * Metre)),
         orthogonal_a_(Orth(Sign(-1),
-                           Rot(120 * si::Degree,
+                           Rot(120 * Degree,
                                Bivector<double, World>({1, 1, 1})))),
         orthogonal_b_(Orth(Sign(1),
-                           Rot(90 * si::Degree,
+                           Rot(90 * Degree,
                                Bivector<double, World>({1, 0, 0})))),
         orthogonal_c_(Orth(Sign(-1),
-                           Rot(90 * si::Degree,
+                           Rot(90 * Degree,
                                Bivector<double, World>({1, 0, 0})))) {}
 
   Vector<quantities::Length, World> vector_;

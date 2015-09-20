@@ -169,12 +169,12 @@ void BM_TransformsBodyCentredNonRotating(
   Time const Δt = 1 * Hour;
   int const steps = state.range_x();
 
-  MassiveBody earth(astronomy::EarthMass);
+  MassiveBody earth(EarthMass);
   Position<World1> center = World1::origin;
   Position<World1> earth_initial_position =
-      World1::origin + Displacement<World1>({1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   AngularVelocity<World1> earth_angular_velocity =
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
@@ -189,9 +189,9 @@ void BM_TransformsBodyCentredNonRotating(
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
-      World1::origin + Displacement<World1>({0.5 * si::AstronomicalUnit,
-                                             -1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({0.5 * AstronomicalUnit,
+                                             -1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   Velocity<World1> probe_velocity =
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
@@ -226,12 +226,12 @@ void BM_TransformsBarycentricRotating(
   Time const Δt = 1 * Hour;
   int const steps = state.range_x();
 
-  MassiveBody earth(astronomy::EarthMass);
+  MassiveBody earth(EarthMass);
   Position<World1> earth_center = World1::origin;
   Position<World1> earth_initial_position =
-      World1::origin + Displacement<World1>({1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   AngularVelocity<World1> earth_angular_velocity =
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
@@ -244,15 +244,15 @@ void BM_TransformsBarycentricRotating(
                                                        steps,
                                                        &earth_trajectory);
 
-  MassiveBody thera(astronomy::EarthMass);
+  MassiveBody thera(EarthMass);
   Position<World1> thera_center =
-      World1::origin + Displacement<World1>({2 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({2 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   Position<World1> thera_initial_position =
-      World1::origin + Displacement<World1>({-0.5 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({-0.5 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   AngularVelocity<World1> thera_angular_velocity =
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
@@ -267,9 +267,9 @@ void BM_TransformsBarycentricRotating(
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
-      World1::origin + Displacement<World1>({0.5 * si::AstronomicalUnit,
-                                             -1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({0.5 * AstronomicalUnit,
+                                             -1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   Velocity<World1> probe_velocity =
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,

@@ -24,7 +24,6 @@
 namespace principia {
 
 using base::not_null;
-using constants::GravitationalConstant;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
 using integrators::SRKNIntegrator;
@@ -36,6 +35,7 @@ using quantities::Pow;
 using quantities::Sin;
 using quantities::Speed;
 using quantities::astronomy::JulianYear;
+using quantities::constants::GravitationalConstant;
 using quantities::si::Minute;
 using quantities::si::Joule;
 using quantities::si::Kilogram;

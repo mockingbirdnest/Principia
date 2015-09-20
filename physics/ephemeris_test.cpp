@@ -25,7 +25,6 @@
 
 namespace principia {
 
-using constants::GravitationalConstant;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
@@ -35,6 +34,7 @@ using quantities::Pow;
 using quantities::Sqrt;
 using quantities::astronomy::LunarDistance;
 using quantities::astronomy::SolarMass;
+using quantities::constants::GravitationalConstant;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Kilogram;
 using quantities::si::Metre;

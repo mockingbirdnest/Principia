@@ -21,7 +21,6 @@
 
 namespace principia {
 
-using constants::SpeedOfLight;
 using quantities::Charge;
 using quantities::Length;
 using quantities::Pressure;
@@ -31,6 +30,7 @@ using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::astronomy::Parsec;
+using quantities::constants::SpeedOfLight;
 using quantities::si::Coulomb;
 using quantities::si::Day;
 using quantities::si::Metre;
