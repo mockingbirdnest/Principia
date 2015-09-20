@@ -12,6 +12,7 @@
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
@@ -23,7 +24,10 @@ namespace principia {
 
 using geometry::Bivector;
 using geometry::RadiusLatitudeLongitude;
+using geometry::Vector;
+using quantities::Length;
 using quantities::ParseQuantity;
+using quantities::Speed;
 using quantities::si::Radian;
 using quantities::si::Second;
 
@@ -32,8 +36,26 @@ namespace physics {
 namespace {
 
 template<typename Frame>
+DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
+    serialization::InitialState::Body const& body);
+
+template<typename Frame>
 std::unique_ptr<MassiveBody> MakeMassiveBody(
     serialization::GravityModel::Body const& body);
+
+template<typename Frame>
+DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
+    serialization::InitialState::Body const& body) {
+  Position<Frame> const
+      position(Vector<Length, Frame>({ParseQuantity<Length>(body.x()),
+                                      ParseQuantity<Length>(body.y()),
+                                      ParseQuantity<Length>(body.z())}));
+  Velocity<Frame> const
+      velocity(Vector<Speed, Frame>({ParseQuantity<Speed>(body.vx()),
+                                     ParseQuantity<Speed>(body.vy()),
+                                     ParseQuantity<Speed>(body.vz())}));
+  return DegreesOfFreedom<Frame>(position, velocity);
+}
 
 template<typename Frame>
 std::unique_ptr<MassiveBody> MakeMassiveBody(
@@ -125,6 +147,24 @@ void SolarSystemFactory::Initialize(std::string const& initial_state_filename,
   }
   CHECK(it1 == initial_state_map.end()) << it1->first;
   CHECK(it2 == gravity_model_map.end()) << it2->first;
+
+  // Build degrees of freedom.
+  for (auto const& pair : initial_state_map) {
+    std::string const& name = pair.first;
+    serialization::InitialState::Body const* const body = pair.second;
+    switch (frame) {
+      case serialization::Frame::ICRF_J2000_ECLIPTIC: {
+        auto const degrees_of_freedom =
+            MakeDegreesOfFreedom<astronomy::ICRFJ2000Ecliptic>(*body);
+        break;
+      }
+      case serialization::Frame::ICRF_J2000_EQUATOR: {
+        auto const degrees_of_freedom =
+            MakeDegreesOfFreedom<astronomy::ICRFJ2000Equator>(*body);
+        break;
+      }
+    }
+  }
 
   // Build bodies.
   for (auto const& pair : gravity_model_map) {
