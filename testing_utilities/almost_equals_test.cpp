@@ -26,11 +26,11 @@ using quantities::Length;
 using quantities::MagneticFlux;
 using quantities::Speed;
 using quantities::bipm::Knot;
+using quantities::cgs::Maxwell;
 using quantities::uk::Foot;
 using testing::Ne;
 using testing::Eq;
 using testing::Not;
-using cgs::Maxwell;
 
 namespace {
 struct World;
