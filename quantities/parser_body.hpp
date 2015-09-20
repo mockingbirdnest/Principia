@@ -17,6 +17,7 @@ Q ParseQuantity(std::string const& s) {
   int const interpreted = interpreted_end - c_string;
   CHECK_LT(0, interpreted) << "invalid floating-point number " << s;
 
+  // Locate the unit.  It may be empty for a double.
   int const first_nonblank = s.find_first_not_of(' ', interpreted);
   int const last_nonblank = s.find_last_not_of(' ');
   std::string unit_string;
