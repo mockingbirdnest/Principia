@@ -1,10 +1,16 @@
 \documentclass[10pt, a4paper]{basestyle}
-\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=false,isbn=false,url=false,eprint=false]{biblatex}
+\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=false]{biblatex}
 \usepackage[Mathematics]{semtex}
 
 \title{Bibliography}
 \bibliography{bibliography}
 \AtEveryBibitem{\clearlist{language}}
+\DeclareFieldFormat{doi}{%
+  \newline
+  \mkbibacro{DOI}\addcolon\space
+    \ifhyperref
+      {\href{http://dx.doi.org/#1}{\nolinkurl{#1}}}
+      {\nolinkurl{#1}}}
 
 \begin{document}
 \nocite{*}
