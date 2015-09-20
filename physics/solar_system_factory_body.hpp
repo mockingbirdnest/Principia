@@ -83,26 +83,40 @@ void SolarSystemFactory<Frame>::Initialize(
   for (; it1 != gravity_model_map.end() && it2 != initial_state_map.end();
        ++it1, ++it2) {
     CHECK_EQ(it1->first, it2->first);
+    names_.push_back(it1->first);
   }
   CHECK(it1 == gravity_model_map.end()) << it1->first;
   CHECK(it2 == initial_state_map.end()) << it2->first;
 
   // Build bodies.
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map) {
     std::string const& name = pair.first;
     serialization::GravityModel::Body const* const body = pair.second;
     CHECK(body->has_gravitational_parameter());
     CHECK_EQ(body->has_j2(), body->has_reference_radius());
     CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
-    std::unique_ptr<MassiveBody> massive_body = MakeMassiveBody(*body);
+    bodies.emplace_back(MakeMassiveBody(*body));
   }
 
   // Build degrees of freedom.
+  std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   for (auto const& pair : initial_state_map) {
     std::string const& name = pair.first;
     serialization::InitialState::Body const* const body = pair.second;
-    auto const degrees_of_freedom = MakeDegreesOfFreedom(*body);
+    degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
   }
+
+  ephemeris_ = std::make_unique<Ephemeris<Frame>>(std::move(bodies),
+                                                  degrees_of_freedom,
+                                                  );
+}
+
+template<typename Frame>
+int SolarSystemFactory<Frame>::index(std::string const& name) const {
+  auto const it = std::equal_range(names_.begin(), names_.end(), name);
+  CHECK(it.first == it.second);
+  return it.first - names_.begin();
 }
 
 template<typename Frame>
@@ -130,6 +144,7 @@ std::unique_ptr<MassiveBody> SolarSystemFactory<Frame>::MakeMassiveBody(
                               ParseQuantity<GravitationalParameter>(
                                   body.gravitational_parameter()));
   if (body.has_axis_declination()) {
+    // TODO(phl): Parse the additional parameters.
     RotatingBody<Frame>::Parameters
         rotating_body_parameters(
             0 * Radian,
