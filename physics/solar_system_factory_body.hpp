@@ -89,6 +89,11 @@ void SolarSystemFactory<Frame>::Initialize(
   CHECK(it2 == initial_state_map_.end()) << it2->first;
 
   epoch_ = JulianDate(initial_state.initial_state().epoch());
+
+  // Call these two functions to parse all the data, so that errors are detected
+  // at initialization.  Drop their results on the floor.
+  MakeAllMassiveBodies();
+  MakeAllDegreesOfFreedom();
 }
 
 template<typename Frame>
@@ -98,27 +103,8 @@ std::unique_ptr<Ephemeris<Frame>> SolarSystemFactory<Frame>::MakeEphemeris(
         planetary_integrator,
     Time const& step,
     Length const& fitting_tolerance) {
-  // Build bodies.
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  for (auto const& pair : gravity_model_map) {
-    std::string const& name = pair.first;
-    serialization::GravityModel::Body const* const body = pair.second;
-    CHECK(body->has_gravitational_parameter());
-    CHECK_EQ(body->has_j2(), body->has_reference_radius());
-    CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
-    bodies.emplace_back(MakeMassiveBody(*body));
-  }
-
-  // Build degrees of freedom.
-  std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
-  for (auto const& pair : initial_state_map) {
-    std::string const& name = pair.first;
-    serialization::InitialState::Body const* const body = pair.second;
-    degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
-  }
-
-  return std::make_unique<Ephemeris<Frame>>(std::move(bodies),
-                                            degrees_of_freedom, 
+  return std::make_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
+                                            MakeAllDegreesOfFreedom(), 
                                             epoch_,
                                             planetary_integrator,
                                             step,
@@ -197,6 +183,33 @@ std::unique_ptr<MassiveBody> SolarSystemFactory<Frame>::MakeMassiveBody(
   } else {
     return std::make_unique<MassiveBody>(massive_body_parameters);
   }
+}
+
+template<typename Frame>
+std::vector<not_null<std::unique_ptr<MassiveBody const>>>
+SolarSystemFactory<Frame>::MakeAllMassiveBodies() {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  for (auto const& pair : gravity_model_map_) {
+    std::string const& name = pair.first;
+    serialization::GravityModel::Body const* const body = pair.second;
+    CHECK(body->has_gravitational_parameter());
+    CHECK_EQ(body->has_j2(), body->has_reference_radius());
+    CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
+    bodies.emplace_back(MakeMassiveBody(*body));
+  }
+  return bodies;
+}
+
+template<typename Frame>
+std::vector<DegreesOfFreedom<Frame>>
+SolarSystemFactory<Frame>::MakeAllDegreesOfFreedom() {
+  std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
+  for (auto const& pair : initial_state_map_) {
+    std::string const& name = pair.first;
+    serialization::InitialState::Body const* const body = pair.second;
+    degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
+  }
+  return degrees_of_freedom;
 }
 
 }  // namespace physics

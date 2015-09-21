@@ -41,6 +41,10 @@ class SolarSystemFactory {
       serialization::GravityModel::Body const& body);
 
  private:
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>>
+      MakeAllMassiveBodies();
+  std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
+
   Instant epoch_;
   std::vector<std::string> names_;
   std::map<std::string,
