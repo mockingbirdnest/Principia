@@ -27,11 +27,19 @@ class SolarSystemFactory {
       Time const& step,
       Length const& fitting_tolerance);
 
+  Instant const& epoch() const;
+  std::vector<std::string> const& names() const;//sorted
+
   int index(std::string const& name) const;
   MassiveBody const& massive_body(Ephemeris<Frame> const& ephemeris,
                                   std::string const& name) const;
   ContinuousTrajectory<Frame> const& trajectory(
       Ephemeris<Frame> const& ephemeris,
+      std::string const& name) const;
+
+  serialization::InitialState::Body const& initial_state(
+      std::string const& name) const;
+  serialization::GravityModel::Body const& gravity_model(
       std::string const& name) const;
 
   static DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
@@ -48,9 +56,9 @@ class SolarSystemFactory {
   Instant epoch_;
   std::vector<std::string> names_;
   std::map<std::string,
-           serialization::GravityModel::Body const*> gravity_model_map_;
-  std::map<std::string,
            serialization::InitialState::Body const*> initial_state_map_;
+  std::map<std::string,
+           serialization::GravityModel::Body const*> gravity_model_map_;
 };
 
 }  // namespace physics

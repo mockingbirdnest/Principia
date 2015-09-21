@@ -112,6 +112,16 @@ std::unique_ptr<Ephemeris<Frame>> SolarSystemFactory<Frame>::MakeEphemeris(
 }
 
 template<typename Frame>
+Instant const& SolarSystemFactory<Frame>::epoch() const {
+  return epoch_;
+}
+
+template<typename Frame>
+std::vector<std::string> const& SolarSystemFactory<Frame>::names() const {
+  return names_;
+}
+
+template<typename Frame>
 int SolarSystemFactory<Frame>::index(std::string const& name) const {
   auto const it = std::equal_range(names_.begin(), names_.end(), name);
   CHECK(it.first == it.second);
@@ -131,6 +141,18 @@ ContinuousTrajectory<Frame> const& SolarSystemFactory<Frame>::trajectory(
     std::string const & name) const {
   auto const body = massive_body(ephemeris, name);
   return ephemeris.trajectory(&body);
+}
+
+template<typename Frame>
+serialization::InitialState::Body const&
+SolarSystemFactory<Frame>::initial_state(std::string const& name) const {
+  return FindOrDie(initial_state_map_, name);
+}
+
+template<typename Frame>
+serialization::GravityModel::Body const&
+SolarSystemFactory<Frame>::gravity_model(std::string const& name) const {
+  return FindOrDie(gravity_model_map_, name);
 }
 
 template<typename Frame>
