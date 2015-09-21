@@ -96,6 +96,8 @@ packages/
 *.out
 *.synctex.gz
 *.thm
+*.bcf
+*.run.xml
 
 #Protocol buffers
 *.pb.h
