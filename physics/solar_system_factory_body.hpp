@@ -9,6 +9,7 @@
 #include "astronomy/frames.hpp"
 #include "geometry/epoch.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -24,6 +25,7 @@
 namespace principia {
 
 using geometry::Bivector;
+using geometry::Instant;
 using geometry::JulianDate;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
@@ -64,32 +66,38 @@ void SolarSystemFactory<Frame>::Initialize(
   CHECK_EQ(Frame::tag, gravity_model.gravity_model().frame());
 
   // Store the data in maps keyed by body name.
-  std::map<std::string,
-           serialization::GravityModel::Body const*> gravity_model_map;
   for (auto const& body : gravity_model.gravity_model().body()) {
     auto const inserted =
-        gravity_model_map.insert(std::make_pair(body.name(), &body));
+        gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
   }
-  std::map<std::string,
-           serialization::InitialState::Body const*> initial_state_map;
   for (auto const& body : initial_state.initial_state().body()) {
     auto const inserted =
-        initial_state_map.insert(std::make_pair(body.name(), &body));
+        initial_state_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
   }
 
   // Check that the maps are consistent.
-  auto it1 = gravity_model_map.begin();
-  auto it2 = initial_state_map.begin();
-  for (; it1 != gravity_model_map.end() && it2 != initial_state_map.end();
+  auto it1 = gravity_model_map_.begin();
+  auto it2 = initial_state_map_.begin();
+  for (; it1 != gravity_model_map_.end() && it2 != initial_state_map_.end();
        ++it1, ++it2) {
     CHECK_EQ(it1->first, it2->first);
     names_.push_back(it1->first);
   }
-  CHECK(it1 == gravity_model_map.end()) << it1->first;
-  CHECK(it2 == initial_state_map.end()) << it2->first;
+  CHECK(it1 == gravity_model_map_.end()) << it1->first;
+  CHECK(it2 == initial_state_map_.end()) << it2->first;
 
+  epoch_ = JulianDate(initial_state.initial_state().epoch());
+}
+
+template<typename Frame>
+std::unique_ptr<Ephemeris<Frame>> SolarSystemFactory<Frame>::MakeEphemeris(
+    FixedStepSizeIntegrator<
+        typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+        planetary_integrator,
+    Time const& step,
+    Length const& fitting_tolerance) {
   // Build bodies.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map) {
@@ -109,10 +117,12 @@ void SolarSystemFactory<Frame>::Initialize(
     degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
   }
 
-  ephemeris_ = std::make_unique<Ephemeris<Frame>>(
-                   std::move(bodies),
-                   degrees_of_freedom,
-                   JulianDate(initial_state.epoch());
+  return std::make_unique<Ephemeris<Frame>>(std::move(bodies),
+                                            degrees_of_freedom, 
+                                            epoch_,
+                                            planetary_integrator,
+                                            step,
+                                            fitting_tolerance);
 }
 
 template<typename Frame>
@@ -120,6 +130,21 @@ int SolarSystemFactory<Frame>::index(std::string const& name) const {
   auto const it = std::equal_range(names_.begin(), names_.end(), name);
   CHECK(it.first == it.second);
   return it.first - names_.begin();
+}
+
+template<typename Frame>
+MassiveBody const& SolarSystemFactory<Frame>::massive_body(
+    Ephemeris<Frame> const & ephemeris,
+    std::string const & name) const {
+  return ephemeris.bodies()[index(name)];
+}
+
+template<typename Frame>
+ContinuousTrajectory<Frame> const& SolarSystemFactory<Frame>::trajectory(
+    Ephemeris<Frame> const & ephemeris,
+    std::string const & name) const {
+  auto const body = massive_body(ephemeris, name);
+  return ephemeris.trajectory(&body);
 }
 
 template<typename Frame>
