@@ -7,6 +7,7 @@
 #include <set>
 
 #include "astronomy/frames.hpp"
+#include "geometry/epoch.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
@@ -23,6 +24,7 @@
 namespace principia {
 
 using geometry::Bivector;
+using geometry::JulianDate;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using quantities::Length;
@@ -107,9 +109,10 @@ void SolarSystemFactory<Frame>::Initialize(
     degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
   }
 
-  ephemeris_ = std::make_unique<Ephemeris<Frame>>(std::move(bodies),
-                                                  degrees_of_freedom,
-                                                  );
+  ephemeris_ = std::make_unique<Ephemeris<Frame>>(
+                   std::move(bodies),
+                   degrees_of_freedom,
+                   JulianDate(initial_state.epoch());
 }
 
 template<typename Frame>

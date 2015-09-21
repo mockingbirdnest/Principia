@@ -2,13 +2,11 @@ initial_state {
   needs : "RealSolarSystem"
   frame : ICRF_J2000_EQUATOR
 
-  # The time of the initial state, in seconds from the beginning of
-  # the game.  The state in this file is from
-  # JD 2433282.500000000 TDB.
+  # The time of the initial state, as a Julian date.
   # This is 1950-01-01T00:00:00 TDB, we set the epoch one non-leap
   # year in the past for RSS, so that RSS begins on
   # 1951-01-01T00:00:00 TDB.
-  epoch : -31536000
+  epoch : 2433282.500000000
   body {
     name : "Vesta"
     x    : "+2.754486616676705E+08 km"

@@ -30,7 +30,7 @@ message InitialState {
   }
   repeated string needs = 1;
   required Frame.SolarSystemTag frame = 2;
-  required int64 epoch = 3;
+  required double epoch = 3;  // Julian date.
   repeated Body body = 4;
 }
 
