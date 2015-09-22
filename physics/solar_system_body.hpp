@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/solar_system_factory.hpp"
+#include "physics/solar_system.hpp"
 
 #include <fstream>
 #include <map>
@@ -38,40 +38,37 @@ using quantities::si::Second;
 namespace physics {
 
 template<typename Frame>
-void SolarSystemFactory<Frame>::Initialize(
-    std::string const& gravity_model_filename,
-    std::string const& initial_state_filename) {
+void SolarSystem<Frame>::Initialize(std::string const& gravity_model_filename,
+                                    std::string const& initial_state_filename) {
   // Parse the files.
-  serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
   google::protobuf::io::IstreamInputStream gravity_model_zcs(
                                                &gravity_model_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&gravity_model_zcs,
-                                            &gravity_model));
-  CHECK(gravity_model.has_gravity_model());
+                                            &gravity_model_));
+  CHECK(gravity_model_.has_gravity_model());
 
-  serialization::SolarSystemFile initial_state;
   std::ifstream initial_state_ifstream(initial_state_filename);
   CHECK(initial_state_ifstream.good());
   google::protobuf::io::IstreamInputStream initial_state_zcs(
                                                &initial_state_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
-                                            &initial_state));
-  CHECK(initial_state.has_initial_state());
+                                            &initial_state_));
+  CHECK(initial_state_.has_initial_state());
 
   // We don't support using a different frame that the one specified by the
   // instance.
-  CHECK_EQ(Frame::tag, initial_state.initial_state().frame());
-  CHECK_EQ(Frame::tag, gravity_model.gravity_model().frame());
+  CHECK_EQ(Frame::tag, initial_state_.initial_state().frame());
+  CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
 
   // Store the data in maps keyed by body name.
-  for (auto const& body : gravity_model.gravity_model().body()) {
+  for (auto const& body : gravity_model_.gravity_model().body()) {
     auto const inserted =
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
   }
-  for (auto const& body : initial_state.initial_state().body()) {
+  for (auto const& body : initial_state_.initial_state().body()) {
     auto const inserted =
         initial_state_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
@@ -88,7 +85,7 @@ void SolarSystemFactory<Frame>::Initialize(
   CHECK(it1 == gravity_model_map_.end()) << it1->first;
   CHECK(it2 == initial_state_map_.end()) << it2->first;
 
-  epoch_ = JulianDate(initial_state.initial_state().epoch());
+  epoch_ = JulianDate(initial_state_.initial_state().epoch());
 
   // Call these two functions to parse all the data, so that errors are detected
   // at initialization.  Drop their results on the floor.
@@ -97,7 +94,7 @@ void SolarSystemFactory<Frame>::Initialize(
 }
 
 template<typename Frame>
-std::unique_ptr<Ephemeris<Frame>> SolarSystemFactory<Frame>::MakeEphemeris(
+std::unique_ptr<Ephemeris<Frame>> SolarSystem<Frame>::MakeEphemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const&
         planetary_integrator,
@@ -112,51 +109,50 @@ std::unique_ptr<Ephemeris<Frame>> SolarSystemFactory<Frame>::MakeEphemeris(
 }
 
 template<typename Frame>
-Instant const& SolarSystemFactory<Frame>::epoch() const {
+Instant const& SolarSystem<Frame>::epoch() const {
   return epoch_;
 }
 
 template<typename Frame>
-std::vector<std::string> const& SolarSystemFactory<Frame>::names() const {
+std::vector<std::string> const& SolarSystem<Frame>::names() const {
   return names_;
 }
 
 template<typename Frame>
-int SolarSystemFactory<Frame>::index(std::string const& name) const {
+int SolarSystem<Frame>::index(std::string const& name) const {
   auto const it = std::equal_range(names_.begin(), names_.end(), name);
-  CHECK(it.first == it.second);
   return it.first - names_.begin();
 }
 
 template<typename Frame>
-MassiveBody const& SolarSystemFactory<Frame>::massive_body(
+MassiveBody const& SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {
-  return ephemeris.bodies()[index(name)];
+  return *ephemeris.bodies()[index(name)];
 }
 
 template<typename Frame>
-ContinuousTrajectory<Frame> const& SolarSystemFactory<Frame>::trajectory(
+ContinuousTrajectory<Frame> const& SolarSystem<Frame>::trajectory(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {
-  auto const body = massive_body(ephemeris, name);
-  return ephemeris.trajectory(&body);
+  MassiveBody const* const body = ephemeris.bodies()[index(name)];
+  return *ephemeris.trajectory(body);
 }
 
 template<typename Frame>
 serialization::InitialState::Body const&
-SolarSystemFactory<Frame>::initial_state(std::string const& name) const {
-  return FindOrDie(initial_state_map_, name);
+SolarSystem<Frame>::initial_state(std::string const& name) const {
+  return *FindOrDie(initial_state_map_, name);
 }
 
 template<typename Frame>
 serialization::GravityModel::Body const&
-SolarSystemFactory<Frame>::gravity_model(std::string const& name) const {
-  return FindOrDie(gravity_model_map_, name);
+SolarSystem<Frame>::gravity_model(std::string const& name) const {
+  return *FindOrDie(gravity_model_map_, name);
 }
 
 template<typename Frame>
-DegreesOfFreedom<Frame> SolarSystemFactory<Frame>::MakeDegreesOfFreedom(
+DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
     serialization::InitialState::Body const& body) {
   Position<Frame> const
       position = Frame::origin + 
@@ -171,7 +167,7 @@ DegreesOfFreedom<Frame> SolarSystemFactory<Frame>::MakeDegreesOfFreedom(
 }
 
 template<typename Frame>
-std::unique_ptr<MassiveBody> SolarSystemFactory<Frame>::MakeMassiveBody(
+std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
   CHECK(body.has_gravitational_parameter());
   CHECK_EQ(body.has_j2(), body.has_reference_radius());
@@ -209,7 +205,7 @@ std::unique_ptr<MassiveBody> SolarSystemFactory<Frame>::MakeMassiveBody(
 
 template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-SolarSystemFactory<Frame>::MakeAllMassiveBodies() {
+SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
     std::string const& name = pair.first;
@@ -224,7 +220,7 @@ SolarSystemFactory<Frame>::MakeAllMassiveBodies() {
 
 template<typename Frame>
 std::vector<DegreesOfFreedom<Frame>>
-SolarSystemFactory<Frame>::MakeAllDegreesOfFreedom() {
+SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   for (auto const& pair : initial_state_map_) {
     std::string const& name = pair.first;

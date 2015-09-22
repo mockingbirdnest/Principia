@@ -15,7 +15,7 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-class SolarSystemFactory {
+class SolarSystem {
  public:
   void Initialize(std::string const& gravity_model_filename,
                   std::string const& initial_state_filename);
@@ -53,6 +53,10 @@ class SolarSystemFactory {
       MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
+  // Note that the maps below hold pointers into these protocol buffers.
+  serialization::SolarSystemFile gravity_model_;
+  serialization::SolarSystemFile initial_state_;
+
   Instant epoch_;
   std::vector<std::string> names_;
   std::map<std::string,
@@ -64,4 +68,4 @@ class SolarSystemFactory {
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/solar_system_factory_body.hpp"
+#include "physics/solar_system_body.hpp"

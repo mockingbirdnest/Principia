@@ -89,10 +89,10 @@
     <ClInclude Include="rotating_body_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="solar_system_factory.hpp">
+    <ClInclude Include="solar_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="solar_system_factory_body.hpp">
+    <ClInclude Include="solar_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -118,7 +118,7 @@
     <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="solar_system_factory_test.cpp">
+    <ClCompile Include="solar_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

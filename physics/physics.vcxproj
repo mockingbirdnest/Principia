@@ -175,8 +175,8 @@
     <ClInclude Include="oblate_body_body.hpp" />
     <ClInclude Include="rotating_body.hpp" />
     <ClInclude Include="rotating_body_body.hpp" />
-    <ClInclude Include="solar_system_factory.hpp" />
-    <ClInclude Include="solar_system_factory_body.hpp" />
+    <ClInclude Include="solar_system.hpp" />
+    <ClInclude Include="solar_system_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
@@ -187,7 +187,7 @@
     <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />
-    <ClCompile Include="solar_system_factory_test.cpp" />
+    <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>
