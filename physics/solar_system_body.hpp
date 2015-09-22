@@ -5,6 +5,8 @@
 #include <fstream>
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "astronomy/frames.hpp"
 #include "geometry/epoch.hpp"
@@ -101,7 +103,7 @@ std::unique_ptr<Ephemeris<Frame>> SolarSystem<Frame>::MakeEphemeris(
     Time const& step,
     Length const& fitting_tolerance) {
   return std::make_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
-                                            MakeAllDegreesOfFreedom(), 
+                                            MakeAllDegreesOfFreedom(),
                                             epoch_,
                                             planetary_integrator,
                                             step,
@@ -155,7 +157,7 @@ template<typename Frame>
 DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
     serialization::InitialState::Body const& body) {
   Position<Frame> const
-      position = Frame::origin + 
+      position = Frame::origin +
                  Vector<Length, Frame>({ParseQuantity<Length>(body.x()),
                                         ParseQuantity<Length>(body.y()),
                                         ParseQuantity<Length>(body.z())});

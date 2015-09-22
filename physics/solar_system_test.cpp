@@ -1,7 +1,8 @@
+﻿
 #include "physics/solar_system.hpp"
 
 #include "astronomy/frames.hpp"
-#include "integrators/symplectic_runge_kutta_nystr�m_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
