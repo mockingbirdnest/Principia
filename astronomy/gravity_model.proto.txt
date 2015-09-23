@@ -1,0 +1,242 @@
+gravity_model {
+  needs : "RealSolarSystem"
+  frame : ICRF_J2000_EQUATOR
+
+  # Unless otherwise mentioned, axis directions are from "Report of the IAU
+  # Working Group on Cartographic Coordinates and Rotational Elements: 2009",
+  # Archinal et al., http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
+  # The values given are for J2000.
+  # TODO(egg): actually compute the value at J2000, instead of using the
+  # constant term; some of the higher-order terms don't vanish at J2000.0.
+
+  # Unless mentioned otherwise, gravitational parameters are from the SPICE
+  # kernel for DE431,
+  # http://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc.
+
+  # Some sources for gravity models give C2,0 instead of J2.
+  # In that case, J2 was computed using Mathematica, as
+  #   N[SetPrecision[-c20, Infinity] * Sqrt[5], 17].
+
+  # Star.
+  body {
+    # J2 coefficient and reference radius from
+    # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
+    name                    : "Sun"
+    gravitational_parameter : "1.3271244004193938E+11 km^3/s^2"
+    axis_right_ascension    : "286.13 deg"
+    axis_declination        : "63.87 deg"
+    j2                      : "2.1106088532726840E-07"
+    reference_radius        : "696000.0 km"
+  }
+
+  # Gas giants.
+  # Gravitational parameters from
+  # http://ssd.jpl.nasa.gov/?gravity_fields_op, retrieved 2015-08-03.
+  body {
+    name                    : "Jupiter"
+    gravitational_parameter : "1.266865349218008E+08 km^3/s^2"
+    axis_right_ascension    : "268.056595 deg"
+    axis_declination        : "64.495303 deg"
+    j2                      : "14695.62E-6"
+    reference_radius        : "71492 km"
+  }
+  body {
+    name                    : "Saturn"
+    gravitational_parameter : "3.793120749865224E+07 km^3/s^2"
+    axis_right_ascension    : "40.589 deg"
+    axis_declination        : "83.537 deg"
+    j2                      : "16290.71E-6"
+    reference_radius        : "60330 km"
+  }
+  body {
+    name                    : "Neptune"
+    gravitational_parameter : "6.835099502439672E+06 km^3/s^2"
+    axis_right_ascension    : "299.36 deg"
+    axis_declination        : "43.46 deg"
+    j2                      : "3408.43E-6"
+    reference_radius        : "25225 km"
+  }
+  body {
+    name                    : "Uranus"
+    gravitational_parameter : "5.793951322279009E+06 km^3/s^2"
+    axis_right_ascension    : "257.311 deg"
+    axis_declination        : "-15.175 deg"
+    j2                      : "3510.68E-6"
+    reference_radius        : "25559 km"
+  }
+
+  # Telluric planets.
+  body {
+    # J2 coefficient and reference radius from
+    # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
+    name                    : "Earth"
+    gravitational_parameter : "3.9860043543609598E+05 km^3/s^2"
+    axis_right_ascension    : "0.0 deg"
+    axis_declination        : "90.0 deg"
+    j2                      : "0.00108262545"
+    reference_radius        : "6378.1363 km"
+  }
+  body {
+    # J2 coefficient and reference radius from MGN180U,
+    # https://github.com/haisamido/GMAT/blob/master/gmat/application/data/gravity/venus/MGNP180U.cof.
+    name                    : "Venus"
+    gravitational_parameter : "3.2485859200000006E+05 km^3/s^2"
+    axis_right_ascension    : "272.76 deg"
+    axis_declination        : "67.16 deg"
+    j2                      : "4.4044353248204983E-6"
+    reference_radius        : "6.05100000000000E+06 m"
+  }
+  body {
+    # J2 coefficient and reference radius from MRO data,
+    # http://pds-geosciences.wustl.edu/mro/mro-m-rss-5-sdp-v1/mrors_1xxx/data/shadr/jgmro_110c_sha.tab.
+    name                    : "Mars"
+    gravitational_parameter : "4.282837362069909E+04 km^3/s^2"
+    axis_right_ascension    : "317.68143 deg"
+    axis_declination        : "52.88650 deg"
+    j2                      : "0.0019566091594086663"
+    reference_radius        : "0.3396000000000000E+04 km"
+  }
+  body {
+    # Gravitational characteristics from MESSENGER data,
+    # http://pds-geosciences.wustl.edu/messenger/mess-h-rss_mla-5-sdp-v1/messrs_1001/data/shadr/ggmes_50v06_sha.tab.
+    name                    : "Mercury"
+    gravitational_parameter : "2.2031780000000021E+04 km^3/s^2"
+    axis_right_ascension    : "281.0097 deg"
+    axis_declination        : "61.4143 deg"
+    j2                      : "4.4044353248204983E-6"
+    reference_radius        : "2.4400000000000000E+03 km"
+  }
+
+  # Moons, dwarf planets, and small Solar System bodies.
+  body {
+    name                    : "Ganymede"
+    gravitational_parameter : "9.887834453334144E+03 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Titan"
+    gravitational_parameter : "+8.978138376543E+03 km^3/s^2"
+  }
+  body {
+    name                    : "Callisto"
+    gravitational_parameter : "7.179289361397270E+03 km^3/s^2"
+  }
+  body {
+    name                    : "Io"
+    gravitational_parameter : "5.959916033410404E+03 km^3/s^2"
+  }
+  body {
+    # J2 coefficient and reference radius from DE431,
+    # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
+    name                    : "Moon"
+    gravitational_parameter : "4.9028000661637961E+03 km^3/s^2"
+    axis_right_ascension    : "269.9949 deg"
+    axis_declination        : "66.5392 deg"
+    j2                      : "2.0321568464952570E-04"
+    reference_radius        : "1738.0 km"
+  }
+  body {
+    name                    : "Europa"
+    gravitational_parameter : "3.202738774922892E+03 km^3/s^2"
+  }
+  body {
+    name                    : "Triton"
+    gravitational_parameter : "1.427598140725034E+03 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Brown and Schaller (2007),
+    #  "The Mass of Dwarf Planet Eris".
+    name                    : "Eris"
+    gravitational_parameter : "1108 km^3/s^2"
+  }
+  body {
+    name                    : "Pluto"
+    gravitational_parameter : "8.696138177608748E+02 km^3/s^2"
+  }
+  body {
+    name                    : "Titania"
+    gravitational_parameter : "2.269437003741248E+02 km^3/s^2"
+  }
+  body {
+    name                    : "Oberon"
+    gravitational_parameter : "2.053234302535623E+02  km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Rhea"
+    gravitational_parameter : "+1.539424643535E+02 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Iapetus"
+    gravitational_parameter : "+1.205120887033E+02 km^3/s^2"
+  }
+  body {
+    name                    : "Charon"
+    gravitational_parameter : "1.058799888601881E+02 km^3/s^2"
+  }
+  body {
+    name                    : "Umbriel"
+    gravitational_parameter : "8.509338094489388E+01 km^3/s^2"
+  }
+  body {
+    name                    : "Ariel"
+    gravitational_parameter : "8.346344431770477E+01 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Dione"
+    gravitational_parameter : "+7.311636648732E+01 km^3/s^2"
+  }
+  body {
+    name                    : "Ceres"
+    gravitational_parameter : "6.3130000000000003E+01 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Tethys"
+    gravitational_parameter : "+4.121107782641E+01 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Dawn gravity science level 2,
+    # Konopliv, A.S., Park, R.S., Asmar, S.W., and Buccino, D.R., Dawn Vesta
+    # Derived Gravity Data, NASA Planetary Data System, DAWN-A-RSS-5-VEGR-V1.0,
+    # 2014, http://sbn.psi.edu/archive/dawn/grav/DWNVGRS_2/DATA/SHADR/JGDWN_VES20H_SHA.TAB.
+    # Axis direction ibidem, http://sbn.psi.edu/archive/dawn/grav/DWNVGRS_2/DATA/SHADR/JGDWN_VES20H_SHA.LBL.
+    name                    : "Vesta"
+    gravitational_parameter : "0.1728824496930000E+02 km^3/s^2"
+    axis_right_ascension    : "309.05870 deg"
+    axis_declination        : "42.23190 deg"
+    j2                      : "0.071060891954441914"
+    reference_radius        : "0.2650000000000000E+03 km"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Enceladus"
+    gravitational_parameter : "+7.211454165826E+00 km^3/s^2"
+  }
+  body {
+    name                    : "Miranda"
+    gravitational_parameter : "4.319516899232100E+00 km^3/s^2"
+  }
+  body {
+    # Gravitational characteristics from Cassini data,
+    # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
+    name                    : "Mimas"
+    gravitational_parameter : "+2.503524000000E+00 km^3/s^2"
+  }
+  body {
+    name                    : "Phobos"
+    gravitational_parameter : "7.087546066894452E-04 km^3/s^2"
+  }
+  body {
+    name                    : "Deimos"
+    gravitational_parameter : "9.615569648120313E-05 km^3/s^2"
+  }
+}

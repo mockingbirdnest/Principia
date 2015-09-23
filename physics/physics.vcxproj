@@ -107,7 +107,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOLUTION_DIR=R"literal($(SolutionDir))literal";WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -123,7 +123,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOLUTION_DIR=R"literal($(SolutionDir))literal";WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -141,7 +141,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOLUTION_DIR=R"literal($(SolutionDir))literal";WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -175,6 +175,8 @@
     <ClInclude Include="oblate_body_body.hpp" />
     <ClInclude Include="rotating_body.hpp" />
     <ClInclude Include="rotating_body_body.hpp" />
+    <ClInclude Include="solar_system.hpp" />
+    <ClInclude Include="solar_system_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
@@ -185,6 +187,7 @@
     <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />
+    <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>

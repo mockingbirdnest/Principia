@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/frames.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "integrators/sprk_integrator.hpp"
@@ -23,6 +24,7 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using base::not_null;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
@@ -42,7 +44,6 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeGravitationalAcceleration;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
