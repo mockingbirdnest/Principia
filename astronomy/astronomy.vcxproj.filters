@@ -30,6 +30,12 @@
     <None Include="query.f">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="generate_initial_state.awk">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="generate_initial_state.sh">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="initial_state.proto.txt">

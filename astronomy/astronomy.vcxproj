@@ -91,6 +91,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="generate_initial_state.awk" />
+    <None Include="generate_initial_state.sh" />
     <None Include="gravity_models.cfg" />
     <None Include="horizons.awk" />
     <None Include="horizons.cfg" />

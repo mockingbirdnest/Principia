@@ -1,8 +1,8 @@
-#OS junk files
+# OS junk files
 [Tt]humbs.db
 *.DS_Store
 
-#Visual Studio files
+# Visual Studio files
 *.[Oo]bj
 *.user
 *.aps
@@ -31,24 +31,24 @@ ipch/
 [Rr]elease*/
 Ankh.NoLoad
 
-#Clang output
+# Clang output
 *.o
 *.d
 
-#MonoDevelop
+# MonoDevelop
 *.pidb
 *.userprefs
 
-#Tooling
+# Tooling
 _ReSharper*/
 *.resharper
 [Tt]est[Rr]esult*
 *.sass-cache
 
-#Project files
+# Project files
 [Bb]uild/
 
-#Subversion files
+# Subversion files
 .svn
 
 # Office Temp Files
@@ -57,21 +57,21 @@ _ReSharper*/
 # vim Temp Files
 *~
 
-#NuGet
+# NuGet
 packages/
 *.nupkg
 
-#ncrunch
+# ncrunch
 *ncrunch*
 *crunch*.local.xml
 
 # visual studio database projects
 *.dbmdl
 
-#Test files
+# Test files
 *.testsettings
 
-#LaTeX stuff
+# LaTeX stuff
 *.aux
 *.glo
 *.idx
@@ -99,14 +99,17 @@ packages/
 *.bcf
 *.run.xml
 
-#Protocol buffers
+# Protocol buffers
 *.pb.h
 *.pb.cc
 
-#Generated Mathematica
+# Generated Mathematica
 *.generated.wl
 *.cdf
 
-#git version header
+# git version header
 base/version.hpp
 deps/
+
+# Mailboxes
+*.mbox
