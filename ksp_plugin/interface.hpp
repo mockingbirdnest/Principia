@@ -131,20 +131,7 @@ extern "C" DLLEXPORT
 void CDECL principia__DeletePlugin(Plugin const** const plugin);
 
 extern "C" DLLEXPORT
-void CDECL principia__DirectlyInsertMassiveCelestial(
-    Plugin* const plugin,
-    int const celestial_index,
-    int const* parent_index,
-    char const* gravitational_parameter,
-    char const* x,
-    char const* y,
-    char const* z,
-    char const* vx,
-    char const* vy,
-    char const* vz);
-
-extern "C" DLLEXPORT
-void CDECL principia__DirectlyInsertOblateCelestial(
+void CDECL principia__DirectlyInsertCelestial(
   Plugin* const plugin,
   int const celestial_index,
   int const* parent_index,

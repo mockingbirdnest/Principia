@@ -75,24 +75,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern void DeletePlugin(ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertMassiveCelestial",
+             EntryPoint        = "principia__DirectlyInsertCelestial",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertMassiveCelestial(
-      IntPtr plugin,
-      int celestial_index,
-      ref int parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String  gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String  x,
-      [MarshalAs(UnmanagedType.LPStr)] String  y,
-      [MarshalAs(UnmanagedType.LPStr)] String  z,
-      [MarshalAs(UnmanagedType.LPStr)] String  vx,
-      [MarshalAs(UnmanagedType.LPStr)] String  vy,
-      [MarshalAs(UnmanagedType.LPStr)] String  vz);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertOblateCelestial",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertOblateCelestial(
+  private static extern void DirectlyInsertCelestial(
       IntPtr plugin,
       int celestial_index,
       ref int parent_index,
@@ -109,24 +94,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       [MarshalAs(UnmanagedType.LPStr)] String vz);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertMassiveCelestial",
+             EntryPoint        = "principia__DirectlyInsertCelestial",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertMassiveCelestial(
-      IntPtr plugin,
-      int celestial_index,
-      IntPtr parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String  gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String  x,
-      [MarshalAs(UnmanagedType.LPStr)] String  y,
-      [MarshalAs(UnmanagedType.LPStr)] String  z,
-      [MarshalAs(UnmanagedType.LPStr)] String  vx,
-      [MarshalAs(UnmanagedType.LPStr)] String  vy,
-      [MarshalAs(UnmanagedType.LPStr)] String  vz);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertOblateCelestial",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertOblateCelestial(
+  private static extern void DirectlyInsertCelestial(
       IntPtr plugin,
       int celestial_index,
       IntPtr parent_index,
