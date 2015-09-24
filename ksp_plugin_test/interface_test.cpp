@@ -234,16 +234,20 @@ TEST_F(InterfaceTest, DirectlyInsertMassiveCelestial) {
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345E6 * SIUnit<GravitationalParameter>())))));
-  principia__DirectlyInsertMassiveCelestial(plugin_.get(),
-                                            kCelestialIndex,
-                                            &kParentIndex,
-                                            "1.2345E6  m^3/s^2",
-                                            "0 m",
-                                            "23.456E-7 km",
-                                            "-1 au",
-                                            "1 au / d",
-                                            "  1 km/s",
-                                            "1  m / s");
+  principia__DirectlyInsertCelestial(plugin_.get(),
+                                     kCelestialIndex,
+                                     &kParentIndex,
+                                     "1.2345E6  m^3/s^2",
+                                     nullptr /*axis_right_ascension*/,
+                                     nullptr /*axis_declination*/,
+                                     nullptr /*j2*/,
+                                     nullptr /*reference_radius*/,
+                                     "0 m",
+                                     "23.456E-7 km",
+                                     "-1 au",
+                                     "1 au / d",
+                                     "  1 km/s",
+                                     "1  m / s");
 }
 
 TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
@@ -267,20 +271,20 @@ TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345E6 *
                                  Pow<3>(Kilo(Metre)) / Pow<2>(Second))))));
-  principia__DirectlyInsertOblateCelestial(plugin_.get(),
-                                           kCelestialIndex,
-                                           &kParentIndex,
-                                           "1.2345E6  km^3 / s^2",
-                                           "42 deg",
-                                           "8°",
-                                           "123e-6",
-                                           "1000 km",
-                                           "0 m",
-                                           "23.456E-7 km",
-                                           "-1 au",
-                                           "1 au / d",
-                                           "  1 km/s",
-                                           "1  m / s");
+  principia__DirectlyInsertCelestial(plugin_.get(),
+                                     kCelestialIndex,
+                                     &kParentIndex,
+                                     "1.2345E6  km^3 / s^2",
+                                     "42 deg",
+                                     "8°",
+                                     "123e-6",
+                                     "1000 km",
+                                     "0 m",
+                                     "23.456E-7 km",
+                                     "-1 au",
+                                     "1 au / d",
+                                     "  1 km/s",
+                                     "1  m / s");
 }
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {

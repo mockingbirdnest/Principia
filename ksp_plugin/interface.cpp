@@ -19,7 +19,9 @@
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
+#include "serialization/astronomy.pb.h"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -37,6 +39,7 @@ using geometry::RadiusLatitudeLongitude;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RotatingBody;
+using physics::SolarSystem;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::si::AstronomicalUnit;
@@ -213,33 +216,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Plugin destroyed";
 }
 
-void principia__DirectlyInsertMassiveCelestial(
-    Plugin* const plugin,
-    int const celestial_index,
-    int const* parent_index,
-    char const* gravitational_parameter,
-    char const* x,
-    char const* y,
-    char const* z,
-    char const* vx,
-    char const* vy,
-    char const* vz) {
-  CHECK_NOTNULL(plugin)->
-      DirectlyInsertCelestial(
-          celestial_index,
-          parent_index,
-          {Barycentric::origin +
-               Displacement<Barycentric>({ParseQuantity<Length>(x),
-                                          ParseQuantity<Length>(y),
-                                          ParseQuantity<Length>(z)}),
-               Velocity<Barycentric>({ParseQuantity<Speed>(vx),
-                                      ParseQuantity<Speed>(vy),
-                                      ParseQuantity<Speed>(vz)})},
-          std::make_unique<MassiveBody>(
-              ParseQuantity<GravitationalParameter>(gravitational_parameter)));
-}
-
-void principia__DirectlyInsertOblateCelestial(
+void principia__DirectlyInsertCelestial(
     Plugin* const plugin,
     int const celestial_index,
     int const* parent_index,
@@ -254,31 +231,33 @@ void principia__DirectlyInsertOblateCelestial(
     char const* vx,
     char const* vy,
     char const* vz) {
+  serialization::GravityModel::Body gravity_model;
+  serialization::InitialState::Body initial_state;
+  gravity_model.set_gravitational_parameter(gravitational_parameter);
+  if (axis_right_ascension != nullptr) {
+    gravity_model.set_axis_right_ascension(axis_right_ascension);
+  }
+  if (axis_declination != nullptr) {
+    gravity_model.set_axis_declination(axis_declination);
+  }
+  if (j2 != nullptr) {
+    gravity_model.set_j2(j2);
+  }
+  if (reference_radius != nullptr) {
+    gravity_model.set_reference_radius(reference_radius);
+  }
+  initial_state.set_x(x);
+  initial_state.set_y(y);
+  initial_state.set_z(z);
+  initial_state.set_vx(vx);
+  initial_state.set_vy(vy);
+  initial_state.set_vz(vz);
   CHECK_NOTNULL(plugin)->
-    DirectlyInsertCelestial(
-      celestial_index,
-      parent_index,
-      {Barycentric::origin +
-       Displacement<Barycentric>({ParseQuantity<Length>(x),
-                                  ParseQuantity<Length>(y),
-                                  ParseQuantity<Length>(z)}),
-       Velocity<Barycentric>({ParseQuantity<Speed>(vx),
-                              ParseQuantity<Speed>(vy),
-                              ParseQuantity<Speed>(vz)})},
-      std::make_unique<OblateBody<Barycentric>>(
-          ParseQuantity<GravitationalParameter>(gravitational_parameter),
-          RotatingBody<Barycentric>::Parameters(
-              0 * Radian,
-              Instant(),
-              Bivector<double, Barycentric>(
-                  RadiusLatitudeLongitude(
-                      1.0,
-                      ParseQuantity<Angle>(axis_declination),
-                      ParseQuantity<Angle>(axis_right_ascension)).
-                  ToCartesian()) * Radian / Second),
-          OblateBody<Barycentric>::Parameters(
-              ParseQuantity<double>(j2),
-              ParseQuantity<Length>(reference_radius))));
+      DirectlyInsertCelestial(
+          celestial_index,
+          parent_index,
+          SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
+          SolarSystem<Barycentric>::MakeMassiveBody(gravity_model));
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,

@@ -1207,79 +1207,57 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             name_to_gravity_model[Planetarium.fetch.Sun.name];
         ConfigNode sun_initial_state =
             name_to_initial_state[Planetarium.fetch.Sun.name];
-        if (sun_gravity_model.HasValue("j2")) {
-          DirectlyInsertOblateCelestial(
-              plugin: plugin_,
-              celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
-              parent_index: IntPtr.Zero,
-              gravitational_parameter:
-                  sun_gravity_model.GetValue("gravitational_parameter"),
-              axis_right_ascension:
-                  sun_gravity_model.GetValue("axis_right_ascension"),
-              axis_declination:
-                  sun_gravity_model.GetValue("axis_declination"),
-              j2: sun_gravity_model.GetValue("j2"),
-              reference_radius: 
-                  sun_gravity_model.GetValue("reference_radius"),
-              x: sun_initial_state.GetValue("x"),
-              y: sun_initial_state.GetValue("y"),
-              z: sun_initial_state.GetValue("z"),
-              vx: sun_initial_state.GetValue("vx"),
-              vy: sun_initial_state.GetValue("vy"),
-              vz: sun_initial_state.GetValue("vz"));
-        } else {
-          DirectlyInsertMassiveCelestial(
-              plugin: plugin_,
-              celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
-              parent_index: IntPtr.Zero,
-              gravitational_parameter:
-                  sun_gravity_model.GetValue("gravitational_parameter"),
-              x: sun_initial_state.GetValue("x"),
-              y: sun_initial_state.GetValue("y"),
-              z: sun_initial_state.GetValue("z"),
-              vx: sun_initial_state.GetValue("vx"),
-              vy: sun_initial_state.GetValue("vy"),
-              vz: sun_initial_state.GetValue("vz"));
-        }
+        DirectlyInsertCelestial(
+            plugin: plugin_,
+            celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
+            parent_index: IntPtr.Zero,
+            gravitational_parameter:
+                sun_gravity_model.GetValue("gravitational_parameter"),
+            axis_right_ascension:
+                sun_gravity_model.HasValue("axis_right_ascension") ?
+                sun_gravity_model.GetValue("axis_right_ascension") : null,
+            axis_declination:
+                sun_gravity_model.HasValue("axis_declination") ?
+                sun_gravity_model.GetValue("axis_declination") : null,
+            j2: sun_gravity_model.HasValue("j2") ?
+                sun_gravity_model.GetValue("j2") : null,
+            reference_radius:
+                sun_gravity_model.HasValue("reference_radius") ?
+                sun_gravity_model.GetValue("reference_radius") : null,
+            x: sun_initial_state.GetValue("x"),
+            y: sun_initial_state.GetValue("y"),
+            z: sun_initial_state.GetValue("z"),
+            vx: sun_initial_state.GetValue("vx"),
+            vy: sun_initial_state.GetValue("vy"),
+            vz: sun_initial_state.GetValue("vz"));
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
           ConfigNode gravity_model = name_to_gravity_model[body.name];
           ConfigNode initial_state = name_to_initial_state[body.name];
           int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
-          if (gravity_model.HasValue("j2")) {
-            DirectlyInsertOblateCelestial(
-                plugin: plugin_,
-                celestial_index: body.flightGlobalsIndex,
-                parent_index: ref parent_index,
-                gravitational_parameter:
-                    gravity_model.GetValue("gravitational_parameter"),
-                axis_right_ascension:
-                    gravity_model.GetValue("axis_right_ascension"),
-                axis_declination:
-                    gravity_model.GetValue("axis_declination"),
-                j2: gravity_model.GetValue("j2"),
-                reference_radius: 
-                    gravity_model.GetValue("reference_radius"),
-                x: initial_state.GetValue("x"),
-                y: initial_state.GetValue("y"),
-                z: initial_state.GetValue("z"),
-                vx: initial_state.GetValue("vx"),
-                vy: initial_state.GetValue("vy"),
-                vz: initial_state.GetValue("vz"));
-          } else {
-            DirectlyInsertMassiveCelestial(
-                plugin: plugin_,
-                celestial_index: body.flightGlobalsIndex,
-                parent_index: ref parent_index,
-                gravitational_parameter:
-                    gravity_model.GetValue("gravitational_parameter"),
-                x: initial_state.GetValue("x"),
-                y: initial_state.GetValue("y"),
-                z: initial_state.GetValue("z"),
-                vx: initial_state.GetValue("vx"),
-                vy: initial_state.GetValue("vy"),
-                vz: initial_state.GetValue("vz"));
-          }
+          DirectlyInsertCelestial(
+              plugin: plugin_,
+              celestial_index: body.flightGlobalsIndex,
+              parent_index: ref parent_index,
+              gravitational_parameter:
+                  gravity_model.GetValue("gravitational_parameter"),
+              axis_right_ascension:
+                  gravity_model.HasValue("axis_right_ascension") ?
+                  gravity_model.GetValue("axis_right_ascension") : null,
+              axis_declination:
+                  gravity_model.HasValue("axis_declination") ?
+                  gravity_model.GetValue("axis_declination") : null,
+              j2: gravity_model.HasValue("j2") ?
+                  gravity_model.GetValue("j2") : null,
+              reference_radius:
+                  gravity_model.HasValue("reference_radius") ?
+                  gravity_model.GetValue("reference_radius") : null,
+              x: initial_state.GetValue("x"),
+              y: initial_state.GetValue("y"),
+              z: initial_state.GetValue("z"),
+              vx: initial_state.GetValue("vx"),
+              vy: initial_state.GetValue("vy"),
+              vz: initial_state.GetValue("vz"));
         };
         ApplyToBodyTree(insert_body);
         EndInitialization(plugin_);
