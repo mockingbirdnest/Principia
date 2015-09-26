@@ -91,5 +91,8 @@
     <ClCompile Include="componentwise_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="solar_system_factory_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

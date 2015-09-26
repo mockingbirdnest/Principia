@@ -39,6 +39,7 @@
     <ClCompile Include="almost_equals_test.cpp" />
     <ClCompile Include="componentwise_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
+    <ClCompile Include="solar_system_factory_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
     <ClCompile Include="vanishes_before_test.cpp" />

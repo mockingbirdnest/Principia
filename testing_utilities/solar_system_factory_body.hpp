@@ -10,56 +10,50 @@ namespace testing_utilities {
 
 namespace {
 
-#define ADD_BODY(x, names)                                                     \
-do {                                                                           \
-  std::string const x_string = #x;                                             \
-  names.insert(x_string.substr(1));                                            \
-} while (true)
-
 void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
                     SolarSystem<ICRFJ2000Equator>* const solar_system) {
-  std::set<std::string> existing_names;
-  std::set<std::string> oblate_names;
+  std::set<std::string> existing;
+  std::set<std::string> oblate;
   switch (accuracy) {
     case SolarSystemFactory::Accuracy::kAllBodiesAndOblateness:
-      ADD_BODY(kJupiter, oblate_names);
-      ADD_BODY(kSaturn, oblate_names);
-      ADD_BODY(kNeptune, oblate_names);
-      ADD_BODY(kUranus, oblate_names);
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::kJupiter));
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::kSaturn));
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::kNeptune));
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::kUranus));
     case SolarSystemFactory::Accuracy::kMinorAndMajorBodies:
-      ADD_BODY(kTitania, existing_names);
-      ADD_BODY(kOberon, existing_names);
-      ADD_BODY(kRhea, existing_names);
-      ADD_BODY(kIapetus, existing_names);
-      ADD_BODY(kCharon, existing_names);
-      ADD_BODY(kAriel, existing_names);
-      ADD_BODY(kUmbriel, existing_names);
-      ADD_BODY(kDione, existing_names);
-      ADD_BODY(kTethys, existing_names);
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kTitania));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kOberon));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kRhea));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kIapetus));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kCharon));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kAriel));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kUmbriel));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kDione));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kTethys));
     case SolarSystemFactory::Accuracy::kMajorBodiesOnly:
-      ADD_BODY(kSun, existing_names);
-      ADD_BODY(kJupiter, existing_names);
-      ADD_BODY(kSaturn, existing_names);
-      ADD_BODY(kNeptune, existing_names);
-      ADD_BODY(kUranus, existing_names);
-      ADD_BODY(kEarth, existing_names);
-      ADD_BODY(kVenus, existing_names);
-      ADD_BODY(kMars, existing_names);
-      ADD_BODY(kMercury, existing_names);
-      ADD_BODY(kGanymede, existing_names);
-      ADD_BODY(kTitan, existing_names);
-      ADD_BODY(kCallisto, existing_names);
-      ADD_BODY(kIo, existing_names);
-      ADD_BODY(kMoon, existing_names);
-      ADD_BODY(kEuropa, existing_names);
-      ADD_BODY(kTriton, existing_names);
-      ADD_BODY(kEris, existing_names);
-      ADD_BODY(kPluto, existing_names);
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kSun));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kJupiter));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kSaturn));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kNeptune));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kUranus));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kEarth));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kVenus));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kMars));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kMercury));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kGanymede));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kTitan));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kCallisto));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kIo));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kMoon));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kEuropa));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kTriton));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kEris));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::kPluto));
   }
   for (std::string const& solar_system_name : solar_system->names()) {
-    if (existing_names.count(solar_system_name) == 0) {
+    if (existing.count(solar_system_name) == 0) {
       solar_system->RemoveMassiveBody(solar_system_name);
-    } else if (oblate_names.count(solar_system_name) == 0) {
+    } else if (oblate.count(solar_system_name) == 0) {
       solar_system->RemoveOblateness(solar_system_name);
     }
   }
@@ -90,9 +84,84 @@ SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
 }
 
 int SolarSystemFactory::parent(int const index) {
+  switch (index) {
+    case kSun:
+      LOG(FATAL) << FUNCTION_SIGNATURE << "The Sun has no parent";
+      base::noreturn();
+    case kJupiter:
+    case kSaturn:
+    case kNeptune:
+    case kUranus:
+    case kEarth:
+    case kVenus:
+    case kMars:
+    case kMercury:
+    case kEris:
+    case kPluto:
+      return kSun;
+    case kGanymede:
+    case kCallisto:
+    case kIo:
+    case kEuropa:
+      return kJupiter;
+    case kTitan:
+    case kRhea:
+    case kIapetus:
+    case kDione:
+    case kTethys:
+      return kSaturn;
+    case kMoon:
+      return kEarth;
+    case kTriton:
+      return kNeptune;
+    case kTitania:
+    case kOberon:
+    case kAriel:
+    case kUmbriel:
+      return kUranus;
+    case kCharon:
+      return kPluto;
+    default:
+      LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
+      base::noreturn();
+  }
 }
 
-std::string SolarSystemFactory::name(int const index) {
+inline std::string SolarSystemFactory::name(int const index) {
+#define BODY_NAME(name) case k##name: return #name
+  switch (index) {
+    BODY_NAME(Sun);
+    BODY_NAME(Jupiter);
+    BODY_NAME(Saturn);
+    BODY_NAME(Neptune);
+    BODY_NAME(Uranus);
+    BODY_NAME(Earth);
+    BODY_NAME(Venus);
+    BODY_NAME(Mars);
+    BODY_NAME(Mercury);
+    BODY_NAME(Ganymede);
+    BODY_NAME(Titan);
+    BODY_NAME(Callisto);
+    BODY_NAME(Io);
+    BODY_NAME(Moon);
+    BODY_NAME(Europa);
+    BODY_NAME(Triton);
+    BODY_NAME(Eris);
+    BODY_NAME(Pluto);
+    BODY_NAME(Titania);
+    BODY_NAME(Oberon);
+    BODY_NAME(Rhea);
+    BODY_NAME(Iapetus);
+    BODY_NAME(Charon);
+    BODY_NAME(Ariel);
+    BODY_NAME(Umbriel);
+    BODY_NAME(Dione);
+    BODY_NAME(Tethys);
+    default:
+      LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
+      base::noreturn();
+  }
+#undef BODY_NAME
 }
 
 }  // namespace testing_utilities
