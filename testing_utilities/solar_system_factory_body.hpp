@@ -50,12 +50,20 @@ void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
       existing.insert(SolarSystemFactory::name(SolarSystemFactory::kEris));
       existing.insert(SolarSystemFactory::name(SolarSystemFactory::kPluto));
   }
+  std::vector<std::string> bodies_to_remove;
+  std::vector<std::string> bodies_to_spherify;
   for (std::string const& solar_system_name : solar_system->names()) {
     if (existing.count(solar_system_name) == 0) {
-      solar_system->RemoveMassiveBody(solar_system_name);
+      bodies_to_remove.push_back(solar_system_name);
     } else if (oblate.count(solar_system_name) == 0) {
-      solar_system->RemoveOblateness(solar_system_name);
+      bodies_to_spherify.push_back(solar_system_name);
     }
+  }
+  for (std::string const& body_to_remove : bodies_to_remove) {
+    solar_system->RemoveMassiveBody(body_to_remove);
+  }
+  for (std::string const& body_to_spherify : bodies_to_spherify) {
+    solar_system->RemoveOblateness(body_to_spherify);
   }
 }
 

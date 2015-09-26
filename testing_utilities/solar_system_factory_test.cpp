@@ -301,12 +301,12 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
                          pluto, pluto_dof,
                          sun, sun_dof,
                          "pluto");
-  TestStronglyBoundOrbit(4.425162E-01, 1E-6,
+  TestStronglyBoundOrbit(4.425162E-01, 1E-5,
                          eris, eris_dof,
                          sun, sun_dof,
                          "eris");
   // Using centre: Jupiter (body centre) [500@599].
-  TestStronglyBoundOrbit(2.825065E-04, 1E-4,
+  TestStronglyBoundOrbit(2.825065E-04, 1E-5,
                          ganymede, ganymede_dof,
                          jupiter, jupiter_dof,
                          sun, sun_dof,
@@ -332,22 +332,22 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
                          saturn, saturn_dof,
                          sun, sun_dof,
                          "titan");
-  TestStronglyBoundOrbit(8.926369E-04, 1E-5,
+  TestStronglyBoundOrbit(8.926369E-04, 1E-4,
                          rhea, rhea_dof,
                          saturn, saturn_dof,
                          sun, sun_dof,
                          "rhea");
-  TestStronglyBoundOrbit(2.799919E-02, 1E-6,
+  TestStronglyBoundOrbit(2.799919E-02, 1E-5,
                          iapetus, iapetus_dof,
                          saturn, saturn_dof,
                          sun, sun_dof,
                          "iapetus");
-  TestStronglyBoundOrbit(2.211120E-03, 1E-5,
+  TestStronglyBoundOrbit(2.211120E-03, 1E-3,
                          dione, dione_dof,
                          saturn, saturn_dof,
                          sun, sun_dof,
                          "dione");
-  TestStronglyBoundOrbit(9.814475E-04, 1E-4,
+  TestStronglyBoundOrbit(9.814475E-04, 1E-3,
                          tethys, tethys_dof,
                          saturn, saturn_dof,
                          sun, sun_dof,
@@ -359,28 +359,28 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
                          sun, sun_dof,
                          "moon");
   // Using centre: Neptune (body centre) [500@899]
-  TestStronglyBoundOrbit(1.587851E-05, 2E-1,
+  TestStronglyBoundOrbit(1.587851E-05, 1E-5,
                          triton, triton_dof,
                          neptune, neptune_dof,
                          sun, sun_dof,
                          "triton");
   // Using centre: Uranus (body centre) [500@799]
-  TestStronglyBoundOrbit(1.413687E-03, 3E-3,
+  TestStronglyBoundOrbit(1.413687E-03, 1E-6,
                          titania, titania_dof,
                          uranus, uranus_dof,
                          sun, sun_dof,
                          "titania");
-  TestStronglyBoundOrbit(1.217327E-03, 2E-3,
+  TestStronglyBoundOrbit(1.217327E-03, 1E-6,
                          oberon, oberon_dof,
                          uranus, uranus_dof,
                          sun, sun_dof,
                          "oberon");
-  TestStronglyBoundOrbit(1.750702E-03, 2E-3,
+  TestStronglyBoundOrbit(1.750702E-03, 1E-6,
                          ariel, ariel_dof,
                          uranus, uranus_dof,
                          sun, sun_dof,
                          "ariel");
-  TestStronglyBoundOrbit(4.337777E-03, 3E-4,
+  TestStronglyBoundOrbit(4.337777E-03, 1E-6,
                          umbriel, umbriel_dof,
                          uranus, uranus_dof,
                          sun, sun_dof,
