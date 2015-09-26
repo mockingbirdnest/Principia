@@ -392,198 +392,198 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
                          sun, sun_dof,
                          "charon");
 }
-//
-//TEST_F(SolarSystemFactoryTest, HierarchyAtSputnik2Launch) {
-//  auto const solar_system = SolarSystemFactory::AtСпутник2Launch(
-//      SolarSystemFactory::Accuracy::kMinorAndMajorBodies);
-//  auto const massive_bodies = solar_system->massive_bodies();
-//  auto const trajectories = solar_system->trajectories();
-//
-//  auto const& sun_dof      = dof[SolarSystemFactory::kSun];
-//  auto const& jupiter_dof  = dof[SolarSystemFactory::kJupiter];
-//  auto const& saturn_dof   = dof[SolarSystemFactory::kSaturn];
-//  auto const& neptune_dof  = dof[SolarSystemFactory::kNeptune];
-//  auto const& uranus_dof   = dof[SolarSystemFactory::kUranus];
-//  auto const& earth_dof    = dof[SolarSystemFactory::kEarth];
-//  auto const& venus_dof    = dof[SolarSystemFactory::kVenus];
-//  auto const& mars_dof     = dof[SolarSystemFactory::kMars];
-//  auto const& mercury_dof  = dof[SolarSystemFactory::kMercury];
-//  auto const& ganymede_dof = dof[SolarSystemFactory::kGanymede];
-//  auto const& titan_dof    = dof[SolarSystemFactory::kTitan];
-//  auto const& callisto_dof = dof[SolarSystemFactory::kCallisto];
-//  auto const& io_dof       = dof[SolarSystemFactory::kIo];
-//  auto const& moon_dof     = dof[SolarSystemFactory::kMoon];
-//  auto const& europa_dof   = dof[SolarSystemFactory::kEuropa];
-//  auto const& triton_dof   = dof[SolarSystemFactory::kTriton];
-//  auto const& eris_dof     = dof[SolarSystemFactory::kEris];
-//  auto const& pluto_dof    = dof[SolarSystemFactory::kPluto];
-//  auto const& titania_dof  = dof[SolarSystemFactory::kTitania];
-//  auto const& oberon_dof   = dof[SolarSystemFactory::kOberon];
-//  auto const& rhea_dof     = dof[SolarSystemFactory::kRhea];
-//  auto const& iapetus_dof  = dof[SolarSystemFactory::kIapetus];
-//  auto const& charon_dof   = dof[SolarSystemFactory::kCharon];
-//  auto const& ariel_dof    = dof[SolarSystemFactory::kAriel];
-//  auto const& umbriel_dof  = dof[SolarSystemFactory::kUmbriel];
-//  auto const& dione_dof    = dof[SolarSystemFactory::kDione];
-//  auto const& tethys_dof   = dof[SolarSystemFactory::kTethys];
-//
-//  auto const& sun      = *massive_bodies[SolarSystemFactory::kSun];
-//  auto const& jupiter  = *massive_bodies[SolarSystemFactory::kJupiter];
-//  auto const& saturn   = *massive_bodies[SolarSystemFactory::kSaturn];
-//  auto const& neptune  = *massive_bodies[SolarSystemFactory::kNeptune];
-//  auto const& uranus   = *massive_bodies[SolarSystemFactory::kUranus];
-//  auto const& earth    = *massive_bodies[SolarSystemFactory::kEarth];
-//  auto const& venus    = *massive_bodies[SolarSystemFactory::kVenus];
-//  auto const& mars     = *massive_bodies[SolarSystemFactory::kMars];
-//  auto const& mercury  = *massive_bodies[SolarSystemFactory::kMercury];
-//  auto const& ganymede = *massive_bodies[SolarSystemFactory::kGanymede];
-//  auto const& titan    = *massive_bodies[SolarSystemFactory::kTitan];
-//  auto const& callisto = *massive_bodies[SolarSystemFactory::kCallisto];
-//  auto const& io       = *massive_bodies[SolarSystemFactory::kIo];
-//  auto const& moon     = *massive_bodies[SolarSystemFactory::kMoon];
-//  auto const& europa   = *massive_bodies[SolarSystemFactory::kEuropa];
-//  auto const& triton   = *massive_bodies[SolarSystemFactory::kTriton];
-//  auto const& eris     = *massive_bodies[SolarSystemFactory::kEris];
-//  auto const& pluto    = *massive_bodies[SolarSystemFactory::kPluto];
-//  auto const& titania  = *massive_bodies[SolarSystemFactory::kTitania];
-//  auto const& oberon   = *massive_bodies[SolarSystemFactory::kOberon];
-//  auto const& rhea     = *massive_bodies[SolarSystemFactory::kRhea];
-//  auto const& iapetus  = *massive_bodies[SolarSystemFactory::kIapetus];
-//  auto const& charon   = *massive_bodies[SolarSystemFactory::kCharon];
-//  auto const& ariel    = *massive_bodies[SolarSystemFactory::kAriel];
-//  auto const& umbriel  = *massive_bodies[SolarSystemFactory::kUmbriel];
-//  auto const& dione    = *massive_bodies[SolarSystemFactory::kDione];
-//  auto const& tethys   = *massive_bodies[SolarSystemFactory::kTethys];
-//
-//  // Reference excentricities from HORIZONS, truncated.
-//  // Using centre: Sun (body centre) [500@10].
-//  TestStronglyBoundOrbit(4.899607E-02, 1E-6,
-//                         jupiter, jupiter_dof,
-//                         sun, sun_dof,
-//                         "jupiter");
-//  TestStronglyBoundOrbit(5.215911E-02, 1E-6,
-//                         saturn, saturn_dof,
-//                         sun, sun_dof,
-//                         "saturn");
-//  TestStronglyBoundOrbit(2.719093E-03, 1E-6,
-//                         neptune, neptune_dof,
-//                         sun, sun_dof,
-//                         "neptune");
-//  TestStronglyBoundOrbit(5.004209E-02, 1E-6,
-//                         uranus, uranus_dof,
-//                         sun, sun_dof,
-//                         "uranus");
-//  TestStronglyBoundOrbit(1.671840E-02, 1E-6,
-//                         earth, earth_dof,
-//                         sun, sun_dof,
-//                         "earth");
-//  TestStronglyBoundOrbit(6.792333E-03, 1E-6,
-//                         venus, venus_dof,
-//                         sun, sun_dof,
-//                         "venus");
-//  TestStronglyBoundOrbit(9.334796E-02, 1E-6,
-//                         mars, mars_dof,
-//                         sun, sun_dof,
-//                         "mars");
-//  TestStronglyBoundOrbit(2.056279E-01, 1E-6,
-//                         mercury, mercury_dof,
-//                         sun, sun_dof,
-//                         "mercury");
-//  TestStronglyBoundOrbit(2.537103E-01, 1E-6,
-//                         pluto, pluto_dof,
-//                         sun, sun_dof,
-//                         "pluto");
-//  TestStronglyBoundOrbit(4.424299E-01, 1E-6,
-//                         eris, eris_dof,
-//                         sun, sun_dof,
-//                         "eris");
-//  // Using centre: Jupiter (body centre) [500@599].
-//  TestStronglyBoundOrbit(4.306439E-04, 1E-4,
-//                         ganymede, ganymede_dof,
-//                         jupiter, jupiter_dof,
-//                         sun, sun_dof,
-//                         "ganymede");
-//  TestStronglyBoundOrbit(7.138518E-03, 1E-5,
-//                         callisto, callisto_dof,
-//                         jupiter, jupiter_dof,
-//                         sun, sun_dof,
-//                         "callisto");
-//  TestStronglyBoundOrbit(4.460632E-03, 1E-5,
-//                         io, io_dof,
-//                         jupiter, jupiter_dof,
-//                         sun, sun_dof,
-//                         "io");
-//  TestStronglyBoundOrbit(9.509972E-03, 1E-6,
-//                         europa, europa_dof,
-//                         jupiter, jupiter_dof,
-//                         sun, sun_dof,
-//                         "europa");
-//  // Using centre: Saturn (body centre) [500@699].
-//  TestStronglyBoundOrbit(2.882510E-02, 1E-6,
-//                         titan, titan_dof,
-//                         saturn, saturn_dof,
-//                         sun, sun_dof,
-//                         "titan");
-//  TestStronglyBoundOrbit(1.228346E-03, 1E-5,
-//                         rhea, rhea_dof,
-//                         saturn, saturn_dof,
-//                         sun, sun_dof,
-//                         "rhea");
-//  TestStronglyBoundOrbit(2.720904E-02, 1E-6,
-//                         iapetus, iapetus_dof,
-//                         saturn, saturn_dof,
-//                         sun, sun_dof,
-//                         "iapetus");
-//  TestStronglyBoundOrbit(2.693662E-03, 1E-5,
-//                         dione, dione_dof,
-//                         saturn, saturn_dof,
-//                         sun, sun_dof,
-//                         "dione");
-//  TestStronglyBoundOrbit(1.088851E-03, 1E-4,
-//                         tethys, tethys_dof,
-//                         saturn, saturn_dof,
-//                         sun, sun_dof,
-//                         "tethys");
-//  // Using centre: Geocentric [500].
-//  TestStronglyBoundOrbit(5.804121E-02, 1E-6,
-//                         moon, moon_dof,
-//                         earth, earth_dof,
-//                         sun, sun_dof,
-//                         "moon");
-//  // Using centre: Neptune (body centre) [500@899]
-//  TestStronglyBoundOrbit(1.529190E-05, 2E-1,
-//                         triton, triton_dof,
-//                         neptune, neptune_dof,
-//                         sun, sun_dof,
-//                         "triton");
-//  // Using centre: Uranus (body centre) [500@799]
-//  TestStronglyBoundOrbit(2.254242E-03, 3E-3,
-//                         titania, titania_dof,
-//                         uranus, uranus_dof,
-//                         sun, sun_dof,
-//                         "titania");
-//  TestStronglyBoundOrbit(4.192300E-04, 3E-3,
-//                         oberon, oberon_dof,
-//                         uranus, uranus_dof,
-//                         sun, sun_dof,
-//                         "oberon");
-//  TestStronglyBoundOrbit(2.065133E-03, 2E-3,
-//                         ariel, ariel_dof,
-//                         uranus, uranus_dof,
-//                         sun, sun_dof,
-//                         "ariel");
-//  TestStronglyBoundOrbit(3.837353E-03, 3E-4,
-//                         umbriel, umbriel_dof,
-//                         uranus, uranus_dof,
-//                         sun, sun_dof,
-//                         "umbriel");
-//  // Using centre: Pluto (body centre) [500@999]
-//  TestStronglyBoundOrbit(5.212037E-05, 1E-6,
-//                         charon, charon_dof,
-//                         pluto, pluto_dof,
-//                         sun, sun_dof,
-//                         "charon");
-//}
+
+TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник2Launch) {
+  auto const solar_system = SolarSystemFactory::AtСпутник2Launch(
+      SolarSystemFactory::Accuracy::kMinorAndMajorBodies);
+  auto const massive_bodies = GetMassiveBodies(*solar_system);
+  auto const dof = GetDegreesOfFreedom(*solar_system);
+
+  auto const& sun_dof      = dof[SolarSystemFactory::kSun];
+  auto const& jupiter_dof  = dof[SolarSystemFactory::kJupiter];
+  auto const& saturn_dof   = dof[SolarSystemFactory::kSaturn];
+  auto const& neptune_dof  = dof[SolarSystemFactory::kNeptune];
+  auto const& uranus_dof   = dof[SolarSystemFactory::kUranus];
+  auto const& earth_dof    = dof[SolarSystemFactory::kEarth];
+  auto const& venus_dof    = dof[SolarSystemFactory::kVenus];
+  auto const& mars_dof     = dof[SolarSystemFactory::kMars];
+  auto const& mercury_dof  = dof[SolarSystemFactory::kMercury];
+  auto const& ganymede_dof = dof[SolarSystemFactory::kGanymede];
+  auto const& titan_dof    = dof[SolarSystemFactory::kTitan];
+  auto const& callisto_dof = dof[SolarSystemFactory::kCallisto];
+  auto const& io_dof       = dof[SolarSystemFactory::kIo];
+  auto const& moon_dof     = dof[SolarSystemFactory::kMoon];
+  auto const& europa_dof   = dof[SolarSystemFactory::kEuropa];
+  auto const& triton_dof   = dof[SolarSystemFactory::kTriton];
+  auto const& eris_dof     = dof[SolarSystemFactory::kEris];
+  auto const& pluto_dof    = dof[SolarSystemFactory::kPluto];
+  auto const& titania_dof  = dof[SolarSystemFactory::kTitania];
+  auto const& oberon_dof   = dof[SolarSystemFactory::kOberon];
+  auto const& rhea_dof     = dof[SolarSystemFactory::kRhea];
+  auto const& iapetus_dof  = dof[SolarSystemFactory::kIapetus];
+  auto const& charon_dof   = dof[SolarSystemFactory::kCharon];
+  auto const& ariel_dof    = dof[SolarSystemFactory::kAriel];
+  auto const& umbriel_dof  = dof[SolarSystemFactory::kUmbriel];
+  auto const& dione_dof    = dof[SolarSystemFactory::kDione];
+  auto const& tethys_dof   = dof[SolarSystemFactory::kTethys];
+
+  auto const& sun      = *massive_bodies[SolarSystemFactory::kSun];
+  auto const& jupiter  = *massive_bodies[SolarSystemFactory::kJupiter];
+  auto const& saturn   = *massive_bodies[SolarSystemFactory::kSaturn];
+  auto const& neptune  = *massive_bodies[SolarSystemFactory::kNeptune];
+  auto const& uranus   = *massive_bodies[SolarSystemFactory::kUranus];
+  auto const& earth    = *massive_bodies[SolarSystemFactory::kEarth];
+  auto const& venus    = *massive_bodies[SolarSystemFactory::kVenus];
+  auto const& mars     = *massive_bodies[SolarSystemFactory::kMars];
+  auto const& mercury  = *massive_bodies[SolarSystemFactory::kMercury];
+  auto const& ganymede = *massive_bodies[SolarSystemFactory::kGanymede];
+  auto const& titan    = *massive_bodies[SolarSystemFactory::kTitan];
+  auto const& callisto = *massive_bodies[SolarSystemFactory::kCallisto];
+  auto const& io       = *massive_bodies[SolarSystemFactory::kIo];
+  auto const& moon     = *massive_bodies[SolarSystemFactory::kMoon];
+  auto const& europa   = *massive_bodies[SolarSystemFactory::kEuropa];
+  auto const& triton   = *massive_bodies[SolarSystemFactory::kTriton];
+  auto const& eris     = *massive_bodies[SolarSystemFactory::kEris];
+  auto const& pluto    = *massive_bodies[SolarSystemFactory::kPluto];
+  auto const& titania  = *massive_bodies[SolarSystemFactory::kTitania];
+  auto const& oberon   = *massive_bodies[SolarSystemFactory::kOberon];
+  auto const& rhea     = *massive_bodies[SolarSystemFactory::kRhea];
+  auto const& iapetus  = *massive_bodies[SolarSystemFactory::kIapetus];
+  auto const& charon   = *massive_bodies[SolarSystemFactory::kCharon];
+  auto const& ariel    = *massive_bodies[SolarSystemFactory::kAriel];
+  auto const& umbriel  = *massive_bodies[SolarSystemFactory::kUmbriel];
+  auto const& dione    = *massive_bodies[SolarSystemFactory::kDione];
+  auto const& tethys   = *massive_bodies[SolarSystemFactory::kTethys];
+
+  // Reference excentricities from HORIZONS, truncated.
+  // Using centre: Sun (body centre) [500@10].
+  TestStronglyBoundOrbit(4.899607E-02, 1E-6,
+                         jupiter, jupiter_dof,
+                         sun, sun_dof,
+                         "jupiter");
+  TestStronglyBoundOrbit(5.215911E-02, 1E-6,
+                         saturn, saturn_dof,
+                         sun, sun_dof,
+                         "saturn");
+  TestStronglyBoundOrbit(2.719093E-03, 1E-6,
+                         neptune, neptune_dof,
+                         sun, sun_dof,
+                         "neptune");
+  TestStronglyBoundOrbit(5.004209E-02, 1E-6,
+                         uranus, uranus_dof,
+                         sun, sun_dof,
+                         "uranus");
+  TestStronglyBoundOrbit(1.671840E-02, 1E-6,
+                         earth, earth_dof,
+                         sun, sun_dof,
+                         "earth");
+  TestStronglyBoundOrbit(6.792333E-03, 1E-6,
+                         venus, venus_dof,
+                         sun, sun_dof,
+                         "venus");
+  TestStronglyBoundOrbit(9.334796E-02, 1E-6,
+                         mars, mars_dof,
+                         sun, sun_dof,
+                         "mars");
+  TestStronglyBoundOrbit(2.056279E-01, 1E-6,
+                         mercury, mercury_dof,
+                         sun, sun_dof,
+                         "mercury");
+  TestStronglyBoundOrbit(2.537103E-01, 1E-6,
+                         pluto, pluto_dof,
+                         sun, sun_dof,
+                         "pluto");
+  TestStronglyBoundOrbit(4.424299E-01, 1E-5,
+                         eris, eris_dof,
+                         sun, sun_dof,
+                         "eris");
+  // Using centre: Jupiter (body centre) [500@599].
+  TestStronglyBoundOrbit(4.306439E-04, 1E-5,
+                         ganymede, ganymede_dof,
+                         jupiter, jupiter_dof,
+                         sun, sun_dof,
+                         "ganymede");
+  TestStronglyBoundOrbit(7.138518E-03, 1E-6,
+                         callisto, callisto_dof,
+                         jupiter, jupiter_dof,
+                         sun, sun_dof,
+                         "callisto");
+  TestStronglyBoundOrbit(4.460632E-03, 1E-5,
+                         io, io_dof,
+                         jupiter, jupiter_dof,
+                         sun, sun_dof,
+                         "io");
+  TestStronglyBoundOrbit(9.509972E-03, 1E-6,
+                         europa, europa_dof,
+                         jupiter, jupiter_dof,
+                         sun, sun_dof,
+                         "europa");
+  // Using centre: Saturn (body centre) [500@699].
+  TestStronglyBoundOrbit(2.882510E-02, 1E-6,
+                         titan, titan_dof,
+                         saturn, saturn_dof,
+                         sun, sun_dof,
+                         "titan");
+  TestStronglyBoundOrbit(1.228346E-03, 1E-4,
+                         rhea, rhea_dof,
+                         saturn, saturn_dof,
+                         sun, sun_dof,
+                         "rhea");
+  TestStronglyBoundOrbit(2.720904E-02, 1E-5,
+                         iapetus, iapetus_dof,
+                         saturn, saturn_dof,
+                         sun, sun_dof,
+                         "iapetus");
+  TestStronglyBoundOrbit(2.693662E-03, 1E-3,
+                         dione, dione_dof,
+                         saturn, saturn_dof,
+                         sun, sun_dof,
+                         "dione");
+  TestStronglyBoundOrbit(1.088851E-03, 1E-3,
+                         tethys, tethys_dof,
+                         saturn, saturn_dof,
+                         sun, sun_dof,
+                         "tethys");
+  // Using centre: Geocentric [500].
+  TestStronglyBoundOrbit(5.804121E-02, 1E-6,
+                         moon, moon_dof,
+                         earth, earth_dof,
+                         sun, sun_dof,
+                         "moon");
+  // Using centre: Neptune (body centre) [500@899]
+  TestStronglyBoundOrbit(1.529190E-05, 1E-5,
+                         triton, triton_dof,
+                         neptune, neptune_dof,
+                         sun, sun_dof,
+                         "triton");
+  // Using centre: Uranus (body centre) [500@799]
+  TestStronglyBoundOrbit(2.254242E-03, 1E-6,
+                         titania, titania_dof,
+                         uranus, uranus_dof,
+                         sun, sun_dof,
+                         "titania");
+  TestStronglyBoundOrbit(4.192300E-04, 1E-6,
+                         oberon, oberon_dof,
+                         uranus, uranus_dof,
+                         sun, sun_dof,
+                         "oberon");
+  TestStronglyBoundOrbit(2.065133E-03, 1E-6,
+                         ariel, ariel_dof,
+                         uranus, uranus_dof,
+                         sun, sun_dof,
+                         "ariel");
+  TestStronglyBoundOrbit(3.837353E-03, 1E-6,
+                         umbriel, umbriel_dof,
+                         uranus, uranus_dof,
+                         sun, sun_dof,
+                         "umbriel");
+  // Using centre: Pluto (body centre) [500@999]
+  TestStronglyBoundOrbit(5.212037E-05, 1E-6,
+                         charon, charon_dof,
+                         pluto, pluto_dof,
+                         sun, sun_dof,
+                         "charon");
+}
 
 }  // namespace testing_utilities
 }  // namespace principia
