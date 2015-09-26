@@ -40,8 +40,9 @@ using quantities::si::Second;
 namespace physics {
 
 template<typename Frame>
-void SolarSystem<Frame>::Initialize(std::string const& gravity_model_filename,
-                                    std::string const& initial_state_filename) {
+void SolarSystem<Frame>::Initialize(
+    std::experimental::filesystem::path const& gravity_model_filename,
+    std::experimental::filesystem::path const& initial_state_filename) {
   // Parse the files.
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());

@@ -1,7 +1,9 @@
 ﻿#pragma once
 
+#include <experimental/filesystem>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -74,8 +76,9 @@ SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
   auto solar_system =
       base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
   solar_system->Initialize(
-      SOLUTION_DIR "astronomy\\gravity_model.proto.txt",
-      SOLUTION_DIR "astronomy\\initial_state_jd_2436116_311504629.proto.txt");
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2436116_311504629.proto.txt");
   AdjustAccuracy(accuracy, solar_system.get());
   return solar_system;
 }
@@ -85,8 +88,9 @@ SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
   auto solar_system =
       base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
   solar_system->Initialize(
-      SOLUTION_DIR "astronomy\\gravity_model.proto.txt",
-      SOLUTION_DIR "astronomy\\initial_state_jd_2436145_604166667.proto.txt");
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2436145_604166667.proto.txt");
   AdjustAccuracy(accuracy, solar_system.get());
   return solar_system;
 }

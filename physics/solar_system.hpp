@@ -1,5 +1,6 @@
 #pragma once
 
+#include <experimental/filesystem>
 #include <map>
 #include <string>
 #include <vector>
@@ -19,8 +20,9 @@ class SolarSystem {
  public:
   // Initializes this object from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.
-  void Initialize(std::string const& gravity_model_filename,
-                  std::string const& initial_state_filename);
+  void Initialize(
+      std::experimental::filesystem::path const& gravity_model_filename,
+      std::experimental::filesystem::path const& initial_state_filename);
 
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
