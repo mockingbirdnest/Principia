@@ -47,6 +47,9 @@ class SolarSystem {
   // The initial state of the body named |name|.
   DegreesOfFreedom<Frame> initial_state(std::string const& name) const;
 
+  // The gravitational parameter of the body named |name|.
+  GravitationalParameter gravitational_parameter(std::string const& name) const;
+
   // The |MassiveBody| for the body named |name|, extracted from the given
   // |ephemeris|.
   MassiveBody const& massive_body(Ephemeris<Frame> const& ephemeris,

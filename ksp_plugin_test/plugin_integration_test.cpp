@@ -51,10 +51,8 @@ class PluginIntegrationTest : public testing::Test {
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
     sun_gravitational_parameter_ =
-        SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-            solar_system_->gravity_model_message(
-                SolarSystemFactory::name(SolarSystemFactory::kSun)))->
-                gravitational_parameter();
+        solar_system_->gravitational_parameter(
+           SolarSystemFactory::name(SolarSystemFactory::kSun));
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -69,10 +67,8 @@ class PluginIntegrationTest : public testing::Test {
         Eq(0));
     // This yields a circular orbit.
     satellite_initial_velocity_ =
-        Sqrt(SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-                 solar_system_->gravity_model_message(
-                     SolarSystemFactory::name(SolarSystemFactory::kEarth)))->
-                     gravitational_parameter() /
+        Sqrt(solar_system_->gravitational_parameter(
+                 SolarSystemFactory::name(SolarSystemFactory::kEarth)) /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
@@ -84,7 +80,7 @@ class PluginIntegrationTest : public testing::Test {
 
   void InsertAllSolarSystemBodies() {
     for (int index = SolarSystemFactory::kSun;
-         index <= SolarSystemFactory::kTethys;
+         index <= SolarSystemFactory::kLastBody;
          ++index) {
       std::unique_ptr<Index> parent_index =
           index == SolarSystemFactory::kSun

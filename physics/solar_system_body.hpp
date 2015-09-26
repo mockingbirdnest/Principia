@@ -135,6 +135,13 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::initial_state(
 }
 
 template<typename Frame>
+GravitationalParameter SolarSystem<Frame>::gravitational_parameter(
+    std::string const& name) const {
+  return MakeMassiveBody(*gravity_model_map_.at(name))->
+             gravitational_parameter();
+}
+
+template<typename Frame>
 MassiveBody const& SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {

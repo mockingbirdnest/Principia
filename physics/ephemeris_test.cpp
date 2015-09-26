@@ -654,7 +654,7 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
       {SolarSystemFactory::kEris, 1E-10}};
 
  for (int i = SolarSystemFactory::kSun;
-       i <= SolarSystemFactory::kTethys;
+       i <= SolarSystemFactory::kLastBody;
        ++i) {
     SolarSystemFactory::Index const index =
         static_cast<SolarSystemFactory::Index>(i);
