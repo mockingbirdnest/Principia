@@ -206,6 +206,26 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
 }
 
 template<typename Frame>
+void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
+  auto const it = names.find(name);
+  CHECK(it != names.end()) << name << " does not exist";
+  names.erase(it);
+  initial_state_map_.erase(name);
+  gravity_model_map_.erase(name);
+}
+
+template<typename Frame>
+void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
+  auto const it = gravity_model_map_.find(name);
+  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
+  serialization::GravityModel::Body& body = it->second;
+  body.clear_axis_declination();
+  body.clear_axis_right_ascension();
+  body.clear_j2();
+  body.clear_reference_radius();
+}
+
+template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

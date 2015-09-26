@@ -66,6 +66,11 @@ class SolarSystem {
   static std::unique_ptr<MassiveBody> MakeMassiveBody(
       serialization::GravityModel::Body const& body);
 
+  // Utilities for patching the internal protocol buffers after initialization.
+  // Should only be used in tests.
+  void RemoveMassiveBody(std::string const& name);
+  void RemoveOblateness(std::string const& name);
+
  private:
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
       MakeAllMassiveBodies();
