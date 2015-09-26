@@ -90,4 +90,4 @@ class SolarSystemFactory {
 }  // namespace testing_utilities
 }  // namespace principia
 
-#include "testing_utilities/solar_system_body.hpp"
+#include "testing_utilities/solar_system_factory_body.hpp"
