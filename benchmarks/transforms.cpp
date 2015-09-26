@@ -33,7 +33,8 @@
 // BM_TransformsBarycentricRotating<true>/1000k_mean       1719766736 1712890980          1  // NOLINT(whitespace/line_length)
 // BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
-#include <optional.hpp>
+#include "base/macros.hpp"
+#include OPTIONAL_HEADER
 
 #include <memory>
 #include <utility>

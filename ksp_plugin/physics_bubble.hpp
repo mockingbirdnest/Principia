@@ -1,6 +1,7 @@
 #pragma once
 
-#include <optional.hpp>
+#include "base/macros.hpp"
+#include OPTIONAL_HEADER
 
 #include <map>
 #include <memory>

@@ -162,6 +162,13 @@ inline void noreturn() { std::exit(0); }
 #  define TEMPLATE template
 #endif
 
+// Use libc++ optional if possible
+#if PRINCIPIA_COMPILER_MSVC
+#  define OPTIONAL_HEADER "optional.hpp"
+#else
+#  define OPTIONAL_HEADER <experimental/optional>
+#endif
+
 #define VLOG_AND_RETURN(verboselevel, expression)                  \
   do {                                                             \
     auto const& value__ = (expression);                            \
