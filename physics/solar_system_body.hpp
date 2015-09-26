@@ -127,6 +127,13 @@ int SolarSystem<Frame>::index(std::string const& name) const {
   return it.first - names_.begin();
 }
 
+
+template<typename Frame>
+DegreesOfFreedom<Frame> SolarSystem<Frame>::initial_state(
+    std::string const& name) const {
+  return MakeDegreesOfFreedom(*initial_state_map_.at(name));
+}
+
 template<typename Frame>
 MassiveBody const& SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
@@ -144,13 +151,13 @@ ContinuousTrajectory<Frame> const& SolarSystem<Frame>::trajectory(
 
 template<typename Frame>
 serialization::InitialState::Body const&
-SolarSystem<Frame>::initial_state(std::string const& name) const {
+SolarSystem<Frame>::initial_state_message(std::string const& name) const {
   return *FindOrDie(initial_state_map_, name);
 }
 
 template<typename Frame>
 serialization::GravityModel::Body const&
-SolarSystem<Frame>::gravity_model(std::string const& name) const {
+SolarSystem<Frame>::gravity_model_message(std::string const& name) const {
   return *FindOrDie(gravity_model_map_, name);
 }
 
