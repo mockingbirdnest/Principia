@@ -1,6 +1,8 @@
 ﻿
 #include "physics/solar_system.hpp"
 
+#include <experimental/filesystem>
+
 #include "astronomy/frames.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "gmock/gmock.h"
@@ -26,8 +28,10 @@ class SolarSystemTest : public ::testing::Test {
 };
 
 TEST_F(SolarSystemTest, RealSolarSystem) {
-  solar_system_.Initialize(SOLUTION_DIR "astronomy\\gravity_model.proto.txt",
-                           SOLUTION_DIR "astronomy\\initial_state.proto.txt");
+  solar_system_.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2433282_500000000.proto.txt");
 
   EXPECT_EQ(Instant(-50 * 365.25 * Day), solar_system_.epoch());
   EXPECT_THAT(solar_system_.names(),
@@ -84,6 +88,56 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   auto const& sun_gravity_model = solar_system_.gravity_model("Sun");
   EXPECT_EQ("286.13 deg", sun_gravity_model.axis_right_ascension());
   EXPECT_EQ("63.87 deg", sun_gravity_model.axis_declination());
+}
+
+TEST_F(SolarSystemTest, Clear) {
+  solar_system_.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2433282_500000000.proto.txt");
+  solar_system_.RemoveMassiveBody("Io");
+  solar_system_.RemoveOblateness("Sun");
+  EXPECT_THAT(solar_system_.names(),
+              ElementsAreArray({"Ariel",
+                                "Callisto",
+                                "Ceres",
+                                "Charon",
+                                "Deimos",
+                                "Dione",
+                                "Earth",
+                                "Enceladus",
+                                "Eris",
+                                "Europa",
+                                "Ganymede",
+                                "Iapetus",
+                                "Jupiter",
+                                "Mars",
+                                "Mercury",
+                                "Mimas",
+                                "Miranda",
+                                "Moon",
+                                "Neptune",
+                                "Oberon",
+                                "Phobos",
+                                "Pluto",
+                                "Rhea",
+                                "Saturn",
+                                "Sun",
+                                "Tethys",
+                                "Titan",
+                                "Titania",
+                                "Triton",
+                                "Umbriel",
+                                "Uranus",
+                                "Venus",
+                                "Vesta"}));
+
+  auto const& sun_initial_state = solar_system_.initial_state("Sun");
+  EXPECT_EQ("+1.309126697236264E+05 km", sun_initial_state.x());
+  EXPECT_EQ("-7.799754996220354E-03 km/s", sun_initial_state.vx());
+  auto const& sun_gravity_model = solar_system_.gravity_model("Sun");
+  EXPECT_FALSE(sun_gravity_model.has_axis_right_ascension());
+  EXPECT_FALSE(sun_gravity_model.has_axis_declination());
 }
 
 }  // namespace physics

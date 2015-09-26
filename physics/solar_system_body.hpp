@@ -40,8 +40,9 @@ using quantities::si::Second;
 namespace physics {
 
 template<typename Frame>
-void SolarSystem<Frame>::Initialize(std::string const& gravity_model_filename,
-                                    std::string const& initial_state_filename) {
+void SolarSystem<Frame>::Initialize(
+    std::experimental::filesystem::path const& gravity_model_filename,
+    std::experimental::filesystem::path const& initial_state_filename) {
   // Parse the files.
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
@@ -65,7 +66,7 @@ void SolarSystem<Frame>::Initialize(std::string const& gravity_model_filename,
   CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
 
   // Store the data in maps keyed by body name.
-  for (auto const& body : gravity_model_.gravity_model().body()) {
+  for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {
     auto const inserted =
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
@@ -203,6 +204,30 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
   } else {
     return std::make_unique<MassiveBody>(massive_body_parameters);
   }
+}
+
+template<typename Frame>
+void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
+  for (int i = 0; i < names_.size(); ++i) {
+    if (names_[i] == name) {
+      names_.erase(names_.begin() + i);
+      initial_state_map_.erase(name);
+      gravity_model_map_.erase(name);
+      return;
+    }
+  }
+  LOG(FATAL) << name << " does not exist";
+}
+
+template<typename Frame>
+void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
+  auto const it = gravity_model_map_.find(name);
+  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
+  serialization::GravityModel::Body* body = it->second;
+  body->clear_axis_declination();
+  body->clear_axis_right_ascension();
+  body->clear_j2();
+  body->clear_reference_radius();
 }
 
 template<typename Frame>

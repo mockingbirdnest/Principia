@@ -1,5 +1,6 @@
 #pragma once
 
+#include <experimental/filesystem>
 #include <map>
 #include <string>
 #include <vector>
@@ -19,8 +20,9 @@ class SolarSystem {
  public:
   // Initializes this object from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.
-  void Initialize(std::string const& gravity_model_filename,
-                  std::string const& initial_state_filename);
+  void Initialize(
+      std::experimental::filesystem::path const& gravity_model_filename,
+      std::experimental::filesystem::path const& initial_state_filename);
 
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
@@ -66,6 +68,11 @@ class SolarSystem {
   static std::unique_ptr<MassiveBody> MakeMassiveBody(
       serialization::GravityModel::Body const& body);
 
+  // Utilities for patching the internal protocol buffers after initialization.
+  // Should only be used in tests.
+  void RemoveMassiveBody(std::string const& name);
+  void RemoveOblateness(std::string const& name);
+
  private:
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
       MakeAllMassiveBodies();
@@ -80,7 +87,7 @@ class SolarSystem {
   std::map<std::string,
            serialization::InitialState::Body const*> initial_state_map_;
   std::map<std::string,
-           serialization::GravityModel::Body const*> gravity_model_map_;
+           serialization::GravityModel::Body*> gravity_model_map_;
 };
 
 }  // namespace physics
