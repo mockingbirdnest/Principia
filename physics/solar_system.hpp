@@ -85,7 +85,7 @@ class SolarSystem {
   std::map<std::string,
            serialization::InitialState::Body const*> initial_state_map_;
   std::map<std::string,
-           serialization::GravityModel::Body const*> gravity_model_map_;
+           serialization::GravityModel::Body*> gravity_model_map_;
 };
 
 }  // namespace physics
