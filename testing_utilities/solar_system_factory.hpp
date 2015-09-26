@@ -70,13 +70,11 @@ class SolarSystemFactory {
     kAllBodiesAndOblateness,
   };
 
-  // A solar system at the time of the launch of Простейший Спутник-1,
-  // 1957-10-04T19:28:34Z (JD2436116.31150).
+  // A solar system at the time of the launch of Простейший Спутник-1.
   static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
   AtСпутник1Launch(Accuracy const accuracy);
 
-  // A solar system at the time of the launch of Простейший Спутник-2,
-  // 1957-11-03T02:30:00Z (JD 2436145.60417)
+  // A solar system at the time of the launch of Простейший Спутник-2.
   static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
   AtСпутник2Launch(Accuracy const accuracy);
 
