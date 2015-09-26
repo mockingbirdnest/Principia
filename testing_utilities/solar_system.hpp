@@ -21,7 +21,7 @@ namespace principia {
 using astronomy::ICRFJ2000Ecliptic;
 using astronomy::ICRFJ2000Equator;
 using astronomy::kEquatorialToEcliptic;
-using astronomy::kSolarSystemBarycentre;
+using astronomy::kSolarSystemBarycentreEcliptic;
 using base::not_null;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;

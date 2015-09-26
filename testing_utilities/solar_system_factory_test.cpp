@@ -143,7 +143,7 @@ class SolarSystemFactoryTest : public testing::Test {
          ++i) {
       degrees_of_freedom.emplace_back(
           SolarSystem<ICRFJ2000Equator>::MakeDegreesOfFreedom(
-              solar_system.initial_state(SolarSystemFactory::name(i))));
+              solar_system.initial_state_message(SolarSystemFactory::name(i))));
     }
     return degrees_of_freedom;
   }
@@ -156,7 +156,7 @@ class SolarSystemFactoryTest : public testing::Test {
          ++i) {
       massive_bodies.emplace_back(
           SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-              solar_system.gravity_model(SolarSystemFactory::name(i))));
+              solar_system.gravity_model_message(SolarSystemFactory::name(i))));
     }
     return massive_bodies;
   }
