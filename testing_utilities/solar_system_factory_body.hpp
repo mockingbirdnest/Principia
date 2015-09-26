@@ -61,7 +61,7 @@ void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
 
 }  // namespace
 
-not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
+inline not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
 SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
   auto solar_system =
       base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
@@ -72,7 +72,7 @@ SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
   return solar_system;
 }
 
-not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
+inline not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
 SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
   auto solar_system =
       base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
@@ -83,7 +83,7 @@ SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
   return solar_system;
 }
 
-int SolarSystemFactory::parent(int const index) {
+inline int SolarSystemFactory::parent(int const index) {
   switch (index) {
     case kSun:
       LOG(FATAL) << FUNCTION_SIGNATURE << "The Sun has no parent";
