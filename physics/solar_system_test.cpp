@@ -26,8 +26,9 @@ class SolarSystemTest : public ::testing::Test {
 };
 
 TEST_F(SolarSystemTest, RealSolarSystem) {
-  solar_system_.Initialize(SOLUTION_DIR "astronomy\\gravity_model.proto.txt",
-                           SOLUTION_DIR "astronomy\\initial_state.proto.txt");
+  solar_system_.Initialize(
+      SOLUTION_DIR "astronomy\\gravity_model.proto.txt",
+      SOLUTION_DIR "astronomy\\initial_state_jd_2433282_500000000.proto.txt");
 
   EXPECT_EQ(Instant(-50 * 365.25 * Day), solar_system_.epoch());
   EXPECT_THAT(solar_system_.names(),
