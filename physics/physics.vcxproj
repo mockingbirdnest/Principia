@@ -161,6 +161,7 @@
     <ClInclude Include="discrete_trajectory.hpp" />
     <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="dynamic_frame.hpp" />
+    <ClInclude Include="dynamic_frame_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
     <ClInclude Include="ephemeris_body.hpp" />
     <ClInclude Include="forkable.hpp" />

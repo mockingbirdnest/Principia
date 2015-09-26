@@ -13,8 +13,8 @@ namespace principia {
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::Position;
-using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
 using quantities::Length;
@@ -22,9 +22,9 @@ using quantities::Length;
 namespace physics {
 
 // TODO(egg): AffineMap needs an accessor for its linear map.
-// TODO(egg): why not OrthogonalMap?
-template<typename FromFrame, typename ToFrame>
-using RigidTransformation = AffineMap<FromFrame, ToFrame, Length, Rotation>;
+template <typename FromFrame, typename ToFrame>
+using RigidTransformation =
+    AffineMap<FromFrame, ToFrame, Length, OrthogonalMap>;
 
 // The instantaneous motion of |ToFrame| with respect to |FromFrame|.
 // This is the derivative of a |RigidTransformation<FromFrame, ToFrame>|.
@@ -33,43 +33,64 @@ using RigidTransformation = AffineMap<FromFrame, ToFrame, Length, Rotation>;
 template<typename FromFrame, typename ToFrame>
 class RigidMotion {
  public:
-  RigidTransformation<FromFrame, ToFrame> const& rigid_transformation();
+  RigidMotion(
+      RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+      AngularVelocity<ToFrame> const& rotation,
+      Velocity<ToFrame> const& translation);
+  ~RigidMotion() = default;
+
+  RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
-  Rotation<FromFrame, ToFrame> const& rotation() const;
+  OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map() const;
 
   DegreesOfFreedom<ToFrame> operator()(
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
+  template<typename From, typename Through, typename To>
+  friend RigidMotion<From, To> operator*(
+      RigidMotion<Through, To> const& left,
+      RigidMotion<From, Through> const& right);
+
  private:
   RigidTransformation<FromFrame, ToFrame> rigid_tranformation_;
-  // d/dt rigid_transformation?¹(basis of ToFrame). The positively oriented
-  // orthogonal bases of FromFrame are acted upon faithfully and transitively by
-  // |Rotation<FromFrame, FromFrame>|, so this lies in the tangent space, i.e.,
-  // the Lie algebra.
-  AngularVelocity<FromFrame> rotation_;
-  // d/dt rigid_transformation?¹(ToFrame::origin).
-  Velocity<FromFrame> translation_;
+  // d/dt rigid_transformation(basis of FromFrame). The positively oriented
+  // orthogonal bases of |ToFrame| are acted upon faithfully and transitively by
+  // SO(ToFrame), so this lies in the tangent space, i.e., the Lie algebra
+  // ????(ToFrame) = ToFrame ? ToFrame.
+  AngularVelocity<ToFrame> rotation_;
+  // d/dt rigid_transformation(FromFrame::origin).
+  Velocity<ToFrame> translation_;
 };
 
-// The definition of a reference frame |Frame| in arbitrary motion with respect
-// to |BaseFrame|.
-template<typename BaseFrame, typename Frame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame> operator*(
+    RigidMotion<ThroughFrame, ToFrame> const& left,
+    RigidMotion<FromFrame, ThroughFrame> const& right);
+
+// The definition of a reference frame |ThisFrame| in arbitrary motion with
+// respect to |BaseFrame|.  |BaseFrame| must be inertial.
+template<typename BaseFrame, typename ThisFrame>
 class DynamicFrame {
  public:
-  virtual RigidMotion<BaseFrame, Frame> ToFrameAtTime(
-      Instant const& t) = 0;
-  virtual RigidMotion<Frame, BaseFrame> FromFrameAtTime(
-      Instant const& t) = 0;
+  static_assert(BaseFrame::is_inertial);
+
+  virtual ~DynamicFrame() = 0;
+  virtual RigidMotion<BaseFrame, ThisFrame> ToThisFrameAtTime(
+      Instant const& t) const = 0;
+  virtual RigidMotion<ThisFrame, BaseFrame> FromThisFrameAtTime(
+      Instant const& t) const = 0;
 
   // The acceleration due to the non-inertial motion of |Frame| and gravity.
   // A particle in free fall follows a trajectory whose second derivative
   // is |GeometricAcceleration|.
-  virtual Vector<Acceleration, Frame> GeometricAcceleration(
+  virtual Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
-      Position const& q) = 0;
+      DegreesOfFreedom const& degrees_of_freedom) const = 0;
 };
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/dynamic_frame_body.hpp"
