@@ -84,6 +84,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy", "astronomy\astronomy.vcxproj", "{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

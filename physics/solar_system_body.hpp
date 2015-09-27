@@ -117,6 +117,16 @@ Instant const& SolarSystem<Frame>::epoch() const {
 }
 
 template<typename Frame>
+std::string const& SolarSystem<Frame>::gravity_model_needs() const {
+  return gravity_model_.gravity_model().needs();
+}
+
+template<typename Frame>
+std::string const& SolarSystem<Frame>::initial_state_needs() const {
+  return initial_state_.initial_state().needs();
+}
+
+template<typename Frame>
 std::vector<std::string> const& SolarSystem<Frame>::names() const {
   return names_;
 }
