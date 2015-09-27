@@ -1,5 +1,4 @@
 initial_state {
-  needs : "RealSolarSystem"
   frame : ICRF_J2000_EQUATOR
   # The time of the initial state, as a TDB Julian date.
   # This is 1950-Jan-01 00:00:00.0000 TDB.

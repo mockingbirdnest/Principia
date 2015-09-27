@@ -35,9 +35,7 @@ void GenerateConfiguration(Instant const& game_epoch,
   std::ofstream gravity_model_cfg(
       (directory / gravity_model_stem).replace_extension(kCfg));
   CHECK(gravity_model_cfg.good());
-  gravity_model_cfg << "principia_gravity_model:NEEDS["
-                    << solar_system.gravity_model_needs()
-                    << "] {\n";
+  gravity_model_cfg << "principia_gravity_model:NEEDS[RealSolarSystem] {\n";
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
@@ -69,9 +67,7 @@ void GenerateConfiguration(Instant const& game_epoch,
   std::ofstream initial_state_cfg(
       (directory / initial_state_stem).replace_extension(kCfg));
   CHECK(initial_state_cfg.good());
-  initial_state_cfg << "principia_initial_state:NEEDS["
-                    << solar_system.initial_state_needs()
-                    << "] {\n";
+  initial_state_cfg << "principia_initial_state:NEEDS[RealSolarSystem] {\n";
   initial_state_cfg << "  epoch = "
                     << (solar_system.epoch() - game_epoch) / Second << "\n";
   for (std::string const& name : solar_system.names()) {

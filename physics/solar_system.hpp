@@ -37,10 +37,6 @@ class SolarSystem {
   // The time origin for the initial state.
   Instant const& epoch() const;
 
-  // The "needs" clauses.
-  std::string const& gravity_model_needs() const;
-  std::string const& initial_state_needs() const;
-
   // The names of the bodies, sorted alphabetically.
   std::vector<std::string> const& names() const;
 
