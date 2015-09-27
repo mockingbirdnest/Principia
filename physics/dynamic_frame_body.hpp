@@ -45,14 +45,15 @@ RigidMotion<ToFrame, FromFrame> RigidMotion<FromFrame, ToFrame>::Inverse()
                                          -orthogonal_map()(translation_));
 }
 
-#ifdef(EGG_IS_NOT_LAZY)
 template <typename FromFrame, typename ThroughFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame> operator*(
     RigidMotion<ThroughFrame, ToFrame> const& left,
     RigidMotion<FromFrame, ThroughFrame> const& right) {
-  return RigidMotion<FromFrame, ToFrame>();
+  return RigidMotion<FromFrame, ToFrame>(
+      left.rigid_transformation() * right.rigid_transformation(),
+      left.rotation_ + left.orthogonal_map()(right.rotation_),
+      left(right({FromFrame::origin, Velocity<FromFrame>()})));
 }
-#endif
 
 }  // namespace physics
 }  // namespace principia
