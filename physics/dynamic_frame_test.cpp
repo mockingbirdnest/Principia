@@ -7,6 +7,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -14,7 +15,9 @@ namespace principia {
 
 using geometry::AngularVelocity;
 using geometry::Frame;
+using geometry::InnerProduct;
 using geometry::Permutation;
+using geometry::Wedge;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Speed;
@@ -23,6 +26,7 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 
@@ -112,6 +116,24 @@ TEST_F(RigidMotionTest, TidalLocking) {
               Componentwise(VanishesBefore(moon_speed, 1),
                             VanishesBefore(moon_speed, 1),
                             0 * Metre / Second));
+}
+
+TEST_F(RigidMotionTest, ApparentMoon) {
+  RigidMotion<Selenocentric, Terrestrial> const selenocentric_to_terrestrial =
+      terrestrial_to_geocentric_.Inverse() * selenocentric_to_geocentric_;
+  DegreesOfFreedom<Terrestrial> const moon_degrees_of_freedom =
+      selenocentric_to_terrestrial(
+          {Selenocentric::origin, Velocity<Selenocentric>()});
+  Displacement<Terrestrial> const earth_to_moon =
+      moon_degrees_of_freedom.position() - Terrestrial::origin;
+  EXPECT_EQ(
+      Displacement<Terrestrial>({earth_moon_distance_, 0 * Metre, 0 * Metre}),
+      earth_to_moon);
+  AngularVelocity<Terrestrial> const moon_angular_velocity =
+      Wedge(earth_to_moon, moon_degrees_of_freedom.velocity()) /
+      InnerProduct(earth_to_moon, earth_to_moon) * Radian;
+  EXPECT_THAT(moon_angular_velocity.Norm() / (2 * π * Radian) * Day,
+              AlmostEquals(29.0 / 30.0, 0));
 }
 
 }  // namespace physics
