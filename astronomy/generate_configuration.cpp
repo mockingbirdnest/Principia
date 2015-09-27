@@ -1,6 +1,5 @@
-#include <string>
-
 #include <experimental/filesystem>
+#include <string>
 
 #include "astronomy/frames.hpp"
 #include "geometry/epoch.hpp"
@@ -45,7 +44,7 @@ void GenerateConfiguration(Instant const& game_epoch,
     gravity_model_cfg << "  body {\n";
     gravity_model_cfg << "    name                    = "
                       << name << "\n";
-    gravity_model_cfg << "    gravitational_parameter = " 
+    gravity_model_cfg << "    gravitational_parameter = "
                       << body.gravitational_parameter() << "\n";
     if (body.has_axis_right_ascension()) {
       gravity_model_cfg << "    axis_right_ascension    = "
