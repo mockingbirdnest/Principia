@@ -139,11 +139,10 @@ class SolarSystemFactoryTest : public testing::Test {
       SolarSystem<ICRFJ2000Equator> const& solar_system) {
     std::vector<DegreesOfFreedom<ICRFJ2000Equator>> degrees_of_freedom;
     for (int i = SolarSystemFactory::kSun;
-         i <= SolarSystemFactory::kTethys;
+         i <= SolarSystemFactory::kLastBody;
          ++i) {
       degrees_of_freedom.emplace_back(
-          SolarSystem<ICRFJ2000Equator>::MakeDegreesOfFreedom(
-              solar_system.initial_state(SolarSystemFactory::name(i))));
+          solar_system.initial_state(SolarSystemFactory::name(i)));
     }
     return degrees_of_freedom;
   }
@@ -152,11 +151,11 @@ class SolarSystemFactoryTest : public testing::Test {
     SolarSystem<ICRFJ2000Equator> const& solar_system) {
     std::vector<std::unique_ptr<MassiveBody>> massive_bodies;
     for (int i = SolarSystemFactory::kSun;
-         i <= SolarSystemFactory::kTethys;
+         i <= SolarSystemFactory::kLastBody;
          ++i) {
       massive_bodies.emplace_back(
           SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-              solar_system.gravity_model(SolarSystemFactory::name(i))));
+              solar_system.gravity_model_message(SolarSystemFactory::name(i))));
     }
     return massive_bodies;
   }
@@ -173,7 +172,7 @@ TEST_F(SolarSystemFactoryDeathTest, Parent) {
 TEST_F(SolarSystemFactoryTest, Name) {
   std::vector<std::string> names;
   for (int i = SolarSystemFactory::kSun;
-       i <= SolarSystemFactory::kTethys;
+       i <= SolarSystemFactory::kLastBody;
        ++i) {
     names.push_back(SolarSystemFactory::name(i));
   }
@@ -188,7 +187,7 @@ TEST_F(SolarSystemFactoryTest, Name) {
 TEST_F(SolarSystemFactoryTest, Parent) {
   std::vector<std::string> parent_names;
   for (int i = SolarSystemFactory::kSun + 1;
-       i <= SolarSystemFactory::kTethys;
+       i <= SolarSystemFactory::kLastBody;
        ++i) {
     parent_names.push_back(
         SolarSystemFactory::name(SolarSystemFactory::parent(i)));

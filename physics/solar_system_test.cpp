@@ -82,10 +82,10 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   auto const& earth_trajectory = solar_system_.trajectory(*ephemeris, "Earth");
   EXPECT_TRUE(earth_trajectory.empty());
 
-  auto const& sun_initial_state = solar_system_.initial_state("Sun");
+  auto const& sun_initial_state = solar_system_.initial_state_message("Sun");
   EXPECT_EQ("+1.309126697236264E+05 km", sun_initial_state.x());
   EXPECT_EQ("-7.799754996220354E-03 km/s", sun_initial_state.vx());
-  auto const& sun_gravity_model = solar_system_.gravity_model("Sun");
+  auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");
   EXPECT_EQ("286.13 deg", sun_gravity_model.axis_right_ascension());
   EXPECT_EQ("63.87 deg", sun_gravity_model.axis_declination());
 }
@@ -132,10 +132,10 @@ TEST_F(SolarSystemTest, Clear) {
                                 "Venus",
                                 "Vesta"}));
 
-  auto const& sun_initial_state = solar_system_.initial_state("Sun");
+  auto const& sun_initial_state = solar_system_.initial_state_message("Sun");
   EXPECT_EQ("+1.309126697236264E+05 km", sun_initial_state.x());
   EXPECT_EQ("-7.799754996220354E-03 km/s", sun_initial_state.vx());
-  auto const& sun_gravity_model = solar_system_.gravity_model("Sun");
+  auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");
   EXPECT_FALSE(sun_gravity_model.has_axis_right_ascension());
   EXPECT_FALSE(sun_gravity_model.has_axis_declination());
 }

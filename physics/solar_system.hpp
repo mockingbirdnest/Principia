@@ -44,6 +44,12 @@ class SolarSystem {
   // bodies of the ephemeris.
   int index(std::string const& name) const;
 
+  // The initial state of the body named |name|.
+  DegreesOfFreedom<Frame> initial_state(std::string const& name) const;
+
+  // The gravitational parameter of the body named |name|.
+  GravitationalParameter gravitational_parameter(std::string const& name) const;
+
   // The |MassiveBody| for the body named |name|, extracted from the given
   // |ephemeris|.
   MassiveBody const& massive_body(Ephemeris<Frame> const& ephemeris,
@@ -56,9 +62,9 @@ class SolarSystem {
       std::string const& name) const;
 
   // The configuration protocol buffers for the body named |name|.
-  serialization::InitialState::Body const& initial_state(
+  serialization::InitialState::Body const& initial_state_message(
       std::string const& name) const;
-  serialization::GravityModel::Body const& gravity_model(
+  serialization::GravityModel::Body const& gravity_model_message(
       std::string const& name) const;
 
   // Factory functions for converting configuration protocol buffers into

@@ -50,7 +50,8 @@ geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
             23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
             geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
 
-geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
+geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentreEcliptic;
+geometry::Position<ICRFJ2000Equator> const kSolarSystemBarycentreEquator;
 
 }  // namespace astronomy
 }  // namespace principia

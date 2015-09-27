@@ -48,6 +48,7 @@ class SolarSystemFactory {
     kTriton = 15,
     kEris = 16,
     kPluto = 17,
+    kLastMajorBody = 17,
     kTitania = 18,
     kOberon = 19,
     kRhea = 20,
@@ -57,6 +58,7 @@ class SolarSystemFactory {
     kUmbriel = 24,
     kDione = 25,
     kTethys = 26,
+    kLastBody = 26,
   };
 
   // Specifies the accuracy of the modeling.
