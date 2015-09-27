@@ -7,6 +7,8 @@
 #include "quantities/numbers.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
@@ -15,11 +17,14 @@ using geometry::Frame;
 using geometry::Permutation;
 using quantities::AngularFrequency;
 using quantities::Length;
+using quantities::Speed;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
 
 namespace physics {
 
@@ -100,9 +105,13 @@ TEST_F(RigidMotionTest, TidalLocking) {
       selenocentric_to_geocentric_.Inverse();
   DegreesOfFreedom<Lunar> const earth_degrees_of_freedom =
       geocentric_to_lunar({Geocentric::origin, Velocity<Geocentric>()});
-  EXPECT_EQ(earth_degrees_of_freedom.position() - Lunar::origin,
-            Displacement<Lunar>({0 * Metre, -earth_moon_distance_, 0 * Metre}));
-  EXPECT_EQ(earth_degrees_of_freedom.velocity(), Velocity<Lunar>());
+  EXPECT_EQ(Displacement<Lunar>({0 * Metre, -earth_moon_distance_, 0 * Metre}),
+            earth_degrees_of_freedom.position() - Lunar::origin);
+  Speed const moon_speed = (moon_orbit_ * earth_to_moon_ / Radian).Norm();
+  EXPECT_THAT(earth_degrees_of_freedom.velocity(),
+              Componentwise(VanishesBefore(moon_speed, 1),
+                            VanishesBefore(moon_speed, 1),
+                            0 * Metre / Second));
 }
 
 }  // namespace physics
