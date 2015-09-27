@@ -88,7 +88,7 @@ class DynamicFrame {
   // is |GeometricAcceleration|.
   virtual Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
-      DegreesOfFreedom const& degrees_of_freedom) const = 0;
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const = 0;
 };
 
 }  // namespace physics
