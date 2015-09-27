@@ -36,6 +36,12 @@
     <None Include="generate_initial_state.sh">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="gravity_model.cfg">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="initial_state_jd_2433282_500000000.cfg">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="gravity_model.proto.txt">

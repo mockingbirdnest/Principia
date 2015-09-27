@@ -29,6 +29,7 @@ void GenerateConfiguration(std::string const& gravity_model_stem,
 
   std::ofstream gravity_model_cfg(
       (directory / gravity_model_stem).replace_extension(kCfg));
+  CHECK(gravity_model_cfg.good());
   gravity_model_cfg << "principia_gravity_model:NEEDS["
                     << solar_system.gravity_model_needs()
                     << "] {\n";
@@ -62,7 +63,24 @@ void GenerateConfiguration(std::string const& gravity_model_stem,
 
   std::ofstream initial_state_cfg(
       (directory / initial_state_stem).replace_extension(kCfg));
-
+  CHECK(initial_state_cfg.good());
+  initial_state_cfg << "principia_initial_state:NEEDS["
+                    << solar_system.initial_state_needs()
+                    << "] {\n";
+  for (std::string const& name : solar_system.names()) {
+    serialization::InitialState::Body const& body =
+        solar_system.initial_state_message(name);
+    initial_state_cfg << "  body {\n";
+    initial_state_cfg << "    name = " << name << "\n";
+    initial_state_cfg << "    x    = " << body.x() << "\n";
+    initial_state_cfg << "    y    = " << body.y() << "\n";
+    initial_state_cfg << "    z    = " << body.z() << "\n";
+    initial_state_cfg << "    vx   = " << body.vx() << "\n";
+    initial_state_cfg << "    vy   = " << body.vy() << "\n";
+    initial_state_cfg << "    vz   = " << body.vz() << "\n";
+    initial_state_cfg << "  }\n";
+  }
+  initial_state_cfg << "}\n";
 }
 
 }  // namespace astronomy

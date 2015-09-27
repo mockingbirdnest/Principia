@@ -16,7 +16,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "serialized_plugin";
   private const String kPrincipiaInitialState = "principia_initial_state";
-  private const String kPrincipiaGravityModels = "principia_gravity_models";
+  private const String kPrincipiaGravityModel = "principia_gravity_model";
   private const double kΔt = 10;
 
   // The number of points in a |VectorLine| can be at most 32766, since
@@ -1180,19 +1180,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
       if (GameDatabase.Instance.GetConfigs(
-              kPrincipiaGravityModels).Length == 0) {
+              kPrincipiaGravityModel).Length == 0) {
         Log.Fatal("missing gravity models");
       }
       if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 1 ||
           GameDatabase.Instance.GetConfigs(
-              kPrincipiaGravityModels).Length > 1) {
+              kPrincipiaGravityModel).Length > 1) {
         Log.Fatal("too many configs");
       }
       try {
         ConfigNode initial_states =
             GameDatabase.Instance.GetConfigs(kPrincipiaInitialState)[0].config;
         ConfigNode gravity_models =
-            GameDatabase.Instance.GetConfigs(kPrincipiaGravityModels)[0].config;
+            GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel)[0].config;
         plugin_ = NewPlugin(double.Parse(initial_states.GetValue("epoch")),
                             Planetarium.InverseRotAngle);
         var name_to_initial_state = new Dictionary<String, ConfigNode>();
