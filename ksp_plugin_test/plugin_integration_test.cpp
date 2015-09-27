@@ -89,7 +89,6 @@ class PluginIntegrationTest : public testing::Test {
       DegreesOfFreedom<Barycentric> const initial_state =
           ICRFToBarycentric(
               solar_system_->initial_state(SolarSystemFactory::name(index)));
-    // barf_cast, to be fixed when we have rvalue conversion.
     plugin_->DirectlyInsertCelestial(
         index,
         parent_index.get(),

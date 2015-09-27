@@ -352,10 +352,10 @@ TEST_F(PluginTest, Initialization) {
                 Componentwise(
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).displacement()),
-                        1, 278784),
+                        1, 42380),
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).velocity()),
-                        0, 1643885)));
+                        74, 1475468))) << SolarSystemFactory::name(index);
   }
 }
 
@@ -548,14 +548,27 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         solar_system_->initial_state(SolarSystemFactory::name(index)) -
         solar_system_->initial_state(
             SolarSystemFactory::name(SolarSystemFactory::kSun));
-    EXPECT_THAT(
-        from_parent,
-        Componentwise(
-            AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).displacement()), 1, 5056),
-            AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).velocity()),
-                1, 146492520)));
+    // All these worlds are fine -- except Triton.
+    // Attempt no computation there.
+    if (index == SolarSystemFactory::kTriton) {
+      EXPECT_THAT(
+          from_parent,
+          Componentwise(
+              AlmostEquals(looking_glass_.Inverse()(
+                  plugin_->CelestialFromParent(index).displacement()), 5),
+              AlmostEquals(looking_glass_.Inverse()(
+                  plugin_->CelestialFromParent(index).velocity()),
+                  146492520))) << SolarSystemFactory::name(index);
+    } else {
+      EXPECT_THAT(
+          from_parent,
+          Componentwise(
+              AlmostEquals(looking_glass_.Inverse()(
+                  plugin_->CelestialFromParent(index).displacement()), 1, 13),
+              AlmostEquals(looking_glass_.Inverse()(
+                  plugin_->CelestialFromParent(index).velocity()),
+                  74, 1475468))) << SolarSystemFactory::name(index);
+    }
   }
 }
 TEST_F(PluginTest, Navball) {

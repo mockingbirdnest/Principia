@@ -32,9 +32,9 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
-#include "quantities/si.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
+#include "quantities/si.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"

@@ -247,10 +247,8 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     Displacement<ICRFJ2000Equator> const earth_probe_displacement(
         {6371 * Kilo(Metre) + 100 * NauticalMile, 0 * Metre, 0 * Metre});
     Speed const earth_probe_speed =
-        Sqrt(at_спутник_1_launch->massive_body(
-                 *ephemeris,
-                 SolarSystemFactory::name(SolarSystemFactory::kEarth)).
-                     gravitational_parameter() /
+        Sqrt(at_спутник_1_launch->gravitational_parameter(
+                 SolarSystemFactory::name(SolarSystemFactory::kEarth)) /
                      earth_probe_displacement.Norm());
     Velocity<ICRFJ2000Equator> const earth_probe_velocity(
         {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
