@@ -194,7 +194,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
                                   body.gravitational_parameter()));
   if (body.has_axis_declination()) {
     // TODO(phl): Parse the additional parameters.
-    RotatingBody<Frame>::Parameters
+    typename RotatingBody<Frame>::Parameters
         rotating_body_parameters(
             0 * Radian,
             Instant(),
@@ -205,7 +205,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
                     ParseQuantity<Angle>(body.axis_right_ascension())).
                 ToCartesian()) * Radian / Second);
     if (body.has_j2()) {
-      OblateBody<Frame>::Parameters oblate_body_parameters(
+      typename OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
           ParseQuantity<Length>(body.reference_radius()));
       return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
@@ -249,7 +249,6 @@ std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
-    std::string const& name = pair.first;
     serialization::GravityModel::Body const* const body = pair.second;
     CHECK(body->has_gravitational_parameter());
     CHECK_EQ(body->has_j2(), body->has_reference_radius());
@@ -264,7 +263,6 @@ std::vector<DegreesOfFreedom<Frame>>
 SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   for (auto const& pair : initial_state_map_) {
-    std::string const& name = pair.first;
     serialization::InitialState::Body const* const body = pair.second;
     degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
   }

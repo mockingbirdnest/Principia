@@ -40,9 +40,10 @@ class BodyTest : public testing::Test {
                             5 * Radian / Second});
     auto const rotating_body =
         RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),
-                        RotatingBody<F>::Parameters(3 * Radian,
-                                                    Instant() + 4 * Second,
-                                                    angular_velocity));
+                        typename RotatingBody<F>::Parameters(
+                            3 * Radian,
+                            Instant() + 4 * Second,
+                            angular_velocity));
 
     serialization::Body message;
     RotatingBody<F> const* cast_rotating_body;

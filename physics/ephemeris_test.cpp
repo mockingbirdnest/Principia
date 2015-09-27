@@ -122,9 +122,6 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  MassiveBody const* const earth = bodies[0].get();
-  MassiveBody const* const moon = bodies[1].get();
-
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
           std::move(bodies),
