@@ -97,9 +97,9 @@ void GenerateConfiguration(Instant const& game_epoch,
 int main(int argc, char const* argv[]) {
   google::InitGoogleLogging(argv[0]);
   google::LogToStderr();
-  if (argc < 4) {
-    std::cerr << "Usage: generate_configuration "
-                 "game_epoch_jd gravity_model_stem initial_state_stem";
+  if (argc != 4) {
+    std::cerr << "Usage: " << argv[0] << " "
+              << "game_epoch_jd gravity_model_stem initial_state_stem";
     return 1;
   }
   principia::geometry::Instant game_epoch =
