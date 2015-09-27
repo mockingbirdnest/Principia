@@ -4,6 +4,7 @@
 
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
@@ -54,7 +55,7 @@ class RigidMotion {
       RigidMotion<From, Through> const& right);
 
  private:
-  RigidTransformation<FromFrame, ToFrame> rigid_tranformation_;
+  RigidTransformation<FromFrame, ToFrame> rigid_transformation_;
   // d/dt rigid_transformation(basis of FromFrame). The positively oriented
   // orthogonal bases of |ToFrame| are acted upon faithfully and transitively by
   // SO(ToFrame), so this lies in the tangent space, i.e., the Lie algebra
@@ -70,11 +71,11 @@ RigidMotion<FromFrame, ToFrame> operator*(
     RigidMotion<FromFrame, ThroughFrame> const& right);
 
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
-// respect to |BaseFrame|.  |BaseFrame| must be inertial.
+// respect to the inertial reference frame |BaseFrame|.
 template<typename BaseFrame, typename ThisFrame>
 class DynamicFrame {
  public:
-  static_assert(BaseFrame::is_inertial);
+  static_assert(BaseFrame::is_inertial, "BaseFrame must be inertial");
 
   virtual ~DynamicFrame() = 0;
   virtual RigidMotion<BaseFrame, ThisFrame> ToThisFrameAtTime(
