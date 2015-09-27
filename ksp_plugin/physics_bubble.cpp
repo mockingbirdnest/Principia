@@ -280,8 +280,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
       preliminary_state.parts.emplace(
           part_id_and_part.part_id(),
           std::make_unique<Part<World>>(
-              std::move(
-                  Part<World>::ReadFromMessage(part_id_and_part.part()))));
+              Part<World>::ReadFromMessage(part_id_and_part.part())));
     }
     for (auto const& guid_and_part_ids : full_state.vessel()) {
       // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?

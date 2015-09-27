@@ -18,13 +18,13 @@
 #include "mathematica/mathematica.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
-#include "testing_utilities/solar_system.hpp"
+#include "testing_utilities/solar_system_factory.hpp"
 
 #define INTEGRATOR(name) &integrators::name(), #name
 
 namespace principia {
 
-using astronomy::ICRFJ2000Ecliptic;
+using astronomy::ICRFJ2000Equator;
 using base::not_null;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
@@ -48,7 +48,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeGravitationalAcceleration;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using testing_utilities::ComputeKeplerAcceleration;
-using testing_utilities::SolarSystem;
+using testing_utilities::SolarSystemFactory;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -305,32 +305,33 @@ void GenerateKeplerProblemWorkErrorGraphs() {
 }
 
 void GenerateSolarSystemPlanetsWorkErrorGraph() {
-  SRKNIntegrator::Parameters<Position<ICRFJ2000Ecliptic>,
-                             Velocity<ICRFJ2000Ecliptic>> parameters;
+  SRKNIntegrator::Parameters<Position<ICRFJ2000Equator>,
+                             Velocity<ICRFJ2000Equator>> parameters;
   Energy initial_energy;
   std::vector<MassiveBody> bodies;
-  int const last_planet = SolarSystem::kMercury;
   Time const Δt_reference = 10 * Minute;
   {
-    not_null<std::unique_ptr<SolarSystem>> const solar_system =
-        SolarSystem::AtСпутник1Launch(SolarSystem::Accuracy::kMajorBodiesOnly);
-    SolarSystem::Bodies const solar_system_bodies =
-        solar_system->massive_bodies();
-    for (int i = 0; i <= last_planet; ++i) {
-      DiscreteTrajectory<ICRFJ2000Ecliptic> const& trajectory =
-          *solar_system->trajectories()[i];
-      bodies.emplace_back(*solar_system_bodies[i]);
+    auto const solar_system =
+        SolarSystemFactory::AtСпутник1Launch(
+            SolarSystemFactory::Accuracy::kMajorBodiesOnly);
+    for (int i = SolarSystemFactory::kSun;
+         i <= SolarSystemFactory::kLastMajorBody;
+         ++i) {
+      bodies.emplace_back(*solar_system->MakeMassiveBody(
+          solar_system->gravity_model_message(SolarSystemFactory::name(i))));
       MassiveBody const& body = bodies.back();
       parameters.initial.positions.emplace_back(
-          trajectory.last().degrees_of_freedom().position());
-      Velocity<ICRFJ2000Ecliptic> const& v =
-          trajectory.last().degrees_of_freedom().velocity();
+          solar_system->initial_state(SolarSystemFactory::name(i)).position());
+      Velocity<ICRFJ2000Equator> const& v =
+          solar_system->initial_state(SolarSystemFactory::name(i)).velocity();
       parameters.initial.momenta.emplace_back(v);
       // Kinetic energy.
       initial_energy += 0.5 * body.mass() * InnerProduct(v, v);
     }
 
-    for (int i = 1; i <= last_planet; ++i) {
+    for (int i = SolarSystemFactory::kSun;
+         i <= SolarSystemFactory::kLastMajorBody;
+         ++i) {
       for (int j = 0; j < i; ++j) {
         // Potential energy.
         initial_energy -=
@@ -346,21 +347,21 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
   // more evaluations than reported for FSAL methods.
   parameters.sampling_period = 1;
 
-  SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
-                           Velocity<ICRFJ2000Ecliptic>> reference_solution;
+  SRKNIntegrator::Solution<Position<ICRFJ2000Equator>,
+                           Velocity<ICRFJ2000Equator>> reference_solution;
   {
     std::vector<
         SRKNIntegrator::Solution<
-            Position<ICRFJ2000Ecliptic>,
-            Velocity<ICRFJ2000Ecliptic>>> reference_solutions;
+            Position<ICRFJ2000Equator>,
+            Velocity<ICRFJ2000Equator>>> reference_solutions;
     LOG(INFO) << "Computing reference solutions";
     for (auto const& method : ReferenceMethods()) {
       LOG(INFO) << method.name;
       parameters.Δt = Δt_reference;
       reference_solutions.emplace_back();
       method.integrator->
-          SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Ecliptic>>(
-              std::bind(ComputeGravitationalAcceleration<ICRFJ2000Ecliptic>,
+          SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Equator>>(
+              std::bind(ComputeGravitationalAcceleration<ICRFJ2000Equator>,
                         _1, _2, _3, std::cref(bodies)),
               parameters,
               &reference_solutions.back());
@@ -372,10 +373,12 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     for (int i = 0; i < reference_size; ++i) {
       reference_solution.emplace_back();
     }
-    for (int b = 0; b <= last_planet; ++b) {
+    for (int b = SolarSystemFactory::kSun;
+         b <= SolarSystemFactory::kLastMajorBody;
+         ++b) {
       for (int i = 0; i < reference_size; ++i) {
-        Position<ICRFJ2000Ecliptic>::BarycentreCalculator<double> reference_q;
-        BarycentreCalculator<Velocity<ICRFJ2000Ecliptic>, double> reference_v;
+        Position<ICRFJ2000Equator>::BarycentreCalculator<double> reference_q;
+        BarycentreCalculator<Velocity<ICRFJ2000Equator>, double> reference_v;
         for (auto const& solution : reference_solutions) {
           reference_q.Add(solution[i].positions[b].value, 1);
           reference_v.Add(solution[i].momenta[b].value, 1);
@@ -386,8 +389,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     }
     LOG(INFO) << "Done";
   }
-  SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
-                           Velocity<ICRFJ2000Ecliptic>> solution;
+  SRKNIntegrator::Solution<Position<ICRFJ2000Equator>,
+                           Velocity<ICRFJ2000Equator>> solution;
   std::vector<std::string> q_error_data;
   std::vector<std::string> v_error_data;
   std::vector<std::string> e_error_data;
@@ -410,8 +413,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
               static_cast<int>(std::floor(parameters.tmax / parameters.Δt));
       LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
       method.integrator->
-          SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Ecliptic>>(
-              std::bind(ComputeGravitationalAcceleration<ICRFJ2000Ecliptic>,
+          SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Equator>>(
+              std::bind(ComputeGravitationalAcceleration<ICRFJ2000Equator>,
                         _1, _2, _3, std::cref(bodies)),
               parameters,
               &solution);
@@ -420,7 +423,9 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
       Energy e_error;
       for (auto const& system_state : solution) {
         Energy energy;
-        for (int body = 0; body <= last_planet; ++body) {
+        for (int body = SolarSystemFactory::kSun;
+             body <= SolarSystemFactory::kLastMajorBody;
+             ++body) {
           int t = static_cast<int>(
                       std::round(system_state.time.value / Δt_reference)) - 1;
           q_error =
@@ -436,7 +441,9 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
                         InnerProduct(system_state.momenta[body].value,
                                      system_state.momenta[body].value);
         }
-        for (int i = 1; i <= last_planet; ++i) {
+        for (int b = SolarSystemFactory::kSun;
+             b <= SolarSystemFactory::kLastMajorBody;
+             ++b) {
           for (int j = 0; j < i; ++j) {
             // Potential energy.
             energy -=

@@ -26,7 +26,8 @@ using AngularMomentum     = Quotient<Action, Angle>;
 using Torque              = Variation<AngularMomentum>;
 using MomentOfInertia     = Quotient<Torque, AngularAcceleration>;
 
-using GravitationalParameter = Product<Length, Product<Speed, Speed>>;
+using GravitationalParameter = Quotient<Exponentiation<Length, 3>,
+                                        Exponentiation<Time, 2>>;
 using Order2ZonalCoefficient = Quotient<Exponentiation<Length, 5>,
                                         Exponentiation<Time, 2>>;
 

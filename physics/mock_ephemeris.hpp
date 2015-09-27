@@ -11,7 +11,7 @@ namespace physics {
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {
  public:
-  MockEphemeris() : Ephemeris() {}
+  MockEphemeris() : Ephemeris<Frame>() {}
 
   MOCK_CONST_METHOD0_T(bodies, std::vector<MassiveBody const*> const&());
   MOCK_CONST_METHOD1_T(trajectory,

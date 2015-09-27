@@ -37,7 +37,10 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 
 template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
+  using Iterator = typename Forkable<DiscreteTrajectory<Frame>>::Iterator;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+  using TimelineConstIterator =
+      typename Forkable<DiscreteTrajectory<Frame>>::TimelineConstIterator;
 
  public:
   class NativeIterator;

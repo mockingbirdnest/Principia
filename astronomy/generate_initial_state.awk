@@ -3,9 +3,9 @@
 # |principia.serialization.SolarSystemFile| containing an |initial_state| field.
 BEGIN {
   print "initial_state {"
-  print "  needs : \"RealSolarSystem\""
   print "  frame : ICRF_J2000_EQUATOR"
   n = 0
+  skip = 1
 }
 /^Target body name:/ {
   body = $0
@@ -15,32 +15,32 @@ BEGIN {
   bodies[n++] = body
 }
 /^[0-9]+\.[0-9]+ = .* \(CT\)/ {
-  if (jd == "") {
-    jd = $1
-  } else if (jd != $1) {
-    print "ERROR: inconsistent dates"
-    exit 1
+  if ($1 == juliandate) {
+    skip = 0
+    humandate = $4 " " $5
+  } else {
+    skip = 1
+    delete bodies[--n]
   }
 }
 /^ *X = / {
-  x[body] = $3
-  y[body] = $6
-  z[body] = $9
+  if (!skip) {
+    x[body] = $3
+    y[body] = $6
+    z[body] = $9
+  }
 }
 /^ *VX=/ {
-  vx[body] = $2
-  vy[body] = $4
-  vz[body] = $6
+  if (!skip) {
+    vx[body] = $2
+    vy[body] = $4
+    vz[body] = $6
+  }
 }
 END {
   print "  # The time of the initial state, as a TDB Julian date."
-  if (jd == "2433282.500000000") {
-    print "  # This is 1950-01-01T00:00:00 TDB."
-    print "  epoch : " jd
-  } else {
-    print "ERROR: unexpected epoch"
-    exit 1
-  }
+  print "  # This is " humandate " TDB."
+  print "  epoch : " juliandate
 
   # The year is 2015 and I am writing a Bubble Sort.  I kid you not.
   do {

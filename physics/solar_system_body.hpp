@@ -40,8 +40,9 @@ using quantities::si::Second;
 namespace physics {
 
 template<typename Frame>
-void SolarSystem<Frame>::Initialize(std::string const& gravity_model_filename,
-                                    std::string const& initial_state_filename) {
+void SolarSystem<Frame>::Initialize(
+    std::experimental::filesystem::path const& gravity_model_filename,
+    std::experimental::filesystem::path const& initial_state_filename) {
   // Parse the files.
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
@@ -65,7 +66,7 @@ void SolarSystem<Frame>::Initialize(std::string const& gravity_model_filename,
   CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
 
   // Store the data in maps keyed by body name.
-  for (auto const& body : gravity_model_.gravity_model().body()) {
+  for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {
     auto const inserted =
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
@@ -126,6 +127,20 @@ int SolarSystem<Frame>::index(std::string const& name) const {
   return it.first - names_.begin();
 }
 
+
+template<typename Frame>
+DegreesOfFreedom<Frame> SolarSystem<Frame>::initial_state(
+    std::string const& name) const {
+  return MakeDegreesOfFreedom(*initial_state_map_.at(name));
+}
+
+template<typename Frame>
+GravitationalParameter SolarSystem<Frame>::gravitational_parameter(
+    std::string const& name) const {
+  return MakeMassiveBody(*gravity_model_map_.at(name))->
+             gravitational_parameter();
+}
+
 template<typename Frame>
 MassiveBody const& SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
@@ -143,13 +158,13 @@ ContinuousTrajectory<Frame> const& SolarSystem<Frame>::trajectory(
 
 template<typename Frame>
 serialization::InitialState::Body const&
-SolarSystem<Frame>::initial_state(std::string const& name) const {
+SolarSystem<Frame>::initial_state_message(std::string const& name) const {
   return *FindOrDie(initial_state_map_, name);
 }
 
 template<typename Frame>
 serialization::GravityModel::Body const&
-SolarSystem<Frame>::gravity_model(std::string const& name) const {
+SolarSystem<Frame>::gravity_model_message(std::string const& name) const {
   return *FindOrDie(gravity_model_map_, name);
 }
 
@@ -179,7 +194,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
                                   body.gravitational_parameter()));
   if (body.has_axis_declination()) {
     // TODO(phl): Parse the additional parameters.
-    RotatingBody<Frame>::Parameters
+    typename RotatingBody<Frame>::Parameters
         rotating_body_parameters(
             0 * Radian,
             Instant(),
@@ -190,7 +205,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
                     ParseQuantity<Angle>(body.axis_right_ascension())).
                 ToCartesian()) * Radian / Second);
     if (body.has_j2()) {
-      OblateBody<Frame>::Parameters oblate_body_parameters(
+      typename OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
           ParseQuantity<Length>(body.reference_radius()));
       return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
@@ -206,11 +221,34 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
 }
 
 template<typename Frame>
+void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
+  for (int i = 0; i < names_.size(); ++i) {
+    if (names_[i] == name) {
+      names_.erase(names_.begin() + i);
+      initial_state_map_.erase(name);
+      gravity_model_map_.erase(name);
+      return;
+    }
+  }
+  LOG(FATAL) << name << " does not exist";
+}
+
+template<typename Frame>
+void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
+  auto const it = gravity_model_map_.find(name);
+  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
+  serialization::GravityModel::Body* body = it->second;
+  body->clear_axis_declination();
+  body->clear_axis_right_ascension();
+  body->clear_j2();
+  body->clear_reference_radius();
+}
+
+template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
-    std::string const& name = pair.first;
     serialization::GravityModel::Body const* const body = pair.second;
     CHECK(body->has_gravitational_parameter());
     CHECK_EQ(body->has_j2(), body->has_reference_radius());
@@ -225,7 +263,6 @@ std::vector<DegreesOfFreedom<Frame>>
 SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   for (auto const& pair : initial_state_map_) {
-    std::string const& name = pair.first;
     serialization::InitialState::Body const* const body = pair.second;
     degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
   }

@@ -75,7 +75,7 @@ T ParseQuantity(std::string const& s) {
 }
 
 template<>
-Length ParseUnit(std::string const& s) {
+inline Length ParseUnit(std::string const& s) {
   if (s == "m") {
     return si::Metre;
   } else if (s == "km") {
@@ -89,7 +89,7 @@ Length ParseUnit(std::string const& s) {
 }
 
 template<>
-Time ParseUnit(std::string const& s) {
+inline Time ParseUnit(std::string const& s) {
   if (s == "s") {
     return si::Second;
   } else if (s == "d") {
@@ -101,7 +101,7 @@ Time ParseUnit(std::string const& s) {
 }
 
 template<>
-Angle ParseUnit(std::string const& s) {
+inline Angle ParseUnit(std::string const& s) {
   if (s == "deg" || s == "°") {
     return si::Degree;
   } else if (s == "rad") {
@@ -113,19 +113,19 @@ Angle ParseUnit(std::string const& s) {
 }
 
 template<>
-Speed ParseUnit(std::string const& s) {
+inline Speed ParseUnit(std::string const& s) {
   return ParseQuotientUnit(s, &ParseUnit<Length>, &ParseUnit<Time>);
 }
 
 template<>
-GravitationalParameter ParseUnit(std::string const& s) {
+inline GravitationalParameter ParseUnit(std::string const& s) {
   return ParseQuotientUnit(s,
                            &ParseExponentiationUnit<Length, 3>,
                            &ParseExponentiationUnit<Time, 2>);
 }
 
 template<>
-double ParseUnit<double>(std::string const& s) {
+inline double ParseUnit<double>(std::string const& s) {
   CHECK(s.empty()) << s;
   return 1;
 }

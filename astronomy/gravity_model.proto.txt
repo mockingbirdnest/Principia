@@ -1,5 +1,4 @@
 gravity_model {
-  needs : "RealSolarSystem"
   frame : ICRF_J2000_EQUATOR
 
   # Unless otherwise mentioned, axis directions are from "Report of the IAU

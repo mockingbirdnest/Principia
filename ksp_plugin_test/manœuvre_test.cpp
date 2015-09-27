@@ -113,12 +113,10 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 
   // Table 2-2. Significant Event Times Summary.
   Instant const range_zero;
-  Instant const s_ivb_1st_ignition          = range_zero +    528.29 * Second;
   Instant const s_ivb_1st_90_percent_thrust = range_zero +    530.53 * Second;
   Instant const s_ivb_1st_eco               = range_zero +    684.98 * Second;
   // Initiate S-IVB Restart Sequence and Start of Time Base 6 (T6).
   Instant const t6                          = range_zero +   9659.54 * Second;
-  Instant const s_ivb_2nd_ignition          = range_zero + 10'237.79 * Second;
   Instant const s_ivb_2nd_90_percent_thrust = range_zero + 10'240.02 * Second;
   Instant const s_ivb_2nd_eco               = range_zero + 10'555.51 * Second;
 

@@ -84,9 +84,6 @@ void TestTermination(
     Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 163 * Second;
   Time const step = 42 * Second;
@@ -143,7 +140,6 @@ void Test1000SecondsAt1Millisecond(
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
 #if defined(_DEBUG)
   Instant const t_final = t_initial + 1 * Second;
@@ -208,7 +204,6 @@ void TestConvergence(Integrator const& integrator,
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
 #if defined(_DEBUG)
   Instant const t_final = t_initial + 10 * Second;
@@ -292,9 +287,6 @@ void TestSymplecticity(Integrator const& integrator,
                        Energy const& expected_energy_error) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 500 * Second;
   Time const step = 0.2 * Second;
@@ -353,8 +345,6 @@ void TestTimeReversibility(Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 100 * Second;
   Time const step = 1 * Second;
