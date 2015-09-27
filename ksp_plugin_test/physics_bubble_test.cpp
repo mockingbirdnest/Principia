@@ -630,10 +630,6 @@ TEST_F(PhysicsBubbleTest, Serialization) {
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   bubble_.Prepare(rotation_, t1_, t2_);
-  DiscreteTrajectory<Barycentric> const& trajectory =
-      bubble_.centre_of_mass_trajectory();
-  DiscreteTrajectory<Barycentric>* mutable_trajectory =
-      bubble_.mutable_centre_of_mass_trajectory();
   bubble_.DisplacementCorrection(rotation_,
                                  celestial_,
                                  celestial_world_position_);

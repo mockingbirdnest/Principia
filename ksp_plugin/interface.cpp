@@ -618,7 +618,7 @@ void principia__DeserializePlugin(char const* const serialization,
 
   // Push the data, taking ownership of it.
   (*deserializer)->Push(Bytes(&bytes[0], byte_size),
-                        [bytes]() { delete bytes; });
+                        [bytes]() { delete[] bytes; });
 
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
