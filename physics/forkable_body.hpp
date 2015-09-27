@@ -340,7 +340,7 @@ void Forkable<Tr4jectory>::WriteSubTreeToMessage(
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     Tr4jectory const& child = pair.second;
-    if (!last_instant || fork_time != last_instant) {
+    if (!last_instant || fork_time != *last_instant) {
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
