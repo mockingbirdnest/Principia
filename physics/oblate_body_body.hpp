@@ -34,15 +34,15 @@ OblateBody<Frame>::OblateBody(
     MassiveBody::Parameters const& massive_body_parameters,
     typename RotatingBody<Frame>::Parameters const& rotating_body_parameters,
     Parameters const& parameters)
-    : RotatingBody(massive_body_parameters, rotating_body_parameters),
+    : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
       parameters_(parameters),
-      axis_(
-          Vector<double, Frame>(Normalize(angular_velocity()).coordinates())) {
+      axis_(Vector<double, Frame>(
+                Normalize(this->angular_velocity()).coordinates())) {
   if (parameters_.j2_) {
-    parameters_.j2_over_μ_ = *parameters_.j2_ / gravitational_parameter();
+    parameters_.j2_over_μ_ = *parameters_.j2_ / this->gravitational_parameter();
   }
   if (parameters_.j2_over_μ_) {
-    parameters_.j2_ = *parameters_.j2_over_μ_ * gravitational_parameter();
+    parameters_.j2_ = *parameters_.j2_over_μ_ * this->gravitational_parameter();
   }
 }
 

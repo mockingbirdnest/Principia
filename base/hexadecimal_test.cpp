@@ -23,8 +23,8 @@ class HexadecimalTest : public testing::Test {
     std::string const lowercase_digits = "00""7f""80""ff""67""68""0a""07";
     std::string const uppercase_digits = "00""7F""80""FF""67""68""0A""07";
     std::memcpy(bytes_.data.get(), "\0\x7F\x80\xFFgh\n\7", kBytes);
-    lowercase_digits_ = std::move(UniqueBytes(lowercase_digits.size()));
-    uppercase_digits_ = std::move(UniqueBytes(uppercase_digits.size()));
+    lowercase_digits_ = UniqueBytes(lowercase_digits.size());
+    uppercase_digits_ = UniqueBytes(uppercase_digits.size());
     std::memcpy(lowercase_digits_.data.get(),
                 lowercase_digits.c_str(),
                 lowercase_digits.size());

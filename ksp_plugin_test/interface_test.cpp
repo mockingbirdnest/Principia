@@ -625,11 +625,6 @@ TEST_F(InterfaceTest, NavballOrientation) {
                           {1 * SIUnit<Length>(),
                            2 * SIUnit<Length>(),
                            3 * SIUnit<Length>()});
-  Position<World> ship_position =
-      World::origin + Displacement<World>(
-                          {2 * SIUnit<Length>(),
-                           3 * SIUnit<Length>(),
-                           5 * SIUnit<Length>()});
   auto const rotation =
       Rotation<World, World>(π / 2 * Radian,
                              Bivector<double, World>({4, 5, 6}));

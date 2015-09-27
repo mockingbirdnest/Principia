@@ -357,15 +357,15 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         engineering_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                 Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
+                Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     parts.emplace_back(
         saucer_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                 Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
+                Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
@@ -395,8 +395,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         engineering_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                 Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
+                Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
@@ -406,8 +406,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         saucer_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                 Velocity<World>({0 * v0, 0 * v0, -v0})}),
+                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
+                Velocity<World>({0 * v0, 0 * v0, -v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
   }
@@ -471,8 +471,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         engineering_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
-                 Velocity<World>({0 * v0, 0 * v0, -v0})}),
+                World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
+                Velocity<World>({0 * v0, 0 * v0, -v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
@@ -482,8 +482,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         saucer_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
-                 Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
+                Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
   }
@@ -504,7 +504,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         engineering_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin, Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
@@ -514,7 +514,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         saucer_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin, Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
   }
@@ -535,13 +535,13 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
         engineering_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin, Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     parts.emplace_back(
         saucer_section,
         make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
-                {World::origin, Velocity<World>({0 * v0, 0 * v0, v0})}),
+                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
     plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
