@@ -15,18 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="gravity_models.cfg">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="horizons.awk">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="horizons.cfg">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="horizons.sh">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="query.f">
       <Filter>Resource Files</Filter>
     </None>
@@ -34,6 +22,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="generate_initial_state.sh">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gravity_model.cfg">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="initial_state_jd_2433282_500000000.cfg">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -55,5 +49,10 @@
     <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="generate_configuration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -13,9 +13,8 @@ message GravityModel {
     optional string j2 = 5;
     optional string reference_radius = 6;
   }
-  repeated string needs = 1;
-  required Frame.SolarSystemTag frame = 2;
-  repeated Body body = 3;
+  required Frame.SolarSystemTag frame = 1;
+  repeated Body body = 2;
 }
 
 message InitialState {
@@ -28,10 +27,9 @@ message InitialState {
     required string vy = 6;
     required string vz = 7;
   }
-  repeated string needs = 1;
-  required Frame.SolarSystemTag frame = 2;
-  required double epoch = 3;  // Julian date.
-  repeated Body body = 4;
+  required Frame.SolarSystemTag frame = 1;
+  required double epoch = 2;  // Julian date.
+  repeated Body body = 3;
 }
 
 message SolarSystemFile {
