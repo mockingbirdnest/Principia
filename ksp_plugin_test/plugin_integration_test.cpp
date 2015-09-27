@@ -134,8 +134,8 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   }
   EXPECT_THAT(
       RelativeError(
-          plugin_->
-              CelestialFromParent(SolarSystemFactory::kEarth).displacement().Norm(),
+          plugin_->CelestialFromParent(
+              SolarSystemFactory::kEarth).displacement().Norm(),
           1 * AstronomicalUnit),
       Lt(0.01));
   serialization::Plugin plugin_message;
@@ -148,8 +148,8 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   }
   EXPECT_THAT(
       RelativeError(
-          plugin_->
-              CelestialFromParent(SolarSystemFactory::kEarth).displacement().Norm(),
+          plugin_->CelestialFromParent(
+              SolarSystemFactory::kEarth).displacement().Norm(),
           1 * AstronomicalUnit),
       Lt(0.01));
 }
@@ -202,8 +202,8 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
                                           geocentric.get(),
                                           sun_world_position);
     Position<World> const earth_world_position =
-        sun_world_position + alice_sun_to_world(
-            plugin_->CelestialFromParent(SolarSystemFactory::kEarth).displacement());
+        sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
+                                 SolarSystemFactory::kEarth).displacement());
     for (auto const segment : rendered_trajectory) {
       Length const l_min =
           std::min((segment.begin - earth_world_position).Norm(),
@@ -285,13 +285,11 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
                                         earth_moon_barycentric.get(),
                                         sun_world_position);
   Position<World> const earth_world_position =
-      sun_world_position +
-      alice_sun_to_world(
-          plugin_->CelestialFromParent(SolarSystemFactory::kEarth).displacement());
+      sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
+                               SolarSystemFactory::kEarth).displacement());
   Position<World> const moon_world_position =
-      earth_world_position +
-      alice_sun_to_world(
-          plugin_->CelestialFromParent(SolarSystemFactory::kMoon).displacement());
+      earth_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
+                                 SolarSystemFactory::kMoon).displacement());
   Length const earth_moon = (moon_world_position - earth_world_position).Norm();
   for (auto const segment : rendered_trajectory) {
     Length const satellite_earth =

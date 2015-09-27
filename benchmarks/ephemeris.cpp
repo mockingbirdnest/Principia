@@ -124,7 +124,7 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
     ephemeris->Prolong(final_time);
     state->PauseTiming();
     error = (at_спутник_1_launch->trajectory(
-                 *ephemeris, 
+                 *ephemeris,
                  SolarSystemFactory::name(SolarSystemFactory::kSun)).
                      EvaluatePosition(final_time, nullptr) -
              at_спутник_1_launch->trajectory(
@@ -197,13 +197,13 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
-                     *ephemeris, 
+                     *ephemeris,
                      SolarSystemFactory::name(SolarSystemFactory::kSun)).
                          EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
-                       *ephemeris, 
+                       *ephemeris,
                        SolarSystemFactory::name(SolarSystemFactory::kEarth)).
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
@@ -271,13 +271,13 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
-                     *ephemeris, 
+                     *ephemeris,
                      SolarSystemFactory::name(SolarSystemFactory::kSun)).
                          EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
-                       *ephemeris, 
+                       *ephemeris,
                        SolarSystemFactory::name(SolarSystemFactory::kEarth)).
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).

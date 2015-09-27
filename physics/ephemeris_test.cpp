@@ -653,7 +653,7 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
       {SolarSystemFactory::kNeptune, 1E-8},
       {SolarSystemFactory::kEris, 1E-10}};
 
- for (int i = SolarSystemFactory::kSun;
+  for (int i = SolarSystemFactory::kSun;
        i <= SolarSystemFactory::kLastBody;
        ++i) {
     SolarSystemFactory::Index const index =
