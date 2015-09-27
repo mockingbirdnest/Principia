@@ -15,18 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="gravity_models.cfg">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="horizons.awk">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="horizons.cfg">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="horizons.sh">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="query.f">
       <Filter>Resource Files</Filter>
     </None>

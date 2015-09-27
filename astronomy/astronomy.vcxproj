@@ -96,10 +96,6 @@
     <None Include="generate_initial_state.awk" />
     <None Include="generate_initial_state.sh" />
     <None Include="gravity_model.cfg" />
-    <None Include="gravity_models.cfg" />
-    <None Include="horizons.awk" />
-    <None Include="horizons.cfg" />
-    <None Include="horizons.sh" />
     <None Include="initial_state_jd_2433282_500000000.cfg" />
     <None Include="query.f" />
   </ItemGroup>
