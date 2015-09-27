@@ -48,37 +48,37 @@ class PermutationTest : public testing::Test {
 using PermutationDeathTest = PermutationTest;
 
 TEST_F(PermutationTest, Identity) {
-  EXPECT_THAT(Perm::Identity()(vector_.coordinates()),
+  EXPECT_THAT(Perm::Identity()(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(PermutationTest, XYZ) {
-  EXPECT_THAT(Perm(Perm::XYZ)(vector_.coordinates()),
+  EXPECT_THAT(Perm(Perm::XYZ)(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(PermutationTest, YZX) {
-  EXPECT_THAT(Perm(Perm::YZX)(vector_.coordinates()),
+  EXPECT_THAT(Perm(Perm::YZX)(vector_).coordinates(),
               Eq<R3>({2.0 * Metre, 3.0 * Metre, 1.0 * Metre}));
 }
 
 TEST_F(PermutationTest, ZXY) {
-  EXPECT_THAT(Perm(Perm::ZXY)(vector_.coordinates()),
+  EXPECT_THAT(Perm(Perm::ZXY)(vector_).coordinates(),
               Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
 }
 
 TEST_F(PermutationTest, XZY) {
-  EXPECT_THAT(Perm(Perm::XZY)(vector_.coordinates()),
+  EXPECT_THAT(Perm(Perm::XZY)(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 3.0 * Metre, 2.0 * Metre}));
 }
 
 TEST_F(PermutationTest, ZYX) {
-  EXPECT_THAT(Perm(Perm::ZYX)(vector_.coordinates()),
+  EXPECT_THAT(Perm(Perm::ZYX)(vector_).coordinates(),
               Eq<R3>({3.0 * Metre, 2.0 * Metre, 1.0 * Metre}));
 }
 
 TEST_F(PermutationTest, YXZ) {
-  EXPECT_THAT(Perm(Perm::YXZ)(vector_.coordinates()),
+  EXPECT_THAT(Perm(Perm::YXZ)(vector_).coordinates(),
               Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
 }
 

@@ -42,9 +42,6 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
-    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
-    <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock_main.props" />
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
@@ -57,20 +54,13 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
-    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
-    <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock_main.props" />
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
