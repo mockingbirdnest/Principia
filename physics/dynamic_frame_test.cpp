@@ -132,8 +132,8 @@ TEST_F(RigidMotionTest, ApparentMoon) {
   AngularVelocity<Terrestrial> const moon_angular_velocity =
       Wedge(earth_to_moon, moon_degrees_of_freedom.velocity()) /
       InnerProduct(earth_to_moon, earth_to_moon) * Radian;
-  EXPECT_THAT(moon_angular_velocity.Norm() / (2 * π * Radian) * Day,
-              AlmostEquals(29.0 / 30.0, 0));
+  EXPECT_THAT(moon_angular_velocity / (2 * π * Radian) * Day,
+              Componentwise(0, 0, AlmostEquals(29.0 / 30.0, 0)));
 }
 
 }  // namespace physics
