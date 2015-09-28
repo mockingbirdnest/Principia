@@ -95,10 +95,13 @@
     <ClInclude Include="solar_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="rigid_motion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="dynamic_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dynamic_frame_body.hpp">
+    <ClInclude Include="rigid_motion_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -127,7 +130,7 @@
     <ClCompile Include="solar_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="dynamic_frame_test.cpp">
+    <ClCompile Include="rigid_motion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
