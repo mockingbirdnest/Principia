@@ -50,11 +50,6 @@ class RigidMotion {
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
-  template<typename From, typename Through, typename To>
-  friend RigidMotion<From, To> operator*(
-      RigidMotion<Through, To> const& left,
-      RigidMotion<From, Through> const& right);
-
  private:
   RigidTransformation<FromFrame, ToFrame> rigid_transformation_;
   // d/dt rigid_transformation(basis of FromFrame). The positively oriented
@@ -64,6 +59,11 @@ class RigidMotion {
   AngularVelocity<ToFrame> rotation_;
   // d/dt rigid_transformation(FromFrame::origin).
   Velocity<ToFrame> translation_;
+
+  template<typename From, typename Through, typename To>
+  friend RigidMotion<From, To> operator*(
+      RigidMotion<Through, To> const& left,
+      RigidMotion<From, Through> const& right);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
