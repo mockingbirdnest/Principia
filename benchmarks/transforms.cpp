@@ -34,7 +34,6 @@
 // BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
 #include <experimental/optional>
-
 #include <memory>
 #include <utility>
 #include <vector>

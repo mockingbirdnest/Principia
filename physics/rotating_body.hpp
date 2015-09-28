@@ -9,7 +9,6 @@
 #define PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 
 #include <experimental/optional>
-
 #include <vector>
 
 #include "geometry/grassmann.hpp"
