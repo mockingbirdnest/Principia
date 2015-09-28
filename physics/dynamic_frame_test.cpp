@@ -72,23 +72,22 @@ class RigidMotionTest : public testing::Test {
           earth_rotation_,
           Velocity<Geocentric>());
 
-   // Our Moon is in an equatorial orbit for simplicity.
-   AngularVelocity<Geocentric> const moon_orbit_ =
-      AngularVelocity<Geocentric>(
-          {0 * Radian / Second, 0 * Radian / Second, moon_rotation_speed_});
-   Displacement<Geocentric> const earth_to_moon_ =
-       Displacement<Geocentric>({earth_moon_distance_, 0 * Metre, 0 * Metre});
+  // Our Moon is in an equatorial orbit for simplicity.
+  AngularVelocity<Geocentric> const moon_orbit_ = AngularVelocity<Geocentric>(
+      {0 * Radian / Second, 0 * Radian / Second, moon_rotation_speed_});
+  Displacement<Geocentric> const earth_to_moon_ =
+      Displacement<Geocentric>({earth_moon_distance_, 0 * Metre, 0 * Metre});
 
-   RigidMotion<Selenocentric, Geocentric> const selenocentric_to_geocentric_ =
-       RigidMotion<Selenocentric, Geocentric>(
-           RigidTransformation<Selenocentric, Geocentric>(
-               Selenocentric::origin,
-               Geocentric::origin + earth_to_moon_,
-               Permutation<Selenocentric, Geocentric>(
-                   Permutation<Selenocentric, Geocentric>::YXZ)
-                   .Forget()),
-           AngularVelocity<Geocentric>(),
-           moon_orbit_ * earth_to_moon_ / Radian);
+  RigidMotion<Selenocentric, Geocentric> const selenocentric_to_geocentric_ =
+      RigidMotion<Selenocentric, Geocentric>(
+          RigidTransformation<Selenocentric, Geocentric>(
+              Selenocentric::origin,
+              Geocentric::origin + earth_to_moon_,
+              Permutation<Selenocentric, Geocentric>(
+                  Permutation<Selenocentric, Geocentric>::YXZ)
+                  .Forget()),
+          AngularVelocity<Geocentric>(),
+          moon_orbit_* earth_to_moon_ / Radian);
 
   AngularVelocity<Selenocentric> const moon_rotation_ =
       AngularVelocity<Selenocentric>(
