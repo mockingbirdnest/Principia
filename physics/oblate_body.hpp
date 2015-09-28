@@ -8,8 +8,7 @@
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
-#include <optional.hpp>
-
+#include <experimental/optional>
 #include <vector>
 
 #include "geometry/grassmann.hpp"
