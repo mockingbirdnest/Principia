@@ -18,10 +18,14 @@ class AffineMap {
             Point<ToVector> const& to_origin,
             LinearMap<FromFrame, ToFrame> const& linear_map);
 
+  AffineMap(AffineMap const&) = default;
+
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
   static AffineMap Identity();
+
+  LinearMap<FromFrame, ToFrame> const& linear_map() const;
 
   void WriteToMessage(not_null<serialization::AffineMap*> const message) const;
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
@@ -37,14 +41,14 @@ class AffineMap {
            template<typename, typename> class Map>
   friend AffineMap<From, To, S, Map> operator*(
       AffineMap<Through, To, S, Map> const& left,
-      AffineMap<From, To, S, Map> const& right);
+      AffineMap<From, Through, S, Map> const& right);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,
          typename Scalar, template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
-    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);
+    AffineMap<FromFrame, ThroughFrame, Scalar, LinearMap> const& right);
 
 }  // namespace geometry
 }  // namespace principia

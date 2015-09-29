@@ -46,6 +46,15 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Identity() {
   return AffineMap();
 }
 
+template <typename FromFrame,
+          typename ToFrame,
+          typename Scalar,
+          template <typename, typename> class LinearMap>
+LinearMap<FromFrame, ToFrame> const&
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::linear_map() const {
+  return linear_map_;
+}
+
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 void AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::WriteToMessage(
@@ -74,8 +83,8 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame,
          typename Scalar, template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
-    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right) {
-  return AffineMap<ToFrame, FromFrame, Scalar, LinearMap>(
+    AffineMap<FromFrame, ThroughFrame, Scalar, LinearMap> const& right) {
+  return AffineMap<FromFrame, ToFrame, Scalar, LinearMap>(
       right.from_origin_ /*from_origin*/,
       left.to_origin_ +
           left.linear_map_(right.to_origin_ - left.from_origin_) /*to_origin*/,
