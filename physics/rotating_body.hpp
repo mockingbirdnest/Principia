@@ -8,7 +8,8 @@
 #ifndef PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 #define PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 
-#include <experimental/optional>
+#include <optional.hpp>
+
 #include <vector>
 
 #include "geometry/grassmann.hpp"

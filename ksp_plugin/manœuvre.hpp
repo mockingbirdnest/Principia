@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <experimental/optional>
+#include <optional.hpp>
 
 #include "geometry/named_quantities.hpp"
 #include "physics/discrete_trajectory.hpp"
