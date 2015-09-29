@@ -8,8 +8,7 @@
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
-#include "base/macros.hpp"
-#include OPTIONAL_HEADER
+#include <optional.hpp>
 
 #include <vector>
 

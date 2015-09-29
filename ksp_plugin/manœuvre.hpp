@@ -1,7 +1,6 @@
 ﻿#pragma once
 
-#include "base/macros.hpp"
-#include OPTIONAL_HEADER
+#include <optional.hpp>
 
 #include "geometry/named_quantities.hpp"
 #include "physics/discrete_trajectory.hpp"

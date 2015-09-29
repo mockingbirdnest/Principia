@@ -1,8 +1,7 @@
 ﻿
 #include "testing_utilities/solar_system_factory.hpp"
 
-#include "base/macros.hpp"
-#include OPTIONAL_HEADER
+#include <optional.hpp>
 #include <string>
 #include <vector>
 
