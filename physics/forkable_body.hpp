@@ -14,7 +14,7 @@ void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   // Find the position of |*forkable| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (&it->second == *trajectory) {
+    if (it->second.get() == *trajectory) {
       children_.erase(it);
       *trajectory = nullptr;
       return;
@@ -53,7 +53,7 @@ std::experimental::optional<Instant> Forkable<Tr4jectory>::ForkTime() const {
   if (is_root()) {
     return std::experimental::nullopt;
   } else {
-    return position_in_parent_children_->first;
+    return (*position_in_parent_children_)->first;
   }
 }
 
@@ -79,7 +79,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
     // There is a next child.  See if we reached its fork time.
     Instant const& current_time = ForkableTraits<Tr4jectory>::time(current_);
     not_null<Tr4jectory const*> child = *ancestry_it;
-    Instant child_fork_time = child->position_in_parent_children_->first;
+    Instant child_fork_time = (*child->position_in_parent_children_)->first;
     if (current_time == child_fork_time) {
       // We have reached the fork time of the next child.  There may be several
       // forks at that time so we must skip them until we find a fork that is at
@@ -91,7 +91,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
           break;
         }
         child = *ancestry_it;
-        child_fork_time = child->position_in_parent_children_->first;
+        child_fork_time = (*child->position_in_parent_children_)->first;
       } while (current_time == child_fork_time);
 
       CheckNormalizedIfEnd();
@@ -117,7 +117,7 @@ Forkable<Tr4jectory>::Iterator::operator--() {
     // ancestry and set |current_| to the fork point.  If the timeline is empty,
     // keep going until we find a non-empty one or the root.
     do {
-      current_ = ancestor->position_in_parent_timeline_;
+      current_ = *ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
       ancestry_.push_front(ancestor);
     } while (current_ == ancestor->timeline_end() &&
@@ -261,9 +261,9 @@ void Forkable<Tr4jectory>::WritePointerToMessage(
     auto const position_in_parent_timeline = position_in_parent_timeline_;
     ancestor = ancestor->parent_;
     int const children_distance = std::distance(ancestor->children_.begin(),
-                                                position_in_parent_children);
+                                                *position_in_parent_children);
     int const timeline_distance = std::distance(ancestor->timeline_begin(),
-                                                position_in_parent_timeline);
+                                                *position_in_parent_timeline);
     auto* const fork_message = message->add_fork();
     fork_message->set_children_distance(children_distance);
     fork_message->set_timeline_distance(timeline_distance);
@@ -283,7 +283,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
     auto timeline_it = descendant->timeline_begin();
     std::advance(children_it, children_distance);
     std::advance(timeline_it, timeline_distance);
-    descendant = &children_it->second;
+    descendant = children_it->second.get();
   }
   return descendant;
 }
@@ -299,17 +299,15 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
   auto timeline_it = timeline_find(time);
 
   // First create a child in the multimap.
-  auto const child_it = children_.emplace(std::piecewise_construct,
-                                          std::forward_as_tuple(time),
-                                          std::forward_as_tuple());
+  auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
 
   // Now set the members of the child object.
-  auto& child_forkable = child_it->second;
-  child_forkable.parent_ = that();
-  child_forkable.position_in_parent_children_ = child_it;
-  child_forkable.position_in_parent_timeline_ = timeline_it;
+  std::unique_ptr<Tr4jectory> const& child_forkable = child_it->second;
+  child_forkable->parent_ = that();
+  child_forkable->position_in_parent_children_ = child_it;
+  child_forkable->position_in_parent_timeline_ = timeline_it;
 
-  return &child_forkable;
+  return child_forkable.get();
 }
 
 template<typename Tr4jectory>
@@ -339,13 +337,13 @@ void Forkable<Tr4jectory>::WriteSubTreeToMessage(
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
-    Tr4jectory const& child = pair.second;
+    std::unique_ptr<Tr4jectory> const& child = pair.second;
     if (!last_instant || fork_time != last_instant) {
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child.WriteSubTreeToMessage(litter->add_trajectories());
+    child->WriteSubTreeToMessage(litter->add_trajectories());
   }
 }
 
