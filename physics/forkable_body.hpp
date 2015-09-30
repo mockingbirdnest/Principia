@@ -53,7 +53,7 @@ std::experimental::optional<Instant> Forkable<Tr4jectory>::ForkTime() const {
   if (is_root()) {
     return std::experimental::nullopt;
   } else {
-    return (*position_in_parent_children_)->first;
+    return position_in_parent_children_->first;
   }
 }
 
@@ -79,7 +79,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
     // There is a next child.  See if we reached its fork time.
     Instant const& current_time = ForkableTraits<Tr4jectory>::time(current_);
     not_null<Tr4jectory const*> child = *ancestry_it;
-    Instant child_fork_time = (*child->position_in_parent_children_)->first;
+    Instant child_fork_time = child->position_in_parent_children_->first;
     if (current_time == child_fork_time) {
       // We have reached the fork time of the next child.  There may be several
       // forks at that time so we must skip them until we find a fork that is at
@@ -91,7 +91,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
           break;
         }
         child = *ancestry_it;
-        child_fork_time = (*child->position_in_parent_children_)->first;
+        child_fork_time = child->position_in_parent_children_->first;
       } while (current_time == child_fork_time);
 
       CheckNormalizedIfEnd();
@@ -117,7 +117,7 @@ Forkable<Tr4jectory>::Iterator::operator--() {
     // ancestry and set |current_| to the fork point.  If the timeline is empty,
     // keep going until we find a non-empty one or the root.
     do {
-      current_ = *ancestor->position_in_parent_timeline_;
+      current_ = ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
       ancestry_.push_front(ancestor);
     } while (current_ == ancestor->timeline_end() &&
@@ -261,9 +261,9 @@ void Forkable<Tr4jectory>::WritePointerToMessage(
     auto const position_in_parent_timeline = position_in_parent_timeline_;
     ancestor = ancestor->parent_;
     int const children_distance = std::distance(ancestor->children_.begin(),
-                                                *position_in_parent_children);
+                                                position_in_parent_children);
     int const timeline_distance = std::distance(ancestor->timeline_begin(),
-                                                *position_in_parent_timeline);
+                                                position_in_parent_timeline);
     auto* const fork_message = message->add_fork();
     fork_message->set_children_distance(children_distance);
     fork_message->set_timeline_distance(timeline_distance);

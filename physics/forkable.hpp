@@ -171,14 +171,15 @@ class Forkable {
   // Null for a root.
   Tr4jectory* parent_ = nullptr;
 
-  // This iterator is never at |end()|.
-  std::experimental::optional<typename Children::const_iterator>
-      position_in_parent_children_;
+  // This iterator is never at |end()|.  Don't use for a root.
+  // NOTE(phl): We would really want this member and the next to be optional<>,
+  // but it fails with libc++ in Clang 3.7.  Optional and CRTP, the final
+  // frontier...
+  typename Children::const_iterator position_in_parent_children_;
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
-  // i.e. is the parent timeline's own fork time.
-  std::experimental::optional<TimelineConstIterator>
-      position_in_parent_timeline_;
+  // i.e. is the parent timeline's own fork time.  Don't use for a root.
+  TimelineConstIterator position_in_parent_timeline_;
 
   Children children_;
 };
