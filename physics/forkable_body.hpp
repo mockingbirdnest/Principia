@@ -14,7 +14,7 @@ void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   // Find the position of |*forkable| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (&it->second == *trajectory) {
+    if (it->second.get() == *trajectory) {
       children_.erase(it);
       *trajectory = nullptr;
       return;
@@ -283,7 +283,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
     auto timeline_it = descendant->timeline_begin();
     std::advance(children_it, children_distance);
     std::advance(timeline_it, timeline_distance);
-    descendant = &children_it->second;
+    descendant = children_it->second.get();
   }
   return descendant;
 }
@@ -299,17 +299,16 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
   auto timeline_it = timeline_find(time);
 
   // First create a child in the multimap.
-  auto const child_it = children_.emplace(std::piecewise_construct,
-                                          std::forward_as_tuple(time),
-                                          std::forward_as_tuple());
+  auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
+  typename Children::const_iterator const_child_it = child_it;
 
   // Now set the members of the child object.
-  auto& child_forkable = child_it->second;
-  child_forkable.parent_ = that();
-  child_forkable.position_in_parent_children_ = child_it;
-  child_forkable.position_in_parent_timeline_ = timeline_it;
+  std::unique_ptr<Tr4jectory> const& child_forkable = const_child_it->second;
+  child_forkable->parent_ = that();
+  child_forkable->position_in_parent_children_ = const_child_it;
+  child_forkable->position_in_parent_timeline_ = timeline_it;
 
-  return &child_forkable;
+  return child_forkable.get();
 }
 
 template<typename Tr4jectory>
@@ -339,13 +338,13 @@ void Forkable<Tr4jectory>::WriteSubTreeToMessage(
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
-    Tr4jectory const& child = pair.second;
+    std::unique_ptr<Tr4jectory> const& child = pair.second;
     if (!last_instant || fork_time != last_instant) {
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child.WriteSubTreeToMessage(litter->add_trajectories());
+    child->WriteSubTreeToMessage(litter->add_trajectories());
   }
 }
 

@@ -166,7 +166,9 @@ class Forkable {
 
  private:
   // There may be several forks starting from the same time, hence the multimap.
-  using Children = std::multimap<Instant, Tr4jectory>;
+  // A level of indirection is needed to avoid referencing an incomplete type in
+  // CRTP.
+  using Children = std::multimap<Instant, std::unique_ptr<Tr4jectory>>;
 
   // Null for a root.
   Tr4jectory* parent_ = nullptr;
