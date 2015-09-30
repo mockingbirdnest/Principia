@@ -12,7 +12,7 @@ echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/a
 apt-get update
 apt-get install -y clang git unzip wget libc++-dev binutils make automake libtool curl cmake monodevelop
 cd principia
-if [ -d deps ]; then echo "Dependencies already installed, remove deps/ to reinstall." else ./install_deps.sh; fi
+if [ -d deps ]; then echo "Dependencies already installed, remove deps/ to reinstall."; else ./install_deps.sh; fi
 SCRIPT
 
   config.vm.provision "shell", inline: script
