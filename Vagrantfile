@@ -4,6 +4,7 @@
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/vivid64"
   config.vm.synced_folder ".", "/home/vagrant/principia"
+  config.vm.synced_folder "../KSP Assemblies", "/home/vagrant/KSP Assemblies", id: "Assemblies"
 
   script = <<SCRIPT
 echo Provisioning Principia
@@ -16,4 +17,9 @@ if [ -d deps ]; then echo "Dependencies already installed, remove deps/ to reins
 SCRIPT
 
   config.vm.provision "shell", inline: script
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 4
+  end
 end
