@@ -300,11 +300,12 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
 
   // First create a child in the multimap.
   auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
+  typename Children::const_iterator const_child_it = child_it;
 
   // Now set the members of the child object.
-  std::unique_ptr<Tr4jectory> const& child_forkable = child_it->second;
+  std::unique_ptr<Tr4jectory> const& child_forkable = const_child_it->second;
   child_forkable->parent_ = that();
-  child_forkable->position_in_parent_children_ = child_it;
+  child_forkable->position_in_parent_children_ = const_child_it;
   child_forkable->position_in_parent_timeline_ = timeline_it;
 
   return child_forkable.get();
