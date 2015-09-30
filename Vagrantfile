@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "debian/jessie64"
+  config.vm.box = "ubuntu/vivid64"
   config.vm.synced_folder ".", "/home/vagrant/principia"
 
   script = <<SCRIPT
