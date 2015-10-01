@@ -19,6 +19,7 @@ using geometry::Position;
 using geometry::Vector;
 using quantities::Acceleration;
 using quantities::Length;
+using quantities::si::Radian;
 
 namespace physics {
 
