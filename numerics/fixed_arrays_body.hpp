@@ -140,5 +140,8 @@ Scalar const* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
   return &data_[index * (index - 1) / 2];
 }
 
+template<typename Scalar, int rows>
+int FixedStrictlyLowerTriangularMatrix<Scalar, rows>::kDimension;
+
 }  // namespace numerics
 }  // namespace principia
