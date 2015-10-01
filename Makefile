@@ -100,6 +100,7 @@ run_tests: tests
 	-physics/test
 	-quantities/test
 	-testing_utilities/test
+	-numerics/test
 
 TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
 
