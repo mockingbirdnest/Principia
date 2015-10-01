@@ -92,6 +92,7 @@ plugin: $(ADAPTER) $(LIB)
 
 ##### TESTS #####
 run_tests: tests
+	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
 	-base/test
 	-geometry/test
 	-integrators/test
