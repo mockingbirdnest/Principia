@@ -92,7 +92,7 @@ class Forkable {
     TimelineConstIterator current_;
     std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
-    template<typename Tr4jectory>
+    template<typename Trajectory>
     friend class Forkable;
   };
 
