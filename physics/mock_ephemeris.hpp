@@ -22,17 +22,20 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_CONST_METHOD0_T(t_max, Instant());
   MOCK_CONST_METHOD0_T(
       planetary_integrator,
-      FixedStepSizeIntegrator<NewtonianMotionEquation> const&());
+      FixedStepSizeIntegrator<
+          typename Ephemeris<Frame>::NewtonianMotionEquation> const&());
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
-  MOCK_METHOD5_T(FlowWithAdaptiveStep,
-                 void(not_null<DiscreteTrajectory<Frame>*> const trajectory,
-                      Length const& length_integration_tolerance,
-                      Speed const& speed_integration_tolerance,
-                      AdaptiveStepSizeIntegrator<
-                          NewtonianMotionEquation> const& integrator,
-                      Instant const& t));
+  MOCK_METHOD5_T(
+      FlowWithAdaptiveStep,
+      void(not_null<DiscreteTrajectory<Frame>*> const trajectory,
+          Length const& length_integration_tolerance,
+          Speed const& speed_integration_tolerance,
+          AdaptiveStepSizeIntegrator<
+              typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+              integrator,
+          Instant const& t));
   MOCK_METHOD3_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
