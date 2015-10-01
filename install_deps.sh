@@ -48,5 +48,7 @@ popd
 git clone "https://github.com/mockingbirdnest/googlemock"
 git clone "https://github.com/mockingbirdnest/googletest"
 
+git clone "https://github.com/Norgg/eggsperimental_filesystem.git"
+
 # Optional doesn't need to be compiled either
 git clone "https://github.com/mockingbirdnest/Optional.git"

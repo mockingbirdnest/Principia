@@ -10,9 +10,10 @@ PROTO_HEADERS := $(PROTO_SOURCES:.proto=.pb.h)
 
 OBJECTS := $(CPP_SOURCES:.cpp=.o)
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
-TEST_DIRS := base geometry integrators ksp_plugin_test physics quantities testing_utilities
+TEST_DIRS := base geometry integrators ksp_plugin_test physics quantities testing_utilities numerics
 TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
+PROJECT_DIR := ksp_plugin_adapter/
 ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj
 ADAPTER_CONFIGURATION := Debug
 FINAL_PRODUCTS_DIR := Debug
@@ -23,9 +24,9 @@ LIB := $(LIB_DIR)/principia.so
 
 DEP_DIR := deps
 LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
-TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I $(DEP_DIR)/googlemock/ -I $(DEP_DIR)/googletest/
+TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I $(DEP_DIR)/googlemock/ -I $(DEP_DIR)/googletest/ -I $(DEP_DIR)/eggsperimental_filesystem/
 INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional $(TEST_INCLUDES)
-SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic 
+SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic -DPROJECT_DIR=$(PROJECT_DIR)
 
 # detect OS
 UNAME_S := $(shell uname -s)
