@@ -23,7 +23,7 @@ LIB := $(LIB_DIR)/principia.so
 
 DEP_DIR := deps
 LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
-TEST_INCLUDES := -I$(DEP_DIR)/gmock/include -I$(DEP_DIR)/gmock/gtest/include -I$(DEP_DIR)/gmock -I$(DEP_DIR)/gmock/gtest
+TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I $(DEP_DIR)/googlemock/ -I $(DEP_DIR)/googletest/
 INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional $(TEST_INCLUDES)
 SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic 
 
@@ -98,7 +98,7 @@ run_tests: tests
 
 TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
 
-GMOCK_SOURCE=$(DEP_DIR)/gmock/src/gmock-all.cc $(DEP_DIR)/gmock/src/gmock_main.cc $(DEP_DIR)/gmock/gtest/src/gtest-all.cc
+GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gmock_main.cc $(DEP_DIR)/googletest/src/gtest-all.cc
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))

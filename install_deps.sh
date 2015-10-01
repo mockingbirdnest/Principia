@@ -44,8 +44,9 @@ pushd glog
 make -j8
 popd
 
-# gmock does not need to be compiled
-git clone "https://github.com/mockingbirdnest/gmock"
+# googlemock/googletest don't need to be compiled
+git clone "https://github.com/mockingbirdnest/googlemock"
+git clone "https://github.com/mockingbirdnest/googletest"
 
 # Optional doesn't need to be compiled either
 git clone "https://github.com/mockingbirdnest/Optional.git"
