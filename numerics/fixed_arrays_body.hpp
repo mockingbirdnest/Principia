@@ -141,7 +141,7 @@ Scalar const* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 }
 
 template<typename Scalar, int rows>
-int FixedStrictlyLowerTriangularMatrix<Scalar, rows>::kDimension;
+int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::kDimension;
 
 }  // namespace numerics
 }  // namespace principia
