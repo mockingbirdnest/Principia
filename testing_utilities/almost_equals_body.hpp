@@ -101,8 +101,8 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (!matches) {
     *listener << "the following components are not within "
               << min_ulps_ << " to " << max_ulps_ << " ULPs: "
-              << (x_is_max ? "" : "x, ") << (y_is_max ? "" : "y, ")
-              << (z_is_max ? "" : "z, ");
+              << (x_is_max ? "x, " : "") << (y_is_max ? "y, " : "")
+              << (z_is_max ? "z, " : "");
     *listener << "the components differ by the following numbers of ULPs: x: "
               << x_distance << ", y: " << y_distance << ", z: " << z_distance;
   }
