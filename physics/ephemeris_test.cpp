@@ -937,7 +937,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            (-3 * m3 + (3 / Sqrt(512)) * m2) * GravitationalConstant *
                Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration0,
-              AlmostEquals(expected_acceleration0, 0, 5));
+              AlmostEquals(expected_acceleration0, 0, 6));
 
   Vector<Acceleration, World> actual_acceleration1 =
       ephemeris.ComputeGravitationalAcceleration(b1, t0_);
@@ -966,7 +966,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            (-3 / Sqrt(512)) * GravitationalConstant * m0 *
                Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
-              AlmostEquals(expected_acceleration2, 0, 2));
+              AlmostEquals(expected_acceleration2, 0, 3));
 
   Vector<Acceleration, World> actual_acceleration3 =
       ephemeris.ComputeGravitationalAcceleration(b3, t0_);
