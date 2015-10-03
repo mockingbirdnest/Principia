@@ -362,8 +362,8 @@ TEST_F(EphemerisTest, EarthProbe) {
       [earth, kDistance](Instant const& t) {
         return Vector<Acceleration, EarthMoonOrbitPlane>(
             {0 * SIUnit<Acceleration>(),
-              earth->gravitational_parameter() / (kDistance * kDistance),
-              0 * SIUnit<Acceleration>()});
+             earth->gravitational_parameter() / (kDistance * kDistance),
+             0 * SIUnit<Acceleration>()});
        };
 
   ephemeris.FlowWithAdaptiveStep(intrinsic_acceleration,
