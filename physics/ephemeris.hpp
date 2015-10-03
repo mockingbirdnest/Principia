@@ -31,7 +31,6 @@ class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  // The acceleration due to the engines of a massless body.
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
   static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
