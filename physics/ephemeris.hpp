@@ -88,7 +88,7 @@ class Ephemeris {
   // |tolerance_to_error_ratio| for step size control.
   virtual void FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
-      IntrinsicAcceleration const intrinsic_acceleration,
+      IntrinsicAcceleration intrinsic_acceleration,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,

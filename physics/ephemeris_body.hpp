@@ -267,13 +267,15 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
-    IntrinsicAcceleration const intrinsic_acceleration,
+    IntrinsicAcceleration intrinsic_acceleration,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Instant const& t) {
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
+  std::vector<IntrinsicAcceleration> const intrinsic_accelerations =
+      {std::move(intrinsic_acceleration)};
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -281,21 +283,10 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   NewtonianMotionEquation massless_body_equation;
   massless_body_equation.compute_acceleration =
-      [this, &hints, intrinsic_acceleration, &trajectories](
-          Instant const& t,
-          std::vector<Position<Frame>> const& positions,
-          not_null<std::vector<Vector<Acceleration, Frame>>*> const
-              accelerations) {
-        // First, the acceleration due to the gravitational field of the
-        // massive bodies.
-        ComputeMasslessBodiesGravitationalAccelerations(
-            trajectories, t, positions, accelerations, &hints);
-        // Then, the intrinsic acceleration, if any.
-        CHECK_EQ(1, accelerations->size());
-        if (intrinsic_acceleration != kNoIntrinsicAcceleration) {
-          (*accelerations)[0] += intrinsic_acceleration(t);
-        }
-      };
+      std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
+                this,
+                std::cref(trajectories), std::cref(intrinsic_accelerations),
+                _1, _2, _3, &hints);
 
   typename NewtonianMotionEquation::SystemState initial_state;
   auto const trajectory_last = trajectory->last();
@@ -327,7 +318,7 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-    std::vector<IntrinsicAcceleration> const& intrinsic_acceleration,
+    std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
     Time const& step,
     Instant const& t) {
   VLOG(1) << __FUNCTION__ << " " << NAMED(step) << " " << NAMED(t);
@@ -338,7 +329,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   NewtonianMotionEquation massless_body_equation;
   massless_body_equation.compute_acceleration =
-      std::bind(&Ephemeris::ComputeMasslessBodiesTotalalAccelerations,
+      std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
                 std::cref(trajectories), std::cref(intrinsic_accelerations),
                 _1, _2, _3, &hints);
@@ -887,11 +878,11 @@ void Ephemeris<Frame>::ComputeMasslessBodiesTotalAccelerations(
   // First, the acceleration due to the gravitational field of the
   // massive bodies.
   ComputeMasslessBodiesGravitationalAccelerations(
-      trajectories, t, positions, accelerations, &hints);
+      trajectories, t, positions, accelerations, hints);
 
   // Then, the intrinsic accelerations, if any.
   if (!intrinsic_accelerations.empty()) {
-    CHECK_EQ(trajectories.size(), intrinsic_accelerations->size());
+    CHECK_EQ(trajectories.size(), intrinsic_accelerations.size());
     for (int i = 0; i < intrinsic_accelerations.size(); ++i) {
       auto const intrinsic_acceleration = intrinsic_accelerations[i];
       if (intrinsic_acceleration != nullptr) {
