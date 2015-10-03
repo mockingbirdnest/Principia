@@ -78,6 +78,32 @@ class InstantaneouslyDefinedFrame : DynamicFrame<InertialFrame, ThisFrame> {
       geometric_acceleration_;
 };
 
+// An inertial frame.
+template<typename OtherFrame, typename ThisFrame>
+class InertialFrame : DynamicFrame<OtherFrame, ThisFrame> {
+  InertialFrame(Velocity<OtherFrame> const& velocity,
+                Position<OtherFrame> const& origin_at_epoch,
+                Instant const& epoch,
+                OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map);
+
+  RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
+      Instant const& t) const override;
+  RigidMotion<ThisFrame, OtherFrame> FromThisFrameAtTime(
+      Instant const& t) const override;
+
+  // The acceleration due to the non-inertial motion of |Frame| and gravity.
+  // A particle in free fall follows a trajectory whose second derivative
+  // is |GeometricAcceleration|.
+  Vector<Acceleration, ThisFrame> GeometricAcceleration(
+      Instant const& t,
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
+ private:
+  Velocity<OtherFrame> const velocity_;
+  Position<OtherFrame> const origin_at_epoch_;
+  Instant const epoch_;
+  OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
+};
+
 }  // namespace physics
 }  // namespace principia
 
