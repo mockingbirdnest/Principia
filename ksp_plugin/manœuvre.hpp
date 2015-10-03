@@ -71,12 +71,12 @@ class Manœuvre {
   typename Ephemeris<Frame>::IntrinsicAcceleration acceleration() const;
 
  private:
-  Vector<double, Frame> const direction_;
-  SpecificImpulse const specific_impulse_;
-  std::experimental::optional<Time> duration_;
-  std::experimental::optional<Instant> initial_time_;
   Force const thrust_;
   Mass const initial_mass_;
+  SpecificImpulse const specific_impulse_;
+  Vector<double, Frame> const direction_;
+  std::experimental::optional<Time> duration_;
+  std::experimental::optional<Instant> initial_time_;
 };
 
 }  // namespace ksp_plugin
