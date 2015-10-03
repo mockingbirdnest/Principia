@@ -793,30 +793,41 @@ void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
 void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   VLOG(1) << __FUNCTION__;
   Trajectories trajectories;
+  Ephemeris<Barycentric>::IntrinsicAccelerations intrinsic_accelerations;
+
   trajectories.reserve(unsynchronized_vessels_.size() + bubble_->count());
+  intrinsic_accelerations.reserve(
+      unsynchronized_vessels_.size() + bubble_->count());
   for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
     if (!bubble_->contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
+      intrinsic_accelerations.push_back(
+          Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
     }
   }
   for (not_null<Vessel*> const vessel : dirty_vessels_) {
     if (!bubble_->contains(vessel) && vessel->is_synchronized()) {
       trajectories.push_back(vessel->mutable_prolongation());
+      intrinsic_accelerations.push_back(
+          Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
     }
   }
   if (!bubble_->empty()) {
     trajectories.push_back(bubble_->mutable_centre_of_mass_trajectory());
+    intrinsic_accelerations.push_back(
+        bubble_->centre_of_mass_intrinsic_acceleration());
   }
   VLOG(1) << "Starting the synchronization of the new vessels"
           << (bubble_->empty() ? "" : " and of the bubble");
-  for (auto const& trajectory : trajectories) {
-    ephemeris_->FlowWithAdaptiveStep(
-        trajectory,
-        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-        prolongation_length_tolerance_,
-        prolongation_speed_tolerance_,
-        prolongation_integrator_,
-        history_time_);
+  for (int i = 0; i < trajectories.size(); ++i) {
+    auto const& trajectory = trajectories[i];
+    auto const& intrinsic_acceleration = intrinsic_accelerations[i];
+    ephemeris_->FlowWithAdaptiveStep(trajectory,
+                                     intrinsic_acceleration,
+                                     prolongation_length_tolerance_,
+                                     prolongation_speed_tolerance_,
+                                     prolongation_integrator_,
+                                     history_time_);
   }
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
