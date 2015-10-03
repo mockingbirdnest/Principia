@@ -3,14 +3,14 @@
 #include <experimental/optional>
 
 #include "geometry/named_quantities.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
 using geometry::Instant;
 using geometry::Vector;
-using physics::DiscreteTrajectory;
+using physics::Ephemeris;
 using quantities::Force;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -68,8 +68,7 @@ class Manœuvre {
 
   // Intensity and timing must have been set.  The result is valid for until
   // |*this| is destroyed.
-  typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
-  acceleration() const;
+  typename Ephemeris<Frame>::IntrinsicAcceleration acceleration() const;
 
  private:
   Vector<double, Frame> const direction_;
