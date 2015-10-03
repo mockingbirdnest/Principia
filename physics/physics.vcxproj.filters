@@ -104,6 +104,9 @@
     <ClInclude Include="rigid_motion_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="dynamic_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
