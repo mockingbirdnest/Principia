@@ -348,16 +348,14 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   EXPECT_TRUE(bubble_.contains(&vessel1_));
   EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
-  // The trajectory of the centre of mass has only one point and no
-  // acceleration.
+  // The trajectory of the centre of mass has only one point.
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
+  EXPECT_FALSE(bubble_.centre_of_mass_intrinsic_acceleration());
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
-  EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
   DiscreteTrajectory<Barycentric>* mutable_trajectory =
       bubble_.mutable_centre_of_mass_trajectory();
   EXPECT_THAT(mutable_trajectory->Times(), ElementsAre(t1_));
-  EXPECT_FALSE(mutable_trajectory->has_intrinsic_acceleration());
 
   // Check the positions and velocities.
   CheckOneVesselDegreesOfFreedom(bubble_);
@@ -391,8 +389,8 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
-  EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
-  EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
+  EXPECT_TRUE(bubble_.centre_of_mass_intrinsic_acceleration());
+  EXPECT_THAT(bubble_.centre_of_mass_intrinsic_acceleration()(t2_),
               AlmostEquals(Vector<Acceleration, Barycentric>(
                                {(-2203.0 / 23.0) * SIUnit<Acceleration>(),
                                 (-7802.0 / 23.0) * SIUnit<Acceleration>(),
@@ -442,8 +440,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
                                    (-124.0 + 2742.0 / 23.0) * SIUnit<Speed>(),
                                    (126.0 - 2788.0 / 23.0) * SIUnit<Speed>()}),
             trajectory.last().degrees_of_freedom().velocity());
-  EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
-  EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
+  EXPECT_TRUE(bubble_.centre_of_mass_intrinsic_acceleration());
+  EXPECT_THAT(bubble_.centre_of_mass_intrinsic_acceleration()(t2_),
               AlmostEquals(Vector<Acceleration, Barycentric>(
                                {(-2313.0 / 23.0) * SIUnit<Acceleration>(),
                                 (-7692.0 / 23.0) * SIUnit<Acceleration>(),
@@ -503,8 +501,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
                                    (124.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
                                    (-126.0 + 2788.0 / 23.0) * SIUnit<Speed>()}),
             trajectory.last().degrees_of_freedom().velocity());
-  EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
-  EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
+  EXPECT_TRUE(bubble_.centre_of_mass_intrinsic_acceleration());
+  EXPECT_THAT(bubble_.centre_of_mass_intrinsic_acceleration()(t2_),
               AlmostEquals(Vector<Acceleration, Barycentric>(
                                {-91 * SIUnit<Acceleration>(),
                                 -344 * SIUnit<Acceleration>(),
@@ -549,7 +547,7 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
-  EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
+  EXPECT_FALSE(bubble_.centre_of_mass_intrinsic_acceleration());
 
   // All the other assertions remain as in |OneVesselOneStep| since we restarted
   // the bubble with parts |p1a_| and |p1b_|.
@@ -580,7 +578,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
-  EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
+  EXPECT_FALSE(bubble_.centre_of_mass_intrinsic_acceleration());
 
   // Check the positions and velocities.
   CheckTwoVesselsDegreesOfFreedom(bubble_);
@@ -607,8 +605,8 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   Vector<Acceleration, World> const acceleration_correction =
       bubble_.VelocityCorrection(rotation_, celestial_) / (t3_ - t2_);
-  EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
-  EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
+  EXPECT_TRUE(bubble_.centre_of_mass_intrinsic_acceleration());
+  EXPECT_THAT(bubble_.centre_of_mass_intrinsic_acceleration()(t2_),
             AlmostEquals(Vector<Acceleration, Barycentric>(
                               {-acceleration_correction.coordinates().y -
                                    17635.0 / 89.0 * SIUnit<Acceleration>(),

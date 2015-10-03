@@ -108,7 +108,7 @@ Time Manœuvre<Frame>::time_to_half_Δv() const {
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::IntrinsicAcceleration
+typename Ephemeris<Frame>::IntrinsicAcceleration
     Manœuvre<Frame>::acceleration() const {
   return [this](Instant const& time) -> Vector<Acceleration, Frame> {
     if (time >= initial_time() && time <= final_time()) {

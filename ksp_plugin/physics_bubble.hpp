@@ -80,6 +80,8 @@ class PhysicsBubble {
   std::vector<not_null<Vessel*>> vessels() const;
   RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass(
       not_null<Vessel const*> const vessel) const;
+  Ephemeris<Barycentric>::IntrinsicAcceleration const&
+  centre_of_mass_intrinsic_acceleration() const;
   DiscreteTrajectory<Barycentric> const& centre_of_mass_trajectory() const;
   not_null<DiscreteTrajectory<Barycentric>*>
   mutable_centre_of_mass_trajectory() const;
@@ -109,6 +111,8 @@ class PhysicsBubble {
         PreliminaryState&& preliminary_state);  // NOLINT(build/c++11)
 
     std::experimental::optional<DegreesOfFreedom<World>> centre_of_mass;
+    Ephemeris<Barycentric>::IntrinsicAcceleration
+        centre_of_mass_intrinsic_acceleration;
     std::unique_ptr<
         DiscreteTrajectory<Barycentric>> centre_of_mass_trajectory;
     std::experimental::optional<

@@ -188,12 +188,13 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                   sun_l4_velocity)));
 
     state->ResumeTiming();
-    ephemeris->FlowWithAdaptiveStep(&trajectory,
-                                    1 * Metre,
-                                    1 * Metre / Second,
-                                    DormandElMikkawyPrince1986RKN434FM<
-                                        Position<ICRFJ2000Equator>>(),
-                                    final_time);
+    ephemeris->FlowWithAdaptiveStep(
+        &trajectory,
+        Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+        1 * Metre,
+        1 * Metre / Second,
+        DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+        final_time);
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -260,12 +261,13 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                               earth_probe_velocity));
 
     state->ResumeTiming();
-    ephemeris->FlowWithAdaptiveStep(&trajectory,
-                                    1 * Metre,
-                                    1 * Metre / Second,
-                                    DormandElMikkawyPrince1986RKN434FM<
-                                        Position<ICRFJ2000Equator>>(),
-                                    final_time);
+    ephemeris->FlowWithAdaptiveStep(
+        &trajectory,
+        Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+        1 * Metre,
+        1 * Metre / Second,
+        DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+        final_time);
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
