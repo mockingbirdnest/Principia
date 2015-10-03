@@ -32,11 +32,11 @@ using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
 using quantities::Time;
-using si::Joule;
-using si::Kilogram;
-using si::Metre;
-using si::Newton;
-using si::Second;
+using quantities::si::Joule;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Newton;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::BidimensionalDatasetMathematicaInput;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
@@ -196,7 +196,7 @@ TEST_P(SimpleHarmonicMotionTest, Error) {
   parameters_.initial.momenta.emplace_back(Speed());
   parameters_.initial.time = Time();
 #ifdef _DEBUG
-  parameters_.tmax = 100.0 * SIUnit<Time>();
+  parameters_.tmax = 10.0 * SIUnit<Time>();
 #else
   parameters_.tmax = 1000.0 * SIUnit<Time>();
 #endif
@@ -269,7 +269,11 @@ TEST_P(SimpleHarmonicMotionTest, Convergence) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Speed());
   parameters_.initial.time = Time();
+#if defined(_DEBUG)
+  parameters_.tmax = 1 * SIUnit<Time>();
+#else
   parameters_.tmax = 100 * SIUnit<Time>();
+#endif
   parameters_.sampling_period = 0;
   parameters_.Δt = GetParam().beginning_of_convergence;
   int const step_sizes = 50;
@@ -312,9 +316,11 @@ TEST_P(SimpleHarmonicMotionTest, Convergence) {
   LOG(INFO) << "Convergence data for q :\n" <<
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
 #endif
+#if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(GetParam().convergence_order, q_convergence_order),
               Lt(0.02));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
+#endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
@@ -324,12 +330,14 @@ TEST_P(SimpleHarmonicMotionTest, Convergence) {
   LOG(INFO) << "Convergence data for p :\n" <<
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
 #endif
+#if !defined(_DEBUG)
   // SPRKs with odd convergence order have a higher convergence order in p.
   EXPECT_THAT(
      RelativeError(((GetParam().convergence_order + 1) / 2) * 2,
                    v_convergence_order),
      Lt(0.02));
   EXPECT_THAT(v_correlation, AllOf(Gt(0.99), Lt(1.01)));
+#endif
 }
 
 TEST_P(SimpleHarmonicMotionTest, Symplecticity) {

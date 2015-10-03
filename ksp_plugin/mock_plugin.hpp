@@ -75,15 +75,12 @@ class MockPlugin : public Plugin {
           not_null<RenderingTransforms*> const transforms,
           Position<World> const& sun_world_position));
 
-  MOCK_METHOD2(
+  MOCK_METHOD3(
       RenderedPrediction,
       RenderedTrajectory<World>(
+          GUID const& vessel_guid,
           not_null<RenderingTransforms*> const transforms,
           Position<World> const& sun_world_position));
-
-  MOCK_METHOD1(set_predicted_vessel, void(GUID const& vessel_guid));
-
-  MOCK_METHOD0(clear_predicted_vessel, void());
 
   MOCK_METHOD1(set_prediction_length, void(Time const& t));
 

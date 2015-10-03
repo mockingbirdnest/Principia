@@ -158,6 +158,11 @@
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
+    <ClInclude Include="discrete_trajectory.hpp" />
+    <ClInclude Include="discrete_trajectory_body.hpp" />
+    <ClInclude Include="dynamic_frame.hpp" />
+    <ClInclude Include="rigid_motion.hpp" />
+    <ClInclude Include="rigid_motion_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
     <ClInclude Include="ephemeris_body.hpp" />
     <ClInclude Include="forkable.hpp" />
@@ -171,8 +176,10 @@
     <ClInclude Include="mock_ephemeris.hpp" />
     <ClInclude Include="oblate_body.hpp" />
     <ClInclude Include="oblate_body_body.hpp" />
-    <ClInclude Include="trajectory.hpp" />
-    <ClInclude Include="trajectory_body.hpp" />
+    <ClInclude Include="rotating_body.hpp" />
+    <ClInclude Include="rotating_body_body.hpp" />
+    <ClInclude Include="solar_system.hpp" />
+    <ClInclude Include="solar_system_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
@@ -180,9 +187,11 @@
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
+    <ClCompile Include="discrete_trajectory_test.cpp" />
+    <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />
-    <ClCompile Include="trajectory_test.cpp" />
+    <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>

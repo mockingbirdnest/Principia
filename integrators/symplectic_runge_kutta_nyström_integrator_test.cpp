@@ -23,14 +23,14 @@ using quantities::Mass;
 using quantities::Pow;
 using quantities::Power;
 using quantities::Sin;
-using si::Joule;
-using si::Kilogram;
-using si::Metre;
-using si::Milli;
-using si::Radian;
-using si::Second;
 using quantities::Speed;
 using quantities::Stiffness;
+using quantities::si::Joule;
+using quantities::si::Kilogram;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
@@ -84,9 +84,6 @@ void TestTermination(
     Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 163 * Second;
   Time const step = 42 * Second;
@@ -143,9 +140,12 @@ void Test1000SecondsAt1Millisecond(
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
+#if defined(_DEBUG)
+  Instant const t_final = t_initial + 1 * Second;
+#else
   Instant const t_final = t_initial + 1000 * Second;
+#endif
   Time const step = 1 * Milli(Second);
   int const steps = static_cast<int>((t_final - t_initial) / step) - 1;
 
@@ -190,8 +190,10 @@ void Test1000SecondsAt1Millisecond(
     q_error = std::max(q_error, AbsoluteError(q_initial * Cos(ω * t), q));
     v_error = std::max(v_error, AbsoluteError(-v_amplitude * Sin(ω * t), v));
   }
+#if !defined(_DEBUG)
   EXPECT_EQ(expected_position_error, q_error);
   EXPECT_EQ(expected_velocity_error, v_error);
+#endif
 }
 
 // Integrates with diminishing step sizes, and checks the order of convergence.
@@ -202,9 +204,12 @@ void TestConvergence(Integrator const& integrator,
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
+#if defined(_DEBUG)
+  Instant const t_final = t_initial + 10 * Second;
+#else
   Instant const t_final = t_initial + 100 * Second;
+#endif
 
   Time step = beginning_of_convergence;
   int const step_sizes = 50;
@@ -255,20 +260,24 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
 
+#if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
               Lt(0.02));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
+#endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
+#if !defined(_DEBUG)
   // SPRKs with odd convergence order have a higher convergence order in p.
   EXPECT_THAT(
       RelativeError(integrator.order + (integrator.order % 2),
                     v_convergence_order),
       Lt(0.02));
   EXPECT_THAT(v_correlation, AllOf(Gt(0.99), Lt(1.01)));
+#endif
 }
 
 // Test that the error in energy does not correlate with the number of steps
@@ -278,9 +287,6 @@ void TestSymplecticity(Integrator const& integrator,
                        Energy const& expected_energy_error) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 500 * Second;
   Time const step = 0.2 * Second;
@@ -339,8 +345,6 @@ void TestTimeReversibility(Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 100 * Second;
   Time const step = 1 * Second;

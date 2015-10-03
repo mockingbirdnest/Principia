@@ -41,20 +41,39 @@ message Ephemeris {
 
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
-  extensions 2000 to 2999;  // Last used: 2001.
+  extensions 2000 to 2999;  // Last used: 2002.
 }
 
 message MasslessBody {}
 
 message OblateBody {
+  extend RotatingBody {
+    optional OblateBody oblate_body = 4000;
+  }
+  required Quantity j2 = 1;
+}
+
+message PreBrouwerOblateBody {
   extend MassiveBody {
-    optional OblateBody oblate_body = 2001;
+    optional PreBrouwerOblateBody pre_brouwer_oblate_body = 2001;
   }
   required Frame frame = 3;
   required Quantity j2 = 1;
   required Multivector axis = 2;
 }
 
+message RotatingBody {
+  extend MassiveBody {
+    optional RotatingBody rotating_body = 2002;
+  }
+  required Frame frame = 1;
+  required Quantity reference_angle = 2;
+  required Point reference_instant = 3;
+  required Multivector angular_velocity = 4;
+  extensions 4000 to 4999;  // Last used: 4000.
+}
+
+// TODO(phl): Rename to DiscreteTrajectory.
 message Trajectory {
   message InstantaneousDegreesOfFreedom {
     required Point instant = 1;

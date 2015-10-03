@@ -21,6 +21,7 @@
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
+    <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="physics_bubble_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
@@ -123,7 +124,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <PreprocessorDefinitions>PROJECT_DIR=R"literal($(ProjectDir))literal";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -138,7 +139,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <PreprocessorDefinitions>PROJECT_DIR=R"literal($(ProjectDir))literal";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -155,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4373;4503;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <PreprocessorDefinitions>PROJECT_DIR=R"literal($(ProjectDir))literal";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

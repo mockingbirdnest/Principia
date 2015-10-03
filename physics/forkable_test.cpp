@@ -11,7 +11,7 @@
 namespace principia {
 
 using geometry::Instant;
-using si::Second;
+using quantities::si::Second;
 using ::testing::ElementsAre;
 
 namespace physics {
@@ -30,6 +30,10 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
 
   void push_back(Instant const& time);
 
+  using Forkable<FakeTrajectory>::NewFork;
+  using Forkable<FakeTrajectory>::DeleteAllForksAfter;
+  using Forkable<FakeTrajectory>::DeleteAllForksBefore;
+
  protected:
   not_null<FakeTrajectory*> that() override;
   not_null<FakeTrajectory const*> that() const override;
@@ -37,8 +41,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
-  void timeline_insert(TimelineConstIterator begin,
-                       TimelineConstIterator end) override;
+  TimelineConstIterator timeline_lower_bound(
+                            Instant const& time) const override;
   bool timeline_empty() const override;
 
  private:
@@ -85,10 +89,15 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_find(
   return timeline_.end();
 }
 
-void FakeTrajectory::timeline_insert(TimelineConstIterator begin,
-                                     TimelineConstIterator end) {
-  CHECK(timeline_empty());
-  timeline_.insert(timeline_.end(), begin, end);
+FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_lower_bound(
+                                          Instant const& time) const {
+  // Stupid O(N) search.
+  for (auto it = timeline_.begin(); it != timeline_.end(); ++it) {
+    if (*it >= time) {
+      return it;
+    }
+  }
+  return timeline_.end();
 }
 
 bool FakeTrajectory::timeline_empty() const {
@@ -157,7 +166,7 @@ TEST_F(ForkableTest, ForkSuccess) {
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 }
 
 TEST_F(ForkableTest, ForkAtLast) {
@@ -208,7 +217,7 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
     trajectory_.push_back(t1_);
     FakeTrajectory* root = &trajectory_;
     trajectory_.DeleteFork(&root);
-  }, "'fork_time'.* non NULL");
+  }, "fork_time");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     FakeTrajectory* fork1 = trajectory_.NewFork(t1_);
@@ -230,7 +239,67 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork1);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
+}
+
+TEST_F(ForkableDeathTest, DeleteAllForksAfterError) {
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    trajectory_.push_back(t2_);
+    not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+    fork->DeleteAllForksAfter(t1_);
+  }, "before the fork time");
+}
+
+TEST_F(ForkableTest, DeleteAllForksAfterSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  fork->push_back(t4_);
+
+  fork->DeleteAllForksAfter(t3_ + (t4_ - t3_) / 2);
+  auto times = Times(fork);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
+
+  fork->DeleteAllForksAfter(t2_);
+  times = Times(fork);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
+
+  times = Times(&trajectory_);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  trajectory_.DeleteAllForksAfter(t1_);
+  times = Times(&trajectory_);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  // Don't use fork, it is dangling.
+}
+
+TEST_F(ForkableDeathTest, DeleteAllForksBeforeError) {
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t1_);
+    fork->DeleteAllForksBefore(t1_);
+  }, "nonroot");
+}
+
+TEST_F(ForkableTest, DeleteAllForksBeforeSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  fork->push_back(t4_);
+
+  trajectory_.DeleteAllForksBefore(t1_ + (t2_ - t1_) / 2);
+  auto times = Times(&trajectory_);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  times = Times(fork);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
+
+  trajectory_.DeleteAllForksBefore(t2_);
+  times = Times(&trajectory_);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  // Don't use fork, it is dangling.
 }
 
 TEST_F(ForkableDeathTest, IteratorDecrementError) {
@@ -262,8 +331,6 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   auto it = fork->End();
   --it;
   EXPECT_EQ(t3_, *it.current());
-  --it;
-  EXPECT_EQ(t2_, *it.current());
   --it;
   EXPECT_EQ(t1_, *it.current());
 }
@@ -311,9 +378,9 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   auto it = fork->Begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
-  EXPECT_EQ(t2_, *it.current());
-  ++it;
   EXPECT_EQ(t3_, *it.current());
+  ++it;
+  EXPECT_EQ(it, fork->End());
 }
 
 TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
@@ -360,7 +427,7 @@ TEST_F(ForkableTest, Root) {
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(&trajectory_, trajectory_.root());
   EXPECT_EQ(&trajectory_, fork->root());
-  EXPECT_EQ(nullptr, trajectory_.ForkTime());
+  EXPECT_FALSE(trajectory_.ForkTime());
   EXPECT_EQ(t2_, *fork->ForkTime());
 }
 
@@ -391,8 +458,6 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
   ++it;
   EXPECT_EQ(t2_, *it.current());
   ++it;
-  EXPECT_EQ(t3_, *it.current());
-  ++it;
   EXPECT_EQ(t4_, *it.current());
   ++it;
   EXPECT_EQ(it, fork->End());
@@ -406,6 +471,8 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
 
+  it = trajectory_.Find(t0_);
+  EXPECT_EQ(it, trajectory_.End());
   it = trajectory_.Find(t1_);
   EXPECT_NE(it, trajectory_.End());
   EXPECT_EQ(t1_, *it.current());
@@ -417,6 +484,8 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
   fork->push_back(t4_);
 
+  it = fork->Find(t0_);
+  EXPECT_EQ(it, fork->End());
   it = fork->Find(t1_);
   EXPECT_NE(it, fork->End());
   EXPECT_EQ(t1_, *it.current());
@@ -426,6 +495,120 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   EXPECT_EQ(t4_, *it.current());
   it = fork->Find(t4_ + 1 * Second);
   EXPECT_EQ(it, fork->End());
+}
+
+TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
+  auto it = trajectory_.LowerBound(t0_);
+  EXPECT_EQ(it, trajectory_.End());
+
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+
+  it = trajectory_.LowerBound(t0_);
+  EXPECT_EQ(t1_, *it.current());
+  it = trajectory_.LowerBound(t1_);
+  EXPECT_EQ(t1_, *it.current());
+  it = trajectory_.LowerBound(t2_);
+  EXPECT_EQ(t2_, *it.current());
+  it = trajectory_.LowerBound(t4_);
+  EXPECT_EQ(it, trajectory_.End());
+
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  fork->push_back(t4_);
+
+  it = fork->LowerBound(t0_);
+  EXPECT_EQ(t1_, *it.current());
+  it = fork->LowerBound(t1_);
+  EXPECT_NE(it, fork->End());
+  EXPECT_EQ(t1_, *it.current());
+  it = fork->LowerBound(t2_);
+  EXPECT_EQ(t2_, *it.current());
+  it = fork->LowerBound(t4_);
+  EXPECT_EQ(t4_, *it.current());
+  it = fork->LowerBound(t4_ + 1 * Second);
+  EXPECT_EQ(it, fork->End());
+}
+
+TEST_F(ForkableTest, IteratorSerializationSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  not_null<FakeTrajectory*> const fork1 = trajectory_.NewFork(t2_);
+  not_null<FakeTrajectory*> const fork2 = trajectory_.NewFork(t2_);
+  not_null<FakeTrajectory*> const fork3 = trajectory_.NewFork(t3_);
+  fork2->DeleteAllForksAfter(t2_);
+  fork3->push_back(t4_);
+
+  {
+    serialization::Trajectory::Pointer message;
+    trajectory_.WritePointerToMessage(&message);
+    EXPECT_EQ(0, message.fork_size());
+    auto trajectory = FakeTrajectory::ReadPointerFromMessage(message,
+                                                             &trajectory_);
+    EXPECT_EQ(&trajectory_, trajectory);
+    auto it = trajectory->Begin();
+    EXPECT_EQ(t1_, *it.current());
+    ++it;
+    EXPECT_EQ(t2_, *it.current());
+    ++it;
+    EXPECT_EQ(t3_, *it.current());
+  }
+
+  {
+    serialization::Trajectory::Pointer message;
+    fork1->WritePointerToMessage(&message);
+    EXPECT_EQ(1, message.fork_size());
+    EXPECT_EQ(0, message.fork(0).children_distance());
+    EXPECT_EQ(1, message.fork(0).timeline_distance());
+    auto trajectory = FakeTrajectory::ReadPointerFromMessage(message,
+                                                             &trajectory_);
+    EXPECT_EQ(fork1, trajectory);
+    auto it = trajectory->Begin();
+    EXPECT_EQ(t1_, *it.current());
+    ++it;
+    EXPECT_EQ(t2_, *it.current());
+    ++it;
+    EXPECT_EQ(it, trajectory->End());
+  }
+
+  {
+    serialization::Trajectory::Pointer message;
+    fork2->WritePointerToMessage(&message);
+    EXPECT_EQ(1, message.fork_size());
+    EXPECT_EQ(1, message.fork(0).children_distance());
+    EXPECT_EQ(1, message.fork(0).timeline_distance());
+    auto trajectory = FakeTrajectory::ReadPointerFromMessage(message,
+                                                             &trajectory_);
+    EXPECT_EQ(fork2, trajectory);
+    auto it = trajectory->Begin();
+    EXPECT_EQ(t1_, *it.current());
+    ++it;
+    EXPECT_EQ(t2_, *it.current());
+    ++it;
+    EXPECT_EQ(it, trajectory->End());
+  }
+
+  {
+    serialization::Trajectory::Pointer message;
+    fork3->WritePointerToMessage(&message);
+    EXPECT_EQ(1, message.fork_size());
+    EXPECT_EQ(2, message.fork(0).children_distance());
+    EXPECT_EQ(2, message.fork(0).timeline_distance());
+    auto trajectory = FakeTrajectory::ReadPointerFromMessage(message,
+                                                             &trajectory_);
+    EXPECT_EQ(fork3, trajectory);
+    auto it = trajectory->Begin();
+    EXPECT_EQ(t1_, *it.current());
+    ++it;
+    EXPECT_EQ(t2_, *it.current());
+    ++it;
+    EXPECT_EQ(t3_, *it.current());
+    ++it;
+    EXPECT_EQ(t4_, *it.current());
+    ++it;
+    EXPECT_EQ(it, trajectory->End());
+  }
 }
 
 }  // namespace physics

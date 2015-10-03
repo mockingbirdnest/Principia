@@ -16,10 +16,10 @@ namespace geometry {
 
 using quantities::Time;
 using quantities::Volume;
-using si::Day;
-using si::Litre;
-using si::Metre;
-using si::Second;
+using quantities::si::Day;
+using quantities::si::Litre;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 

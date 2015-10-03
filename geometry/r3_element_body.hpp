@@ -1,4 +1,6 @@
-#pragma once
+﻿#pragma once
+
+#include "geometry/r3_element.hpp"
 
 #include <string>
 
@@ -10,8 +12,12 @@
 
 namespace principia {
 
+using quantities::ArcSin;
+using quantities::ArcTan;
+using quantities::Cos;
 using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
+using quantities::Sin;
 using quantities::SIUnit;
 
 namespace geometry {
@@ -95,6 +101,15 @@ inline Scalar R3Element<Scalar>::Norm() const {
 }
 
 template<typename Scalar>
+SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
+  SphericalCoordinates<Scalar> result;
+  result.radius = Norm();
+  result.latitude = ArcSin(z / result.radius);
+  result.longitude = ArcTan(y, x);
+  return result;
+}
+
+template<typename Scalar>
 template<typename S>
 void R3Element<Scalar>::Orthogonalize(
     not_null<R3Element<S>*> const r3_element) const {
@@ -122,6 +137,28 @@ R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
   return {Serializer::ReadFromMessage(message.x()),
           Serializer::ReadFromMessage(message.y()),
           Serializer::ReadFromMessage(message.z())};
+}
+
+template<typename Scalar>
+SphericalCoordinates<Scalar>::SphericalCoordinates() {}
+
+template<typename Scalar>
+R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
+  double const cos_latitude = Cos(latitude);
+  return {radius * Cos(longitude) * cos_latitude,
+          radius * Sin(longitude) * cos_latitude,
+          radius * Sin(latitude)};
+}
+
+template<typename Scalar>
+SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
+                                                     Angle const& latitude,
+                                                     Angle const& longitude) {
+  SphericalCoordinates<Scalar> result;
+  result.latitude = latitude;
+  result.longitude = longitude;
+  result.radius = radius;
+  return result;
 }
 
 template<typename Scalar>

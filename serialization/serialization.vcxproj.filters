@@ -17,6 +17,7 @@
     <CustomBuild Include="ksp_plugin.proto" />
     <CustomBuild Include="numerics.proto" />
     <CustomBuild Include="integrators.proto" />
+    <CustomBuild Include="astronomy.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -37,6 +38,9 @@
     <ClInclude Include="integrators.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="astronomy.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc">
@@ -55,6 +59,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="integrators.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="astronomy.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

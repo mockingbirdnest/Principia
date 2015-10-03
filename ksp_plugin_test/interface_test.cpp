@@ -20,13 +20,13 @@ using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
 using quantities::Pow;
-using si::AstronomicalUnit;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Metre;
-using si::Second;
-using si::Tonne;
+using quantities::si::AstronomicalUnit;
+using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Second;
+using quantities::si::Tonne;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -234,16 +234,20 @@ TEST_F(InterfaceTest, DirectlyInsertMassiveCelestial) {
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345E6 * SIUnit<GravitationalParameter>())))));
-  principia__DirectlyInsertMassiveCelestial(plugin_.get(),
-                                            kCelestialIndex,
-                                            &kParentIndex,
-                                            "1.2345E6  m^3/s^2",
-                                            "0 m",
-                                            "23.456E-7 km",
-                                            "-1 au",
-                                            "1 au / d",
-                                            "  1 km/s",
-                                            "1  m / s");
+  principia__DirectlyInsertCelestial(plugin_.get(),
+                                     kCelestialIndex,
+                                     &kParentIndex,
+                                     "1.2345E6  m^3/s^2",
+                                     nullptr /*axis_right_ascension*/,
+                                     nullptr /*axis_declination*/,
+                                     nullptr /*j2*/,
+                                     nullptr /*reference_radius*/,
+                                     "0 m",
+                                     "23.456E-7 km",
+                                     "-1 au",
+                                     "1 au / d",
+                                     "  1 km/s",
+                                     "1  m / s");
 }
 
 TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
@@ -267,20 +271,20 @@ TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345E6 *
                                  Pow<3>(Kilo(Metre)) / Pow<2>(Second))))));
-  principia__DirectlyInsertOblateCelestial(plugin_.get(),
-                                           kCelestialIndex,
-                                           &kParentIndex,
-                                           "1.2345E6  km^3 / s^2",
-                                           "42 deg",
-                                           "8°",
-                                           "123e-6",
-                                           "1000 km",
-                                           "0 m",
-                                           "23.456E-7 km",
-                                           "-1 au",
-                                           "1 au / d",
-                                           "  1 km/s",
-                                           "1  m / s");
+  principia__DirectlyInsertCelestial(plugin_.get(),
+                                     kCelestialIndex,
+                                     &kParentIndex,
+                                     "1.2345E6  km^3 / s^2",
+                                     "42 deg",
+                                     "8°",
+                                     "123e-6",
+                                     "1000 km",
+                                     "0 m",
+                                     "23.456E-7 km",
+                                     "-1 au",
+                                     "1 au / d",
+                                     "  1 km/s",
+                                     "1  m / s");
 }
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
@@ -445,6 +449,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
 
   EXPECT_CALL(*plugin_,
               RenderedPrediction(
+                  kVesselGUID,
                   check_not_null(transforms),
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
@@ -453,6 +458,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
       .WillOnce(Return(rendered_trajectory));
   LineAndIterator* line_and_iterator =
       principia__RenderedPrediction(plugin_.get(),
+                                    kVesselGUID,
                                     transforms,
                                     kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
@@ -550,10 +556,6 @@ TEST_F(InterfaceTest, LineAndIterator) {
 }
 
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
-  EXPECT_CALL(*plugin_, set_predicted_vessel(kVesselGUID));
-  principia__set_predicted_vessel(plugin_.get(), kVesselGUID);
-  EXPECT_CALL(*plugin_, clear_predicted_vessel());
-  principia__clear_predicted_vessel(plugin_.get());
   EXPECT_CALL(*plugin_, set_prediction_length(42 * Second));
   principia__set_prediction_length(plugin_.get(), 42);
   EXPECT_CALL(*plugin_, set_prediction_length_tolerance(1729 * Metre));
@@ -623,11 +625,6 @@ TEST_F(InterfaceTest, NavballOrientation) {
                           {1 * SIUnit<Length>(),
                            2 * SIUnit<Length>(),
                            3 * SIUnit<Length>()});
-  Position<World> ship_position =
-      World::origin + Displacement<World>(
-                          {2 * SIUnit<Length>(),
-                           3 * SIUnit<Length>(),
-                           5 * SIUnit<Length>()});
   auto const rotation =
       Rotation<World, World>(π / 2 * Radian,
                              Bivector<double, World>({4, 5, 6}));
@@ -681,7 +678,6 @@ TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_THAT(Instant(current_time * Second), Eq(kUnixEpoch));
 }
 
-#if 0  // TODO(egg): Boring serialized plugin.
 TEST_F(InterfaceTest, SerializePlugin) {
   PullSerializer* serializer = nullptr;
   std::string const message_bytes =
@@ -715,7 +711,6 @@ TEST_F(InterfaceTest, DeserializePlugin) {
   EXPECT_EQ(Instant(), plugin->current_time());
   principia__DeletePlugin(&plugin);
 }
-#endif
 
 TEST_F(InterfaceDeathTest, SettersAndGetters) {
   // We use EXPECT_EXITs in this test to avoid interfering with the execution of

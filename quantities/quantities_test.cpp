@@ -18,6 +18,7 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace quantities {
 
 using astronomy::EarthMass;
 using astronomy::JulianYear;
@@ -56,8 +57,6 @@ using uk::Mile;
 using uk::Rood;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
-
-namespace quantities {
 
 class QuantitiesTest : public testing::Test {
  protected:

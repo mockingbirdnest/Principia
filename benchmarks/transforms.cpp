@@ -1,5 +1,5 @@
 ﻿
-// .\release\benchmarks.exe --benchmark_filter=Transforms --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_filter=Transforms --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/06/15-22:32:50
 // Benchmark                                                 Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
@@ -33,8 +33,7 @@
 // BM_TransformsBarycentricRotating<true>/1000k_mean       1719766736 1712890980          1  // NOLINT(whitespace/line_length)
 // BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
-#include <optional.hpp>
-
+#include <experimental/optional>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -51,9 +50,9 @@
 #include "physics/body.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
-#include "physics/trajectory.hpp"
 #include "physics/transforms.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -62,8 +61,6 @@
 
 namespace principia {
 
-using astronomy::EarthMass;
-using astronomy::JulianYear;
 using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -77,16 +74,18 @@ using quantities::Time;
 using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MasslessBody;
-using physics::Trajectory;
 using physics::Transforms;
-using si::AstronomicalUnit;
-using si::Hour;
-using si::Kilo;
-using si::Metre;
-using si::Radian;
-using si::Second;
+using quantities::astronomy::EarthMass;
+using quantities::astronomy::JulianYear;
+using quantities::si::AstronomicalUnit;
+using quantities::si::Hour;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace benchmarks {
 
@@ -137,12 +136,12 @@ std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
     not_null<Transforms<World1, World2, World1>*> const transforms,
-    Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
+    DiscreteTrajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<World2> intermediate_trajectory(body);
+  DiscreteTrajectory<World2> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
@@ -169,12 +168,12 @@ void BM_TransformsBodyCentredNonRotating(
   Time const Δt = 1 * Hour;
   int const steps = state.range_x();
 
-  MassiveBody earth(astronomy::EarthMass);
+  MassiveBody earth(EarthMass);
   Position<World1> center = World1::origin;
   Position<World1> earth_initial_position =
-      World1::origin + Displacement<World1>({1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   AngularVelocity<World1> earth_angular_velocity =
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
@@ -189,19 +188,19 @@ void BM_TransformsBodyCentredNonRotating(
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
-      World1::origin + Displacement<World1>({0.5 * si::AstronomicalUnit,
-                                             -1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({0.5 * AstronomicalUnit,
+                                             -1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   Velocity<World1> probe_velocity =
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory(&probe);
-  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
-                                           probe_velocity,
-                                           Δt,
-                                           steps,
-                                           &probe_trajectory);
+  DiscreteTrajectory<World1> probe_trajectory;
+  FillLinearTrajectory<World1, DiscreteTrajectory>(probe_initial_position,
+                                                   probe_velocity,
+                                                   Δt,
+                                                   steps,
+                                                   &probe_trajectory);
 
   auto transforms = Transforms<World1, World2, World1>::
       BodyCentredNonRotating(earth, earth_trajectory, earth_trajectory);
@@ -226,12 +225,12 @@ void BM_TransformsBarycentricRotating(
   Time const Δt = 1 * Hour;
   int const steps = state.range_x();
 
-  MassiveBody earth(astronomy::EarthMass);
+  MassiveBody earth(EarthMass);
   Position<World1> earth_center = World1::origin;
   Position<World1> earth_initial_position =
-      World1::origin + Displacement<World1>({1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   AngularVelocity<World1> earth_angular_velocity =
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
@@ -244,15 +243,15 @@ void BM_TransformsBarycentricRotating(
                                                        steps,
                                                        &earth_trajectory);
 
-  MassiveBody thera(astronomy::EarthMass);
+  MassiveBody thera(EarthMass);
   Position<World1> thera_center =
-      World1::origin + Displacement<World1>({2 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({2 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   Position<World1> thera_initial_position =
-      World1::origin + Displacement<World1>({-0.5 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({-0.5 * AstronomicalUnit,
+                                             0 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   AngularVelocity<World1> thera_angular_velocity =
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
@@ -267,19 +266,19 @@ void BM_TransformsBarycentricRotating(
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
-      World1::origin + Displacement<World1>({0.5 * si::AstronomicalUnit,
-                                             -1 * si::AstronomicalUnit,
-                                             0 * si::AstronomicalUnit});
+      World1::origin + Displacement<World1>({0.5 * AstronomicalUnit,
+                                             -1 * AstronomicalUnit,
+                                             0 * AstronomicalUnit});
   Velocity<World1> probe_velocity =
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory(&probe);
-  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
-                                           probe_velocity,
-                                           Δt,
-                                           steps,
-                                           &probe_trajectory);
+  DiscreteTrajectory<World1> probe_trajectory;
+  FillLinearTrajectory<World1, DiscreteTrajectory>(probe_initial_position,
+                                                   probe_velocity,
+                                                   Δt,
+                                                   steps,
+                                                   &probe_trajectory);
 
   auto transforms = Transforms<World1, World2, World1>::
       BarycentricRotating(earth,

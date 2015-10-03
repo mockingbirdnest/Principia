@@ -18,8 +18,8 @@ namespace principia {
 using geometry::Instant;
 using quantities::Length;
 using quantities::Speed;
-using si::Metre;
-using si::Second;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
@@ -360,7 +360,8 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
                               near_speed(2.9E-14 * Metre / Second),
                               near_speed(2.2E-14 * Metre / Second),
                               near_speed(2.9E-14 * Metre / Second)),
-                  ElementsAre(near_speed(5.4E-14 * Metre / Second),
+                  ElementsAre(AllOf(Gt(5.3E-14 * Metre / Second),
+                                    Lt(6.1E-14 * Metre / Second)),
                               near_speed(6.8E-14 * Metre / Second),
                               near_speed(3.5E-13 * Metre / Second),
                               near_speed(8.5E-13 * Metre / Second),

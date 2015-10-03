@@ -11,8 +11,8 @@
 
 namespace principia {
 
-using si::Metre;
-using si::Second;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing_utilities::ULPDistance;
 
 namespace physics {
@@ -151,6 +151,7 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     return series_[hint->index_].Evaluate(time) + Frame::origin;
   } else {
     auto const it = FindSeriesForInstant(time);
+    CHECK(it != series_.end());
     if (hint != nullptr) {
       hint->index_ = it - series_.cbegin();
     }
@@ -168,6 +169,7 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     return series_[hint->index_].EvaluateDerivative(time);
   } else {
     auto const it = FindSeriesForInstant(time);
+    CHECK(it != series_.end());
     if (hint != nullptr) {
       hint->index_ = it - series_.cbegin();
     }
@@ -187,6 +189,7 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
                                    series.EvaluateDerivative(time));
   } else {
     auto const it = FindSeriesForInstant(time);
+    CHECK(it != series_.end());
     if (hint != nullptr) {
       hint->index_ = it - series_.cbegin();
     }
@@ -363,7 +366,6 @@ ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
                          Instant const& right) {
                         return left.t_max() < right;
                       });
-  CHECK(it != series_.end());
   return it;
 }
 

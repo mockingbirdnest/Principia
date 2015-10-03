@@ -1,27 +1,33 @@
-#pragma once
+﻿#pragma once
 
 #include <memory>
+#include <vector>
 
 #include "ksp_plugin/celestial.hpp"
-#include "ksp_plugin/mobile_interface.hpp"
+#include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/part.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
-#include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
+using physics::DiscreteTrajectory;
+using physics::Ephemeris;
 using physics::MasslessBody;
-using physics::Trajectory;
 using quantities::GravitationalParameter;
 
 namespace ksp_plugin {
 
 // Represents a KSP |Vessel|.
-class Vessel : public MobileInterface {
+class Vessel {
  public:
+  using Manœuvres =
+      std::vector<not_null<std::unique_ptr<Manœuvre<Barycentric> const>>>;
+
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
@@ -47,18 +53,24 @@ class Vessel : public MobileInterface {
   void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_synchronized()|.
-  Trajectory<Barycentric> const& history() const override;
-  not_null<Trajectory<Barycentric>*> mutable_history() override;
+  DiscreteTrajectory<Barycentric> const& history() const;
+  not_null<DiscreteTrajectory<Barycentric>*> mutable_history();
 
   // Both accessors require |is_initialized()|.
-  Trajectory<Barycentric> const& prolongation() const override;
-  not_null<Trajectory<Barycentric>*> mutable_prolongation() override;
+  DiscreteTrajectory<Barycentric> const& prolongation() const;
+  not_null<DiscreteTrajectory<Barycentric>*> mutable_prolongation();
 
-  // Both accessors require |is_initialized()|.  In addition the first one
-  // requires |has_prediction()|.
-  Trajectory<Barycentric> const& prediction() const override;
-  Trajectory<Barycentric>* mutable_prediction() override;
-  bool has_prediction() const override;
+  // Requires |is_initialized()|.
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const&
+  flight_plan() const;
+  bool has_flight_plan() const;
+
+  // Requires |has_prediction()|.
+  DiscreteTrajectory<Barycentric> const& prediction() const;
+  bool has_prediction() const;
+
+  Manœuvres const& manœuvres() const;
+  not_null<Manœuvres*> mutable_manœuvres();
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy
@@ -84,11 +96,37 @@ class Vessel : public MobileInterface {
   // |owned_prolongation_| must be null.
   void ResetProlongation(Instant const& time);
 
-  // Creates a |prediction_| forked at the end of the |prolongation_|.
-  // Requires |is_initialized()| and |!has_prediction()|.
-  void ForkPrediction();
+  // Fills |flight_plan_| with predictions using the given |ephemeris| for
+  // successive manœuvres, with the given prediction tolerances for the coasting
+  // phases, and the given prolongation tolerances for the manœuvres.  Uses the
+  // given |integrator|.
+  // Deletes any pre-existing predictions.
+  // Does nothing unless |is_synchronized()|, pending the removal of
+  // synchronization.
+  // TODO(egg): struct containing (integrator, length tol, speed tol) so we
+  // don't need that many parameters...
+  void UpdateFlightPlan(
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      AdaptiveStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+      Instant const& last_time,
+      Length const& prediction_length_tolerance,
+      Speed const& prediction_speed_tolerance,
+      Length const& prolongation_length_tolerance,
+      Speed const& prolongation_speed_tolerance);
 
-  // Deletes the |prediction_|.
+  // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
+  void DeleteFlightPlan();
+
+  void UpdatePrediction(
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      AdaptiveStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+      Instant const& last_time,
+      Length const& prediction_length_tolerance,
+      Speed const& prediction_speed_tolerance);
+
+  // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
   void DeletePrediction();
 
   // The vessel must satisfy |is_initialized()|.
@@ -107,19 +145,24 @@ class Vessel : public MobileInterface {
   // The past and present trajectory of the body. It ends at |HistoryTime()|
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.  It is advanced with a constant time step.
-  std::unique_ptr<Trajectory<Barycentric>> history_;
+  std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
   // Most of the time, this is a child trajectory of |*history_|. It is forked
   // at |history_->last_time()| and continues until |current_time_|. It is
   // computed with a non-constant timestep, which breaks symplecticity.
   // If |history_| is null, this points to |owned_prolongation_| instead.
   // Not owning.
-  Trajectory<Barycentric>* prolongation_ = nullptr;
+  DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
   // When the vessel is added, before it is synchonized with the other vessels
   // and celestials, there is no |history_|.  The prolongation is directly owned
   // during that time.  Null if, and only if, |history_| is not null.
-  std::unique_ptr<Trajectory<Barycentric>> owned_prolongation_;
-  // A child trajectory of |*prolongation_|.
-  Trajectory<Barycentric>* prediction_ = nullptr;
+  std::unique_ptr<DiscreteTrajectory<Barycentric>> owned_prolongation_;
+  // Child trajectory of |history_|.
+  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  // Child trajectories of |history_|.  Each element is a child of the
+  // previous one, corresponding to successive manœuvres.  Trajectories at even
+  // indices are burns, trajectories at odd indices are coast phases.
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> flight_plan_;
+  Manœuvres manœuvres_;
 };
 
 }  // namespace ksp_plugin

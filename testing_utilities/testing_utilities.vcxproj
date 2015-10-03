@@ -25,8 +25,8 @@
     <ClInclude Include="integration_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
-    <ClInclude Include="solar_system_body.hpp" />
-    <ClInclude Include="solar_system.hpp" />
+    <ClInclude Include="solar_system_factory.hpp" />
+    <ClInclude Include="solar_system_factory_body.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
     <ClInclude Include="vanishes_before.hpp" />
@@ -37,7 +37,7 @@
     <ClCompile Include="almost_equals_test.cpp" />
     <ClCompile Include="componentwise_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
-    <ClCompile Include="solar_system_test.cpp" />
+    <ClCompile Include="solar_system_factory_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
     <ClCompile Include="vanishes_before_test.cpp" />
   </ItemGroup>
@@ -78,6 +78,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
@@ -94,6 +95,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
@@ -109,6 +111,7 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\llvm_compatibility.props" />
     <Import Project="..\include_solution.props" />

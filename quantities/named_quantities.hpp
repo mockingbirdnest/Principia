@@ -3,7 +3,6 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
-
 namespace quantities {
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
@@ -27,11 +26,13 @@ using AngularMomentum     = Quotient<Action, Angle>;
 using Torque              = Variation<AngularMomentum>;
 using MomentOfInertia     = Quotient<Torque, AngularAcceleration>;
 
-using GravitationalParameter = Product<Length, Product<Speed, Speed>>;
+using GravitationalParameter = Quotient<Exponentiation<Length, 3>,
+                                        Exponentiation<Time, 2>>;
 using Order2ZonalCoefficient = Quotient<Exponentiation<Length, 5>,
                                         Exponentiation<Time, 2>>;
 
 // Astrodynamics
+using SpecificImpulse         = Quotient<Momentum, Mass>;
 using SpecificEnergy          = Quotient<Energy, Mass>;
 using SpecificAngularMomentum = Quotient<AngularMomentum, Mass>;
 
@@ -96,5 +97,6 @@ using LuminousEnergy   = Product<LuminousFlux, Time>;
 using Illuminance      = Quotient<LuminousFlux, Area>;
 using LuminousExposure = Product<Illuminance, Time>;
 using LuminousEfficacy = Quotient<LuminousFlux, RadiantFlux>;
+
 }  // namespace quantities
 }  // namespace principia

@@ -23,7 +23,7 @@ using geometry::Vector;
 using quantities::Action;
 using quantities::Winding;
 using quantities::Length;
-using si::Metre;
+using quantities::si::Metre;
 using ::testing::Eq;
 using ::testing::Not;
 

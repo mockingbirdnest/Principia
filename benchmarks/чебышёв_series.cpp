@@ -31,18 +31,21 @@
 #include <random>
 #include <vector>
 
-#include "quantities/si.hpp"
+#include "astronomy/frames.hpp"
+#include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
-#include "testing_utilities/solar_system.hpp"
+#include "quantities/si.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
+using geometry::Displacement;
 using numerics::ЧебышёвSeries;
-using si::Second;
-using testing_utilities::ICRFJ2000Ecliptic;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 namespace benchmarks {
 

@@ -27,8 +27,9 @@ using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using quantities::Abs;
 using quantities::Exponentiation;
+using quantities::Quotient;
 using quantities::Time;
-using si::Day;
+using quantities::si::Day;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -46,8 +47,8 @@ Time const kMaxTimeBetweenIntermediateStates = 180 * Day;
 //
 // Where |r| is the norm of r and r.j is the inner product.
 template<typename Frame>
-FORCE_INLINE Vector<Acceleration, Frame>
-    Order2ZonalAcceleration(
+FORCE_INLINE Vector<Quotient<Acceleration,
+                             GravitationalParameter>, Frame> Order2ZonalEffect(
         OblateBody<Frame> const& body,
         Displacement<Frame> const& r,
         Exponentiation<Length, -2> const& one_over_r_squared,
@@ -55,15 +56,17 @@ FORCE_INLINE Vector<Acceleration, Frame>
   Vector<double, Frame> const& axis = body.axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth =
-      body.j2() * one_over_r_cubed * one_over_r_squared;
-  Vector<Acceleration, Frame> const& axis_acceleration =
+      body.j2_over_μ() * one_over_r_cubed * one_over_r_squared;
+  Vector<Quotient<Acceleration,
+                  GravitationalParameter>, Frame> const axis_effect =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  Vector<Acceleration, Frame> const& radial_acceleration =
+  Vector<Quotient<Acceleration,
+                  GravitationalParameter>, Frame> const radial_effect =
       (j2_over_r_fifth *
            (-1.5 +
             7.5 * r_axis_projection *
                   r_axis_projection * one_over_r_squared)) * r;
-  return axis_acceleration + radial_acceleration;
+  return axis_effect + radial_effect;
 }
 
 // For mocking purposes.
@@ -264,12 +267,13 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithAdaptiveStep(
     IntrinsicAcceleration const intrinsic_acceleration,
-    not_null<Trajectory<Frame>*> const trajectory,
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Instant const& t) {
-  std::vector<not_null<Trajectory<Frame>*>> const trajectories = {trajectory};
+  std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
+      {trajectory};
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -322,7 +326,7 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
 
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
-    std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     Time const& step,
     Instant const& t) {
   VLOG(1) << __FUNCTION__ << " " << NAMED(step) << " " << NAMED(t);
@@ -368,6 +372,100 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 #if defined(WE_LOVE_228)
   AppendMasslessBodiesState(last_state, trajectories);
 #endif
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
+    Instant const & t) {
+  auto const it = trajectory->Find(t);
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
+
+  // To avoid intrinsic accelerations.
+  DiscreteTrajectory<Frame> empty_trajectory;
+
+  std::vector<Vector<Acceleration, Frame>> accelerations(1);
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  ComputeMasslessBodiesGravitationalAccelerations(
+      {&empty_trajectory},
+      t,
+      {degrees_of_freedom.position()},
+      &accelerations,
+      &hints);
+
+  return accelerations[0];
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+    not_null<MassiveBody const*> const body,
+    Instant const& t) {
+  bool const body_is_oblate = body->is_oblate();
+
+  // |other_xxx_bodies| is |xxx_bodies_| without |body|.  Index 0 in |positions|
+  // and |accelerations| corresponds to |body|, the other indices to
+  // |other_xxx_bodies|.
+  std::vector<not_null<MassiveBody const*>> other_oblate_bodies;
+  std::vector<not_null<MassiveBody const*>> other_spherical_bodies;
+  std::vector<Position<Frame>> positions;
+  std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
+
+  // Make room for |body|.
+  positions.resize(1);
+
+  // Fill |other_xxx_bodies| and evaluate the |positions|.
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  for (int b = 0; b < bodies_.size(); ++b) {
+    auto const& other_body = bodies_[b];
+    auto const& other_body_trajectory = trajectories_[b];
+    if (other_body.get() == body) {
+      positions[0] = other_body_trajectory->EvaluatePosition(t, &hints[b]);
+    } else if (b < number_of_oblate_bodies_) {
+      CHECK(other_body->is_oblate());
+      other_oblate_bodies.push_back(other_body.get());
+      positions.push_back(
+          other_body_trajectory->EvaluatePosition(t, &hints[b]));
+    } else {
+      CHECK(!other_body->is_oblate());
+      other_spherical_bodies.push_back(other_body.get());
+      positions.push_back(
+          other_body_trajectory->EvaluatePosition(t, &hints[b]));
+    }
+  }
+
+  if (body_is_oblate) {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        true /*body1_is_oblate*/,
+        true /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_oblate_bodies /*bodies2*/,
+        1 /*b2_begin*/, other_oblate_bodies.size() + 1 /*b2_end*/,
+        positions, &accelerations);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        true /*body1_is_oblate*/,
+        false /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_spherical_bodies /*bodies2*/,
+        other_oblate_bodies.size() + 1/*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+  } else {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        false /*body1_is_oblate*/,
+        true /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_oblate_bodies /*bodies2*/,
+        1 /*b2_begin*/, other_oblate_bodies.size() + 1 /*b2_end*/,
+        positions, &accelerations);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        false /*body1_is_oblate*/,
+        false /*body2_is_oblate*/>(
+        *body /*body1*/, 0 /*b1*/,
+        other_spherical_bodies /*bodies2*/,
+        other_oblate_bodies.size() + 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        positions, &accelerations);
+  }
+
+  return accelerations[0];
 }
 
 template<typename Frame>
@@ -449,17 +547,16 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
             << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Frame>> initial_state;
-  std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
+  std::vector<std::unique_ptr<DiscreteTrajectory<Frame>>> histories;
   std::set<Instant> initial_time;
   std::set<Instant> final_time;
   for (auto const& message : messages) {
     serialization::Celestial const& celestial = message.celestial();
     bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
-    histories.emplace_back(Trajectory<Frame>::ReadFromMessage(
-        celestial.history_and_prolongation().history(),
-        bodies.back().get()));
+    histories.emplace_back(DiscreteTrajectory<Frame>::ReadFromMessage(
+        celestial.history_and_prolongation().history()));
     auto const prolongation =
-        Trajectory<Frame>::ReadPointerFromMessage(
+        DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),
             histories.back().get());
     initial_state.push_back(histories.back()->first().degrees_of_freedom());
@@ -571,7 +668,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesState(
     typename NewtonianMotionEquation::SystemState const& state,
-    std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
     trajectory->Append(
@@ -621,27 +718,28 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
     if (body1_is_oblate || body2_is_oblate) {
       Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;
       if (body1_is_oblate) {
-        Vector<Acceleration, Frame> const order_2_zonal_acceleration1 =
-            Order2ZonalAcceleration<Frame>(
-                static_cast<OblateBody<Frame> const &>(body1),
+        Vector<Quotient<Acceleration,
+                        GravitationalParameter>, Frame> const
+            order_2_zonal_effect1 =
+                Order2ZonalEffect<Frame>(
+                    static_cast<OblateBody<Frame> const&>(body1),
                 Δq,
                 one_over_Δq_squared,
                 one_over_Δq_cubed);
-        (*accelerations)[b2] += order_2_zonal_acceleration1;
-        // Don't update |(*accelerations)[b1]| here: we exempt ourselves from
-        // Newton's third law because the oblate bodies are generally much
-        // bigger than the other bodies, so the ratio of the masses makes the
-        // opposite acceleration very small.
+        acceleration_on_b1 -= μ2 * order_2_zonal_effect1;
+        acceleration_on_b2 += μ1 * order_2_zonal_effect1;
       }
       if (body2_is_oblate) {
-        Vector<Acceleration, Frame> const order_2_zonal_acceleration2 =
-            Order2ZonalAcceleration<Frame>(
+        Vector<Quotient<Acceleration,
+                        GravitationalParameter>, Frame> const
+            order_2_zonal_effect2 =
+                Order2ZonalEffect<Frame>(
                 static_cast<OblateBody<Frame> const&>(body2),
                 Δq,
                 one_over_Δq_squared,
                 one_over_Δq_cubed);
-        (*accelerations)[b1] -= order_2_zonal_acceleration2;
-        // Yet another exemption from Newton's third law.
+        acceleration_on_b1 -= μ2 * order_2_zonal_effect2;
+        acceleration_on_b2 += μ1 * order_2_zonal_effect2;
       }
     }
   }
@@ -675,13 +773,15 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     if (body1_is_oblate) {
       Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;
-      Vector<Acceleration, Frame> const order_2_zonal_acceleration1 =
-          Order2ZonalAcceleration<Frame>(
+      Vector<Quotient<Acceleration,
+                      GravitationalParameter>, Frame> const
+          order_2_zonal_effect1 =
+              Order2ZonalEffect<Frame>(
               static_cast<OblateBody<Frame> const &>(body1),
               Δq,
               one_over_Δq_squared,
               one_over_Δq_cubed);
-      (*accelerations)[b2] += order_2_zonal_acceleration1;
+      (*accelerations)[b2] += μ1 * order_2_zonal_effect1;
     }
   }
 }
@@ -736,7 +836,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
 
 template<typename Frame>
 void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,

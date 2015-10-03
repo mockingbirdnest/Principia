@@ -151,6 +151,7 @@ message Frame {
     TEST = 1;
     TEST1 = 2;
     TEST2 = 3;
+    TEST3 = 7;
     FROM = 4;
     THROUGH = 5;
     TO = 6;

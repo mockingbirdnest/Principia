@@ -1,3 +1,4 @@
+#include <experimental/filesystem>
 #include <fstream>
 #include <string>
 
@@ -23,10 +24,10 @@ using geometry::Bivector;
 using geometry::Trivector;
 using geometry::Vector;
 using quantities::Length;
-using si::Hour;
-using si::Metre;
-using si::Radian;
-using si::Second;
+using quantities::si::Hour;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 
@@ -87,10 +88,8 @@ TEST_F(PluginCompatibilityTest, PreBorel) {
 
 TEST_F(PluginCompatibilityTest, PreBourbaki) {
   // Read the entire hex data.
-  std::string path;
-  path.append(PROJECT_DIR);
-  path.append("pre_bourbaki.proto.hex");
-  std::fstream file = std::fstream(path);
+  std::fstream file = std::fstream(
+      SOLUTION_DIR / "ksp_plugin_test" / "pre_bourbaki.proto.hex");
   CHECK(file.good());
   std::string hex;
   while (!file.eof()) {

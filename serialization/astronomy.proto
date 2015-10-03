@@ -1,0 +1,40 @@
+syntax = "proto2";
+
+import "serialization/geometry.proto";
+
+package principia.serialization;
+
+message GravityModel {
+  message Body {
+    required string name = 1;
+    required string gravitational_parameter = 2;
+    optional string axis_right_ascension = 3;
+    optional string axis_declination = 4;
+    optional string j2 = 5;
+    optional string reference_radius = 6;
+  }
+  required Frame.SolarSystemTag frame = 1;
+  repeated Body body = 2;
+}
+
+message InitialState {
+  message Body {
+    required string name = 1;
+    required string x = 2;
+    required string y = 3;
+    required string z = 4;
+    required string vx = 5;
+    required string vy = 6;
+    required string vz = 7;
+  }
+  required Frame.SolarSystemTag frame = 1;
+  required double epoch = 2;  // Julian date.
+  repeated Body body = 3;
+}
+
+message SolarSystemFile {
+  oneof file {
+    GravityModel gravity_model = 1;
+    InitialState initial_state = 2;
+  }
+}

@@ -11,8 +11,12 @@
 namespace principia {
 
 using base::not_null;
+using quantities::Angle;
 
 namespace geometry {
+
+template<typename Scalar>
+struct SphericalCoordinates;
 
 // An |R3Element<Scalar>| is an element of Scalar³. |Scalar| should be a vector
 // space over ℝ, represented by |double|. |R3Element| is the underlying data
@@ -33,6 +37,10 @@ struct R3Element {
 
   Scalar Norm() const;
 
+  // Uses the x-y plane as the equator, the x-axis as the reference direction on
+  // the equator, and the z-axis as the north pole.
+  SphericalCoordinates<Scalar> ToSpherical() const;
+
   // Modifies |*r3_element| so as to make it orthogonal to |*this|, using the
   // modified Gram-Schmidt algorithm.  Fails if |*this| is zero.
   template<typename S>
@@ -45,6 +53,26 @@ struct R3Element {
   Scalar y;
   Scalar z;
 };
+
+template<typename Scalar>
+struct SphericalCoordinates {
+  // Default, but prevents aggregate initialization of |SphericalCoordinates| to
+  // obviate confusion over the order of |latitude| and |longitude|.
+  SphericalCoordinates();
+
+  // Uses the x-y plane as the equator, the x-axis as the reference direction on
+  // the equator, and the z-axis as the north pole.
+  R3Element<Scalar> ToCartesian();
+
+  Scalar radius;
+  Angle latitude;
+  Angle longitude;
+};
+
+template<typename Scalar>
+SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
+                                                     Angle const& latitude,
+                                                     Angle const& longitude);
 
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& right);

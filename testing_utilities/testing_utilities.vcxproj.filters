@@ -38,12 +38,6 @@
     <ClInclude Include="statistics_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="solar_system.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="solar_system_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="vanishes_before.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -62,6 +56,12 @@
     <ClInclude Include="integration_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="solar_system_factory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="solar_system_factory_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
@@ -76,13 +76,13 @@
     <ClCompile Include="statistics_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="solar_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="vanishes_before_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="componentwise_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="solar_system_factory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

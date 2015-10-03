@@ -21,7 +21,6 @@
 
 namespace principia {
 
-using astronomy::JulianYear;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
@@ -29,11 +28,12 @@ using numerics::ЧебышёвSeries;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Time;
-using si::Kilo;
-using si::Metre;
-using si::Milli;
-using si::Radian;
-using si::Second;
+using quantities::astronomy::JulianYear;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 
@@ -328,6 +328,8 @@ TEST_F(ContinuousTrajectoryTest, Io) {
               AbsoluteError(expected_velocity, actual_velocity));
   }
 
+  trajectory_->ForgetBefore(trajectory_->t_min() - kStep);
+
   Instant const kForgetBeforeTime = t0 + 44444 * Second;
   trajectory_->ForgetBefore(kForgetBeforeTime);
   EXPECT_EQ(kForgetBeforeTime, trajectory_->t_min());
@@ -371,6 +373,8 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
+
+  trajectory_->ForgetBefore(trajectory_->t_max() + kStep);
 }
 
 TEST_F(ContinuousTrajectoryTest, Serialization) {

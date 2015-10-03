@@ -28,8 +28,8 @@ using quantities::Acceleration;
 using quantities::Speed;
 using quantities::SIUnit;
 using quantities::Time;
-using si::Degree;
-using si::Second;
+using quantities::si::Degree;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
@@ -183,10 +183,10 @@ class PhysicsBubbleTest : public testing::Test {
 
     // The trajectory of the centre of mass has one point which matches that
     // of the vessel.
-    Trajectory<Barycentric> const& trajectory =
+    DiscreteTrajectory<Barycentric> const& trajectory =
         bubble.centre_of_mass_trajectory();
     EXPECT_EQ(dof1_, trajectory.last().degrees_of_freedom());
-    Trajectory<Barycentric>* mutable_trajectory =
+    DiscreteTrajectory<Barycentric>* mutable_trajectory =
         bubble.mutable_centre_of_mass_trajectory();
     EXPECT_EQ(dof1_, mutable_trajectory->last().degrees_of_freedom());
 
@@ -260,7 +260,7 @@ class PhysicsBubbleTest : public testing::Test {
 
     // The trajectory of the centre of mass has only one point which is at the
     // barycentre of the trajectories of the vessels.
-    Trajectory<Barycentric> const& trajectory =
+    DiscreteTrajectory<Barycentric> const& trajectory =
         bubble.centre_of_mass_trajectory();
     DegreesOfFreedom<Barycentric> const expected_dof =
         physics::Barycentre<Barycentric, double>({dof1_, dof2_}, {23, 66});
@@ -350,11 +350,11 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
 
   // The trajectory of the centre of mass has only one point and no
   // acceleration.
-  Trajectory<Barycentric> const& trajectory =
+  DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
-  Trajectory<Barycentric>* mutable_trajectory =
+  DiscreteTrajectory<Barycentric>* mutable_trajectory =
       bubble_.mutable_centre_of_mass_trajectory();
   EXPECT_THAT(mutable_trajectory->Times(), ElementsAre(t1_));
   EXPECT_FALSE(mutable_trajectory->has_intrinsic_acceleration());
@@ -388,7 +388,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The trajectory now has an intrinsic acceleration.
-  Trajectory<Barycentric> const& trajectory =
+  DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
@@ -432,7 +432,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   // The trajectory was reset by Shift.  Its intrinsic acceleration comes only
   // from |p1b_|.  The velocity of the centre of mass was updated to reflect the
   // change of parts.
-  Trajectory<Barycentric> const& trajectory =
+  DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
   EXPECT_EQ(dof1_.position(),
@@ -493,7 +493,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
   // from |p1b_|.  The velocity of the centre of mass was updated to reflect the
   // change of parts, the adjustment is opposite to that of
   // |OneVesselPartRemoved|.
-  Trajectory<Barycentric> const& trajectory =
+  DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
   EXPECT_EQ(dof1_.position(),
@@ -546,7 +546,7 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The bubble was restarted.
-  Trajectory<Barycentric> const& trajectory =
+  DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
   EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
@@ -577,7 +577,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
 
 
   // The trajectory of the centre of mass has only one point.
-  Trajectory<Barycentric> const& trajectory =
+  DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
@@ -630,10 +630,6 @@ TEST_F(PhysicsBubbleTest, Serialization) {
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   bubble_.Prepare(rotation_, t1_, t2_);
-  Trajectory<Barycentric> const& trajectory =
-      bubble_.centre_of_mass_trajectory();
-  Trajectory<Barycentric>* mutable_trajectory =
-      bubble_.mutable_centre_of_mass_trajectory();
   bubble_.DisplacementCorrection(rotation_,
                                  celestial_,
                                  celestial_world_position_);

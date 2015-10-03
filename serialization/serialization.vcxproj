@@ -130,6 +130,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="astronomy.pb.h" />
     <ClInclude Include="geometry.pb.h" />
     <ClInclude Include="integrators.pb.h" />
     <ClInclude Include="ksp_plugin.pb.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="quantities.pb.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="astronomy.pb.cc" />
     <ClCompile Include="geometry.pb.cc" />
     <ClCompile Include="integrators.pb.cc" />
     <ClCompile Include="ksp_plugin.pb.cc" />
@@ -187,6 +189,17 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ files for %(FullPath)</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="astronomy.proto">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

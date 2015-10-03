@@ -68,7 +68,7 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int rows>
 class FixedStrictlyLowerTriangularMatrix {
  public:
-  static int const kDimension = rows * (rows - 1) / 2;
+  static int constexpr kDimension = rows * (rows - 1) / 2;
 
   // The |data| must be in row-major format.
   explicit FixedStrictlyLowerTriangularMatrix(

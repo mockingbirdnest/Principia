@@ -1,7 +1,7 @@
 ﻿
-// The files containing the tree of of child classes of |Body| must be included
-// in the order of inheritance to avoid circular dependencies.  This class will
-// end up being reincluded as part of the implementation of its parent.
+// The files containing the tree of child classes of |Body| must be included in
+// the order of inheritance to avoid circular dependencies.  This class will end
+// up being reincluded as part of the implementation of its parent.
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #include "physics/body.hpp"
 #else
@@ -23,8 +23,20 @@ class MassiveBody : public Body {
   // We use the gravitational parameter μ = G M in order not to accumulate
   // unit roundoffs from repeated multiplications by G.  The parameter must not
   // be zero.
-  explicit MassiveBody(GravitationalParameter const& gravitational_parameter);
-  explicit MassiveBody(Mass const& mass);
+  class Parameters {
+   public:
+    // The constructors are implicit on purpose.
+    Parameters(
+        GravitationalParameter const& gravitational_parameter);  // NOLINT
+    Parameters(Mass const& mass);  // NOLINT(runtime/explicit)
+
+   private:
+    GravitationalParameter const gravitational_parameter_;
+    Mass const mass_;
+    friend class MassiveBody;
+  };
+
+  explicit MassiveBody(Parameters const& parameters);
   ~MassiveBody() = default;
 
   // Returns the construction parameter.
@@ -37,8 +49,12 @@ class MassiveBody : public Body {
   // Returns false.
   bool is_oblate() const override;
 
+  // Call the following |WriteToMessage|, which dispatches to the proper
+  // subclass.
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
+  // Must be overridden by each subclass and first call the same method of the
+  // superclass.
   virtual void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const;
 
@@ -46,7 +62,7 @@ class MassiveBody : public Body {
   // |OblateBody| extension is present in the message.  Use |reinterpret_cast|
   // afterwards as appropriate if the frame is known.
 
-  // |message.has_massless_body()| must be true.
+  // |message.has_massive_body()| must be true.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
 
@@ -54,8 +70,7 @@ class MassiveBody : public Body {
       serialization::MassiveBody const& message);
 
  private:
-  GravitationalParameter const gravitational_parameter_;
-  Mass const mass_;
+  Parameters const parameters_;
 };
 
 }  // namespace physics

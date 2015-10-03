@@ -10,9 +10,11 @@ PROTO_HEADERS := $(PROTO_SOURCES:.proto=.pb.h)
 
 OBJECTS := $(CPP_SOURCES:.cpp=.o)
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
-TEST_DIRS := base geometry integrators ksp_plugin_test physics quantities testing_utilities
+TEST_DIRS := base geometry integrators ksp_plugin_test physics quantities testing_utilities numerics
 TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
+PROJECT_DIR := ksp_plugin_adapter/
+SOLUTION_DIR := ./
 ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj
 ADAPTER_CONFIGURATION := Debug
 FINAL_PRODUCTS_DIR := Debug
@@ -22,16 +24,18 @@ LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia
 LIB := $(LIB_DIR)/principia.so
 
 DEP_DIR := deps
-LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
-TEST_INCLUDES := -I$(DEP_DIR)/gmock/include -I$(DEP_DIR)/gtest/include -I$(DEP_DIR)/gmock -I$(DEP_DIR)/gtest
-INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include $(TEST_INCLUDES)
-SHARED_ARGS := -std=c++1y -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic 
+LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I $(DEP_DIR)/googlemock/ -I $(DEP_DIR)/googletest/ -I $(DEP_DIR)/eggsperimental_filesystem/
+INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional $(TEST_INCLUDES)
+SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic \
+	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
+	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")'
 
 # detect OS
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    UNAME_P := $(shell uname -p)
-    ifeq ($(UNAME_P),x86_64)
+    UNAME_M := $(shell uname -m)
+    ifeq ($(UNAME_M),x86_64)
         SHARED_ARGS += -m64
     else
         SHARED_ARGS += -m32
@@ -88,6 +92,7 @@ plugin: $(ADAPTER) $(LIB)
 
 ##### TESTS #####
 run_tests: tests
+	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
 	-base/test
 	-geometry/test
 	-integrators/test
@@ -95,10 +100,11 @@ run_tests: tests
 	-physics/test
 	-quantities/test
 	-testing_utilities/test
+	-numerics/test
 
 TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
 
-GMOCK_SOURCE=$(DEP_DIR)/gmock/src/gmock-all.cc $(DEP_DIR)/gmock/src/gmock_main.cc $(DEP_DIR)/gtest/src/gtest-all.cc
+GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gmock_main.cc $(DEP_DIR)/googletest/src/gtest-all.cc
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))

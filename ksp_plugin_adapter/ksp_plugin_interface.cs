@@ -75,24 +75,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern void DeletePlugin(ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertMassiveCelestial",
+             EntryPoint        = "principia__DirectlyInsertCelestial",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertMassiveCelestial(
-      IntPtr plugin,
-      int celestial_index,
-      ref int parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String  gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String  x,
-      [MarshalAs(UnmanagedType.LPStr)] String  y,
-      [MarshalAs(UnmanagedType.LPStr)] String  z,
-      [MarshalAs(UnmanagedType.LPStr)] String  vx,
-      [MarshalAs(UnmanagedType.LPStr)] String  vy,
-      [MarshalAs(UnmanagedType.LPStr)] String  vz);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertOblateCelestial",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertOblateCelestial(
+  private static extern void DirectlyInsertCelestial(
       IntPtr plugin,
       int celestial_index,
       ref int parent_index,
@@ -109,24 +94,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       [MarshalAs(UnmanagedType.LPStr)] String vz);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertMassiveCelestial",
+             EntryPoint        = "principia__DirectlyInsertCelestial",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertMassiveCelestial(
-      IntPtr plugin,
-      int celestial_index,
-      IntPtr parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String  gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String  x,
-      [MarshalAs(UnmanagedType.LPStr)] String  y,
-      [MarshalAs(UnmanagedType.LPStr)] String  z,
-      [MarshalAs(UnmanagedType.LPStr)] String  vx,
-      [MarshalAs(UnmanagedType.LPStr)] String  vy,
-      [MarshalAs(UnmanagedType.LPStr)] String  vz);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertOblateCelestial",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DirectlyInsertOblateCelestial(
+  private static extern void DirectlyInsertCelestial(
       IntPtr plugin,
       int celestial_index,
       IntPtr parent_index,
@@ -248,10 +218,25 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__UpdatePrediction",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void UpdatePrediction(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__HasPrediction",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern bool HasPrediction(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedPrediction",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr RenderedPrediction(
       IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       IntPtr transforms,
       XYZ sun_world_position);
 
@@ -274,18 +259,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              EntryPoint        = "principia__DeleteLineAndIterator",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void DeleteLineAndIterator(ref IntPtr line);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_predicted_vessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void set_predicted_vessel(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__clear_predicted_vessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void clear_predicted_vessel(IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__set_prediction_length",

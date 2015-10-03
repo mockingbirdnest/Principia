@@ -11,26 +11,33 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
-using astronomy::JulianYear;
-using astronomy::Parsec;
-using bipm::Knot;
-using constants::SpeedOfLight;
 using quantities::Length;
 using quantities::Speed;
+using quantities::Sqrt;
 using quantities::Time;
-using si::Day;
-using si::Hour;
-using si::Kilo;
-using si::Metre;
-using si::Minute;
-using si::Second;
+using quantities::astronomy::JulianYear;
+using quantities::astronomy::Parsec;
+using quantities::bipm::Knot;
+using quantities::constants::SpeedOfLight;
+using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Hour;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Minute;
+using quantities::si::Second;
+using quantities::uk::Furlong;
+using quantities::uk::Mile;
+using quantities::uk::Rod;
 using testing_utilities::AlmostEquals;
-using uk::Furlong;
-using uk::Mile;
-using uk::Rod;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
+using ::testing::Eq;
 
 namespace geometry {
 
@@ -175,6 +182,44 @@ TEST_F(R3ElementTest, SerializationSuccess) {
   EXPECT_EQ(5.0, message.z().double_());
   R3Element<double> const d2 = R3Element<double>::ReadFromMessage(message);
   EXPECT_EQ(d1, d2);
+}
+
+TEST_F(R3ElementTest, SphericalCoordinates) {
+  R3Element<Length> x{1 * Metre, 0 * Metre, 0 * Metre};
+  R3Element<Length> y{0 * Metre, 1 * Metre, 0 * Metre};
+  R3Element<Length> z{0 * Metre, 0 * Metre, 1 * Metre};
+  R3Element<Length> v{1 * Metre, -1 * Metre, -Sqrt(6) * Metre};
+
+  EXPECT_EQ(0 * Degree, x.ToSpherical().latitude);
+  EXPECT_EQ(0 * Degree, x.ToSpherical().longitude);
+  EXPECT_EQ(1 * Metre, x.ToSpherical().radius);
+
+  EXPECT_EQ(0 * Degree, y.ToSpherical().latitude);
+  EXPECT_EQ(90 * Degree, y.ToSpherical().longitude);
+  EXPECT_EQ(1 * Metre, y.ToSpherical().radius);
+
+  EXPECT_EQ(90 * Degree, z.ToSpherical().latitude);
+  // The x and y coordinates are both +0, so the angle is +0, see Kahan (1986).
+  EXPECT_EQ(0 * Degree, z.ToSpherical().longitude);
+  EXPECT_EQ(1 * Metre, z.ToSpherical().radius);
+
+  EXPECT_EQ(-60 * Degree, v.ToSpherical().latitude);
+  EXPECT_EQ(-45 * Degree, v.ToSpherical().longitude);
+  EXPECT_THAT(v.ToSpherical().radius, AlmostEquals(Sqrt(8) * Metre, 1));
+
+  EXPECT_EQ(x, RadiusLatitudeLongitude(1 * Metre, 0 * Degree, 0 * Degree)
+                   .ToCartesian());
+  EXPECT_THAT(
+      RadiusLatitudeLongitude(1 * Metre, 0 * Degree, 90 * Degree).ToCartesian(),
+      Componentwise(VanishesBefore(1 * Metre, 0),
+                    Eq(1 * Metre),
+                    Eq(0 * Metre)));
+  EXPECT_THAT(RadiusLatitudeLongitude(1 * Metre,
+                                      90 * Degree,
+                                      42 * Degree).ToCartesian(),
+              Componentwise(VanishesBefore(1 * Metre, 0),
+                            VanishesBefore(1 * Metre, 0),
+                            Eq(1 * Metre)));
 }
 
 }  // namespace geometry

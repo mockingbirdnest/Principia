@@ -1,11 +1,13 @@
 #pragma once
 
-#include <list>
+#include <deque>
+#include <experimental/optional>  // NOLINT
 #include <map>
 #include <memory>
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -37,19 +39,11 @@ class Forkable {
       typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
   Forkable() = default;
+  virtual ~Forkable() = default;
 
-  // Creates a new child trajectory forked at time |time|, and returns it.  The
-  // child trajectory shares its data with the current trajectory for times less
-  // than or equal to |time|, and is an exact copy of the current trajectory for
-  // times greater than |time|.  It may be changed independently from the
-  // parent trajectory for any time (strictly) greater than |time|.  The child
-  // trajectory is owned by its parent trajectory.  Deleting the parent
-  // trajectory deletes all child trajectories.  |time| must be one of the times
-  // of this trajectory, and must be at or after the fork time, if any.
-  not_null<Tr4jectory*> NewFork(Instant const& time);
-
-  // Deletes the child trajectory denoted by |*fork|, which must be a pointer
-  // previously returned by NewFork for this object.  Nulls |*fork|.
+  // Deletes the child trajectory denoted by |*trajectory|, which must be a
+  // pointer previously returned by NewFork for this object.  Nulls
+  // |*trajectory|.
   void DeleteFork(not_null<Tr4jectory**> const trajectory);
 
   // Returns true if this is a root trajectory.
@@ -61,7 +55,7 @@ class Forkable {
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
-  Instant const* ForkTime() const;  // optional
+  std::experimental::optional<Instant> ForkTime() const;
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.
@@ -75,6 +69,9 @@ class Forkable {
 
     // Returns the point in the timeline that is denoted by this iterator.
     TimelineConstIterator current() const;
+
+    // Returns the (most forked) trajectory to which this iterator applies.
+    not_null<Tr4jectory const*> trajectory() const;
 
    private:
     Iterator() = default;
@@ -93,9 +90,9 @@ class Forkable {
     // |ancestry_| is never empty.  |current_| is an iterator in the timeline
     // for |ancestry_.front()|.  |current_| may be at end.
     TimelineConstIterator current_;
-    std::list<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
+    std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
-    template<typename Tr4jectory>
+    template<typename Trajectory>
     friend class Forkable;
   };
 
@@ -103,18 +100,31 @@ class Forkable {
   Iterator End() const;
 
   Iterator Find(Instant const& time) const;
+  Iterator LowerBound(Instant const& time) const;
 
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and ancestor is this object).
+  // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
+  // separate method.
   Iterator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
 
+  void WritePointerToMessage(
+      not_null<serialization::Trajectory::Pointer*> const message) const;
+
+  // |trajectory| must be a root.
+  static not_null<Tr4jectory*> ReadPointerFromMessage(
+      serialization::Trajectory::Pointer const& message,
+      not_null<Tr4jectory*> const trajectory);
+
  protected:
   // The API that must be implemented by subclasses.
+  // TODO(phl): Try to reduce this API.  Forkable should probably not modify the
+  // timeline.
 
   // Must return |this| of the proper type
   virtual not_null<Tr4jectory*> that() = 0;
@@ -124,26 +134,53 @@ class Forkable {
   virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
-  virtual void timeline_insert(TimelineConstIterator begin,
-                               TimelineConstIterator end) = 0;
+  virtual TimelineConstIterator timeline_lower_bound(
+                                    Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
+
+ protected:
+  // The API that subclasses may use to implement their public operations.
+
+  // Creates a new child trajectory forked at time |time|, and returns it.  The
+  // child trajectory shares its data with the current trajectory for times less
+  // than or equal to |time|.  It may be changed independently from the parent
+  // trajectory for any time (strictly) greater than |time|.  The child
+  // trajectory is owned by its parent trajectory.  Deleting the parent
+  // trajectory deletes all child trajectories.  |time| must be one of the times
+  // of this trajectory, and must be at or after the fork time, if any.
+  not_null<Tr4jectory*> NewFork(Instant const& time);
+
+  // Deletes all forks for times (strictly) greater than |time|.  |time| must be
+  // at or after the fork time of this trajectory, if any.
+  void DeleteAllForksAfter(Instant const& time);
+
+  // Deletes all forks for times less than or equal to |time|.  This trajectory
+  // must be a root.
+  void DeleteAllForksBefore(Instant const& time);
+
+  // This trajectory need not be a root.
+  void WriteSubTreeToMessage(
+      not_null<serialization::Trajectory*> const message) const;
+
+  void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
  private:
   // There may be several forks starting from the same time, hence the multimap.
-  using Children = std::multimap<Instant, Tr4jectory>;
+  // A level of indirection is needed to avoid referencing an incomplete type in
+  // CRTP.
+  using Children = std::multimap<Instant, std::unique_ptr<Tr4jectory>>;
 
   // Null for a root.
   Tr4jectory* parent_ = nullptr;
 
-  // TODO(phl): The following two iterators should be optional because we don't
-  // really have a good value for roots.
-
   // This iterator is never at |end()|.
-  typename Children::const_iterator position_in_parent_children_;
+  std::experimental::optional<typename Children::const_iterator>
+      position_in_parent_children_;
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
   // i.e. is the parent timeline's own fork time.
-  TimelineConstIterator position_in_parent_timeline_;
+  std::experimental::optional<TimelineConstIterator>
+      position_in_parent_timeline_;
 
   Children children_;
 };

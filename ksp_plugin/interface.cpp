@@ -19,6 +19,9 @@
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
+#include "physics/solar_system.hpp"
+#include "quantities/parser.hpp"
+#include "serialization/astronomy.pb.h"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -32,16 +35,21 @@ using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
 using geometry::Quaternion;
+using geometry::RadiusLatitudeLongitude;
 using physics::MassiveBody;
 using physics::OblateBody;
+using physics::RotatingBody;
+using physics::SolarSystem;
+using quantities::ParseQuantity;
 using quantities::Pow;
-using si::AstronomicalUnit;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Metre;
-using si::Second;
-using si::Tonne;
+using quantities::si::AstronomicalUnit;
+using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Kilo;
+using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
+using quantities::si::Tonne;
 
 namespace ksp_plugin {
 
@@ -82,117 +90,6 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
-}
-
-// Similar to std::stod, but uses LOG(FATAL) instead of exceptions.
-double ParseDouble(std::string const& s, not_null<std::size_t*> size) {
-  char* interpreted_end;
-  char const* const c_string = s.c_str();
-  double result = std::strtod(c_string, &interpreted_end);
-  *size = interpreted_end - c_string;
-  CHECK_GT(*size, 0) << "invalid floating-point number " << s;
-  return result;
-}
-
-double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
-  std::size_t i;
-  double magnitude = ParseDouble(s, &i);
-  unit->clear();
-  for (; i < s.length(); ++i) {
-    if (!std::isspace(s[i])) {
-      *unit += s[i];
-    }
-  }
-  return magnitude;
-}
-
-Length ParseLength(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "m") {
-    return magnitude * Metre;
-  } else if (unit == "km") {
-    return magnitude * Kilo(Metre);
-  } else if (unit == "au") {
-    return magnitude * AstronomicalUnit;
-  } else {
-    LOG(FATAL) << "unsupported unit of length " << unit;
-    base::noreturn();
-  }
-}
-
-Speed ParseSpeed(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "m/s") {
-    return magnitude * Metre / Second;
-  } else if (unit == "km/s") {
-    return magnitude * Kilo(Metre) / Second;
-  } else if (unit == "km/d") {
-    return magnitude * Kilo(Metre) / Day;
-  } else if (unit == "au/d") {
-    return magnitude * AstronomicalUnit / Day;
-  } else {
-    LOG(FATAL) << "unsupported unit of speed " << unit;
-    base::noreturn();
-  }
-}
-
-Angle ParseAngle(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "deg" || unit == "°") {
-    return magnitude * Degree;
-  } else if (unit == "rad") {
-    return magnitude * Radian;
-  } else {
-    LOG(FATAL) << "unsupported unit of angle " << unit;
-    base::noreturn();
-  }
-}
-
-GravitationalParameter ParseGravitationalParameter(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  if (unit == "m^3/s^2") {
-    return magnitude * Pow<3>(Metre) / Pow<2>(Second);
-  } else if (unit == "km^3/s^2") {
-    return magnitude * Pow<3>(Kilo(Metre)) / Pow<2>(Second);
-  } else if (unit == "km^3/d^2") {
-    return magnitude * Pow<3>(Kilo(Metre)) / Pow<2>(Day);
-  } else if (unit == "au^3/d^2") {
-    return magnitude * Pow<3>(AstronomicalUnit) / Pow<2>(Day);
-  } else {
-    LOG(FATAL) << "unsupported unit of gravitational parameter " << unit;
-    base::noreturn();
-  }
-}
-
-double ParseDimensionless(std::string const& s) {
-  std::string unit;
-  double magnitude = ParseQuantity(s, &unit);
-  CHECK(unit.empty()) << unit;
-  return magnitude;
-}
-
-// Returns a unit vector pointing in the direction defined by |right_ascension|
-// and |declination|, assuming the reference system is as follows:
-// xy-plane: plane of the Earth's mean equator at the reference epoch
-// x-axis  : out along ascending node of instantaneous plane of the Earth's
-//           orbit and the Earth's mean equator at the reference epoch
-// z-axis  : along the Earth mean north pole at the reference epoch
-Vector<double, Barycentric> Direction(Angle const& right_ascension,
-                                      Angle const& declination) {
-  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
-  // An angle of 0 keeps {1, 0, 0} on the equator.
-  auto const decline = Rotation<Barycentric, Barycentric>(
-                           declination,
-                           Bivector<double, Barycentric>({0, -1, 0}));
-  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
-  auto const ascend = Rotation<Barycentric, Barycentric>(
-                          right_ascension,
-                          Bivector<double, Barycentric>({0, 0, 1}));
-  return ascend(decline(Vector<double, Barycentric>({1, 0, 0})));
 }
 
 }  // namespace
@@ -319,33 +216,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Plugin destroyed";
 }
 
-void principia__DirectlyInsertMassiveCelestial(
-    Plugin* const plugin,
-    int const celestial_index,
-    int const* parent_index,
-    char const* gravitational_parameter,
-    char const* x,
-    char const* y,
-    char const* z,
-    char const* vx,
-    char const* vy,
-    char const* vz) {
-  CHECK_NOTNULL(plugin)->
-      DirectlyInsertCelestial(
-          celestial_index,
-          parent_index,
-          {Barycentric::origin +
-               Displacement<Barycentric>({ParseLength(x),
-                                          ParseLength(y),
-                                          ParseLength(z)}),
-               Velocity<Barycentric>({ParseSpeed(vx),
-                                      ParseSpeed(vy),
-                                      ParseSpeed(vz)})},
-          std::make_unique<MassiveBody>(
-              ParseGravitationalParameter(gravitational_parameter)));
-}
-
-void principia__DirectlyInsertOblateCelestial(
+void principia__DirectlyInsertCelestial(
     Plugin* const plugin,
     int const celestial_index,
     int const* parent_index,
@@ -360,23 +231,33 @@ void principia__DirectlyInsertOblateCelestial(
     char const* vx,
     char const* vy,
     char const* vz) {
+  serialization::GravityModel::Body gravity_model;
+  serialization::InitialState::Body initial_state;
+  gravity_model.set_gravitational_parameter(gravitational_parameter);
+  if (axis_right_ascension != nullptr) {
+    gravity_model.set_axis_right_ascension(axis_right_ascension);
+  }
+  if (axis_declination != nullptr) {
+    gravity_model.set_axis_declination(axis_declination);
+  }
+  if (j2 != nullptr) {
+    gravity_model.set_j2(j2);
+  }
+  if (reference_radius != nullptr) {
+    gravity_model.set_reference_radius(reference_radius);
+  }
+  initial_state.set_x(x);
+  initial_state.set_y(y);
+  initial_state.set_z(z);
+  initial_state.set_vx(vx);
+  initial_state.set_vy(vy);
+  initial_state.set_vz(vz);
   CHECK_NOTNULL(plugin)->
-    DirectlyInsertCelestial(
-      celestial_index,
-      parent_index,
-      {Barycentric::origin +
-       Displacement<Barycentric>({ParseLength(x),
-                                  ParseLength(y),
-                                  ParseLength(z)}),
-       Velocity<Barycentric>({ParseSpeed(vx),
-                              ParseSpeed(vy),
-                              ParseSpeed(vz)})},
-      std::make_unique<OblateBody<Barycentric>>(
-          ParseGravitationalParameter(gravitational_parameter),
-          ParseDimensionless(j2),
-          ParseLength(reference_radius),
-          Direction(ParseAngle(axis_right_ascension),
-                    ParseAngle(axis_declination))));
+      DirectlyInsertCelestial(
+          celestial_index,
+          parent_index,
+          SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
+          SolarSystem<Barycentric>::MakeMassiveBody(gravity_model));
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
@@ -479,6 +360,11 @@ void principia__DeleteTransforms(RenderingTransforms** const transforms) {
   TakeOwnership(transforms);
 }
 
+void principia__UpdatePrediction(Plugin const* const plugin,
+                                 char const* const vessel_guid) {
+  CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
+}
+
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
@@ -496,12 +382,19 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   return result.release();
 }
 
+bool principia__HasPrediction(Plugin const* const plugin,
+                              char const* const vessel_guid) {
+  return CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid);
+}
+
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
+    char const* vessel_guid,
     RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
-  RenderedTrajectory<World> rendered_trajectory =
-      CHECK_NOTNULL(plugin)->RenderedPrediction(
+  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+      RenderedPrediction(
+          vessel_guid,
           transforms,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
@@ -511,13 +404,28 @@ LineAndIterator* principia__RenderedPrediction(
   return result.release();
 }
 
-void principia__set_predicted_vessel(Plugin* const plugin,
-                                     char const* vessel_guid) {
-  CHECK_NOTNULL(plugin)->set_predicted_vessel(vessel_guid);
+int principia__FlightPlanSize(Plugin const* const plugin,
+                              char const* const vessel_guid) {
+  return CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid);
 }
 
-void principia__clear_predicted_vessel(Plugin* const plugin) {
-  CHECK_NOTNULL(plugin)->clear_predicted_vessel();
+LineAndIterator* principia__RenderedFlightPlan(
+    Plugin* const plugin,
+    char const* vessel_guid,
+    int const plan_phase,
+    RenderingTransforms* const transforms,
+    XYZ const sun_world_position) {
+  RenderedTrajectory<World> rendered_trajectory =
+      CHECK_NOTNULL(plugin)->RenderedFlightPlan(
+          vessel_guid,
+          plan_phase,
+          transforms,
+          World::origin + Displacement<World>(
+                              ToR3Element(sun_world_position) * Metre));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return result.release();
 }
 
 void principia__set_prediction_length(Plugin* const plugin,
@@ -710,7 +618,7 @@ void principia__DeserializePlugin(char const* const serialization,
 
   // Push the data, taking ownership of it.
   (*deserializer)->Push(Bytes(&bytes[0], byte_size),
-                        [bytes]() { delete bytes; });
+                        [bytes]() { delete[] bytes; });
 
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
