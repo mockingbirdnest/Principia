@@ -35,7 +35,8 @@ class Ephemeris {
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
   static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
-  static std::vector<IntrinsicAcceleration> kNoIntrinsicAccelerations;
+  using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
+  static IntrinsicAccelerations const kNoIntrinsicAccelerations;
 
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
@@ -100,7 +101,7 @@ class Ephemeris {
   // calls |Prolong(t)| beforehand.
   virtual void FlowWithFixedStep(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-      std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
+      IntrinsicAccelerations const& intrinsic_accelerations,
       Time const& step,
       Instant const& t);
 

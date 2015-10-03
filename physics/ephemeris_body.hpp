@@ -869,7 +869,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
 template<typename Frame>
 void Ephemeris<Frame>::ComputeMasslessBodiesTotalAccelerations(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-    std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
+    IntrinsicAccelerations const& intrinsic_accelerations,
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
@@ -911,6 +911,10 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
   return std::min(length_integration_tolerance / max_length_error,
                   speed_integration_tolerance / max_speed_error);
 }
+
+template<typename Frame>
+typename Ephemeris<Frame>::IntrinsicAccelerations const
+    Ephemeris<Frame>::kNoIntrinsicAccelerations;
 
 }  // namespace physics
 }  // namespace principia

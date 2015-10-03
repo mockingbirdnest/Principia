@@ -779,7 +779,11 @@ void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
   // Integration with a constant step.{
   VLOG(1) << "Starting the evolution of the histories" << '\n'
           << "from : " << history_time_;
-  ephemeris_->FlowWithFixedStep(histories, Δt_, t);
+  ephemeris_->FlowWithFixedStep(
+      histories,
+      Ephemeris<Barycentric>::kNoIntrinsicAccelerations,
+      Δt_,
+      t);
   history_time_ = histories.front()->last().time();
   CHECK_GE(history_time_, current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
@@ -806,11 +810,13 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   VLOG(1) << "Starting the synchronization of the new vessels"
           << (bubble_->empty() ? "" : " and of the bubble");
   for (auto const& trajectory : trajectories) {
-    ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     prolongation_length_tolerance_,
-                                     prolongation_speed_tolerance_,
-                                     prolongation_integrator_,
-                                     history_time_);
+    ephemeris_->FlowWithAdaptiveStep(
+        trajectory,
+        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        prolongation_length_tolerance_,
+        prolongation_speed_tolerance_,
+        prolongation_integrator_,
+        history_time_);
   }
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
@@ -867,26 +873,36 @@ void Plugin::ResetProlongations() {
 void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   Trajectories trajectories;
+  Ephemeris<Barycentric>::IntrinsicAccelerations intrinsic_accelerations;
 
   std::size_t const number_of_vessels_not_in_physics_bubble =
       vessels_.size() - bubble_->number_of_vessels();
   trajectories.reserve(number_of_vessels_not_in_physics_bubble +
                        bubble_->count());
+  intrinsic_accelerations.reserve(number_of_vessels_not_in_physics_bubble +
+                                  bubble_->count());
   for (auto const& pair : vessels_) {
     not_null<Vessel*> const vessel = pair.second.get();
     if (!bubble_->contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
+      intrinsic_accelerations.push_back(
+          Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
     }
   }
   if (!bubble_->empty()) {
     trajectories.push_back(bubble_->mutable_centre_of_mass_trajectory());
+    intrinsic_accelerations.push_back(
+        bubble_->centre_of_mass_intrinsic_acceleration());
   }
   VLOG(1) << "Evolving prolongations"
           << (bubble_->empty() ? "" : " and bubble") << '\n'
           << "from : " << trajectories.front()->last().time() << '\n'
           << "to   : " << t;
-  for (auto const& trajectory : trajectories) {
+  for (int i = 0; i < trajectories.size(); ++i) {
+    auto const& trajectory = trajectories[i];
+    auto const& intrinsic_acceleration = intrinsic_accelerations[i];
     ephemeris_->FlowWithAdaptiveStep(trajectory,
+                                     intrinsic_acceleration,
                                      prolongation_length_tolerance_,
                                      prolongation_speed_tolerance_,
                                      prolongation_integrator_,
