@@ -35,6 +35,7 @@ class Ephemeris {
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
   static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
+  static std::vector<IntrinsicAcceleration> kNoIntrinsicAccelerations;
 
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
@@ -86,8 +87,8 @@ class Ephemeris {
   // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   virtual void FlowWithAdaptiveStep(
-      IntrinsicAcceleration const intrinsic_acceleration,
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      IntrinsicAcceleration const intrinsic_acceleration,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -99,6 +100,7 @@ class Ephemeris {
   // calls |Prolong(t)| beforehand.
   virtual void FlowWithFixedStep(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
       Time const& step,
       Instant const& t);
 
@@ -179,13 +181,23 @@ class Ephemeris {
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
-  // massless bodies.  The massless bodies are at the given |positions| and may
-  // have an intrinsic acceleration described in their |trajectories| object.
-  // The |hints| are passed to
+  // massless bodies.  The massless bodies are at the given |positions|.  The
+  // |hints| are passed to
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
   void ComputeMasslessBodiesGravitationalAccelerations(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
+      not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
+          const hints);
+
+  // Same as above, but the massless bodies have intrinsic accelerations.
+  // |intrinsic_accelerations| may be empty.
+  void ComputeMasslessBodiesTotalAccelerations(
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,

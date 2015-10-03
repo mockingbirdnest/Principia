@@ -181,39 +181,6 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::set_intrinsic_acceleration(
-    IntrinsicAcceleration const acceleration) {
-  CHECK(intrinsic_acceleration_ == nullptr)
-      << "DiscreteTrajectory already has an intrinsic acceleration";
-  intrinsic_acceleration_ =
-      std::make_unique<IntrinsicAcceleration>(acceleration);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::clear_intrinsic_acceleration() {
-  intrinsic_acceleration_.reset();
-}
-
-template<typename Frame>
-bool DiscreteTrajectory<Frame>::has_intrinsic_acceleration() const {
-  return intrinsic_acceleration_ != nullptr;
-}
-
-template<typename Frame>
-Vector<Acceleration, Frame>
-DiscreteTrajectory<Frame>::evaluate_intrinsic_acceleration(
-    Instant const& time) const {
-  if (intrinsic_acceleration_ != nullptr &&
-      (this->is_root() || time > *this->ForkTime())) {
-    return (*intrinsic_acceleration_)(time);
-  } else {
-    return Vector<Acceleration, Frame>({0 * SIUnit<Acceleration>(),
-                                        0 * SIUnit<Acceleration>(),
-                                        0 * SIUnit<Acceleration>()});
-  }
-}
-
-template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::Trajectory*> const message) const {
   LOG(INFO) << __FUNCTION__;
