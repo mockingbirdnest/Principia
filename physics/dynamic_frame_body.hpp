@@ -134,8 +134,8 @@ InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   return RigidMotion<OtherFrame, ThisFrame>(
       RigidTransformation<OtherFrame, ThisFrame>(
-          OtherFrame::origin,
           origin_at_epoch_ + (t - epoch_) * velocity_,
+          ThisFrame::origin,
           orthogonal_map_),
       AngularVelocity<ThisFrame>(), -orthogonal_map_(velocity_));
 }

@@ -19,7 +19,7 @@ namespace {
 using Circular =
     Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
 using Helical =
-    Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+    Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
 
 Vector<Acceleration, Circular> Gravity(Instant const& t,
                                        Position<Circular> const& q) {
@@ -50,8 +50,9 @@ class DynamicFrameTest : public testing::Test {
 };
 
 TEST_F(DynamicFrameTest, Helix) {
-  auto helix_frenet_frame =
-      helix_frame_.FrenetFrame(Instant(), circular_degrees_of_freedom_);
+  auto helix_frenet_frame = helix_frame_.FrenetFrame(
+      Instant(),
+      helix_frame_.ToThisFrameAtTime(Instant())(circular_degrees_of_freedom_));
   auto dof =helix_frenet_frame->ToThisFrameAtTime(Instant())(
       {Circular::origin, Velocity<Circular>()});
       LOG(ERROR)<<dof;
