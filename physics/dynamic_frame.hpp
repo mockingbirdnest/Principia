@@ -42,14 +42,16 @@ class DynamicFrame {
   // with the given |DegreesOfFreedom| at the given |Instant|.  Unless
   // specialized otherwise by child classes, the member functions of the result
   // fail when called at instants other than |t|.
-  virtual DynamicFrame<InertialFrame, Frenet<ThisFrame>> FrenetFrame(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
+  virtual std::unique_ptr<DynamicFrame<InertialFrame, Frenet<ThisFrame>>>
+  FrenetFrame(Instant const& t,
+              DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 };
 
 // A |DynamicFrame| valid only at a single |Instant|.
 template<typename InertialFrame, typename ThisFrame>
-class InstantaneouslyDefinedFrame : DynamicFrame<InertialFrame, ThisFrame> {
+class InstantaneouslyDefinedFrame
+    : public DynamicFrame<InertialFrame, ThisFrame> {
+ public:
   InstantaneouslyDefinedFrame(
       Instant const& definition_instant,
       RigidMotion<InertialFrame, ThisFrame> const& to_this_frame,
@@ -80,11 +82,15 @@ class InstantaneouslyDefinedFrame : DynamicFrame<InertialFrame, ThisFrame> {
 
 // An inertial frame.
 template<typename OtherFrame, typename ThisFrame>
-class InertialFrame : DynamicFrame<OtherFrame, ThisFrame> {
+class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
+ public:
   InertialFrame(Velocity<OtherFrame> const& velocity,
                 Position<OtherFrame> const& origin_at_epoch,
                 Instant const& epoch,
-                OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map);
+                OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
+                std::function<Vector<Acceleration, OtherFrame>(
+                    Instant const& t,
+                    Position<OtherFrame> const& q)> gravity);
 
   RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
@@ -102,6 +108,9 @@ class InertialFrame : DynamicFrame<OtherFrame, ThisFrame> {
   Position<OtherFrame> const origin_at_epoch_;
   Instant const epoch_;
   OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
+  std::function<Vector<Acceleration, OtherFrame>(
+      Instant const& t,
+      Position<OtherFrame> const& q)> gravity_;
 };
 
 }  // namespace physics

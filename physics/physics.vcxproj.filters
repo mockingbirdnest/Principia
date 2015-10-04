@@ -136,5 +136,8 @@
     <ClCompile Include="rigid_motion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="dynamic_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

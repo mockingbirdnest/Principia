@@ -18,7 +18,7 @@ using quantities::si::Second;
 namespace physics {
 
 template <typename InertialFrame, typename ThisFrame>
-DynamicFrame<InertialFrame, Frenet<ThisFrame>>
+std::unique_ptr<DynamicFrame<InertialFrame, Frenet<ThisFrame>>>
 DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
@@ -26,7 +26,7 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
   Vector<Acceleration, ThisFrame> const acceleration =
       GeometricAcceleration(t, degrees_of_freedom);
   Vector<Acceleration, ThisFrame> normal_acceleration = acceleration;
-  velocity.Orthogonalize(&normal_acceleration);
+  velocity.Orthogonalize<Acceleration>(&normal_acceleration);
   Vector<double, ThisFrame> tangent = Normalize(velocity);
   Vector<double, ThisFrame> normal = Normalize(normal_acceleration);
   Bivector<double, ThisFrame> binormal = Wedge(tangent, normal);
@@ -53,21 +53,26 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
   RigidTransformation<ThisFrame, Frenet<ThisFrame>> rigid_transformation(
       degrees_of_freedom.position(),
       Frenet<ThisFrame>::origin,
-      to_frenet_trihedron);
+      to_frenet_trihedron.Forget());
   RigidMotion<ThisFrame, Frenet<ThisFrame>> rigid_motion(
       rigid_transformation,
       this_frame_angular_velocity,
       this_frame_velocity);
+  auto rigid_motion_inverse = rigid_motion.Inverse();
   auto geometric_acceleration = [this, to_frenet_trihedron, acceleration,
-                                 rigid_motion](
+                                 rigid_motion_inverse](
+      Instant const& t,
       DegreesOfFreedom<Frenet<ThisFrame>> const& dof) {
-    return to_frenet_trihedron(GeometricAcceleration(t, rigid_motion(dof)) -
-                               acceleration);
+    return to_frenet_trihedron(
+        GeometricAcceleration(t, rigid_motion_inverse(dof)) - acceleration);
   };
-  return InstantaneouslyDefinedFrame<InertialFrame, Frenet<InertialFrame>>(
-      t /*definition_instant*/,
-      rigid_motion /*to_this_frame*/,
-      geometric_acceleration);
+  std::unique_ptr<DynamicFrame<InertialFrame, Frenet<ThisFrame>>> result =
+      std::make_unique<
+          InstantaneouslyDefinedFrame<InertialFrame, Frenet<InertialFrame>>>(
+          t /*definition_instant*/,
+          rigid_motion * ToThisFrameAtTime(t) /*to_this_frame*/,
+          geometric_acceleration);
+  return std::move(result);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -105,7 +110,7 @@ InstantaneouslyDefinedFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
   CHECK_EQ(definition_instant_, t);
-  return geometric_acceleration_(degrees_of_freedom);
+  return geometric_acceleration_(t, degrees_of_freedom);
 }
 
 template<typename OtherFrame, typename ThisFrame>
@@ -113,11 +118,15 @@ InertialFrame<OtherFrame, ThisFrame>::InertialFrame(
     Velocity<OtherFrame> const& velocity,
     Position<OtherFrame> const& origin_at_epoch,
     Instant const& epoch,
-    OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map)
+    OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
+    std::function<Vector<Acceleration, OtherFrame>(
+        Instant const& t,
+        Position<OtherFrame> const& q)> gravity)
     : velocity_(velocity),
       origin_at_epoch_(origin_at_epoch),
       epoch_(epoch),
-      orthogonal_map_(orthogonal_map) {}
+      orthogonal_map_(orthogonal_map),
+      gravity_(gravity) {}
 
 template<typename OtherFrame, typename ThisFrame>
 RigidMotion<OtherFrame, ThisFrame>
@@ -126,21 +135,16 @@ InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
   return RigidMotion<OtherFrame, ThisFrame>(
       RigidTransformation<OtherFrame, ThisFrame>(
           OtherFrame::origin,
-          origin_at_epoch + (t - epoch) * velocity,
+          origin_at_epoch_ + (t - epoch_) * velocity_,
           orthogonal_map_),
-      AngularVelocity<ThisFrame>(), orthogonal_map_(velocity));
+      AngularVelocity<ThisFrame>(), -orthogonal_map_(velocity_));
 }
 
 template<typename OtherFrame, typename ThisFrame>
 RigidMotion<ThisFrame, OtherFrame>
 InertialFrame<OtherFrame, ThisFrame>::FromThisFrameAtTime(
     Instant const& t) const {
-  return RigidMotion<ThisFrame, OtherFrame>(
-      RigidTransformation<OtherFrame, ThisFrame>(
-          origin_at_epoch + (t - epoch) * velocity,
-          OtherFrame::origin,
-          orthogonal_map_.Inverse()),
-      AngularVelocity<OtherFrame>(), velocity);
+  return ToThisFrameAtTime(t).Inverse();
 }
 
 template<typename OtherFrame, typename ThisFrame>
@@ -148,7 +152,8 @@ Vector<Acceleration, ThisFrame>
 InertialFrame<OtherFrame, ThisFrame>::GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  return Vector<Acceleration, ThisFrame>();
+  return orthogonal_map_(
+      gravity_(t, FromThisFrameAtTime(t)(degrees_of_freedom).position()));
 }
 
 
