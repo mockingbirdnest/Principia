@@ -104,6 +104,12 @@
     <ClInclude Include="rigid_motion_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="body_centered_non_rotating_dynamic_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centered_non_rotating_dynamic_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
