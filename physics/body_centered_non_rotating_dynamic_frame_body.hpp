@@ -2,18 +2,31 @@
 
 #include "physics/body_centered_non_rotating_dynamic_frame.hpp"
 
+#include "geometry/identity.hpp"
+
 namespace principia {
+
+using geometry::Identity;
+
 namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredNonRotatingDynamicFrame(
-    ContinuousTrajectory<InertialFrame> const& centre_trajectory) {}
+    not_null<ContinuousTrajectory<InertialFrame> const*> const
+        centre_trajectory) 
+    : centre_trajectory_(centre_trajectory) {}
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
+  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
+      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
+  RigidTransformation<InertialFrame, ThisFrame> const
+      rigid_transformation(centre_degrees_of_freedom.position(),
+                           ThisFrame::origin,
+                           Identity<InertialFrame, ThisFrame>());
   return RigidMotion<InertialFrame, ThisFrame>();
 }
 

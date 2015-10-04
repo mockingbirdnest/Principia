@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -10,6 +11,7 @@
 
 namespace principia {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Vector;
 using quantities::Acceleration;
@@ -21,7 +23,8 @@ class BodyCentredNonRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
   explicit BodyCentredNonRotatingDynamicFrame(
-      ContinuousTrajectory<InertialFrame> const& centre_trajectory);
+      not_null<ContinuousTrajectory<InertialFrame> const*> const
+          centre_trajectory);
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
@@ -30,6 +33,11 @@ class BodyCentredNonRotatingDynamicFrame
   Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
+
+ private:
+    not_null<ContinuousTrajectory<InertialFrame> const*> const
+        centre_trajectory_;
+    ContinuousTrajectory<InertialFrame> hint_;
 };
 
 }  // namespace physics
