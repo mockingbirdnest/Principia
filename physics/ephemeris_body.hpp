@@ -370,11 +370,8 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 
 template<typename Frame>
 Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
-    not_null<DiscreteTrajectory<Frame>*> const trajectory,
-    Instant const & t) {
-  auto const it = trajectory->Find(t);
-  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
-
+    Position<Frame> const& position,
+    Instant const& t) {
   // To avoid intrinsic accelerations.
   DiscreteTrajectory<Frame> empty_trajectory;
 
@@ -383,11 +380,20 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
   ComputeMasslessBodiesGravitationalAccelerations(
       {&empty_trajectory},
       t,
-      {degrees_of_freedom.position()},
+      {position},
       &accelerations,
       &hints);
 
   return accelerations[0];
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
+    Instant const& t) {
+  auto const it = trajectory->Find(t);
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
+  return ComputeGravitationalAcceleration(degrees_of_freedom.position(), t);
 }
 
 template<typename Frame>

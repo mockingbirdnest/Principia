@@ -104,6 +104,12 @@ class Ephemeris {
       Time const& step,
       Instant const& t);
 
+  // Returns the gravitational acceleration on a massless body located at the
+  // given |position| at time |t|.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      Position<Frame> const& position,
+      Instant const & t);
+
   // Returns the gravitational acceleration on the massless body having the
   // given |trajectory| at time |t|.  |t| must be one of the times of the
   // |trajectory|.

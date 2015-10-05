@@ -57,7 +57,12 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  return Vector<Acceleration, ThisFrame>();
+  Vector<Acceleration, InertialFrame> const acceleration_of_centre =
+      ephemeris_->ComputeGravitationalAcceleration(centre_, t);
+  Vector<Acceleration, InertialFrame> const acceleration_at_point =
+      ephemeris_->ComputeGravitationalAcceleration(
+          degrees_of_freedom.position(), t);
+  return acceleration_at_point - acceleration_of_centre;
 }
 
 }  // namespace physics

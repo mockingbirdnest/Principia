@@ -23,7 +23,7 @@ template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
-  explicit BodyCentredNonRotatingDynamicFrame(
+  BodyCentredNonRotatingDynamicFrame(
       not_null<Ephemeris<InertialFrame> const*> const ephemeris,
       not_null<MassiveBody const*> const centre);
 
@@ -36,11 +36,10 @@ class BodyCentredNonRotatingDynamicFrame
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
  private:
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
-    not_null<MassiveBody const*> const centre_;
-    not_null<ContinuousTrajectory<InertialFrame> const*> const
-        centre_trajectory_;
-    ContinuousTrajectory<InertialFrame> hint_;
+  not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
+  not_null<MassiveBody const*> const centre_;
+  not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
+  ContinuousTrajectory<InertialFrame> hint_;
 };
 
 }  // namespace physics
