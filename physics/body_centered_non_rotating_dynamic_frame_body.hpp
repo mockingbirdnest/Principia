@@ -27,21 +27,34 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,
                            Identity<InertialFrame, ThisFrame>());
-  return RigidMotion<InertialFrame, ThisFrame>();
+  return RigidMotion<InertialFrame, ThisFrame>(
+             rigid_transformation,
+             AngularVelocity<InertialFrame>(),
+             centre_degrees_of_freedom.velocity());
 }
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 FromThisFrameAtTime(Instant const& t) const {
-  return RigidMotion<ThisFrame, InertialFrame>();
+  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
+      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
+  RigidTransformation<ThisFrame, InertialFrame> const
+      rigid_transformation(ThisFrame::origin,
+                           centre_degrees_of_freedom.position(),
+                           Identity<ThisFrame, InertialFrame>());
+  return RigidMotion<InertialFrame, ThisFrame>(
+             rigid_transformation,
+             AngularVelocity<InertialFrame>(),
+             centre_degrees_of_freedom.velocity());
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
-GeometricAcceleration(Instant const& t,
-                      DegreesOfFreedom<ThisFrame> const & degrees_of_freedom) const {
+GeometricAcceleration(
+    Instant const& t,
+    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
   return Vector<Acceleration, ThisFrame>();
 }
 
