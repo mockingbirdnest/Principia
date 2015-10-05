@@ -13,9 +13,11 @@ namespace physics {
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredNonRotatingDynamicFrame(
-    not_null<ContinuousTrajectory<InertialFrame> const*> const
-        centre_trajectory) 
-    : centre_trajectory_(centre_trajectory) {}
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<MassiveBody const*> const centre) 
+    : ephemeris_(ephemeris),
+      centre_(centre),
+      centre_trajectory_(ephemeris_->trajectory(centre_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
