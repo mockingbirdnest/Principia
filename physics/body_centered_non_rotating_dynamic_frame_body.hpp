@@ -28,7 +28,7 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           Identity<InertialFrame, ThisFrame>());
+                           Identity<InertialFrame, ThisFrame>().Forget());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              AngularVelocity<InertialFrame>(),
@@ -44,7 +44,7 @@ FromThisFrameAtTime(Instant const& t) const {
   RigidTransformation<ThisFrame, InertialFrame> const
       rigid_transformation(ThisFrame::origin,
                            centre_degrees_of_freedom.position(),
-                           Identity<ThisFrame, InertialFrame>());
+                           Identity<ThisFrame, InertialFrame>().Forget());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              AngularVelocity<InertialFrame>(),
