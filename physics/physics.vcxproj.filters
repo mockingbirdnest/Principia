@@ -139,5 +139,8 @@
     <ClCompile Include="rigid_motion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="body_centered_non_rotating_dynamic_frame_body_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

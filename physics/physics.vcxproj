@@ -186,6 +186,7 @@
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="body_centered_non_rotating_dynamic_frame_body_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
