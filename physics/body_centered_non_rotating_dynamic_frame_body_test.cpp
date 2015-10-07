@@ -1,4 +1,4 @@
-#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+﻿#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
 
 #include <memory>
 
@@ -6,7 +6,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
-#include "integrators/symplectic_runge_kutta_nystr�m_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
@@ -31,13 +31,13 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                     serialization::Frame::TEST, false /*inertial*/>;
 
   BodyCentredNonRotatingDynamicFrameTest()
-      : period_(10 * ? * sqrt(5.0 / 7.0) * Second) {
+      : period_(10 * π * sqrt(5.0 / 7.0) * Second) {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
         SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
     ephemeris_ = solar_system_.MakeEphemeris(
                      integrators::McLachlanAtela1992Order4Optimal<
-                          Position<ICRFJ2000Equator>>(),
+                         Position<ICRFJ2000Equator>>(),
                      1 * Second,
                      1 * Metre);
     ephemeris_->Prolong(t0_ + 2 * period_);

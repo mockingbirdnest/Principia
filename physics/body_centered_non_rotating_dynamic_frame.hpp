@@ -40,8 +40,10 @@ class BodyCentredNonRotatingDynamicFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
-  ContinuousTrajectory<InertialFrame> hint_;
+  typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/body_centered_non_rotating_dynamic_frame_body.hpp"

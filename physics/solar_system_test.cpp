@@ -78,7 +78,7 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
                              1 * Second,
                              1 * Metre);
   auto const earth = solar_system_.massive_body(*ephemeris, "Earth");
-  EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth.mass()), 6E-9);
+  EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth->mass()), 6E-9);
   auto const& earth_trajectory = solar_system_.trajectory(*ephemeris, "Earth");
   EXPECT_TRUE(earth_trajectory.empty());
 
