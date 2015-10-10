@@ -32,7 +32,7 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
   Bivector<double, ThisFrame> binormal = Wedge(tangent, normal);
   // Maps |tangent| to {1, 0, 0}, |normal| to {0, 1, 0}, and |binormal| to
   // {0, 0, 1}.
-  Rotation<Frenet<ThisFrame>, ThisFrame> to_frenet_trihedron(
+  return Rotation<Frenet<ThisFrame>, ThisFrame>(
       R3x3Matrix(tangent.coordinates(),
                  normal.coordinates(),
                  binormal.coordinates()).Transpose());
