@@ -4,6 +4,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 
 namespace principia {
 
@@ -11,6 +13,8 @@ using geometry::Frame;
 using geometry::InnerProduct;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
 
 namespace physics {
 
@@ -57,8 +61,11 @@ TEST_F(DynamicFrameTest, Helix) {
       helix_frenet_frame(Vector<double, Frenet<Helical>>({1, 0, 0}));
   Vector<double, Helical> normal =
       helix_frenet_frame(Vector<double, Frenet<Helical>>({0, 1, 0}));
-  LOG(ERROR)<<tangent;
-  LOG(ERROR)<<normal;
+  EXPECT_THAT(normal, Componentwise(-1, 0, 0));
+  EXPECT_THAT(tangent,
+              Componentwise(0,
+                            AlmostEquals(Sqrt(0.5), 1),
+                            AlmostEquals(-Sqrt(0.5), 1)));
 }
 
 }  // namespace physics
