@@ -53,9 +53,12 @@ TEST_F(DynamicFrameTest, Helix) {
   auto helix_frenet_frame = helix_frame_.FrenetFrame(
       Instant(),
       helix_frame_.ToThisFrameAtTime(Instant())(circular_degrees_of_freedom_));
-  auto dof =helix_frenet_frame->ToThisFrameAtTime(Instant())(
-      {Circular::origin, Velocity<Circular>()});
-      LOG(ERROR)<<dof;
+  Vector<double, Circular> tangent =
+      helix_frenet_frame(Vector<double, Circular>({1, 0, 0}));
+  Vector<double, Circular> normal =
+      helix_frenet_frame(Vector<double, Circular>({0, 1, 0}));
+  LOG(ERROR)<<tangent;
+  LOG(ERROR)<<normal;
 }
 
 }  // namespace physics

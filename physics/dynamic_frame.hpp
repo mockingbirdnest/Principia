@@ -42,42 +42,9 @@ class DynamicFrame {
   // with the given |DegreesOfFreedom| at the given |Instant|.  Unless
   // specialized otherwise by child classes, the member functions of the result
   // fail when called at instants other than |t|.
-  virtual std::unique_ptr<DynamicFrame<InertialFrame, Frenet<ThisFrame>>>
-  FrenetFrame(Instant const& t,
-              DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
-};
-
-// A |DynamicFrame| valid only at a single |Instant|.
-template<typename InertialFrame, typename ThisFrame>
-class InstantaneouslyDefinedFrame
-    : public DynamicFrame<InertialFrame, ThisFrame> {
- public:
-  InstantaneouslyDefinedFrame(
-      Instant const& definition_instant,
-      RigidMotion<InertialFrame, ThisFrame> const& to_this_frame,
-      std::function<Vector<Acceleration, ThisFrame>(
-          Instant const& t,
-          DegreesOfFreedom<ThisFrame> const& degrees_of_freedom)>
-          geometric_acceleration);
-
-  RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
-      Instant const& t) const override;
-  RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
-      Instant const& t) const override;
-
-  // The acceleration due to the non-inertial motion of |Frame| and gravity.
-  // A particle in free fall follows a trajectory whose second derivative
-  // is |GeometricAcceleration|.
-  Vector<Acceleration, ThisFrame> GeometricAcceleration(
+  virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
       Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
- private:
-  Instant const definition_instant_;
-  RigidMotion<InertialFrame, ThisFrame> const to_this_frame_;
-  std::function<Vector<Acceleration, ThisFrame>(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom)>
-      geometric_acceleration_;
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 };
 
 // An inertial frame.
