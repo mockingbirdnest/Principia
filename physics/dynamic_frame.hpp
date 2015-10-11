@@ -45,38 +45,6 @@ class DynamicFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 };
 
-// An inertial frame.
-template<typename OtherFrame, typename ThisFrame>
-class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
- public:
-  InertialFrame(DegreesOfFreedom<OtherFrame> const& origin_at_epoch,
-                Instant const& epoch,
-                OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
-                std::function<Vector<Acceleration, OtherFrame>(
-                    Instant const& t,
-                    Position<OtherFrame> const& q)> gravity);
-
-  RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
-      Instant const& t) const override;
-  RigidMotion<ThisFrame, OtherFrame> FromThisFrameAtTime(
-      Instant const& t) const override;
-
-  // The acceleration due to gravity.
-  // A particle in free fall follows a trajectory whose second derivative
-  // is |GeometricAcceleration|.
-  Vector<Acceleration, ThisFrame> GeometricAcceleration(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
-
- private:
-  DegreesOfFreedom<OtherFrame> const origin_at_epoch_;
-  Instant const epoch_;
-  OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
-  std::function<Vector<Acceleration, OtherFrame>(
-      Instant const& t,
-      Position<OtherFrame> const& q)> gravity_;
-};
-
 }  // namespace physics
 }  // namespace principia
 
