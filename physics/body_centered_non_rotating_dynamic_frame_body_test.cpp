@@ -16,6 +16,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -30,6 +31,7 @@ using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
+using testing_utilities::Componentwise;
 using ::testing::Lt;
 
 namespace physics {
@@ -102,29 +104,44 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
   SolarSystem<ICRFJ2000Equator> solar_system_;
 };
 
-TEST_F(BodyCentredNonRotatingDynamicFrameTest, ToBigFrame) {
-  int const kSteps = 100;
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const big_to_centre =
-      centre_of_mass_initial_state_ - big_initial_state_;
 
+// Check that the small body has the right degrees of freedom in the frame of
+// the big body.
+TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
+  int const kSteps = 10;
   Bivector<double, ICRFJ2000Equator> const axis({0, 0, 1});
+
+  RelativeDegreesOfFreedom<ICRFJ2000Equator> const big_to_small =
+      small_initial_state_ - big_initial_state_;
+  RelativeDegreesOfFreedom<ICRFJ2000Equator> const center_to_small =
+      small_initial_state_ - centre_of_mass_initial_state_;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
-    auto const angle_at_t = 2 * π * (t - t0_) * Radian / period_;
-    auto const to_big_frame = big_frame_->ToThisFrameAtTime(t);
-    Displacement<Big> const displacement_at_t =
-        Rotation<ICRFJ2000Equator, Big>(-angle_at_t, axis)(
-            big_to_centre.displacement());
-    Velocity<Big> const velocity_at_t =
-        Rotation<ICRFJ2000Equator, Big>(-angle_at_t, axis)(
-            big_to_centre.velocity());
+    auto const angle_at_t = -2 * π * (t - t0_) * Radian / period_;
+
+    auto const rotation_in_inertial_frame_at_t =
+        Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(angle_at_t, axis);
+    DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
+        centre_of_mass_initial_state_ +
+        RelativeDegreesOfFreedom<ICRFJ2000Equator>(
+            rotation_in_inertial_frame_at_t(center_to_small.displacement()),
+            rotation_in_inertial_frame_at_t(center_to_small.velocity()));
+
+    auto const rotation_in_big_frame_at_t =
+        Rotation<ICRFJ2000Equator, Big>::Identity() *
+        rotation_in_inertial_frame_at_t;
+    DegreesOfFreedom<Big> const small_in_big_frame_at_t(
+        rotation_in_big_frame_at_t(big_to_small.displacement()) + Big::origin,
+        rotation_in_big_frame_at_t(big_to_small.velocity()));
+
+    auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
     EXPECT_THAT(AbsoluteError(
-                    to_big_frame(centre_of_mass_initial_state_).position() -
+                    to_big_frame_at_t(small_in_inertial_frame_at_t).position() -
                         Big::origin,
-                    displacement_at_t),
-                Lt(0.2 * Milli(Metre)));
+                    small_in_big_frame_at_t.position() - Big::origin),
+                Lt(0.1 * Milli(Metre)));
     EXPECT_THAT(AbsoluteError(
-                    to_big_frame(centre_of_mass_initial_state_).velocity(),
-                    velocity_at_t),
+                    to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
+                    small_in_big_frame_at_t.velocity()),
                 Lt(2 * Milli(Metre) / Second));
   }
 }
