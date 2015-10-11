@@ -16,7 +16,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
-#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -31,7 +31,7 @@ using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
-using testing_utilities::Componentwise;
+using testing_utilities::AlmostEquals;
 using ::testing::Lt;
 
 namespace physics {
@@ -137,6 +137,20 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
                     to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
                     small_in_big_frame_at_t.velocity()),
                 Lt(4 * Milli(Metre) / Second));
+  }
+}
+
+TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
+  int const kSteps = 100;
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+    auto const from_big_frame_at_t = big_frame_->FromThisFrameAtTime(t);
+    auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
+    auto const small_initial_state_transformed_and_back =
+        from_big_frame_at_t(to_big_frame_at_t(small_initial_state_));
+    EXPECT_THAT(small_initial_state_transformed_and_back.position(),
+                AlmostEquals(small_initial_state_.position(), 0, 1));
+    EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),
+                AlmostEquals(small_initial_state_.velocity(), 0, 1));
   }
 }
 
