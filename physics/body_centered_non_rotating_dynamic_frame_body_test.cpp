@@ -7,6 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
@@ -29,6 +30,7 @@ using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
+using ::testing::Lt;
 
 namespace physics {
 
@@ -107,15 +109,23 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, ToBigFrame) {
 
   Bivector<double, ICRFJ2000Equator> const axis({0, 0, 1});
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+    auto const angle_at_t = 2 * π * (t - t0_) * Radian / period_;
     auto const to_big_frame = big_frame_->ToThisFrameAtTime(t);
     Displacement<Big> const displacement_at_t =
-        Rotation<ICRFJ2000Equator, Big>(2 * π * (t0_ - t) * Radian / period_,
-                                        axis)(big_to_centre.displacement());
-    EXPECT_GT(0.2 * Milli(Metre),
-              AbsoluteError(
-                  to_big_frame(centre_of_mass_initial_state_).position() -
-                      Big::origin,
-                  displacement_at_t));
+        Rotation<ICRFJ2000Equator, Big>(-angle_at_t, axis)(
+            big_to_centre.displacement());
+    Velocity<Big> const velocity_at_t =
+        Rotation<ICRFJ2000Equator, Big>(-angle_at_t, axis)(
+            big_to_centre.velocity());
+    EXPECT_THAT(AbsoluteError(
+                    to_big_frame(centre_of_mass_initial_state_).position() -
+                        Big::origin,
+                    displacement_at_t),
+                Lt(0.2 * Milli(Metre)));
+    EXPECT_THAT(AbsoluteError(
+                    to_big_frame(centre_of_mass_initial_state_).velocity(),
+                    velocity_at_t),
+                Lt(2 * Milli(Metre) / Second));
   }
 }
 
