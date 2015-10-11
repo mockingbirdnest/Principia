@@ -45,7 +45,7 @@ FromThisFrameAtTime(Instant const& t) const {
       rigid_transformation(ThisFrame::origin,
                            centre_degrees_of_freedom.position(),
                            Identity<ThisFrame, InertialFrame>().Forget());
-  return RigidMotion<InertialFrame, ThisFrame>(
+  return RigidMotion<ThisFrame, InertialFrame>(
              rigid_transformation,
              AngularVelocity<InertialFrame>(),
              centre_degrees_of_freedom.velocity());
@@ -57,12 +57,18 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
+  auto const from_this_frame = FromThisFrameAtTime(t);
+  auto const to_this_frame = ToThisFrameAtTime(t);
+
   Vector<Acceleration, InertialFrame> const acceleration_of_centre =
       ephemeris_->ComputeGravitationalAcceleration(centre_, t);
   Vector<Acceleration, InertialFrame> const acceleration_at_point =
       ephemeris_->ComputeGravitationalAcceleration(
-          degrees_of_freedom.position(), t);
-  return acceleration_at_point - acceleration_of_centre;
+          from_this_frame.rigid_transformation()(
+              degrees_of_freedom.position()), t);
+
+  return to_this_frame.orthogonal_map()(
+             acceleration_at_point - acceleration_of_centre);
 }
 
 }  // namespace physics
