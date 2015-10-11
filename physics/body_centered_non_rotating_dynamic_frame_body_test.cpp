@@ -25,7 +25,9 @@ using astronomy::ICRFJ2000Equator;
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::Rotation;
+using geometry::Vector;
 using quantities::Time;
+using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Radian;
@@ -151,6 +153,38 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
                 AlmostEquals(small_initial_state_.position(), 0, 1));
     EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),
                 AlmostEquals(small_initial_state_.velocity(), 0, 1));
+  }
+}
+
+TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
+  int const kSteps = 10;
+  RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
+      small_initial_state_ - big_initial_state_;
+  Length const big_to_small = initial_big_to_small.displacement().Norm();
+  Acceleration const small_on_big =
+      small_gravitational_parameter_ / (big_to_small * big_to_small);
+  for (Length y = big_to_small / kSteps;
+       y < big_to_small;
+       y += big_to_small / kSteps) {
+    Position<Big> const position(Big::origin +
+                                     Displacement<Big>({0 * Kilo(Metre),
+                                                        y,
+                                                        0 * Kilo(Metre)}));
+    Acceleration const big_on_position =
+        -big_gravitational_parameter_ / (y * y);
+    Acceleration const small_on_position =
+        small_gravitational_parameter_ /
+            ((big_to_small - y) * (big_to_small - y));
+    Vector<Acceleration, Big> const expected_acceleration(
+                  {0 * SIUnit<Acceleration>(),
+                   small_on_position + big_on_position - small_on_big,
+                   0 * SIUnit<Acceleration>()});
+    EXPECT_THAT(AbsoluteError(
+                    big_frame_->GeometricAcceleration(
+                        t0_,
+                        DegreesOfFreedom<Big>(position, Velocity<Big>())),
+                    expected_acceleration),
+                Lt(1E-10 * SIUnit<Acceleration>()));
   }
 }
 
