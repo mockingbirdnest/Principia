@@ -108,41 +108,35 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
 // Check that the small body has the right degrees of freedom in the frame of
 // the big body.
 TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
-  int const kSteps = 10;
+  int const kSteps = 100;
   Bivector<double, ICRFJ2000Equator> const axis({0, 0, 1});
 
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const big_to_small =
+  RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const center_to_small =
-      small_initial_state_ - centre_of_mass_initial_state_;
+  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
-    auto const angle_at_t = -2 * π * (t - t0_) * Radian / period_;
-
-    auto const rotation_in_inertial_frame_at_t =
-        Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(angle_at_t, axis);
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
-        centre_of_mass_initial_state_ +
-        RelativeDegreesOfFreedom<ICRFJ2000Equator>(
-            rotation_in_inertial_frame_at_t(center_to_small.displacement()),
-            rotation_in_inertial_frame_at_t(center_to_small.velocity()));
+        solar_system_.trajectory(*ephemeris_, kSmall).
+            EvaluateDegreesOfFreedom(t, &hint);
 
     auto const rotation_in_big_frame_at_t =
-        Rotation<ICRFJ2000Equator, Big>::Identity() *
-        rotation_in_inertial_frame_at_t;
+        Rotation<ICRFJ2000Equator, Big>(-2 * π * (t - t0_) * Radian / period_,
+                                        axis);
     DegreesOfFreedom<Big> const small_in_big_frame_at_t(
-        rotation_in_big_frame_at_t(big_to_small.displacement()) + Big::origin,
-        rotation_in_big_frame_at_t(big_to_small.velocity()));
+        rotation_in_big_frame_at_t(initial_big_to_small.displacement()) +
+            Big::origin,
+        rotation_in_big_frame_at_t(initial_big_to_small.velocity()));
 
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
     EXPECT_THAT(AbsoluteError(
                     to_big_frame_at_t(small_in_inertial_frame_at_t).position() -
                         Big::origin,
                     small_in_big_frame_at_t.position() - Big::origin),
-                Lt(0.1 * Milli(Metre)));
+                Lt(0.3 * Milli(Metre)));
     EXPECT_THAT(AbsoluteError(
                     to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
                     small_in_big_frame_at_t.velocity()),
-                Lt(2 * Milli(Metre) / Second));
+                Lt(4 * Milli(Metre) / Second));
   }
 }
 
