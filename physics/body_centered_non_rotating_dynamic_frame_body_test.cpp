@@ -35,6 +35,7 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
         SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
+    t0_ = solar_system_.epoch();
     ephemeris_ = solar_system_.MakeEphemeris(
                      integrators::McLachlanAtela1992Order4Optimal<
                          Position<ICRFJ2000Equator>>(),
@@ -48,7 +49,7 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
   }
 
   Time const period_;
-  Instant const t0_;
+  Instant t0_;
   std::unique_ptr<
       BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Big>> big_frame_;
   std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
