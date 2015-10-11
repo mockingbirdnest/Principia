@@ -36,7 +36,6 @@ Vector<Acceleration, Circular> Gravity(Instant const& t,
 
 class DynamicFrameTest : public testing::Test {
  protected:
-
   DegreesOfFreedom<Circular> circular_degrees_of_freedom_ = {
       Circular::origin +
           Displacement<Circular>({1 * Metre, 0 * Metre, 0 * Metre}),

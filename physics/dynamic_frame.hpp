@@ -70,6 +70,7 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
   Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
+
  private:
   Velocity<OtherFrame> const velocity_;
   Position<OtherFrame> const origin_at_epoch_;
