@@ -17,7 +17,7 @@ using quantities::si::Second;
 
 namespace physics {
 
-template <typename InertialFrame, typename ThisFrame>
+template<typename InertialFrame, typename ThisFrame>
 Rotation<Frenet<ThisFrame>, ThisFrame>
 DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
     Instant const& t,
@@ -40,18 +40,16 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
 
 template<typename OtherFrame, typename ThisFrame>
 InertialFrame<OtherFrame, ThisFrame>::InertialFrame(
-    Velocity<OtherFrame> const& velocity,
-    Position<OtherFrame> const& origin_at_epoch,
+    DegreesOfFreedom<OtherFrame> const& origin_at_epoch,
     Instant const& epoch,
     OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
     std::function<Vector<Acceleration, OtherFrame>(
         Instant const& t,
         Position<OtherFrame> const& q)> gravity)
-    : velocity_(velocity),
-      origin_at_epoch_(origin_at_epoch),
+    : origin_at_epoch_(origin_at_epoch),
       epoch_(epoch),
       orthogonal_map_(orthogonal_map),
-      gravity_(gravity) {}
+      gravity_(std::move(gravity)) {}
 
 template<typename OtherFrame, typename ThisFrame>
 RigidMotion<OtherFrame, ThisFrame>
@@ -59,10 +57,11 @@ InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   return RigidMotion<OtherFrame, ThisFrame>(
       RigidTransformation<OtherFrame, ThisFrame>(
-          origin_at_epoch_ + (t - epoch_) * velocity_,
-          ThisFrame::origin,
-          orthogonal_map_),
-      AngularVelocity<ThisFrame>(), -orthogonal_map_(velocity_));
+          origin_at_epoch_.position() +
+              (t - epoch_) * origin_at_epoch_.velocity(),
+          ThisFrame::origin, orthogonal_map_),
+      AngularVelocity<ThisFrame>(),
+      -orthogonal_map_(origin_at_epoch_.velocity()));
 }
 
 template<typename OtherFrame, typename ThisFrame>

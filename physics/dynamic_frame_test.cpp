@@ -44,9 +44,9 @@ class DynamicFrameTest : public testing::Test {
 
   InertialFrame<Circular, Helical> helix_frame_ =
       InertialFrame<Circular, Helical>(
-          Velocity<Circular>(
-              {0 * Metre / Second, 0 * Metre / Second, 1 * Metre / Second}),
-          Circular::origin /*origin_at_epoch*/,
+          {Circular::origin,
+           Velocity<Circular>(
+               {0 * Metre / Second, 0 * Metre / Second, 1 * Metre / Second})},
           Instant() /*epoch*/,
           OrthogonalMap<Circular, Helical>::Identity(),
           &Gravity);
