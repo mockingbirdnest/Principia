@@ -6,7 +6,7 @@ initial_state {
 
   # The two bodies are on circular orbits around their center of mass.  The
   # center of mass is located at {0 km, 15/7 km, 0 km}.  The common orbital
-  # period is 10 ? Sqrt[5/7] s.
+  # period is 10 Pi Sqrt[5/7] s.
   body {
     name : "Big"
     x    : "0 km"
