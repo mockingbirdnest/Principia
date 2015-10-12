@@ -14,7 +14,7 @@ template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredNonRotatingDynamicFrame(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const centre) 
+    not_null<MassiveBody const*> const centre)
     : ephemeris_(ephemeris),
       centre_(centre),
       centre_trajectory_(ephemeris_->trajectory(centre_)) {}
