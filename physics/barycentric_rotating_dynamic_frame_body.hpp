@@ -48,16 +48,24 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
            secondary_->gravitational_parameter()});
 
   Rotation<InertialFrame, ThisFrame>
-      from_basis_of_barycentric_frame_to_standard_basis =
+      from_basis_of_inertial_frame_to_basis_of_this_frame =
           Rotation<InertialFrame, ThisFrame>::Identity();
-  Bivector<AngularFrequency, InertialFrame> angular_frequency;
+  AngularVelocity<InertialFrame> angular_velocity;
   FromBasisOfInertialFrameToBasisOfThisFrame(
       barycentre_degrees_of_freedom,
       primary_degrees_of_freedom,
       secondary_degrees_of_freedom,
-      &from_basis_of_barycentric_frame_to_standard_basis,
-      &angular_frequency);
+      &from_basis_of_inertial_frame_to_basis_of_this_frame,
+      &angular_velocity);
 
+  RigidTransformation<InertialFrame, ThisFrame> const
+      rigid_transformation(centre_degrees_of_freedom.position(),
+                           ThisFrame::origin,
+                           from_basis_of_inertial_frame_to_basis_of_this_frame);
+  return RigidMotion<InertialFrame, ThisFrame>(
+             rigid_transformation,
+             angular_velocity,
+             barycentre_degrees_of_freedom.velocity());
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -83,8 +91,7 @@ FromBasisOfInertialFrameToBasisOfThisFrame(
     DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
     not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
-    not_null<Bivector<AngularFrequency, InertialFrame>*> const
-        angular_frequency) {
+    not_null<AngularVelocity<InertialFrame>*> const angular_velocity) {
   RelativeDegreesOfFreedom<InertialFrame> const reference =
       primary_degrees_of_freedom - barycentre_degrees_of_freedom;
   Displacement<InertialFrame> const& reference_direction =
@@ -98,7 +105,7 @@ FromBasisOfInertialFrameToBasisOfThisFrame(
                   R3x3Matrix(Normalize(reference_direction).coordinates(),
                              Normalize(reference_normal).coordinates(),
                              Normalize(reference_binormal).coordinates()));
-  *angular_frequency =
+  *angular_velocity =
       (Radian / Pow<2>(reference_direction.Norm())) * reference_binormal;
 }
 

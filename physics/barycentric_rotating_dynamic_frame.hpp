@@ -15,12 +15,11 @@
 namespace principia {
 
 using base::not_null;
-using geometry::Bivector;
+using geometry::AngularVelocity;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
-using quantities::AngularFrequency;
 
 namespace physics {
 
@@ -51,8 +50,7 @@ class BarycentricRotatingDynamicFrame
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
       DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
       not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
-      not_null<Bivector<AngularFrequency, InertialFrame>*> const
-          angular_frequency);
+      not_null<AngularVelocity<InertialFrame>*> const angular_velocity);
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
