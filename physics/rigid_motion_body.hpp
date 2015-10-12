@@ -2,8 +2,22 @@
 
 #include "physics/rigid_motion.hpp"
 
+#include "geometry/linear_map.hpp"
+
 namespace principia {
+
+using geometry::LinearMap;
+
 namespace physics {
+
+template<typename FromFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame>::RigidMotion(
+    RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+    AngularVelocity<FromFrame> const& rotation,
+    Velocity<FromFrame> const& translation)
+    : rigid_transformation_(rigid_transformation),
+      rotation_(-rigid_transformation_.linear_map()(rotation)),
+      translation_(-rigid_transformation_.linear_map()(translation)) {}
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
@@ -39,9 +53,7 @@ template<typename FromFrame, typename ToFrame>
 RigidMotion<ToFrame, FromFrame>
 RigidMotion<FromFrame, ToFrame>::Inverse() const {
   return RigidMotion<ToFrame, FromFrame>(
-      rigid_transformation_.Inverse(),
-      -orthogonal_map().Inverse()(rotation_),
-      -orthogonal_map().Inverse()(translation_));
+      rigid_transformation_.Inverse(), rotation_, translation_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

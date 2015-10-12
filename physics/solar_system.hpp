@@ -52,8 +52,8 @@ class SolarSystem {
 
   // The |MassiveBody| for the body named |name|, extracted from the given
   // |ephemeris|.
-  MassiveBody const& massive_body(Ephemeris<Frame> const& ephemeris,
-                                  std::string const& name) const;
+  not_null<MassiveBody const*> massive_body(Ephemeris<Frame> const& ephemeris,
+                                            std::string const& name) const;
 
   // The |ContinuousTrajectory| for the body named |name|, extracted from the
   // given |ephemeris|.

@@ -76,6 +76,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
   double const sin = Sin(half_angle);
   R3Element<Scalar> const coordinates = axis.coordinates();
   Scalar const norm = coordinates.Norm();
+  CHECK_NE(0.0 * SIUnit<Scalar>(), norm);
   R3Element<double> const unit_axis = coordinates / norm;
   quaternion_ = Quaternion(cos, sin * unit_axis);
 }

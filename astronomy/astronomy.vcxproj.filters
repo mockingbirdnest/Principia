@@ -44,6 +44,12 @@
     <Text Include="initial_state_jd_2436145_604166667.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="gravity_model_two_bodies_test.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initial_state_two_bodies_test.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">

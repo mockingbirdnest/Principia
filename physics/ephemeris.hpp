@@ -104,18 +104,24 @@ class Ephemeris {
       Time const& step,
       Instant const& t);
 
+  // Returns the gravitational acceleration on a massless body located at the
+  // given |position| at time |t|.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      Position<Frame> const& position,
+      Instant const & t) const;
+
   // Returns the gravitational acceleration on the massless body having the
   // given |trajectory| at time |t|.  |t| must be one of the times of the
   // |trajectory|.
   virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
-      Instant const& t);
+      Instant const& t) const;
 
   // Returns the gravitational acceleration on the massive |body| at time |t|.
   // |body| must be one of the bodies of this object.
   virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
       not_null<MassiveBody const*> const body,
-      Instant const& t);
+      Instant const& t) const;
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
@@ -172,13 +178,14 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-          const hints);
+          const hints) const;
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
   void ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const
+          accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.  The
@@ -191,7 +198,7 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-          const hints);
+          const hints) const;
 
   // Same as above, but the massless bodies have intrinsic accelerations.
   // |intrinsic_accelerations| may be empty.
@@ -202,7 +209,7 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-          const hints);
+          const hints) const;
 
   // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(
