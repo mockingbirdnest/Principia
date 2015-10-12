@@ -36,12 +36,13 @@ Vector<Acceleration, Circular> Gravity(Instant const& t,
 template<typename OtherFrame, typename ThisFrame>
 class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
  public:
-  InertialFrame(DegreesOfFreedom<OtherFrame> const& origin_at_epoch,
-                Instant const& epoch,
-                OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
-                std::function<Vector<Acceleration, OtherFrame>(
-                    Instant const& t,
-                    Position<OtherFrame> const& q)> gravity);
+  InertialFrame(
+      DegreesOfFreedom<OtherFrame> const& origin_degrees_of_freedom_at_epoch,
+      Instant const& epoch,
+      OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
+      std::function<Vector<Acceleration, OtherFrame>(
+          Instant const& t,
+          Position<OtherFrame> const& q)> gravity);
 
   RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
@@ -56,7 +57,7 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
  private:
-  DegreesOfFreedom<OtherFrame> const origin_at_epoch_;
+  DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
   Instant const epoch_;
   OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
   std::function<Vector<Acceleration, OtherFrame>(
@@ -66,13 +67,13 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
 
 template<typename OtherFrame, typename ThisFrame>
 InertialFrame<OtherFrame, ThisFrame>::InertialFrame(
-    DegreesOfFreedom<OtherFrame> const& origin_at_epoch,
+    DegreesOfFreedom<OtherFrame> const& origin_degrees_of_freedom_at_epoch,
     Instant const& epoch,
     OrthogonalMap<OtherFrame, ThisFrame> const& orthogonal_map,
     std::function<Vector<Acceleration, OtherFrame>(
         Instant const& t,
         Position<OtherFrame> const& q)> gravity)
-    : origin_at_epoch_(origin_at_epoch),
+    : origin_degrees_of_freedom_at_epoch_(origin_degrees_of_freedom_at_epoch),
       epoch_(epoch),
       orthogonal_map_(orthogonal_map),
       gravity_(std::move(gravity)) {}
@@ -82,12 +83,14 @@ RigidMotion<OtherFrame, ThisFrame>
 InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   return RigidMotion<OtherFrame, ThisFrame>(
-      RigidTransformation<OtherFrame, ThisFrame>(
-          origin_at_epoch_.position() +
-              (t - epoch_) * origin_at_epoch_.velocity(),
-          ThisFrame::origin, orthogonal_map_),
-      AngularVelocity<ThisFrame>(),
-      -orthogonal_map_(origin_at_epoch_.velocity()));
+             RigidTransformation<OtherFrame, ThisFrame>(
+                 origin_degrees_of_freedom_at_epoch_.position() +
+                     (t - epoch_) *
+                         origin_degrees_of_freedom_at_epoch_.velocity(),
+                 ThisFrame::origin,
+                 orthogonal_map_),
+             AngularVelocity<ThisFrame>(),
+             -orthogonal_map_(origin_degrees_of_freedom_at_epoch_.velocity()));
 }
 
 template<typename OtherFrame, typename ThisFrame>
