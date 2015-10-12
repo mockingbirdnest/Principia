@@ -152,6 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="barycentric_rotating_dynamic_frame.hpp" />
+    <ClInclude Include="barycentric_rotating_dynamic_frame_body.hpp" />
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
     <ClInclude Include="body_centered_non_rotating_dynamic_frame.hpp" />
