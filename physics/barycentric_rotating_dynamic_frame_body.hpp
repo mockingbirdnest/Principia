@@ -72,8 +72,40 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 FromThisFrameAtTime(Instant const& t) const {
-  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
-      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
+  Rotation<ThisFrame, InertialFrame>
+      from_standard_basis_to_basis_of_last_barycentric_frame =
+          Rotation<ThisFrame, InertialFrame>::Identity();
+  DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom =
+      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+  DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom =
+      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
+  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
+      Barycentre<InertialFrame, GravitationalParameter>(
+          {primary_degrees_of_freedom,
+           secondary_degrees_of_freedom},
+          {primary_->gravitational_parameter(),
+           secondary_->gravitational_parameter()});
+
+  Rotation<ThisFrame, InertialFrame>
+      from_basis_of_this_frame_to_basic_of_inertial_frame =
+          Rotation<ThisFrame, InertialFrame>::Identity();
+  AngularVelocity<ThisFrame> angular_velocity;
+  FromBasisOfThisFrameToBasisOfInertialFrame<ThisFrame, InertialFrame>(
+      barycentre_degrees_of_freedom,
+      primary_degrees_of_freedom,
+      secondary_degrees_of_freedom,
+      &from_basis_of_inertial_frame_to_basis_of_this_frame,
+      &angular_velocity);
+
+  RigidTransformation<ThisFrame, InertialFrame> const
+      rigid_transformation(
+          ThisFrame::origin,
+          barycentre_degrees_of_freedom.position(),
+          from_basis_of_this_frame_to_basic_of_inertial_frame);
+  return RigidMotion<InertialFrame, ThisFrame>(
+             rigid_transformation,
+             angular_velocity,
+             barycentre_degrees_of_freedom.velocity());
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -107,6 +139,27 @@ FromBasisOfInertialFrameToBasisOfThisFrame(
                              Normalize(reference_binormal).coordinates()));
   *angular_velocity =
       (Radian / Pow<2>(reference_direction.Norm())) * reference_binormal;
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+FromBasisOfThisFrameToBasisOfInertialFrame(
+    DegreesOfFreedom<InertialFrame> const& barycentre_degrees_of_freedom,
+    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+    DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+    not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
+    not_null<AngularVelocity<InertialFrame>*> const angular_velocity) {
+  Rotation<InertialFrame, ThisFrame>
+      from_basis_of_inertial_frame_to_basis_of_this_frame =
+          Rotation<InertialFrame, ThisFrame>::Identity();
+  AngularVelocity<InertialFrame> angular_velocity;
+  FromBasisOfInertialFrameToBasisOfThisFrame(
+      *last_barycentre_degrees_of_freedom,
+      primary_degrees_of_freedom,
+      secondary_degrees_of_freedom,
+      &from_basis_of_inertial_frame_to_basis_of_this_frame,
+      &angular_velocity);
+  *rotation = from_basis_of_inertial_frame_to_basis_of_this_frame.Inverse();
 }
 
 }  // namespace physics
