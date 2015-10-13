@@ -52,13 +52,6 @@ class BarycentricRotatingDynamicFrame
       not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
       not_null<AngularVelocity<InertialFrame>*> const angular_velocity);
 
-  static void FromBasisOfThisFrameToBasisOfInertialFrame(
-      DegreesOfFreedom<InertialFrame> const& barycentre_degrees_of_freedom,
-      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-      not_null<Rotation<ThisFrame, InertialFrame>*> const rotation,
-      not_null<AngularVelocity<InertialFrame>*> const angular_velocity);
-
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
   not_null<MassiveBody const*> const secondary_;
