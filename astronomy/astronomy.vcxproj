@@ -96,9 +96,11 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="gravity_model.proto.txt" />
+    <Text Include="gravity_model_two_bodies_test.proto.txt" />
     <Text Include="initial_state_jd_2433282_500000000.proto.txt" />
     <Text Include="initial_state_jd_2436116_311504629.proto.txt" />
     <Text Include="initial_state_jd_2436145_604166667.proto.txt" />
+    <Text Include="initial_state_two_bodies_test.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp" />

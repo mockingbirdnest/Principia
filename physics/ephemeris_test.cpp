@@ -358,14 +358,16 @@ TEST_F(EphemerisTest, EarthProbe) {
                         earth_position + Vector<Length, EarthMoonOrbitPlane>(
                             {0 * Metre, kDistance, 0 * Metre}),
                         earth_velocity));
-  trajectory.set_intrinsic_acceleration(
+  auto const intrinsic_acceleration =
       [earth, kDistance](Instant const& t) {
-    return Vector<Acceleration, EarthMoonOrbitPlane>(
-        {0 * SIUnit<Acceleration>(),
-         earth->gravitational_parameter() / (kDistance * kDistance),
-         0 * SIUnit<Acceleration>()});});
+        return Vector<Acceleration, EarthMoonOrbitPlane>(
+            {0 * SIUnit<Acceleration>(),
+             earth->gravitational_parameter() / (kDistance * kDistance),
+             0 * SIUnit<Acceleration>()});
+      };
 
   ephemeris.FlowWithAdaptiveStep(&trajectory,
+                                 intrinsic_acceleration,
                                  1E-9 * Metre,
                                  2.6E-15 * Metre / Second,
                                  DormandElMikkawyPrince1986RKN434FM<
@@ -454,12 +456,13 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
                          earth_position + Vector<Length, EarthMoonOrbitPlane>(
                              {0 * Metre, kDistance1, 0 * Metre}),
                          earth_velocity));
-  trajectory1.set_intrinsic_acceleration(
+  auto const intrinsic_acceleration1 =
       [earth, kDistance1](Instant const& t) {
-    return Vector<Acceleration, EarthMoonOrbitPlane>(
-        {0 * SIUnit<Acceleration>(),
-         earth->gravitational_parameter() / (kDistance1 * kDistance1),
-         0 * SIUnit<Acceleration>()});});
+        return Vector<Acceleration, EarthMoonOrbitPlane>(
+            {0 * SIUnit<Acceleration>(),
+             earth->gravitational_parameter() / (kDistance1 * kDistance1),
+             0 * SIUnit<Acceleration>()});
+      };
 
   MasslessBody probe2;
   DiscreteTrajectory<EarthMoonOrbitPlane> trajectory2;
@@ -468,16 +471,19 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
                          earth_position + Vector<Length, EarthMoonOrbitPlane>(
                              {0 * Metre, -kDistance2, 0 * Metre}),
                          earth_velocity));
-  trajectory2.set_intrinsic_acceleration(
+  auto const intrinsic_acceleration2 =
       [earth, kDistance2](Instant const& t) {
-    return Vector<Acceleration, EarthMoonOrbitPlane>(
-        {0 * SIUnit<Acceleration>(),
-         -earth->gravitational_parameter() / (kDistance2 * kDistance2),
-         0 * SIUnit<Acceleration>()});});
+        return Vector<Acceleration, EarthMoonOrbitPlane>(
+            {0 * SIUnit<Acceleration>(),
+             -earth->gravitational_parameter() / (kDistance2 * kDistance2),
+             0 * SIUnit<Acceleration>()});
+      };
 
-  ephemeris.FlowWithFixedStep({&trajectory1, &trajectory2},
-                              period / 1000,
-                              t0_ + period);
+  ephemeris.FlowWithFixedStep(
+      {&trajectory1, &trajectory2},
+      {intrinsic_acceleration1, intrinsic_acceleration2},
+      period / 1000,
+      t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -827,12 +833,14 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
                             {0 * Metre, 0 * Metre, kEarthPolarRadius}),
                         earth_velocity));
 
-  ephemeris.FlowWithAdaptiveStep(&trajectory,
-                                 1E-9 * Metre,
-                                 2.6E-15 * Metre / Second,
-                                 DormandElMikkawyPrince1986RKN434FM<
-                                     Position<EarthMoonOrbitPlane>>(),
-                                 t0_ + kDuration);
+  ephemeris.FlowWithAdaptiveStep(
+      &trajectory,
+      Ephemeris<EarthMoonOrbitPlane>::kNoIntrinsicAcceleration,
+      1E-9 * Metre,
+      2.6E-15 * Metre / Second,
+      DormandElMikkawyPrince1986RKN434FM<
+          Position<EarthMoonOrbitPlane>>(),
+      t0_ + kDuration);
 
   Speed const v_elephant =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;

@@ -138,17 +138,19 @@ inline void Vessel::UpdateFlightPlan(
   for (auto const& manœuvre : manœuvres_) {
     not_null<DiscreteTrajectory<Barycentric>*> const coast_trajectory =
         flight_plan_.back();
-    ephemeris->FlowWithAdaptiveStep(coast_trajectory,
-                                    prediction_length_tolerance,
-                                    prediction_speed_tolerance,
-                                    integrator,
-                                    manœuvre->initial_time());
+    ephemeris->FlowWithAdaptiveStep(
+        coast_trajectory,
+        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        prediction_length_tolerance,
+        prediction_speed_tolerance,
+        integrator,
+        manœuvre->initial_time());
     flight_plan_.emplace_back(
         coast_trajectory->NewForkWithCopy(coast_trajectory->last().time()));
     not_null<DiscreteTrajectory<Barycentric>*> const burn_trajectory =
         flight_plan_.back();
-    burn_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
     ephemeris->FlowWithAdaptiveStep(burn_trajectory,
+                                    manœuvre->acceleration(),
                                     prolongation_length_tolerance,
                                     prolongation_speed_tolerance,
                                     integrator,
@@ -156,11 +158,13 @@ inline void Vessel::UpdateFlightPlan(
     flight_plan_.emplace_back(
         burn_trajectory->NewForkWithCopy(burn_trajectory->last().time()));
   }
-  ephemeris->FlowWithAdaptiveStep(flight_plan_.back(),
-                                  prediction_length_tolerance,
-                                  prediction_speed_tolerance,
-                                  integrator,
-                                  last_time);
+  ephemeris->FlowWithAdaptiveStep(
+      flight_plan_.back(),
+      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+      prediction_length_tolerance,
+      prediction_speed_tolerance,
+      integrator,
+      last_time);
 }
 
 inline void Vessel::DeleteFlightPlan() {
@@ -187,11 +191,13 @@ inline void Vessel::UpdatePrediction(
   // might warn).
   prediction_->Append(prolongation().last().time(),
                       prolongation().last().degrees_of_freedom());
-  ephemeris->FlowWithAdaptiveStep(prediction_,
-                                  prediction_length_tolerance,
-                                  prediction_speed_tolerance,
-                                  integrator,
-                                  last_time);
+  ephemeris->FlowWithAdaptiveStep(
+      prediction_,
+      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+      prediction_length_tolerance,
+      prediction_speed_tolerance,
+      integrator,
+      last_time);
 }
 
 inline void Vessel::DeletePrediction() {

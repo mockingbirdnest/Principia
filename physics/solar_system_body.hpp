@@ -142,10 +142,10 @@ GravitationalParameter SolarSystem<Frame>::gravitational_parameter(
 }
 
 template<typename Frame>
-MassiveBody const& SolarSystem<Frame>::massive_body(
+not_null<MassiveBody const*> SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {
-  return *ephemeris.bodies()[index(name)];
+  return ephemeris.bodies()[index(name)];
 }
 
 template<typename Frame>

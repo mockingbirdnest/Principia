@@ -528,67 +528,6 @@ TEST_F(DiscreteTrajectoryTest, LastSuccess) {
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
 }
 
-TEST_F(DiscreteTrajectoryDeathTest, IntrinsicAccelerationError) {
-  EXPECT_DEATH({
-    massless_trajectory_->set_intrinsic_acceleration(
-        [](Instant const& t) { return Vector<Acceleration, World>(); } );
-    massless_trajectory_->set_intrinsic_acceleration(
-        [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, "already has.* acceleration");
-}
-
-TEST_F(DiscreteTrajectoryTest, IntrinsicAccelerationSuccess) {
-  massless_trajectory_->Append(t1_, d1_);
-  massless_trajectory_->Append(t2_, d2_);
-  massless_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork =
-      massless_trajectory_->NewForkWithCopy(t2_);
-  fork->Append(t4_, d4_);
-
-  EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
-  massless_trajectory_->set_intrinsic_acceleration(
-      [this](Instant const& t) {
-        return Vector<Acceleration, World>(
-            {1 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
-             2 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
-             3 * SIUnit<Length>() / ((t - t0_) * (t - t0_))});});
-  EXPECT_TRUE(massless_trajectory_->has_intrinsic_acceleration());
-  EXPECT_THAT(massless_trajectory_->evaluate_intrinsic_acceleration(t1_),
-              Eq(Vector<Acceleration, World>(
-                  {0.020408163265306122449 * SIUnit<Acceleration>(),
-                   0.040816326530612244898 * SIUnit<Acceleration>(),
-                   0.061224489795918367347 * SIUnit<Acceleration>()})));
-
-  EXPECT_FALSE(fork->has_intrinsic_acceleration());
-  fork->set_intrinsic_acceleration(
-      [this](Instant const& t) {
-        return Vector<Acceleration, World>(
-            {4 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
-             5 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
-             6 * SIUnit<Length>() / ((t - t0_) * (t - t0_))});});
-  EXPECT_TRUE(fork->has_intrinsic_acceleration());
-  EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t1_),
-              Eq(Vector<Acceleration, World>({0 * SIUnit<Acceleration>(),
-                                              0 * SIUnit<Acceleration>(),
-                                              0 * SIUnit<Acceleration>()})));
-  EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t2_),
-              Eq(Vector<Acceleration, World>({0 * SIUnit<Acceleration>(),
-                                              0 * SIUnit<Acceleration>(),
-                                              0 * SIUnit<Acceleration>()})));
-  EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t3_),
-              Eq(Vector<Acceleration, World>(
-                  {0.0054869684499314128944 * SIUnit<Acceleration>(),
-                   0.0068587105624142661180 * SIUnit<Acceleration>(),
-                   0.0082304526748971193416 * SIUnit<Acceleration>()})));
-  fork->clear_intrinsic_acceleration();
-  EXPECT_FALSE(fork->has_intrinsic_acceleration());
-  EXPECT_TRUE(massless_trajectory_->has_intrinsic_acceleration());
-
-  massless_trajectory_->clear_intrinsic_acceleration();
-  EXPECT_FALSE(fork->has_intrinsic_acceleration());
-  EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
-}
-
 TEST_F(DiscreteTrajectoryDeathTest, NativeIteratorError) {
   EXPECT_DEATH({
     DiscreteTrajectory<World>::NativeIterator it = massive_trajectory_->last();

@@ -134,38 +134,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // trajectory must be a root.
   void ForgetBefore(Instant const& time);
 
-  // This function represents the intrinsic acceleration of a body, irrespective
-  // of any external field.  It can be due e.g., to an engine burn.
-  using IntrinsicAcceleration =
-      std::function<Vector<Acceleration, Frame>(Instant const& time)>;
-
-  // Sets the intrinsic acceleration for the trajectory of a massless body.
-  // For a nonroot trajectory the intrinsic acceleration only applies to times
-  // (strictly) greater than |fork_time()|.  In other words, the function
-  // |acceleration| is never called with times less than or equal to
-  // |fork_time()|.  It may, however, be called with times beyond |last_time()|.
-  // For a root trajectory the intrinsic acceleration applies to times greater
-  // than or equal to the first time of the trajectory.  Again, it may apply
-  // beyond |last_time()|.
-  // It is an error to call this function for a trajectory that already has an
-  // intrinsic acceleration, or for the trajectory of a massive body.
-  void set_intrinsic_acceleration(IntrinsicAcceleration const acceleration);
-
-  // Removes any intrinsic acceleration for the trajectory.
-  void clear_intrinsic_acceleration();
-
-  // Returns true if this trajectory has an intrinsic acceleration.
-  bool has_intrinsic_acceleration() const;
-
-  // Computes the intrinsic acceleration for this trajectory at time |time|.  If
-  // |has_intrinsic_acceleration()| return false, or if |time| is before the
-  // |fork_time()| (or initial time) of this trajectory, the returned
-  // acceleration is zero.
-  Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
-      Instant const& time) const;
-
-  // This trajectory must be a root.  The intrinsic acceleration is not
-  // serialized.
+  // This trajectory must be a root.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
   // NOTE(egg): This should return a |not_null|, but we can't do that until
@@ -221,8 +190,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
   Timeline timeline_;
-
-  std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;
 
   std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
       on_destroy_;

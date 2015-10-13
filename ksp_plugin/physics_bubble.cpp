@@ -102,16 +102,13 @@ void PhysicsBubble::Prepare(
             barycentric_to_world_sun.Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
         VLOG(1) << NAMED(barycentric_intrinsic_acceleration);
-        if (next->centre_of_mass_trajectory->has_intrinsic_acceleration()) {
-          next->centre_of_mass_trajectory->clear_intrinsic_acceleration();
-        }
         // TODO(egg): this makes the intrinsic acceleration a step function.
         // Might something smoother be better?  We need to be careful not to be
         // one step or half a step in the past though.
-        next->centre_of_mass_trajectory->set_intrinsic_acceleration(
+        next->centre_of_mass_intrinsic_acceleration =
             [barycentric_intrinsic_acceleration](Instant const& t) {
               return barycentric_intrinsic_acceleration;
-            });
+            };
       }
     }
   }
@@ -197,6 +194,12 @@ PhysicsBubble::from_centre_of_mass(not_null<Vessel const*> const vessel) const {
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->from_centre_of_mass);
   return FindOrDie(*current_->from_centre_of_mass, vessel);
+}
+
+Ephemeris<Barycentric>::IntrinsicAcceleration const&
+PhysicsBubble::centre_of_mass_intrinsic_acceleration() const {
+  CHECK(!empty()) << "Empty bubble";
+  return current_->centre_of_mass_intrinsic_acceleration;
 }
 
 DiscreteTrajectory<Barycentric> const&

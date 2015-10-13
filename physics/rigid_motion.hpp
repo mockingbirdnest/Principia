@@ -38,6 +38,10 @@ class RigidMotion {
  public:
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
+      AngularVelocity<FromFrame> const& rotation,
+      Velocity<FromFrame> const& translation);
+  RigidMotion(
+      RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
       AngularVelocity<ToFrame> const& rotation,
       Velocity<ToFrame> const& translation);
   ~RigidMotion() = default;
@@ -52,7 +56,7 @@ class RigidMotion {
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
  private:
-  RigidTransformation<FromFrame, ToFrame> rigid_transformation_;
+  RigidTransformation<FromFrame, ToFrame> const rigid_transformation_;
   // d/dt rigid_transformation(basis of FromFrame). The positively oriented
   // orthogonal bases of |ToFrame| are acted upon faithfully and transitively by
   // SO(ToFrame), so this lies in the tangent space, i.e., the Lie algebra
