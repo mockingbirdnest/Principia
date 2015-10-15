@@ -153,7 +153,7 @@ TEST_F(RigidMotionTest, GroupoidAssociativity) {
           degrees_of_freedom_);
   EXPECT_THAT(d1.position() - Lunar::origin,
               AlmostEquals(d2.position() - Lunar::origin, 0));
-  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 4));
 }
 
 TEST_F(RigidMotionTest, GroupoidAction) {
@@ -165,8 +165,8 @@ TEST_F(RigidMotionTest, GroupoidAction) {
   DegreesOfFreedom<Lunar> const d2 =
       geocentric_to_lunar(terrestrial_to_geocentric(degrees_of_freedom_));
   EXPECT_THAT(d1.position() - Lunar::origin,
-              AlmostEquals(d2.position() - Lunar::origin, 0));
-  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
+              AlmostEquals(d2.position() - Lunar::origin, 5));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 1));
 }
 
 TEST_F(RigidMotionTest, GroupoidInverse) {
@@ -181,11 +181,11 @@ TEST_F(RigidMotionTest, GroupoidInverse) {
   EXPECT_THAT(
       d1.position() - Terrestrial::origin,
       AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 0));
-  EXPECT_THAT(d1.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 0));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 4));
   EXPECT_THAT(
       d2.position() - Terrestrial::origin,
-      AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 0));
-  EXPECT_THAT(d2.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 0));
+      AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 4));
+  EXPECT_THAT(d2.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 6));
 }
 
 
