@@ -100,13 +100,14 @@ class RigidMotionTest : public testing::Test {
           moon_rotation_,
           Velocity<Selenocentric>());
 
-  // Degrees of freedom in general position.
+  // General degrees of freedom.
   DegreesOfFreedom<Terrestrial> const degrees_of_freedom_ = {
       Terrestrial::origin +
           Displacement<Terrestrial>({earth_moon_distance_ / 3,
-                                    -earth_moon_distance_ / 5,
-                                    3 * earth_moon_distance_ / 7}),
-      Velocity<Terrestrial>()};
+                                     -earth_moon_distance_ / 5,
+                                     3 * earth_moon_distance_ / 7}),
+      earth_rotation_speed_ * earth_moon_distance_ / Radian *
+          Vector<double, Terrestrial>({-0.5, 0.42, 2.1})};
 };
 
 TEST_F(RigidMotionTest, TidalLocking) {
