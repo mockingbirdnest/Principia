@@ -73,41 +73,7 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 FromThisFrameAtTime(Instant const& t) const {
-  Rotation<ThisFrame, InertialFrame>
-      from_standard_basis_to_basis_of_last_barycentric_frame =
-          Rotation<ThisFrame, InertialFrame>::Identity();
-  DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
-  DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom =
-      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
-  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<InertialFrame, GravitationalParameter>(
-          {primary_degrees_of_freedom,
-           secondary_degrees_of_freedom},
-          {primary_->gravitational_parameter(),
-           secondary_->gravitational_parameter()});
-
-  Rotation<InertialFrame, ThisFrame>
-      from_basis_of_inertial_frame_to_basis_of_this_frame =
-          Rotation<InertialFrame, ThisFrame>::Identity();
-  AngularVelocity<InertialFrame> angular_velocity;
-  FromBasisOfInertialFrameToBasisOfThisFrame(
-      barycentre_degrees_of_freedom,
-      primary_degrees_of_freedom,
-      secondary_degrees_of_freedom,
-      &from_basis_of_inertial_frame_to_basis_of_this_frame,
-      &angular_velocity);
-
-  RigidTransformation<ThisFrame, InertialFrame> const
-      rigid_transformation(
-          ThisFrame::origin,
-          barycentre_degrees_of_freedom.position(),
-          from_basis_of_inertial_frame_to_basis_of_this_frame.
-              Inverse().Forget());
-  return RigidMotion<ThisFrame, InertialFrame>(
-             rigid_transformation,
-             angular_velocity,
-             barycentre_degrees_of_freedom.velocity());
+  return ToThisFrameAtTime(t).Inverse();
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -132,8 +98,7 @@ FromBasisOfInertialFrameToBasisOfThisFrame(
   Displacement<InertialFrame> const& reference_direction =
       reference.displacement();
   Velocity<InertialFrame> reference_normal = reference.velocity();
-  reference_direction.template Orthogonalize<Speed, InertialFrame>(
-      &reference_normal);
+  reference_direction.template Orthogonalize<Speed>(&reference_normal);
   Bivector<Product<Length, Speed>, InertialFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
   *rotation = Rotation<InertialFrame, ThisFrame>(

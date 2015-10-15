@@ -39,17 +39,7 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 FromThisFrameAtTime(Instant const& t) const {
-  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
-      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
-  RigidTransformation<ThisFrame, InertialFrame> const
-      rigid_transformation(ThisFrame::origin,
-                           centre_degrees_of_freedom.position(),
-                           Identity<ThisFrame, InertialFrame>().Forget());
-  return RigidMotion<ThisFrame, InertialFrame>(
-      rigid_transformation,
-      AngularVelocity<ThisFrame>(),
-      Identity<InertialFrame, ThisFrame>()(
-          -centre_degrees_of_freedom.velocity()));
+  return ToThisFrameAtTime(t).Inverse();
 }
 
 template<typename InertialFrame, typename ThisFrame>

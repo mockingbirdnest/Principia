@@ -113,7 +113,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                 Lt(1.0E-11 * Metre));
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
                               Velocity<BigSmall>()),
-                Lt(0 * Milli(Metre) / Second));
+                Lt(1.0E-11 * Metre / Second));
   }
 }
 
