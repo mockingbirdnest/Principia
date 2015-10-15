@@ -46,9 +46,9 @@ FromThisFrameAtTime(Instant const& t) const {
                            centre_degrees_of_freedom.position(),
                            Identity<ThisFrame, InertialFrame>().Forget());
   return RigidMotion<ThisFrame, InertialFrame>(
-             rigid_transformation,
-             AngularVelocity<InertialFrame>(),
-             centre_degrees_of_freedom.velocity());
+      rigid_transformation, AngularVelocity<ThisFrame>(),
+      Identity<InertialFrame, ThisFrame>()(
+          -centre_degrees_of_freedom.velocity()));
 }
 
 template<typename InertialFrame, typename ThisFrame>

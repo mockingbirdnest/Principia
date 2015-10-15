@@ -63,12 +63,12 @@ class RigidMotionTest : public testing::Test {
   AngularVelocity<Geocentric> const earth_rotation_ =
       AngularVelocity<Geocentric>(
           {0 * Radian / Second, 0 * Radian / Second, earth_rotation_speed_});
-  RigidMotion<Terrestrial, Geocentric> const terrestrial_to_geocentric_ =
-      RigidMotion<Terrestrial, Geocentric>(
-          RigidTransformation<Terrestrial, Geocentric>(
-              Terrestrial::origin,
+  RigidMotion<Geocentric, Terrestrial> const geocentric_to_terrestrial =
+      RigidMotion<Geocentric, Terrestrial>(
+          RigidTransformation<Geocentric, Terrestrial>(
               Geocentric::origin,
-              OrthogonalMap<Terrestrial, Geocentric>::Identity()),
+              Terrestrial::origin,
+              OrthogonalMap<Geocentric, Terrestrial>::Identity()),
           earth_rotation_,
           Velocity<Geocentric>());
 
@@ -78,48 +78,46 @@ class RigidMotionTest : public testing::Test {
   Displacement<Geocentric> const earth_to_moon_ =
       Displacement<Geocentric>({earth_moon_distance_, 0 * Metre, 0 * Metre});
 
-  RigidMotion<Selenocentric, Geocentric> const selenocentric_to_geocentric_ =
-      RigidMotion<Selenocentric, Geocentric>(
-          RigidTransformation<Selenocentric, Geocentric>(
-              Selenocentric::origin,
+  RigidMotion<Geocentric, Selenocentric> const geocentric_to_selenocentric_ =
+      RigidMotion<Geocentric, Selenocentric>(
+          RigidTransformation<Geocentric, Selenocentric>(
               Geocentric::origin + earth_to_moon_,
-              Permutation<Selenocentric, Geocentric>(
-                  Permutation<Selenocentric, Geocentric>::YXZ)
-                  .Forget()),
+              Selenocentric::origin,
+              Permutation<Geocentric, Selenocentric>(
+                  Permutation<Geocentric, Selenocentric>::YXZ).Forget()),
           AngularVelocity<Geocentric>(),
           moon_orbit_* earth_to_moon_ / Radian);
 
   AngularVelocity<Selenocentric> const moon_rotation_ =
       AngularVelocity<Selenocentric>(
           {0 * Radian / Second, 0 * Radian / Second, -moon_rotation_speed_});
-  RigidMotion<Lunar, Selenocentric> const lunar_to_selenocentric_ =
-      RigidMotion<Lunar, Selenocentric>(
-          RigidTransformation<Lunar, Selenocentric>(
-              Lunar::origin,
+  RigidMotion<Selenocentric, Lunar> const selenocentric_to_lunar_ =
+      RigidMotion<Selenocentric, Lunar>(
+          RigidTransformation<Selenocentric, Lunar>(
               Selenocentric::origin,
-              OrthogonalMap<Lunar, Selenocentric>::Identity()),
+              Lunar::origin,
+              OrthogonalMap<Selenocentric, Lunar>::Identity()),
           moon_rotation_,
           Velocity<Selenocentric>());
 };
 
 TEST_F(RigidMotionTest, TidalLocking) {
   RigidMotion<Geocentric, Lunar> const geocentric_to_lunar =
-      lunar_to_selenocentric_.Inverse() *
-      selenocentric_to_geocentric_.Inverse();
+      selenocentric_to_lunar_ * geocentric_to_selenocentric_;
   DegreesOfFreedom<Lunar> const earth_degrees_of_freedom =
       geocentric_to_lunar({Geocentric::origin, Velocity<Geocentric>()});
   EXPECT_EQ(Displacement<Lunar>({0 * Metre, -earth_moon_distance_, 0 * Metre}),
             earth_degrees_of_freedom.position() - Lunar::origin);
   Speed const moon_speed = (moon_orbit_ * earth_to_moon_ / Radian).Norm();
   EXPECT_THAT(earth_degrees_of_freedom.velocity(),
-              Componentwise(VanishesBefore(moon_speed, 1),
-                            VanishesBefore(moon_speed, 1),
+              Componentwise(VanishesBefore(moon_speed, 0),
+                            VanishesBefore(moon_speed, 3),
                             0 * Metre / Second));
 }
 
 TEST_F(RigidMotionTest, ApparentMoon) {
   RigidMotion<Selenocentric, Terrestrial> const selenocentric_to_terrestrial =
-      terrestrial_to_geocentric_.Inverse() * selenocentric_to_geocentric_;
+      geocentric_to_terrestrial * geocentric_to_selenocentric_.Inverse();
   DegreesOfFreedom<Terrestrial> const moon_degrees_of_freedom =
       selenocentric_to_terrestrial(
           {Selenocentric::origin, Velocity<Selenocentric>()});
@@ -132,7 +130,7 @@ TEST_F(RigidMotionTest, ApparentMoon) {
       Wedge(earth_to_moon, moon_degrees_of_freedom.velocity()) /
       InnerProduct(earth_to_moon, earth_to_moon) * Radian;
   EXPECT_THAT(moon_angular_velocity / (2 * π * Radian) * Day,
-              Componentwise(0, 0, AlmostEquals(-29.0 / 30.0, 0)));
+              Componentwise(0, 0, AlmostEquals(-29.0 / 30.0, 5)));
 }
 
 }  // namespace physics
