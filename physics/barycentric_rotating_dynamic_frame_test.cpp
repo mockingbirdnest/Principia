@@ -100,7 +100,21 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
 };
 
 
-TEST_F(BarycentricRotatingDynamicFrameTest, Test) {
+TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
+  int const kSteps = 100;
+
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+    auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
+    DegreesOfFreedom<BigSmall> const centre_of_mass_in_big_small_at_t =
+        to_big_small_frame_at_t(centre_of_mass_initial_state_);
+    EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.position() -
+                                  BigSmall::origin,
+                              Displacement<BigSmall>()),
+                Lt(1.0E-11 * Metre));
+    EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
+                              Velocity<BigSmall>()),
+                Lt(0 * Milli(Metre) / Second));
+  }
 }
 
 }  // namespace physics
