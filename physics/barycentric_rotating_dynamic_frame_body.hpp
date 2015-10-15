@@ -47,22 +47,18 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
           {primary_->gravitational_parameter(),
            secondary_->gravitational_parameter()});
 
-  Rotation<InertialFrame, ThisFrame>
-      from_basis_of_inertial_frame_to_basis_of_this_frame =
+  Rotation<InertialFrame, ThisFrame> rotation =
           Rotation<InertialFrame, ThisFrame>::Identity();
   AngularVelocity<InertialFrame> angular_velocity;
-  FromBasisOfInertialFrameToBasisOfThisFrame(
-      barycentre_degrees_of_freedom,
-      primary_degrees_of_freedom,
-      secondary_degrees_of_freedom,
-      &from_basis_of_inertial_frame_to_basis_of_this_frame,
-      &angular_velocity);
+  ComputeTwoBodyRigidMotion(primary_degrees_of_freedom,
+                            secondary_degrees_of_freedom,
+                            &rotation,
+                            &angular_velocity);
 
   RigidTransformation<InertialFrame, ThisFrame> const
-      rigid_transformation(
-          barycentre_degrees_of_freedom.position(),
-          ThisFrame::origin,
-          from_basis_of_inertial_frame_to_basis_of_this_frame.Forget());
+      rigid_transformation(barycentre_degrees_of_freedom.position(),
+                           ThisFrame::origin,
+                           rotation.Forget());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,
@@ -82,19 +78,19 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
+  LOG(FATAL) << "NYI";
   return Vector<Acceleration, ThisFrame>();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
-FromBasisOfInertialFrameToBasisOfThisFrame(
-    DegreesOfFreedom<InertialFrame> const& barycentre_degrees_of_freedom,
+ComputeTwoBodyRigidMotion(
     DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
     not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
     not_null<AngularVelocity<InertialFrame>*> const angular_velocity) {
   RelativeDegreesOfFreedom<InertialFrame> const reference =
-      primary_degrees_of_freedom - barycentre_degrees_of_freedom;
+      primary_degrees_of_freedom - secondary_degrees_of_freedom;
   Displacement<InertialFrame> const& reference_direction =
       reference.displacement();
   Velocity<InertialFrame> reference_normal = reference.velocity();

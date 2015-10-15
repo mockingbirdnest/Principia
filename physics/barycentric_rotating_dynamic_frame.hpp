@@ -43,10 +43,8 @@ class BarycentricRotatingDynamicFrame
  private:
   // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
   // to the basis of |ThisFrame|.  Fills |*angular_frequency| with the
-  // corresponding angular velocity.  |barycentre_degrees_of_freedom| must be a
-  // convex combination of the two other degrees of freedom.
-  static void FromBasisOfInertialFrameToBasisOfThisFrame(
-      DegreesOfFreedom<InertialFrame> const& barycentre_degrees_of_freedom,
+  // corresponding angular velocity.
+  static void ComputeTwoBodyRigidMotion(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
       DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
       not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,

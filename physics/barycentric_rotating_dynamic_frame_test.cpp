@@ -172,6 +172,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
         AbsoluteError(small_initial_state_transformed_and_back.velocity(),
                       small_initial_state_.velocity()),
         Lt(1.0E-11 * Metre / Second));
+  }
 }
 
 }  // namespace physics
