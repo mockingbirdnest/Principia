@@ -16,8 +16,7 @@ RigidMotion<FromFrame, ToFrame>::RigidMotion(
     AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
     Velocity<FromFrame> const& velocity_of_to_frame_origin)
     : rigid_transformation_(rigid_transformation),
-      angular_velocity_of_to_frame_(
-          angular_velocity_of_to_frame),
+      angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
       velocity_of_to_frame_origin_(velocity_of_to_frame_origin) {}
 
 template<typename FromFrame, typename ToFrame>
@@ -61,8 +60,8 @@ RigidMotion<FromFrame, ToFrame> operator*(
       left.rigid_transformation() * right.rigid_transformation(),
       right.angular_velocity_of_to_frame_ +
           right.orthogonal_map().Inverse()(left.angular_velocity_of_to_frame_),
-      right.Inverse()(left.Inverse()({ToFrame::origin, Velocity<ToFrame>()}))
-          .velocity());
+      right.Inverse()(left.Inverse()(
+          {ToFrame::origin, Velocity<ToFrame>()})).velocity());
 }
 
 }  // namespace physics

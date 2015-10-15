@@ -143,7 +143,7 @@ TEST_F(RigidMotionTest, ApparentMoon) {
 }
 
 TEST_F(RigidMotionTest, GroupoidAssociativity) {
-  auto terrestrial_to_geocentric = geocentric_to_terrestrial_.Inverse();
+  auto const terrestrial_to_geocentric = geocentric_to_terrestrial_.Inverse();
   DegreesOfFreedom<Lunar> const d1 =
       ((selenocentric_to_lunar_ * geocentric_to_selenocentric_) *
        terrestrial_to_geocentric)(degrees_of_freedom_);
@@ -157,8 +157,8 @@ TEST_F(RigidMotionTest, GroupoidAssociativity) {
 }
 
 TEST_F(RigidMotionTest, GroupoidAction) {
-  auto terrestrial_to_geocentric = geocentric_to_terrestrial_.Inverse();
-  auto geocentric_to_lunar =
+  auto const terrestrial_to_geocentric = geocentric_to_terrestrial_.Inverse();
+  auto const geocentric_to_lunar =
       selenocentric_to_lunar_ * geocentric_to_selenocentric_;
   DegreesOfFreedom<Lunar> const d1 =
       (geocentric_to_lunar * terrestrial_to_geocentric)(degrees_of_freedom_);
@@ -170,7 +170,7 @@ TEST_F(RigidMotionTest, GroupoidAction) {
 }
 
 TEST_F(RigidMotionTest, GroupoidInverse) {
-  auto terrestrial_to_lunar = selenocentric_to_lunar_ *
+  auto const terrestrial_to_lunar = selenocentric_to_lunar_ *
                               geocentric_to_selenocentric_ *
                               geocentric_to_terrestrial_.Inverse();
   DegreesOfFreedom<Terrestrial> const d1 =
