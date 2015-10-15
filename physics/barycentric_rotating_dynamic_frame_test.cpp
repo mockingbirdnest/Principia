@@ -153,5 +153,26 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
 
 }
 
+TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
+  int const kSteps = 100;
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+    auto const from_big_small_frame_at_t =
+        big_small_frame_->FromThisFrameAtTime(t);
+    auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
+    auto const small_initial_state_transformed_and_back =
+        from_big_small_frame_at_t(to_big_small_frame_at_t(
+            small_initial_state_));
+    EXPECT_THAT(
+        AbsoluteError(small_initial_state_transformed_and_back.position() -
+                          ICRFJ2000Equator::origin,
+                      small_initial_state_.position() -
+                          ICRFJ2000Equator::origin),
+        Lt(1.0E-11 * Metre));
+    EXPECT_THAT(
+        AbsoluteError(small_initial_state_transformed_and_back.velocity(),
+                      small_initial_state_.velocity()),
+        Lt(1.0E-11 * Metre / Second));
+}
+
 }  // namespace physics
 }  // namespace principia
