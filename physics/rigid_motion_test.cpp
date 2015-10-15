@@ -63,7 +63,7 @@ class RigidMotionTest : public testing::Test {
   AngularVelocity<Geocentric> const earth_rotation_ =
       AngularVelocity<Geocentric>(
           {0 * Radian / Second, 0 * Radian / Second, earth_rotation_speed_});
-  RigidMotion<Geocentric, Terrestrial> const geocentric_to_terrestrial =
+  RigidMotion<Geocentric, Terrestrial> const geocentric_to_terrestrial_ =
       RigidMotion<Geocentric, Terrestrial>(
           RigidTransformation<Geocentric, Terrestrial>(
               Geocentric::origin,
@@ -117,7 +117,7 @@ TEST_F(RigidMotionTest, TidalLocking) {
 
 TEST_F(RigidMotionTest, ApparentMoon) {
   RigidMotion<Selenocentric, Terrestrial> const selenocentric_to_terrestrial =
-      geocentric_to_terrestrial * geocentric_to_selenocentric_.Inverse();
+      geocentric_to_terrestrial_ * geocentric_to_selenocentric_.Inverse();
   DegreesOfFreedom<Terrestrial> const moon_degrees_of_freedom =
       selenocentric_to_terrestrial(
           {Selenocentric::origin, Velocity<Selenocentric>()});
@@ -131,6 +131,27 @@ TEST_F(RigidMotionTest, ApparentMoon) {
       InnerProduct(earth_to_moon, earth_to_moon) * Radian;
   EXPECT_THAT(moon_angular_velocity / (2 * π * Radian) * Day,
               Componentwise(0, 0, AlmostEquals(-29.0 / 30.0, 5)));
+}
+
+TEST_F(RigidMotionTest, AlgebraicProperties) {
+  DegreesOfFreedom<Terrestrial> const degrees_of_freedom = {
+      Terrestrial::origin +
+          Displacement<Terrestrial>({earth_moon_distance_ / 3,
+                                    -earth_moon_distance_ / 5,
+                                    3 * earth_moon_distance_ / 7}),
+      Velocity<Terrestrial>()};
+
+  // Group associativity.
+  DegreesOfFreedom<Lunar> const d1 =
+      ((selenocentric_to_lunar_ * geocentric_to_selenocentric_) *
+       geocentric_to_terrestrial_.Inverse())(degrees_of_freedom);
+  DegreesOfFreedom<Lunar> const d2 =
+      (selenocentric_to_lunar_ *
+       (geocentric_to_selenocentric_ * geocentric_to_terrestrial_.Inverse()))(
+          degrees_of_freedom);
+  EXPECT_THAT(d1.position() - Lunar::origin,
+              AlmostEquals(d2.position() - Lunar::origin, 0));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 0));
 }
 
 }  // namespace physics
