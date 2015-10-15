@@ -13,20 +13,11 @@ namespace physics {
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
     RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
-    AngularVelocity<FromFrame> const& rotation,
-    Velocity<FromFrame> const& translation)
+    AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
+    Velocity<FromFrame> const& velocity_of_to_frame_origin)
     : rigid_transformation_(rigid_transformation),
-      rotation_(-rigid_transformation_.linear_map()(rotation)),
-      translation_(-rigid_transformation_.linear_map()(translation)) {}
-
-template<typename FromFrame, typename ToFrame>
-RigidMotion<FromFrame, ToFrame>::RigidMotion(
-    RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
-    AngularVelocity<ToFrame> const& rotation,
-    Velocity<ToFrame> const& translation)
-    : rigid_transformation_(rigid_transformation),
-      rotation_(rotation),
-      translation_(translation) {}
+      angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
+      velocity_of_to_frame_origin_(velocity_of_to_frame_origin) {}
 
 template<typename FromFrame, typename ToFrame>
 RigidTransformation<FromFrame, ToFrame> const&
@@ -44,16 +35,21 @@ template<typename FromFrame, typename ToFrame>
 DegreesOfFreedom<ToFrame> RigidMotion<FromFrame, ToFrame>::operator()(
     DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const {
   return {rigid_transformation_(degrees_of_freedom.position()),
-          orthogonal_map()(degrees_of_freedom.velocity()) + translation_ +
-              rotation_ * orthogonal_map()(degrees_of_freedom.position() -
-                                           FromFrame::origin) / Radian};
+          orthogonal_map()(
+              degrees_of_freedom.velocity() - velocity_of_to_frame_origin_ -
+              angular_velocity_of_to_frame_ *
+                  (degrees_of_freedom.position() -
+                   rigid_transformation_.Inverse()(ToFrame::origin)) /
+                  Radian)};
 }
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<ToFrame, FromFrame>
 RigidMotion<FromFrame, ToFrame>::Inverse() const {
   return RigidMotion<ToFrame, FromFrame>(
-      rigid_transformation_.Inverse(), rotation_, translation_);
+      rigid_transformation_.Inverse(),
+      -orthogonal_map()(angular_velocity_of_to_frame_),
+      (*this)({FromFrame::origin, Velocity<FromFrame>()}).velocity());
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -62,8 +58,10 @@ RigidMotion<FromFrame, ToFrame> operator*(
     RigidMotion<FromFrame, ThroughFrame> const& right) {
   return RigidMotion<FromFrame, ToFrame>(
       left.rigid_transformation() * right.rigid_transformation(),
-      left.rotation_ + left.orthogonal_map()(right.rotation_),
-      left(right({FromFrame::origin, Velocity<FromFrame>()})).velocity());
+      right.angular_velocity_of_to_frame_ +
+          right.orthogonal_map().Inverse()(left.angular_velocity_of_to_frame_),
+      right.Inverse()(left.Inverse()(
+          {ToFrame::origin, Velocity<ToFrame>()})).velocity());
 }
 
 }  // namespace physics

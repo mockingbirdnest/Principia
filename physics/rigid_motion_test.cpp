@@ -63,12 +63,12 @@ class RigidMotionTest : public testing::Test {
   AngularVelocity<Geocentric> const earth_rotation_ =
       AngularVelocity<Geocentric>(
           {0 * Radian / Second, 0 * Radian / Second, earth_rotation_speed_});
-  RigidMotion<Terrestrial, Geocentric> const terrestrial_to_geocentric_ =
-      RigidMotion<Terrestrial, Geocentric>(
-          RigidTransformation<Terrestrial, Geocentric>(
-              Terrestrial::origin,
+  RigidMotion<Geocentric, Terrestrial> const geocentric_to_terrestrial_ =
+      RigidMotion<Geocentric, Terrestrial>(
+          RigidTransformation<Geocentric, Terrestrial>(
               Geocentric::origin,
-              OrthogonalMap<Terrestrial, Geocentric>::Identity()),
+              Terrestrial::origin,
+              OrthogonalMap<Geocentric, Terrestrial>::Identity()),
           earth_rotation_,
           Velocity<Geocentric>());
 
@@ -78,48 +78,55 @@ class RigidMotionTest : public testing::Test {
   Displacement<Geocentric> const earth_to_moon_ =
       Displacement<Geocentric>({earth_moon_distance_, 0 * Metre, 0 * Metre});
 
-  RigidMotion<Selenocentric, Geocentric> const selenocentric_to_geocentric_ =
-      RigidMotion<Selenocentric, Geocentric>(
-          RigidTransformation<Selenocentric, Geocentric>(
-              Selenocentric::origin,
+  RigidMotion<Geocentric, Selenocentric> const geocentric_to_selenocentric_ =
+      RigidMotion<Geocentric, Selenocentric>(
+          RigidTransformation<Geocentric, Selenocentric>(
               Geocentric::origin + earth_to_moon_,
-              Permutation<Selenocentric, Geocentric>(
-                  Permutation<Selenocentric, Geocentric>::YXZ)
-                  .Forget()),
+              Selenocentric::origin,
+              Permutation<Geocentric, Selenocentric>(
+                  Permutation<Geocentric, Selenocentric>::YXZ).Forget()),
           AngularVelocity<Geocentric>(),
           moon_orbit_* earth_to_moon_ / Radian);
 
   AngularVelocity<Selenocentric> const moon_rotation_ =
       AngularVelocity<Selenocentric>(
           {0 * Radian / Second, 0 * Radian / Second, -moon_rotation_speed_});
-  RigidMotion<Lunar, Selenocentric> const lunar_to_selenocentric_ =
-      RigidMotion<Lunar, Selenocentric>(
-          RigidTransformation<Lunar, Selenocentric>(
-              Lunar::origin,
+  RigidMotion<Selenocentric, Lunar> const selenocentric_to_lunar_ =
+      RigidMotion<Selenocentric, Lunar>(
+          RigidTransformation<Selenocentric, Lunar>(
               Selenocentric::origin,
-              OrthogonalMap<Lunar, Selenocentric>::Identity()),
+              Lunar::origin,
+              OrthogonalMap<Selenocentric, Lunar>::Identity()),
           moon_rotation_,
           Velocity<Selenocentric>());
+
+  // General degrees of freedom.
+  DegreesOfFreedom<Terrestrial> const degrees_of_freedom_ = {
+      Terrestrial::origin +
+          Displacement<Terrestrial>({earth_moon_distance_ / 3,
+                                     -earth_moon_distance_ / 5,
+                                     3 * earth_moon_distance_ / 7}),
+      earth_rotation_speed_ * earth_moon_distance_ / Radian *
+          Vector<double, Terrestrial>({-0.5, 0.42, 2.1})};
 };
 
 TEST_F(RigidMotionTest, TidalLocking) {
   RigidMotion<Geocentric, Lunar> const geocentric_to_lunar =
-      lunar_to_selenocentric_.Inverse() *
-      selenocentric_to_geocentric_.Inverse();
+      selenocentric_to_lunar_ * geocentric_to_selenocentric_;
   DegreesOfFreedom<Lunar> const earth_degrees_of_freedom =
       geocentric_to_lunar({Geocentric::origin, Velocity<Geocentric>()});
   EXPECT_EQ(Displacement<Lunar>({0 * Metre, -earth_moon_distance_, 0 * Metre}),
             earth_degrees_of_freedom.position() - Lunar::origin);
   Speed const moon_speed = (moon_orbit_ * earth_to_moon_ / Radian).Norm();
   EXPECT_THAT(earth_degrees_of_freedom.velocity(),
-              Componentwise(VanishesBefore(moon_speed, 1),
-                            VanishesBefore(moon_speed, 1),
+              Componentwise(VanishesBefore(moon_speed, 0),
+                            VanishesBefore(moon_speed, 3),
                             0 * Metre / Second));
 }
 
 TEST_F(RigidMotionTest, ApparentMoon) {
   RigidMotion<Selenocentric, Terrestrial> const selenocentric_to_terrestrial =
-      terrestrial_to_geocentric_.Inverse() * selenocentric_to_geocentric_;
+      geocentric_to_terrestrial_ * geocentric_to_selenocentric_.Inverse();
   DegreesOfFreedom<Terrestrial> const moon_degrees_of_freedom =
       selenocentric_to_terrestrial(
           {Selenocentric::origin, Velocity<Selenocentric>()});
@@ -132,8 +139,55 @@ TEST_F(RigidMotionTest, ApparentMoon) {
       Wedge(earth_to_moon, moon_degrees_of_freedom.velocity()) /
       InnerProduct(earth_to_moon, earth_to_moon) * Radian;
   EXPECT_THAT(moon_angular_velocity / (2 * π * Radian) * Day,
-              Componentwise(0, 0, AlmostEquals(-29.0 / 30.0, 0)));
+              Componentwise(0, 0, AlmostEquals(-29.0 / 30.0, 5)));
 }
+
+TEST_F(RigidMotionTest, GroupoidAssociativity) {
+  auto const terrestrial_to_geocentric = geocentric_to_terrestrial_.Inverse();
+  DegreesOfFreedom<Lunar> const d1 =
+      ((selenocentric_to_lunar_ * geocentric_to_selenocentric_) *
+       terrestrial_to_geocentric)(degrees_of_freedom_);
+  DegreesOfFreedom<Lunar> const d2 =
+      (selenocentric_to_lunar_ *
+       (geocentric_to_selenocentric_ * terrestrial_to_geocentric))(
+          degrees_of_freedom_);
+  EXPECT_THAT(d1.position() - Lunar::origin,
+              AlmostEquals(d2.position() - Lunar::origin, 0));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 4));
+}
+
+TEST_F(RigidMotionTest, GroupoidAction) {
+  auto const terrestrial_to_geocentric = geocentric_to_terrestrial_.Inverse();
+  auto const geocentric_to_lunar =
+      selenocentric_to_lunar_ * geocentric_to_selenocentric_;
+  DegreesOfFreedom<Lunar> const d1 =
+      (geocentric_to_lunar * terrestrial_to_geocentric)(degrees_of_freedom_);
+  DegreesOfFreedom<Lunar> const d2 =
+      geocentric_to_lunar(terrestrial_to_geocentric(degrees_of_freedom_));
+  EXPECT_THAT(d1.position() - Lunar::origin,
+              AlmostEquals(d2.position() - Lunar::origin, 5));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(d2.velocity(), 1));
+}
+
+TEST_F(RigidMotionTest, GroupoidInverse) {
+  auto const terrestrial_to_lunar = selenocentric_to_lunar_ *
+                              geocentric_to_selenocentric_ *
+                              geocentric_to_terrestrial_.Inverse();
+  DegreesOfFreedom<Terrestrial> const d1 =
+      (terrestrial_to_lunar.Inverse() *
+       terrestrial_to_lunar)(degrees_of_freedom_);
+  DegreesOfFreedom<Terrestrial> const d2 =
+      terrestrial_to_lunar.Inverse()(terrestrial_to_lunar(degrees_of_freedom_));
+  EXPECT_THAT(
+      d1.position() - Terrestrial::origin,
+      AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 0));
+  EXPECT_THAT(d1.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 4));
+  EXPECT_THAT(
+      d2.position() - Terrestrial::origin,
+      AlmostEquals(degrees_of_freedom_.position() - Terrestrial::origin, 4));
+  EXPECT_THAT(d2.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 6));
+}
+
 
 }  // namespace physics
 }  // namespace principia

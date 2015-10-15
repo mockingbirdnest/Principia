@@ -35,8 +35,9 @@ class Multivector<Scalar, Frame, 1> {
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
-  template<typename S, typename F>
-  void Orthogonalize(not_null<Multivector<S, F, 1>*> const multivector) const;
+  template<typename S>
+  void Orthogonalize(
+      not_null<Multivector<S, Frame, 1>*> const multivector) const;
 
   void WriteToMessage(
       not_null<serialization::Multivector*> const message) const;
@@ -76,8 +77,9 @@ class Multivector<Scalar, Frame, 2> {
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
-  template<typename S, typename F>
-  void Orthogonalize(not_null<Multivector<S, F, 2>*> const multivector) const;
+  template<typename S>
+  void Orthogonalize(
+      not_null<Multivector<S, Frame, 2>*> const multivector) const;
 
   void WriteToMessage(
       not_null<serialization::Multivector*> const message) const;

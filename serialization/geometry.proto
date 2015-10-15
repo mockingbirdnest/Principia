@@ -140,6 +140,11 @@ message Frame {
     WORLD_SUN = 6;
   }
 
+  // The frame tags used in the physics library.
+  enum PhysicsTag {
+    FRENET = 1;
+  }
+
   // The frame tags used in the solar system simulation.
   enum SolarSystemTag {
     ICRF_J2000_ECLIPTIC = 1;
