@@ -50,7 +50,7 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
   return RigidMotion<ToFrame, FromFrame>(
       rigid_transformation_.Inverse(),
       -orthogonal_map()(angular_velocity_of_to_frame_),
-      -orthogonal_map()(velocity_of_to_frame_origin_));
+      (*this)({FromFrame::origin, Velocity<FromFrame>()}).velocity());
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
