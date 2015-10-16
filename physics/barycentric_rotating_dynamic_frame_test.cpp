@@ -150,7 +150,6 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                               Velocity<BigSmall>()),
                 Lt(1.0E-4 * Metre / Second));
   }
-
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
