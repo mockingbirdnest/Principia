@@ -50,7 +50,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   Rotation<InertialFrame, ThisFrame> rotation =
           Rotation<InertialFrame, ThisFrame>::Identity();
   AngularVelocity<InertialFrame> angular_velocity;
-  ComputeTwoBodyRigidMotion(primary_degrees_of_freedom,
+  ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
                             secondary_degrees_of_freedom,
                             &rotation,
                             &angular_velocity);
@@ -84,7 +84,7 @@ GeometricAcceleration(
 
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
-ComputeTwoBodyRigidMotion(
+ComputeAngularDegreesOfFreedom(
     DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
     not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
