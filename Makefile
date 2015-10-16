@@ -52,6 +52,7 @@ LDFLAGS := $(SHARED_ARGS)
 
 
 .PHONY: all adapter lib tests check plugin run_tests clean
+.PRECIOUS: %.o
 .DEFAULT_GOAL := plugin
 
 ##### CONVENIENCE TARGETS #####
