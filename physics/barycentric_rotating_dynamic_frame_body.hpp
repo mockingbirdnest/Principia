@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
@@ -78,6 +78,36 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
+  auto const to_this_frame = ToThisFrameAtTime(t);
+  auto const from_this_frame = to_this_frame.Inverse();
+
+  DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
+      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+  DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
+      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
+  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
+      Barycentre<InertialFrame, GravitationalParameter>(
+          {primary_degrees_of_freedom,
+           secondary_degrees_of_freedom},
+          {primary_->gravitational_parameter(),
+           secondary_->gravitational_parameter()});
+
+  Vector<Acceleration, InertialFrame> const
+      gravitational_acceleration_of_barycentre =
+          ephemeris_->ComputeGravitationalAcceleration(
+              barycentre_degrees_of_freedom, t);
+  Vector<Acceleration, InertialFrame> const
+      gravitational_acceleration_at_point =
+          ephemeris_->ComputeGravitationalAcceleration(
+              from_this_frame.rigid_transformation()(
+                  degrees_of_freedom.position()), t);
+
+  AngularVelocity<InertialFrame> const Ω =
+      to_this_frame.angular_velocity_of_to_frame();
+
+  return from_this_frame.orthogonal_map()(
+             acceleration_at_point - acceleration_of_barycentre);
+
   LOG(FATAL) << "NYI";
   return Vector<Acceleration, ThisFrame>();
 }

@@ -48,8 +48,8 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  auto const from_this_frame = FromThisFrameAtTime(t);
   auto const to_this_frame = ToThisFrameAtTime(t);
+  auto const from_this_frame = to_this_frame.Inverse();
 
   Vector<Acceleration, InertialFrame> const acceleration_of_centre =
       ephemeris_->ComputeGravitationalAcceleration(centre_, t);
