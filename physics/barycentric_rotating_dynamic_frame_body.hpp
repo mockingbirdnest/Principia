@@ -129,14 +129,14 @@ GeometricAcceleration(
       to_this_frame.orthogonal_map()(
           -ephemeris_->ComputeGravitationalAcceleration(
               barycentre_degrees_of_freedom.position(), t));
-  Vector<Acceleration, ThisFrame> coriolis_acceleration_at_point =
+  Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
       -2 * Ω * degrees_of_freedom.velocity() / Radian;
-  Vector<Acceleration, ThisFrame> centrifugal_acceleration_at_point =
+  Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =
       -Ω * (Ω * r) / Pow<2>(Radian);
   Vector<Acceleration, ThisFrame> const euler_acceleration_at_point =
       -dΩ_over_dt * r / Radian;
 
-  Vector<Acceleration, ThisFrame> const& fictitious_acceleration =
+  Vector<Acceleration, ThisFrame> const fictitious_acceleration =
       linear_acceleration +
       coriolis_acceleration_at_point +
       centrifugal_acceleration_at_point +
