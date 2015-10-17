@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
@@ -78,8 +78,70 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  LOG(FATAL) << "NYI";
-  return Vector<Acceleration, ThisFrame>();
+  auto const to_this_frame = ToThisFrameAtTime(t);
+  auto const from_this_frame = to_this_frame.Inverse();
+
+  DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
+      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+  DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
+      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
+  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
+      Barycentre<InertialFrame, GravitationalParameter>(
+          {primary_degrees_of_freedom,
+           secondary_degrees_of_freedom},
+          {primary_->gravitational_parameter(),
+           secondary_->gravitational_parameter()});
+
+  // Beware, we want the angular velocity of ThisFrame as seen in the
+  // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
+  AngularVelocity<InertialFrame> const Ω_inertial =
+      to_this_frame.angular_velocity_of_to_frame();
+  AngularVelocity<ThisFrame> const Ω =
+      to_this_frame.orthogonal_map()(Ω_inertial);
+
+  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
+      primary_degrees_of_freedom - secondary_degrees_of_freedom;
+  Vector<Acceleration, InertialFrame> const primary_acceleration =
+      ephemeris_->ComputeGravitationalAcceleration(
+          primary_degrees_of_freedom.position(), t);
+  Vector<Acceleration, InertialFrame> const secondary_acceleration =
+      ephemeris_->ComputeGravitationalAcceleration(
+          secondary_degrees_of_freedom.position(), t);
+
+  // TODO(egg): TeX and reference.
+  Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
+      to_this_frame.orthogonal_map()
+          (Wedge(primary_secondary.displacement(),
+                 (primary_acceleration - secondary_acceleration)) * Radian -
+           2 * Ω_inertial * InnerProduct(primary_secondary.displacement(),
+                                         primary_secondary.velocity())) /
+               InnerProduct(primary_secondary.displacement(),
+                            primary_secondary.displacement());
+
+  Displacement<ThisFrame> const r =
+      degrees_of_freedom.position() - ThisFrame::origin;
+  Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
+      to_this_frame.orthogonal_map()(
+          ephemeris_->ComputeGravitationalAcceleration(
+              from_this_frame.rigid_transformation()(
+                  degrees_of_freedom.position()), t));
+  Vector<Acceleration, ThisFrame> const linear_acceleration =
+      to_this_frame.orthogonal_map()(
+          -ephemeris_->ComputeGravitationalAcceleration(
+              barycentre_degrees_of_freedom.position(), t));
+  Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
+      -2 * Ω * degrees_of_freedom.velocity() / Radian;
+  Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =
+      -Ω * (Ω * r) / Pow<2>(Radian);
+  Vector<Acceleration, ThisFrame> const euler_acceleration_at_point =
+      -dΩ_over_dt * r / Radian;
+
+  Vector<Acceleration, ThisFrame> const fictitious_acceleration =
+      linear_acceleration +
+      coriolis_acceleration_at_point +
+      centrifugal_acceleration_at_point +
+      euler_acceleration_at_point;
+  return gravitational_acceleration_at_point + fictitious_acceleration;
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -101,8 +163,8 @@ ComputeAngularDegreesOfFreedom(
                   R3x3Matrix(Normalize(reference_direction).coordinates(),
                              Normalize(reference_normal).coordinates(),
                              Normalize(reference_binormal).coordinates()));
-  *angular_velocity =
-      (Radian / Pow<2>(reference_direction.Norm())) * reference_binormal;
+  *angular_velocity = reference_binormal * Radian /
+                      InnerProduct(reference_direction, reference_direction);
 }
 
 }  // namespace physics
