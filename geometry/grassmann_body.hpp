@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "geometry/grassmann.hpp"
+
 #include <string>
 
 #include "geometry/permutation.hpp"

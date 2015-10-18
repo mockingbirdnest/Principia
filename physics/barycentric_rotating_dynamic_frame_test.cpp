@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
@@ -35,8 +36,11 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using ::testing::InSequence;
 using ::testing::Lt;
+using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 
 namespace physics {
 
@@ -91,6 +95,12 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
 
     mock_ephemeris_ =
        std::make_unique<StrictMock<MockEphemeris<ICRFJ2000Equator>>>();
+    EXPECT_CALL(*mock_ephemeris_,
+                trajectory(solar_system_.massive_body(*ephemeris_, kBig)))
+        .WillOnce(Return(&mock_big_trajectory_));
+    EXPECT_CALL(*mock_ephemeris_,
+                trajectory(solar_system_.massive_body(*ephemeris_, kSmall)))
+        .WillOnce(Return(&mock_small_trajectory_));
     mock_frame_ =
         std::make_unique<
             BarycentricRotatingDynamicFrame<ICRFJ2000Equator, MockFrame>>(
@@ -108,11 +118,14 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
   GravitationalParameter small_gravitational_parameter_;
   std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
                   BigSmallFrame>> big_small_frame_;
+  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
+  SolarSystem<ICRFJ2000Equator> solar_system_;
+
+  MockContinuousTrajectory<ICRFJ2000Equator> mock_big_trajectory_;
+  MockContinuousTrajectory<ICRFJ2000Equator> mock_small_trajectory_;
   std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
                   MockFrame>> mock_frame_;
-  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
   std::unique_ptr<StrictMock<MockEphemeris<ICRFJ2000Equator>>> mock_ephemeris_;
-  SolarSystem<ICRFJ2000Equator> solar_system_;
 };
 
 
@@ -193,14 +206,53 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
-  DegreesOfFreedom<MockFrame> point_degrees_of_freedom =
-      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
+  Instant const t = t0_ + 0 * Second;
+  DegreesOfFreedom<MockFrame> point_dof =
+      {Displacement<MockFrame>({1 * Metre, 0 * Metre, 0 * Metre}) +
            MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
+       Velocity<MockFrame>({1 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  auto const actual = mock_frame_->GeometricAcceleration(
-      t0_ + 0 * Second, point_degrees_of_freedom);
+  DegreesOfFreedom<ICRFJ2000Equator> big_dof =
+      {Displacement<ICRFJ2000Equator>({2 * Metre, 0 * Metre, 0 * Metre}) +
+           ICRFJ2000Equator::origin,
+       Velocity<ICRFJ2000Equator>({2 * Metre / Second,
+                                   2 * Metre / Second,
+                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRFJ2000Equator> small_dof =
+      {Displacement<ICRFJ2000Equator>({1 * Metre, 0 * Metre, 0 * Metre}) +
+           ICRFJ2000Equator::origin,
+       Velocity<ICRFJ2000Equator>({1 * Metre / Second,
+                                   1 * Metre / Second,
+                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRFJ2000Equator> const barycentre_dof =
+      Barycentre<ICRFJ2000Equator, GravitationalParameter>(
+          {big_dof, small_dof},
+          {big_gravitational_parameter_, small_gravitational_parameter_});
+
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+      .Times(2)
+      .WillRepeatedly(Return(big_dof));
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+      .Times(2)
+      .WillRepeatedly(Return(small_dof));
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(big_dof.position(), t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(small_dof.position(), t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(_, t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(barycentre_dof.position(), t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+  }
+
+  auto const actual = mock_frame_->GeometricAcceleration(t, point_dof);
 }
 
 }  // namespace physics

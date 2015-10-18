@@ -99,8 +99,6 @@ GeometricAcceleration(
   AngularVelocity<ThisFrame> const Ω =
       to_this_frame.orthogonal_map()(Ω_inertial);
 
-  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
-      primary_degrees_of_freedom - secondary_degrees_of_freedom;
   Vector<Acceleration, InertialFrame> const primary_acceleration =
       ephemeris_->ComputeGravitationalAcceleration(
           primary_degrees_of_freedom.position(), t);
@@ -109,6 +107,8 @@ GeometricAcceleration(
           secondary_degrees_of_freedom.position(), t);
 
   // TODO(egg): TeX and reference.
+  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
+      primary_degrees_of_freedom - secondary_degrees_of_freedom;
   Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
       to_this_frame.orthogonal_map()
           (Wedge(primary_secondary.displacement(),

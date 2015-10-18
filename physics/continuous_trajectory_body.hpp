@@ -263,6 +263,9 @@ ContinuousTrajectory<Frame>::Hint::Hint()
     : index_(std::numeric_limits<int>::max()) {}
 
 template<typename Frame>
+ContinuousTrajectory<Frame>::ContinuousTrajectory() {}
+
+template<typename Frame>
 void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Displacement<Frame>> const& q,
