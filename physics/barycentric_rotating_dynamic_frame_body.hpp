@@ -98,8 +98,6 @@ GeometricAcceleration(
       to_this_frame.angular_velocity_of_to_frame();
   AngularVelocity<ThisFrame> const Ω =
       to_this_frame.orthogonal_map()(Ω_inertial);
-  LOG(ERROR)<<Ω_inertial;
-  LOG(ERROR)<<Ω;
 
   Vector<Acceleration, InertialFrame> const primary_acceleration =
       ephemeris_->ComputeGravitationalAcceleration(
@@ -127,6 +125,7 @@ GeometricAcceleration(
           ephemeris_->ComputeGravitationalAcceleration(
               from_this_frame.rigid_transformation()(
                   degrees_of_freedom.position()), t));
+  //TODO(phl): Incorrect: should be the barycentre of the accelerations.
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       to_this_frame.orthogonal_map()(
           -ephemeris_->ComputeGravitationalAcceleration(

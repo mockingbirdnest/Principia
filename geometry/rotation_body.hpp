@@ -171,7 +171,7 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
   R3Element<double> const& imaginary_part = quaternion_.imaginary_part();
   return r3_element + 2 * Cross(imaginary_part,
                                 Cross(imaginary_part, r3_element) +
-                                    real_part * r3_element);
+                                      real_part * r3_element);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

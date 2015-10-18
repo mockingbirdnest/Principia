@@ -208,14 +208,15 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
 
 TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
   Instant const t = t0_ + 0 * Second;
+  // The velocity is opposed to the motion and away from the centre.
   DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({3E-9 * Metre, 4E-9 * Metre, 0 * Metre}) +
+      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
            MockFrame::origin,
-       Velocity<MockFrame>({(-80 + 30) * Metre / Second,
-                            (60 + 40) * Metre / Second,
+       Velocity<MockFrame>({(80 - 30) * Metre / Second,
+                            (-60 - 40) * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const big_dof =
-      {Displacement<ICRFJ2000Equator>({2 * Metre, 1* Metre, 0 * Metre}) +
+      {Displacement<ICRFJ2000Equator>({2 * Metre, 1 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>({0 * Metre / Second,
                                    0 * Metre / Second,
@@ -256,6 +257,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
+  // The Coriolis acceleration is towards the centre and opposed to the motion.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (-1200 - 800) * Metre / Pow<2>(Second),
@@ -272,7 +274,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
                             0 * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const big_dof =
-      {Displacement<ICRFJ2000Equator>({2 * Metre, 1* Metre, 0 * Metre}) +
+      {Displacement<ICRFJ2000Equator>({2 * Metre, 1 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>({0 * Metre / Second,
                                    0 * Metre / Second,
@@ -308,6 +310,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAcceleration(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+    //TODO(phl): Nonphysical, the barycentre moves.
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAcceleration(barycentre_dof.position(), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
