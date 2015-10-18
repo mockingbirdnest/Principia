@@ -98,6 +98,8 @@ GeometricAcceleration(
       to_this_frame.angular_velocity_of_to_frame();
   AngularVelocity<ThisFrame> const Ω =
       to_this_frame.orthogonal_map()(Ω_inertial);
+  LOG(ERROR)<<Ω_inertial;
+  LOG(ERROR)<<Ω;
 
   Vector<Acceleration, InertialFrame> const primary_acceleration =
       ephemeris_->ComputeGravitationalAcceleration(

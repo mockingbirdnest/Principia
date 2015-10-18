@@ -206,6 +206,63 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
   }
 }
 
+TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
+  Instant const t = t0_ + 0 * Second;
+  DegreesOfFreedom<MockFrame> const point_dof =
+      {Displacement<MockFrame>({3E-9 * Metre, 4E-9 * Metre, 0 * Metre}) +
+           MockFrame::origin,
+       Velocity<MockFrame>({(-80 + 30) * Metre / Second,
+                            (60 + 40) * Metre / Second,
+                            0 * Metre / Second})};
+  DegreesOfFreedom<ICRFJ2000Equator> const big_dof =
+      {Displacement<ICRFJ2000Equator>({2 * Metre, 1* Metre, 0 * Metre}) +
+           ICRFJ2000Equator::origin,
+       Velocity<ICRFJ2000Equator>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRFJ2000Equator> const small_dof =
+      {Displacement<ICRFJ2000Equator>({5 * Metre, 5 * Metre, 0 * Metre}) +
+           ICRFJ2000Equator::origin,
+       Velocity<ICRFJ2000Equator>({40 * Metre / Second,
+                                   -30 * Metre / Second,
+                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRFJ2000Equator> const barycentre_dof =
+      Barycentre<ICRFJ2000Equator, GravitationalParameter>(
+          {big_dof, small_dof},
+          {big_gravitational_parameter_, small_gravitational_parameter_});
+
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+      .Times(2)
+      .WillRepeatedly(Return(big_dof));
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+      .Times(2)
+      .WillRepeatedly(Return(small_dof));
+  {
+    InSequence s;
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(big_dof.position(), t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(small_dof.position(), t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
+                             -300 * Metre / Pow<2>(Second),
+                             -400 * Metre / Pow<2>(Second),
+                             0 * Metre / Pow<2>(Second)})));
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(_, t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+    EXPECT_CALL(*mock_ephemeris_,
+                ComputeGravitationalAcceleration(barycentre_dof.position(), t))
+        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
+  }
+
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
+              AlmostEquals(Vector<Acceleration, MockFrame>({
+                               (-1200 - 800) * Metre / Pow<2>(Second),
+                               (-1600 + 600) * Metre / Pow<2>(Second),
+                               0 * Metre / Pow<2>(Second)}), 0));
+}
+
 TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
   Instant const t = t0_ + 0 * Second;
   DegreesOfFreedom<MockFrame> const point_dof =
