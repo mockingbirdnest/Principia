@@ -103,7 +103,8 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         .WillOnce(Return(&mock_small_trajectory_));
     mock_frame_ =
         std::make_unique<
-            BarycentricRotatingDynamicFrame<ICRFJ2000Equator, MockFrame>>(
+            StrictMock<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
+                       MockFrame>>>(
                 mock_ephemeris_.get(),
                 solar_system_.massive_body(*ephemeris_, kBig),
                 solar_system_.massive_body(*ephemeris_, kSmall));
@@ -121,10 +122,10 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
   std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
   SolarSystem<ICRFJ2000Equator> solar_system_;
 
-  MockContinuousTrajectory<ICRFJ2000Equator> mock_big_trajectory_;
-  MockContinuousTrajectory<ICRFJ2000Equator> mock_small_trajectory_;
-  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
-                  MockFrame>> mock_frame_;
+  StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>> mock_big_trajectory_;
+  StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>> mock_small_trajectory_;
+  std::unique_ptr<StrictMock<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
+                             MockFrame>>> mock_frame_;
   std::unique_ptr<StrictMock<MockEphemeris<ICRFJ2000Equator>>> mock_ephemeris_;
 };
 
@@ -207,19 +208,19 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
 
 TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
   Instant const t = t0_ + 0 * Second;
-  DegreesOfFreedom<MockFrame> point_dof =
+  DegreesOfFreedom<MockFrame> const point_dof =
       {Displacement<MockFrame>({1 * Metre, 0 * Metre, 0 * Metre}) +
            MockFrame::origin,
        Velocity<MockFrame>({1 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRFJ2000Equator> big_dof =
+  DegreesOfFreedom<ICRFJ2000Equator> const big_dof =
       {Displacement<ICRFJ2000Equator>({2 * Metre, 0 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>({2 * Metre / Second,
                                    2 * Metre / Second,
                                    0 * Metre / Second})};
-  DegreesOfFreedom<ICRFJ2000Equator> small_dof =
+  DegreesOfFreedom<ICRFJ2000Equator> const small_dof =
       {Displacement<ICRFJ2000Equator>({1 * Metre, 0 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>({1 * Metre / Second,
@@ -252,7 +253,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
-  auto const actual = mock_frame_->GeometricAcceleration(t, point_dof);
+  auto const acceleration = mock_frame_->GeometricAcceleration(t, point_dof);
 }
 
 }  // namespace physics
