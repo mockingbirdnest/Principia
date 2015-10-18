@@ -27,21 +27,39 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
-  MOCK_METHOD5_T(
+  MOCK_METHOD6_T(
       FlowWithAdaptiveStep,
       void(not_null<DiscreteTrajectory<Frame>*> const trajectory,
-          Length const& length_integration_tolerance,
-          Speed const& speed_integration_tolerance,
-          AdaptiveStepSizeIntegrator<
-              typename Ephemeris<Frame>::NewtonianMotionEquation> const&
-              integrator,
-          Instant const& t));
-  MOCK_METHOD3_T(
+           typename Ephemeris<Frame>::IntrinsicAcceleration
+               intrinsic_acceleration,
+           Length const& length_integration_tolerance,
+           Speed const& speed_integration_tolerance,
+           AdaptiveStepSizeIntegrator<
+               typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+               integrator,
+           Instant const& t));
+  MOCK_METHOD4_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
                trajectories,
+           typename Ephemeris<Frame>::IntrinsicAccelerations const&
+               intrinsic_accelerations,
            Time const& step,
            Instant const& t));
+
+  MOCK_CONST_METHOD2_T(
+      ComputeGravitationalAcceleration,
+      Vector<Acceleration, Frame>(Position<Frame> const& position,
+                                  Instant const & t));
+  //MOCK_CONST_METHOD2_T(
+  //    ComputeGravitationalAcceleration,
+  //    Vector<Acceleration, Frame>(
+  //        not_null<DiscreteTrajectory<Frame>*> const trajectory,
+  //        Instant const& t));
+  //MOCK_CONST_METHOD2_T(
+  //    ComputeGravitationalAcceleration,
+  //    Vector<Acceleration, Frame>(not_null<MassiveBody const*> const body,
+  //                                Instant const& t));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));

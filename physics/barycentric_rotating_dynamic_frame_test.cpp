@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
@@ -35,6 +36,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::Lt;
+using ::testing::StrictMock;
 
 namespace physics {
 
@@ -48,8 +50,10 @@ constexpr char kSmall[] = "Small";
 class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the barycentre of the two bodies.
-  using BigSmall = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST, false /*inertial*/>;
+  using BigSmallFrame = Frame<serialization::Frame::TestTag,
+                              serialization::Frame::TEST, false /*inertial*/>;
+  using MockFrame = Frame<serialization::Frame::TestTag,
+                          serialization::Frame::TEST1, false /*inertial*/>;
 
   BarycentricRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -80,8 +84,17 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
             {big_gravitational_parameter_, small_gravitational_parameter_});
     big_small_frame_ =
         std::make_unique<
-            BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmall>>(
+            BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
                 ephemeris_.get(),
+                solar_system_.massive_body(*ephemeris_, kBig),
+                solar_system_.massive_body(*ephemeris_, kSmall));
+
+    mock_ephemeris_ =
+       std::make_unique<StrictMock<MockEphemeris<ICRFJ2000Equator>>>();
+    mock_frame_ =
+        std::make_unique<
+            BarycentricRotatingDynamicFrame<ICRFJ2000Equator, MockFrame>>(
+                mock_ephemeris_.get(),
                 solar_system_.massive_body(*ephemeris_, kBig),
                 solar_system_.massive_body(*ephemeris_, kSmall));
   }
@@ -93,9 +106,12 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
   DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
   GravitationalParameter big_gravitational_parameter_;
   GravitationalParameter small_gravitational_parameter_;
-  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmall>>
-      big_small_frame_;
+  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
+                  BigSmallFrame>> big_small_frame_;
+  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
+                  MockFrame>> mock_frame_;
   std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
+  std::unique_ptr<StrictMock<MockEphemeris<ICRFJ2000Equator>>> mock_ephemeris_;
   SolarSystem<ICRFJ2000Equator> solar_system_;
 };
 
@@ -109,14 +125,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
     auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
 
     // Check that the centre of mass is at the origin and doesn't move.
-    DegreesOfFreedom<BigSmall> const centre_of_mass_in_big_small_at_t =
+    DegreesOfFreedom<BigSmallFrame> const centre_of_mass_in_big_small_at_t =
         to_big_small_frame_at_t(centre_of_mass_initial_state_);
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.position() -
-                                  BigSmall::origin,
-                              Displacement<BigSmall>()),
+                                  BigSmallFrame::origin,
+                              Displacement<BigSmallFrame>()),
                 Lt(1.0E-11 * Metre));
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
-                              Velocity<BigSmall>()),
+                              Velocity<BigSmallFrame>()),
                 Lt(1.0E-11 * Metre / Second));
 
     // Check that the bodies don't move and are at the right locations.
@@ -127,27 +143,29 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
         solar_system_.trajectory(*ephemeris_, kSmall).
             EvaluateDegreesOfFreedom(t, &small_hint);
 
-    DegreesOfFreedom<BigSmall> const big_in_big_small_at_t =
+    DegreesOfFreedom<BigSmallFrame> const big_in_big_small_at_t =
         to_big_small_frame_at_t(big_in_inertial_frame_at_t);
-    DegreesOfFreedom<BigSmall> const small_in_big_small_at_t =
+    DegreesOfFreedom<BigSmallFrame> const small_in_big_small_at_t =
         to_big_small_frame_at_t(small_in_inertial_frame_at_t);
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position() -
-                                  BigSmall::origin,
-                              Displacement<BigSmall>({15.0 / 7.0 * Kilo(Metre),
-                                                      0 * Kilo(Metre),
-                                                      0 * Kilo(Metre)})),
+                                  BigSmallFrame::origin,
+                              Displacement<BigSmallFrame>({
+                                  15.0 / 7.0 * Kilo(Metre),
+                                  0 * Kilo(Metre),
+                                  0 * Kilo(Metre)})),
                 Lt(1.0E-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              Velocity<BigSmall>()),
+                              Velocity<BigSmallFrame>()),
                 Lt(1.0E-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position() -
-                                  BigSmall::origin,
-                              Displacement<BigSmall>({-20.0 / 7.0 * Kilo(Metre),
-                                                      0 * Kilo(Metre),
-                                                      0 * Kilo(Metre)})),
+                                  BigSmallFrame::origin,
+                              Displacement<BigSmallFrame>({
+                                  -20.0 / 7.0 * Kilo(Metre),
+                                  0 * Kilo(Metre),
+                                  0 * Kilo(Metre)})),
                 Lt(1.0E-5 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              Velocity<BigSmall>()),
+                              Velocity<BigSmallFrame>()),
                 Lt(1.0E-4 * Metre / Second));
   }
 }
@@ -172,6 +190,17 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
                       small_initial_state_.velocity()),
         Lt(1.0E-11 * Metre / Second));
   }
+}
+
+TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
+  DegreesOfFreedom<MockFrame> point_degrees_of_freedom =
+      {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
+           MockFrame::origin,
+       Velocity<MockFrame>({0 * Metre / Second,
+                            0 * Metre / Second,
+                            0 * Metre / Second})};
+  auto const actual = mock_frame_->GeometricAcceleration(
+      t0_ + 0 * Second, point_degrees_of_freedom);
 }
 
 }  // namespace physics
