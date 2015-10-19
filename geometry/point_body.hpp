@@ -165,18 +165,5 @@ Point<Vector> BarycentreCalculator<Point<Vector>, Weight>::Get() const {
   return Point<Vector>(weighted_sum_ / weight_);
 }
 
-template<typename Vector, typename Weight>
-Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
-                         std::vector<Weight> const& weights) {
-  CHECK_EQ(points.size(), weights.size())
-      << "Points and weights of unequal sizes";
-  CHECK(!points.empty()) << "Empty input";
-  BarycentreCalculator<Point<Vector>, Weight> calculator;
-  for (size_t i = 0; i < points.size(); ++i) {
-    calculator.Add(points[i], weights[i]);
-  }
-  return calculator.Get();
-}
-
 }  // namespace geometry
 }  // namespace principia

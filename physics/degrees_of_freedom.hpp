@@ -61,11 +61,6 @@ class RelativeDegreesOfFreedom
   Velocity<Frame> const& velocity() const;
 };
 
-template<typename Frame, typename Weight>
-DegreesOfFreedom<Frame> Barycentre(
-    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-    std::vector<Weight> const& weights);
-
 template<typename Frame>
 std::string DebugString(DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -102,6 +97,8 @@ class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
 
 }  // namespace base
 
+// Reopen the geometry namespace to make BarycentreCalculator applicable to
+// degrees of freedom.
 namespace geometry {
 
 template<typename Frame, typename Weight>

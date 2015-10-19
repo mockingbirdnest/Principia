@@ -335,7 +335,7 @@ PhysicsBubble::FullState::FullState(
 void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
     not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__;
-  DegreesOfFreedom<World>::BarycentreCalculator<Mass> centre_of_mass_calculator;
+  BarycentreCalculator<DegreesOfFreedom<World>, Mass> centre_of_mass_calculator;
   for (auto const& id_part : next->parts) {
     not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
     centre_of_mass_calculator.Add(part->degrees_of_freedom(), part->mass());
@@ -356,7 +356,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     std::vector<not_null<Part<World>*>> const& parts =
         vessel_parts.second;
     VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
-    DegreesOfFreedom<World>::BarycentreCalculator<Mass> vessel_calculator;
+    BarycentreCalculator<DegreesOfFreedom<World>, Mass> vessel_calculator;
     for (auto const part : parts) {
       vessel_calculator.Add(part->degrees_of_freedom(), part->mass());
     }
@@ -374,7 +374,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
 void PhysicsBubble::RestartNext(Instant const& current_time,
                                 not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__<< '\n' << NAMED(current_time);
-  DegreesOfFreedom<Barycentric>::BarycentreCalculator<Mass> bubble_calculator;
+  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> bubble_calculator;
   for (auto const& vessel_parts : next->vessels) {
     not_null<Vessel const*> vessel = vessel_parts.first;
     // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
@@ -451,8 +451,8 @@ void PhysicsBubble::Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
                           not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(current_time) << '\n' << NAMED(common_parts);
-  DegreesOfFreedom<World>::BarycentreCalculator<Mass> current_common_calculator;
-  DegreesOfFreedom<World>::BarycentreCalculator<Mass> next_common_calculator;
+  BarycentreCalculator<DegreesOfFreedom<World>, Mass> current_common_calculator;
+  BarycentreCalculator<DegreesOfFreedom<World>, Mass> next_common_calculator;
   for (auto const& current_next : common_parts) {
     not_null<Part<World>*> const current_part = current_next.first;
     not_null<Part<World>*> const next_part = current_next.second;

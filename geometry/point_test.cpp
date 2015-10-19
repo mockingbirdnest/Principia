@@ -115,7 +115,7 @@ TEST_F(PointDeathTest, BarycentreError) {
   auto barycentre =
       [](std::vector<Instant> const& instants,
          std::vector<Volume> const& weights) -> Instant {
-    return Barycentre<Time, Volume>(instants, weights);
+    return Barycentre<Instant, Volume>(instants, weights);
   };
   EXPECT_DEATH({
     Instant const t1 = kUnixEpoch + 1 * Day;
@@ -135,8 +135,9 @@ TEST_F(PointDeathTest, BarycentreError) {
 TEST_F(PointTest, Barycentres) {
   Instant const t1 = kUnixEpoch + 1 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
-  Instant const b1 = Barycentre<Time, Volume>({t1, t2}, {3 * Litre, 1 * Litre});
-  Instant const b2 = Barycentre<Time, double>({t2, t1}, {1, 1});
+  Instant const b1 = Barycentre<Instant, Volume>({t1, t2},
+                                                 {3 * Litre, 1 * Litre});
+  Instant const b2 = Barycentre<Instant, double>({t2, t1}, {1, 1});
   EXPECT_THAT(b1, Eq(kUnixEpoch));
   EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));
 }

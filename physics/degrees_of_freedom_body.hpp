@@ -6,6 +6,9 @@
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
+
+using geometry::BarycentreCalculator;
+
 namespace physics {
 
 template<typename Frame>
@@ -54,22 +57,6 @@ RelativeDegreesOfFreedom<Frame>::displacement() const {
 template<typename Frame>
 Velocity<Frame> const& RelativeDegreesOfFreedom<Frame>::velocity() const {
   return this->t2_;
-}
-
-template<typename Frame, typename Weight>
-DegreesOfFreedom<Frame> Barycentre(
-    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-    std::vector<Weight> const& weights) {
-  CHECK_EQ(degrees_of_freedom.size(), weights.size())
-      << "Degrees of freedom and weights of unequal sizes";
-  CHECK(!degrees_of_freedom.empty()) << "Empty input";
-  geometry::BarycentreCalculator<DegreesOfFreedom<Frame>, Weight> calculator;
-  for (size_t i = 0; i < degrees_of_freedom.size(); ++i) {
-    calculator.Add(degrees_of_freedom[i], weights[i]);
-  }
-  return calculator.Get();
-  CHECK_EQ(degrees_of_freedom.size(), weights.size());
-  CHECK(!degrees_of_freedom.empty());
 }
 
 template<typename Frame>

@@ -6,6 +6,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -28,6 +29,7 @@ namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::kSolarSystemBarycentreEquator;
+using geometry::Barycentre;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
@@ -85,17 +87,17 @@ class EphemerisTest : public testing::Test {
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
     Position<EarthMoonOrbitPlane> const q1(
-        Vector<Length, EarthMoonOrbitPlane>({0 * Metre, 0 * Metre, 0 * Metre}));
+        Displacement<EarthMoonOrbitPlane>({0 * Metre, 0 * Metre, 0 * Metre}));
     Position<EarthMoonOrbitPlane> const q2(
-        Vector<Length, EarthMoonOrbitPlane>({0 * Metre,
-                                             4E8 * Metre,
-                                             0 * Metre}));
+        Displacement<EarthMoonOrbitPlane>({0 * Metre,
+                                           4E8 * Metre,
+                                           0 * Metre}));
     Length const semi_major_axis = (q1 - q2).Norm();
     *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (earth->gravitational_parameter() +
                                 moon->gravitational_parameter()));
     *centre_of_mass =
-        geometry::Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
+        Barycentre<Position<EarthMoonOrbitPlane>, Mass>(
             {q1, q2}, {earth->mass(), moon->mass()});
     Velocity<EarthMoonOrbitPlane> const v1(
         {-2 * π * (q1 - *centre_of_mass).Norm() / *period,
@@ -150,7 +152,7 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
   EXPECT_EQ(t_max, ephemeris.t_max());
 
   Instant const last_t =
-      geometry::Barycentre<Time, double>({t0_ + period, t_max}, {0.5, 0.5});
+      Barycentre<Instant, double>({t0_ + period, t_max}, {0.5, 0.5});
   ephemeris.Prolong(last_t);
   EXPECT_EQ(t_max, ephemeris.t_max());
 }

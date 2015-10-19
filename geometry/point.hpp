@@ -107,10 +107,6 @@ class BarycentreCalculator<Point<Vector>, Weight> {
   Weight weight_;
 };
 
-template<typename Vector, typename Weight>
-Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
-                         std::vector<Weight> const& weights);
-
 }  // namespace geometry
 }  // namespace principia
 
