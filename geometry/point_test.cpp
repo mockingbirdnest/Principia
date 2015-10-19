@@ -125,8 +125,9 @@ TEST_F(PointDeathTest, BarycentreError) {
   EXPECT_DEATH({
     barycentre({}, {});
   }, "Empty input");
+  using InstantBarycentreCalculator = BarycentreCalculator<Instant, Volume>;
   EXPECT_DEATH({
-    Instant::BarycentreCalculator<Volume> calculator;
+    InstantBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -141,7 +142,7 @@ TEST_F(PointTest, Barycentres) {
 }
 
 TEST_F(PointTest, InstantBarycentreCalculator) {
-  Instant::BarycentreCalculator<double> calculator;
+  BarycentreCalculator<Instant, double> calculator;
   Instant const t1 = kUnixEpoch + 2 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
   Instant const t3 = kUnixEpoch + 5 * Day;
@@ -155,7 +156,7 @@ TEST_F(PointTest, InstantBarycentreCalculator) {
 }
 
 TEST_F(PointTest, DoubleBarycentreCalculator) {
-  Point<double>::BarycentreCalculator<double> calculator;
+  BarycentreCalculator<Point<double>, double> calculator;
   Point<double> const d1 = Point<double>(2);
   Point<double> const d2 = Point<double>(-3);
   Point<double> const d3 = Point<double>(5);

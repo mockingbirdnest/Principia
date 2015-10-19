@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -38,21 +39,6 @@ class Point {
   void WriteToMessage(not_null<serialization::Point*> const message) const;
   static Point ReadFromMessage(serialization::Point const& message);
 
-  template<typename Weight>
-  class BarycentreCalculator {
-   public:
-    BarycentreCalculator() = default;
-    ~BarycentreCalculator() = default;
-
-    void Add(Point const& point, Weight const& weight);
-    Point Get() const;
-
-   private:
-    bool empty_ = true;
-    decltype(std::declval<Vector>() * std::declval<Weight>()) weighted_sum_;
-    Weight weight_;
-  };
-
  private:
   Vector coordinates_;
 
@@ -75,9 +61,8 @@ class Point {
   template<typename V>
   friend std::string DebugString(Point<V> const& point);
 
-  template<typename V, typename Weight>
-  friend Point<V> Barycentre(std::vector<Point<V>> const& points,
-                             std::vector<Weight> const& weights);
+  template<typename V, typename S>
+  friend class BarycentreCalculator;
 };
 
 template<typename Vector>
@@ -105,6 +90,22 @@ std::string DebugString(Point<Vector> const& point);
 
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
+
+// Specialize BarycentreCalculator to make it applicable to Points.
+template<typename Vector, typename Weight>
+class BarycentreCalculator<Point<Vector>, Weight> {
+ public:
+  BarycentreCalculator() = default;
+  ~BarycentreCalculator() = default;
+
+  void Add(Point<Vector> const& point, Weight const& weight);
+  Point<Vector> Get() const;
+
+ private:
+  bool empty_ = true;
+  decltype(std::declval<Vector>() * std::declval<Weight>()) weighted_sum_;
+  Weight weight_;
+};
 
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,

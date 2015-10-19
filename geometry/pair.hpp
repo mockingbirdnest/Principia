@@ -217,16 +217,17 @@ typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
+// Specialize BarycentreCalculator to make it applicable to Pairs.
 template<typename T1, typename T2, typename Weight>
 class BarycentreCalculator<Pair<T1, T2>, Weight> {
-  public:
+ public:
   BarycentreCalculator() = default;
   ~BarycentreCalculator() = default;
 
   void Add(Pair<T1, T2> const& pair, Weight const& weight);
   Pair<T1, T2> Get() const;
 
-  private:
+ private:
   bool empty_ = true;
   decltype(std::declval<typename vector_of<T1>::type>() *
             std::declval<Weight>()) t1_weighted_sum_;
