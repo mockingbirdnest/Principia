@@ -125,11 +125,13 @@ GeometricAcceleration(
           ephemeris_->ComputeGravitationalAcceleration(
               from_this_frame.rigid_transformation()(
                   degrees_of_freedom.position()), t));
-  //TODO(phl): Incorrect: should be the barycentre of the accelerations.
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       to_this_frame.orthogonal_map()(
-          -ephemeris_->ComputeGravitationalAcceleration(
-              barycentre_degrees_of_freedom.position(), t));
+          -Barycentre<InertialFrame, GravitationalParameter>(
+              {primary_acceleration,
+               secondary_acceleration},
+              {primary_->gravitational_parameter(),
+               secondary_->gravitational_parameter()}));
   Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
       -2 * Ω * degrees_of_freedom.velocity() / Radian;
   Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =
