@@ -129,7 +129,8 @@ GeometricAcceleration(
                   degrees_of_freedom.position()), t));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       to_this_frame.orthogonal_map()(
-          -Barycentre<InertialFrame, GravitationalParameter>(
+          -Barycentre<Vector<Acceleration, InertialFrame>,
+                      GravitationalParameter>(
               {primary_acceleration,
                secondary_acceleration},
               {primary_->gravitational_parameter(),

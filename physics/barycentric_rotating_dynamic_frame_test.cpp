@@ -230,7 +230,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const barycentre_dof =
-      Barycentre<ICRFJ2000Equator, GravitationalParameter>(
+      Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
           {big_dof, small_dof},
           {big_gravitational_parameter_, small_gravitational_parameter_});
 
@@ -288,7 +288,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const barycentre_dof =
-      Barycentre<ICRFJ2000Equator, GravitationalParameter>(
+      Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
           {big_dof, small_dof},
           {big_gravitational_parameter_, small_gravitational_parameter_});
 
