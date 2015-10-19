@@ -6,12 +6,18 @@
 #include "quantities/si.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "geometry/epoch.hpp"
+#include "geometry/named_quantities.hpp"
+#include "astronomy/frames.hpp"
 
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using geometry::JulianDate;
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantities::si::Minute;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using geometry::Position;
 
 namespace physics {
 
