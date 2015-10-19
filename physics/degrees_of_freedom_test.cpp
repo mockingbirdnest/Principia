@@ -69,8 +69,10 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   EXPECT_DEATH({
     barycentre({}, {});
   }, "Empty input");
+  using DegreesOfFreedomBarycentreCalculator =
+      geometry::BarycentreCalculator<DegreesOfFreedom<World>, Entropy>;
   EXPECT_DEATH({
-    DegreesOfFreedom<World>::BarycentreCalculator<Entropy> calculator;
+    DegreesOfFreedomBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -111,7 +113,7 @@ TEST_F(DegreesOfFreedomTest, Barycentre) {
 }
 
 TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
-  DegreesOfFreedom<World>::BarycentreCalculator<double> calculator;
+  geometry::BarycentreCalculator<DegreesOfFreedom<World>, double> calculator;
   calculator.Add(d1_, 3);
   DegreesOfFreedom<World> barycentre = calculator.Get();
   EXPECT_THAT(barycentre, Eq(d1_));
