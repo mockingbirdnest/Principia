@@ -105,27 +105,6 @@ Point<Vector> Point<Vector>::ReadFromMessage(
 }
 
 template<typename Vector>
-template<typename Weight>
-void Point<Vector>::BarycentreCalculator<Weight>::Add(Point const& point,
-                                                      Weight const& weight) {
-  if (empty_) {
-    weighted_sum_ = point.coordinates_ * weight;
-    weight_ = weight;
-    empty_ = false;
-  } else {
-    weighted_sum_ += point.coordinates_ * weight;
-    weight_ += weight;
-  }
-}
-
-template<typename Vector>
-template<typename Weight>
-Point<Vector> Point<Vector>::BarycentreCalculator<Weight>::Get() const {
-  CHECK(!empty_) << "Empty BarycentreCalculator";
-  return Point<Vector>(weighted_sum_ / weight_);
-}
-
-template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point) {
   return Point<Vector>(translation + point.coordinates_);
@@ -167,16 +146,23 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
 }
 
 template<typename Vector, typename Weight>
-Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
-                         std::vector<Weight> const& weights) {
-  CHECK_EQ(points.size(), weights.size())
-      << "Points and weights of unequal sizes";
-  CHECK(!points.empty()) << "Empty input";
-  typename Point<Vector>::template BarycentreCalculator<Weight> calculator;
-  for (size_t i = 0; i < points.size(); ++i) {
-    calculator.Add(points[i], weights[i]);
+void BarycentreCalculator<Point<Vector>, Weight>::Add(
+    Point<Vector> const& point,
+    Weight const& weight) {
+  if (empty_) {
+    weighted_sum_ = point.coordinates_ * weight;
+    weight_ = weight;
+    empty_ = false;
+  } else {
+    weighted_sum_ += point.coordinates_ * weight;
+    weight_ += weight;
   }
-  return calculator.Get();
+}
+
+template<typename Vector, typename Weight>
+Point<Vector> BarycentreCalculator<Point<Vector>, Weight>::Get() const {
+  CHECK(!empty_) << "Empty BarycentreCalculator";
+  return Point<Vector>(weighted_sum_ / weight_);
 }
 
 }  // namespace geometry

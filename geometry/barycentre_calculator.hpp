@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <utility>
 
 namespace principia {
@@ -20,6 +21,10 @@ class BarycentreCalculator {
   decltype(std::declval<Vector>() * std::declval<Scalar>()) weighted_sum_;
   Scalar weight_;
 };
+
+// |T| is anything for which a specialization of BarycentreCalculator exists.
+template<typename T, typename Scalar>
+T Barycentre(std::vector<T> const& ts, std::vector<Scalar> const& weights);
 
 }  // namespace geometry
 }  // namespace principia

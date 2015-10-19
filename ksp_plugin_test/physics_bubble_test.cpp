@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -22,6 +23,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Rotation;
 using quantities::Acceleration;
@@ -263,7 +265,8 @@ class PhysicsBubbleTest : public testing::Test {
     DiscreteTrajectory<Barycentric> const& trajectory =
         bubble.centre_of_mass_trajectory();
     DegreesOfFreedom<Barycentric> const expected_dof =
-        physics::Barycentre<Barycentric, double>({dof1_, dof2_}, {23, 66});
+        Barycentre<DegreesOfFreedom<Barycentric>, double>({dof1_, dof2_},
+                                                          {23, 66});
     EXPECT_EQ(expected_dof, trajectory.last().degrees_of_freedom());
 
     EXPECT_THAT(bubble.DisplacementCorrection(
