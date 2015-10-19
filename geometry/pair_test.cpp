@@ -486,20 +486,24 @@ TEST_F(PairTest, SerializationSuccess) {
 }
 
 TEST_F(PairDeathTest, BarycentreCalculatorError) {
+  using PPBarycentreCalculator = BarycentreCalculator<PP, Entropy>;
+  using PVBarycentreCalculator = BarycentreCalculator<PV, Entropy>;
+  using VPBarycentreCalculator = BarycentreCalculator<VP, Entropy>;
+  using VVBarycentreCalculator = BarycentreCalculator<VV, Entropy>;
   EXPECT_DEATH({
-    PP::BarycentreCalculator<Entropy> calculator;
+    PPBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
   EXPECT_DEATH({
-    PV::BarycentreCalculator<Entropy> calculator;
+    PVBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
   EXPECT_DEATH({
-    VP::BarycentreCalculator<Entropy> calculator;
+    VPBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
   EXPECT_DEATH({
-    VV::BarycentreCalculator<Entropy> calculator;
+    VVBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -508,7 +512,7 @@ TEST_F(PairDeathTest, BarycentreCalculatorError) {
 // the computations, so we'll redo some testing for DegreesOfFreedom.
 TEST_F(PairTest, BarycentreCalculatorSuccess) {
   {
-    PP::BarycentreCalculator<double> calculator;
+    BarycentreCalculator<PP, double> calculator;
     calculator.Add(pp_, 3);
     PP barycentre = calculator.Get();
     EXPECT_EQ(pp_, barycentre);
@@ -520,7 +524,7 @@ TEST_F(PairTest, BarycentreCalculatorSuccess) {
     EXPECT_EQ(pp_ - 19.0 / 16.0 * vv_, barycentre);
   }
   {
-    PV::BarycentreCalculator<double> calculator;
+    BarycentreCalculator<PV, double> calculator;
     calculator.Add(pv_, 3);
     PV barycentre = calculator.Get();
     EXPECT_EQ(pv_, barycentre);
@@ -532,7 +536,7 @@ TEST_F(PairTest, BarycentreCalculatorSuccess) {
     EXPECT_EQ(pv_ - 19.0 / 16.0 * vv_, barycentre);
   }
   {
-    VP::BarycentreCalculator<double> calculator;
+    BarycentreCalculator<VP, double> calculator;
     calculator.Add(vp_, 3);
     VP barycentre = calculator.Get();
     EXPECT_EQ(vp_, barycentre);
@@ -544,7 +548,7 @@ TEST_F(PairTest, BarycentreCalculatorSuccess) {
     EXPECT_EQ(vp_ - 19.0 / 16.0 * vv_, barycentre);
   }
   {
-    VV::BarycentreCalculator<double> calculator;
+    BarycentreCalculator<VV, double> calculator;
     calculator.Add(vv_, 3);
     VV barycentre = calculator.Get();
     EXPECT_EQ(vv_, barycentre);

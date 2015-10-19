@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -22,6 +23,7 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::Rotation;
@@ -86,7 +88,7 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                          ephemeris_.get(),
                          solar_system_.massive_body(*ephemeris_, kSmall));
     centre_of_mass_initial_state_ =
-        Barycentre<ICRFJ2000Equator, GravitationalParameter>(
+        Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
             {big_initial_state_, small_initial_state_},
             {big_gravitational_parameter_, small_gravitational_parameter_});
   }

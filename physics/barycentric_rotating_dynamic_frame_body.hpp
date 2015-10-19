@@ -2,6 +2,7 @@
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/quantities.hpp"
@@ -9,6 +10,7 @@
 
 namespace principia {
 
+using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
@@ -41,7 +43,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<InertialFrame, GravitationalParameter>(
+      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
           {primary_degrees_of_freedom,
            secondary_degrees_of_freedom},
           {primary_->gravitational_parameter(),
@@ -86,7 +88,7 @@ GeometricAcceleration(
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<InertialFrame, GravitationalParameter>(
+      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
           {primary_degrees_of_freedom,
            secondary_degrees_of_freedom},
           {primary_->gravitational_parameter(),

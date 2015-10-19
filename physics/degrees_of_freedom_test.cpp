@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -11,6 +12,8 @@
 
 namespace principia {
 
+using geometry::Barycentre;
+using geometry::BarycentreCalculator;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
@@ -61,7 +64,8 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   auto barycentre =
       [](std::vector<DegreesOfFreedom<World>> const& degrees_of_freedom,
          std::vector<Entropy> const& weights) -> DegreesOfFreedom<World> {
-    return Barycentre<World, Entropy>(degrees_of_freedom, weights);
+    return Barycentre<DegreesOfFreedom<World>, Entropy>(
+               degrees_of_freedom, weights);
   };
   EXPECT_DEATH({
     barycentre({d1_, d2_, d3_}, {3 * SIUnit<Entropy>(), 4 * SIUnit<Entropy>()});
@@ -69,8 +73,10 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   EXPECT_DEATH({
     barycentre({}, {});
   }, "Empty input");
+  using DegreesOfFreedomBarycentreCalculator =
+      BarycentreCalculator<DegreesOfFreedom<World>, Entropy>;
   EXPECT_DEATH({
-    DegreesOfFreedom<World>::BarycentreCalculator<Entropy> calculator;
+    DegreesOfFreedomBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -95,10 +101,10 @@ TEST_F(DegreesOfFreedomTest, Output) {\
 
 TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
-      Barycentre<World, Entropy>({d1_, d2_, d3_},
-                                 {3 * SIUnit<Entropy>(),
-                                  4 * SIUnit<Entropy>(),
-                                  5 * SIUnit<Entropy>()});
+      Barycentre<DegreesOfFreedom<World>, Entropy>({d1_, d2_, d3_},
+                                                   {3 * SIUnit<Entropy>(),
+                                                    4 * SIUnit<Entropy>(),
+                                                    5 * SIUnit<Entropy>()});
   EXPECT_THAT(barycentre,
               Componentwise(
                   Eq(origin_ +
@@ -111,7 +117,7 @@ TEST_F(DegreesOfFreedomTest, Barycentre) {
 }
 
 TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
-  DegreesOfFreedom<World>::BarycentreCalculator<double> calculator;
+  BarycentreCalculator<DegreesOfFreedom<World>, double> calculator;
   calculator.Add(d1_, 3);
   DegreesOfFreedom<World> barycentre = calculator.Get();
   EXPECT_THAT(barycentre, Eq(d1_));

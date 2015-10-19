@@ -28,5 +28,16 @@ Vector BarycentreCalculator<Vector, Scalar>::Get() const {
   return Vector(weighted_sum_ / weight_);
 }
 
+template<typename T, typename Scalar>
+T Barycentre(std::vector<T> const& ts, std::vector<Scalar> const& weights) {
+  CHECK_EQ(ts.size(), weights.size()) << "Ts and weights of unequal sizes";
+  CHECK(!ts.empty()) << "Empty input";
+  BarycentreCalculator<T, Scalar> calculator;
+  for (size_t i = 0; i < ts.size(); ++i) {
+    calculator.Add(ts[i], weights[i]);
+  }
+  return calculator.Get();
+}
+
 }  // namespace geometry
 }  // namespace principia
