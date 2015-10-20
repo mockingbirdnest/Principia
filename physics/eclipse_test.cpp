@@ -19,26 +19,30 @@ using quantities::si::Milli;
 
 namespace physics {
 
-	class EclipseTest : public testing::Test {
-	protected:
-		EclipseTest() {
-			solar_system_1950_.Initialize(
-				SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt", 
-				SOLUTION_DIR / "astronomy" / "initial_state_jd_2433282_500000000.proto.txt");
-		}
+  class EclipseTest : public testing::Test {
+  protected:
+    EclipseTest() {
+      solar_system_1950_.Initialize(
+        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt", 
+        SOLUTION_DIR / "astronomy" / "initial_state_jd_2433282_500000000.proto.txt");
+    }
 
-		SolarSystem<ICRFJ2000Equator> solar_system_1950_;
-	};
+    SolarSystem<ICRFJ2000Equator> solar_system_1950_;
+  };
     
-	TEST_F(EclipseTest, Dummy) {
-		auto ephemeris = solar_system_1950_.MakeEphemeris(McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-		45 * Minute,
-		5 * Milli(Metre));
+  TEST_F(EclipseTest, Dummy) {
+    auto ephemeris = solar_system_1950_.MakeEphemeris(McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+    45 * Minute,
+    5 * Milli(Metre));
 
-		ephemeris->Prolong(JulianDate(2433374.5));
-		// Prolong until date of eclipse
-		// pass body to Ephemeris.trajectory
-	};
+    ephemeris->Prolong(JulianDate(2433374.5)); // Prolong until date of eclipse (Eclipse was 1950-04-02 but JD is 1950-04-03:00:00:00)
+    // pass body to Ephemeris.trajectory
+    auto earth = ephemeris->bodies()[solar_system_1950_.index("Earth")];
+    auto sun = ephemeris->bodies()[solar_system_1950_.index("Sun")];
+    auto moon = ephemeris->bodies()[solar_system_1950_.index("Moon")];
+    // check body angles at target times: P1, U1, U2, U3, U4, P4. (Us might be unavailable for some eclipses)
+    // Future: 2048-01-01
+  };
         
 } // physics
 
