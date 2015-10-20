@@ -238,6 +238,8 @@ inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector) {
+  Scalar const norm = multivector.Norm();
+  CHECK_NE(Scalar(), norm);
   return multivector / multivector.Norm();
 }
 
