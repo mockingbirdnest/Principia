@@ -166,7 +166,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position() -
                                   BigSmallFrame::origin,
                               Displacement<BigSmallFrame>({
-                                  15.0 / 7.0 * Kilo(Metre),
+                                  10.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
                                   0 * Kilo(Metre)})),
                 Lt(1.0E-6 * Metre));
@@ -176,7 +176,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position() -
                                   BigSmallFrame::origin,
                               Displacement<BigSmallFrame>({
-                                  -20.0 / 7.0 * Kilo(Metre),
+                                  -25.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
                                   0 * Kilo(Metre)})),
                 Lt(1.0E-5 * Metre));
