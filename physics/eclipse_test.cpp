@@ -37,11 +37,19 @@ namespace physics {
 
     ephemeris->Prolong(JulianDate(2433374.5)); // Prolong until date of eclipse (Eclipse was 1950-04-02 but JD is 1950-04-03:00:00:00)
     // pass body to Ephemeris.trajectory
-    auto earth = ephemeris->bodies()[solar_system_1950_.index("Earth")];
     auto sun = ephemeris->bodies()[solar_system_1950_.index("Sun")];
+    auto earth = ephemeris->bodies()[solar_system_1950_.index("Earth")];
     auto moon = ephemeris->bodies()[solar_system_1950_.index("Moon")];
-    // check body angles at target times: P1, U1, U2, U3, U4, P4. (Us might be unavailable for some eclipses)
-    // Future: 2048-01-01
+
+    // Get positions/trajectories/ephemeres for bodies
+    // Dates will have to be for U1, etc. (and all will have to be generated)
+    auto some_instant = JulianDate(2433374.5);
+    ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
+    ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
+    ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
+    // check body angles at target times
+
+    // Future: check 2048-01-01 Lunar eclipse
   };
         
 } // physics
