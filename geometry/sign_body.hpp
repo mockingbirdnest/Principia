@@ -1,5 +1,9 @@
 #pragma once
 
+#include "geometry/sign.hpp"
+
+#include <string>
+
 namespace principia {
 namespace geometry {
 

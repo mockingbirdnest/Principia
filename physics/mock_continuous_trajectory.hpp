@@ -18,7 +18,6 @@ class MockContinuousTrajectory : public ContinuousTrajectory<Frame> {
       DegreesOfFreedom<Frame>(
           Instant const& time,
           typename ContinuousTrajectory<Frame>::Hint* const hint));
-
 };
 
 }  // namespace physics

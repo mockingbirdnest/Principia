@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "base/not_null.hpp"
 #include "serialization/geometry.pb.h"
 
