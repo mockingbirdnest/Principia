@@ -87,12 +87,6 @@ GeometricAcceleration(
       primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
-  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
-          {primary_degrees_of_freedom,
-           secondary_degrees_of_freedom},
-          {primary_->gravitational_parameter(),
-           secondary_->gravitational_parameter()});
 
   // Beware, we want the angular velocity of ThisFrame as seen in the
   // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
