@@ -240,7 +240,7 @@ inline Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector) {
   Scalar const norm = multivector.Norm();
   CHECK_NE(Scalar(), norm);
-  return multivector / multivector.Norm();
+  return multivector / norm;
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

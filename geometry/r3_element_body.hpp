@@ -263,7 +263,7 @@ template<typename Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
   Scalar const norm = r3_element.Norm();
   CHECK_NE(Scalar(), norm);
-  return r3_element / r3_element.Norm();
+  return r3_element / norm;
 }
 
 template<typename Scalar>
