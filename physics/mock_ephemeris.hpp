@@ -53,7 +53,7 @@ class MockEphemeris : public Ephemeris<Frame> {
                                   Instant const & t));
 
   // NOTE(phl): Can't mock the other overloads of
-  // ComputeGravitationalAcceleration, it causes an internal error in the 
+  // ComputeGravitationalAcceleration, it causes an internal error in the
   // compiler.
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
