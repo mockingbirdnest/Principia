@@ -376,7 +376,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
-    // The acceleration is centripete + tangential.
+    // The acceleration is centripetal + tangential.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAcceleration(big_dof.position(), t))
@@ -442,7 +442,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
-    // The acceleration is linear + centripete.
+    // The acceleration is linear + centripetal.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAcceleration(big_dof.position(), t))
