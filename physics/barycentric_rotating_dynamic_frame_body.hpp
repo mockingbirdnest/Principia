@@ -87,12 +87,6 @@ GeometricAcceleration(
       primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
-  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
-          {primary_degrees_of_freedom,
-           secondary_degrees_of_freedom},
-          {primary_->gravitational_parameter(),
-           secondary_->gravitational_parameter()});
 
   // Beware, we want the angular velocity of ThisFrame as seen in the
   // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
@@ -101,8 +95,6 @@ GeometricAcceleration(
   AngularVelocity<ThisFrame> const Ω =
       to_this_frame.orthogonal_map()(Ω_inertial);
 
-  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
-      primary_degrees_of_freedom - secondary_degrees_of_freedom;
   Vector<Acceleration, InertialFrame> const primary_acceleration =
       ephemeris_->ComputeGravitationalAcceleration(
           primary_degrees_of_freedom.position(), t);
@@ -111,6 +103,8 @@ GeometricAcceleration(
           secondary_degrees_of_freedom.position(), t);
 
   // TODO(egg): TeX and reference.
+  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
+      primary_degrees_of_freedom - secondary_degrees_of_freedom;
   Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
       to_this_frame.orthogonal_map()
           (Wedge(primary_secondary.displacement(),
@@ -129,8 +123,12 @@ GeometricAcceleration(
                   degrees_of_freedom.position()), t));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       to_this_frame.orthogonal_map()(
-          -ephemeris_->ComputeGravitationalAcceleration(
-              barycentre_degrees_of_freedom.position(), t));
+          -Barycentre<Vector<Acceleration, InertialFrame>,
+                      GravitationalParameter>(
+              {primary_acceleration,
+               secondary_acceleration},
+              {primary_->gravitational_parameter(),
+               secondary_->gravitational_parameter()}));
   Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
       -2 * Ω * degrees_of_freedom.velocity() / Radian;
   Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =

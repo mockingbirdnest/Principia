@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "geometry/grassmann.hpp"
+
 #include <string>
 
 #include "geometry/permutation.hpp"
@@ -236,7 +238,9 @@ inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector) {
-  return multivector / multivector.Norm();
+  Scalar const norm = multivector.Norm();
+  CHECK_NE(Scalar(), norm);
+  return multivector / norm;
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

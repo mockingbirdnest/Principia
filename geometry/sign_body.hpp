@@ -1,5 +1,9 @@
 #pragma once
 
+#include "geometry/sign.hpp"
+
+#include <string>
+
 namespace principia {
 namespace geometry {
 
@@ -30,6 +34,15 @@ inline Sign operator*(Sign const& left, Sign const& right) {
 template<typename T>
 T operator*(Sign const& left, T const& right) {
   return left.negative_ ? -right : right;
+}
+
+inline std::string DebugString(Sign const& sign) {
+  return sign.Negative() ? "-" : "+";
+}
+
+inline std::ostream& operator<<(std::ostream& out, Sign const& sign) {
+  out << DebugString(sign);
+  return out;
 }
 
 }  // namespace geometry

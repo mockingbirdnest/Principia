@@ -119,6 +119,9 @@
     <ClInclude Include="barycentric_rotating_dynamic_frame_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="mock_continuous_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
