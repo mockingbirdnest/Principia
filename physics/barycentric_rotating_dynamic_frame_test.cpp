@@ -209,6 +209,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
   }
 }
 
+// Two bodies in rotation with their barycentre at rest.  The test point is at
+// the origin and in motion.  The acceleration is purely due to Coriolis.
 TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
   Instant const t = t0_ + 0 * Second;
   // The velocity is opposed to the motion and away from the centre.
@@ -272,6 +274,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
                                0 * Metre / Pow<2>(Second)}), 0));
 }
 
+// Two bodies in rotation with their barycentre at rest.  The test point doesn't
+// move so the acceleration is purely centrifugal.
 TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
   Instant const t = t0_ + 0 * Second;
   DegreesOfFreedom<MockFrame> const point_dof =
@@ -333,6 +337,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
                                0 * Metre / Pow<2>(Second)}), 2));
 }
 
+// Two bodies in rotation with their barycentre at rest, with a tangential
+// acceleration that increases their rotational speed.  The test point doesn't
+// move.  The resulting acceleration combines centrifugal and Euler.
 TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
   Instant const t = t0_ + 0 * Second;
   DegreesOfFreedom<MockFrame> const point_dof =
@@ -369,6 +376,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
+    // The acceleration is centripete + tangential.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAcceleration(big_dof.position(), t))
@@ -387,6 +395,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
+  // The acceleration is centrifugal + Euler.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (1E3 + 2E3) * Metre / Pow<2>(Second),
@@ -394,6 +403,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
                                0 * Metre / Pow<2>(Second)}), 1));
 }
 
+// Two bodies in rotation with their barycentre at rest, with a linear
+// acceleration identical for both bodies.  The test point doesn't move.  The
+// resulting acceleration combines centrifugal and linear.
 TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
   Instant const t = t0_ + 0 * Second;
   DegreesOfFreedom<MockFrame> const point_dof =
@@ -430,6 +442,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
+    // The acceleration is linear + centripete.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAcceleration(big_dof.position(), t))
@@ -448,6 +461,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
+  // The acceleration is linear + centrifugal.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                1E3 * Metre / Pow<2>(Second),
