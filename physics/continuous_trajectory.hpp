@@ -77,8 +77,9 @@ class ContinuousTrajectory {
                                    Hint* const hint) const;
   Velocity<Frame> EvaluateVelocity(Instant const& time,
                                    Hint* const hint) const;
-  DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(Instant const& time,
-                                                   Hint* const hint) const;
+  virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
+      Instant const& time,
+      Hint* const hint) const;
 
   void WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const;
@@ -94,6 +95,10 @@ class ContinuousTrajectory {
     int index_;
     friend class ContinuousTrajectory<Frame>;
   };
+
+ protected:
+  // For mocking.
+  ContinuousTrajectory();
 
  private:
   // Computes the best Newhall approximation based on the desired tolerance.

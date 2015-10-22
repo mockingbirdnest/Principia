@@ -6,6 +6,9 @@
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
+
+using geometry::BarycentreCalculator;
+
 namespace physics {
 
 template<typename Frame>
@@ -56,23 +59,6 @@ Velocity<Frame> const& RelativeDegreesOfFreedom<Frame>::velocity() const {
   return this->t2_;
 }
 
-template<typename Frame, typename Weight>
-DegreesOfFreedom<Frame> Barycentre(
-    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-    std::vector<Weight> const& weights) {
-  CHECK_EQ(degrees_of_freedom.size(), weights.size())
-      << "Degrees of freedom and weights of unequal sizes";
-  CHECK(!degrees_of_freedom.empty()) << "Empty input";
-  typename DegreesOfFreedom<Frame>::
-      template BarycentreCalculator<Weight> calculator;
-  for (size_t i = 0; i < degrees_of_freedom.size(); ++i) {
-    calculator.Add(degrees_of_freedom[i], weights[i]);
-  }
-  return calculator.Get();
-  CHECK_EQ(degrees_of_freedom.size(), weights.size());
-  CHECK(!degrees_of_freedom.empty());
-}
-
 template<typename Frame>
 std::string DebugString(DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   return "{" + DebugString(degrees_of_freedom.position()) + ", " +
@@ -114,4 +100,36 @@ Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>::Do(
 }
 
 }  // namespace base
+
+namespace geometry {
+
+template<typename Frame, typename Weight>
+void BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::Add(
+    physics::DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Weight const& weight) {
+  implementation_.Add(degrees_of_freedom, weight);
+}
+
+template<typename Frame, typename Weight>
+physics::DegreesOfFreedom<Frame>
+BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::Get() const {
+  return implementation_.Get();
+}
+
+template<typename Frame, typename Weight>
+void
+BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::Add(
+    physics::RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom,
+    Weight const& weight) {
+  implementation_.Add(relative_degrees_of_freedom, weight);
+}
+
+template<typename Frame, typename Weight>
+physics::RelativeDegreesOfFreedom<Frame>
+BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::Get()
+    const {
+  return implementation_.Get();
+}
+
+}  // namespace geometry
 }  // namespace principia

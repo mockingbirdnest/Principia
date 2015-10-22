@@ -1,0 +1,12 @@
+gravity_model {
+  frame : ICRF_J2000_EQUATOR
+
+  body {
+    name                    : "Big"
+    gravitational_parameter : "5 km^3/s^2"
+  }
+  body {
+    name                    : "Small"
+    gravitational_parameter : "2 km^3/s^2"
+  }
+}

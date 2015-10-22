@@ -1,0 +1,30 @@
+initial_state {
+  frame : ICRF_J2000_EQUATOR
+  # The time of the initial state, as a TDB Julian date.
+  # This is 1950-Jan-01 00:00:00.0000 TDB.
+  epoch : 2433282.500000000
+
+  # The two bodies are on circular orbits around their center of mass.  The
+  # center of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
+  # period is 10 Pi Sqrt[5/7] s.
+  body {
+    name : "Big"
+    x    : "0 km"
+    y    : "0 km"
+    z    : "0 km"
+    # -2 / Sqrt[35] km/s
+    vx   : "-0.33806170189140663100 km/s"
+    vy   : "0 km/s"
+    vz   : "0 km/s"
+  }
+  body {
+    name : "Small"
+    x    : "0 km"
+    y    : "5 km"
+    z    : "0 km"
+    # 5 / Sqrt[35] km/s
+    vx   : "0.84515425472851657751 km/s"
+    vy   : "0 km/s"
+    vz   : "0 km/s"
+  }
+}

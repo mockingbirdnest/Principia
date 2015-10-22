@@ -1,0 +1,69 @@
+#pragma once
+
+#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+
+#include "geometry/identity.hpp"
+
+namespace principia {
+
+using geometry::Identity;
+
+namespace physics {
+
+template<typename InertialFrame, typename ThisFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+BodyCentredNonRotatingDynamicFrame(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<MassiveBody const*> const centre)
+    : ephemeris_(ephemeris),
+      centre_(centre),
+      centre_trajectory_(ephemeris_->trajectory(centre_)) {}
+
+template<typename InertialFrame, typename ThisFrame>
+RigidMotion<InertialFrame, ThisFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
+    Instant const& t) const {
+  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
+      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
+  RigidTransformation<InertialFrame, ThisFrame> const
+      rigid_transformation(centre_degrees_of_freedom.position(),
+                           ThisFrame::origin,
+                           Identity<InertialFrame, ThisFrame>().Forget());
+  return RigidMotion<InertialFrame, ThisFrame>(
+             rigid_transformation,
+             AngularVelocity<InertialFrame>(),
+             centre_degrees_of_freedom.velocity());
+}
+
+template<typename InertialFrame, typename ThisFrame>
+RigidMotion<ThisFrame, InertialFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+FromThisFrameAtTime(Instant const& t) const {
+  return ToThisFrameAtTime(t).Inverse();
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Vector<Acceleration, ThisFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+GeometricAcceleration(
+    Instant const& t,
+    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
+  auto const to_this_frame = ToThisFrameAtTime(t);
+  auto const from_this_frame = to_this_frame.Inverse();
+
+  Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
+      to_this_frame.orthogonal_map()(
+          ephemeris_->ComputeGravitationalAcceleration(
+              from_this_frame.rigid_transformation()(
+                  degrees_of_freedom.position()), t));
+  Vector<Acceleration, ThisFrame> const linear_acceleration =
+      to_this_frame.orthogonal_map()(
+          -ephemeris_->ComputeGravitationalAcceleration(centre_, t));
+
+  Vector<Acceleration, ThisFrame> const& fictitious_acceleration =
+      linear_acceleration;
+  return gravitational_acceleration_at_point + fictitious_acceleration;
+}
+
+}  // namespace physics
+}  // namespace principia

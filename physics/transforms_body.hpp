@@ -7,6 +7,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
@@ -22,6 +23,7 @@ namespace principia {
 
 using base::make_not_null_unique;
 using geometry::AffineMap;
+using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Identity;
@@ -57,8 +59,7 @@ void FromBasisOfBarycentricFrameToStandardBasis(
   Displacement<FromFrame> const& reference_direction =
       reference.displacement();
   Velocity<FromFrame> reference_normal = reference.velocity();
-  reference_direction.template Orthogonalize<Speed, FromFrame>(
-      &reference_normal);
+  reference_direction.template Orthogonalize<Speed>(&reference_normal);
   Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
   *rotation = Rotation<FromFrame, ToFrame>(
@@ -93,7 +94,7 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
       to_secondary_trajectory.EvaluateDegreesOfFreedom(
           last, &*to_secondary_hint);
   *last_barycentre_degrees_of_freedom =
-      Barycentre<ToFrame, GravitationalParameter>(
+      Barycentre<DegreesOfFreedom<ToFrame>, GravitationalParameter>(
           {last_primary_degrees_of_freedom,
            last_secondary_degrees_of_freedom},
           {primary.gravitational_parameter(),
@@ -264,7 +265,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         from_secondary_trajectory.EvaluateDegreesOfFreedom(
             t, &*from_secondary_hint);
     DegreesOfFreedom<FromFrame> const barycentre_degrees_of_freedom =
-        Barycentre<FromFrame, GravitationalParameter>(
+        Barycentre<DegreesOfFreedom<FromFrame>, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
             {primary.gravitational_parameter(),

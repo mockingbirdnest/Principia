@@ -76,6 +76,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
   double const sin = Sin(half_angle);
   R3Element<Scalar> const coordinates = axis.coordinates();
   Scalar const norm = coordinates.Norm();
+  CHECK_NE(0.0 * SIUnit<Scalar>(), norm);
   R3Element<double> const unit_axis = coordinates / norm;
   quaternion_ = Quaternion(cos, sin * unit_axis);
 }
@@ -170,7 +171,7 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
   R3Element<double> const& imaginary_part = quaternion_.imaginary_part();
   return r3_element + 2 * Cross(imaginary_part,
                                 Cross(imaginary_part, r3_element) +
-                                    real_part * r3_element);
+                                      real_part * r3_element);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

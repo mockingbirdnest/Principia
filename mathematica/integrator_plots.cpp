@@ -377,7 +377,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
          b <= SolarSystemFactory::kLastMajorBody;
          ++b) {
       for (int i = 0; i < reference_size; ++i) {
-        Position<ICRFJ2000Equator>::BarycentreCalculator<double> reference_q;
+        BarycentreCalculator<Position<ICRFJ2000Equator>, double> reference_q;
         BarycentreCalculator<Velocity<ICRFJ2000Equator>, double> reference_v;
         for (auto const& solution : reference_solutions) {
           reference_q.Add(solution[i].positions[b].value, 1);

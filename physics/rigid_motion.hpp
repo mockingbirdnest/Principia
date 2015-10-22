@@ -38,13 +38,15 @@ class RigidMotion {
  public:
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
-      AngularVelocity<ToFrame> const& rotation,
-      Velocity<ToFrame> const& translation);
+      AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
+      Velocity<FromFrame> const& velocity_of_to_frame_origin);
   ~RigidMotion() = default;
 
   RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
   OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map() const;
+  AngularVelocity<FromFrame> const& angular_velocity_of_to_frame() const;
+  Velocity<FromFrame> const& velocity_of_to_frame_origin() const;
 
   DegreesOfFreedom<ToFrame> operator()(
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
@@ -52,14 +54,14 @@ class RigidMotion {
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
  private:
-  RigidTransformation<FromFrame, ToFrame> rigid_transformation_;
-  // d/dt rigid_transformation(basis of FromFrame). The positively oriented
-  // orthogonal bases of |ToFrame| are acted upon faithfully and transitively by
-  // SO(ToFrame), so this lies in the tangent space, i.e., the Lie algebra
-  // 𝖘𝔬(ToFrame) ≅ ToFrame ∧ ToFrame.
-  AngularVelocity<ToFrame> rotation_;
-  // d/dt rigid_transformation(FromFrame::origin).
-  Velocity<ToFrame> translation_;
+  RigidTransformation<FromFrame, ToFrame> const rigid_transformation_;
+  // d/dt rigid_transformation⁻¹(basis of ToFrame). The positively oriented
+  // orthogonal bases of |FromFrame| are acted upon faithfully and transitively
+  // by SO(FromFrame), so this lies in the tangent space, i.e., the Lie algebra
+  // 𝖘𝔬(FromFrame) ≅ FromFrame ∧ FromFrame.
+  AngularVelocity<FromFrame> angular_velocity_of_to_frame_;
+  // d/dt rigid_transformation⁻¹(ToFrame::origin).
+  Velocity<FromFrame> velocity_of_to_frame_origin_;
 
   template<typename From, typename Through, typename To>
   friend RigidMotion<From, To> operator*(

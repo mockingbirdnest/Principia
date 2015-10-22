@@ -370,11 +370,8 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 
 template<typename Frame>
 Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
-    not_null<DiscreteTrajectory<Frame>*> const trajectory,
-    Instant const & t) {
-  auto const it = trajectory->Find(t);
-  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
-
+    Position<Frame> const& position,
+    Instant const& t) const {
   // To avoid intrinsic accelerations.
   DiscreteTrajectory<Frame> empty_trajectory;
 
@@ -383,7 +380,7 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
   ComputeMasslessBodiesGravitationalAccelerations(
       {&empty_trajectory},
       t,
-      {degrees_of_freedom.position()},
+      {position},
       &accelerations,
       &hints);
 
@@ -392,8 +389,17 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
 
 template<typename Frame>
 Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
+    Instant const& t) const {
+  auto const it = trajectory->Find(t);
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
+  return ComputeGravitationalAcceleration(degrees_of_freedom.position(), t);
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
     not_null<MassiveBody const*> const body,
-    Instant const& t) {
+    Instant const& t) const {
   bool const body_is_oblate = body->is_oblate();
 
   // |other_xxx_bodies| is |xxx_bodies_| without |body|.  Index 0 in |positions|
@@ -749,7 +755,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
     not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-        const hints) {
+        const hints) const {
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
 
   for (size_t b2 = 0; b2 < positions.size(); ++b2) {
@@ -784,7 +790,8 @@ template<typename Frame>
 void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
-    not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations) {
+    not_null<std::vector<Vector<Acceleration, Frame>>*> const
+        accelerations) const {
   accelerations->assign(accelerations->size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -835,7 +842,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-          const hints) {
+          const hints) const {
   CHECK_EQ(trajectories.size(), positions.size());
   CHECK_EQ(trajectories.size(), accelerations->size());
   accelerations->assign(accelerations->size(), Vector<Acceleration, Frame>());
@@ -874,7 +881,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesTotalAccelerations(
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
     not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-        const hints) {
+        const hints) const {
   // First, the acceleration due to the gravitational field of the
   // massive bodies.
   ComputeMasslessBodiesGravitationalAccelerations(

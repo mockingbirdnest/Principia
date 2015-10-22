@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/mappable.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/point.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -96,30 +97,6 @@ class Pair {
   void WriteToMessage(not_null<serialization::Pair*> const message) const;
   static Pair ReadFromMessage(serialization::Pair const& message);
 
-  template<typename Weight>
-  class BarycentreCalculator {
-   public:
-    BarycentreCalculator() = default;
-    ~BarycentreCalculator() = default;
-
-    void Add(Pair const& pair, Weight const& weight);
-    Pair Get() const;
-
-   private:
-    bool empty_ = true;
-    decltype(std::declval<typename vector_of<T1>::type>() *
-             std::declval<Weight>()) t1_weighted_sum_;
-    decltype(std::declval<typename vector_of<T2>::type>() *
-             std::declval<Weight>()) t2_weighted_sum_;
-    Weight weight_;
-
-    // We need reference values to convert points into vectors, if needed.  We
-    // pick default-constructed objects as they don't introduce any inaccuracies
-    // in the computations.
-    static T1 const reference_t1_;
-    static T2 const reference_t2_;
-  };
-
  protected:
   // The subclasses can access the members directly to implement accessors.
   T1 t1_;
@@ -128,8 +105,12 @@ class Pair {
  private:
   // This is needed so that different instantiations of Pair can access the
   // members.
-  template<typename T3, typename T4>
+  template<typename U1, typename U2>
   friend class Pair;
+
+  // This is needed to specialize BarycentreCalculator.
+  template<typename V, typename S>
+  friend class BarycentreCalculator;
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
@@ -139,52 +120,52 @@ class Pair {
   template<typename T1Matcher, typename T2Matcher>
   friend class testing_utilities::ComponentwiseMatcher2;
 
-  template<typename T3, typename T4>
-  friend typename vector_of<Pair<T3, T4>>::type operator-(
-      typename enable_if_affine<Pair<T3, T4>>::type const& left,
-      Pair<T3, T4> const& right);
+  template<typename U1, typename U2>
+  friend typename vector_of<Pair<U1, U2>>::type operator-(
+      typename enable_if_affine<Pair<U1, U2>>::type const& left,
+      Pair<U1, U2> const& right);
 
-  template<typename T3, typename T4>
-  friend typename enable_if_vector<Pair<T3, T4>>::type operator+(
-      Pair<T3, T4> const& right);
+  template<typename U1, typename U2>
+  friend typename enable_if_vector<Pair<U1, U2>>::type operator+(
+      Pair<U1, U2> const& right);
 
-  template<typename T3, typename T4>
-  friend typename enable_if_vector<Pair<T3, T4>>::type operator-(
-      Pair<T3, T4> const& right);
+  template<typename U1, typename U2>
+  friend typename enable_if_vector<Pair<U1, U2>>::type operator-(
+      Pair<U1, U2> const& right);
 
-  template<typename Scalar, typename T3, typename T4>
+  template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
-      Pair<T3, T4>,
-      Pair<decltype(std::declval<Scalar>() * std::declval<T3>()),
-           decltype(std::declval<Scalar>() * std::declval<T4>())>>::type
-  operator*(Scalar const left, Pair<T3, T4> const& right);
+      Pair<U1, U2>,
+      Pair<decltype(std::declval<Scalar>() * std::declval<U1>()),
+           decltype(std::declval<Scalar>() * std::declval<U2>())>>::type
+  operator*(Scalar const left, Pair<U1, U2> const& right);
 
-  template<typename Scalar, typename T3, typename T4>
+  template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
-      Pair<T3, T4>,
-      Pair<decltype(std::declval<T3>() * std::declval<Scalar>()),
-           decltype(std::declval<T4>() * std::declval<Scalar>())>>::type
-  operator*(Pair<T3, T4> const& left, Scalar const right);
+      Pair<U1, U2>,
+      Pair<decltype(std::declval<U1>() * std::declval<Scalar>()),
+           decltype(std::declval<U2>() * std::declval<Scalar>())>>::type
+  operator*(Pair<U1, U2> const& left, Scalar const right);
 
-  template<typename Scalar, typename T3, typename T4>
+  template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
-      Pair<T3, T4>,
-      Pair<decltype(std::declval<T3>() / std::declval<Scalar>()),
-           decltype(std::declval<T4>() / std::declval<Scalar>())>>::type
-  operator/(Pair<T3, T4> const& left, Scalar const right);
+      Pair<U1, U2>,
+      Pair<decltype(std::declval<U1>() / std::declval<Scalar>()),
+           decltype(std::declval<U2>() / std::declval<Scalar>())>>::type
+  operator/(Pair<U1, U2> const& left, Scalar const right);
 
-  template<typename T3, typename T4>
-  friend typename enable_if_vector<Pair<T3, T4>>::type& operator*=(
-      Pair<T3, T4>& left,  // NOLINT(runtime/references)
+  template<typename U1, typename U2>
+  friend typename enable_if_vector<Pair<U1, U2>>::type& operator*=(
+      Pair<U1, U2>& left,  // NOLINT(runtime/references)
       double const right);
 
-  template<typename T3, typename T4>
-  friend typename enable_if_vector<Pair<T3, T4>>::type& operator/=(
-      Pair<T3, T4>& left,  // NOLINT(runtime/references)
+  template<typename U1, typename U2>
+  friend typename enable_if_vector<Pair<U1, U2>>::type& operator/=(
+      Pair<U1, U2>& left,  // NOLINT(runtime/references)
       double const right);
 
-  template<typename T3, typename T4>
-  friend std::ostream& operator<<(std::ostream& out, Pair<T3, T4> const& pair);
+  template<typename U1, typename U2>
+  friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);
 };
 
 // NOTE(phl): Would like to put the enable_if_affine<> on the return type, but
@@ -235,6 +216,31 @@ typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
 
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
+
+// Specialize BarycentreCalculator to make it applicable to Pairs.
+template<typename T1, typename T2, typename Weight>
+class BarycentreCalculator<Pair<T1, T2>, Weight> {
+ public:
+  BarycentreCalculator() = default;
+  ~BarycentreCalculator() = default;
+
+  void Add(Pair<T1, T2> const& pair, Weight const& weight);
+  Pair<T1, T2> Get() const;
+
+ private:
+  bool empty_ = true;
+  decltype(std::declval<typename vector_of<T1>::type>() *
+            std::declval<Weight>()) t1_weighted_sum_;
+  decltype(std::declval<typename vector_of<T2>::type>() *
+            std::declval<Weight>()) t2_weighted_sum_;
+  Weight weight_;
+
+  // We need reference values to convert points into vectors, if needed.  We
+  // pick default-constructed objects as they don't introduce any inaccuracies
+  // in the computations.
+  static T1 const reference_t1_;
+  static T2 const reference_t2_;
+};
 
 }  // namespace geometry
 
