@@ -39,17 +39,7 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 FromThisFrameAtTime(Instant const& t) const {
-  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
-      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
-  RigidTransformation<ThisFrame, InertialFrame> const
-      rigid_transformation(ThisFrame::origin,
-                           centre_degrees_of_freedom.position(),
-                           Identity<ThisFrame, InertialFrame>().Forget());
-  return RigidMotion<ThisFrame, InertialFrame>(
-      rigid_transformation,
-      AngularVelocity<ThisFrame>(),
-      Identity<InertialFrame, ThisFrame>()(
-          -centre_degrees_of_freedom.velocity()));
+  return ToThisFrameAtTime(t).Inverse();
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -58,18 +48,21 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  auto const from_this_frame = FromThisFrameAtTime(t);
   auto const to_this_frame = ToThisFrameAtTime(t);
+  auto const from_this_frame = to_this_frame.Inverse();
 
-  Vector<Acceleration, InertialFrame> const acceleration_of_centre =
-      ephemeris_->ComputeGravitationalAcceleration(centre_, t);
-  Vector<Acceleration, InertialFrame> const acceleration_at_point =
-      ephemeris_->ComputeGravitationalAcceleration(
-          from_this_frame.rigid_transformation()(
-              degrees_of_freedom.position()), t);
+  Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
+      to_this_frame.orthogonal_map()(
+          ephemeris_->ComputeGravitationalAcceleration(
+              from_this_frame.rigid_transformation()(
+                  degrees_of_freedom.position()), t));
+  Vector<Acceleration, ThisFrame> const linear_acceleration =
+      to_this_frame.orthogonal_map()(
+          -ephemeris_->ComputeGravitationalAcceleration(centre_, t));
 
-  return to_this_frame.orthogonal_map()(
-             acceleration_at_point - acceleration_of_centre);
+  Vector<Acceleration, ThisFrame> const& fictitious_acceleration =
+      linear_acceleration;
+  return gravitational_acceleration_at_point + fictitious_acceleration;
 }
 
 }  // namespace physics

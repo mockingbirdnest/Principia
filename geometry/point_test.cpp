@@ -115,7 +115,7 @@ TEST_F(PointDeathTest, BarycentreError) {
   auto barycentre =
       [](std::vector<Instant> const& instants,
          std::vector<Volume> const& weights) -> Instant {
-    return Barycentre<Time, Volume>(instants, weights);
+    return Barycentre<Instant, Volume>(instants, weights);
   };
   EXPECT_DEATH({
     Instant const t1 = kUnixEpoch + 1 * Day;
@@ -125,8 +125,9 @@ TEST_F(PointDeathTest, BarycentreError) {
   EXPECT_DEATH({
     barycentre({}, {});
   }, "Empty input");
+  using InstantBarycentreCalculator = BarycentreCalculator<Instant, Volume>;
   EXPECT_DEATH({
-    Instant::BarycentreCalculator<Volume> calculator;
+    InstantBarycentreCalculator calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -134,14 +135,15 @@ TEST_F(PointDeathTest, BarycentreError) {
 TEST_F(PointTest, Barycentres) {
   Instant const t1 = kUnixEpoch + 1 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
-  Instant const b1 = Barycentre<Time, Volume>({t1, t2}, {3 * Litre, 1 * Litre});
-  Instant const b2 = Barycentre<Time, double>({t2, t1}, {1, 1});
+  Instant const b1 = Barycentre<Instant, Volume>({t1, t2},
+                                                 {3 * Litre, 1 * Litre});
+  Instant const b2 = Barycentre<Instant, double>({t2, t1}, {1, 1});
   EXPECT_THAT(b1, Eq(kUnixEpoch));
   EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));
 }
 
 TEST_F(PointTest, InstantBarycentreCalculator) {
-  Instant::BarycentreCalculator<double> calculator;
+  BarycentreCalculator<Instant, double> calculator;
   Instant const t1 = kUnixEpoch + 2 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
   Instant const t3 = kUnixEpoch + 5 * Day;
@@ -155,7 +157,7 @@ TEST_F(PointTest, InstantBarycentreCalculator) {
 }
 
 TEST_F(PointTest, DoubleBarycentreCalculator) {
-  Point<double>::BarycentreCalculator<double> calculator;
+  BarycentreCalculator<Point<double>, double> calculator;
   Point<double> const d1 = Point<double>(2);
   Point<double> const d2 = Point<double>(-3);
   Point<double> const d3 = Point<double>(5);

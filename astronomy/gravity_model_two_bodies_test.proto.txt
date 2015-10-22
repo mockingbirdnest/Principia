@@ -3,10 +3,10 @@ gravity_model {
 
   body {
     name                    : "Big"
-    gravitational_parameter : "4 km^3/s^2"
+    gravitational_parameter : "5 km^3/s^2"
   }
   body {
     name                    : "Small"
-    gravitational_parameter : "3 km^3/s^2"
+    gravitational_parameter : "2 km^3/s^2"
   }
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "base/not_null.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -34,6 +36,10 @@ Sign operator*(Sign const& left, Sign const& right);
 // This operator is applicable to any type that has a unary minus operator.
 template<typename T>
 T operator*(Sign const& left, T const& right);
+
+std::string DebugString(Sign const& sign);
+
+std::ostream& operator<<(std::ostream& out, Sign const& sign);
 
 }  // namespace geometry
 }  // namespace principia

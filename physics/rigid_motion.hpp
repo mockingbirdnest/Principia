@@ -45,6 +45,8 @@ class RigidMotion {
   RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
   OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map() const;
+  AngularVelocity<FromFrame> const& angular_velocity_of_to_frame() const;
+  Velocity<FromFrame> const& velocity_of_to_frame_origin() const;
 
   DegreesOfFreedom<ToFrame> operator()(
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;

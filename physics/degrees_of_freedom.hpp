@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/pair.hpp"
@@ -60,11 +61,6 @@ class RelativeDegreesOfFreedom
   Velocity<Frame> const& velocity() const;
 };
 
-template<typename Frame, typename Weight>
-DegreesOfFreedom<Frame> Barycentre(
-    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-    std::vector<Weight> const& weights);
-
 template<typename Frame>
 std::string DebugString(DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -100,6 +96,43 @@ class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
 };
 
 }  // namespace base
+
+// Reopen the geometry namespace to make BarycentreCalculator applicable to
+// degrees of freedom.
+namespace geometry {
+
+template<typename Frame, typename Weight>
+class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> {
+ public:
+  BarycentreCalculator() = default;
+  ~BarycentreCalculator() = default;
+
+  void Add(physics::DegreesOfFreedom<Frame> const& degrees_of_freedom,
+           Weight const& weight);
+  physics::DegreesOfFreedom<Frame> Get() const;
+
+ private:
+  BarycentreCalculator<Pair<Position<Frame>, Velocity<Frame>>, Weight>
+      implementation_;
+};
+
+template<typename Frame, typename Weight>
+class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight> {
+ public:
+  BarycentreCalculator() = default;
+  ~BarycentreCalculator() = default;
+
+  void Add(physics::RelativeDegreesOfFreedom<Frame> const&
+               relative_degrees_of_freedom,
+           Weight const& weight);
+  physics::RelativeDegreesOfFreedom<Frame> Get() const;
+
+ private:
+  BarycentreCalculator<Pair<Displacement<Frame>, Velocity<Frame>>, Weight>
+      implementation_;
+};
+
+}  // namespace geometry
 }  // namespace principia
 
 #include "physics/degrees_of_freedom_body.hpp"

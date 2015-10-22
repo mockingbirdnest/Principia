@@ -32,6 +32,18 @@ RigidMotion<FromFrame, ToFrame>::orthogonal_map() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+AngularVelocity<FromFrame> const&
+RigidMotion<FromFrame, ToFrame>::angular_velocity_of_to_frame() const {
+  return angular_velocity_of_to_frame_;
+}
+
+template<typename FromFrame, typename ToFrame>
+Velocity<FromFrame> const&
+RigidMotion<FromFrame, ToFrame>::velocity_of_to_frame_origin() const {
+  return velocity_of_to_frame_origin_;
+}
+
+template<typename FromFrame, typename ToFrame>
 DegreesOfFreedom<ToFrame> RigidMotion<FromFrame, ToFrame>::operator()(
     DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const {
   return {rigid_transformation_(degrees_of_freedom.position()),

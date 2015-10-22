@@ -113,6 +113,15 @@
     <ClInclude Include="body_centered_non_rotating_dynamic_frame_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="barycentric_rotating_dynamic_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="barycentric_rotating_dynamic_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_continuous_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -145,7 +154,10 @@
     <ClCompile Include="dynamic_frame_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="body_centered_non_rotating_dynamic_frame_body_test.cpp">
+    <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="body_centered_non_rotating_dynamic_frame_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

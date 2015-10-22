@@ -299,8 +299,9 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                               VanishesBefore(s, 0, 13)));
 
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
-        Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
-                                  {body1_.mass(), body2_.mass()});
+        Barycentre<DegreesOfFreedom<Through>, Mass>(
+            {degrees_of_freedom1, degrees_of_freedom2},
+            {body1_.mass(), body2_.mass()});
     EXPECT_THAT(barycentre_degrees_of_freedom.position() - Through::origin,
                 Componentwise(VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 4),

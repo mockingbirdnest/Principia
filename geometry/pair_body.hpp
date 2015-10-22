@@ -1,7 +1,8 @@
 #pragma once
 
-#include "geometry/grassmann.hpp"
 #include "geometry/pair.hpp"
+
+#include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/serialization.hpp"
 
@@ -68,40 +69,6 @@ Pair<T1, T2> Pair<T1, T2>::ReadFromMessage(serialization::Pair const& message) {
                     ReadFromMessage(message.t2());
   return {t1, t2};
 }
-
-template<typename T1, typename T2>
-template<typename Weight>
-void Pair<T1, T2>::BarycentreCalculator<Weight>::Add(Pair const& pair,
-                                                     Weight const& weight) {
-  auto const t1_weighted_sum_diff = (pair.t1_ - reference_t1_) * weight;
-  auto const t2_weighted_sum_diff = (pair.t2_ - reference_t2_) * weight;
-  if (empty_) {
-    t1_weighted_sum_ = t1_weighted_sum_diff;
-    t2_weighted_sum_ = t2_weighted_sum_diff;
-    weight_ = weight;
-    empty_ = false;
-  } else {
-    t1_weighted_sum_ += t1_weighted_sum_diff;
-    t2_weighted_sum_ += t2_weighted_sum_diff;
-    weight_ += weight;
-  }
-}
-
-template<typename T1, typename T2>
-template<typename Weight>
-Pair<T1, T2> Pair<T1, T2>::BarycentreCalculator<Weight>::Get() const {
-  CHECK(!empty_) << "Empty BarycentreCalculator";
-  return Pair<T1, T2>(reference_t1_ + (t1_weighted_sum_ / weight_),
-                      reference_t2_ + (t2_weighted_sum_ / weight_));
-}
-
-template<typename T1, typename T2>
-template<typename Weight>
-T1 const Pair<T1, T2>::BarycentreCalculator<Weight>::reference_t1_;
-
-template<typename T1, typename T2>
-template<typename Weight>
-T2 const Pair<T1, T2>::BarycentreCalculator<Weight>::reference_t2_;
 
 template<typename T1, typename T2>
 typename vector_of<Pair<T1, T2>>::type operator-(
@@ -179,6 +146,36 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
   out << "{" << pair.t1_ << ", " << pair.t2_ << "}";
   return out;
 }
+
+template<typename T1, typename T2, typename Weight>
+void BarycentreCalculator<Pair<T1, T2>, Weight>::Add(Pair<T1, T2> const& pair,
+                                                     Weight const& weight) {
+  auto const t1_weighted_sum_diff = (pair.t1_ - reference_t1_) * weight;
+  auto const t2_weighted_sum_diff = (pair.t2_ - reference_t2_) * weight;
+  if (empty_) {
+    t1_weighted_sum_ = t1_weighted_sum_diff;
+    t2_weighted_sum_ = t2_weighted_sum_diff;
+    weight_ = weight;
+    empty_ = false;
+  } else {
+    t1_weighted_sum_ += t1_weighted_sum_diff;
+    t2_weighted_sum_ += t2_weighted_sum_diff;
+    weight_ += weight;
+  }
+}
+
+template<typename T1, typename T2, typename Weight>
+Pair<T1, T2> BarycentreCalculator<Pair<T1, T2>, Weight>::Get() const {
+  CHECK(!empty_) << "Empty BarycentreCalculator";
+  return Pair<T1, T2>(reference_t1_ + (t1_weighted_sum_ / weight_),
+                      reference_t2_ + (t2_weighted_sum_ / weight_));
+}
+
+template<typename T1, typename T2, typename Weight>
+T1 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t1_;
+
+template<typename T1, typename T2, typename Weight>
+T2 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t2_;
 
 }  // namespace geometry
 

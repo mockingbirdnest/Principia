@@ -152,6 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="barycentric_rotating_dynamic_frame.hpp" />
+    <ClInclude Include="barycentric_rotating_dynamic_frame_body.hpp" />
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
     <ClInclude Include="body_centered_non_rotating_dynamic_frame.hpp" />
@@ -164,6 +166,7 @@
     <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
+    <ClInclude Include="mock_continuous_trajectory.hpp" />
     <ClInclude Include="rigid_motion.hpp" />
     <ClInclude Include="rigid_motion_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
@@ -187,7 +190,8 @@
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="body_centered_non_rotating_dynamic_frame_body_test.cpp" />
+    <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
+    <ClCompile Include="body_centered_non_rotating_dynamic_frame_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
