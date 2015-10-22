@@ -8,6 +8,9 @@
 #include "geometry/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 
+#include "quantities/elementary_functions.hpp"
+#include "geometry/grassmann.hpp"
+
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
@@ -44,11 +47,14 @@ namespace physics {
     // Get positions/trajectories/ephemeres for bodies
     // Dates will have to be for U1, etc. (and all will have to be generated)
     auto some_instant = JulianDate(2433374.5);
-    ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
+    auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
     ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
     ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
-    // check body angles at target times
 
+    // check body angles at target times
+    // ArcTan(r_sun/Norm(q_moon - q_sun));
+    // ArcTan(r_earth/Norm(q_moon - q_earth));
+    LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
         
