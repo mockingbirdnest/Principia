@@ -13,6 +13,7 @@ echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/a
 apt-get update
 apt-get install -y clang git unzip wget libc++-dev libc++abi-dev binutils make automake libtool curl cmake monodevelop
 git clone https://github.com/mockingbirdnest/Principia.git principia
+chown -R vagrant:vagrant principia KSP
 cd principia
 if [ -d deps ]; then echo "Dependencies already installed, remove deps/ to reinstall."; else ./install_deps.sh; fi
 SCRIPT
