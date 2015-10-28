@@ -50,7 +50,7 @@ class PointSerializer<Multivector<Scalar, Frame, rank>> {
 };
 
 template<typename Vector>
-Point<Vector>::Point() {}
+Point<Vector>::Point() : coordinates_() {}
 
 template<typename Vector>
 Vector Point<Vector>::operator-(Point const& from) const {

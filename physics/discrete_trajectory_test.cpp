@@ -87,8 +87,8 @@ class DiscreteTrajectoryTest : public testing::Test {
       CHECK_EQ(expected_trajectory, actual_trajectory);
       return {World::origin + 
                   2 * (from_degrees_of_freedom.position() -
-                       World::origin + Displacement<World>(
-                           {43 * Metre, 42 * Metre, 41 * Metre})),
+                       (World::origin + Displacement<World>(
+                           {43 * Metre, 42 * Metre, 41 * Metre}))),
               3 * from_degrees_of_freedom.velocity()};
     };
     massive_transform_ =
