@@ -46,13 +46,13 @@ class DiscreteTrajectoryTest : public testing::Test {
                       serialization::Frame::TEST1, true>;
 
   DiscreteTrajectoryTest()
-      : q1_(World::origin + 
+      : q1_(World::origin +
             Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre})),
-        q2_(World::origin + 
+        q2_(World::origin +
             Displacement<World>({11 * Metre, 12 * Metre, 13 * Metre})),
-        q3_(World::origin + 
+        q3_(World::origin +
             Displacement<World>({21 * Metre, 22 * Metre, 23 * Metre})),
-        q4_(World::origin + 
+        q4_(World::origin +
             Displacement<World>({31 * Metre, 32 * Metre, 33 * Metre})),
         p1_(Velocity<World>({4 * Metre / Second,
                                5 * Metre / Second,
@@ -85,7 +85,7 @@ class DiscreteTrajectoryTest : public testing::Test {
         DiscreteTrajectory<World> const* expected_trajectory) ->
         DegreesOfFreedom<World> {
       CHECK_EQ(expected_trajectory, actual_trajectory);
-      return {World::origin + 
+      return {World::origin +
                   2 * (from_degrees_of_freedom.position() -
                        (World::origin + Displacement<World>(
                            {43 * Metre, 42 * Metre, 41 * Metre}))),
