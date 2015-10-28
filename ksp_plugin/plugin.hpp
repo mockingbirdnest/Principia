@@ -70,9 +70,6 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
-using RenderingTransforms =
-    Transforms<Barycentric, Rendering, Barycentric>;
-
 class Plugin {
  public:
   Plugin() = delete;
