@@ -199,8 +199,9 @@ void principia__LogFatal(char const* message) {
 Plugin* principia__NewPlugin(double const initial_time,
                              double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
+  Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
-      Instant(initial_time * Second),
+      t0 + initial_time * Second,
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return result.release();
@@ -315,13 +316,15 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
-  CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
+  Instant const t0;
+  CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
                                      planetarium_rotation * Degree);
 }
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
-  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(Instant(t * Second));
+  Instant const t0;
+  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
 }
 
 QP principia__VesselFromParent(Plugin const* const plugin,

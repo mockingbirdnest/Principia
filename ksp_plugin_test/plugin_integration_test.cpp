@@ -46,7 +46,7 @@ class PluginIntegrationTest : public testing::Test {
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::kAllBodiesAndOblateness)),
-        initial_time_(42 * Second),
+        initial_time_(Instant() + 42 * Second),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
@@ -597,7 +597,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.set_prediction_length(2 * π * Second);
   plugin.set_prediction_length_tolerance(1 * Milli(Metre));
   plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
-  plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
+  plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(satellite, transforms.get(), World::origin);

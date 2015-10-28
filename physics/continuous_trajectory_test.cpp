@@ -75,7 +75,8 @@ class ContinuousTrajectoryTest : public testing::Test {
     delete error_estimates_;
     error_estimates_ = new std::deque<Displacement<World>>(error_estimates);
 
-    Instant const t(1 * Second);
+    Instant const t0;
+    Instant const t = t0 + 1 * Second;
     std::vector<Displacement<World>> const q;
     std::vector<Velocity<World>> const v;
     trajectory_->ComputeBestNewhallApproximation(

@@ -656,7 +656,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   if (t_max == state.time.value) {
     Instant const t_last_intermediate_state =
         intermediate_states_.empty()
-            ? Instant(-std::numeric_limits<double>::infinity() * Second)
+            ? Instant() - std::numeric_limits<double>::infinity() * Second
             : intermediate_states_.back().time.value;
     CHECK_LE(t_last_intermediate_state, t_max);
     if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {

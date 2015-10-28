@@ -35,12 +35,12 @@ class PairTest : public testing::Test {
   struct Universe;
 
   PairTest()
-      : p1_(V1({4 * SIUnit<Action>(),
-                5 * SIUnit<Action>(),
-                6 * SIUnit<Action>()})),
-        p2_(V2({16 * SIUnit<Winding>(),
-                15 * SIUnit<Winding>(),
-                14 * SIUnit<Winding>()})),
+      : p1_(P1() + V1({4 * SIUnit<Action>(),
+                       5 * SIUnit<Action>(),
+                       6 * SIUnit<Action>()})),
+        p2_(P2() + V2({16 * SIUnit<Winding>(),
+                       15 * SIUnit<Winding>(),
+                       14 * SIUnit<Winding>()})),
         v1_({1 * SIUnit<Action>(),
              2 * SIUnit<Action>(),
              3 * SIUnit<Action>()}),
@@ -74,16 +74,16 @@ class PairTest : public testing::Test {
 using PairDeathTest = PairTest;
 
 TEST_F(PairTest, MemberAddition) {
-  EXPECT_EQ(PP(P1(V1({5 * SIUnit<Action>(),
-                      7 * SIUnit<Action>(),
-                      9 * SIUnit<Action>()})),
-               P2(V2({29 * SIUnit<Winding>(),
-                      27 * SIUnit<Winding>(),
-                      25 * SIUnit<Winding>()}))),
+  EXPECT_EQ(PP(P1() + V1({5 * SIUnit<Action>(),
+                          7 * SIUnit<Action>(),
+                          9 * SIUnit<Action>()}),
+               P2() + V2({29 * SIUnit<Winding>(),
+                          27 * SIUnit<Winding>(),
+                          25 * SIUnit<Winding>()})),
             pp_ + vv_);
-  EXPECT_EQ(PV(P1(V1({5 * SIUnit<Action>(),
-                      7 * SIUnit<Action>(),
-                      9 * SIUnit<Action>()})),
+  EXPECT_EQ(PV(P1() + V1({5 * SIUnit<Action>(),
+                          7 * SIUnit<Action>(),
+                          9 * SIUnit<Action>()}),
                V2({26 * SIUnit<Winding>(),
                    24 * SIUnit<Winding>(),
                    22 * SIUnit<Winding>()})),
@@ -91,9 +91,9 @@ TEST_F(PairTest, MemberAddition) {
   EXPECT_EQ(VP(V1({2 * SIUnit<Action>(),
                    4 * SIUnit<Action>(),
                    6 * SIUnit<Action>()}),
-               P2(V2({29 * SIUnit<Winding>(),
-                      27 * SIUnit<Winding>(),
-                      25 * SIUnit<Winding>()}))),
+               P2() + V2({29 * SIUnit<Winding>(),
+                          27 * SIUnit<Winding>(),
+                          25 * SIUnit<Winding>()})),
             vp_ + vv_);
   EXPECT_EQ(VV(V1({2 * SIUnit<Action>(),
                    4 * SIUnit<Action>(),
@@ -105,16 +105,16 @@ TEST_F(PairTest, MemberAddition) {
 }
 
 TEST_F(PairTest, MemberSubtraction) {
-  EXPECT_EQ(PP(P1(V1({3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>()})),
-               P2(V2({3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>()}))),
+  EXPECT_EQ(PP(P1() + V1({3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>()}),
+               P2() + V2({3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>()})),
             pp_ - vv_);
-  EXPECT_EQ(PV(P1(V1({3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>()})),
+  EXPECT_EQ(PV(P1() + V1({3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>()}),
                V2({0 * SIUnit<Winding>(),
                    0 * SIUnit<Winding>(),
                    0 * SIUnit<Winding>()})),
@@ -122,9 +122,9 @@ TEST_F(PairTest, MemberSubtraction) {
   EXPECT_EQ(VP(V1({0 * SIUnit<Action>(),
                    0 * SIUnit<Action>(),
                    0 * SIUnit<Action>()}),
-               P2(V2({3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>()}))),
+               P2() + V2({3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>()})),
             vp_ - vv_);
   EXPECT_EQ(VV(V1({0 * SIUnit<Action>(),
                    0 * SIUnit<Action>(),
@@ -137,17 +137,17 @@ TEST_F(PairTest, MemberSubtraction) {
 
 TEST_F(PairTest, MemberAdditionTo) {
   pp_ += vv_;
-  EXPECT_EQ(PP(P1(V1({5 * SIUnit<Action>(),
-                      7 * SIUnit<Action>(),
-                      9 * SIUnit<Action>()})),
-               P2(V2({29 * SIUnit<Winding>(),
-                      27 * SIUnit<Winding>(),
-                      25 * SIUnit<Winding>()}))),
+  EXPECT_EQ(PP(P1() + V1({5 * SIUnit<Action>(),
+                          7 * SIUnit<Action>(),
+                          9 * SIUnit<Action>()}),
+               P2() + V2({29 * SIUnit<Winding>(),
+                          27 * SIUnit<Winding>(),
+                          25 * SIUnit<Winding>()})),
             pp_);
   pv_ += vv_;
-  EXPECT_EQ(PV(P1(V1({5 * SIUnit<Action>(),
-                      7 * SIUnit<Action>(),
-                      9 * SIUnit<Action>()})),
+  EXPECT_EQ(PV(P1() + V1({5 * SIUnit<Action>(),
+                          7 * SIUnit<Action>(),
+                          9 * SIUnit<Action>()}),
                V2({26 * SIUnit<Winding>(),
                    24 * SIUnit<Winding>(),
                    22 * SIUnit<Winding>()})),
@@ -156,9 +156,9 @@ TEST_F(PairTest, MemberAdditionTo) {
   EXPECT_EQ(VP(V1({2 * SIUnit<Action>(),
                    4 * SIUnit<Action>(),
                    6 * SIUnit<Action>()}),
-               P2(V2({29 * SIUnit<Winding>(),
-                      27 * SIUnit<Winding>(),
-                      25 * SIUnit<Winding>()}))),
+               P2() + V2({29 * SIUnit<Winding>(),
+                          27 * SIUnit<Winding>(),
+                          25 * SIUnit<Winding>()})),
             vp_);
   vv_ += vv_;
   EXPECT_EQ(VV(V1({2 * SIUnit<Action>(),
@@ -172,17 +172,17 @@ TEST_F(PairTest, MemberAdditionTo) {
 
 TEST_F(PairTest, MemberSubtractionFrom) {
   pp_ -= vv_;
-  EXPECT_EQ(PP(P1(V1({3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>()})),
-               P2(V2({3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>()}))),
+  EXPECT_EQ(PP(P1() + V1({3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>()}),
+               P2() + V2({3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>()})),
             pp_);
   pv_ -= vv_;
-  EXPECT_EQ(PV(P1(V1({3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>(),
-                      3 * SIUnit<Action>()})),
+  EXPECT_EQ(PV(P1() + V1({3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>(),
+                          3 * SIUnit<Action>()}),
                V2({0 * SIUnit<Winding>(),
                    0 * SIUnit<Winding>(),
                    0 * SIUnit<Winding>()})),
@@ -191,9 +191,9 @@ TEST_F(PairTest, MemberSubtractionFrom) {
   EXPECT_EQ(VP(V1({0 * SIUnit<Action>(),
                    0 * SIUnit<Action>(),
                    0 * SIUnit<Action>()}),
-               P2(V2({3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>(),
-                      3 * SIUnit<Winding>()}))),
+               P2() + V2({3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>(),
+                          3 * SIUnit<Winding>()})),
             vp_);
   vv_ -= vv_;
   EXPECT_EQ(VV(V1({0 * SIUnit<Action>(),
@@ -206,42 +206,42 @@ TEST_F(PairTest, MemberSubtractionFrom) {
 }
 
 TEST_F(PairTest, MemberEquality) {
-  EXPECT_TRUE(pp_ == PP(P1(V1({4 * SIUnit<Action>(),
-                               5 * SIUnit<Action>(),
-                               6 * SIUnit<Action>()})),
-                        P2(V2({16 * SIUnit<Winding>(),
-                               15 * SIUnit<Winding>(),
-                               14 * SIUnit<Winding>()}))));
-  EXPECT_FALSE(pp_ == PP(P1(V1({4 * SIUnit<Action>(),
-                                5 * SIUnit<Action>(),
-                                6 * SIUnit<Action>()})),
-                         P2(V2({26 * SIUnit<Winding>(),
+  EXPECT_TRUE(pp_ == PP(P1() + V1({4 * SIUnit<Action>(),
+                                   5 * SIUnit<Action>(),
+                                   6 * SIUnit<Action>()}),
+                        P2() + V2({16 * SIUnit<Winding>(),
+                                   15 * SIUnit<Winding>(),
+                                   14 * SIUnit<Winding>()})));
+  EXPECT_FALSE(pp_ == PP(P1() + V1({4 * SIUnit<Action>(),
+                                    5 * SIUnit<Action>(),
+                                    6 * SIUnit<Action>()}),
+                         P2() + V2({26 * SIUnit<Winding>(),
                                 15 * SIUnit<Winding>(),
-                                14 * SIUnit<Winding>()}))));
-  EXPECT_TRUE(pv_ == PV(P1(V1({4 * SIUnit<Action>(),
-                               5 * SIUnit<Action>(),
-                               6 * SIUnit<Action>()})),
+                                14 * SIUnit<Winding>()})));
+  EXPECT_TRUE(pv_ == PV(P1() + V1({4 * SIUnit<Action>(),
+                                   5 * SIUnit<Action>(),
+                                   6 * SIUnit<Action>()}),
                         V2({13 * SIUnit<Winding>(),
                             12 * SIUnit<Winding>(),
                             11 * SIUnit<Winding>()})));
-  EXPECT_FALSE(pv_ == PV(P1(V1({4 * SIUnit<Action>(),
-                                15 * SIUnit<Action>(),
-                                6 * SIUnit<Action>()})),
+  EXPECT_FALSE(pv_ == PV(P1() + V1({4 * SIUnit<Action>(),
+                                    15 * SIUnit<Action>(),
+                                    6 * SIUnit<Action>()}),
                          V2({13 * SIUnit<Winding>(),
                              12 * SIUnit<Winding>(),
                              11 * SIUnit<Winding>()})));
   EXPECT_TRUE(vp_ == VP(V1({1 * SIUnit<Action>(),
                             2 * SIUnit<Action>(),
                             3 * SIUnit<Action>()}),
-                        P2(V2({16 * SIUnit<Winding>(),
+                        P2() + V2({16 * SIUnit<Winding>(),
                                15 * SIUnit<Winding>(),
-                               14 * SIUnit<Winding>()}))));
+                               14 * SIUnit<Winding>()})));
   EXPECT_FALSE(vp_ == VP(V1({1 * SIUnit<Action>(),
                              2 * SIUnit<Action>(),
                              13 * SIUnit<Action>()}),
-                         P2(V2({16 * SIUnit<Winding>(),
+                         P2() + V2({16 * SIUnit<Winding>(),
                                 15 * SIUnit<Winding>(),
-                                14 * SIUnit<Winding>()}))));
+                                14 * SIUnit<Winding>()})));
   EXPECT_TRUE(vv_ == VV(V1({1 * SIUnit<Action>(),
                             2 * SIUnit<Action>(),
                             3 * SIUnit<Action>()}),
@@ -257,42 +257,42 @@ TEST_F(PairTest, MemberEquality) {
 }
 
 TEST_F(PairTest, MemberInequality) {
-  EXPECT_FALSE(pp_ != PP(P1(V1({4 * SIUnit<Action>(),
-                                5 * SIUnit<Action>(),
-                                6 * SIUnit<Action>()})),
-                         P2(V2({16 * SIUnit<Winding>(),
-                                15 * SIUnit<Winding>(),
-                                14 * SIUnit<Winding>()}))));
-  EXPECT_TRUE(pp_ != PP(P1(V1({4 * SIUnit<Action>(),
-                               5 * SIUnit<Action>(),
-                               6 * SIUnit<Action>()})),
-                        P2(V2({26 * SIUnit<Winding>(),
-                               15 * SIUnit<Winding>(),
-                               14 * SIUnit<Winding>()}))));
-  EXPECT_FALSE(pv_ != PV(P1(V1({4 * SIUnit<Action>(),
-                                5 * SIUnit<Action>(),
-                                6 * SIUnit<Action>()})),
+  EXPECT_FALSE(pp_ != PP(P1() + V1({4 * SIUnit<Action>(),
+                                    5 * SIUnit<Action>(),
+                                    6 * SIUnit<Action>()}),
+                         P2() + V2({16 * SIUnit<Winding>(),
+                                    15 * SIUnit<Winding>(),
+                                    14 * SIUnit<Winding>()})));
+  EXPECT_TRUE(pp_ != PP(P1() + V1({4 * SIUnit<Action>(),
+                                   5 * SIUnit<Action>(),
+                                   6 * SIUnit<Action>()}),
+                        P2() + V2({26 * SIUnit<Winding>(),
+                                   15 * SIUnit<Winding>(),
+                                   14 * SIUnit<Winding>()})));
+  EXPECT_FALSE(pv_ != PV(P1() + V1({4 * SIUnit<Action>(),
+                                    5 * SIUnit<Action>(),
+                                    6 * SIUnit<Action>()}),
                          V2({13 * SIUnit<Winding>(),
                              12 * SIUnit<Winding>(),
                              11 * SIUnit<Winding>()})));
-  EXPECT_TRUE(pv_ != PV(P1(V1({4 * SIUnit<Action>(),
-                               15 * SIUnit<Action>(),
-                               6 * SIUnit<Action>()})),
+  EXPECT_TRUE(pv_ != PV(P1() + V1({4 * SIUnit<Action>(),
+                                   15 * SIUnit<Action>(),
+                                   6 * SIUnit<Action>()}),
                         V2({13 * SIUnit<Winding>(),
                             12 * SIUnit<Winding>(),
                             11 * SIUnit<Winding>()})));
   EXPECT_FALSE(vp_ != VP(V1({1 * SIUnit<Action>(),
                              2 * SIUnit<Action>(),
                              3 * SIUnit<Action>()}),
-                         P2(V2({16 * SIUnit<Winding>(),
+                         P2() + V2({16 * SIUnit<Winding>(),
                                 15 * SIUnit<Winding>(),
-                                14 * SIUnit<Winding>()}))));
+                                14 * SIUnit<Winding>()})));
   EXPECT_TRUE(vp_ != VP(V1({1 * SIUnit<Action>(),
                             2 * SIUnit<Action>(),
                             13 * SIUnit<Action>()}),
-                        P2(V2({16 * SIUnit<Winding>(),
+                        P2() + V2({16 * SIUnit<Winding>(),
                                15 * SIUnit<Winding>(),
-                               14 * SIUnit<Winding>()}))));
+                               14 * SIUnit<Winding>()})));
   EXPECT_FALSE(vv_ != VV(V1({1 * SIUnit<Action>(),
                              2 * SIUnit<Action>(),
                              3 * SIUnit<Action>()}),
