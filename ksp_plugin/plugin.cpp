@@ -20,6 +20,8 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/barycentric_rotating_dynamic_frame_body.hpp"
+#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -36,6 +38,8 @@ using geometry::Permutation;
 using geometry::Sign;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using physics::BarycentricRotatingDynamicFrame;
+using physics::BodyCentredNonRotatingDynamicFrame;
 using quantities::Force;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -319,7 +323,7 @@ void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const transforms,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
@@ -351,7 +355,7 @@ bool Plugin::HasPrediction(GUID const& vessel_guid) const {
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
@@ -368,7 +372,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
 RenderedTrajectory<World> Plugin::RenderedFlightPlan(
     GUID const& vessel_guid,
     int const plan_phase,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
@@ -402,32 +406,28 @@ bool Plugin::has_vessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
+not_null<std::unique_ptr<RenderingFrame>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   CHECK(!initializing_);
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
-  return RenderingTransforms::BodyCentredNonRotating(
-             reference_body.body(),
-             reference_body.trajectory(),
-             reference_body.trajectory());
+  return make_not_null_unique<BodyCentredNonRotatingDynamicFrame>(
+             ephemeris_.get(),
+             &reference_body.body());
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
+not_null<std::unique_ptr<RenderingFrame>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   CHECK(!initializing_);
   // TODO(egg): these should be const, use a custom comparator in the map.
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
-  return RenderingTransforms::BarycentricRotating(
-             primary.body(),
-             primary.trajectory(),
-             primary.trajectory(),
-             secondary.body(),
-             secondary.trajectory(),
-             secondary.trajectory());
+  return make_not_null_unique<BarycentricRotatingDynamicFrame>(
+             ephemeris_.get(),
+             &primary.body(),
+             &secondary.body());
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
@@ -464,7 +464,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 }
 
 FrameField<World> Plugin::Navball(
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const transforms,
     Position<World> const& sun_world_position) const {
   auto const to_world =
       OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
@@ -492,7 +492,7 @@ FrameField<World> Plugin::Navball(
 
 Vector<double, World> Plugin::VesselTangent(
     GUID const& vessel_guid,
-    not_null<RenderingTransforms*> const transforms) const {
+    not_null<RenderingFrame*> const transforms) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   auto const actual_it =
       transforms->first_on_or_after(vessel.prolongation(),
@@ -936,7 +936,7 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
     not_null<Body const*> const body,
     DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
         actual_it,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const transforms,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
   auto const to_world =

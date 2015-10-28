@@ -22,19 +22,19 @@ void MockPlugin::DirectlyInsertCelestial(
                                   body);
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
+not_null<std::unique_ptr<RenderingFrame>>
 MockPlugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
-  std::unique_ptr<RenderingTransforms> transforms;
+  std::unique_ptr<RenderingFrame> transforms;
   FillBodyCentredNonRotatingTransforms(reference_body_index, &transforms);
   return std::move(transforms);
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
+not_null<std::unique_ptr<RenderingFrame>>
 MockPlugin::NewBarycentricRotatingTransforms(
     Index const primary_index,
     Index const secondary_index) const {
-  std::unique_ptr<RenderingTransforms> transforms;
+  std::unique_ptr<RenderingFrame> transforms;
   FillBarycentricRotatingTransforms(primary_index,
                                     secondary_index,
                                     &transforms);

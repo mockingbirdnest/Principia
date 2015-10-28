@@ -340,14 +340,14 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
           ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-RenderingTransforms* principia__NewBodyCentredNonRotatingTransforms(
+RenderingFrame* principia__NewBodyCentredNonRotatingTransforms(
     Plugin const* const plugin,
     int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
       NewBodyCentredNonRotatingTransforms(reference_body_index).release();
 }
 
-RenderingTransforms* principia__NewBarycentricRotatingTransforms(
+RenderingFrame* principia__NewBarycentricRotatingTransforms(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
@@ -356,7 +356,7 @@ RenderingTransforms* principia__NewBarycentricRotatingTransforms(
           primary_index, secondary_index).release();
 }
 
-void principia__DeleteTransforms(RenderingTransforms** const transforms) {
+void principia__DeleteTransforms(RenderingFrame** const transforms) {
   TakeOwnership(transforms);
 }
 
@@ -368,7 +368,7 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
@@ -390,7 +390,7 @@ bool principia__HasPrediction(Plugin const* const plugin,
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
     char const* vessel_guid,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
@@ -413,7 +413,7 @@ LineAndIterator* principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* vessel_guid,
     int const plan_phase,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
@@ -522,7 +522,7 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 WXYZ principia__NavballOrientation(
     Plugin const* const plugin,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
@@ -538,7 +538,7 @@ WXYZ principia__NavballOrientation(
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* vessel_guid,
-                             RenderingTransforms* const transforms) {
+                             RenderingFrame* const transforms) {
   return ToXYZ(CHECK_NOTNULL(plugin)->
                    VesselTangent(vessel_guid, transforms).coordinates());
 }

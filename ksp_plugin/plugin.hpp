@@ -20,6 +20,7 @@
 #include "physics/body.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -37,6 +38,7 @@ using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
 using physics::DiscreteTrajectory;
+using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Transforms;
@@ -69,6 +71,8 @@ struct LineSegment {
 // We render trajectories as polygons.
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
+
+using RenderingFrame = DynamicFrame<Barycentric, Rendering>;
 
 class Plugin {
  public:
@@ -204,7 +208,7 @@ class Plugin {
   // relation between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const transforms,
       Position<World> const& sun_world_position) const;
 
   int FlightPlanSize(GUID const& vessel_guid) const;
@@ -221,13 +225,13 @@ class Plugin {
   // global variable |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const transforms,
       Position<World> const& sun_world_position);
 
   virtual RenderedTrajectory<World> RenderedFlightPlan(
       GUID const& vessel_guid,
       int const plan_phase,
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const transforms,
       Position<World> const& sun_world_position);
 
   virtual void set_prediction_length(Time const& t);
@@ -237,10 +241,10 @@ class Plugin {
 
   virtual bool has_vessel(GUID const& vessel_guid) const;
 
-  virtual not_null<std::unique_ptr<RenderingTransforms>>
+  virtual not_null<std::unique_ptr<RenderingFrame>>
   NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
-  virtual not_null<std::unique_ptr<RenderingTransforms>>
+  virtual not_null<std::unique_ptr<RenderingFrame>>
   NewBarycentricRotatingTransforms(Index const primary_index,
                                    Index const secondary_index) const;
 
@@ -271,14 +275,14 @@ class Plugin {
 
   // The navball field at |current_time| for the given |transforms|.
   virtual FrameField<World> Navball(
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const transforms,
       Position<World> const& sun_world_position) const;
 
   // The unit tangent vector to the trajectory of the vessel with the given GUID
   // in the frame given by |transforms|.
   virtual Vector<double, World> VesselTangent(
       GUID const& vessel_guid,
-      not_null<RenderingTransforms*> const transforms) const;
+      not_null<RenderingFrame*> const transforms) const;
 
   virtual Instant current_time() const;
 
@@ -384,7 +388,7 @@ class Plugin {
       not_null<Body const*> const body,
       DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
           actual_it,
-      not_null<RenderingTransforms*>const transforms,
+      not_null<RenderingFrame*>const transforms,
       Position<World> const& sun_world_position) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in

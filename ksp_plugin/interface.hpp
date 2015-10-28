@@ -211,14 +211,14 @@ QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-RenderingTransforms* CDECL principia__NewBodyCentredNonRotatingTransforms(
+RenderingFrame* CDECL principia__NewBodyCentredNonRotatingTransforms(
     Plugin const* const plugin,
     int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-RenderingTransforms* CDECL principia__NewBarycentricRotatingTransforms(
+RenderingFrame* CDECL principia__NewBarycentricRotatingTransforms(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index);
@@ -227,7 +227,7 @@ RenderingTransforms* CDECL principia__NewBarycentricRotatingTransforms(
 // |transforms| must not be null.  No transfer of ownership of |*transforms|,
 // takes ownership of |**transforms|.
 extern "C" DLLEXPORT
-void CDECL principia__DeleteTransforms(RenderingTransforms** const transforms);
+void CDECL principia__DeleteTransforms(RenderingFrame** const transforms);
 
 extern "C" DLLEXPORT
 void principia__UpdatePrediction(Plugin const* const plugin,
@@ -242,7 +242,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -253,7 +253,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedPrediction(
     Plugin* const plugin,
     char const* vessel_guid,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -265,7 +265,7 @@ LineAndIterator* CDECL principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* vessel_guid,
     int const plan_phase,
-    RenderingTransforms* const transforms,
+    RenderingFrame* const transforms,
     XYZ const sun_world_position);
 
 // Returns |line_and_iterator->rendered_trajectory.size()|.
@@ -330,14 +330,14 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 extern "C" DLLEXPORT
 WXYZ CDECL principia__NavballOrientation(Plugin const* const plugin,
-                                         RenderingTransforms* const transforms,
+                                         RenderingFrame* const transforms,
                                          XYZ const sun_world_position,
                                          XYZ const ship_world_position);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
                                    char const* vessel_guid,
-                                   RenderingTransforms* const transforms);
+                                   RenderingFrame* const transforms);
 
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
