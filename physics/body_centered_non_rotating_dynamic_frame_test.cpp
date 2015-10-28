@@ -133,9 +133,8 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
 
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
     EXPECT_THAT(AbsoluteError(
-                    to_big_frame_at_t(small_in_inertial_frame_at_t).position() -
-                        Big::origin,
-                    small_in_big_frame_at_t.position() - Big::origin),
+                    to_big_frame_at_t(small_in_inertial_frame_at_t).position(),
+                    small_in_big_frame_at_t.position()),
                 Lt(0.3 * Milli(Metre)));
     EXPECT_THAT(AbsoluteError(
                     to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),

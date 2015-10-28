@@ -619,8 +619,9 @@ TEST_F(PluginIntegrationTest, Prediction) {
     }
   }
   EXPECT_THAT(
-      AbsoluteError(rendered_prediction.back().end - World::origin,
-                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
+      AbsoluteError(rendered_prediction.back().end,
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
+                        World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
 }
 
