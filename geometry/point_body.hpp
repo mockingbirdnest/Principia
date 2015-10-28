@@ -53,9 +53,6 @@ template<typename Vector>
 Point<Vector>::Point() {}
 
 template<typename Vector>
-Point<Vector>::Point(Vector const& coordinates) : coordinates_(coordinates) {}
-
-template<typename Vector>
 Vector Point<Vector>::operator-(Point const& from) const {
   return coordinates_ - from.coordinates_;
 }

@@ -22,7 +22,6 @@ template<typename Vector>
 class Point {
  public:
   Point();
-  explicit Point(Vector const& coordinates);
   ~Point() = default;
 
   Vector operator-(Point const& from) const;
