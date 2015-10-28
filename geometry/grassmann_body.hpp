@@ -261,7 +261,12 @@ inline Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
 
 template<typename Frame>
 Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent) {
-  return Rotation<Frame, Frame>(exponent.Norm(), exponent);
+  quantities::Angle const angle = exponent.Norm();
+  if (angle == quantities::Angle()) {
+    return Rotation<Frame, Frame>::Identity();
+  } else {
+    return Rotation<Frame, Frame>(angle, exponent);
+  }
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
