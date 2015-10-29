@@ -144,9 +144,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
     // Check that the centre of mass is at the origin and doesn't move.
     DegreesOfFreedom<BigSmallFrame> const centre_of_mass_in_big_small_at_t =
         to_big_small_frame_at_t(centre_of_mass_initial_state_);
-    EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.position() -
-                                  BigSmallFrame::origin,
-                              Displacement<BigSmallFrame>()),
+    EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.position(),
+                              BigSmallFrame::origin),
                 Lt(1.0E-11 * Metre));
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
@@ -164,22 +163,20 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
         to_big_small_frame_at_t(big_in_inertial_frame_at_t);
     DegreesOfFreedom<BigSmallFrame> const small_in_big_small_at_t =
         to_big_small_frame_at_t(small_in_inertial_frame_at_t);
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position() -
-                                  BigSmallFrame::origin,
+    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
                                   10.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
-                                  0 * Kilo(Metre)})),
+                                  0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0E-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
                 Lt(1.0E-4 * Metre / Second));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position() -
-                                  BigSmallFrame::origin,
+    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
                                   -25.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
-                                  0 * Kilo(Metre)})),
+                                  0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0E-5 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
@@ -197,10 +194,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
         from_big_small_frame_at_t(to_big_small_frame_at_t(
             small_initial_state_));
     EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.position() -
-                          ICRFJ2000Equator::origin,
-                      small_initial_state_.position() -
-                          ICRFJ2000Equator::origin),
+        AbsoluteError(small_initial_state_transformed_and_back.position(),
+                      small_initial_state_.position()),
         Lt(1.0E-11 * Metre));
     EXPECT_THAT(
         AbsoluteError(small_initial_state_transformed_and_back.velocity(),

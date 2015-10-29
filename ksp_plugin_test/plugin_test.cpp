@@ -144,7 +144,7 @@ class PluginTest : public testing::Test {
       : looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
         solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::kMajorBodiesOnly)),
-        initial_time_(42 * Second),
+        initial_time_(Instant() + 42 * Second),
         sun_gravitational_parameter_(
             solar_system_->gravitational_parameter(
                 SolarSystemFactory::name(SolarSystemFactory::kSun))),

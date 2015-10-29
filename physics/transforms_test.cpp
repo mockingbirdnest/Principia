@@ -72,6 +72,7 @@ class TransformsTest : public testing::Test {
         satellite_from_(make_not_null_unique<DiscreteTrajectory<From>>()),
         satellite_through_(make_not_null_unique<DiscreteTrajectory<Through>>()),
         satellite_to_(make_not_null_unique<DiscreteTrajectory<To>>()) {
+    Instant const t0;
     // For historical reasons (don't you just love that phrase?) the positions
     // and velocities below are not physical (they both increase linearly and
     // the velocities are not tangent to the trajectory).  This confuses the
@@ -84,48 +85,48 @@ class TransformsTest : public testing::Test {
     body2_to_.degree_ = kDegree;
 
     for (int i = 1; i <= kNumberOfPoints; ++i) {
-      body1_from_.Append(Instant(i * Second),
+      body1_from_.Append(t0 + i * Second,
                          DegreesOfFreedom<From>(
-                             Position<From>(
+                             From::origin +
                                  Displacement<From>({1 * i * Metre,
                                                      2 * i * Metre,
-                                                     3 * i * Metre})),
+                                                     3 * i * Metre}),
                              Velocity<From>({4 * i * Metre / Second,
                                              8 * i * Metre / Second,
                                              16 * i * Metre / Second})));
-      body1_to_.Append(Instant(i * Second),
+      body1_to_.Append(t0 + i * Second,
                        DegreesOfFreedom<To>(
-                           Position<To>(
+                           To::origin +
                                Displacement<To>({3 * i * Metre,
                                                  1 * i * Metre,
-                                                 2 * i * Metre})),
+                                                 2 * i * Metre}),
                            Velocity<To>({16 * i * Metre / Second,
                                          4 * i * Metre / Second,
                                          8 * i * Metre / Second})));
-      body2_from_.Append(Instant(i * Second),
+      body2_from_.Append(t0 + i * Second,
                          DegreesOfFreedom<From>(
-                             Position<From>(
+                             From::origin +
                                  Displacement<From>({-1 * i * Metre,
                                                      -2 * i * Metre,
-                                                     3 * i * Metre})),
+                                                     3 * i * Metre}),
                              Velocity<From>({-4 * i * Metre / Second,
                                              8 * i * Metre / Second,
                                              -16 * i * Metre / Second})));
-      body2_to_.Append(Instant(i * Second),
+      body2_to_.Append(t0 + i * Second,
                        DegreesOfFreedom<To>(
-                           Position<To>(
+                           To::origin +
                                Displacement<To>({3 * i * Metre,
                                                 -1 * i * Metre,
-                                                -2 * i * Metre})),
+                                                -2 * i * Metre}),
                            Velocity<To>({-16 * i * Metre / Second,
                                          4 * i * Metre / Second,
                                          8 * i * Metre / Second})));
-      satellite_from_->Append(Instant(i * Second),
+      satellite_from_->Append(t0 + i * Second,
                               DegreesOfFreedom<From>(
-                                  Position<From>(
+                                  From::origin +
                                       Displacement<From>({10 * i * Metre,
                                                           -20 * i * Metre,
-                                                          30 * i * Metre})),
+                                                          30 * i * Metre}),
                                   Velocity<From>({40 * i * Metre / Second,
                                                   -80 * i * Metre / Second,
                                                   160 * i * Metre / Second})));
@@ -147,6 +148,7 @@ class TransformsTest : public testing::Test {
 // This transform is simple enough that we can compute its effect by hand.  This
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformsTest, BodyCentredNonRotating) {
+  Instant const t0;
   auto const transforms =
       Transforms<From, Through, To>::BodyCentredNonRotating(
           body1_, body1_from_, body1_to_);
@@ -169,11 +171,11 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
                          -88 * i * Metre / Second,
                          144 * i * Metre / Second}),
                         0, 720))) << i;
-    satellite_through_->Append(Instant(i * Second), degrees_of_freedom);
+    satellite_through_->Append(t0 + i * Second, degrees_of_freedom);
   }
 
   i = 1;
-  for (auto it = transforms->second(Instant(kNumberOfPoints * Second),
+  for (auto it = transforms->second(t0 + kNumberOfPoints * Second,
                                     *satellite_through_);
        !it.at_end();
        ++it, ++i) {
@@ -196,6 +198,7 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
 
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformsTest, SatelliteBarycentricRotating) {
+  Instant const t0;
   auto const transforms =
       Transforms<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
@@ -220,11 +223,11 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                          (2776.0 / sqrt(105.0)) * i * Metre / Second,
                          176.0 / sqrt(21.0) * i * Metre / Second}),
                         2, 10776))) << i;
-    satellite_through.Append(Instant(i * Second), degrees_of_freedom);
+    satellite_through.Append(t0 + i * Second, degrees_of_freedom);
   }
 
   i = 1;
-  for (auto it = transforms->second(Instant(kNumberOfPoints * Second),
+  for (auto it = transforms->second(t0 + kNumberOfPoints * Second,
                                     satellite_through);
        !it.at_end();
        ++it, ++i) {
@@ -249,6 +252,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 // from each other and from the barycentre, and that the barycentre is the
 // centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
+  Instant const t0;
   auto const transforms =
       Transforms<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
@@ -260,12 +264,12 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
   DiscreteTrajectory<From> discrete_body2_from;
   for (int i = 1; i <= kNumberOfPoints; ++i) {
     discrete_body1_from.Append(
-        Instant(i * Second),
-        body1_from_.EvaluateDegreesOfFreedom(Instant(i * Second),
+        t0 + i * Second,
+        body1_from_.EvaluateDegreesOfFreedom(t0 + i * Second,
                                              nullptr /*hint*/));
     discrete_body2_from.Append(
-        Instant(i * Second),
-        body2_from_.EvaluateDegreesOfFreedom(Instant(i * Second),
+        t0 + i * Second,
+        body2_from_.EvaluateDegreesOfFreedom(t0 + i * Second,
                                              nullptr /*hint*/));
   }
 
@@ -319,7 +323,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
 }
 
 TEST_F(TransformsTest, CoordinateFrame) {
-  Instant const t(kNumberOfPoints * Second);
+  Instant const t0;
+  Instant const t = t0 + kNumberOfPoints * Second;
   {
     auto const transforms =
         Transforms<From, Through, To>::BodyCentredNonRotating(

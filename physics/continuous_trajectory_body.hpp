@@ -48,7 +48,8 @@ bool ContinuousTrajectory<Frame>::empty() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   if (empty()) {
-    return Instant(std::numeric_limits<double>::infinity() * Second);
+    Instant const t0;
+    return t0 + std::numeric_limits<double>::infinity() * Second;
   }
   return *first_time_;
 }
@@ -56,7 +57,8 @@ Instant ContinuousTrajectory<Frame>::t_min() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max() const {
   if (empty()) {
-    return Instant(-std::numeric_limits<double>::infinity() * Second);
+    Instant const t0;
+    return t0 - std::numeric_limits<double>::infinity() * Second;
   }
   return series_.back().t_max();
 }

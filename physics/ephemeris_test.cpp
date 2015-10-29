@@ -86,12 +86,12 @@ class EphemerisTest : public testing::Test {
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    Position<EarthMoonOrbitPlane> const q1(
-        Displacement<EarthMoonOrbitPlane>({0 * Metre, 0 * Metre, 0 * Metre}));
-    Position<EarthMoonOrbitPlane> const q2(
+    Position<EarthMoonOrbitPlane> const q1 = EarthMoonOrbitPlane::origin +
+        Displacement<EarthMoonOrbitPlane>({0 * Metre, 0 * Metre, 0 * Metre});
+    Position<EarthMoonOrbitPlane> const q2 = EarthMoonOrbitPlane::origin +
         Displacement<EarthMoonOrbitPlane>({0 * Metre,
                                            4E8 * Metre,
-                                           0 * Metre}));
+                                           0 * Metre});
     Length const semi_major_axis = (q1 - q2).Norm();
     *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (earth->gravitational_parameter() +
@@ -805,10 +805,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Velocity<EarthMoonOrbitPlane> const v({0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>()});
-  Position<EarthMoonOrbitPlane> const q(
+  Position<EarthMoonOrbitPlane> const q = EarthMoonOrbitPlane::origin +
       Vector<Length, EarthMoonOrbitPlane>({0 * AstronomicalUnit,
                                            0 * AstronomicalUnit,
-                                           0 * AstronomicalUnit}));
+                                           0 * AstronomicalUnit});
 
   bodies.push_back(std::unique_ptr<MassiveBody const>(earth));
   initial_state.emplace_back(q, v);
@@ -904,22 +904,22 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Velocity<World> const v({0 * SIUnit<Speed>(),
                            0 * SIUnit<Speed>(),
                            0 * SIUnit<Speed>()});
-  Position<World> const q0(
+  Position<World> const q0 = World::origin +
       Vector<Length, World>({0 * AstronomicalUnit,
                              0 * AstronomicalUnit,
-                             0 * AstronomicalUnit}));
-  Position<World> const q1(
+                             0 * AstronomicalUnit});
+  Position<World> const q1 = World::origin +
       Vector<Length, World>({1 * AstronomicalUnit,
                              0 * AstronomicalUnit,
-                             0 * AstronomicalUnit}));
-  Position<World> const q2(
+                             0 * AstronomicalUnit});
+  Position<World> const q2 = World::origin +
       Vector<Length, World>({1 * AstronomicalUnit,
                              0 * AstronomicalUnit,
-                             1 * AstronomicalUnit}));
-  Position<World> const q3(
+                             1 * AstronomicalUnit});
+  Position<World> const q3 = World::origin +
       Vector<Length, World>({0 * AstronomicalUnit,
                              0 * AstronomicalUnit,
-                             1 * AstronomicalUnit}));
+                             1 * AstronomicalUnit});
   initial_state.emplace_back(q0, v);
   initial_state.emplace_back(q1, v);
   initial_state.emplace_back(q2, v);

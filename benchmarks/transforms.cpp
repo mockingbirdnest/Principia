@@ -106,11 +106,12 @@ void FillCircularTrajectory(Position<F> const& center,
                             int const steps,
                             not_null<T<F>*> const trajectory) {
   Displacement<F> const radius = initial - center;
+  Instant const t0;
   for (int i = 0; i < steps; ++i) {
-    Time const t_i = i * Δt;
-    Displacement<F> const displacement_i = Exp(angular_velocity * t_i)(radius);
+    Time const iΔt = i * Δt;
+    Displacement<F> const displacement_i = Exp(angular_velocity * iΔt)(radius);
     Velocity<F> const velocity_i = angular_velocity * displacement_i / Radian;
-    trajectory->Append(Instant(t_i),
+    trajectory->Append(t0 + iΔt,
                        DegreesOfFreedom<F>(initial + displacement_i,
                                            velocity_i));
   }
@@ -122,10 +123,11 @@ void FillLinearTrajectory(Position<F> const& initial,
                           Time const& Δt,
                           int const steps,
                           not_null<T<F>*> const trajectory) {
+  Instant const t0;
   for (int i = 0; i < steps; ++i) {
-    Time const t_i = i * Δt;
-    Displacement<F> const displacement_i = velocity * t_i;
-    trajectory->Append(Instant(t_i),
+    Time const iΔt = i * Δt;
+    Displacement<F> const displacement_i = velocity * iΔt;
+    trajectory->Append(t0 + iΔt,
                        DegreesOfFreedom<F>(initial + displacement_i,
                                            velocity));
   }

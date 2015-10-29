@@ -101,6 +101,7 @@ class InterfaceTest : public testing::Test {
       : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
+  Instant const t0_;
 };
 
 using InterfaceDeathTest = InterfaceTest;
@@ -333,14 +334,14 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
 
 TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
-              AdvanceTime(Instant(kTime * SIUnit<Time>()),
+              AdvanceTime(t0_ + kTime * SIUnit<Time>(),
                           kPlanetariumRotation * Degree));
   principia__AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
 }
 
 TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
   EXPECT_CALL(*plugin_,
-              ForgetAllHistoriesBefore(Instant(kTime * SIUnit<Time>())));
+              ForgetAllHistoriesBefore(t0_ + kTime * SIUnit<Time>()));
   principia__ForgetAllHistoriesBefore(plugin_.get(), kTime);
 }
 
@@ -675,7 +676,7 @@ TEST_F(InterfaceTest, VesselTangent) {
 TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
   double const current_time = principia__current_time(plugin_.get());
-  EXPECT_THAT(Instant(current_time * Second), Eq(kUnixEpoch));
+  EXPECT_THAT(t0_ + current_time * Second, Eq(kUnixEpoch));
 }
 
 TEST_F(InterfaceTest, SerializePlugin) {

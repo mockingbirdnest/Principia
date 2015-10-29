@@ -59,8 +59,9 @@ TEST_F(PointTest, AssignmentOperators) {
 
 TEST_F(PointTest, Ordering) {
   // Check that is_quantity works for double.
-  Point<double> d1(1.0);
-  Point<double> d2(-3.0);
+  Point<double> zero;
+  Point<double> d1 = zero + 1.0;
+  Point<double> d2 = zero -3.0;
   EXPECT_TRUE(d2 < d1);
   // Check ordering for instants.
   Instant const t1 = kUnixEpoch + 1 * Day;
@@ -78,14 +79,16 @@ TEST_F(PointTest, Ordering) {
 TEST_F(PointDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Point message;
-    Instant const t1(10 * Second);
+    Instant const t0;
+    Instant const t1 = t0 + 10 * Second;
     t1.WriteToMessage(&message);
     Position<World> const d2 = Position<World>::ReadFromMessage(message);
   }, "has_multivector");
   EXPECT_DEATH({
     serialization::Point message;
-    Position<World> const d1(
-        Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre}));
+    Position<World> const origin;
+    Position<World> const d1 = origin +
+        Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre});
     d1.WriteToMessage(&message);
     Instant const t2 = Instant::ReadFromMessage(message);
   }, "has_scalar");
@@ -94,15 +97,17 @@ TEST_F(PointDeathTest, SerializationError) {
 TEST_F(PointTest, SerializationSuccess) {
   serialization::Point message;
 
-  Instant const t1(10 * Second);
+  Instant const t0;
+  Instant const t1 = t0 + 10 * Second;
   t1.WriteToMessage(&message);
   EXPECT_TRUE(message.has_scalar());
   EXPECT_FALSE(message.has_multivector());
   Instant const t2 = Instant::ReadFromMessage(message);
   EXPECT_EQ(t1, t2);
 
-  Position<World> const d1(
-      Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre}));
+  Position<World> const origin;
+  Position<World> const d1 = origin +
+      Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre});
   d1.WriteToMessage(&message);
   EXPECT_FALSE(message.has_scalar());
   EXPECT_TRUE(message.has_multivector());
@@ -158,16 +163,17 @@ TEST_F(PointTest, InstantBarycentreCalculator) {
 
 TEST_F(PointTest, DoubleBarycentreCalculator) {
   BarycentreCalculator<Point<double>, double> calculator;
-  Point<double> const d1 = Point<double>(2);
-  Point<double> const d2 = Point<double>(-3);
-  Point<double> const d3 = Point<double>(5);
-  Point<double> const d4 = Point<double>(-7);
+  Point<double> zero;
+  Point<double> const d1 = zero + 2;
+  Point<double> const d2 = zero - 3;
+  Point<double> const d3 = zero + 5;
+  Point<double> const d4 = zero - 7;
   calculator.Add(d1, 1);
   calculator.Add(d2, 2);
-  EXPECT_THAT(calculator.Get(), Eq(Point<double>(-4.0 / 3.0)));
+  EXPECT_THAT(calculator.Get(), Eq(zero - 4.0 / 3.0));
   calculator.Add(d3, 3);
   calculator.Add(d4, 4);
-  EXPECT_THAT(calculator.Get(), Eq(Point<double>(-1.7)));
+  EXPECT_THAT(calculator.Get(), Eq(zero - 1.7));
 }
 
 }  // namespace geometry

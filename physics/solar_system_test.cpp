@@ -33,7 +33,7 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
       SOLUTION_DIR / "astronomy" /
           "initial_state_jd_2433282_500000000.proto.txt");
 
-  EXPECT_EQ(Instant(-50 * 365.25 * Day), solar_system_.epoch());
+  EXPECT_EQ(Instant() - 50 * 365.25 * Day, solar_system_.epoch());
   EXPECT_THAT(solar_system_.names(),
               ElementsAreArray({"Ariel",
                                 "Callisto",
