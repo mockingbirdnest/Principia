@@ -386,7 +386,7 @@ class Plugin {
   // from the trajectory of |body| starting at |actual_it|.
   RenderedTrajectory<World> RenderTrajectory(
       not_null<Body const*> const body,
-      DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
+      DiscreteTrajectory<Barycentric>::NativeIterator const&
           actual_it,
       not_null<RenderingFrame*>const transforms,
       Position<World> const& sun_world_position) const;

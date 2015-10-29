@@ -162,7 +162,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
                                     satellite_initial_velocity_));
-  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
+  not_null<std::unique_ptr<RenderingFrame>> const geocentric =
       plugin_->NewBodyCentredNonRotatingTransforms(SolarSystemFactory::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
@@ -242,7 +242,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
               from_the_earth_to_the_moon.velocity());
   plugin_->SetVesselStateOffset(satellite,
                                 {from_the_earth_to_l5, initial_velocity});
-  not_null<std::unique_ptr<RenderingTransforms>> const earth_moon_barycentric =
+  not_null<std::unique_ptr<RenderingFrame>> const earth_moon_barycentric =
       plugin_->NewBarycentricRotatingTransforms(SolarSystemFactory::kEarth,
                                                 SolarSystemFactory::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
