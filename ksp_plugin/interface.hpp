@@ -8,7 +8,6 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
-
 namespace ksp_plugin {
 
 struct LineAndIterator {

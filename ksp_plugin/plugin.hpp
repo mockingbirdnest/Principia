@@ -20,6 +20,7 @@
 #include "physics/body.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/frame_field.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -240,7 +241,8 @@ class Plugin {
   virtual bool has_vessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<RenderingFrame>>
-  NewBodyCentredNonRotatingRenderingFrame(Index const reference_body_index) const;
+  NewBodyCentredNonRotatingRenderingFrame(
+      Index const reference_body_index) const;
 
   virtual not_null<std::unique_ptr<RenderingFrame>>
   NewBarycentricRotatingRenderingFrame(Index const primary_index,

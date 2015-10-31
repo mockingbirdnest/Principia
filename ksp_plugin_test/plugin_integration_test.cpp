@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "geometry/identity.hpp"
+#include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -12,9 +14,12 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using geometry::Identity;
+using geometry::Permutation;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::si::Day;
@@ -589,7 +594,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
-  auto rendering_frame =
+  auto const rendering_frame =
       plugin.NewBodyCentredNonRotatingRenderingFrame(celestial);
   plugin.SetVesselStateOffset(
       satellite,

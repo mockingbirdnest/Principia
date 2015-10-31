@@ -494,16 +494,23 @@ Vector<double, World> Plugin::VesselTangent(
     GUID const& vessel_guid,
     not_null<RenderingFrame*> const rendering_frame) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  Instant const& time = vessel.prolongation().last().time();
+  auto const& last = vessel.prolongation().last();
+  Instant const& time = last.time();
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
-      vessel.prolongation().last().degrees_of_freedom();
+      last.degrees_of_freedom();
+  auto const from_frenet_frame_to_rendering_frame =
+      rendering_frame->FrenetFrame(
+          time,
+          rendering_frame->ToThisFrameAtTime(time)(degrees_of_freedom));
+  Vector<double, Frenet<Rendering>> const tangent({1, 0, 0});
+
+  // The vector with coordinates {1, 0, 0} in the Frenet frame of the
+  // vessel's free-falling trajectory in the given |rendering_frame|, converted
+  // to |WorldSun| coordinates.
   return Identity<WorldSun, World>()(
       BarycentricToWorldSun()(
           rendering_frame->FromThisFrameAtTime(time).orthogonal_map()(
-              rendering_frame->FrenetFrame(
-                  time,
-                  rendering_frame->ToThisFrameAtTime(time)(degrees_of_freedom))(
-                      Vector<double, Frenet<Rendering>>({1, 0, 0})))));
+              from_frenet_frame_to_rendering_frame(tangent))));
 }
 
 Instant Plugin::current_time() const {
@@ -951,7 +958,8 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   auto initial_it = intermediate_trajectory.first();
   auto from_rendering_frame_to_world_at_current_time =
       to_world *
-      rendering_frame->FromThisFrameAtTime(current_time_).rigid_transformation();
+          rendering_frame->
+              FromThisFrameAtTime(current_time_).rigid_transformation();
   if (!initial_it.at_end()) {
     for (auto final_it = initial_it;
          ++final_it, !final_it.at_end();
