@@ -108,27 +108,33 @@ std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyDynamicFrame(
     not_null<Body const*> const body,
     not_null<DynamicFrame<World1, World2>*> const dynamic_frame,
-    DiscreteTrajectory<World1>::TransformingIterator<World2> const& actual_it) {
+    DiscreteTrajectory<World1>::NativeIterator const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
 
-  // First build the trajectory resulting from the first transform.
+  // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<World2> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
-    intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
+    intermediate_trajectory.Append(
+        it.time(),
+        dynamic_frame->ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
   }
 
-  // Then build the final result using the second transform.
-  std::experimental::optional<Position<World1>> last_position;
-  for (auto it = transforms->second(intermediate_trajectory.last().time(),
-                                    intermediate_trajectory);
-       !it.at_end();
-       ++it) {
-    Position<World1> const& position = it.degrees_of_freedom().position();
-    if (last_position) {
-      result.emplace_back(*last_position, position);
+  // Render the trajectory at current time in |World|.
+  Instant const& current_time = intermediate_trajectory.last().time();
+  auto initial_it = intermediate_trajectory.first();
+  auto from_rendering_frame_to_world_at_current_time =
+          dynamic_frame->
+              FromThisFrameAtTime(current_time).rigid_transformation();
+  if (!initial_it.at_end()) {
+    for (auto final_it = initial_it;
+         ++final_it, !final_it.at_end();
+         initial_it = final_it) {
+      result.emplace_back(from_rendering_frame_to_world_at_current_time(
+                              initial_it.degrees_of_freedom().position()),
+                          from_rendering_frame_to_world_at_current_time(
+                              final_it.degrees_of_freedom().position()));
     }
-    last_position = position;
   }
   return result;
 }
