@@ -48,13 +48,18 @@ namespace physics {
     // Dates will have to be for U1, etc. (and all will have to be generated)
     auto some_instant = JulianDate(2433374.5);
     auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
+    auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
     ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
     ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
 
+    // sun.radius; // wrong format
+    // sun->radius; // MassiveBody doesn't have a radius, so...
     // check body angles at target times
-    // ArcTan(r_sun/Norm(q_moon - q_sun));
+    //(q_moon - q_sun).Norm();
+    // ArcTan(sun.radius, (q_moon - q_sun).Norm()); // will need another double once I can find how body radii are actually called.
+    // ArcTan(1.0);
     // ArcTan(r_earth/Norm(q_moon - q_earth));
-    LOG(ERROR) << ArcTan(1.0);
+    // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
         
