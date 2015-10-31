@@ -50,7 +50,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
-  private IntPtr transforms_ = IntPtr.Zero;
+  private IntPtr rendering_frame_ = IntPtr.Zero;
 
   [KSPField(isPersistant = true)]
   private int first_selected_celestial_ = 0;
@@ -520,7 +520,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
                 (UnityEngine.QuaternionD)NavballOrientation(
                     plugin_,
-                    transforms_,
+                    rendering_frame_,
                     (XYZ)Planetarium.fetch.Sun.position,
                     (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
         // TODO(egg): the navball should be independent from the frame of the
@@ -537,7 +537,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           Vector3d prograde =
               (Vector3d)VesselTangent(plugin_,
                                       active_vessel.id.ToString(),
-                                      transforms_);
+                                      rendering_frame_);
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
                   prograde * 0.05;
@@ -697,7 +697,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       trajectory_iterator = RenderedVesselTrajectory(
                                 plugin_,
                                 active_vessel.id.ToString(),
-                                transforms_,
+                                rendering_frame_,
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
@@ -705,7 +705,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         trajectory_iterator = RenderedPrediction(
                                   plugin_,
                                   active_vessel.id.ToString(),
-                                  transforms_,
+                                  rendering_frame_,
                                   (XYZ)Planetarium.fetch.Sun.position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
                                   rendered_prediction_);
@@ -798,7 +798,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref transforms_);
+    DeleteRenderingFrame(ref rendering_frame_);
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -911,11 +911,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void CrashOptions() {
     if (UnityEngine.GUILayout.Button(text : "CRASH ON MAP VIEW")) {
       first_selected_celestial_ = second_selected_celestial_;
-      DeleteRenderingFrame(ref transforms_);
-      transforms_ = NewBarycentricRotatingRenderingFrame(
-                        plugin_,
-                        first_selected_celestial_,
-                        second_selected_celestial_);
+      DeleteRenderingFrame(ref rendering_frame_);
+      rendering_frame_ = NewBarycentricRotatingRenderingFrame(
+                             plugin_,
+                             first_selected_celestial_,
+                             second_selected_celestial_);
     }
     if (UnityEngine.GUILayout.Button(text : "CRASH NOW")) {
       Log.Fatal("You asked for it!");
@@ -1159,16 +1159,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       navball_changed_ = true;
       reset_rsas_target_ = true;
     }
-    DeleteRenderingFrame(ref transforms_);
+    DeleteRenderingFrame(ref rendering_frame_);
     if (first_selected_celestial_ == second_selected_celestial_) {
-      transforms_ = NewBodyCentredNonRotatingRenderingFrame(
-                        plugin_,
-                        first_selected_celestial_);
+      rendering_frame_ = NewBodyCentredNonRotatingRenderingFrame(
+                             plugin_,
+                             first_selected_celestial_);
     } else {
-      transforms_ = NewBarycentricRotatingRenderingFrame(
-                        plugin_,
-                        first_selected_celestial_,
-                        second_selected_celestial_);
+      rendering_frame_ = NewBarycentricRotatingRenderingFrame(
+                             plugin_,
+                             first_selected_celestial_,
+                             second_selected_celestial_);
     }
   }
 

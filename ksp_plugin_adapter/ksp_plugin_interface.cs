@@ -207,7 +207,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DeleteRenderingFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteRenderingFrame(ref IntPtr transforms);
+  private static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
@@ -215,7 +215,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern IntPtr RenderedVesselTrajectory(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr transforms,
+      IntPtr rendering_frame,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -238,7 +238,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern IntPtr RenderedPrediction(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr transforms,
+      IntPtr rendering_frame,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -315,7 +315,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern WXYZ NavballOrientation(
       IntPtr plugin,
-      IntPtr transforms,
+      IntPtr rendering_frame,
       XYZ sun_world_position,
       XYZ ship_world_position);
 
@@ -325,7 +325,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern XYZ VesselTangent(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr transforms);
+      IntPtr rendering_frame);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__current_time",

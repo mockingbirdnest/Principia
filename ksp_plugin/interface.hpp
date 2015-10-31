@@ -6,7 +6,6 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/transforms.hpp"
 
 namespace principia {
 
@@ -221,11 +220,12 @@ RenderingFrame* CDECL principia__NewBarycentricRotatingRenderingFrame(
     int const primary_index,
     int const secondary_index);
 
-// Deletes and nulls |*transforms|.
-// |transforms| must not be null.  No transfer of ownership of |*transforms|,
-// takes ownership of |**transforms|.
+// Deletes and nulls |*rendering_frame|.
+// |rendering_frame| must not be null.  No transfer of ownership of
+// |*rendering_frame|, takes ownership of |**rendering_frame|.
 extern "C" DLLEXPORT
-void CDECL principia__DeleteRenderingFrame(RenderingFrame** const transforms);
+void CDECL principia__DeleteRenderingFrame(
+    RenderingFrame** const rendering_frame);
 
 extern "C" DLLEXPORT
 void principia__UpdatePrediction(Plugin const* const plugin,
@@ -240,7 +240,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -251,7 +251,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedPrediction(
     Plugin* const plugin,
     char const* vessel_guid,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -263,7 +263,7 @@ LineAndIterator* CDECL principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* vessel_guid,
     int const plan_phase,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position);
 
 // Returns |line_and_iterator->rendered_trajectory.size()|.
@@ -328,14 +328,14 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 extern "C" DLLEXPORT
 WXYZ CDECL principia__NavballOrientation(Plugin const* const plugin,
-                                         RenderingFrame* const transforms,
+                                         RenderingFrame* const rendering_frame,
                                          XYZ const sun_world_position,
                                          XYZ const ship_world_position);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
                                    char const* vessel_guid,
-                                   RenderingFrame* const transforms);
+                                   RenderingFrame* const rendering_frame);
 
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);

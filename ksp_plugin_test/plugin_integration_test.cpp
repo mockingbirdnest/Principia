@@ -589,7 +589,8 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
-  auto transforms = plugin.NewBodyCentredNonRotatingRenderingFrame(celestial);
+  auto rendering_frame =
+      plugin.NewBodyCentredNonRotatingRenderingFrame(celestial);
   plugin.SetVesselStateOffset(
       satellite,
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
@@ -601,7 +602,9 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
   plugin.UpdatePrediction(satellite);
   RenderedTrajectory<World> rendered_prediction =
-      plugin.RenderedPrediction(satellite, transforms.get(), World::origin);
+      plugin.RenderedPrediction(satellite,
+                                rendering_frame.get(),
+                                World::origin);
   EXPECT_EQ(14, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
     auto const& segment = rendered_prediction[i];

@@ -72,14 +72,14 @@ class MockPlugin : public Plugin {
       RenderedVesselTrajectory,
       RenderedTrajectory<World>(
           GUID const& vessel_guid,
-          not_null<RenderingFrame*> const transforms,
+          not_null<RenderingFrame*> const rendering_frame,
           Position<World> const& sun_world_position));
 
   MOCK_METHOD3(
       RenderedPrediction,
       RenderedTrajectory<World>(
           GUID const& vessel_guid,
-          not_null<RenderingFrame*> const transforms,
+          not_null<RenderingFrame*> const rendering_frame,
           Position<World> const& sun_world_position));
 
   MOCK_METHOD1(set_prediction_length, void(Time const& t));
@@ -105,13 +105,13 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD2(
       FillBodyCentredNonRotatingRenderingFrame,
       void(Index const reference_body_index,
-           std::unique_ptr<RenderingFrame>* transforms));
+           std::unique_ptr<RenderingFrame>* rendering_frame));
 
   MOCK_CONST_METHOD3(
       FillBarycentricRotatingRenderingFrame,
       void(Index const primary_index,
            Index const secondary_index,
-           std::unique_ptr<RenderingFrame>* transforms));
+           std::unique_ptr<RenderingFrame>* rendering_frame));
 
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
@@ -134,13 +134,13 @@ class MockPlugin : public Plugin {
 
   MOCK_CONST_METHOD2(Navball,
                      FrameField<World>(
-                         not_null<RenderingFrame*> const transforms,
+                         not_null<RenderingFrame*> const rendering_frame,
                          Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD2(VesselTangent,
                      Vector<double, World>(
                          GUID const& vessel_guid,
-                         not_null<RenderingFrame*> const transforms));
+                         not_null<RenderingFrame*> const rendering_frame));
 
   MOCK_CONST_METHOD0(current_time, Instant());
 

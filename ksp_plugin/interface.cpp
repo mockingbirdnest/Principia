@@ -352,12 +352,12 @@ RenderingFrame* principia__NewBarycentricRotatingRenderingFrame(
     int const primary_index,
     int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBarycentricRotatingRenderingFrame(
-          primary_index, secondary_index).release();
+      NewBarycentricRotatingRenderingFrame(primary_index,
+                                           secondary_index).release();
 }
 
-void principia__DeleteRenderingFrame(RenderingFrame** const transforms) {
-  TakeOwnership(transforms);
+void principia__DeleteRenderingFrame(RenderingFrame** const rendering_frame) {
+  TakeOwnership(rendering_frame);
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,
@@ -368,12 +368,12 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          transforms,
+          rendering_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -390,12 +390,12 @@ bool principia__HasPrediction(Plugin const* const plugin,
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
     char const* vessel_guid,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
-          transforms,
+          rendering_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -413,13 +413,13 @@ LineAndIterator* principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* vessel_guid,
     int const plan_phase,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
           plan_phase,
-          transforms,
+          rendering_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -522,11 +522,11 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 WXYZ principia__NavballOrientation(
     Plugin const* const plugin,
-    RenderingFrame* const transforms,
+    RenderingFrame* const rendering_frame,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
-      transforms,
+      rendering_frame,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
   return ToWXYZ(
@@ -538,9 +538,9 @@ WXYZ principia__NavballOrientation(
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* vessel_guid,
-                             RenderingFrame* const transforms) {
+                             RenderingFrame* const rendering_frame) {
   return ToXYZ(CHECK_NOTNULL(plugin)->
-                   VesselTangent(vessel_guid, transforms).coordinates());
+                   VesselTangent(vessel_guid, rendering_frame).coordinates());
 }
 
 double principia__current_time(Plugin const* const plugin) {
