@@ -1,5 +1,5 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_filter=DynamicFrame --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_filter=DynamicFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <experimental/optional>
 #include <memory>
@@ -59,10 +59,10 @@ using physics::SolarSystem;
 using quantities::astronomy::EarthMass;
 using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
-using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 
@@ -76,30 +76,12 @@ using Rendering = Frame<serialization::Frame::TestTag,
                         serialization::Frame::TEST, false>;
 
 template<typename F, template<typename F> class T>
-void FillCircularTrajectory(Position<F> const& center,
-                            Position<F> const& initial,
-                            AngularVelocity<F> const& angular_velocity,
-                            Time const& Δt,
-                            int const steps,
-                            not_null<T<F>*> const trajectory) {
-  Displacement<F> const radius = initial - center;
-  for (int i = 0; i < steps; ++i) {
-    Time const t_i = i * Δt;
-    Displacement<F> const displacement_i = Exp(angular_velocity * t_i)(radius);
-    Velocity<F> const velocity_i = angular_velocity * displacement_i / Radian;
-    trajectory->Append(Instant(t_i),
-                       DegreesOfFreedom<F>(initial + displacement_i,
-                                           velocity_i));
-  }
-}
-
-template<typename F, template<typename F> class T>
 void FillLinearTrajectory(Position<F> const& initial,
                           Velocity<F> const& velocity,
+                          Instant const& t0,
                           Time const& Δt,
                           int const steps,
                           not_null<T<F>*> const trajectory) {
-  Instant const t0;
   for (int i = 0; i < steps; ++i) {
     Time const iΔt = i * Δt;
     Displacement<F> const displacement_i = velocity * iΔt;
@@ -147,7 +129,7 @@ std::vector<std::pair<Position<ICRFJ2000Equator>,
 
 void BM_BodyCentredNonRotatingDynamicFrame(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  Time const Δt = 1 * Hour;
+  Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
   SolarSystem<ICRFJ2000Equator> solar_system;
@@ -159,6 +141,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(
       McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
       45 * Minute,
       5 * Milli(Metre));
+  ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
   not_null<MassiveBody const*> const earth =
       solar_system.massive_body(*ephemeris, "Earth");
@@ -177,6 +160,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(
   FillLinearTrajectory<ICRFJ2000Equator, DiscreteTrajectory>(
       probe_initial_position,
       probe_velocity,
+      solar_system.epoch(),
       Δt,
       steps,
       &probe_trajectory);
@@ -192,7 +176,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(
 
 void BM_BarycentricRotatingDynamicFrame(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  Time const Δt = 1 * Hour;
+  Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
   SolarSystem<ICRFJ2000Equator> solar_system;
@@ -204,6 +188,7 @@ void BM_BarycentricRotatingDynamicFrame(
       McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
       45 * Minute,
       5 * Milli(Metre));
+  ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
   not_null<MassiveBody const*> const earth =
       solar_system.massive_body(*ephemeris, "Earth");
@@ -224,6 +209,7 @@ void BM_BarycentricRotatingDynamicFrame(
   FillLinearTrajectory<ICRFJ2000Equator, DiscreteTrajectory>(
       probe_initial_position,
       probe_velocity,
+      solar_system.epoch(),
       Δt,
       steps,
       &probe_trajectory);
