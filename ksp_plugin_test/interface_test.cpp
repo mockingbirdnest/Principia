@@ -382,8 +382,9 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 }
 
 TEST_F(InterfaceTest, NewBodyCentredNonRotatingRenderingFrame) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingRenderingFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(mock_rendering_frame));
@@ -394,8 +395,9 @@ TEST_F(InterfaceTest, NewBodyCentredNonRotatingRenderingFrame) {
 }
 
 TEST_F(InterfaceTest, NewBarycentricRotatingRenderingFrame) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                     kParentIndex,
@@ -409,8 +411,9 @@ TEST_F(InterfaceTest, NewBarycentricRotatingRenderingFrame) {
 }
 
 TEST_F(InterfaceTest, DeleteRenderingFrame) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                     kParentIndex,
@@ -426,8 +429,9 @@ TEST_F(InterfaceTest, DeleteRenderingFrame) {
 }
 
 TEST_F(InterfaceTest, RenderedPrediction) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                     kParentIndex,
@@ -494,8 +498,9 @@ TEST_F(InterfaceTest, RenderedPrediction) {
 }
 
 TEST_F(InterfaceTest, LineAndIterator) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                     kParentIndex,
@@ -618,8 +623,9 @@ TEST_F(InterfaceTest, PhysicsBubble) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
@@ -658,8 +664,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
 }
 
 TEST_F(InterfaceTest, VesselTangent) {
-  MockDynamicFrame<Barycentric, Rendering>* const mock_rendering_frame =
-     new MockDynamicFrame<Barycentric, Rendering>;
+  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
+     mock_rendering_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
