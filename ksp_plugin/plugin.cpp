@@ -20,6 +20,8 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/barycentric_rotating_dynamic_frame_body.hpp"
+#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -36,6 +38,9 @@ using geometry::Permutation;
 using geometry::Sign;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using physics::BarycentricRotatingDynamicFrame;
+using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::Frenet;
 using quantities::Force;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -319,7 +324,7 @@ void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
@@ -333,10 +338,10 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     return RenderedTrajectory<World>();
   }
 
-  // Compute the apparent trajectory using the given |transforms|.
+  // Compute the apparent trajectory using the given |rendering_frame|.
   return RenderTrajectory(vessel->body(),
-                          transforms->first(vessel->history()),
-                          transforms,
+                          vessel->history().first(),
+                          rendering_frame,
                           sun_world_position);
 }
 
@@ -351,16 +356,15 @@ bool Plugin::HasPrediction(GUID const& vessel_guid) const {
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   RenderedTrajectory<World> result =
       RenderTrajectory(vessel.body(),
-                       transforms->first_on_or_after(
-                           vessel.prediction(),
+                       vessel.prediction().on_or_after(
                            *vessel.prediction().ForkTime()),
-                       transforms,
+                       rendering_frame,
                        sun_world_position);
   return result;
 }
@@ -368,7 +372,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
 RenderedTrajectory<World> Plugin::RenderedFlightPlan(
     GUID const& vessel_guid,
     int const plan_phase,
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
@@ -378,10 +382,8 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
   CHECK(prediction.ForkTime());
   RenderedTrajectory<World> result =
       RenderTrajectory(vessel.body(),
-                       transforms->first_on_or_after(
-                           prediction,
-                           *prediction.ForkTime()),
-                       transforms,
+                       prediction.on_or_after(*prediction.ForkTime()),
+                       rendering_frame,
                        sun_world_position);
   return result;
 }
@@ -402,32 +404,31 @@ bool Plugin::has_vessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
-Plugin::NewBodyCentredNonRotatingTransforms(
+not_null<std::unique_ptr<RenderingFrame>>
+Plugin::NewBodyCentredNonRotatingRenderingFrame(
     Index const reference_body_index) const {
   CHECK(!initializing_);
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
-  return RenderingTransforms::BodyCentredNonRotating(
-             reference_body.body(),
-             reference_body.trajectory(),
-             reference_body.trajectory());
+  return make_not_null_unique<
+      BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>>(
+          ephemeris_.get(),
+          &reference_body.body());
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
-Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
-                                         Index const secondary_index) const {
+not_null<std::unique_ptr<RenderingFrame>>
+Plugin::NewBarycentricRotatingRenderingFrame(
+    Index const primary_index,
+    Index const secondary_index) const {
   CHECK(!initializing_);
   // TODO(egg): these should be const, use a custom comparator in the map.
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
-  return RenderingTransforms::BarycentricRotating(
-             primary.body(),
-             primary.trajectory(),
-             primary.trajectory(),
-             secondary.body(),
-             secondary.trajectory(),
-             secondary.trajectory());
+  return make_not_null_unique<
+      BarycentricRotatingDynamicFrame<Barycentric, Rendering>>(
+          ephemeris_.get(),
+          &primary.body(),
+          &secondary.body());
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
@@ -464,7 +465,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 }
 
 FrameField<World> Plugin::Navball(
-    not_null<RenderingTransforms*> const transforms,
+    not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) const {
   auto const to_world =
       OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
@@ -474,15 +475,14 @@ FrameField<World> Plugin::Navball(
           sun_world_position,
           sun_->current_position(current_time_),
           to_world.Inverse());
-  return [transforms, to_world, positions_from_world, this](
+  return [rendering_frame, to_world, positions_from_world, this](
       Position<World> const& q) -> Rotation<World, World> {
     // KSP's navball has x west, y up, z south.
     // we want x north, y west, z up.
     auto const orthogonal_map = to_world *
-        transforms->coordinate_frame(current_time_)(
-            positions_from_world(q)).Forget() *
-        Permutation<World, Barycentric>(
-            Permutation<World, Barycentric>::XZY).Forget() *
+        rendering_frame->FromThisFrameAtTime(current_time_).orthogonal_map() *
+        Permutation<World, Rendering>(
+            Permutation<World, Rendering>::XZY).Forget() *
         Rotation<World, World>(π / 2 * Radian,
                                Bivector<double, World>({0, 1, 0})).Forget();
     CHECK(orthogonal_map.Determinant().Positive());
@@ -492,23 +492,25 @@ FrameField<World> Plugin::Navball(
 
 Vector<double, World> Plugin::VesselTangent(
     GUID const& vessel_guid,
-    not_null<RenderingTransforms*> const transforms) const {
+    not_null<RenderingFrame*> const rendering_frame) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  auto const actual_it =
-      transforms->first_on_or_after(vessel.prolongation(),
-                                    vessel.prolongation().last().time());
-  DiscreteTrajectory<Rendering> intermediate_trajectory;
-  intermediate_trajectory.Append(actual_it.time(),
-                                 actual_it.degrees_of_freedom());
-  auto const intermediate_it = transforms->second(current_time_,
-                                                  intermediate_trajectory);
-  DiscreteTrajectory<Barycentric> apparent_trajectory;
-  apparent_trajectory.Append(intermediate_it.time(),
-                             intermediate_it.degrees_of_freedom());
-  return Normalize(
-    Identity<WorldSun, World>()(
-        BarycentricToWorldSun()(
-            apparent_trajectory.last().degrees_of_freedom().velocity())));
+  auto const& last = vessel.prolongation().last();
+  Instant const& time = last.time();
+  DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
+      last.degrees_of_freedom();
+  auto const from_frenet_frame_to_rendering_frame =
+      rendering_frame->FrenetFrame(
+          time,
+          rendering_frame->ToThisFrameAtTime(time)(degrees_of_freedom));
+  Vector<double, Frenet<Rendering>> const tangent({1, 0, 0});
+
+  // The vector with coordinates {1, 0, 0} in the Frenet frame of the
+  // vessel's free-falling trajectory in the given |rendering_frame|, converted
+  // to |WorldSun| coordinates.
+  return Identity<WorldSun, World>()(
+      BarycentricToWorldSun()(
+          rendering_frame->FromThisFrameAtTime(time).orthogonal_map()(
+              from_frenet_frame_to_rendering_frame(tangent))));
 }
 
 Instant Plugin::current_time() const {
@@ -934,9 +936,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 
 RenderedTrajectory<World> Plugin::RenderTrajectory(
     not_null<Body const*> const body,
-    DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
-        actual_it,
-    not_null<RenderingTransforms*> const transforms,
+    DiscreteTrajectory<Barycentric>::NativeIterator const& actual_it,
+    not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
   auto const to_world =
@@ -945,30 +946,28 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
           sun_world_position,
           OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
-  // First build the trajectory resulting from the first transform.
+  // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
-    intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
+    intermediate_trajectory.Append(
+        it.time(),
+        rendering_frame->ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
   }
 
-  // Then build the apparent trajectory using the second transform.
-  DiscreteTrajectory<Barycentric> apparent_trajectory;
-  for (auto intermediate_it =
-           transforms->second(current_time_, intermediate_trajectory);
-       !intermediate_it.at_end();
-       ++intermediate_it) {
-    apparent_trajectory.Append(intermediate_it.time(),
-                               intermediate_it.degrees_of_freedom());
-  }
-
-  // Finally use the apparent trajectory to build the result.
-  auto initial_it = apparent_trajectory.first();
+  // Render the trajectory at current time in |World|.
+  auto initial_it = intermediate_trajectory.first();
+  auto from_rendering_frame_to_world_at_current_time =
+      to_world *
+          rendering_frame->
+              FromThisFrameAtTime(current_time_).rigid_transformation();
   if (!initial_it.at_end()) {
     for (auto final_it = initial_it;
          ++final_it, !final_it.at_end();
          initial_it = final_it) {
-      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
-                          to_world(final_it.degrees_of_freedom().position()));
+      result.emplace_back(from_rendering_frame_to_world_at_current_time(
+                              initial_it.degrees_of_freedom().position()),
+                          from_rendering_frame_to_world_at_current_time(
+                              final_it.degrees_of_freedom().position()));
     }
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
