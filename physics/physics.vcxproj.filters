@@ -65,12 +65,6 @@
     <ClInclude Include="mock_ephemeris.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="transforms.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="transforms_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="forkable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -134,9 +128,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="ephemeris_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="transforms_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="forkable_test.cpp">

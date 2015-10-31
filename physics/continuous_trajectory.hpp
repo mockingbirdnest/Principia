@@ -153,7 +153,6 @@ class ContinuousTrajectory {
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
 
   friend class ContinuousTrajectoryTest;
-  friend class TransformsTest;
 };
 
 }  // namespace physics

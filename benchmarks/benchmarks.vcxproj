@@ -173,7 +173,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="sprk_integrator.cpp" />
-    <ClCompile Include="transforms.cpp" />
     <ClCompile Include="чебышёв_series.cpp" />
   </ItemGroup>
   <ItemGroup>
