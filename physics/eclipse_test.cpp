@@ -19,6 +19,7 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::si::Minute;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Kilo;
 
 namespace physics {
 
@@ -52,13 +53,14 @@ namespace physics {
     ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
     ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
 
-    // sun.radius; // wrong format
-    // sun->radius; // MassiveBody doesn't have a radius, so...
+    // Massive_body eventually needs radius information. Or non-hardcoded data pulled from https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
+    auto r_sun = 696000.0 * Kilo(Metre);
+    auto r_moon = 6378.1363 * Kilo(Metre);
+    auto r_earth = 1738.0 * Kilo(Metre);
     // check body angles at target times
-    //(q_moon - q_sun).Norm();
-    // ArcTan(sun.radius, (q_moon - q_sun).Norm()); // will need another double once I can find how body radii are actually called.
-    // ArcTan(1.0);
-    // ArcTan(r_earth/Norm(q_moon - q_earth));
+    // Lunar eclipse
+    auto alpha = ArcTan(r_sun, (q_moon - q_sun).Norm());
+    // U14, U23, etc using the angle
     // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
