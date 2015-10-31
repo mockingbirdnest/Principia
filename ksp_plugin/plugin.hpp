@@ -19,8 +19,9 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/transforms.hpp"
+#include "physics/frame_field.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -37,9 +38,9 @@ using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
 using physics::DiscreteTrajectory;
+using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
-using physics::Transforms;
 using quantities::Angle;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -70,8 +71,7 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
-using RenderingTransforms =
-    Transforms<Barycentric, Rendering, Barycentric>;
+using RenderingFrame = DynamicFrame<Barycentric, Rendering>;
 
 class Plugin {
  public:
@@ -201,13 +201,13 @@ class Plugin {
                         Instant const& last_time) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
-  // with the given |GUID| in the frame defined by |transforms|.
+  // with the given |GUID| in the frame defined by |rendering_frame|.
   // |sun_world_position| is the current position of the sun in |World| space as
   // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
   // relation between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const rendering_frame,
       Position<World> const& sun_world_position) const;
 
   int FlightPlanSize(GUID const& vessel_guid) const;
@@ -215,22 +215,23 @@ class Plugin {
 
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |current_time()| to
-  // |current_time() + prediction_length_| in the frame defined by |transforms|.
-  // |sun_world_position| is the current  position of the sun in |World| space
-  // as returned by |Planetarium.fetch.Sun.position|.  It is used to define the
-  // relation between |WorldSun| and |World|.  No transfer of ownership.
+  // |current_time() + prediction_length_| in the frame defined by
+  // |rendering_frame|.  |sun_world_position| is the current position of the sun
+  // in |World| space as returned by |Planetarium.fetch.Sun.position|.  It is
+  // used to define the relation between |WorldSun| and |World|.
+  // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
   // called after |predicted_vessel_| was set.  Not const because of the stupid
-  // global variable |transforms_are_operating_on_predictions_|.
+  // global variable |rendering_frame_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const rendering_frame,
       Position<World> const& sun_world_position);
 
   virtual RenderedTrajectory<World> RenderedFlightPlan(
       GUID const& vessel_guid,
       int const plan_phase,
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const rendering_frame,
       Position<World> const& sun_world_position);
 
   virtual void set_prediction_length(Time const& t);
@@ -240,12 +241,13 @@ class Plugin {
 
   virtual bool has_vessel(GUID const& vessel_guid) const;
 
-  virtual not_null<std::unique_ptr<RenderingTransforms>>
-  NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
+  virtual not_null<std::unique_ptr<RenderingFrame>>
+  NewBodyCentredNonRotatingRenderingFrame(
+      Index const reference_body_index) const;
 
-  virtual not_null<std::unique_ptr<RenderingTransforms>>
-  NewBarycentricRotatingTransforms(Index const primary_index,
-                                   Index const secondary_index) const;
+  virtual not_null<std::unique_ptr<RenderingFrame>>
+  NewBarycentricRotatingRenderingFrame(Index const primary_index,
+                                       Index const secondary_index) const;
 
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
@@ -272,16 +274,16 @@ class Plugin {
   virtual Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
-  // The navball field at |current_time| for the given |transforms|.
+  // The navball field at |current_time| for the given |rendering_frame|.
   virtual FrameField<World> Navball(
-      not_null<RenderingTransforms*> const transforms,
+      not_null<RenderingFrame*> const rendering_frame,
       Position<World> const& sun_world_position) const;
 
   // The unit tangent vector to the trajectory of the vessel with the given GUID
-  // in the frame given by |transforms|.
+  // in the frame given by |rendering_frame|.
   virtual Vector<double, World> VesselTangent(
       GUID const& vessel_guid,
-      not_null<RenderingTransforms*> const transforms) const;
+      not_null<RenderingFrame*> const rendering_frame) const;
 
   virtual Instant current_time() const;
 
@@ -381,13 +383,13 @@ class Plugin {
   void EvolveProlongationsAndBubble(Instant const& t);
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
-  // returns a |RenderedTrajectory| as computed by the given |transforms|
+  // returns a |RenderedTrajectory| as computed by the given |rendering_frame|
   // from the trajectory of |body| starting at |actual_it|.
   RenderedTrajectory<World> RenderTrajectory(
       not_null<Body const*> const body,
-      DiscreteTrajectory<Barycentric>::TransformingIterator<Rendering> const&
+      DiscreteTrajectory<Barycentric>::NativeIterator const&
           actual_it,
-      not_null<RenderingTransforms*>const transforms,
+      not_null<RenderingFrame*>const rendering_frame,
       Position<World> const& sun_world_position) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
