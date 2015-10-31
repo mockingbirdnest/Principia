@@ -116,6 +116,9 @@
     <ClInclude Include="mock_continuous_trajectory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mock_dynamic_frame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
