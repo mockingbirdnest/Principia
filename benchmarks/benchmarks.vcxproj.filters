@@ -29,9 +29,6 @@
     <ClCompile Include="ephemeris.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="transforms.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dynamic_frame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

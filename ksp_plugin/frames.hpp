@@ -42,8 +42,8 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
 
-// The frame used for rendering.  Its definition depends on the actual factory
-// function used to create it, see class Transforms.
+// The frame used for rendering.  Its definition depends on the actual subclass
+// of DynamicFrame.
 using Rendering = Frame<serialization::Frame::PluginTag,
                         serialization::Frame::RENDERING, false>;
 
