@@ -189,24 +189,25 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        =
-                 "principia__NewBodyCentredNonRotatingTransforms",
+                 "principia__NewBodyCentredNonRotatingRenderingFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingTransforms(
+  private static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
       IntPtr plugin,
       int reference_body_index);
 
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NewBarycentricRotatingTransforms",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingTransforms(
+  [DllImport(
+       dllName           : kDllPath,
+       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
+       CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewBarycentricRotatingRenderingFrame(
       IntPtr plugin,
       int primary_index,
       int secondary_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteTransforms",
+             EntryPoint        = "principia__DeleteRenderingFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteTransforms(ref IntPtr transforms);
+  private static extern void DeleteRenderingFrame(ref IntPtr transforms);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",

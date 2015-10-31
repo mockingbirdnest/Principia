@@ -94,21 +94,21 @@ class MockPlugin : public Plugin {
   // we override the function of the Plugin class with bona fide functions which
   // call mock functions which fill a std::unique_ptr<> instead of returning it.
   not_null<std::unique_ptr<RenderingFrame>>
-  NewBodyCentredNonRotatingTransforms(
+  NewBodyCentredNonRotatingRenderingFrame(
       Index const reference_body_index) const override;
 
   not_null<std::unique_ptr<RenderingFrame>>
-  NewBarycentricRotatingTransforms(
+  NewBarycentricRotatingRenderingFrame(
       Index const primary_index,
       Index const secondary_index) const override;
 
   MOCK_CONST_METHOD2(
-      FillBodyCentredNonRotatingTransforms,
+      FillBodyCentredNonRotatingRenderingFrame,
       void(Index const reference_body_index,
            std::unique_ptr<RenderingFrame>* transforms));
 
   MOCK_CONST_METHOD3(
-      FillBarycentricRotatingTransforms,
+      FillBarycentricRotatingRenderingFrame,
       void(Index const primary_index,
            Index const secondary_index,
            std::unique_ptr<RenderingFrame>* transforms));

@@ -41,7 +41,6 @@ using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
-using physics::Transforms;
 using quantities::Angle;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -242,11 +241,11 @@ class Plugin {
   virtual bool has_vessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<RenderingFrame>>
-  NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
+  NewBodyCentredNonRotatingRenderingFrame(Index const reference_body_index) const;
 
   virtual not_null<std::unique_ptr<RenderingFrame>>
-  NewBarycentricRotatingTransforms(Index const primary_index,
-                                   Index const secondary_index) const;
+  NewBarycentricRotatingRenderingFrame(Index const primary_index,
+                                       Index const secondary_index) const;
 
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to

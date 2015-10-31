@@ -565,7 +565,7 @@ TEST_F(PluginTest, Navball) {
   plugin.InsertSun(SolarSystemFactory::kSun, sun_gravitational_parameter_);
   plugin.EndInitialization();
   not_null<std::unique_ptr<RenderingFrame>> const heliocentric =
-          plugin.NewBodyCentredNonRotatingTransforms(SolarSystemFactory::kSun);
+      plugin.NewBodyCentredNonRotatingRenderingFrame(SolarSystemFactory::kSun);
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
@@ -597,7 +597,7 @@ TEST_F(PluginTest, Frenet) {
   Vector<double, World> t = alice_sun_to_world(
                                 Normalize(satellite_initial_velocity_));
   not_null<std::unique_ptr<RenderingFrame>> const geocentric =
-      plugin.NewBodyCentredNonRotatingTransforms(
+      plugin.NewBodyCentredNonRotatingRenderingFrame(
           SolarSystemFactory::kEarth);
   EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
               AlmostEquals(t, 2));

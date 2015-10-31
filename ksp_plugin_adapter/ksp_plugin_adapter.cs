@@ -798,7 +798,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     DeletePlugin(ref plugin_);
-    DeleteTransforms(ref transforms_);
+    DeleteRenderingFrame(ref transforms_);
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -911,8 +911,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void CrashOptions() {
     if (UnityEngine.GUILayout.Button(text : "CRASH ON MAP VIEW")) {
       first_selected_celestial_ = second_selected_celestial_;
-      DeleteTransforms(ref transforms_);
-      transforms_ = NewBarycentricRotatingTransforms(
+      DeleteRenderingFrame(ref transforms_);
+      transforms_ = NewBarycentricRotatingRenderingFrame(
                         plugin_,
                         first_selected_celestial_,
                         second_selected_celestial_);
@@ -1159,13 +1159,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       navball_changed_ = true;
       reset_rsas_target_ = true;
     }
-    DeleteTransforms(ref transforms_);
+    DeleteRenderingFrame(ref transforms_);
     if (first_selected_celestial_ == second_selected_celestial_) {
-      transforms_ = NewBodyCentredNonRotatingTransforms(
+      transforms_ = NewBodyCentredNonRotatingRenderingFrame(
                         plugin_,
                         first_selected_celestial_);
     } else {
-      transforms_ = NewBarycentricRotatingTransforms(
+      transforms_ = NewBarycentricRotatingRenderingFrame(
                         plugin_,
                         first_selected_celestial_,
                         second_selected_celestial_);

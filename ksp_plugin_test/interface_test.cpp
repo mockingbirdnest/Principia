@@ -139,7 +139,7 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialFromParent(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__NewBodyCentredNonRotatingTransforms(plugin, kCelestialIndex);
+    principia__NewBodyCentredNonRotatingRenderingFrame(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__LogFatal("a fatal error");
@@ -380,56 +380,56 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 
 #if 0
 // TODO(egg): Revive.
-TEST_F(InterfaceTest, NewBodyCentredNonRotatingTransforms) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+TEST_F(InterfaceTest, NewBodyCentredNonRotatingRenderingFrame) {
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingTransforms(kCelestialIndex, _))
+              FillBodyCentredNonRotatingRenderingFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(dummy_transforms));
-  std::unique_ptr<RenderingTransforms> transforms(
-      principia__NewBodyCentredNonRotatingTransforms(plugin_.get(),
+  std::unique_ptr<RenderingRenderingFrame> transforms(
+      principia__NewBodyCentredNonRotatingRenderingFrame(plugin_.get(),
                                                       kCelestialIndex));
   EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
-TEST_F(InterfaceTest, NewBarycentricRotatingTransforms) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+TEST_F(InterfaceTest, NewBarycentricRotatingRenderingFrame) {
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingTransforms(kCelestialIndex,
+              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  std::unique_ptr<RenderingTransforms> transforms(
-      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+  std::unique_ptr<RenderingRenderingFrame> transforms(
+      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex));
   EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
-TEST_F(InterfaceTest, DeleteTransforms) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+TEST_F(InterfaceTest, DeleteRenderingFrame) {
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingTransforms(kCelestialIndex,
+              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  RenderingTransforms* transforms(
-      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+  RenderingRenderingFrame* transforms(
+      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex));
   EXPECT_EQ(dummy_transforms, transforms);
-  principia__DeleteTransforms(&transforms);
+  principia__DeleteRenderingFrame(&transforms);
   EXPECT_THAT(transforms, IsNull());
 }
 
 TEST_F(InterfaceTest, RenderedPrediction) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingTransforms(kCelestialIndex,
+              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  RenderingTransforms* transforms =
-      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+  RenderingRenderingFrame* transforms =
+      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);
 
@@ -484,19 +484,19 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
   EXPECT_EQ(dummy_transforms, transforms);
-  principia__DeleteTransforms(&transforms);
+  principia__DeleteRenderingFrame(&transforms);
   EXPECT_THAT(transforms, IsNull());
 }
 
 TEST_F(InterfaceTest, LineAndIterator) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingTransforms(kCelestialIndex,
+              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  RenderingTransforms* transforms =
-      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+  RenderingRenderingFrame* transforms =
+      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);
 
@@ -553,7 +553,7 @@ TEST_F(InterfaceTest, LineAndIterator) {
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
   EXPECT_EQ(dummy_transforms, transforms);
-  principia__DeleteTransforms(&transforms);
+  principia__DeleteRenderingFrame(&transforms);
   EXPECT_THAT(transforms, IsNull());
 }
 
@@ -612,14 +612,14 @@ TEST_F(InterfaceTest, PhysicsBubble) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingTransforms(kCelestialIndex,
+              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  RenderingTransforms* transforms =
-      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+  RenderingRenderingFrame* transforms =
+      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);
   Position<World> sun_position =
@@ -646,19 +646,19 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_EQ(q.z, rotation.quaternion().imaginary_part().z);
 
   EXPECT_EQ(dummy_transforms, transforms);
-  principia__DeleteTransforms(&transforms);
+  principia__DeleteRenderingFrame(&transforms);
   EXPECT_THAT(transforms, IsNull());
 }
 
 TEST_F(InterfaceTest, VesselTangent) {
-  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+  auto dummy_transforms = RenderingRenderingFrame::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingTransforms(kCelestialIndex,
+              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  RenderingTransforms* transforms =
-      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+  RenderingRenderingFrame* transforms =
+      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);
   auto const tangent = Vector<double, World>({4, 5, 6});
@@ -670,7 +670,7 @@ TEST_F(InterfaceTest, VesselTangent) {
   EXPECT_EQ(t.z, tangent.coordinates().z);
 
   EXPECT_EQ(dummy_transforms, transforms);
-  principia__DeleteTransforms(&transforms);
+  principia__DeleteRenderingFrame(&transforms);
   EXPECT_THAT(transforms, IsNull());
 }
 

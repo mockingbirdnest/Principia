@@ -333,30 +333,30 @@ QP principia__VesselFromParent(Plugin const* const plugin,
 }
 
 QP principia__CelestialFromParent(Plugin const* const plugin,
-                                   int const celestial_index) {
+                                  int const celestial_index) {
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
   return {ToXYZ(result.displacement().coordinates() / Metre),
           ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-RenderingFrame* principia__NewBodyCentredNonRotatingTransforms(
+RenderingFrame* principia__NewBodyCentredNonRotatingRenderingFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBodyCentredNonRotatingTransforms(reference_body_index).release();
+      NewBodyCentredNonRotatingRenderingFrame(reference_body_index).release();
 }
 
-RenderingFrame* principia__NewBarycentricRotatingTransforms(
+RenderingFrame* principia__NewBarycentricRotatingRenderingFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBarycentricRotatingTransforms(
+      NewBarycentricRotatingRenderingFrame(
           primary_index, secondary_index).release();
 }
 
-void principia__DeleteTransforms(RenderingFrame** const transforms) {
+void principia__DeleteRenderingFrame(RenderingFrame** const transforms) {
   TakeOwnership(transforms);
 }
 
