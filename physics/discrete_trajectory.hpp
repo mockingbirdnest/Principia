@@ -67,8 +67,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // These functions return the series of positions/velocities/times for the
   // trajectory.  All three containers are guaranteed to have the same size.
   // These functions are O(|depth| + |length|).
-  std::map<Instant, Position<Frame>> Positions() const;
-  std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The

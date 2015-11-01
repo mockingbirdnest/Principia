@@ -44,32 +44,6 @@ DiscreteTrajectory<Frame>::last() const {
 }
 
 template<typename Frame>
-std::map<Instant, Position<Frame>>
-DiscreteTrajectory<Frame>::Positions() const {
-  std::map<Instant, Position<Frame>> result;
-  for (auto it = this->Begin(); it != this->End(); ++it) {
-    auto timeline_it = it.current();
-    Instant const& time = timeline_it->first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = timeline_it->second;
-    result.emplace_hint(result.end(), time, degrees_of_freedom.position());
-  }
-  return result;
-}
-
-template<typename Frame>
-std::map<Instant, Velocity<Frame>>
-DiscreteTrajectory<Frame>::Velocities() const {
-  std::map<Instant, Velocity<Frame>> result;
-  for (auto it = this->Begin(); it != this->End(); ++it) {
-    auto const timeline_it = it.current();
-    Instant const& time = timeline_it->first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = timeline_it->second;
-    result.emplace_hint(result.end(), time, degrees_of_freedom.velocity());
-  }
-  return result;
-}
-
-template<typename Frame>
 std::list<Instant> DiscreteTrajectory<Frame>::Times() const {
   std::list<Instant> result;
   for (auto it = this->Begin(); it != this->End(); ++it) {
