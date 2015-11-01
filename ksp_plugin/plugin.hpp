@@ -384,11 +384,10 @@ class Plugin {
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
   // returns a |RenderedTrajectory| as computed by the given |rendering_frame|
-  // from the trajectory of |body| starting at |actual_it|.
+  // from the trajectory defined by |begin| and |end|.
   RenderedTrajectory<World> RenderTrajectory(
-      not_null<Body const*> const body,
-      DiscreteTrajectory<Barycentric>::Iterator const&
-          actual_it,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
       not_null<RenderingFrame*>const rendering_frame,
       Position<World> const& sun_world_position) const;
 

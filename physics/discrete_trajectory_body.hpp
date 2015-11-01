@@ -175,6 +175,11 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
+DiscreteTrajectory<Frame>::Iterator::Iterator(
+    typename Forkable<DiscreteTrajectory<Frame>>::Iterator it)
+    : Forkable<DiscreteTrajectory<Frame>>::Iterator(std::move(it)) {}
+
+template<typename Frame>
 bool DiscreteTrajectory<Frame>::Iterator::at_end() const {
   return *this == this->trajectory()->End();
 }
@@ -189,11 +194,6 @@ DegreesOfFreedom<Frame> const&
 DiscreteTrajectory<Frame>::Iterator::degrees_of_freedom() const {
   return this->current()->second;
 }
-
-template<typename Frame>
-DiscreteTrajectory<Frame>::Iterator::Iterator(
-    typename Forkable<DiscreteTrajectory<Frame>>::Iterator it)
-    : Forkable<DiscreteTrajectory<Frame>>::Iterator(std::move(it)) {}
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {

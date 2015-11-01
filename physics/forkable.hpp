@@ -55,6 +55,7 @@ class Forkable {
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
+  //TODO(phl):Unneeded?
   std::experimental::optional<Instant> ForkTime() const;
 
   // A base class for iterating over the timeline of a trajectory, taking forks
