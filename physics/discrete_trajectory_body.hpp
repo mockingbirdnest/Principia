@@ -44,13 +44,6 @@ DiscreteTrajectory<Frame>::first() const {
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
-DiscreteTrajectory<Frame>::on_or_after(
-    Instant const& time) const {
-  return Iterator(this->LowerBound(time));
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
   auto it = this->End();
   return Iterator(--it);

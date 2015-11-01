@@ -64,11 +64,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // O(|depth|).  The result may be at end if the trajectory is empty.
   Iterator first() const;
 
-  // Returns at the first point of the trajectory which is on or after |time|.
-  // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
-  // |time| is after the end of the trajectory.
-  Iterator on_or_after(Instant const& time) const;
-
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
   Iterator last() const;

@@ -165,7 +165,9 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_EQ(t3_, fork2->last().time());
 
   std::vector<Instant> after;
-  for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
+  for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t3_);
+       it != fork3->End();
+       ++it) {
     after.push_back(it.time());
   }
   EXPECT_THAT(after, ElementsAre(t3_));
@@ -186,7 +188,9 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_EQ(t3_, fork2->last().time());
 
   after.clear();
-  for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
+  for (DiscreteTrajectory<World>::Iterator it = fork2->Find(t3_);
+       it != fork2->End();
+       ++it) {
     after.push_back(it.time());
   }
   EXPECT_THAT(after, ElementsAre(t3_));
@@ -207,7 +211,9 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
   EXPECT_EQ(t3_, fork2->last().time());
 
   after.clear();
-  for (auto it = fork1->on_or_after(t3_); !it.at_end(); ++it) {
+  for (DiscreteTrajectory<World>::Iterator it = fork1->Find(t3_);
+       it != fork1->End();
+       ++it) {
     after.push_back(it.time());
   }
   EXPECT_THAT(after, ElementsAre(t3_, t4_));
@@ -228,20 +234,26 @@ TEST_F(DiscreteTrajectoryTest, NewForkWithCopyAtLast) {
 
   fork2->Append(t4_, d4_);
   after.clear();
-  for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
+  for (DiscreteTrajectory<World>::Iterator it = fork2->Find(t3_);
+       it != fork2->End();
+       ++it) {
     after.push_back(it.time());
   }
   EXPECT_THAT(after, ElementsAre(t3_, t4_));
 
   fork3->Append(t4_, d4_);
   after.clear();
-  for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
+  for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t3_);
+       it != fork3->End();
+       ++it) {
     after.push_back(it.time());
   }
   EXPECT_THAT(after, ElementsAre(t3_, t4_));
 
   after.clear();
-  for (auto it = fork3->on_or_after(t2_); !it.at_end(); ++it) {
+  for (DiscreteTrajectory<World>::Iterator it = fork3->Find(t2_);
+       it != fork3->End();
+       ++it) {
     after.push_back(it.time());
   }
   EXPECT_THAT(after, ElementsAre(t2_, t3_, t4_));
@@ -548,43 +560,6 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(d4_, it.degrees_of_freedom());
   ++it;
-  EXPECT_TRUE(it.at_end());
-}
-
-TEST_F(DiscreteTrajectoryTest, IteratorOnOrAfterSuccess) {
-  DiscreteTrajectory<World>::Iterator it =
-      massive_trajectory_->on_or_after(t0_);
-  EXPECT_TRUE(it.at_end());
-
-  massless_trajectory_->Append(t1_, d1_);
-  massless_trajectory_->Append(t2_, d2_);
-  massless_trajectory_->Append(t3_, d3_);
-
-  it = massless_trajectory_->on_or_after(t0_);
-  EXPECT_FALSE(it.at_end());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(d1_, it.degrees_of_freedom());
-  it = massless_trajectory_->on_or_after(t2_);
-  EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(d2_, it.degrees_of_freedom());
-  it = massless_trajectory_->on_or_after(t4_);
-  EXPECT_TRUE(it.at_end());
-
-  not_null<DiscreteTrajectory<World>*> const fork =
-      massless_trajectory_->NewForkWithCopy(t2_);
-  fork->Append(t4_, d4_);
-
-  it = fork->on_or_after(t0_);
-  EXPECT_FALSE(it.at_end());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(d1_, it.degrees_of_freedom());
-  it = fork->on_or_after(t2_);
-  EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(d2_, it.degrees_of_freedom());
-  it = fork->on_or_after(t4_);
-  EXPECT_EQ(t4_, it.time());
-  EXPECT_EQ(d4_, it.degrees_of_freedom());
-  it = fork->on_or_after(t4_ + 1 * Second);
   EXPECT_TRUE(it.at_end());
 }
 
