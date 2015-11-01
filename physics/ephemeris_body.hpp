@@ -559,7 +559,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),
             histories.back().get());
-    DiscreteTrajectory<Frame>::Iterator const history_begin =
+    typename DiscreteTrajectory<Frame>::Iterator const history_begin =
         histories.back()->Begin();
     initial_state.push_back(history_begin.degrees_of_freedom());
     initial_time.insert(history_begin.time());
@@ -597,7 +597,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     }
     auto continuous_trajectory = ephemeris->trajectories_[j];
 
-    DiscreteTrajectory<Frame>::Iterator it = history->Begin();
+    typename DiscreteTrajectory<Frame>::Iterator it = history->Begin();
     Instant last_time = it.time();
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
     for (; it != history->End(); ++it) {
