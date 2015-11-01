@@ -954,14 +954,17 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   }
 
   // Render the trajectory at current time in |World|.
-  auto initial_it = intermediate_trajectory.first();
+  DiscreteTrajectory<Rendering>::Iterator initial_it =
+      intermediate_trajectory.Begin();
+  DiscreteTrajectory<Rendering>::Iterator const intermediate_end =
+      intermediate_trajectory.End();
   auto from_rendering_frame_to_world_at_current_time =
       to_world *
           rendering_frame->
               FromThisFrameAtTime(current_time_).rigid_transformation();
-  if (!initial_it.at_end()) {
+  if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
-         ++final_it, !final_it.at_end();
+         ++final_it, final_it != intermediate_end;
          initial_it = final_it) {
       result.emplace_back(from_rendering_frame_to_world_at_current_time(
                               initial_it.degrees_of_freedom().position()),

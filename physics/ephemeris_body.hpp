@@ -595,10 +595,10 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     }
     auto continuous_trajectory = ephemeris->trajectories_[j];
 
-    auto it = history->first();
+    DiscreteTrajectory<Frame>::Iterator it = history->Begin();
     Instant last_time = it.time();
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
-    for (; !it.at_end(); ++it) {
+    for (; it != history->End(); ++it) {
       Time const duration_since_last_time = it.time() - last_time;
       if (duration_since_last_time == step) {
         // A time in the discrete trajectory that is aligned on the continuous
