@@ -37,23 +37,23 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::NativeIterator
+typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::first() const {
-  return NativeIterator(this->Begin());
+  return Iterator(this->Begin());
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::NativeIterator
+typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::on_or_after(
     Instant const& time) const {
-  return NativeIterator(this->LowerBound(time));
+  return Iterator(this->LowerBound(time));
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::NativeIterator
+typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
   auto it = this->End();
-  return NativeIterator(--it);
+  return Iterator(--it);
 }
 
 template<typename Frame>
@@ -175,24 +175,25 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-bool DiscreteTrajectory<Frame>::NativeIterator::at_end() const {
+bool DiscreteTrajectory<Frame>::Iterator::at_end() const {
   return *this == this->trajectory()->End();
 }
 
 template<typename Frame>
-Instant const& DiscreteTrajectory<Frame>::NativeIterator::time() const {
+Instant const& DiscreteTrajectory<Frame>::Iterator::time() const {
   return this->current()->first;
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> const&
-DiscreteTrajectory<Frame>::NativeIterator::degrees_of_freedom() const {
+DiscreteTrajectory<Frame>::Iterator::degrees_of_freedom() const {
   return this->current()->second;
 }
 
 template<typename Frame>
-DiscreteTrajectory<Frame>::NativeIterator::NativeIterator(Iterator it)
-    : Iterator(std::move(it)) {}
+DiscreteTrajectory<Frame>::Iterator::Iterator(
+    typename Forkable<DiscreteTrajectory<Frame>>::Iterator it)
+    : Forkable<DiscreteTrajectory<Frame>>::Iterator(std::move(it)) {}
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {

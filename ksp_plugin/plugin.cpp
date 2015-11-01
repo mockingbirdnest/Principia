@@ -936,7 +936,7 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 
 RenderedTrajectory<World> Plugin::RenderTrajectory(
     not_null<Body const*> const body,
-    DiscreteTrajectory<Barycentric>::NativeIterator const& actual_it,
+    DiscreteTrajectory<Barycentric>::Iterator const& actual_it,
     not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;

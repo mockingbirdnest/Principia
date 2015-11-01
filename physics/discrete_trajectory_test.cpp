@@ -503,14 +503,14 @@ TEST_F(DiscreteTrajectoryTest, LastSuccess) {
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
 }
 
-TEST_F(DiscreteTrajectoryDeathTest, NativeIteratorError) {
+TEST_F(DiscreteTrajectoryDeathTest, IteratorError) {
   EXPECT_DEATH({
-    DiscreteTrajectory<World>::NativeIterator it = massive_trajectory_->last();
+    DiscreteTrajectory<World>::Iterator it = massive_trajectory_->last();
   }, "parent_.*non NULL");
 }
 
-TEST_F(DiscreteTrajectoryTest, NativeIteratorSuccess) {
-  DiscreteTrajectory<World>::NativeIterator it = massive_trajectory_->first();
+TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
+  DiscreteTrajectory<World>::Iterator it = massive_trajectory_->first();
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
@@ -551,8 +551,8 @@ TEST_F(DiscreteTrajectoryTest, NativeIteratorSuccess) {
   EXPECT_TRUE(it.at_end());
 }
 
-TEST_F(DiscreteTrajectoryTest, NativeIteratorOnOrAfterSuccess) {
-  DiscreteTrajectory<World>::NativeIterator it =
+TEST_F(DiscreteTrajectoryTest, IteratorOnOrAfterSuccess) {
+  DiscreteTrajectory<World>::Iterator it =
       massive_trajectory_->on_or_after(t0_);
   EXPECT_TRUE(it.at_end());
 

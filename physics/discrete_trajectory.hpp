@@ -37,13 +37,12 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 
 template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
-  using Iterator = typename Forkable<DiscreteTrajectory<Frame>>::Iterator;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
   using TimelineConstIterator =
       typename Forkable<DiscreteTrajectory<Frame>>::TimelineConstIterator;
 
  public:
-  class NativeIterator;
+  class Iterator;
 
   DiscreteTrajectory() = default;
   ~DiscreteTrajectory() override;
@@ -63,16 +62,16 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
-  NativeIterator first() const;
+  Iterator first() const;
 
   // Returns at the first point of the trajectory which is on or after |time|.
   // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
   // |time| is after the end of the trajectory.
-  NativeIterator on_or_after(Instant const& time) const;
+  Iterator on_or_after(Instant const& time) const;
 
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
-  NativeIterator last() const;
+  Iterator last() const;
 
   // These functions return the series of positions/velocities/times for the
   // trajectory.  All three containers are guaranteed to have the same size.
@@ -114,16 +113,15 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
       serialization::Trajectory const& message);
 
-  // An iterator which returns the coordinates in the native frame of the
-  // trajectory, i.e., |Frame|.
-  class NativeIterator : public Iterator {
+  class Iterator : public Forkable<DiscreteTrajectory<Frame>>::Iterator {
    public:
     bool at_end() const;
     Instant const& time() const;
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 
    private:
-    explicit NativeIterator(Iterator it);
+    explicit Iterator(
+        typename Forkable<DiscreteTrajectory<Frame>>::Iterator it);
     friend class DiscreteTrajectory;
   };
 

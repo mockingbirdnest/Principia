@@ -96,7 +96,7 @@ std::vector<std::pair<Position<ICRFJ2000Equator>,
                       Position<ICRFJ2000Equator>>> ApplyDynamicFrame(
     not_null<Body const*> const body,
     not_null<DynamicFrame<ICRFJ2000Equator, Rendering>*> const dynamic_frame,
-    DiscreteTrajectory<ICRFJ2000Equator>::NativeIterator const& actual_it) {
+    DiscreteTrajectory<ICRFJ2000Equator>::Iterator const& actual_it) {
   std::vector<std::pair<Position<ICRFJ2000Equator>,
                         Position<ICRFJ2000Equator>>> result;
 
