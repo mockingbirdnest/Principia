@@ -44,12 +44,10 @@ DiscreteTrajectory<Frame>::last() const {
 }
 
 template<typename Frame>
-std::list<Instant> DiscreteTrajectory<Frame>::Times() const {
-  std::list<Instant> result;
+int DiscreteTrajectory<Frame>::Size() const {
+  int result = 0;
   for (auto it = this->Begin(); it != this->End(); ++it) {
-    auto const timeline_it = it.current();
-    Instant const& time = timeline_it->first;
-    result.push_back(time);
+    ++result;
   }
   return result;
 }
@@ -73,19 +71,19 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  auto const fork_time = this->ForkTime();
-  if (fork_time && time <= fork_time) {
+  Iterator const fork_it = this->Fork();
+  if (fork_it != this->End() && time <= fork_it.time()) {
     // TODO(egg): This is a logic error and it should CHECK.  Unfortunately, the
     // plugin integration test fails this check.
     LOG(ERROR) << "Append at " << time
-               << " which is before fork time " << *fork_time;
+               << " which is before fork time " << fork_it.time();
     return;
   }
 
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << Times().front() << ", "
-                 << Times().back() << "]";
+                 << ", time range = [" << Iterator(this->Begin()).time() << ", "
+                 << last().time() << "]";
     return;
   }
   auto it = timeline_.emplace_hint(timeline_.end(),

@@ -209,7 +209,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
-    steps = trajectory.Times().size();
+    steps = trajectory.Size();
     state->ResumeTiming();
   }
   std::stringstream ss;
@@ -282,7 +282,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
-    steps = trajectory.Times().size();
+    steps = trajectory.Size();
     state->ResumeTiming();
   }
   std::stringstream ss;

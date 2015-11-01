@@ -8,11 +8,11 @@ namespace physics {
 template<typename Tr4jectory>
 void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   CHECK_NOTNULL(*trajectory);
-  std::experimental::optional<Instant> const fork_time =
-      (*trajectory)->ForkTime();
-  CHECK(fork_time);
-  // Find the position of |*forkable| among our children and remove it.
-  auto const range = children_.equal_range(*fork_time);
+  auto const fork_it = (*trajectory)->Fork();
+  CHECK(fork_it != (*trajectory)->End());
+  // Find the position of |*trajectory| among our children and remove it.
+  auto const range = children_.equal_range(
+                         ForkableTraits<Tr4jectory>::time(fork_it.current_));
   for (auto it = range.first; it != range.second; ++it) {
     if (it->second.get() == *trajectory) {
       children_.erase(it);
@@ -46,15 +46,6 @@ Forkable<Tr4jectory>::root() {
     ancestor = ancestor->parent_;
   }
   return ancestor;
-}
-
-template<typename Tr4jectory>
-std::experimental::optional<Instant> Forkable<Tr4jectory>::ForkTime() const {
-  if (is_root()) {
-    return std::experimental::nullopt;
-  } else {
-    return ForkableTraits<Tr4jectory>::time(Fork().current_);
-  }
 }
 
 template<typename Tr4jectory>
@@ -308,9 +299,10 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
 
 template<typename Tr4jectory>
 not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
-  std::experimental::optional<Instant> const fork_time = ForkTime();
+  auto const fork_it = Fork();
   CHECK(timeline_find(time) != timeline_end() ||
-        (fork_time && time == *fork_time))
+        (fork_it != End() &&
+         time == ForkableTraits<Tr4jectory>::time(fork_it.current_)))
       << "NewFork at nonexistent time " << time;
 
   // May be at |timeline_end()| if |time| is the fork time of this object.
@@ -334,7 +326,7 @@ void Forkable<Tr4jectory>::DeleteAllForksAfter(Instant const& time) {
   // Get an iterator denoting the first entry with time > |time|.  Remove that
   // entry and all the entries that follow it.  This preserve any entry with
   // time == |time|.
-  CHECK(is_root() || time >= *ForkTime())
+  CHECK(is_root() || time >= ForkableTraits<Tr4jectory>::time(Fork().current_))
       << "DeleteAllForksAfter before the fork time";
   auto const it = children_.upper_bound(time);
   children_.erase(it, children_.end());

@@ -42,7 +42,19 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
       typename Forkable<DiscreteTrajectory<Frame>>::TimelineConstIterator;
 
  public:
-  class Iterator;
+  // An iterator over the points of a trajectory.
+  class Iterator : public Forkable<DiscreteTrajectory<Frame>>::Iterator {
+   public:
+    // Not explicit because we want the factory functions in |Forkable| to be
+    // easily usable for |Iterator|.
+    Iterator(typename Forkable<DiscreteTrajectory<Frame>>::Iterator it);
+
+    Instant const& time() const;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+   private:
+    friend class DiscreteTrajectory;
+  };
 
   DiscreteTrajectory() = default;
   ~DiscreteTrajectory() override;
@@ -57,17 +69,15 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
       std::function<void(not_null<DiscreteTrajectory<Frame>const*> const)>
           on_destroy);
 
-  // TODO(phl): Many/most of the iterator functions are obsolete.  Remove them
-  // and use the ones from Forkable.
-
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
+  // TODO(phl): This is really RBegin, but Forkable doesn't have reverse
+  // iterators.
   Iterator last() const;
 
-  // These functions return the series of positions/velocities/times for the
-  // trajectory.  All three containers are guaranteed to have the same size.
-  // These functions are O(|depth| + |length|).
-  std::list<Instant> Times() const;
+  // Returns the number of points in the trajectory.  Complexity is O(|length| +
+  // |depth|).
+  int Size() const;
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less
@@ -101,17 +111,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // that requires a VS 2015 feature (rvalue references for |*this|).
   static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
       serialization::Trajectory const& message);
-
-  class Iterator : public Forkable<DiscreteTrajectory<Frame>>::Iterator {
-   public:
-    Iterator(typename Forkable<DiscreteTrajectory<Frame>>::Iterator it);
-
-    Instant const& time() const;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
-   private:
-    friend class DiscreteTrajectory;
-  };
 
  protected:
   // The API inherited from Forkable.
