@@ -559,8 +559,10 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),
             histories.back().get());
-    initial_state.push_back(histories.back()->first().degrees_of_freedom());
-    initial_time.insert(histories.back()->first().time());
+    typename DiscreteTrajectory<Frame>::Iterator const history_begin =
+        histories.back()->Begin();
+    initial_state.push_back(history_begin.degrees_of_freedom());
+    initial_time.insert(history_begin.time());
     final_time.insert(prolongation->last().time());
   }
   CHECK_EQ(1, initial_time.size());
@@ -595,10 +597,10 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     }
     auto continuous_trajectory = ephemeris->trajectories_[j];
 
-    auto it = history->first();
+    typename DiscreteTrajectory<Frame>::Iterator it = history->Begin();
     Instant last_time = it.time();
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
-    for (; !it.at_end(); ++it) {
+    for (; it != history->End(); ++it) {
       Time const duration_since_last_time = it.time() - last_time;
       if (duration_since_last_time == step) {
         // A time in the discrete trajectory that is aligned on the continuous

@@ -96,13 +96,14 @@ std::vector<std::pair<Position<ICRFJ2000Equator>,
                       Position<ICRFJ2000Equator>>> ApplyDynamicFrame(
     not_null<Body const*> const body,
     not_null<DynamicFrame<ICRFJ2000Equator, Rendering>*> const dynamic_frame,
-    DiscreteTrajectory<ICRFJ2000Equator>::NativeIterator const& actual_it) {
+    DiscreteTrajectory<ICRFJ2000Equator>::Iterator const& begin,
+    DiscreteTrajectory<ICRFJ2000Equator>::Iterator const& end) {
   std::vector<std::pair<Position<ICRFJ2000Equator>,
                         Position<ICRFJ2000Equator>>> result;
 
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
-  for (auto it = actual_it; !it.at_end(); ++it) {
+  for (auto it = begin; it != end; ++it) {
     intermediate_trajectory.Append(
         it.time(),
         dynamic_frame->ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
@@ -110,17 +111,19 @@ std::vector<std::pair<Position<ICRFJ2000Equator>,
 
   // Render the trajectory at current time in |Rendering|.
   Instant const& current_time = intermediate_trajectory.last().time();
-  auto initial_it = intermediate_trajectory.first();
-  auto from_rendering_frame_to_Rendering_at_current_time =
-          dynamic_frame->
-              FromThisFrameAtTime(current_time).rigid_transformation();
-  if (!initial_it.at_end()) {
+  DiscreteTrajectory<Rendering>::Iterator initial_it =
+      intermediate_trajectory.Begin();
+  DiscreteTrajectory<Rendering>::Iterator const intermediate_end =
+      intermediate_trajectory.End();
+  auto to_rendering_frame_at_current_time =
+      dynamic_frame->FromThisFrameAtTime(current_time).rigid_transformation();
+  if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
-         ++final_it, !final_it.at_end();
+         ++final_it, final_it != intermediate_end;
          initial_it = final_it) {
-      result.emplace_back(from_rendering_frame_to_Rendering_at_current_time(
+      result.emplace_back(to_rendering_frame_at_current_time(
                               initial_it.degrees_of_freedom().position()),
-                          from_rendering_frame_to_Rendering_at_current_time(
+                          to_rendering_frame_at_current_time(
                               final_it.degrees_of_freedom().position()));
     }
   }
@@ -170,7 +173,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
-                               probe_trajectory.first());
+                               probe_trajectory.Begin(),
+                               probe_trajectory.End());
   }
 }
 
@@ -219,7 +223,8 @@ void BM_BarycentricRotatingDynamicFrame(
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
                                &dynamic_frame,
-                               probe_trajectory.first());
+                               probe_trajectory.Begin(),
+                               probe_trajectory.End());
   }
 }
 

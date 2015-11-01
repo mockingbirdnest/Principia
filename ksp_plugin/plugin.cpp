@@ -339,8 +339,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Compute the apparent trajectory using the given |rendering_frame|.
-  return RenderTrajectory(vessel->body(),
-                          vessel->history().first(),
+  return RenderTrajectory(vessel->history().Begin(),
+                          vessel->history().End(),
                           rendering_frame,
                           sun_world_position);
 }
@@ -361,9 +361,8 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   RenderedTrajectory<World> result =
-      RenderTrajectory(vessel.body(),
-                       vessel.prediction().on_or_after(
-                           *vessel.prediction().ForkTime()),
+      RenderTrajectory(vessel.prediction().Fork(),
+                       vessel.prediction().End(),
                        rendering_frame,
                        sun_world_position);
   return result;
@@ -379,10 +378,10 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
   CHECK_LT(plan_phase, vessel.flight_plan().size());
   DiscreteTrajectory<Barycentric> const& prediction =
       *vessel.flight_plan()[plan_phase];
-  CHECK(prediction.ForkTime());
+  CHECK(!prediction.is_root());
   RenderedTrajectory<World> result =
-      RenderTrajectory(vessel.body(),
-                       prediction.on_or_after(*prediction.ForkTime()),
+      RenderTrajectory(prediction.Fork(),
+                       prediction.End(),
                        rendering_frame,
                        sun_world_position);
   return result;
@@ -935,8 +934,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 }
 
 RenderedTrajectory<World> Plugin::RenderTrajectory(
-    not_null<Body const*> const body,
-    DiscreteTrajectory<Barycentric>::NativeIterator const& actual_it,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
     not_null<RenderingFrame*> const rendering_frame,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
@@ -948,21 +947,24 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
 
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
-  for (auto it = actual_it; !it.at_end(); ++it) {
+  for (auto it = begin; it != end; ++it) {
     intermediate_trajectory.Append(
         it.time(),
         rendering_frame->ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
   }
 
   // Render the trajectory at current time in |World|.
-  auto initial_it = intermediate_trajectory.first();
+  DiscreteTrajectory<Rendering>::Iterator initial_it =
+      intermediate_trajectory.Begin();
+  DiscreteTrajectory<Rendering>::Iterator const intermediate_end =
+      intermediate_trajectory.End();
   auto from_rendering_frame_to_world_at_current_time =
       to_world *
           rendering_frame->
               FromThisFrameAtTime(current_time_).rigid_transformation();
-  if (!initial_it.at_end()) {
+  if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
-         ++final_it, !final_it.at_end();
+         ++final_it, final_it != intermediate_end;
          initial_it = final_it) {
       result.emplace_back(from_rendering_frame_to_world_at_current_time(
                               initial_it.degrees_of_freedom().position()),

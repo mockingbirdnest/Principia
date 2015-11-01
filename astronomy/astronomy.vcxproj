@@ -57,6 +57,7 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />

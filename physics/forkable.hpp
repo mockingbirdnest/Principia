@@ -53,10 +53,6 @@ class Forkable {
   not_null<Tr4jectory const*> root() const;
   not_null<Tr4jectory*> root();
 
-  // Returns the fork time for a nonroot trajectory and null for a root
-  // trajectory.
-  std::experimental::optional<Instant> ForkTime() const;
-
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.
   class Iterator {
@@ -70,6 +66,7 @@ class Forkable {
     // Returns the point in the timeline that is denoted by this iterator.
     TimelineConstIterator current() const;
 
+   protected:
     // Returns the (most forked) trajectory to which this iterator applies.
     not_null<Tr4jectory const*> trajectory() const;
 
@@ -102,11 +99,19 @@ class Forkable {
   Iterator Find(Instant const& time) const;
   Iterator LowerBound(Instant const& time) const;
 
+  // Returns an iterator denoting the fork point of this object, or |End()| if
+  // this object is a root.
+  Iterator Fork() const;
+
+  // Returns the number of points in this object.  Complexity is O(|length| +
+  // |depth|).
+  int Size() const;
+
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
-  // end if it is an iterator in this object (and ancestor is this object).
+  // end if it is an iterator in this object (and |ancestor| is this object).
   // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
   // separate method.
   Iterator Wrap(
@@ -123,8 +128,6 @@ class Forkable {
 
  protected:
   // The API that must be implemented by subclasses.
-  // TODO(phl): Try to reduce this API.  Forkable should probably not modify the
-  // timeline.
 
   // Must return |this| of the proper type
   virtual not_null<Tr4jectory*> that() = 0;
