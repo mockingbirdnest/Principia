@@ -57,32 +57,6 @@ DiscreteTrajectory<Frame>::last() const {
 }
 
 template<typename Frame>
-template<typename ToFrame>
-typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
-DiscreteTrajectory<Frame>::first_with_transform(
-    Transform<ToFrame> const& transform) const {
-  return TransformingIterator<ToFrame>(this->Begin(), transform);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
-DiscreteTrajectory<Frame>::on_or_after_with_transform(
-    Instant const& time,
-    Transform<ToFrame> const& transform) const {
-  return TransformingIterator<ToFrame>(this->LowerBound(time), transform);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
-DiscreteTrajectory<Frame>::last_with_transform(
-    Transform<ToFrame> const& transform) const {
-  auto it = this->End();
-  return TransformingIterator<ToFrame>(--it, transform);
-}
-
-template<typename Frame>
 std::map<Instant, Position<Frame>>
 DiscreteTrajectory<Frame>::Positions() const {
   std::map<Instant, Position<Frame>> result;
@@ -219,34 +193,6 @@ DiscreteTrajectory<Frame>::NativeIterator::degrees_of_freedom() const {
 template<typename Frame>
 DiscreteTrajectory<Frame>::NativeIterator::NativeIterator(Iterator it)
     : Iterator(std::move(it)) {}
-
-template<typename Frame>
-template<typename ToFrame>
-bool DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::at_end() const {
-  return *this == this->trajectory()->End();
-}
-
-template<typename Frame>
-template<typename ToFrame>
-Instant const&
-DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::time() const {
-  return this->current()->first;
-}
-template<typename Frame>
-template<typename ToFrame>
-DegreesOfFreedom<ToFrame>
-DiscreteTrajectory<Frame>::
-TransformingIterator<ToFrame>::degrees_of_freedom() const {
-  auto it = this->current();
-  return transform_(it->first, it->second, this->trajectory());
-}
-
-template<typename Frame>
-template<typename ToFrame>
-DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
-    Iterator it, Transform<ToFrame> transform)
-    : Iterator(std::move(it)),
-      transform_(std::move(transform)) {}
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {

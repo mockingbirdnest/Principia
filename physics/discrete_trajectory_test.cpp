@@ -77,24 +77,6 @@ class DiscreteTrajectoryTest : public testing::Test {
 
     massive_trajectory_ = std::make_unique<DiscreteTrajectory<World>>();
     massless_trajectory_ = std::make_unique<DiscreteTrajectory<World>>();
-
-    transform_ = [](
-        Instant const& t,
-        DegreesOfFreedom<World> const& from_degrees_of_freedom,
-        DiscreteTrajectory<World> const* actual_trajectory,
-        DiscreteTrajectory<World> const* expected_trajectory) ->
-        DegreesOfFreedom<World> {
-      CHECK_EQ(expected_trajectory, actual_trajectory);
-      return {World::origin +
-                  2 * (from_degrees_of_freedom.position() -
-                       (World::origin + Displacement<World>(
-                           {43 * Metre, 42 * Metre, 41 * Metre}))),
-              3 * from_degrees_of_freedom.velocity()};
-    };
-    massive_transform_ =
-        std::bind(transform_, _1, _2, _3, massive_trajectory_.get());
-    massless_transform_ =
-        std::bind(transform_, _1, _2, _3, massless_trajectory_.get());
   }
 
   Position<World> q1_, q2_, q3_, q4_;
@@ -104,13 +86,6 @@ class DiscreteTrajectoryTest : public testing::Test {
   Instant t1_, t2_, t3_, t4_;
   std::unique_ptr<DiscreteTrajectory<World>> massive_trajectory_;
   std::unique_ptr<DiscreteTrajectory<World>> massless_trajectory_;
-  std::function<DegreesOfFreedom<World>(
-      Instant const&,
-      DegreesOfFreedom<World> const&,
-      DiscreteTrajectory<World> const*,
-      DiscreteTrajectory<World> const*)> transform_;
-  DiscreteTrajectory<World>::Transform<World> massive_transform_;
-  DiscreteTrajectory<World>::Transform<World> massless_transform_;
 };
 
 using DiscreteTrajectoryDeathTest = DiscreteTrajectoryTest;
@@ -576,80 +551,6 @@ TEST_F(DiscreteTrajectoryTest, NativeIteratorSuccess) {
   EXPECT_TRUE(it.at_end());
 }
 
-TEST_F(DiscreteTrajectoryDeathTest, TransformingIteratorError) {
-  EXPECT_DEATH({
-    DiscreteTrajectory<World>::TransformingIterator<World> it =
-        massive_trajectory_->last_with_transform(massive_transform_);
-  }, "parent_.*non NULL");
-}
-
-TEST_F(DiscreteTrajectoryTest, TransformingIteratorSuccess) {
-  DiscreteTrajectory<World>::TransformingIterator<World> it =
-      massive_trajectory_->first_with_transform(massive_transform_);
-  EXPECT_TRUE(it.at_end());
-
-  massless_trajectory_->Append(t1_, d1_);
-  massless_trajectory_->Append(t2_, d2_);
-  massless_trajectory_->Append(t3_, d3_);
-
-  it = massless_trajectory_->first_with_transform(massless_transform_);
-  EXPECT_FALSE(it.at_end());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-84 * Metre, -80 * Metre, -76 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-64 * Metre, -60 * Metre, -56 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_EQ(t3_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-44 * Metre, -40 * Metre, -36 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p3_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_TRUE(it.at_end());
-
-  not_null<DiscreteTrajectory<World>*> const fork =
-      massless_trajectory_->NewForkWithCopy(t2_);
-  fork->Append(t4_, d4_);
-  DiscreteTrajectory<World>::Transform<World> const fork_transform =
-      std::bind(transform_, _1, _2, _3, fork);
-
-  it = fork->first_with_transform(fork_transform);
-  EXPECT_FALSE(it.at_end());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-84 * Metre, -80 * Metre, -76 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-64 * Metre, -60 * Metre, -56 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_EQ(t3_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-44 * Metre, -40 * Metre, -36 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p3_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_EQ(t4_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-24 * Metre, -20 * Metre, -16 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity());
-  ++it;
-  EXPECT_TRUE(it.at_end());
-}
-
 TEST_F(DiscreteTrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   DiscreteTrajectory<World>::NativeIterator it =
       massive_trajectory_->on_or_after(t0_);
@@ -684,64 +585,6 @@ TEST_F(DiscreteTrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(d4_, it.degrees_of_freedom());
   it = fork->on_or_after(t4_ + 1 * Second);
-  EXPECT_TRUE(it.at_end());
-}
-
-TEST_F(DiscreteTrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
-  DiscreteTrajectory<World>::TransformingIterator<World> it =
-      massive_trajectory_->on_or_after_with_transform(t0_, massive_transform_);
-  EXPECT_TRUE(it.at_end());
-
-  massless_trajectory_->Append(t1_, d1_);
-  massless_trajectory_->Append(t2_, d2_);
-  massless_trajectory_->Append(t3_, d3_);
-
-  it = massless_trajectory_->on_or_after_with_transform(t0_,
-                                                        massless_transform_);
-  EXPECT_FALSE(it.at_end());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-84 * Metre, -80 * Metre, -76 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
-  it = massless_trajectory_->on_or_after_with_transform(t2_,
-                                                        massless_transform_);
-  EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-64 * Metre, -60 * Metre, -56 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
-  it = massless_trajectory_->on_or_after_with_transform(t4_,
-                                                        massless_transform_);
-  EXPECT_TRUE(it.at_end());
-
-  not_null<DiscreteTrajectory<World>*> const fork =
-      massless_trajectory_->NewForkWithCopy(t2_);
-  fork->Append(t4_, d4_);
-  DiscreteTrajectory<World>::Transform<World> const fork_transform =
-      std::bind(transform_, _1, _2, _3, fork);
-
-  it = fork->on_or_after_with_transform(t0_, fork_transform);
-  EXPECT_FALSE(it.at_end());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-84 * Metre, -80 * Metre, -76 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
-  it = fork->on_or_after_with_transform(t2_, fork_transform);
-  EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-64 * Metre, -60 * Metre, -56 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
-  it = fork->on_or_after_with_transform(t4_, fork_transform);
-  EXPECT_EQ(t4_, it.time());
-  EXPECT_EQ(World::origin + Displacement<World>(
-                {-24 * Metre, -20 * Metre, -16 * Metre}),
-            it.degrees_of_freedom().position());
-  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity());
-  it = fork->on_or_after_with_transform(t4_ + 1 * Second, fork_transform);
   EXPECT_TRUE(it.at_end());
 }
 
