@@ -53,7 +53,7 @@ std::experimental::optional<Instant> Forkable<Tr4jectory>::ForkTime() const {
   if (is_root()) {
     return std::experimental::nullopt;
   } else {
-    return (*position_in_parent_children_)->first;
+    return ForkableTraits<Tr4jectory>::time(Fork().current_);
   }
 }
 
@@ -224,6 +224,23 @@ Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
 
   iterator.NormalizeIfEnd();
   return iterator;
+}
+
+template<typename Tr4jectory>
+typename Forkable<Tr4jectory>::Iterator
+Forkable<Tr4jectory>::Fork() const {
+  if (parent_ == nullptr) {
+    return End();
+  } else {
+    not_null<Tr4jectory const*> ancestor = that();
+    TimelineConstIterator position_in_ancestor_timeline;
+    do {
+      position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
+      ancestor = ancestor->parent_;
+    } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
+             ancestor->parent_ != nullptr);
+    return Wrap(ancestor, position_in_ancestor_timeline);
+  }
 }
 
 template<typename Tr4jectory>
