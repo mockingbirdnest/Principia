@@ -75,10 +75,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // iterators.
   Iterator last() const;
 
-  // Returns the number of points in the trajectory.  Complexity is O(|length| +
-  // |depth|).
-  int Size() const;
-
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less
   // than or equal to |time|, and is an exact copy of the current trajectory for

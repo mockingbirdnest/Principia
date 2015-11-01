@@ -44,15 +44,6 @@ DiscreteTrajectory<Frame>::last() const {
 }
 
 template<typename Frame>
-int DiscreteTrajectory<Frame>::Size() const {
-  int result = 0;
-  for (auto it = this->Begin(); it != this->End(); ++it) {
-    ++result;
-  }
-  return result;
-}
-
-template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
   auto const fork = this->NewFork(time);

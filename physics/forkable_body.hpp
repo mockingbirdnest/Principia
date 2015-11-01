@@ -236,6 +236,15 @@ Forkable<Tr4jectory>::Fork() const {
 }
 
 template<typename Tr4jectory>
+int Forkable<Tr4jectory>::Size() const {
+  int result = 0;
+  for (auto it = Begin(); it != End(); ++it) {
+    ++result;
+  }
+  return result;
+}
+
+template<typename Tr4jectory>
 typename Forkable<Tr4jectory>::Iterator
 Forkable<Tr4jectory>::Wrap(
     not_null<const Tr4jectory*> const ancestor,

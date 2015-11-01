@@ -103,6 +103,10 @@ class Forkable {
   // this object is a root.
   Iterator Fork() const;
 
+  // Returns the number of points in this object.  Complexity is O(|length| +
+  // |depth|).
+  int Size() const;
+
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
