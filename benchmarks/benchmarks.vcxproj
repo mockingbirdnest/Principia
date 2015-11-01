@@ -85,6 +85,7 @@
     <Import Project="..\google_benchmark.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />

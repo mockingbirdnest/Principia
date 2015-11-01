@@ -112,7 +112,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
    public:
     Iterator(typename Forkable<DiscreteTrajectory<Frame>>::Iterator it);
 
-    bool at_end() const;
     Instant const& time() const;
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 

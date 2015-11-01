@@ -59,6 +59,7 @@ std::experimental::optional<Instant> Forkable<Tr4jectory>::ForkTime() const {
 
 template<typename Tr4jectory>
 bool Forkable<Tr4jectory>::Iterator::operator==(Iterator const& right) const {
+  DCHECK_EQ(trajectory(), right.trajectory());
   return ancestry_ == right.ancestry_ && current_ == right.current_;
 }
 

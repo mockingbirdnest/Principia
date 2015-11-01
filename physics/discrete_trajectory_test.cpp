@@ -522,15 +522,15 @@ TEST_F(DiscreteTrajectoryDeathTest, IteratorError) {
 }
 
 TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
-  DiscreteTrajectory<World>::Iterator it = massive_trajectory_->first();
-  EXPECT_TRUE(it.at_end());
+  DiscreteTrajectory<World>::Iterator it = massive_trajectory_->Begin();
+  EXPECT_TRUE(it == massive_trajectory_->End());
 
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
 
-  it = massless_trajectory_->first();
-  EXPECT_FALSE(it.at_end());
+  it = massless_trajectory_->Begin();
+  EXPECT_FALSE(it == massless_trajectory_->End());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(d1_, it.degrees_of_freedom());
   ++it;
@@ -540,14 +540,14 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
   EXPECT_EQ(t3_, it.time());
   EXPECT_EQ(d3_, it.degrees_of_freedom());
   ++it;
-  EXPECT_TRUE(it.at_end());
+  EXPECT_TRUE(it == massless_trajectory_->End());
 
   not_null<DiscreteTrajectory<World>*> const fork =
       massless_trajectory_->NewForkWithCopy(t2_);
   fork->Append(t4_, d4_);
 
-  it = fork->first();
-  EXPECT_FALSE(it.at_end());
+  it = fork->Begin();
+  EXPECT_FALSE(it == fork->End());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(d1_, it.degrees_of_freedom());
   ++it;
@@ -560,7 +560,7 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(d4_, it.degrees_of_freedom());
   ++it;
-  EXPECT_TRUE(it.at_end());
+  EXPECT_TRUE(it == fork->End());
 }
 
 }  // namespace physics

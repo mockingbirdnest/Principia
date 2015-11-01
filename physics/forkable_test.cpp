@@ -408,6 +408,7 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   EXPECT_EQ(it, fork3->End());
 }
 
+#if !defined(_DEBUG)
 TEST_F(ForkableTest, IteratorEndEquality) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
@@ -417,6 +418,7 @@ TEST_F(ForkableTest, IteratorEndEquality) {
   auto it2 = fork2->End();
   EXPECT_NE(it1, it2);
 }
+#endif
 
 TEST_F(ForkableTest, Root) {
   trajectory_.push_back(t1_);

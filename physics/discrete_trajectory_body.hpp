@@ -173,11 +173,6 @@ DiscreteTrajectory<Frame>::Iterator::Iterator(
     : Forkable<DiscreteTrajectory<Frame>>::Iterator(std::move(it)) {}
 
 template<typename Frame>
-bool DiscreteTrajectory<Frame>::Iterator::at_end() const {
-  return *this == this->trajectory()->End();
-}
-
-template<typename Frame>
 Instant const& DiscreteTrajectory<Frame>::Iterator::time() const {
   return this->current()->first;
 }
