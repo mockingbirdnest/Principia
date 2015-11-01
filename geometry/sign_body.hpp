@@ -32,7 +32,7 @@ inline Sign operator*(Sign const& left, Sign const& right) {
 }
 
 template<typename T>
-T operator*(Sign const& left, T const& right) {
+FORCE_INLINE T operator*(Sign const& left, T const& right) {
   return left.negative_ ? -right : right;
 }
 

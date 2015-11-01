@@ -62,12 +62,12 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  Iterator const fork_it = this->Fork();
-  if (fork_it != this->End() && time <= fork_it.time()) {
+  if (!this->is_root() && time <= Iterator(this->Fork()).time()) {
     // TODO(egg): This is a logic error and it should CHECK.  Unfortunately, the
     // plugin integration test fails this check.
     LOG(ERROR) << "Append at " << time
-               << " which is before fork time " << fork_it.time();
+               << " which is before fork time "
+               << Iterator(this->Fork()).time();
     return;
   }
 
@@ -80,7 +80,8 @@ void DiscreteTrajectory<Frame>::Append(
   auto it = timeline_.emplace_hint(timeline_.end(),
                                    time,
                                    degrees_of_freedom);
-  CHECK(timeline_.end() == ++it) << "Append out of order";
+  // Decrementing |end()| is much faster than incrementing |it|.  Don't ask.
+  CHECK(--timeline_.end() == it) << "Append out of order";
 }
 
 template<typename Frame>
