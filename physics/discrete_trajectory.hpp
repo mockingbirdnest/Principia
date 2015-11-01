@@ -60,10 +60,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // TODO(phl): Many/most of the iterator functions are obsolete.  Remove them
   // and use the ones from Forkable.
 
-  // Returns an iterator at the first point of the trajectory.  Complexity is
-  // O(|depth|).  The result may be at end if the trajectory is empty.
-  Iterator first() const;
-
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
   Iterator last() const;

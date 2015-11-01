@@ -38,12 +38,6 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
-DiscreteTrajectory<Frame>::first() const {
-  return Iterator(this->Begin());
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
   auto it = this->End();
   return Iterator(--it);
