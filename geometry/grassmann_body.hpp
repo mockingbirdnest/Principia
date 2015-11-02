@@ -319,7 +319,7 @@ inline Multivector<Scalar, Frame, rank> operator+(
 }
 
 template<typename Scalar, typename Frame, int rank>
-inline Multivector<Scalar, Frame, rank> operator-(
+Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right) {
   return Multivector<Scalar, Frame, rank>(
