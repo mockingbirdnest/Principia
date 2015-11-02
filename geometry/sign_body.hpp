@@ -1,9 +1,10 @@
 #pragma once
 
-#include "base/macros.hpp"
 #include "geometry/sign.hpp"
 
 #include <string>
+
+#include "base/macros.hpp"
 
 namespace principia {
 namespace geometry {
