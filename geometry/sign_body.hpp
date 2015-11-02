@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/macros.hpp"
 #include "geometry/sign.hpp"
 
 #include <string>
