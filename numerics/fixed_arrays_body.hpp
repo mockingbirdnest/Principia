@@ -12,7 +12,12 @@ namespace numerics {
 
 template<typename Scalar, int size>
 constexpr FixedVector<Scalar, size>::FixedVector() {
-  data_.fill({});  // Zero-initialized.
+  // TODO(phl): This used to be:
+  //   Scalar zero{};
+  //   data_.fill(zero);
+  // which is more readable since it makes the zero-initialization explicit.
+  // Unfortunately, this is not constexpr in C++11.
+  data_.fill({});
 }
 
 template<typename Scalar, int size>

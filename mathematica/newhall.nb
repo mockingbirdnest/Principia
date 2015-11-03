@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     26517,        659]
-NotebookOptionsPosition[     24661,        600]
-NotebookOutlinePosition[     25239,        621]
-CellTagsIndexPosition[     25196,        618]
+NotebookDataLength[     26725,        661]
+NotebookOptionsPosition[     24870,        602]
+NotebookOutlinePosition[     25448,        623]
+CellTagsIndexPosition[     25405,        620]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -65,7 +65,7 @@ Cell[BoxData[
    3.6414547427469935`*^9, {3.6414549191156282`*^9, 3.6414549255702744`*^9}, {
    3.641454963873104*^9, 3.6414549836000767`*^9}, 3.6414553923619485`*^9, 
    3.6523680002656956`*^9, 3.6555736696468344`*^9, {3.655573763584227*^9, 
-   3.655573787177586*^9}, 3.655573832788147*^9}]
+   3.655573787177586*^9}, 3.655573832788147*^9, 3.6555755761551704`*^9}]
 }, Open  ]],
 
 Cell[TextData[{
@@ -355,9 +355,11 @@ Cell["Formatting and Output", "Section",
 
 Cell["\<\
 Produces a representation of a matrix as an initializer_list containing \
-initializer_lists.\
+initializer_lists.  (Note that this function is unused and might need to \
+change, e.g., to use std::array if we wanted to use it.)\
 \>", "Text",
- CellChangeTimes->{{3.640882583696988*^9, 3.640882621413759*^9}}],
+ CellChangeTimes->{{3.640882583696988*^9, 3.640882621413759*^9}, {
+  3.655575540756631*^9, 3.655575564861041*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -409,7 +411,7 @@ Cell[BoxData[
   ":=", 
   RowBox[{
   "type", "<>", "\"\<<\>\"", "<>", "element", "<>", "\"\<, \>\"", "<>", 
-   "dimension1", "<>", "\"\<,\>\"", "<>", "dimension2", "<>", 
+   "dimension1", "<>", "\"\<, \>\"", "<>", "dimension2", "<>", 
    "\"\<> constexpr\\r\\n    \>\"", "<>", "variable", "<>", 
    "\"\<(\\r\\n        std::array<\>\"", "<>", "element", "<>", "\"\<, \>\"", 
    "<>", "\"\<(\>\"", "<>", "dimension1", "<>", "\"\<) * (\>\"", "<>", 
@@ -450,7 +452,7 @@ Cell[BoxData[
    3.655573317211594*^9, 3.655573383166189*^9}, {3.6555734151113834`*^9, 
    3.655573558612732*^9}, {3.655573642560126*^9, 3.655573648583728*^9}, {
    3.655573747958665*^9, 3.6555737490367727`*^9}, {3.655573780005869*^9, 
-   3.6555737800288715`*^9}}],
+   3.6555737800288715`*^9}, 3.655575538414397*^9}],
 
 Cell["Produces a representation of a list as an initializer list.", "Text",
  CellChangeTimes->{{3.640882654947112*^9, 3.640882678263444*^9}}],
@@ -628,37 +630,37 @@ Cell[930, 31, 99, 1, 70, "Section"],
 Cell[1032, 34, 161, 3, 30, "Text"],
 Cell[CellGroupData[{
 Cell[1218, 41, 509, 9, 31, "Input"],
-Cell[1730, 52, 699, 15, 31, "Output"]
+Cell[1730, 52, 723, 15, 31, "Output"]
 }, Open  ]],
-Cell[2444, 70, 817, 19, 49, "Text"],
-Cell[3264, 91, 1715, 40, 132, "Input"],
-Cell[4982, 133, 380, 8, 30, "Text"],
-Cell[5365, 143, 716, 17, 33, "Input"],
-Cell[6084, 162, 363, 10, 30, "Text"],
-Cell[6450, 174, 699, 16, 52, "Input"],
-Cell[7152, 192, 951, 23, 52, "Input"],
-Cell[8106, 217, 385, 8, 31, "Input"],
-Cell[8494, 227, 324, 8, 31, "Input"],
-Cell[8821, 237, 834, 20, 92, "Input"],
-Cell[9658, 259, 361, 10, 30, "Text"],
-Cell[10022, 271, 507, 12, 31, "Input"],
-Cell[10532, 285, 522, 13, 31, "Input"],
-Cell[11057, 300, 551, 15, 52, "Input"],
-Cell[11611, 317, 508, 16, 32, "Text"],
-Cell[12122, 335, 487, 12, 52, "Input"]
+Cell[2468, 70, 817, 19, 49, "Text"],
+Cell[3288, 91, 1715, 40, 132, "Input"],
+Cell[5006, 133, 380, 8, 30, "Text"],
+Cell[5389, 143, 716, 17, 33, "Input"],
+Cell[6108, 162, 363, 10, 30, "Text"],
+Cell[6474, 174, 699, 16, 52, "Input"],
+Cell[7176, 192, 951, 23, 52, "Input"],
+Cell[8130, 217, 385, 8, 31, "Input"],
+Cell[8518, 227, 324, 8, 31, "Input"],
+Cell[8845, 237, 834, 20, 92, "Input"],
+Cell[9682, 259, 361, 10, 30, "Text"],
+Cell[10046, 271, 507, 12, 31, "Input"],
+Cell[10556, 285, 522, 13, 31, "Input"],
+Cell[11081, 300, 551, 15, 52, "Input"],
+Cell[11635, 317, 508, 16, 32, "Text"],
+Cell[12146, 335, 487, 12, 52, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[12646, 352, 108, 1, 70, "Section"],
-Cell[12757, 355, 182, 4, 30, "Text"],
-Cell[12942, 361, 1740, 34, 172, "Input"],
-Cell[14685, 397, 170, 3, 30, "Text"],
-Cell[14858, 402, 2900, 50, 212, "Input"],
-Cell[17761, 454, 141, 1, 30, "Text"],
-Cell[17905, 457, 1557, 28, 132, "Input"],
-Cell[19465, 487, 347, 8, 30, "Text"],
-Cell[19815, 497, 4038, 78, 572, "Input"],
-Cell[23856, 577, 146, 1, 30, "Text"],
-Cell[24005, 580, 628, 16, 109, "Input"]
+Cell[12670, 352, 108, 1, 70, "Section"],
+Cell[12781, 355, 344, 6, 49, "Text"],
+Cell[13128, 363, 1740, 34, 172, "Input"],
+Cell[14871, 399, 170, 3, 30, "Text"],
+Cell[15044, 404, 2923, 50, 212, "Input"],
+Cell[17970, 456, 141, 1, 30, "Text"],
+Cell[18114, 459, 1557, 28, 132, "Input"],
+Cell[19674, 489, 347, 8, 30, "Text"],
+Cell[20024, 499, 4038, 78, 572, "Input"],
+Cell[24065, 579, 146, 1, 30, "Text"],
+Cell[24214, 582, 628, 16, 52, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

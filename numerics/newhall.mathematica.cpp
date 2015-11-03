@@ -8,7 +8,7 @@
 namespace principia {
 namespace numerics {
 
-FixedMatrix<double, 3 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 3 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_3_divisions_8_w04(
         std::array<double, (3 + 1) * (2 * 8 + 2)>{
             {0.5,
@@ -87,7 +87,7 @@ FixedMatrix<double, 3 + 1,2 * 8 + 2> constexpr
              0.0625,
              0.0625}});
 
-FixedMatrix<double, 4 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 4 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_4_divisions_8_w04(
         std::array<double, (4 + 1) * (2 * 8 + 2)>{
             {0.3334967362615748,
@@ -185,7 +185,7 @@ FixedMatrix<double, 4 + 1,2 * 8 + 2> constexpr
              -0.0555010879128084,
              -0.03200232372686756}});
 
-FixedMatrix<double, 5 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 5 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_5_divisions_8_w04(
         std::array<double, (5 + 1) * (2 * 8 + 2)>{
             {0.3334967362615748,
@@ -302,7 +302,7 @@ FixedMatrix<double, 5 + 1,2 * 8 + 2> constexpr
              0.0431495299716275,
              0.017453769737792887}});
 
-FixedMatrix<double, 6 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 6 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_6_divisions_8_w04(
         std::array<double, (6 + 1) * (2 * 8 + 2)>{
             {0.29219783443707037,
@@ -438,7 +438,7 @@ FixedMatrix<double, 6 + 1,2 * 8 + 2> constexpr
              -0.031829953718359554,
              -0.009627067532662011}});
 
-FixedMatrix<double, 7 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 7 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_7_divisions_8_w04(
         std::array<double, (7 + 1) * (2 * 8 + 2)>{
             {0.29219783443707037,
@@ -593,7 +593,7 @@ FixedMatrix<double, 7 + 1,2 * 8 + 2> constexpr
              0.03165537365655292,
              0.005943610171321292}});
 
-FixedMatrix<double, 8 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 8 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_8_divisions_8_w04(
         std::array<double, (8 + 1) * (2 * 8 + 2)>{
             {0.23402045525812332,
@@ -767,7 +767,7 @@ FixedMatrix<double, 8 + 1,2 * 8 + 2> constexpr
              -0.042218106185240085,
              -0.0047678673135658585}});
 
-FixedMatrix<double, 9 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 9 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_9_divisions_8_w04(
         std::array<double, (9 + 1) * (2 * 8 + 2)>{
             {0.23402045525812332,
@@ -960,7 +960,7 @@ FixedMatrix<double, 9 + 1,2 * 8 + 2> constexpr
              0.05598979970865338,
              0.004663720001414206}});
 
-FixedMatrix<double, 10 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 10 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_10_divisions_8_w04(
         std::array<double, (10 + 1) * (2 * 8 + 2)>{
             {0.13688929419105048,
@@ -1172,7 +1172,7 @@ FixedMatrix<double, 10 + 1,2 * 8 + 2> constexpr
              -0.03858388477609944,
              -0.0028878288244193672}});
 
-FixedMatrix<double, 11 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 11 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_11_divisions_8_w04(
         std::array<double, (11 + 1) * (2 * 8 + 2)>{
             {0.13688929419105048,
@@ -1403,7 +1403,7 @@ FixedMatrix<double, 11 + 1,2 * 8 + 2> constexpr
              0.02003143030256607,
              0.0014020789186142552}});
 
-FixedMatrix<double, 12 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 12 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_12_divisions_8_w04(
         std::array<double, (12 + 1) * (2 * 8 + 2)>{
             {0.1294477795126886,
@@ -1653,7 +1653,7 @@ FixedMatrix<double, 12 + 1,2 * 8 + 2> constexpr
              -0.017351668245517208,
              -0.0010622721108709066}});
 
-FixedMatrix<double, 13 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 13 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_13_divisions_8_w04(
         std::array<double, (13 + 1) * (2 * 8 + 2)>{
             {0.1294477795126886,
@@ -1922,7 +1922,7 @@ FixedMatrix<double, 13 + 1,2 * 8 + 2> constexpr
              0.009790552814963807,
              0.0005609931490456848}});
 
-FixedMatrix<double, 14 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 14 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_14_divisions_8_w04(
         std::array<double, (14 + 1) * (2 * 8 + 2)>{
             {0.12390367481831142,
@@ -2210,7 +2210,7 @@ FixedMatrix<double, 14 + 1,2 * 8 + 2> constexpr
              -0.0057134404553152406,
              -0.00030653632485443897}});
 
-FixedMatrix<double, 15 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 15 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_15_divisions_8_w04(
         std::array<double, (15 + 1) * (2 * 8 + 2)>{
             {0.12390367481831142,
@@ -2517,7 +2517,7 @@ FixedMatrix<double, 15 + 1,2 * 8 + 2> constexpr
              0.0031883697761380244,
              0.00016147229976212283}});
 
-FixedMatrix<double, 16 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 16 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_16_divisions_8_w04(
         std::array<double, (16 + 1) * (2 * 8 + 2)>{
             {0.11923006874707555,
@@ -2843,7 +2843,7 @@ FixedMatrix<double, 16 + 1,2 * 8 + 2> constexpr
              -0.0016723895907569378,
              -0.00008062484252960444}});
 
-FixedMatrix<double, 17 + 1,2 * 8 + 2> constexpr
+FixedMatrix<double, 17 + 1, 2 * 8 + 2> constexpr
     newhall_c_matrix_degree_17_divisions_8_w04(
         std::array<double, (17 + 1) * (2 * 8 + 2)>{
             {0.11923006874707555,
