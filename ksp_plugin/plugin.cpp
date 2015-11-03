@@ -492,24 +492,25 @@ FrameField<World> Plugin::Navball(
 Vector<double, World> Plugin::VesselTangent(
     GUID const& vessel_guid,
     not_null<RenderingFrame*> const rendering_frame) const {
-  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  auto const& last = vessel.prolongation().last();
-  Instant const& time = last.time();
-  DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
-      last.degrees_of_freedom();
-  auto const from_frenet_frame_to_rendering_frame =
-      rendering_frame->FrenetFrame(
-          time,
-          rendering_frame->ToThisFrameAtTime(time)(degrees_of_freedom));
-  Vector<double, Frenet<Rendering>> const tangent({1, 0, 0});
+  return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
+                               rendering_frame,
+                               Vector<double, Frenet<Rendering>>({1, 0, 0}));
+}
 
-  // The vector with coordinates {1, 0, 0} in the Frenet frame of the
-  // vessel's free-falling trajectory in the given |rendering_frame|, converted
-  // to |WorldSun| coordinates.
-  return Identity<WorldSun, World>()(
-      BarycentricToWorldSun()(
-          rendering_frame->FromThisFrameAtTime(time).orthogonal_map()(
-              from_frenet_frame_to_rendering_frame(tangent))));
+Vector<double, World> Plugin::VesselNormal(
+    GUID const& vessel_guid,
+    not_null<RenderingFrame*> const rendering_frame) const {
+  return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
+                               rendering_frame,
+                               Vector<double, Frenet<Rendering>>({0, 1, 0}));
+}
+
+Vector<double, World> Plugin::VesselBinormal(
+    GUID const& vessel_guid,
+    not_null<RenderingFrame*> const rendering_frame) const {
+  return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
+                               rendering_frame,
+                               Vector<double, Frenet<Rendering>>({0, 0, 1}));
 }
 
 Instant Plugin::current_time() const {
@@ -974,6 +975,28 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
   return result;
+}
+
+Vector<double, World> Plugin::FromVesselFrenetFrame(
+    Vessel const& vessel,
+    not_null<RenderingFrame*> const rendering_frame,
+    Vector<double, Frenet<Rendering>> const& vector) {
+  auto const& last = vessel.prolongation().last();
+  Instant const& time = last.time();
+  DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
+      last.degrees_of_freedom();
+  auto const from_frenet_frame_to_rendering_frame =
+      rendering_frame->FrenetFrame(
+          time,
+          rendering_frame->ToThisFrameAtTime(time)(degrees_of_freedom));
+
+  // The given |vector| in the Frenet frame of the vessel's free-falling
+  // trajectory in the given |rendering_frame|, converted to |WorldSun|
+  // coordinates.
+  return Identity<WorldSun, World>()(
+      BarycentricToWorldSun()(
+          rendering_frame->FromThisFrameAtTime(time).orthogonal_map()(
+              from_frenet_frame_to_rendering_frame(vector))));
 }
 
 template<typename T>

@@ -284,6 +284,12 @@ class Plugin {
   virtual Vector<double, World> VesselTangent(
       GUID const& vessel_guid,
       not_null<RenderingFrame*> const rendering_frame) const;
+  virtual Vector<double, World> VesselNormal(
+      GUID const& vessel_guid,
+      not_null<RenderingFrame*> const rendering_frame) const;
+  virtual Vector<double, World> VesselBinormal(
+      GUID const& vessel_guid,
+      not_null<RenderingFrame*> const rendering_frame) const;
 
   virtual Instant current_time() const;
 
@@ -390,6 +396,11 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       not_null<RenderingFrame*>const rendering_frame,
       Position<World> const& sun_world_position) const;
+
+  Vector<double, World> FromVesselFrenetFrame(
+      Vessel const& vessel,
+      not_null<RenderingFrame*> const rendering_frame,
+      Vector<double, Frenet<Rendering>> const& vector);
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
   // |celestial_messages| (which may be pre- or post-Bourbaki).
