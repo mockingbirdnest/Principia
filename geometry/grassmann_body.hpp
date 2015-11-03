@@ -235,12 +235,16 @@ inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
       Cross(left.coordinates(), right.coordinates()));
 }
 
-template<typename Scalar, typename Frame, int rank>
-inline Multivector<double, Frame, rank> Normalize(
-    Multivector<Scalar, Frame, rank> const& multivector) {
-  Scalar const norm = multivector.Norm();
-  CHECK_NE(Scalar(), norm);
-  return multivector / norm;
+template<typename Scalar, typename Frame>
+inline Multivector<double, Frame, 1> Normalize(
+    Multivector<Scalar, Frame, 1> const& multivector) {
+  return Multivector<double, Frame, 1>(Normalize(multivector.coordinates()));
+}
+
+template<typename Scalar, typename Frame>
+inline Multivector<double, Frame, 2> Normalize(
+    Multivector<Scalar, Frame, 2> const& multivector) {
+  return Multivector<double, Frame, 2>(Normalize(multivector.coordinates()));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

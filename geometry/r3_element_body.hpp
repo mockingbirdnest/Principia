@@ -41,13 +41,14 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
     case 2:
       return z;
     default:
-      LOG(FATAL) << FUNCTION_SIGNATURE << ": index = " << index;
+      DLOG(FATAL) << FUNCTION_SIGNATURE << ": index = " << index;
       base::noreturn();
   }
 }
 
 template<typename Scalar>
-inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
+FORCE_INLINE Scalar const& R3Element<Scalar>::operator[](
+    int const index) const {
   switch (index) {
     case 0:
       return x;
@@ -56,7 +57,7 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
     case 2:
       return z;
     default:
-      LOG(FATAL) << FUNCTION_SIGNATURE << ": index = " << index;
+      DLOG(FATAL) << FUNCTION_SIGNATURE << ": index = " << index;
       base::noreturn();
   }
 }
@@ -113,9 +114,7 @@ template<typename Scalar>
 template<typename S>
 void R3Element<Scalar>::Orthogonalize(
     not_null<R3Element<S>*> const r3_element) const {
-  Scalar const this_norm = this->Norm();
-  CHECK_NE(0 * SIUnit<Scalar>(), this_norm);
-  R3Element<double> const this_normalized = *this / this_norm;
+  R3Element<double> const this_normalized = Normalize(*this);
   *r3_element -= Dot(*r3_element, this_normalized) * this_normalized;
 }
 
@@ -260,9 +259,9 @@ bool operator!=(R3Element<Scalar> const& left,
 }
 
 template<typename Scalar>
-R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
+FORCE_INLINE R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
   Scalar const norm = r3_element.Norm();
-  CHECK_NE(Scalar(), norm);
+  DCHECK_NE(Scalar(), norm);
   return r3_element / norm;
 }
 
