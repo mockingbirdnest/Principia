@@ -24,15 +24,15 @@ namespace geometry {
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
-inline R3Element<Scalar>::R3Element() : x(), y(), z() {}
+R3Element<Scalar>::R3Element() : x(), y(), z() {}
 
 template<typename Scalar>
-inline R3Element<Scalar>::R3Element(Scalar const& x,
-                                    Scalar const& y,
-                                    Scalar const& z) : x(x), y(y), z(z) {}
+R3Element<Scalar>::R3Element(Scalar const& x,
+                             Scalar const& y,
+                             Scalar const& z) : x(x), y(y), z(z) {}
 
 template<typename Scalar>
-inline Scalar& R3Element<Scalar>::operator[](int const index) {
+Scalar& R3Element<Scalar>::operator[](int const index) {
   switch (index) {
     case 0:
       return x;
@@ -47,7 +47,7 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
 }
 
 template<typename Scalar>
-FORCE_INLINE Scalar const& R3Element<Scalar>::operator[](
+Scalar const& R3Element<Scalar>::operator[](
     int const index) const {
   switch (index) {
     case 0:
@@ -63,7 +63,7 @@ FORCE_INLINE Scalar const& R3Element<Scalar>::operator[](
 }
 
 template<typename Scalar>
-inline R3Element<Scalar>& R3Element<Scalar>::operator+=(
+R3Element<Scalar>& R3Element<Scalar>::operator+=(
     R3Element<Scalar> const& right) {
   x += right.x;
   y += right.y;
@@ -72,7 +72,7 @@ inline R3Element<Scalar>& R3Element<Scalar>::operator+=(
 }
 
 template<typename Scalar>
-inline R3Element<Scalar>& R3Element<Scalar>::operator-=(
+R3Element<Scalar>& R3Element<Scalar>::operator-=(
     R3Element<Scalar> const& right) {
   x -= right.x;
   y -= right.y;
@@ -81,7 +81,7 @@ inline R3Element<Scalar>& R3Element<Scalar>::operator-=(
 }
 
 template<typename Scalar>
-inline R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
+R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
   x *= right;
   y *= right;
   z *= right;
@@ -89,7 +89,7 @@ inline R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
 }
 
 template<typename Scalar>
-inline R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
+R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
   x /= right;
   y /= right;
   z /= right;
@@ -97,7 +97,7 @@ inline R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
 }
 
 template<typename Scalar>
-inline Scalar R3Element<Scalar>::Norm() const {
+Scalar R3Element<Scalar>::Norm() const {
   return quantities::Sqrt(Dot(*this, *this));
 }
 
@@ -161,59 +161,57 @@ SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
+R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
+R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(-right.x, -right.y, -right.z);
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator+(
-    R3Element<Scalar> const& left,
-    R3Element<Scalar> const& right) {
+R3Element<Scalar> operator+(R3Element<Scalar> const& left,
+                            R3Element<Scalar> const& right) {
   return R3Element<Scalar>(left.x + right.x,
                            left.y + right.y,
                            left.z + right.z);
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator-(
-    R3Element<Scalar> const& left,
-    R3Element<Scalar> const& right) {
+R3Element<Scalar> operator-(R3Element<Scalar> const& left,
+                            R3Element<Scalar> const& right) {
   return R3Element<Scalar>(left.x - right.x,
                            left.y - right.y,
                            left.z - right.z);
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator*(double const left,
-                                   R3Element<Scalar> const& right) {
+R3Element<Scalar> operator*(double const left,
+                            R3Element<Scalar> const& right) {
   return R3Element<Scalar>(left * right.x,
                            left * right.y,
                            left * right.z);
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                                   double const right) {
+R3Element<Scalar> operator*(R3Element<Scalar> const& left,
+                            double const right) {
   return R3Element<Scalar>(left.x * right,
                            left.y * right,
                            left.z * right);
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator/(R3Element<Scalar> const& left,
-                                   double const right) {
+R3Element<Scalar> operator/(R3Element<Scalar> const& left,
+                            double const right) {
   return R3Element<Scalar>(left.x / right,
                            left.y / right,
                            left.z / right);
 }
 
 template<typename LDimension, typename RScalar>
-inline R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
+R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
 operator*(quantities::Quantity<LDimension> const& left,
           R3Element<RScalar> const& right) {
   return R3Element<quantities::Product<quantities::Quantity<LDimension>,
@@ -224,7 +222,7 @@ operator*(quantities::Quantity<LDimension> const& left,
 }
 
 template<typename LScalar, typename RDimension>
-inline R3Element<quantities::Product<LScalar, quantities::Quantity<RDimension>>>
+R3Element<quantities::Product<LScalar, quantities::Quantity<RDimension>>>
 operator*(R3Element<LScalar> const& left,
           quantities::Quantity<RDimension> const& right) {
   return R3Element<quantities::Product<LScalar,
@@ -235,7 +233,7 @@ operator*(R3Element<LScalar> const& left,
 }
 
 template<typename LScalar, typename RDimension>
-inline R3Element<quantities::Quotient<LScalar,
+R3Element<quantities::Quotient<LScalar,
                                       quantities::Quantity<RDimension>>>
 operator/(R3Element<LScalar> const& left,
           quantities::Quantity<RDimension> const& right) {
@@ -259,9 +257,11 @@ bool operator!=(R3Element<Scalar> const& left,
 }
 
 template<typename Scalar>
-FORCE_INLINE R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
+R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
   Scalar const norm = r3_element.Norm();
-  DCHECK_NE(Scalar(), norm);
+#ifdef _DEBUG
+  CHECK_NE(Scalar(), norm);
+#endif
   return r3_element / norm;
 }
 
@@ -285,7 +285,7 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 template<typename LScalar, typename RScalar>
-inline R3Element<quantities::Product<LScalar, RScalar>> Cross(
+R3Element<quantities::Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right) {
   return R3Element<quantities::Product<LScalar, RScalar>>(
@@ -295,7 +295,7 @@ inline R3Element<quantities::Product<LScalar, RScalar>> Cross(
 }
 
 template<typename LScalar, typename RScalar>
-inline quantities::Product<LScalar, RScalar> Dot(
+quantities::Product<LScalar, RScalar> Dot(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right) {
   return left.x * right.x + left.y * right.y + left.z * right.z;

@@ -17,7 +17,7 @@ namespace {
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.
-inline Quaternion ToQuaternion(R3x3Matrix const& matrix) {
+FORCE_INLINE Quaternion ToQuaternion(R3x3Matrix const& matrix) {
   double const t = matrix.Trace();
   double real_part;
   R3Element<double> imaginary_part;
