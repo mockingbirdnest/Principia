@@ -253,6 +253,8 @@ TEST_F(GrassmannTest, Normalize) {
               Eq(Bivector<double, World>({4 / Sqrt(77),
                                           -5 / Sqrt(77),
                                           6 / Sqrt(77)})));
+  Trivector<Length, World> const u(-4 * Furlong);
+  EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
 }
 
 TEST_F(GrassmannDeathTest, SerializationError) {
