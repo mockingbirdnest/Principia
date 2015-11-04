@@ -546,6 +546,20 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
                    VesselTangent(vessel_guid, rendering_frame).coordinates());
 }
 
+XYZ principia__VesselNormal(Plugin const* const plugin,
+                             char const* vessel_guid,
+                             RenderingFrame* const rendering_frame) {
+  return ToXYZ(CHECK_NOTNULL(plugin)->
+                   VesselBinormal(vessel_guid, rendering_frame).coordinates());
+}
+
+XYZ principia__VesselBinormal(Plugin const* const plugin,
+                             char const* vessel_guid,
+                             RenderingFrame* const rendering_frame) {
+  return ToXYZ(CHECK_NOTNULL(plugin)->
+                   VesselBinormal(vessel_guid, rendering_frame).coordinates());
+}
+
 double principia__current_time(Plugin const* const plugin) {
   return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
 }

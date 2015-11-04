@@ -41,6 +41,7 @@ using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
+using physics::Frenet;
 using quantities::Angle;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -400,7 +401,7 @@ class Plugin {
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
       not_null<RenderingFrame*> const rendering_frame,
-      Vector<double, Frenet<Rendering>> const& vector);
+      Vector<double, Frenet<Rendering>> const& vector) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
   // |celestial_messages| (which may be pre- or post-Bourbaki).

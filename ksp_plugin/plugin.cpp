@@ -980,7 +980,7 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
 Vector<double, World> Plugin::FromVesselFrenetFrame(
     Vessel const& vessel,
     not_null<RenderingFrame*> const rendering_frame,
-    Vector<double, Frenet<Rendering>> const& vector) {
+    Vector<double, Frenet<Rendering>> const& vector) const {
   auto const& last = vessel.prolongation().last();
   Instant const& time = last.time();
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom =

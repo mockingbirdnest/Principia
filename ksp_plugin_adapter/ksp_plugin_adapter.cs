@@ -533,16 +533,36 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         if (has_active_vessel_in_space() &&
             has_vessel(plugin_, active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
-          // TODO(egg): just the tangent for now.
           Vector3d prograde =
               (Vector3d)VesselTangent(plugin_,
                                       active_vessel.id.ToString(),
                                       rendering_frame_);
+          Vector3d radial =
+              (Vector3d)VesselNormal(plugin_,
+                                     active_vessel.id.ToString(),
+                                     rendering_frame_);
+          // Yes, the astrodynamicist's normal is the mathematician's binormal.
+          // Don't ask.
+          Vector3d normal =
+              (Vector3d)VesselBinormal(plugin_,
+                                       active_vessel.id.ToString(),
+                                       rendering_frame_);
+
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
                   prograde * 0.05;
+          navball_.radialInVector.transform.localPosition =
+              (UnityEngine.QuaternionD)navball_.attitudeGymbal *
+                  radial * 0.05;
+          navball_.normalVector.transform.localPosition =
+              (UnityEngine.QuaternionD)navball_.attitudeGymbal *
+                  normal * 0.05;
           navball_.retrogradeVector.transform.localPosition =
               -navball_.progradeVector.transform.localPosition;
+          navball_.radialOutVector.transform.localPosition =
+              -navball_.radialInVector.transform.localPosition;
+          navball_.antiNormalVector.transform.localPosition =
+              -navball_.normalVector.transform.localPosition;
           // Make the autopilot target our Frenet trihedron.
           // TODO(egg): just the tangent for now.
           if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
@@ -561,6 +581,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                 break;
               case VesselAutopilot.AutopilotMode.Retrograde:
                 rsas_target_ = -prograde;
+                break;
+              case VesselAutopilot.AutopilotMode.RadialIn:
+                rsas_target_ = radial;
+                break;
+              case VesselAutopilot.AutopilotMode.RadialOut:
+                rsas_target_ = -radial;
+                break;
+              case VesselAutopilot.AutopilotMode.Normal:
+                rsas_target_ = normal;
+                break;
+              case VesselAutopilot.AutopilotMode.Antinormal:
+                rsas_target_ = -normal;
                 break;
               default:
                 override_rsas_target_ = false;
