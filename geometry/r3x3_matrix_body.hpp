@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
 
@@ -20,17 +21,17 @@ inline double R3x3Matrix::Trace() const {
   return row_x_.x + row_y_.y + row_z_.z;
 }
 
-inline double R3x3Matrix::operator[](std::pair<int, int> const& indices) const {
-  switch (indices.first) {
+FORCE_INLINE double R3x3Matrix::operator()(int const r, int const c) const {
+  switch (r) {
     case 0:
-      return row_x_[indices.second];
+      return row_x_[c];
     case 1:
-      return row_y_[indices.second];
+      return row_y_[c];
     case 2:
-      return row_z_[indices.second];
+      return row_z_[c];
     default:
-      LOG(FATAL) << "indices = {" << indices.first
-                 << ", " << indices.second << "}";
+      DLOG(FATAL) << FUNCTION_SIGNATURE
+                  << " indices = {" << r << ", " << c << "}";
       base::noreturn();
   }
 }
