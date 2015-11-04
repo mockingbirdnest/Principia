@@ -550,7 +550,7 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
                              char const* vessel_guid,
                              RenderingFrame* const rendering_frame) {
   return ToXYZ(CHECK_NOTNULL(plugin)->
-                   VesselBinormal(vessel_guid, rendering_frame).coordinates());
+                   VesselNormal(vessel_guid, rendering_frame).coordinates());
 }
 
 XYZ principia__VesselBinormal(Plugin const* const plugin,
