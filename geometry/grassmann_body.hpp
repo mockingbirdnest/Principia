@@ -248,8 +248,9 @@ Multivector<double, Frame, 2> Normalize(
 template<typename Scalar, typename Frame>
 Multivector<double, Frame, 3> Normalize(
     Multivector<Scalar, Frame, 3> const& multivector) {
-  return Multivector<double, Frame, 3>(
-      std::copysign(1.0, multivector.coordinate()));
+  Scalar const norm = multivector.Norm();
+  CHECK_NE(Scalar(), norm);
+  return multivector / norm;
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
