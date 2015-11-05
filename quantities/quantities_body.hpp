@@ -329,7 +329,6 @@ constexpr double Pow(double x) {
 
 // Static specializations for frequently-used exponents, so that this gets
 // turned into multiplications at compile time.
-//TODO(phl): Extend to quantities
 
 template<>
 inline constexpr double Pow<-3>(double x) {

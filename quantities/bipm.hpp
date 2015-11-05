@@ -13,12 +13,12 @@ namespace quantities {
 // http://www.bipm.org/en/si/si_brochure/chapter4/table8.html.
 namespace bipm {
 
-Pressure const Bar                 = 1e5 * si::Pascal;
-Pressure const MillimetreOfMercury = 133.322 * si::Pascal;
-Length   const Ångström            = 1e-10 * si::Metre;
-Length   const NauticalMile        = 1852 * si::Metre;
-Speed    const Knot                = 1 * NauticalMile / si::Hour;
-Area     const Barn                = 1e-28 * Pow<2>(si::Metre);
+Pressure constexpr Bar                 = 1e5 * si::Pascal;
+Pressure constexpr MillimetreOfMercury = 133.322 * si::Pascal;
+Length   constexpr Ångström            = 1e-10 * si::Metre;
+Length   constexpr NauticalMile        = 1852 * si::Metre;
+Speed    constexpr Knot                = 1 * NauticalMile / si::Hour;
+Area     constexpr Barn                = 1e-28 * Pow<2>(si::Metre);
 
 }  // namespace bipm
 }  // namespace quantities
