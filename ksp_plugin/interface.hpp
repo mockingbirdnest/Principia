@@ -337,6 +337,16 @@ XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
                                    RenderingFrame* const rendering_frame);
 
 extern "C" DLLEXPORT
+XYZ CDECL principia__VesselNormal(Plugin const* const plugin,
+                                  char const* vessel_guid,
+                                  RenderingFrame* const rendering_frame);
+
+extern "C" DLLEXPORT
+XYZ CDECL principia__VesselBinormal(Plugin const* const plugin,
+                                    char const* vessel_guid,
+                                    RenderingFrame* const rendering_frame);
+
+extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
 
 // |plugin| must not be null.  The caller takes ownership of the result, except

@@ -142,6 +142,16 @@ class MockPlugin : public Plugin {
                          GUID const& vessel_guid,
                          not_null<RenderingFrame*> const rendering_frame));
 
+  MOCK_CONST_METHOD2(VesselNormal,
+                     Vector<double, World>(
+                         GUID const& vessel_guid,
+                         not_null<RenderingFrame*> const rendering_frame));
+
+  MOCK_CONST_METHOD2(VesselBinormal,
+                     Vector<double, World>(
+                         GUID const& vessel_guid,
+                         not_null<RenderingFrame*> const rendering_frame));
+
   MOCK_CONST_METHOD0(current_time, Instant());
 
   MOCK_CONST_METHOD1(WriteToMessage,

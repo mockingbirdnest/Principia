@@ -328,6 +328,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       IntPtr rendering_frame);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__VesselNormal",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ VesselNormal(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      IntPtr rendering_frame);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__VesselBinormal",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ VesselBinormal(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      IntPtr rendering_frame);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__current_time",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern double current_time(IntPtr plugin);

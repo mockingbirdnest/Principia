@@ -663,7 +663,7 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_THAT(rendering_frame, IsNull());
 }
 
-TEST_F(InterfaceTest, VesselTangent) {
+TEST_F(InterfaceTest, Frenet) {
   StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
      mock_rendering_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
@@ -676,14 +676,39 @@ TEST_F(InterfaceTest, VesselTangent) {
       principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);
-  auto const tangent = Vector<double, World>({4, 5, 6});
-  EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID,
-                                      check_not_null(rendering_frame)))
-    .WillOnce(Return(tangent));
-  XYZ t = principia__VesselTangent(plugin_.get(), kVesselGUID, rendering_frame);
-  EXPECT_EQ(t.x, tangent.coordinates().x);
-  EXPECT_EQ(t.y, tangent.coordinates().y);
-  EXPECT_EQ(t.z, tangent.coordinates().z);
+  {
+    auto const tangent = Vector<double, World>({4, 5, 6});
+    EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID,
+                                        check_not_null(rendering_frame)))
+      .WillOnce(Return(tangent));
+    XYZ t =
+        principia__VesselTangent(plugin_.get(), kVesselGUID, rendering_frame);
+    EXPECT_EQ(t.x, tangent.coordinates().x);
+    EXPECT_EQ(t.y, tangent.coordinates().y);
+    EXPECT_EQ(t.z, tangent.coordinates().z);
+  }
+  {
+    auto const normal = Vector<double, World>({-13, 7, 5});
+    EXPECT_CALL(*plugin_, VesselNormal(kVesselGUID,
+                                       check_not_null(rendering_frame)))
+      .WillOnce(Return(normal));
+    XYZ n =
+        principia__VesselNormal(plugin_.get(), kVesselGUID, rendering_frame);
+    EXPECT_EQ(n.x, normal.coordinates().x);
+    EXPECT_EQ(n.y, normal.coordinates().y);
+    EXPECT_EQ(n.z, normal.coordinates().z);
+  }
+  {
+    auto const binormal = Vector<double, World>({43, 67, 163});
+    EXPECT_CALL(*plugin_, VesselBinormal(kVesselGUID,
+                                         check_not_null(rendering_frame)))
+      .WillOnce(Return(binormal));
+    XYZ b =
+        principia__VesselBinormal(plugin_.get(), kVesselGUID, rendering_frame);
+    EXPECT_EQ(b.x, binormal.coordinates().x);
+    EXPECT_EQ(b.y, binormal.coordinates().y);
+    EXPECT_EQ(b.z, binormal.coordinates().z);
+  }
 
   EXPECT_EQ(mock_rendering_frame, rendering_frame);
   principia__DeleteRenderingFrame(&rendering_frame);
