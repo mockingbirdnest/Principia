@@ -596,11 +596,19 @@ TEST_F(PluginTest, Frenet) {
                                   satellite_initial_velocity_));
   Vector<double, World> t = alice_sun_to_world(
                                 Normalize(satellite_initial_velocity_));
+  Vector<double, World> n = alice_sun_to_world(
+                                Normalize(-satellite_initial_displacement_));
+  // World is left-handed, but the Frenet trihedron is right-handed.
+  Vector<double, World> b(-geometry::Cross(t.coordinates(), n.coordinates()));
   not_null<std::unique_ptr<RenderingFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingRenderingFrame(
           SolarSystemFactory::kEarth);
   EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
               AlmostEquals(t, 2));
+  EXPECT_THAT(plugin.VesselNormal(satellite, geocentric.get()),
+              AlmostEquals(n, 3));
+  EXPECT_THAT(plugin.VesselBinormal(satellite, geocentric.get()),
+              AlmostEquals(b, 4));
 }
 
 }  // namespace ksp_plugin
