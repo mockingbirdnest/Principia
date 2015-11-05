@@ -174,7 +174,7 @@ class Quantity {
   template<typename LDimensions, typename RDimensions>
   friend constexpr internal::Quotient<Quantity<LDimensions>,
                                       Quantity<RDimensions>> operator/(
-      Quantity<LDimensions> const& left, 
+      Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
   friend constexpr Quantity<RDimensions> operator*(
