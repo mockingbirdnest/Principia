@@ -28,10 +28,10 @@ struct Dimensions {
     SolidAngle        = SolidAngleExponent
   };
 
-  static int const kMinExponent = -16;
-  static int const kMaxExponent = 15;
-  static int const kExponentBits = 5;
-  static int const kExponentMask = 0x1F;
+  static int constexpr kMinExponent = -16;
+  static int constexpr kMaxExponent = 15;
+  static int constexpr kExponentBits = 5;
+  static int constexpr kExponentMask = 0x1F;
 
   static_assert(LengthExponent >= kMinExponent &&
                 LengthExponent <= kMaxExponent,
@@ -65,7 +65,7 @@ struct Dimensions {
                 "Invalid winding exponent");
 
   // The NOLINT are because glint is confused by the binary and.  I kid you not.
-  static int64_t const representation =
+  static int64_t constexpr representation =
       (LengthExponent & kExponentMask)                                 |  // NOLINT
       (MassExponent & kExponentMask)              << 1 * kExponentBits |  // NOLINT
       (TimeExponent & kExponentMask)              << 2 * kExponentBits |  // NOLINT
@@ -180,31 +180,32 @@ struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
 }  // namespace internal
 
 template<typename D>
-inline Quantity<D>::Quantity() : magnitude_(0) {}
+constexpr Quantity<D>::Quantity() : magnitude_(0) {}
 
 template<typename D>
-inline Quantity<D>::Quantity(double const magnitude) : magnitude_(magnitude) {}
+constexpr Quantity<D>::Quantity(double const magnitude)
+    : magnitude_(magnitude) {}
 
 template<typename D>
-inline Quantity<D>& Quantity<D>::operator+=(Quantity const& right) {
+Quantity<D>& Quantity<D>::operator+=(Quantity const& right) {
   magnitude_ += right.magnitude_;
   return *this;
 }
 
 template<typename D>
-inline Quantity<D>& Quantity<D>::operator-=(Quantity const& right) {
+Quantity<D>& Quantity<D>::operator-=(Quantity const& right) {
   magnitude_ -= right.magnitude_;
   return *this;
 }
 
 template<typename D>
-inline Quantity<D>& Quantity<D>::operator*=(double const right) {
+Quantity<D>& Quantity<D>::operator*=(double const right) {
   magnitude_ *= right;
   return *this;
 }
 
 template<typename D>
-inline Quantity<D>& Quantity<D>::operator/=(double const right) {
+Quantity<D>& Quantity<D>::operator/=(double const right) {
   magnitude_ /= right;
   return *this;
 }
@@ -212,54 +213,56 @@ inline Quantity<D>& Quantity<D>::operator/=(double const right) {
 // Additive group
 
 template<typename D>
-inline Quantity<D> Quantity<D>::operator+() const {
+constexpr Quantity<D> Quantity<D>::operator+() const {
   return *this;
 }
 
 template<typename D>
-inline Quantity<D> Quantity<D>::operator-() const {
+constexpr Quantity<D> Quantity<D>::operator-() const {
   return Quantity(-magnitude_);
 }
 
 template<typename D>
-FORCE_INLINE Quantity<D> Quantity<D>::operator+(Quantity const& right) const {
+FORCE_INLINE constexpr Quantity<D> Quantity<D>::operator+(
+    Quantity const& right) const {
   return Quantity(magnitude_ + right.magnitude_);
 }
 
 template<typename D>
-FORCE_INLINE Quantity<D> Quantity<D>::operator-(Quantity const& right) const {
+FORCE_INLINE constexpr Quantity<D> Quantity<D>::operator-(
+    Quantity const& right) const {
   return Quantity(magnitude_ - right.magnitude_);
 }
 
 // Comparison operators
 
 template<typename D>
-inline bool Quantity<D>::operator>(Quantity const& right) const {
+constexpr bool Quantity<D>::operator>(Quantity const& right) const {
   return magnitude_ > right.magnitude_;
 }
 
 template<typename D>
-inline bool Quantity<D>::operator<(Quantity const& right) const {
+constexpr bool Quantity<D>::operator<(Quantity const& right) const {
   return magnitude_ < right.magnitude_;
 }
 
 template<typename D>
-inline bool Quantity<D>::operator>=(Quantity const& right) const {
+constexpr bool Quantity<D>::operator>=(Quantity const& right) const {
   return magnitude_ >= right.magnitude_;
 }
 
 template<typename D>
-inline bool Quantity<D>::operator<=(Quantity const& right) const {
+constexpr bool Quantity<D>::operator<=(Quantity const& right) const {
   return magnitude_ <= right.magnitude_;
 }
 
 template<typename D>
-inline bool Quantity<D>::operator==(Quantity const& right) const {
+constexpr bool Quantity<D>::operator==(Quantity const& right) const {
   return magnitude_ == right.magnitude_;
 }
 
 template<typename D>
-inline bool Quantity<D>::operator!=(Quantity const& right) const {
+constexpr bool Quantity<D>::operator!=(Quantity const& right) const {
   return magnitude_ != right.magnitude_;
 }
 
@@ -280,17 +283,17 @@ Quantity<D> Quantity<D>::ReadFromMessage(
 // Multiplicative group
 
 template<typename D>
-inline Quantity<D> Quantity<D>::operator/(double const right) const {
+constexpr Quantity<D> Quantity<D>::operator/(double const right) const {
   return Quantity(magnitude_ / right);
 }
 
 template<typename D>
-inline Quantity<D> Quantity<D>::operator*(double const right) const {
+constexpr Quantity<D> Quantity<D>::operator*(double const right) const {
   return Quantity(magnitude_ * right);
 }
 
 template<typename LDimensions, typename RDimensions>
-inline internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
@@ -298,7 +301,7 @@ operator*(Quantity<LDimensions> const& left,
 }
 
 template<typename LDimensions, typename RDimensions>
-inline internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
 operator/(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Quotient<Quantity<LDimensions>,
@@ -306,21 +309,21 @@ operator/(Quantity<LDimensions> const& left,
 }
 
 template<typename RDimensions>
-FORCE_INLINE Quantity<RDimensions> operator*(
+FORCE_INLINE constexpr Quantity<RDimensions> operator*(
     double const left,
     Quantity<RDimensions> const& right) {
   return Quantity<RDimensions>(left * right.magnitude_);
 }
 
 template<typename RDimensions>
-inline typename Quantity<RDimensions>::Inverse operator/(
+constexpr typename Quantity<RDimensions>::Inverse operator/(
     double const left,
     Quantity<RDimensions> const& right) {
   return typename Quantity<RDimensions>::Inverse(left / right.magnitude_);
 }
 
 template<int exponent>
-inline double Pow(double x) {
+constexpr double Pow(double x) {
   return std::pow(x, exponent);
 }
 
@@ -328,46 +331,44 @@ inline double Pow(double x) {
 // turned into multiplications at compile time.
 
 template<>
-inline double Pow<-3>(double x) {
+inline constexpr double Pow<-3>(double x) {
   return 1 / (x * x * x);
 }
 
 template<>
-inline double Pow<-2>(double x) {
+inline constexpr double Pow<-2>(double x) {
   return 1 / (x * x);
 }
 
 template<>
-inline double Pow<-1>(double x) {
+inline constexpr double Pow<-1>(double x) {
   return 1 / x;
 }
 
 template<>
-inline double Pow<0>(double x) {
+inline constexpr double Pow<0>(double x) {
   return 1;
 }
 
 template<>
-inline double Pow<1>(double x) {
+inline constexpr double Pow<1>(double x) {
   return x;
 }
 
 template<>
-inline double Pow<2>(double x) {
+inline constexpr double Pow<2>(double x) {
   return x * x;
 }
 
 template<>
-inline double Pow<3>(double x) {
+inline constexpr double Pow<3>(double x) {
   return x * x * x;
 }
 
-
 template<int exponent, typename D>
-Exponentiation<Quantity<D>, exponent> Pow(
+constexpr Exponentiation<Quantity<D>, exponent> Pow(
     Quantity<D> const& x) {
-  return Exponentiation<Quantity<D>, exponent>(
-      Pow<exponent>(x.magnitude_));
+  return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
 }
 
 inline double Abs(double const x) {
@@ -381,12 +382,12 @@ Quantity<D> Abs(Quantity<D> const& quantity) {
 
 
 template<typename Q>
-inline Q SIUnit() {
+constexpr Q SIUnit() {
   return Q(1);
 }
 
 template<>
-inline double SIUnit<double>() {
+constexpr double SIUnit<double>() {
   return 1;
 }
 

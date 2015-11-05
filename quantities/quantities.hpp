@@ -83,31 +83,30 @@ using SquareRoot = typename internal::SquareRootGenerator<Q>::Type;
 // Returns the base or derived SI Unit of |Q|.
 // For instance, |SIUnit<Action>() == Joule * Second|.
 template<typename Q>
-Q SIUnit();
+constexpr Q SIUnit();
 // Returns 1.
 template<>
-double SIUnit<double>();
+constexpr double SIUnit<double>();
 
 template<typename LDimensions, typename RDimensions>
-internal::Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
-    Quantity<LDimensions> const&,
-    Quantity<RDimensions> const&);
+constexpr internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+operator*(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename LDimensions, typename RDimensions>
-internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
-    Quantity<LDimensions> const&,
-    Quantity<RDimensions> const&);
+constexpr internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+operator/(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename RDimensions>
-Quantity<RDimensions> operator*(double const, Quantity<RDimensions> const&);
+constexpr Quantity<RDimensions>
+operator*(double const, Quantity<RDimensions> const&);
 template<typename RDimensions>
-typename Quantity<RDimensions>::Inverse operator/(double const,
-                                                  Quantity<RDimensions> const&);
+constexpr typename Quantity<RDimensions>::Inverse
+operator/(double const, Quantity<RDimensions> const&);
 
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.
 template<int exponent>
-double Pow(double x);
+constexpr double Pow(double x);
 template<int exponent, typename D>
-Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
@@ -137,60 +136,64 @@ class Quantity {
   using Dimensions = D;
   using Inverse = internal::Quotient<double, Quantity>;
 
-  Quantity();
+  constexpr Quantity();
   ~Quantity() = default;
 
-  Quantity operator+() const;
-  Quantity operator-() const;
-  Quantity operator+(Quantity const& right) const;
-  Quantity operator-(Quantity const& right) const;
+  constexpr Quantity operator+() const;
+  constexpr Quantity operator-() const;
+  constexpr Quantity operator+(Quantity const& right) const;
+  constexpr Quantity operator-(Quantity const& right) const;
 
-  Quantity operator*(double const right) const;
-  Quantity operator/(double const right) const;
+  constexpr Quantity operator*(double const right) const;
+  constexpr Quantity operator/(double const right) const;
 
   Quantity& operator+=(Quantity const&);
   Quantity& operator-=(Quantity const&);
   Quantity& operator*=(double const);
   Quantity& operator/=(double const);
 
-  bool operator>(Quantity const& right) const;
-  bool operator<(Quantity const& right) const;
-  bool operator>=(Quantity const& right) const;
-  bool operator<=(Quantity const& right) const;
-  bool operator==(Quantity const& right) const;
-  bool operator!=(Quantity const& right) const;
+  constexpr bool operator>(Quantity const& right) const;
+  constexpr bool operator<(Quantity const& right) const;
+  constexpr bool operator>=(Quantity const& right) const;
+  constexpr bool operator<=(Quantity const& right) const;
+  constexpr bool operator==(Quantity const& right) const;
+  constexpr bool operator!=(Quantity const& right) const;
 
   void WriteToMessage(not_null<serialization::Quantity*> const message) const;
   static Quantity ReadFromMessage(serialization::Quantity const& message);
 
  private:
-  explicit Quantity(double const magnitude);
+  explicit constexpr Quantity(double const magnitude);
   double magnitude_;
 
   template<typename LDimensions, typename RDimensions>
-  friend internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
-  operator*(Quantity<LDimensions> const& left,
-            Quantity<RDimensions> const& right);
+  friend constexpr internal::Product<Quantity<LDimensions>,
+                                     Quantity<RDimensions>> operator*(
+      Quantity<LDimensions> const& left,
+      Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
-  friend internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
-  operator/(Quantity<LDimensions> const& left,
-            Quantity<RDimensions> const& right);
+  friend constexpr internal::Quotient<Quantity<LDimensions>,
+                                      Quantity<RDimensions>> operator/(
+      Quantity<LDimensions> const& left,
+      Quantity<RDimensions> const& right);
   template<typename RDimensions>
-  friend Quantity<RDimensions> operator*(double const left,
-                                         Quantity<RDimensions> const& right);
+  friend constexpr Quantity<RDimensions> operator*(
+      double const left,
+      Quantity<RDimensions> const& right);
   template<typename RDimensions>
-  friend typename Quantity<RDimensions>::Inverse operator/(
+  friend constexpr typename Quantity<RDimensions>::Inverse operator/(
       double const left,
       Quantity<RDimensions> const& right);
 
   template<typename Q>
-  friend Q SIUnit();
+  friend constexpr Q SIUnit();
 
   template<int exponent, typename BaseDimensions>
-  friend Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
+  friend constexpr Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
       Quantity<BaseDimensions> const& x);
 
   friend Quantity<D> Abs<>(Quantity<D> const&);
+
   template<typename ArgumentDimensions>
   friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
       Quantity<ArgumentDimensions> const& x);
