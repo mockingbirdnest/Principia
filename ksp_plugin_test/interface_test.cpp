@@ -681,7 +681,8 @@ TEST_F(InterfaceTest, Frenet) {
     EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID,
                                         check_not_null(rendering_frame)))
       .WillOnce(Return(tangent));
-    XYZ t = principia__VesselTangent(plugin_.get(), kVesselGUID, rendering_frame);
+    XYZ t =
+        principia__VesselTangent(plugin_.get(), kVesselGUID, rendering_frame);
     EXPECT_EQ(t.x, tangent.coordinates().x);
     EXPECT_EQ(t.y, tangent.coordinates().y);
     EXPECT_EQ(t.z, tangent.coordinates().z);
