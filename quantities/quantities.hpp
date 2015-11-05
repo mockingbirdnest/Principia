@@ -104,9 +104,9 @@ operator/(double const, Quantity<RDimensions> const&);
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.
 template<int exponent>
-double Pow(double x);
+constexpr double Pow(double x);
 template<int exponent, typename D>
-Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
@@ -189,7 +189,7 @@ class Quantity {
   friend constexpr Q SIUnit();
 
   template<int exponent, typename BaseDimensions>
-  friend Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
+  friend constexpr Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
       Quantity<BaseDimensions> const& x);
 
   friend Quantity<D> Abs<>(Quantity<D> const&);

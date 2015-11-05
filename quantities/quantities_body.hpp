@@ -323,7 +323,7 @@ constexpr typename Quantity<RDimensions>::Inverse operator/(
 }
 
 template<int exponent>
-double Pow(double x) {
+constexpr double Pow(double x) {
   return std::pow(x, exponent);
 }
 
@@ -367,7 +367,7 @@ inline constexpr double Pow<3>(double x) {
 }
 
 template<int exponent, typename D>
-Exponentiation<Quantity<D>, exponent> Pow(
+constexpr Exponentiation<Quantity<D>, exponent> Pow(
     Quantity<D> const& x) {
   return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
 }
