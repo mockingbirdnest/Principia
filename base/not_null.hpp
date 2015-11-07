@@ -253,19 +253,6 @@ class not_null {
       Args&&... args);  // NOLINT(build/c++11)
 };
 
-//// Comparison operators with a second argument which is not_null<Pointer>
-//template<typename Pointer>
-//bool operator==(std::nullptr_t const left, not_null<Pointer> const right);
-//template<typename Pointer>
-//bool operator!=(std::nullptr_t const left, not_null<Pointer> const right);
-//
-//template<typename Pointer>
-//bool operator==(typename not_null<Pointer>::pointer const left,
-//                not_null<Pointer> const right);
-//template<typename Pointer>
-//bool operator!=(typename not_null<Pointer>::pointer const left,
-//                not_null<Pointer> const right);
-
 // We want only one way of doing things, and we can't make
 // |not_null<Pointer> const| and |not_null<Pointer const>| etc. equivalent
 // easily.
