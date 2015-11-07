@@ -154,6 +154,12 @@ TEST_F(NotNullTest, RValue) {
 
   std::vector<int*> v2;
   v2.push_back(not_null_int);
+  EXPECT_EQ(2, *v2[0]);
+  EXPECT_EQ(2, *not_null_int);
+
+  std::unique_ptr<int const> owner_const_int =
+      not_null<std::unique_ptr<int const>>(make_not_null_unique<int>(5));
+  EXPECT_EQ(5, *owner_const_int);
 }
 
 }  // namespace base

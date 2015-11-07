@@ -113,7 +113,7 @@ Ephemeris<Frame>::Ephemeris(
     auto& body = bodies[i];
     DegreesOfFreedom<Frame> const& degrees_of_freedom = initial_state[i];
 
-    unowned_bodies_.push_back(body.get());
+    unowned_bodies_.emplace_back(body.get());
 
     auto const inserted = bodies_to_trajectories_.emplace(
                               body.get(),

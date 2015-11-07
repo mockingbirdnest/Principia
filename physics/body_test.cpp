@@ -100,13 +100,11 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
   // No members to test in this class, we just check that it doesn't crash.
   massless_body_ = *MasslessBody::ReadFromMessage(message);
 
-  // Dispatching from |Body|.
-  std::unique_ptr<Body> const body =
-      Body::ReadFromMessage(message);
-  // NOTE(egg): The &* is a quick way to explicitly forget |not_null|ness. We
-  // cannot strip the |not_null| from the previous line because MSVC does not
-  // support move conversion at the moment.
-  cast_massless_body = dynamic_cast<MasslessBody const*>(&*body);
+  // Dispatching from |Body|.  Need two steps to add const and remove
+  // |not_null|.
+  std::unique_ptr<Body const> const body =
+      not_null<std::unique_ptr<Body const>>(Body::ReadFromMessage(message));
+  cast_massless_body = dynamic_cast<MasslessBody const*>(body.get());
   EXPECT_THAT(cast_massless_body, NotNull());
 }
 

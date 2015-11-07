@@ -184,7 +184,9 @@ class not_null {
   // Returns |pointer_|, by const reference to avoid a copy if |pointer| is
   // |unique_ptr|.
   operator pointer const&() const&;
-  operator pointer &&() &&;
+
+  // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
+  operator pointer&&() &&;
 
   // NOTE(egg): When MSVC supports it, we'll want
   // operator pointer()&&

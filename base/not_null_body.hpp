@@ -69,7 +69,7 @@ not_null<Pointer>::operator pointer const&() const& {
 }
 
 template<typename Pointer>
-not_null<Pointer>::operator pointer &&() && {
+not_null<Pointer>::operator pointer&&() && {
   return std::move(pointer_);
 }
 
