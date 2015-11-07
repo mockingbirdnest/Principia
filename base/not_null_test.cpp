@@ -139,21 +139,21 @@ TEST_F(NotNullTest, CheckArguments) {
 #endif
 }
 
-TEST_F(NotNullTest, WTF) {
-  std::unique_ptr<int> x = std::make_unique<int>(1);
-  not_null<int *> y = new int(2);
-  bool const b = x.get() == y;
-  static_assert(!std::is_copy_assignable<std::unique_ptr<int>>::value, "sad");
-  static_assert(!std::is_copy_constructible<std::unique_ptr<int>>::value, "sad");
-  std::unique_ptr<int> t = make_not_null_unique<int>(3);
+TEST_F(NotNullTest, RValue) {
+  std::unique_ptr<int> owner_int = std::make_unique<int>(1);
+  not_null<int*> not_null_int = new int(2);
+  EXPECT_NE(owner_int.get(), not_null_int);
 
-  not_null<std::unique_ptr<int>> z = make_not_null_unique<int>(4);
-  std::vector<int*> v;
-  v.push_back(z.get());
+  not_null<std::unique_ptr<int>> not_null_owner_int =
+      make_not_null_unique<int>(4);
+  std::vector<int*> v1;
+  // v1.push_back would be ambiguous here.
+  v1.emplace_back(not_null_owner_int.get());
+  EXPECT_EQ(4, *v1[0]);
+  EXPECT_EQ(4, *not_null_owner_int);
 
-  not_null<int*> zz = new int(5);
-  std::vector<int*> vv;
-  vv.push_back(zz);
+  std::vector<int*> v2;
+  v2.push_back(not_null_int);
 }
 
 }  // namespace base

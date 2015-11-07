@@ -63,18 +63,13 @@ not_null<Pointer>& not_null<Pointer>::operator=(
   return *this;
 }
 
-//template<typename Pointer>
-//not_null<Pointer>::operator pointer const&() const& {
-//  return pointer_;
-//}
-//
 template<typename Pointer>
 not_null<Pointer>::operator pointer const&() const& {
   return pointer_;
 }
 
 template<typename Pointer>
-not_null<Pointer>::operator pointer() && {
+not_null<Pointer>::operator pointer &&() && {
   return std::move(pointer_);
 }
 
