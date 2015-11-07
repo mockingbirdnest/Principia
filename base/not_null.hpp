@@ -183,7 +183,9 @@ class not_null {
 
   // Returns |pointer_|, by const reference to avoid a copy if |pointer| is
   // |unique_ptr|.
-  operator pointer const&() const;
+  //operator pointer const&() const&;
+  operator pointer const&() const&;
+  operator pointer() &&;
 
   // NOTE(egg): When MSVC supports it, we'll want
   // operator pointer()&&
@@ -256,6 +258,19 @@ class not_null {
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
 };
+
+//// Comparison operators with a second argument which is not_null<Pointer>
+//template<typename Pointer>
+//bool operator==(std::nullptr_t const left, not_null<Pointer> const right);
+//template<typename Pointer>
+//bool operator!=(std::nullptr_t const left, not_null<Pointer> const right);
+//
+//template<typename Pointer>
+//bool operator==(typename not_null<Pointer>::pointer const left,
+//                not_null<Pointer> const right);
+//template<typename Pointer>
+//bool operator!=(typename not_null<Pointer>::pointer const left,
+//                not_null<Pointer> const right);
 
 // We want only one way of doing things, and we can't make
 // |not_null<Pointer> const| and |not_null<Pointer const>| etc. equivalent

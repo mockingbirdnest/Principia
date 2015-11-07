@@ -139,5 +139,22 @@ TEST_F(NotNullTest, CheckArguments) {
 #endif
 }
 
+TEST_F(NotNullTest, WTF) {
+  std::unique_ptr<int> x = std::make_unique<int>(1);
+  not_null<int *> y = new int(2);
+  bool const b = x.get() == y;
+  static_assert(!std::is_copy_assignable<std::unique_ptr<int>>::value, "sad");
+  static_assert(!std::is_copy_constructible<std::unique_ptr<int>>::value, "sad");
+  std::unique_ptr<int> t = make_not_null_unique<int>(3);
+
+  not_null<std::unique_ptr<int>> z = make_not_null_unique<int>(4);
+  std::vector<int*> v;
+  v.push_back(z.get());
+
+  not_null<int*> zz = new int(5);
+  std::vector<int*> vv;
+  vv.push_back(zz);
+}
+
 }  // namespace base
 }  // namespace principia

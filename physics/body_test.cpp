@@ -101,7 +101,7 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
   massless_body_ = *MasslessBody::ReadFromMessage(message);
 
   // Dispatching from |Body|.
-  not_null<std::unique_ptr<Body const>> const body =
+  std::unique_ptr<Body> const body =
       Body::ReadFromMessage(message);
   // NOTE(egg): The &* is a quick way to explicitly forget |not_null|ness. We
   // cannot strip the |not_null| from the previous line because MSVC does not
