@@ -44,9 +44,8 @@ struct UniqueArray {
   UniqueArray(std::unique_ptr<Element[]> data, Size const size);
 
   // Move it, move it!
-  // TODO(phl): The following should be = default when MSVC supports it.
-  UniqueArray(UniqueArray&& other);  // NOLINT(build/c++11)
-  UniqueArray& operator=(UniqueArray&& other);  // NOLINT(build/c++11)
+  UniqueArray(UniqueArray&& other) = default;  // NOLINT(build/c++11)
+  UniqueArray& operator=(UniqueArray&& other) = default;  // NOLINT(build/c++11)
 
   // No transfer of ownership.
   Array<Element> get() const;

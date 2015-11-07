@@ -145,9 +145,7 @@ class not_null {
 
   // Move constructor from an other |not_null<Pointer>|.  This constructor may
   // invalidate its argument.
-  // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
-  // the move constructor.
-  not_null(not_null&&);  // NOLINT(build/c++11)
+  not_null(not_null&&) = default;  // NOLINT(build/c++11)
   // Move contructor for implicitly convertible pointers. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
@@ -187,11 +185,6 @@ class not_null {
 
   // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
   operator pointer&&() &&;
-
-  // NOTE(egg): When MSVC supports it, we'll want
-  // operator pointer()&&
-  // which will support |unique_ptr| properly, the above is not good for much.
-  // The 2013 CTP seems to support it, so it's probably not far away.
 
   // Returns |*pointer_|.
   std::add_lvalue_reference_t<element_type> operator*() const;

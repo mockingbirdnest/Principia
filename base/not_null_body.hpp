@@ -27,10 +27,6 @@ not_null<Pointer>::not_null(pointer other) {
 }
 
 template<typename Pointer>
-not_null<Pointer>::not_null(not_null&& other)  // NOLINT(build/c++11)
-    : pointer_(std::move(other.pointer_)) {}
-
-template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
     : pointer_(std::move(other.pointer_)) {}
