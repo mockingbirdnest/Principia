@@ -35,7 +35,7 @@ class TestablePlugin : public Plugin {
  public:
   void KeepAllVessels();
 
-  static std::unique_ptr<TestablePlugin> ReadFromMessage(
+  static not_null<std::unique_ptr<TestablePlugin>> ReadFromMessage(
     serialization::Plugin const& message);
 };
 
@@ -46,11 +46,11 @@ void TestablePlugin::KeepAllVessels() {
   }
 }
 
-std::unique_ptr<TestablePlugin> TestablePlugin::ReadFromMessage(
+not_null<std::unique_ptr<TestablePlugin>> TestablePlugin::ReadFromMessage(
   serialization::Plugin const& message) {
-  auto plugin = Plugin::ReadFromMessage(message);
+  std::unique_ptr<Plugin> plugin = Plugin::ReadFromMessage(message);
   return std::unique_ptr<TestablePlugin>(
-    reinterpret_cast<TestablePlugin*>(plugin.release()));
+      reinterpret_cast<TestablePlugin*>(plugin.release()));
 }
 
 class PluginCompatibilityTest : public testing::Test {

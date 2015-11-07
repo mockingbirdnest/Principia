@@ -297,10 +297,7 @@ class Plugin {
   // Must be called after initialization.
   virtual void WriteToMessage(
       not_null<serialization::Plugin*> const message) const;
-  // NOTE(egg): This should return a |not_null|, but we can't do that until
-  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
-  // that requires a VS 2015 feature (rvalue references for |*this|).
-  static std::unique_ptr<Plugin> ReadFromMessage(
+  static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
       serialization::Plugin const& message);
 
  private:

@@ -117,10 +117,10 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-std::unique_ptr<DiscreteTrajectory<Frame>>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message) {
-  auto trajectory = std::make_unique<DiscreteTrajectory>();
+  auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   trajectory->FillSubTreeFromMessage(message);
   return trajectory;
 }
