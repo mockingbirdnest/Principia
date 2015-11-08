@@ -99,8 +99,8 @@ class Forkable {
   Iterator Find(Instant const& time) const;
   Iterator LowerBound(Instant const& time) const;
 
-  // Returns an iterator denoting the fork point of this object, or |End()| if
-  // this object is a root.
+  // Returns an iterator denoting the fork point of this object.  Fails if this
+  // object is a root.
   Iterator Fork() const;
 
   // Returns the number of points in this object.  Complexity is O(|length| +
