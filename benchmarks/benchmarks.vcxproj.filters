@@ -32,6 +32,9 @@
     <ClCompile Include="dynamic_frame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
