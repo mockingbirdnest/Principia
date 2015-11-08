@@ -1,5 +1,5 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=HarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -19,9 +20,6 @@
 #include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/integration.hpp"
-
-// Must come last to avoid conflicts when defining the CHECK macros.
-#include "benchmark/benchmark.h"
 
 namespace principia {
 
@@ -105,8 +103,6 @@ void SolveHarmonicOscillatorAndComputeError(
   integrator.Solve(problem, step);
 
   state->PauseTiming();
-  int const steps = static_cast<int>(std::floor((t_final - t_initial) / step));
-  //CHECK_EQ(steps, solution.size());
   *q_error = Length();
   *v_error = Speed();
   for (std::size_t i = 0; i < solution.size(); ++i) {
