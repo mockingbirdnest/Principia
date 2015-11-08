@@ -168,7 +168,9 @@ void SolveHarmonicOscillatorAndComputeError(
 #else
   parameters.tmax = 1000.0 * SIUnit<Time>();
 #endif
-  parameters.Δt = 1.0E-4 * SIUnit<Time>();
+  // NOTE(phl): This used to be 1.0E-4, but this causes us to run out of memory
+  // in the new benchmarks.  Reducing to 3.0E-4 to permit comparisons.
+  parameters.Δt = 3.0E-4 * SIUnit<Time>();
   parameters.sampling_period = 1;
   integrator.SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
