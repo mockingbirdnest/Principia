@@ -181,7 +181,16 @@ class not_null {
 
   // Returns |pointer_|, by const reference to avoid a copy if |pointer| is
   // |unique_ptr|.
-  operator pointer const&() const&;
+  // If this were to return by |const&|, ambiguities would arise where an rvalue
+  // of type |not_null<pointer>| is given as an argument to a function that has
+  // overloads for both |pointer const&| and |pointer&&|.
+  // Note that the preference for |T&&| over |T const&| for overload resolution
+  // is not relevant here since both go through a user-defined conversion,
+  // see 13.3.3.2.
+  // GCC nevertheless incorrectly prefers |T&&| in that case, while clang and
+  // MSVC recognize the ambiguity.
+  // The |RValue| test gives two examples of this.
+  operator pointer const&&() const&;
 
   // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
   operator pointer&&() &&;

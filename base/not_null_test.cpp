@@ -148,7 +148,11 @@ TEST_F(NotNullTest, RValue) {
   not_null<std::unique_ptr<int>> not_null_owner_int =
       make_not_null_unique<int>(4);
   std::vector<int*> v1;
-  // v1.push_back would be ambiguous here.
+  // |v1.push_back| would be ambiguous here if |not_null<pointer>| had an
+  // |operator pointer const&() const&| instead of an
+  // |operator pointer const&&() const&|.
+  v1.push_back(not_null_owner_int.get());
+  // |emplace_back| is fine no matter what.
   v1.emplace_back(not_null_owner_int.get());
   EXPECT_EQ(4, *v1[0]);
   EXPECT_EQ(4, *not_null_owner_int);
@@ -157,6 +161,15 @@ TEST_F(NotNullTest, RValue) {
   v2.push_back(not_null_int);
   EXPECT_EQ(2, *v2[0]);
   EXPECT_EQ(2, *not_null_int);
+
+  // |std::unique_ptr<int>::operator=| would be ambiguous here between the move
+  // and copy assignments if |not_null<pointer>| had an
+  // |operator pointer const&() const&| instead of an
+  // |operator pointer const&&() const&|.
+  // Note that one of the overloads (the implicit copy assignment operator) is
+  // deleted, but this does not matter for overload resolution; however MSVC
+  // compiles this even when it is ambiguous, while clang correctly fails.
+  owner_int = make_not_null_unique<int>(1729);
 
   std::unique_ptr<int const> owner_const_int =
       not_null<std::unique_ptr<int const>>(make_not_null_unique<int>(5));
