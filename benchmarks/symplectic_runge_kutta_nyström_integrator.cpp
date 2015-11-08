@@ -4,12 +4,15 @@
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
 #include <algorithm>
+#include <type_traits>
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/integration.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
@@ -17,6 +20,8 @@
 
 namespace principia {
 
+using geometry::Frame;
+using integrators::CompositionMethod;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using quantities::Abs;
 using quantities::AngularFrequency;
@@ -34,12 +39,13 @@ void SolveHarmonicOscillatorAndComputeError(
     not_null<Length*> const q_error,
     not_null<Speed*> const v_error,
     SymplecticRungeKuttaNyströmIntegrator<
-        Position, order_, time_reversible_, evaluations_> const& integrator) {
+        Position, order_, time_reversible_, evaluations_, composition_> const&
+            integrator) {
   typename SymplecticRungeKuttaNyströmIntegrator<
-      Position, order_, time_reversible_, evaluations_>::
+      Position, order_, time_reversible_, evaluations_, composition_>::
           Solution<Length, Speed> solution;
   typename SymplecticRungeKuttaNyströmIntegrator<
-      Position, order_, time_reversible_, evaluations_>::
+      Position, order_, time_reversible_, evaluations_, composition_>::
           Parameters<Length, Speed> parameters;
 
   parameters.initial.positions.emplace_back(SIUnit<Length>());
@@ -89,12 +95,13 @@ void BM_SolveHarmonicOscillator(
   state.SetLabel(ss.str());
 }
 
-BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator,
-                    SymplecticRungeKuttaNyströmIntegrator<Position>,
-                    &integrators::McLachlanAtela1992Order4Optimal<Position>);
-BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator,
-                    SymplecticRungeKuttaNyströmIntegrator,
-                    &integrators::McLachlanAtela1992Order5Optimal);
+using World = Frame<serialization::Frame::TestTag,
+                    serialization::Frame::TEST, true>;
+
+BENCHMARK_TEMPLATE2(
+    BM_SolveHarmonicOscillator,
+    decltype(integrators::McLachlanAtela1992Order4Optimal<Position<World>>()),
+    &integrators::McLachlanAtela1992Order4Optimal<Position<World>>);
 
 }  // namespace benchmarks
 }  // namespace principia
