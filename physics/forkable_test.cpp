@@ -155,6 +155,9 @@ TEST_F(ForkableDeathTest, ForkError) {
     trajectory_.push_back(t3_);
     trajectory_.NewFork(t2_);
   }, "nonexistent time");
+  EXPECT_DEATH({
+    trajectory_.Fork();
+  }, "!is_root");
 }
 
 TEST_F(ForkableTest, ForkSuccess) {
@@ -217,7 +220,7 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
     trajectory_.push_back(t1_);
     FakeTrajectory* root = &trajectory_;
     trajectory_.DeleteFork(&root);
-  }, "fork.*End");
+  }, "!is_root");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     FakeTrajectory* fork1 = trajectory_.NewFork(t1_);
@@ -429,7 +432,6 @@ TEST_F(ForkableTest, Root) {
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(&trajectory_, trajectory_.root());
   EXPECT_EQ(&trajectory_, fork->root());
-  EXPECT_TRUE(trajectory_.Fork() == trajectory_.End());
   EXPECT_EQ(t2_, *fork->Fork().current());
 }
 

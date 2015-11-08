@@ -9,7 +9,6 @@ template<typename Tr4jectory>
 void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   CHECK_NOTNULL(*trajectory);
   auto const fork_it = (*trajectory)->Fork();
-  CHECK(fork_it != (*trajectory)->End());
   // Find the position of |*trajectory| among our children and remove it.
   auto const range = children_.equal_range(
                          ForkableTraits<Tr4jectory>::time(fork_it.current_));
@@ -221,18 +220,15 @@ Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
 template<typename Tr4jectory>
 typename Forkable<Tr4jectory>::Iterator
 Forkable<Tr4jectory>::Fork() const {
-  if (parent_ == nullptr) {
-    return End();
-  } else {
-    not_null<Tr4jectory const*> ancestor = that();
-    TimelineConstIterator position_in_ancestor_timeline;
-    do {
-      position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
-      ancestor = ancestor->parent_;
-    } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
-             ancestor->parent_ != nullptr);
-    return Wrap(ancestor, position_in_ancestor_timeline);
-  }
+  CHECK(!is_root());
+  not_null<Tr4jectory const*> ancestor = that();
+  TimelineConstIterator position_in_ancestor_timeline;
+  do {
+    position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
+    ancestor = ancestor->parent_;
+  } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
+            ancestor->parent_ != nullptr);
+  return Wrap(ancestor, position_in_ancestor_timeline);
 }
 
 template<typename Tr4jectory>
@@ -308,10 +304,9 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
 
 template<typename Tr4jectory>
 not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
-  auto const fork_it = Fork();
   CHECK(timeline_find(time) != timeline_end() ||
-        (fork_it != End() &&
-         time == ForkableTraits<Tr4jectory>::time(fork_it.current_)))
+        (!is_root() &&
+         time == ForkableTraits<Tr4jectory>::time(Fork().current_)))
       << "NewFork at nonexistent time " << time;
 
   // May be at |timeline_end()| if |time| is the fork time of this object.
