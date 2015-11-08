@@ -154,8 +154,7 @@ void Plugin::EndInitialization() {
       kFittingTolerance);
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
-    // TODO(egg): unorthodox address of reference.
-    celestial.set_trajectory(ephemeris_->trajectory(&celestial.body()));
+    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
   }
 }
 
@@ -412,7 +411,7 @@ Plugin::NewBodyCentredNonRotatingRenderingFrame(
   return make_not_null_unique<
       BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>>(
           ephemeris_.get(),
-          &reference_body.body());
+          reference_body.body());
 }
 
 not_null<std::unique_ptr<RenderingFrame>>
@@ -426,8 +425,8 @@ Plugin::NewBarycentricRotatingRenderingFrame(
   return make_not_null_unique<
       BarycentricRotatingDynamicFrame<Barycentric, Rendering>>(
           ephemeris_.get(),
-          &primary.body(),
-          &secondary.body());
+          primary.body(),
+          secondary.body());
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(

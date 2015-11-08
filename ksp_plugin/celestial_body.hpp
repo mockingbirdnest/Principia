@@ -50,8 +50,8 @@ inline Velocity<Barycentric> Celestial::current_velocity(
   return trajectory().EvaluateVelocity(current_time, current_time_hint());
 }
 
-inline MassiveBody const& Celestial::body() const {
-  return *body_;
+inline not_null<MassiveBody const*> Celestial::body() const {
+  return body_;
 }
 
 inline bool Celestial::has_parent() const {
