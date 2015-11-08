@@ -169,6 +169,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dynamic_frame.cpp" />
+    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />

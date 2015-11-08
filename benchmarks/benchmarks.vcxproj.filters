@@ -35,6 +35,9 @@
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
