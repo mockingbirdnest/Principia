@@ -241,7 +241,8 @@ BENCHMARK_TEMPLATE2(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>()),
+    decltype(
+        integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>()),
     &integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>);
 
 }  // namespace benchmarks
