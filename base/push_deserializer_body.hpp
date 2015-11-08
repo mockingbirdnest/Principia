@@ -97,7 +97,7 @@ inline void PushDeserializer::Start(
     not_null<std::unique_ptr<google::protobuf::Message>> message,
     std::function<void(google::protobuf::Message const&)> done) {
   CHECK(thread_ == nullptr);
-  message_.reset(message.release());  // Should std::move but VS is not ready.
+  message_ = std::move(message);
   thread_ = std::make_unique<std::thread>([this, done](){
     CHECK(message_->ParseFromZeroCopyStream(&stream_));
 

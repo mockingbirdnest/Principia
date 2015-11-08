@@ -147,21 +147,6 @@ inline void noreturn() { std::exit(0); }
 #  define GUARDED_BY(x)
 #endif
 
-// A workaround for a MSVC bug wherein a |typename| is required by the standard
-// and by clang but forbidden by MSVC.
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_VER < 1900)
-#  define TYPENAME
-#else
-#  define TYPENAME typename
-#endif
-
-// Same as above, with |template|.
-#if PRINCIPIA_COMPILER_MSVC
-#  define TEMPLATE
-#else
-#  define TEMPLATE template
-#endif
-
 #define VLOG_AND_RETURN(verboselevel, expression)                  \
   do {                                                             \
     auto const& value__ = (expression);                            \

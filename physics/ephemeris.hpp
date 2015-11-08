@@ -125,8 +125,7 @@ class Ephemeris {
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
-  // Should be |not_null| once we have move conversion.
-  static std::unique_ptr<Ephemeris> ReadFromMessage(
+  static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message);
 
   // Compatibility method for construction an ephemeris from pre-Bourbaki data.

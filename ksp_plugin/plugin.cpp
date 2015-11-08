@@ -572,7 +572,7 @@ void Plugin::WriteToMessage(
   LOG(INFO) << NAMED(message->ByteSize());
 }
 
-std::unique_ptr<Plugin> Plugin::ReadFromMessage(
+not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
   LOG(INFO) << __FUNCTION__;
   bool const is_pre_bourbaki = message.pre_bourbaki_celestial_size() > 0;

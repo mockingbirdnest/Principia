@@ -556,10 +556,6 @@ inline SPRKIntegrator const& McLachlan1995SS17() {
   return integrator;
 }
 
-inline SPRKIntegrator::SPRKIntegrator(std::vector<double> const& a,
-                                      std::vector<double> const& b)
-    : SRKNIntegrator(a, b) {}
-
 template<typename Position, typename Momentum>
 void SPRKIntegrator::SolveIncrement(
     SPRKRightHandSideComputation<Position, Momentum> compute_force,

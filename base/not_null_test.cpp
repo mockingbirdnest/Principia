@@ -3,6 +3,7 @@
 #include <memory>
 #include <utility>
 #include <string>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -137,6 +138,29 @@ TEST_F(NotNullTest, CheckArguments) {
   Sub(check_not_null(accumulator.get()), check_not_null(twenty_one.get()));
   EXPECT_THAT(*accumulator, Eq(21));
 #endif
+}
+
+TEST_F(NotNullTest, RValue) {
+  std::unique_ptr<int> owner_int = std::make_unique<int>(1);
+  not_null<int*> not_null_int = new int(2);
+  EXPECT_NE(owner_int.get(), not_null_int);
+
+  not_null<std::unique_ptr<int>> not_null_owner_int =
+      make_not_null_unique<int>(4);
+  std::vector<int*> v1;
+  // v1.push_back would be ambiguous here.
+  v1.emplace_back(not_null_owner_int.get());
+  EXPECT_EQ(4, *v1[0]);
+  EXPECT_EQ(4, *not_null_owner_int);
+
+  std::vector<int*> v2;
+  v2.push_back(not_null_int);
+  EXPECT_EQ(2, *v2[0]);
+  EXPECT_EQ(2, *not_null_int);
+
+  std::unique_ptr<int const> owner_const_int =
+      not_null<std::unique_ptr<int const>>(make_not_null_unique<int>(5));
+  EXPECT_EQ(5, *owner_const_int);
 }
 
 }  // namespace base

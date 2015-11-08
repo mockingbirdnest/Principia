@@ -103,10 +103,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // This trajectory must be a root.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  // NOTE(egg): This should return a |not_null|, but we can't do that until
-  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
-  // that requires a VS 2015 feature (rvalue references for |*this|).
-  static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
+  static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::Trajectory const& message);
 
  protected:

@@ -145,15 +145,13 @@ class not_null {
 
   // Move constructor from an other |not_null<Pointer>|.  This constructor may
   // invalidate its argument.
-  // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
-  // the move constructor.
-  not_null(not_null&&);  // NOLINT(build/c++11)
+  not_null(not_null&&) = default;
   // Move contructor for implicitly convertible pointers. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
-  not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
+  not_null(not_null<OtherPointer>&& other);
   // Explicit move constructor for static_cast'ing. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
@@ -161,7 +159,7 @@ class not_null {
                !std::is_convertible<OtherPointer, pointer>::value>::type,
            typename = decltype(static_cast<pointer>(
                                    std::declval<OtherPointer>()))>
-  explicit not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
+  explicit not_null(not_null<OtherPointer>&& other);
 
   ~not_null() = default;
 
@@ -174,21 +172,19 @@ class not_null {
 
   // Move assignment operators.
   // Implemented as a swap, so the argument remains valid.
-  not_null& operator=(not_null&& other);  // NOLINT(build/c++11)
+  not_null& operator=(not_null&& other);
   // This operator may invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
-  not_null& operator=(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
+  not_null& operator=(not_null<OtherPointer>&& other);
 
   // Returns |pointer_|, by const reference to avoid a copy if |pointer| is
   // |unique_ptr|.
-  operator pointer const&() const;
+  operator pointer const&() const&;
 
-  // NOTE(egg): When MSVC supports it, we'll want
-  // operator pointer()&&
-  // which will support |unique_ptr| properly, the above is not good for much.
-  // The 2013 CTP seems to support it, so it's probably not far away.
+  // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
+  operator pointer&&() &&;
 
   // Returns |*pointer_|.
   std::add_lvalue_reference_t<element_type> operator*() const;
@@ -253,8 +249,7 @@ class not_null {
   template<typename P>
   friend _checked_not_null<P> check_not_null(P pointer);
   template<typename T, typename... Args>
-  friend not_null<std::unique_ptr<T>> make_not_null_unique(
-      Args&&... args);  // NOLINT(build/c++11)
+  friend not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 };
 
 // We want only one way of doing things, and we can't make
@@ -269,7 +264,7 @@ template<typename Pointer>
 class not_null<Pointer&>;
 // Use |not_null<Pointer>&&| instead.
 template<typename Pointer>
-class not_null<Pointer&&>;  // NOLINT(build/c++11)
+class not_null<Pointer&&>;
 
 // Factory taking advantage of template argument deduction.  Returns a
 // |not_null<Pointer>| to |*pointer|.  |CHECK|s that |pointer| is not null.
@@ -289,8 +284,7 @@ not_null<Pointer> check_not_null(not_null<Pointer> pointer);
 // |check_not_null(make_unique<T>(args))|, but does not perform a |CHECK|, since
 // the result of |make_unique| is not null.
 template<typename T, typename... Args>
-not_null<std::unique_ptr<T>> make_not_null_unique(
-    Args&&... args);  // NOLINT(build/c++11)
+not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 
 // For logging.
 template<typename Pointer>
