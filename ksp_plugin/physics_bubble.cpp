@@ -325,8 +325,7 @@ not_null<std::unique_ptr<PhysicsBubble>> PhysicsBubble::ReadFromMessage(
 
 PhysicsBubble::PreliminaryState::PreliminaryState() {}
 
-PhysicsBubble::FullState::FullState(
-    PreliminaryState&& preliminary_state)  // NOLINT(build/c++11)
+PhysicsBubble::FullState::FullState(PreliminaryState preliminary_state)
     : PreliminaryState() {
   parts = std::move(preliminary_state.parts);
   vessels = std::move(preliminary_state.vessels);

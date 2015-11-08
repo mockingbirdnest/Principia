@@ -107,8 +107,7 @@ class PhysicsBubble {
   };
 
   struct FullState : public PreliminaryState {
-    explicit FullState(
-        PreliminaryState&& preliminary_state);  // NOLINT(build/c++11)
+    explicit FullState(PreliminaryState preliminary_state);
 
     std::experimental::optional<DegreesOfFreedom<World>> centre_of_mass;
     Ephemeris<Barycentric>::IntrinsicAcceleration

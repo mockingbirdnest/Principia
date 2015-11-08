@@ -45,8 +45,7 @@ not_null<Pointer>& not_null<Pointer>::operator=(
 }
 
 template<typename Pointer>
-not_null<Pointer>& not_null<Pointer>::operator=(
-    not_null&& other) {  // NOLINT(build/c++11)
+not_null<Pointer>& not_null<Pointer>::operator=(not_null&& other) {
   std::swap(pointer_, other.pointer_);
   return *this;
 }
@@ -54,7 +53,7 @@ not_null<Pointer>& not_null<Pointer>::operator=(
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>& not_null<Pointer>::operator=(
-    not_null<OtherPointer>&& other) {  // NOLINT(build/c++11)
+    not_null<OtherPointer>&& other) {
   pointer_ = std::move(other.pointer_);
   return *this;
 }

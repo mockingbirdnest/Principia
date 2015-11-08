@@ -32,8 +32,7 @@ template<typename Vector>
 
 
 template<typename Vector>
-ЧебышёвSeries<Vector>::ЧебышёвSeries(
-    ЧебышёвSeries&& other)  // NOLINT(build/c++11)
+ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
     : coefficients_(std::move(other.coefficients_)),
       degree_(std::move(other.degree_)),
       t_min_(std::move(other.t_min_)),
@@ -43,7 +42,7 @@ template<typename Vector>
 
 template<typename Vector>
 ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(
-    ЧебышёвSeries&& other) {  // NOLINT(build/c++11)
+    ЧебышёвSeries&& other) {
   coefficients_ = std::move(other.coefficients_);
   degree_ = other.degree_;
   t_min_ = std::move(other.t_min_);
