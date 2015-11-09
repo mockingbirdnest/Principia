@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -158,7 +159,20 @@ TEST_F(NotNullTest, RValue) {
   EXPECT_EQ(4, *not_null_owner_int);
 
   std::vector<int*> v2;
+  // NOTE(egg): The following fails using clang, I'm not sure where the bug is.
+  // More generally, if functions |foo(int*&&)| and |foo(int* const&)| exist,
+  // |foo(non_rvalue_not_null)| fails to compile with clang ("no viable
+  // conversion"), but without the |foo(int*&&)| overload it compiles.
+  // This is easily circumvented using a temporary (whereas the ambiguity that
+  // would result from having an |operator pointer const&() const&| would
+  // entirely prevent conversion of |not_null<unique_ptr<T>>| to
+  // |unique_ptr<T>|), so we ignore it.
+#if PRINCIPIA_COMPILER_MSVC
   v2.push_back(not_null_int);
+#else
+  int* const temporary = not_null_int;
+  v2.push_back(temporary);
+#endif
   EXPECT_EQ(2, *v2[0]);
   EXPECT_EQ(2, *not_null_int);
 
