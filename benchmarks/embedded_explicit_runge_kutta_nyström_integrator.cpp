@@ -234,6 +234,8 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
   state.SetLabel(ss.str());
 }
 
+// Keep each argument on a single line below, lest it breaks benchmark parsing.
+
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
     decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Length>()),
@@ -241,8 +243,7 @@ BENCHMARK_TEMPLATE2(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(
-        integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>()),
+    decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>()),  // NOLINT
     &integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>);
 
 }  // namespace benchmarks
