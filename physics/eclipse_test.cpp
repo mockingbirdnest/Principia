@@ -59,8 +59,10 @@ namespace physics {
     auto r_earth = 1738.0 * Kilo(Metre);
     // check body angles at target times
     // Lunar eclipse
-    auto alpha = ArcTan(r_sun, (q_moon - q_sun).Norm());
+    auto alpha = ArcSin(r_sun/(q_moon - q_sun).Norm());
     // U14, U23, etc using the angle
+    ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
+    // ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
     // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
