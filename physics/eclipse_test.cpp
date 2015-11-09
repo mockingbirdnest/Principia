@@ -50,8 +50,7 @@ namespace physics {
     auto some_instant = JulianDate(2433374.5);
     auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
     auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
-    ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
-    ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
+    auto q_earth = ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
 
     // Massive_body eventually needs radius information. Or non-hardcoded data pulled from https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
     auto r_sun = 696000.0 * Kilo(Metre);
@@ -60,9 +59,13 @@ namespace physics {
     // check body angles at target times
     // Lunar eclipse
     auto alpha = ArcSin(r_sun/(q_moon - q_sun).Norm());
-    // U14, U23, etc using the angle
+    // should check with ArcSin(r_earth/(q_moon - q_earth).Norm());
+    // U14 have the same angle, also expressible 2 different ways:
     ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
-    // ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
+    ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
+    // U23
+    ArcSin((r_sun - r_moon)/(q_moon - q_sun).Norm());
+    ArcSin((r_earth - r_moon)/(q_moon - q_earth).Norm());
     // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
