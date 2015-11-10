@@ -26,6 +26,10 @@ struct ForkableTraits<FakeTrajectory> {
 
 class FakeTrajectory : public Forkable<FakeTrajectory> {
  public:
+  class Iterator
+      : public Forkable<FakeTrajectory>::
+               template Iterator<typename FakeTrajectory::Iterator> {};
+
   FakeTrajectory() = default;
 
   void push_back(Instant const& time);

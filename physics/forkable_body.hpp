@@ -64,7 +64,7 @@ bool Forkable<Tr4jectory>::Iterator<It3rator>::operator!=(
 
 template<typename Tr4jectory>
 template<typename It3rator>
-typename Forkable<Tr4jectory>::Iterator<It3rator>&
+typename Forkable<Tr4jectory>::template Iterator<It3rator>&
 Forkable<Tr4jectory>::Iterator<It3rator>::operator++() {
   CHECK(!ancestry_.empty());
   CHECK(current_ != ancestry_.front()->timeline_end());
@@ -103,7 +103,7 @@ Forkable<Tr4jectory>::Iterator<It3rator>::operator++() {
 
 template<typename Tr4jectory>
 template<typename It3rator>
-typename Forkable<Tr4jectory>::Iterator<It3rator>&
+typename Forkable<Tr4jectory>::template Iterator<It3rator>&
 Forkable<Tr4jectory>::Iterator<It3rator>::operator--() {
   CHECK(!ancestry_.empty());
 

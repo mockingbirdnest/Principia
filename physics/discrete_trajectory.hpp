@@ -45,7 +45,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // An iterator over the points of a trajectory.
   class Iterator
       : public Forkable<DiscreteTrajectory<Frame>>::
-               Iterator<typename DiscreteTrajectory<Frame>::Iterator> {
+               template Iterator<typename DiscreteTrajectory<Frame>::Iterator> {
    public:
     Instant const& time() const;
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
