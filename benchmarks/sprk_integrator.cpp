@@ -1,5 +1,5 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=HarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=5 --benchmark_filter=HarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/01-14:30:36
 // Benchmark                                                                                                           Time(ns)    CPU(ns) Iterations                                                                                              // NOLINT(whitespace/line_length)
