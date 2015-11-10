@@ -55,6 +55,7 @@ class Forkable {
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.
+  template<typename It3rator>
   class Iterator {
    public:
     bool operator==(Iterator const& right) const;
@@ -93,15 +94,15 @@ class Forkable {
     friend class Forkable;
   };
 
-  Iterator Begin() const;
-  Iterator End() const;
+  typename Tr4jectory::Iterator Begin() const;
+  typename Tr4jectory::Iterator End() const;
 
-  Iterator Find(Instant const& time) const;
-  Iterator LowerBound(Instant const& time) const;
+  typename Tr4jectory::Iterator Find(Instant const& time) const;
+  typename Tr4jectory::Iterator LowerBound(Instant const& time) const;
 
   // Returns an iterator denoting the fork point of this object.  Fails if this
   // object is a root.
-  Iterator Fork() const;
+  typename Tr4jectory::Iterator Fork() const;
 
   // Returns the number of points in this object.  Complexity is O(|length| +
   // |depth|).
@@ -114,7 +115,7 @@ class Forkable {
   // end if it is an iterator in this object (and |ancestor| is this object).
   // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
   // separate method.
-  Iterator Wrap(
+  typename Tr4jectory::Iterator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
 

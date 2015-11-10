@@ -43,13 +43,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
 
  public:
   // An iterator over the points of a trajectory.
-  class Iterator : public Forkable<DiscreteTrajectory<Frame>>::Iterator {
+  class Iterator
+      : public Forkable<DiscreteTrajectory<Frame>>::
+               Iterator<typename DiscreteTrajectory<Frame>::Iterator> {
    public:
-    // Not explicit because we want the factory functions in |Forkable| to be
-    // easily usable for |Iterator|.
-    Iterator(
-        typename Forkable<DiscreteTrajectory<Frame>>::Iterator it);  // NOLINT
-
     Instant const& time() const;
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 
