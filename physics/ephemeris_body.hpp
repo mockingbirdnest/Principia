@@ -10,6 +10,7 @@
 
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -21,6 +22,7 @@
 namespace principia {
 
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
