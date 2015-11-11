@@ -40,7 +40,9 @@ namespace internal {
 // TimelineConstIterator must be an STL-like iterator in the timeline of
 // Tr4jectory.  |time()| must return the corresponding time.
 //
-// TODO(phl): This might be made to work (better?) with another CRTP class.
+// NOTE(phl): This was originally written as a trait under the assumption that
+// we would want to expose STL iterators to clients.  This doesn't seem like a
+// good idea anymore, so maybe this should turn into another CRTP class.
 template<typename Tr4jectory>
 struct ForkableTraits;
 
@@ -136,17 +138,6 @@ class Forkable {
   // |depth|).
   int Size() const;
 
-  // Constructs an Iterator by wrapping the timeline iterator
-  // |position_in_ancestor_timeline| which must be an iterator in the timeline
-  // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
-  // (it may be this object).  |position_in_ancestor_timeline| may only be at
-  // end if it is an iterator in this object (and |ancestor| is this object).
-  // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
-  // separate method.  PRIVATE!
-  It3rator Wrap(
-      not_null<const Tr4jectory*> const ancestor,
-      TimelineConstIterator const position_in_ancestor_timeline) const;
-
   void WritePointerToMessage(
       not_null<serialization::Trajectory::Pointer*> const message) const;
 
@@ -197,6 +188,17 @@ class Forkable {
   void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
  private:
+  // Constructs an Iterator by wrapping the timeline iterator
+  // |position_in_ancestor_timeline| which must be an iterator in the timeline
+  // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
+  // (it may be this object).  |position_in_ancestor_timeline| may only be at
+  // end if it is an iterator in this object (and |ancestor| is this object).
+  // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
+  // separate method.  PRIVATE!
+  It3rator Wrap(
+      not_null<const Tr4jectory*> const ancestor,
+      TimelineConstIterator const position_in_ancestor_timeline) const;
+
   // There may be several forks starting from the same time, hence the multimap.
   // A level of indirection is needed to avoid referencing an incomplete type in
   // CRTP.

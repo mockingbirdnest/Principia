@@ -242,31 +242,6 @@ int Forkable<Tr4jectory, It3rator>::Size() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
-It3rator Forkable<Tr4jectory, It3rator>::Wrap(
-    not_null<const Tr4jectory*> const ancestor,
-    TimelineConstIterator const position_in_ancestor_timeline) const {
-  Iterator iterator;
-
-  // Go up the ancestry chain until we find |ancestor| and set |current_| to
-  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.
-  not_null<Tr4jectory const*> ancest0r = that();
-  do {
-    iterator.ancestry_.push_front(ancest0r);
-    if (ancestor == ancest0r) {
-      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
-      iterator.CheckNormalizedIfEnd();
-      return iterator;
-    }
-    iterator.current_ = ancest0r->timeline_end();
-    ancest0r = ancest0r->parent_;
-  } while (ancest0r != nullptr);
-
-  LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
-  base::noreturn();
-}
-
-template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WritePointerToMessage(
     not_null<serialization::Trajectory::Pointer*> const message) const {
   not_null<Tr4jectory const*> ancestor = that();
@@ -373,6 +348,31 @@ void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
       NewFork(fork_time)->FillSubTreeFromMessage(child);
     }
   }
+}
+
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::Wrap(
+    not_null<const Tr4jectory*> const ancestor,
+    TimelineConstIterator const position_in_ancestor_timeline) const {
+  Iterator iterator;
+
+  // Go up the ancestry chain until we find |ancestor| and set |current_| to
+  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.
+  not_null<Tr4jectory const*> ancest0r = that();
+  do {
+    iterator.ancestry_.push_front(ancest0r);
+    if (ancestor == ancest0r) {
+      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
+      iterator.CheckNormalizedIfEnd();
+      return iterator;
+    }
+    iterator.current_ = ancest0r->timeline_end();
+    ancest0r = ancest0r->parent_;
+  } while (ancest0r != nullptr);
+
+  LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
+  base::noreturn();
 }
 
 }  // namespace physics
