@@ -28,6 +28,9 @@ struct ForkableTraits<FakeTrajectory> {
 
 class FakeTrajectoryIterator
     : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {
+ public:
+  using ForkableIterator<FakeTrajectory, FakeTrajectoryIterator>::current;
+
  protected:
   not_null<FakeTrajectoryIterator*> that() override;
   not_null<FakeTrajectoryIterator const*> that() const override;
@@ -44,12 +47,9 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
   void push_back(Instant const& time);
 
-  using Forkable<FakeTrajectory,
-                 internal::FakeTrajectoryIterator>::NewFork;
-  using Forkable<FakeTrajectory,
-                 internal::FakeTrajectoryIterator>::DeleteAllForksAfter;
-  using Forkable<FakeTrajectory,
-                 internal::FakeTrajectoryIterator>::DeleteAllForksBefore;
+  using Forkable<FakeTrajectory, Iterator>::NewFork;
+  using Forkable<FakeTrajectory, Iterator>::DeleteAllForksAfter;
+  using Forkable<FakeTrajectory, Iterator>::DeleteAllForksBefore;
 
  protected:
   not_null<FakeTrajectory*> that() override;
@@ -74,17 +74,17 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
 namespace internal {
 
+Instant const& ForkableTraits<FakeTrajectory>::time(
+  TimelineConstIterator const it) {
+  return *it;
+}
+
 not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
   return this;
 }
 
 not_null<FakeTrajectoryIterator const*> FakeTrajectoryIterator::that() const {
   return this;
-}
-
-Instant const& ForkableTraits<FakeTrajectory>::time(
-  TimelineConstIterator const it) {
-  return *it;
 }
 
 }  // namespace internal

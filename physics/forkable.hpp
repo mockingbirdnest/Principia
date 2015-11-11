@@ -18,7 +18,7 @@ namespace physics {
 // Forkable and ForkableIterator both use CRTP to achieve static polymorphism on
 // the parameters and return type of the member functions: we want them to
 // return Tr4jectory and It3rator, not Forkable and ForkableIterator, so that
-// the clients don't have to down_cast or construct object of subclasses.
+// the clients don't have to down_cast or construct objects of subclasses.
 // ForkableIterator is seen by the clients as a class nested within Forkable.
 // However, this cannot be implemented that way because the two classes are
 // mutually dependent.  Instead we have two distinct classes: ForkableIterator
@@ -52,6 +52,7 @@ template<typename Tr4jectory, typename It3rator>
 class ForkableIterator {
   using TimelineConstIterator =
       typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
+
  public:
   ForkableIterator() = default;
 
@@ -61,14 +62,14 @@ class ForkableIterator {
   It3rator& operator++();
   It3rator& operator--();
 
-  // Returns the point in the timeline that is denoted by this iterator.
-  TimelineConstIterator current() const;
-
  protected:
   // The API that must be implemented by subclasses.
-  // Must return |this| of the proper type
+  // Must return |this| of the proper type.
   virtual not_null<It3rator*> that() = 0;
   virtual not_null<It3rator const*> that() const = 0;
+
+  // Returns the point in the timeline that is denoted by this iterator.
+  TimelineConstIterator current() const;
 
  private:
   // Returns the (most forked) trajectory to which this iterator applies.
@@ -122,8 +123,6 @@ class Forkable {
   not_null<Tr4jectory const*> root() const;
   not_null<Tr4jectory*> root();
 
-  using Iterator = It3rator;
-
   It3rator Begin() const;
   It3rator End() const;
 
@@ -149,7 +148,7 @@ class Forkable {
  protected:
   // The API that must be implemented by subclasses.
 
-  // Must return |this| of the proper type
+  // Must return |this| of the proper type.
   virtual not_null<Tr4jectory*> that() = 0;
   virtual not_null<Tr4jectory const*> that() const = 0;
 

@@ -44,6 +44,7 @@ class DiscreteTrajectoryIterator
  public:
   Instant const& time() const;
   DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
  protected:
   not_null<DiscreteTrajectoryIterator*> that() override;
   not_null<DiscreteTrajectoryIterator const*> that() const override;

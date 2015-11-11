@@ -394,7 +394,7 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->Find(t);
-  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
   return ComputeGravitationalAcceleration(degrees_of_freedom.position(), t);
 }
 
