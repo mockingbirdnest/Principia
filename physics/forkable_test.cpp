@@ -75,7 +75,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 namespace internal {
 
 Instant const& ForkableTraits<FakeTrajectory>::time(
-  TimelineConstIterator const it) {
+    TimelineConstIterator const it) {
   return *it;
 }
 
