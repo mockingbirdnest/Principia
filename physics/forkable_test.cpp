@@ -18,13 +18,13 @@ namespace physics {
 
 class FakeTrajectory;
 
+namespace internal {
+
 template<>
 struct ForkableTraits<FakeTrajectory> {
   using TimelineConstIterator = std::list<Instant>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };
-
-class FakeTrajectory;
 
 class FakeTrajectoryIterator
     : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {
@@ -33,17 +33,23 @@ class FakeTrajectoryIterator
   not_null<FakeTrajectoryIterator const*> that() const override;
 };
 
-class FakeTrajectory : public Forkable<FakeTrajectory, FakeTrajectoryIterator> {
+}  // namespace internal
+
+class FakeTrajectory : public Forkable<FakeTrajectory,
+                                       internal::FakeTrajectoryIterator> {
  public:
-  using Iterator = FakeTrajectoryIterator;
+  using Iterator = internal::FakeTrajectoryIterator;
 
   FakeTrajectory() = default;
 
   void push_back(Instant const& time);
 
-  using Forkable<FakeTrajectory, FakeTrajectoryIterator>::NewFork;
-  using Forkable<FakeTrajectory, FakeTrajectoryIterator>::DeleteAllForksAfter;
-  using Forkable<FakeTrajectory, FakeTrajectoryIterator>::DeleteAllForksBefore;
+  using Forkable<FakeTrajectory,
+                 internal::FakeTrajectoryIterator>::NewFork;
+  using Forkable<FakeTrajectory,
+                 internal::FakeTrajectoryIterator>::DeleteAllForksAfter;
+  using Forkable<FakeTrajectory,
+                 internal::FakeTrajectoryIterator>::DeleteAllForksBefore;
 
  protected:
   not_null<FakeTrajectory*> that() override;
@@ -61,10 +67,12 @@ class FakeTrajectory : public Forkable<FakeTrajectory, FakeTrajectoryIterator> {
   std::list<Instant> timeline_;
 
   template<typename, typename>
-  friend class ForkableIterator;
+  friend class internal::ForkableIterator;
   template<typename, typename>
   friend class Forkable;
 };
+
+namespace internal {
 
 not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
   return this;
@@ -78,6 +86,8 @@ Instant const& ForkableTraits<FakeTrajectory>::time(
   TimelineConstIterator const it) {
   return *it;
 }
+
+}  // namespace internal
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);

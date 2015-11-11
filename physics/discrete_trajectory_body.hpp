@@ -15,6 +15,7 @@ using base::make_not_null_unique;
 using geometry::Instant;
 
 namespace physics {
+namespace internal {
 
 template<typename Frame>
 Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
@@ -44,6 +45,8 @@ not_null<DiscreteTrajectoryIterator<Frame> const*>
 DiscreteTrajectoryIterator<Frame>::that() const {
   return this;
 }
+
+}  // namespace internal
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
@@ -191,8 +194,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
-  Forkable<DiscreteTrajectory, DiscreteTrajectoryIterator<Frame>>::
-      WriteSubTreeToMessage(message);
+  Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message);
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
@@ -213,8 +215,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
            DegreesOfFreedom<Frame>::ReadFromMessage(
                timeline_it->degrees_of_freedom()));
   }
-  Forkable<DiscreteTrajectory, DiscreteTrajectoryIterator<Frame>>::
-      FillSubTreeFromMessage(message);
+  Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message);
 }
 
 }  // namespace physics

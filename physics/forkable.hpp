@@ -15,6 +15,23 @@ using geometry::Instant;
 
 namespace physics {
 
+// Forkable and ForkableIterator both use CRTP to achieve static polymorphism on
+// the parameters and return type of the member functions: we want them to
+// return Tr4jectory and It3rator, not Forkable and ForkableIterator, so that
+// the clients don't have to down_cast or construct object of subclasses.
+// ForkableIterator is seen by the clients as a class nested within Forkable.
+// However, this cannot be implemented that way because the two classes are
+// mutually dependent.  Instead we have two distinct classes: ForkableIterator
+// must be instantiated first using an incomplete declaration of Forkable,
+// and Forkable may then be instantiated using ForkableIterator.
+// The template parameters with 1337 names are those that participate in this
+// mutual CRTP.
+
+template<typename Tr4jectory, typename It3rator>
+class Forkable;
+
+namespace internal {
+
 // This traits class must export declarations similar to the following:
 //
 // using TimelineConstIterator = ...;
@@ -22,10 +39,12 @@ namespace physics {
 //
 // TimelineConstIterator must be an STL-like iterator in the timeline of
 // Tr4jectory.  |time()| must return the corresponding time.
+//
+// TODO(phl): This might be made to work (better?) with another CRTP class.
 template<typename Tr4jectory>
 struct ForkableTraits;
 
-// A base class for iterating over the timeline of a trajectory, taking forks
+// A template for iterating over the timeline of a Forkable object, taking forks
 // into account.
 template<typename Tr4jectory, typename It3rator>
 class ForkableIterator {
@@ -49,10 +68,10 @@ class ForkableIterator {
   virtual not_null<It3rator*> that() = 0;
   virtual not_null<It3rator const*> that() const = 0;
 
+ private:
   // Returns the (most forked) trajectory to which this iterator applies.
   not_null<Tr4jectory const*> trajectory() const;
 
- private:
   // We want a single representation for an end iterator.  In various places
   // we may end up with |current_| at the end of its timeline, but that
   // timeline is not the "most forked" one.  This function normalizes this
@@ -70,13 +89,13 @@ class ForkableIterator {
   std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
   template<typename, typename>
-  friend class Forkable;
+  friend class physics::Forkable;
 };
 
-// This template represents a trajectory which is forkable and iterable.  It
-// uses CRTP to achieve static polymorphism on the return type of the member
-// functions: we want them to return Tr4jectory, not Forkable, so that the
-// clients don't have to down_cast.
+}  // namespace internal
+
+// This template represents a trajectory which is forkable and iterable (using
+// a ForkableIterator).
 template<typename Tr4jectory, typename It3rator>
 class Forkable {
  public:
@@ -84,7 +103,7 @@ class Forkable {
   // Beware, if these iterators are invalidated all the guarantees of Forkable
   // are void.
   using TimelineConstIterator =
-      typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
+      typename internal::ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
   Forkable() = default;
   virtual ~Forkable() = default;
@@ -123,7 +142,7 @@ class Forkable {
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and |ancestor| is this object).
   // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
-  // separate method.
+  // separate method.  PRIVATE!
   It3rator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
@@ -198,7 +217,7 @@ class Forkable {
   Children children_;
 
   template<typename, typename>
-  friend class ForkableIterator;
+  friend class internal::ForkableIterator;
 };
 
 }  // namespace physics
