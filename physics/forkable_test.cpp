@@ -24,19 +24,22 @@ struct ForkableTraits<FakeTrajectory> {
   static Instant const& time(TimelineConstIterator const it);
 };
 
-class FakeTrajectory : public Forkable<FakeTrajectory> {
+class FakeTrajectory;
+
+class FakeTrajectoryIterator
+    : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {};
+
+class FakeTrajectory : public Forkable<FakeTrajectory, FakeTrajectoryIterator> {
  public:
-  class Iterator
-      : public Forkable<FakeTrajectory>::
-               template Iterator<typename FakeTrajectory::Iterator> {};
+  using Iterator = FakeTrajectoryIterator;
 
   FakeTrajectory() = default;
 
   void push_back(Instant const& time);
 
-  using Forkable<FakeTrajectory>::NewFork;
-  using Forkable<FakeTrajectory>::DeleteAllForksAfter;
-  using Forkable<FakeTrajectory>::DeleteAllForksBefore;
+  using Forkable<FakeTrajectory, FakeTrajectoryIterator>::NewFork;
+  using Forkable<FakeTrajectory, FakeTrajectoryIterator>::DeleteAllForksAfter;
+  using Forkable<FakeTrajectory, FakeTrajectoryIterator>::DeleteAllForksBefore;
 
  protected:
   not_null<FakeTrajectory*> that() override;
@@ -53,7 +56,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
   // Use list<> because we want the iterators to remain valid across operations.
   std::list<Instant> timeline_;
 
-  template<typename Tr4jectory>
+  template<typename, typename>
   friend class Forkable;
 };
 

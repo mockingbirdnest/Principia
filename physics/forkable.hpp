@@ -25,11 +25,54 @@ namespace physics {
 template<typename Tr4jectory>
 struct ForkableTraits;
 
+// A base class for iterating over the timeline of a trajectory, taking forks
+// into account.
+template<typename Tr4jectory, typename It3rator>
+class ForkableIterator {
+  using TimelineConstIterator =
+      typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
+ public:
+  bool operator==(It3rator const& right) const;
+  bool operator!=(It3rator const& right) const;
+
+  It3rator& operator++();
+  It3rator& operator--();
+
+  // Returns the point in the timeline that is denoted by this iterator.
+  TimelineConstIterator current() const;
+
+  protected:
+  // Returns the (most forked) trajectory to which this iterator applies.
+  not_null<Tr4jectory const*> trajectory() const;
+
+ private:
+  ForkableIterator() = default;
+
+  // We want a single representation for an end iterator.  In various places
+  // we may end up with |current_| at the end of its timeline, but that
+  // timeline is not the "most forked" one.  This function normalizes this
+  // object so that there is only one entry in the |ancestry_| (the "most
+  // forked" one) and |current_| is at its end.
+  void NormalizeIfEnd();
+
+  // Checks that this object verifies the invariants enforced by
+  // NormalizeIfEnd and dies if it doesn't.
+  void CheckNormalizedIfEnd();
+
+  // |ancestry_| is never empty.  |current_| is an iterator in the timeline
+  // for |ancestry_.front()|.  |current_| may be at end.
+  TimelineConstIterator current_;
+  std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
+
+  template<typename, typename>
+  friend class Forkable;
+};
+
 // This template represents a trajectory which is forkable and iterable.  It
 // uses CRTP to achieve static polymorphism on the return type of the member
 // functions: we want them to return Tr4jectory, not Forkable, so that the
 // clients don't have to down_cast.
-template<typename Tr4jectory>
+template<typename Tr4jectory, typename It3rator>
 class Forkable {
  public:
   // An iterator into the timeline of the trajectory.  Must be STL-like.
@@ -53,56 +96,17 @@ class Forkable {
   not_null<Tr4jectory const*> root() const;
   not_null<Tr4jectory*> root();
 
-  // A base class for iterating over the timeline of a trajectory, taking forks
-  // into account.
-  template<typename It3rator>
-  class Iterator {
-   public:
-    bool operator==(Iterator const& right) const;
-    bool operator!=(Iterator const& right) const;
+  using Iterator = It3rator;
 
-    Iterator& operator++();
-    Iterator& operator--();
+  It3rator Begin() const;
+  It3rator End() const;
 
-    // Returns the point in the timeline that is denoted by this iterator.
-    TimelineConstIterator current() const;
-
-   protected:
-    // Returns the (most forked) trajectory to which this iterator applies.
-    not_null<Tr4jectory const*> trajectory() const;
-
-   private:
-    Iterator() = default;
-
-    // We want a single representation for an end iterator.  In various places
-    // we may end up with |current_| at the end of its timeline, but that
-    // timeline is not the "most forked" one.  This function normalizes this
-    // object so that there is only one entry in the |ancestry_| (the "most
-    // forked" one) and |current_| is at its end.
-    void NormalizeIfEnd();
-
-    // Checks that this object verifies the invariants enforced by
-    // NormalizeIfEnd and dies if it doesn't.
-    void CheckNormalizedIfEnd();
-
-    // |ancestry_| is never empty.  |current_| is an iterator in the timeline
-    // for |ancestry_.front()|.  |current_| may be at end.
-    TimelineConstIterator current_;
-    std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
-
-    template<typename Trajectory>
-    friend class Forkable;
-  };
-
-  typename Tr4jectory::Iterator Begin() const;
-  typename Tr4jectory::Iterator End() const;
-
-  typename Tr4jectory::Iterator Find(Instant const& time) const;
-  typename Tr4jectory::Iterator LowerBound(Instant const& time) const;
+  It3rator Find(Instant const& time) const;
+  It3rator LowerBound(Instant const& time) const;
 
   // Returns an iterator denoting the fork point of this object.  Fails if this
   // object is a root.
-  typename Tr4jectory::Iterator Fork() const;
+  It3rator Fork() const;
 
   // Returns the number of points in this object.  Complexity is O(|length| +
   // |depth|).
@@ -115,7 +119,7 @@ class Forkable {
   // end if it is an iterator in this object (and |ancestor| is this object).
   // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
   // separate method.
-  typename Tr4jectory::Iterator Wrap(
+  It3rator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
 

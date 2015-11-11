@@ -36,23 +36,28 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 };
 
 template<typename Frame>
-class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
+class DiscreteTrajectory;
+
+template<typename Frame>
+class DiscreteTrajectoryIterator
+    : public ForkableIterator<DiscreteTrajectory<Frame>,
+                              DiscreteTrajectoryIterator<Frame>> {
+ public:
+  Instant const& time() const;
+  DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+};
+
+template<typename Frame>
+class DiscreteTrajectory
+    : public Forkable<DiscreteTrajectory<Frame>,
+                      DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
   using TimelineConstIterator =
-      typename Forkable<DiscreteTrajectory<Frame>>::TimelineConstIterator;
+      typename Forkable<DiscreteTrajectory<Frame>,
+                        DiscreteTrajectoryIterator<Frame>>::TimelineConstIterator;
 
  public:
-  // An iterator over the points of a trajectory.
-  class Iterator
-      : public Forkable<DiscreteTrajectory<Frame>>::
-               template Iterator<typename DiscreteTrajectory<Frame>::Iterator> {
-   public:
-    Instant const& time() const;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
-   private:
-    friend class DiscreteTrajectory;
-  };
+  using Iterator = DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
   ~DiscreteTrajectory() override;
@@ -127,7 +132,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
       on_destroy_;
 
-  template<typename Tr4jectory>
+  template<typename, typename>
   friend class Forkable;
 
   // For using the private constructor in maps.
