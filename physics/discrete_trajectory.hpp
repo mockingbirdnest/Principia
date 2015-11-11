@@ -45,6 +45,9 @@ class DiscreteTrajectoryIterator
  public:
   Instant const& time() const;
   DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+ protected:
+  not_null<DiscreteTrajectoryIterator*> that() override;
+  not_null<DiscreteTrajectoryIterator const*> that() const override;
 };
 
 template<typename Frame>
@@ -132,6 +135,8 @@ class DiscreteTrajectory
   std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
       on_destroy_;
 
+  template<typename, typename>
+  friend class ForkableIterator;
   template<typename, typename>
   friend class Forkable;
 

@@ -32,6 +32,8 @@ class ForkableIterator {
   using TimelineConstIterator =
       typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
  public:
+  ForkableIterator() = default;
+
   bool operator==(It3rator const& right) const;
   bool operator!=(It3rator const& right) const;
 
@@ -41,13 +43,16 @@ class ForkableIterator {
   // Returns the point in the timeline that is denoted by this iterator.
   TimelineConstIterator current() const;
 
-  protected:
+ protected:
+  // The API that must be implemented by subclasses.
+  // Must return |this| of the proper type
+  virtual not_null<It3rator*> that() = 0;
+  virtual not_null<It3rator const*> that() const = 0;
+
   // Returns the (most forked) trajectory to which this iterator applies.
   not_null<Tr4jectory const*> trajectory() const;
 
  private:
-  ForkableIterator() = default;
-
   // We want a single representation for an end iterator.  In various places
   // we may end up with |current_| at the end of its timeline, but that
   // timeline is not the "most forked" one.  This function normalizes this
@@ -191,6 +196,9 @@ class Forkable {
       position_in_parent_timeline_;
 
   Children children_;
+
+  template<typename, typename>
+  friend class ForkableIterator;
 };
 
 }  // namespace physics

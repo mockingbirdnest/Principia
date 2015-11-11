@@ -27,7 +27,11 @@ struct ForkableTraits<FakeTrajectory> {
 class FakeTrajectory;
 
 class FakeTrajectoryIterator
-    : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {};
+    : public ForkableIterator<FakeTrajectory, FakeTrajectoryIterator> {
+ protected:
+  not_null<FakeTrajectoryIterator*> that() override;
+  not_null<FakeTrajectoryIterator const*> that() const override;
+};
 
 class FakeTrajectory : public Forkable<FakeTrajectory, FakeTrajectoryIterator> {
  public:
@@ -57,8 +61,18 @@ class FakeTrajectory : public Forkable<FakeTrajectory, FakeTrajectoryIterator> {
   std::list<Instant> timeline_;
 
   template<typename, typename>
+  friend class ForkableIterator;
+  template<typename, typename>
   friend class Forkable;
 };
+
+not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
+  return this;
+}
+
+not_null<FakeTrajectoryIterator const*> FakeTrajectoryIterator::that() const {
+  return this;
+}
 
 Instant const& ForkableTraits<FakeTrajectory>::time(
   TimelineConstIterator const it) {
