@@ -36,9 +36,6 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 };
 
 template<typename Frame>
-class DiscreteTrajectory;
-
-template<typename Frame>
 class DiscreteTrajectoryIterator
     : public ForkableIterator<DiscreteTrajectory<Frame>,
                               DiscreteTrajectoryIterator<Frame>> {
