@@ -193,8 +193,6 @@ class Forkable {
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and |ancestor| is this object).
-  // TODO(phl): This is only used for |Begin|.  Unclear if it needs to be a
-  // separate method.  PRIVATE!
   It3rator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;

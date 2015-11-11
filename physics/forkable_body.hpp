@@ -354,7 +354,7 @@ template<typename Tr4jectory, typename It3rator>
 It3rator Forkable<Tr4jectory, It3rator>::Wrap(
     not_null<const Tr4jectory*> const ancestor,
     TimelineConstIterator const position_in_ancestor_timeline) const {
-  Iterator iterator;
+  It3rator iterator;
 
   // Go up the ancestry chain until we find |ancestor| and set |current_| to
   // |position_in_ancestor_timeline|.  The ancestry has |forkable|
