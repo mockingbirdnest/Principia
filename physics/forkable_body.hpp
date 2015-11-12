@@ -4,63 +4,23 @@
 
 namespace principia {
 namespace physics {
+namespace internal {
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
-  CHECK_NOTNULL(*trajectory);
-  auto const fork_it = (*trajectory)->Fork();
-  // Find the position of |*trajectory| among our children and remove it.
-  auto const range = children_.equal_range(
-                         ForkableTraits<Tr4jectory>::time(fork_it.current_));
-  for (auto it = range.first; it != range.second; ++it) {
-    if (it->second.get() == *trajectory) {
-      children_.erase(it);
-      *trajectory = nullptr;
-      return;
-    }
-  }
-  LOG(FATAL) << "argument is not a child of this trajectory";
-}
-
-template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::is_root() const {
-  return parent_ == nullptr;
-}
-
-template<typename Tr4jectory>
-not_null<Tr4jectory const*>
-Forkable<Tr4jectory>::root() const {
-  not_null<Tr4jectory const*> ancestor = that();
-  while (ancestor->parent_ != nullptr) {
-    ancestor = ancestor->parent_;
-  }
-  return ancestor;
-}
-
-template<typename Tr4jectory>
-not_null<Tr4jectory*>
-Forkable<Tr4jectory>::root() {
-  not_null<Tr4jectory*> ancestor = that();
-  while (ancestor->parent_ != nullptr) {
-    ancestor = ancestor->parent_;
-  }
-  return ancestor;
-}
-
-template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::Iterator::operator==(Iterator const& right) const {
+template<typename Tr4jectory, typename It3rator>
+bool ForkableIterator<Tr4jectory, It3rator>::operator==(
+    It3rator const& right) const {
   DCHECK_EQ(trajectory(), right.trajectory());
   return ancestry_ == right.ancestry_ && current_ == right.current_;
 }
 
-template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::Iterator::operator!=(Iterator const& right) const {
+template<typename Tr4jectory, typename It3rator>
+bool ForkableIterator<Tr4jectory, It3rator>::operator!=(
+    It3rator const& right) const {
   return !(*this == right);
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator&
-Forkable<Tr4jectory>::Iterator::operator++() {
+template<typename Tr4jectory, typename It3rator>
+It3rator& ForkableIterator<Tr4jectory, It3rator>::operator++() {
   CHECK(!ancestry_.empty());
   CHECK(current_ != ancestry_.front()->timeline_end());
 
@@ -86,19 +46,18 @@ Forkable<Tr4jectory>::Iterator::operator++() {
       } while (current_time == child_fork_time);
 
       CheckNormalizedIfEnd();
-      return *this;
+      return *that();
     }
   }
   // Business as usual, keep moving along the same timeline.
   ++current_;
 
   CheckNormalizedIfEnd();
-  return *this;
+  return *that();
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator&
-Forkable<Tr4jectory>::Iterator::operator--() {
+template<typename Tr4jectory, typename It3rator>
+It3rator& ForkableIterator<Tr4jectory, It3rator>::operator--() {
   CHECK(!ancestry_.empty());
 
   not_null<Tr4jectory const*> ancestor = ancestry_.front();
@@ -113,27 +72,28 @@ Forkable<Tr4jectory>::Iterator::operator--() {
       ancestry_.push_front(ancestor);
     } while (current_ == ancestor->timeline_end() &&
              ancestor->parent_ != nullptr);
-    return *this;
+    return *that();
   }
 
   --current_;
-  return *this;
+  return *that();
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::TimelineConstIterator
-Forkable<Tr4jectory>::Iterator::current() const {
+template<typename Tr4jectory, typename It3rator>
+typename ForkableIterator<Tr4jectory, It3rator>::TimelineConstIterator
+ForkableIterator<Tr4jectory, It3rator>::current() const {
   return current_;
 }
 
-template<typename Tr4jectory>
-not_null<Tr4jectory const*> Forkable<Tr4jectory>::Iterator::trajectory() const {
+template<typename Tr4jectory, typename It3rator>
+not_null<Tr4jectory const*>
+ForkableIterator<Tr4jectory, It3rator>::trajectory() const {
   CHECK(!ancestry_.empty());
   return ancestry_.back();
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::Iterator::NormalizeIfEnd() {
+template<typename Tr4jectory, typename It3rator>
+void ForkableIterator<Tr4jectory, It3rator>::NormalizeIfEnd() {
   CHECK(!ancestry_.empty());
   if (current_ == ancestry_.front()->timeline_end() &&
       ancestry_.size() > 1) {
@@ -142,34 +102,75 @@ void Forkable<Tr4jectory>::Iterator::NormalizeIfEnd() {
   }
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::Iterator::CheckNormalizedIfEnd() {
+template<typename Tr4jectory, typename It3rator>
+void ForkableIterator<Tr4jectory, It3rator>::CheckNormalizedIfEnd() {
   CHECK(current_ != ancestry_.front()->timeline_end() ||
         ancestry_.size() == 1);
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator
-Forkable<Tr4jectory>::Begin() const {
+}  // namespace internal
+
+template<typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::DeleteFork(
+    not_null<Tr4jectory**> const trajectory) {
+  CHECK_NOTNULL(*trajectory);
+  auto const fork_it = (*trajectory)->Fork();
+  // Find the position of |*trajectory| among our children and remove it.
+  auto const range =
+      children_.equal_range(
+          internal::ForkableTraits<Tr4jectory>::time(fork_it.current_));
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second.get() == *trajectory) {
+      children_.erase(it);
+      *trajectory = nullptr;
+      return;
+    }
+  }
+  LOG(FATAL) << "argument is not a child of this trajectory";
+}
+
+template<typename Tr4jectory, typename It3rator>
+bool Forkable<Tr4jectory, It3rator>::is_root() const {
+  return parent_ == nullptr;
+}
+
+template<typename Tr4jectory, typename It3rator>
+not_null<Tr4jectory const*> Forkable<Tr4jectory, It3rator>::root() const {
+  not_null<Tr4jectory const*> ancestor = that();
+  while (ancestor->parent_ != nullptr) {
+    ancestor = ancestor->parent_;
+  }
+  return ancestor;
+}
+
+template<typename Tr4jectory, typename It3rator>
+not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::root() {
+  not_null<Tr4jectory*> ancestor = that();
+  while (ancestor->parent_ != nullptr) {
+    ancestor = ancestor->parent_;
+  }
+  return ancestor;
+}
+
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::Begin() const {
   not_null<Tr4jectory const*> ancestor = root();
   return Wrap(ancestor, ancestor->timeline_begin());
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator
-Forkable<Tr4jectory>::End() const {
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::End() const {
   not_null<Tr4jectory const*> const ancestor = that();
-  Iterator iterator;
+  It3rator iterator;
   iterator.ancestry_.push_front(ancestor);
   iterator.current_ = ancestor->timeline_end();
   iterator.CheckNormalizedIfEnd();
   return iterator;
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator
-Forkable<Tr4jectory>::Find(Instant const& time) const {
-  Iterator iterator;
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::Find(Instant const& time) const {
+  It3rator iterator;
 
   // Go up the ancestry chain until we find a timeline that covers |time| (that
   // is, |time| is after the first time of the timeline).  Set |current_| to
@@ -179,7 +180,8 @@ Forkable<Tr4jectory>::Find(Instant const& time) const {
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
-        ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
+        internal::ForkableTraits<Tr4jectory>::time(
+            ancestor->timeline_begin()) <= time) {
       iterator.current_ = ancestor->timeline_find(time);  // May be at end.
       break;
     }
@@ -191,10 +193,9 @@ Forkable<Tr4jectory>::Find(Instant const& time) const {
   return iterator;
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator
-Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
-  Iterator iterator;
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
+  It3rator iterator;
 
   // Go up the ancestry chain until we find a timeline that covers |time| (that
   // is, |time| is after the first time of the timeline).  Set |current_| to
@@ -204,7 +205,8 @@ Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
-        ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
+        internal::ForkableTraits<Tr4jectory>::time(
+            ancestor->timeline_begin()) <= time) {
       iterator.current_ =
           ancestor->timeline_lower_bound(time);  // May be at end.
       break;
@@ -217,9 +219,8 @@ Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
   return iterator;
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator
-Forkable<Tr4jectory>::Fork() const {
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::Fork() const {
   CHECK(!is_root());
   not_null<Tr4jectory const*> ancestor = that();
   TimelineConstIterator position_in_ancestor_timeline;
@@ -231,8 +232,8 @@ Forkable<Tr4jectory>::Fork() const {
   return Wrap(ancestor, position_in_ancestor_timeline);
 }
 
-template<typename Tr4jectory>
-int Forkable<Tr4jectory>::Size() const {
+template<typename Tr4jectory, typename It3rator>
+int Forkable<Tr4jectory, It3rator>::Size() const {
   int result = 0;
   for (auto it = Begin(); it != End(); ++it) {
     ++result;
@@ -240,34 +241,8 @@ int Forkable<Tr4jectory>::Size() const {
   return result;
 }
 
-template<typename Tr4jectory>
-typename Forkable<Tr4jectory>::Iterator
-Forkable<Tr4jectory>::Wrap(
-    not_null<const Tr4jectory*> const ancestor,
-    TimelineConstIterator const position_in_ancestor_timeline) const {
-  Iterator iterator;
-
-  // Go up the ancestry chain until we find |ancestor| and set |current_| to
-  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.
-  not_null<Tr4jectory const*> ancest0r = that();
-  do {
-    iterator.ancestry_.push_front(ancest0r);
-    if (ancestor == ancest0r) {
-      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
-      iterator.CheckNormalizedIfEnd();
-      return iterator;
-    }
-    iterator.current_ = ancest0r->timeline_end();
-    ancest0r = ancest0r->parent_;
-  } while (ancest0r != nullptr);
-
-  LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
-  base::noreturn();
-}
-
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::WritePointerToMessage(
+template<typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::WritePointerToMessage(
     not_null<serialization::Trajectory::Pointer*> const message) const {
   not_null<Tr4jectory const*> ancestor = that();
   while (ancestor->parent_ != nullptr) {
@@ -284,8 +259,8 @@ void Forkable<Tr4jectory>::WritePointerToMessage(
   }
 }
 
-template<typename Tr4jectory>
-not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
+template<typename Tr4jectory, typename It3rator>
+not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
     serialization::Trajectory::Pointer const& message,
     not_null<Tr4jectory*> const trajectory) {
   CHECK(trajectory->is_root());
@@ -302,11 +277,12 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
   return descendant;
 }
 
-template<typename Tr4jectory>
-not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
+template<typename Tr4jectory, typename It3rator>
+not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
+    Instant const & time) {
   CHECK(timeline_find(time) != timeline_end() ||
         (!is_root() &&
-         time == ForkableTraits<Tr4jectory>::time(Fork().current_)))
+         time == internal::ForkableTraits<Tr4jectory>::time(Fork().current_)))
       << "NewFork at nonexistent time " << time;
 
   // May be at |timeline_end()| if |time| is the fork time of this object.
@@ -325,19 +301,20 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
   return child_forkable.get();
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::DeleteAllForksAfter(Instant const& time) {
+template<typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::DeleteAllForksAfter(Instant const& time) {
   // Get an iterator denoting the first entry with time > |time|.  Remove that
   // entry and all the entries that follow it.  This preserve any entry with
   // time == |time|.
-  CHECK(is_root() || time >= ForkableTraits<Tr4jectory>::time(Fork().current_))
+  CHECK(is_root() ||
+        time >= internal::ForkableTraits<Tr4jectory>::time(Fork().current_))
       << "DeleteAllForksAfter before the fork time";
   auto const it = children_.upper_bound(time);
   children_.erase(it, children_.end());
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::DeleteAllForksBefore(Instant const& time) {
+template<typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::DeleteAllForksBefore(Instant const& time) {
   CHECK(is_root()) << "DeleteAllForksBefore on a nonroot trajectory";
   // Get an iterator denoting the first entry with time > |time|.  Remove all
   // the entries that precede it.  This removes any entry with time == |time|.
@@ -345,8 +322,8 @@ void Forkable<Tr4jectory>::DeleteAllForksBefore(Instant const& time) {
   children_.erase(children_.begin(), it);
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::WriteSubTreeToMessage(
+template<typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
   std::experimental::optional<Instant> last_instant;
   serialization::Trajectory::Litter* litter = nullptr;
@@ -362,8 +339,8 @@ void Forkable<Tr4jectory>::WriteSubTreeToMessage(
   }
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::FillSubTreeFromMessage(
+template<typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
     serialization::Trajectory const& message) {
   for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
@@ -371,6 +348,31 @@ void Forkable<Tr4jectory>::FillSubTreeFromMessage(
       NewFork(fork_time)->FillSubTreeFromMessage(child);
     }
   }
+}
+
+template<typename Tr4jectory, typename It3rator>
+It3rator Forkable<Tr4jectory, It3rator>::Wrap(
+    not_null<const Tr4jectory*> const ancestor,
+    TimelineConstIterator const position_in_ancestor_timeline) const {
+  It3rator iterator;
+
+  // Go up the ancestry chain until we find |ancestor| and set |current_| to
+  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.
+  not_null<Tr4jectory const*> ancest0r = that();
+  do {
+    iterator.ancestry_.push_front(ancest0r);
+    if (ancestor == ancest0r) {
+      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
+      iterator.CheckNormalizedIfEnd();
+      return iterator;
+    }
+    iterator.current_ = ancest0r->timeline_end();
+    ancest0r = ancest0r->parent_;
+  } while (ancest0r != nullptr);
+
+  LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
+  base::noreturn();
 }
 
 }  // namespace physics

@@ -83,9 +83,9 @@ class DiscreteTrajectoryTest : public testing::Test {
       DiscreteTrajectory<World> const& trajectory) const {
     std::map<Instant, Position<World>> result;
     for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      auto const timeline_it = it.current();
-      Instant const& time = timeline_it->first;
-      DegreesOfFreedom<World> const& degrees_of_freedom = timeline_it->second;
+      Instant const& time = it.time();
+      DegreesOfFreedom<World> const& degrees_of_freedom =
+          it.degrees_of_freedom();
       result.emplace_hint(result.end(), time, degrees_of_freedom.position());
     }
     return result;
@@ -95,9 +95,9 @@ class DiscreteTrajectoryTest : public testing::Test {
       DiscreteTrajectory<World> const& trajectory) const {
     std::map<Instant, Velocity<World>> result;
     for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      auto const timeline_it = it.current();
-      Instant const& time = timeline_it->first;
-      DegreesOfFreedom<World> const& degrees_of_freedom = timeline_it->second;
+      Instant const& time = it.time();
+      DegreesOfFreedom<World> const& degrees_of_freedom =
+          it.degrees_of_freedom();
       result.emplace_hint(result.end(), time, degrees_of_freedom.velocity());
     }
     return result;
@@ -106,9 +106,7 @@ class DiscreteTrajectoryTest : public testing::Test {
   std::list<Instant> Times(DiscreteTrajectory<World> const& trajectory) const {
     std::list<Instant> result;
     for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      auto const timeline_it = it.current();
-      Instant const& time = timeline_it->first;
-      result.push_back(time);
+      result.push_back(it.time());
     }
     return result;
   }
