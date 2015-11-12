@@ -28,6 +28,8 @@ namespace physics {
 template<typename Frame>
 class DiscreteTrajectory;
 
+namespace internal {
+
 template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
   using TimelineConstIterator =
@@ -36,26 +38,32 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 };
 
 template<typename Frame>
-class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
+class DiscreteTrajectoryIterator
+    : public ForkableIterator<DiscreteTrajectory<Frame>,
+                              DiscreteTrajectoryIterator<Frame>> {
+ public:
+  Instant const& time() const;
+  DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+ protected:
+  not_null<DiscreteTrajectoryIterator*> that() override;
+  not_null<DiscreteTrajectoryIterator const*> that() const override;
+};
+
+}  // namespace internal
+
+template<typename Frame>
+class DiscreteTrajectory
+    : public Forkable<DiscreteTrajectory<Frame>,
+                      internal::DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
   using TimelineConstIterator =
-      typename Forkable<DiscreteTrajectory<Frame>>::TimelineConstIterator;
+      typename Forkable<
+          DiscreteTrajectory<Frame>,
+          internal::DiscreteTrajectoryIterator<Frame>>::TimelineConstIterator;
 
  public:
-  // An iterator over the points of a trajectory.
-  class Iterator : public Forkable<DiscreteTrajectory<Frame>>::Iterator {
-   public:
-    // Not explicit because we want the factory functions in |Forkable| to be
-    // easily usable for |Iterator|.
-    Iterator(
-        typename Forkable<DiscreteTrajectory<Frame>>::Iterator it);  // NOLINT
-
-    Instant const& time() const;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
-   private:
-    friend class DiscreteTrajectory;
-  };
+  using Iterator = internal::DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
   ~DiscreteTrajectory() override;
@@ -130,7 +138,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
       on_destroy_;
 
-  template<typename Tr4jectory>
+  template<typename, typename>
+  friend class internal::ForkableIterator;
+  template<typename, typename>
   friend class Forkable;
 
   // For using the private constructor in maps.

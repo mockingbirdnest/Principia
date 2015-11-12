@@ -287,9 +287,7 @@ class PhysicsBubbleTest : public testing::Test {
       DiscreteTrajectory<Barycentric> const& trajectory) const {
     std::list<Instant> result;
     for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-      auto const timeline_it = it.current();
-      Instant const& time = timeline_it->first;
-      result.push_back(time);
+      result.push_back(it.time());
     }
     return result;
   }
