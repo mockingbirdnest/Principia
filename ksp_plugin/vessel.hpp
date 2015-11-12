@@ -26,7 +26,8 @@ namespace ksp_plugin {
 class Vessel {
  public:
   using Manœuvres =
-      std::vector<not_null<std::unique_ptr<Manœuvre<Barycentric> const>>>;
+      std::vector<
+          not_null<std::unique_ptr<Manœuvre<Barycentric, Rendering> const>>>;
 
   Vessel() = delete;
   Vessel(Vessel const&) = delete;

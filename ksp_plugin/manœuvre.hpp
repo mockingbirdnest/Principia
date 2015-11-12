@@ -3,6 +3,7 @@
 #include <experimental/optional>
 
 #include "geometry/named_quantities.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
@@ -13,6 +14,7 @@ using geometry::Instant;
 using geometry::Vector;
 using physics::Ephemeris;
 using physics::Frenet;
+using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using quantities::Force;
 using quantities::Mass;
@@ -24,7 +26,7 @@ using quantities::Variation;
 namespace ksp_plugin {
 
 // This class represents a constant-thrust inertial burn.
-template<typename Frame, typename InertialFrame>
+template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
   Manœuvre(Force const& thrust,
@@ -83,7 +85,7 @@ class Manœuvre {
   Vector<double, Frenet<Frame>> const direction_;
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
-  DynamicFrame<InertialFrame, Frame> frame_;
+  not_null<DynamicFrame<InertialFrame, Frame> const*> frame_;
 };
 
 }  // namespace ksp_plugin
