@@ -13,14 +13,17 @@ using quantities::Sqrt;
 namespace ksp_plugin {
 
 template<typename Frame>
-Manœuvre<Frame>::Manœuvre(Force const& thrust,
-                          Mass const& initial_mass,
-                          SpecificImpulse const& specific_impulse,
-                          Vector<double, Frame> const& direction)
+Manœuvre<Frame>::Manœuvre(
+    Force const& thrust,
+    Mass const& initial_mass,
+    SpecificImpulse const& specific_impulse,
+    Vector<double, Frenet<Frame>> const& direction,
+    not_null<DynamicFrame<InertialFrame, Frame> const*> frame)
     : thrust_(thrust),
       initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
-      direction_(direction) {}
+      direction_(direction),
+      frame_(frame) {}
 
 template<typename Frame>
 Instant Manœuvre<Frame>::initial_time() const {
@@ -108,8 +111,10 @@ Time Manœuvre<Frame>::time_to_half_Δv() const {
 }
 
 template<typename Frame>
-typename Ephemeris<Frame>::IntrinsicAcceleration
-    Manœuvre<Frame>::acceleration() const {
+typename Ephemeris<InertialFrame>::IntrinsicAcceleration
+Manœuvre<Frame>::acceleration(
+    DiscreteTrajectory<InertialFrame> const& coasting_trajectory) const {
+  coasting_trajectory.
   return [this](Instant const& time) -> Vector<Acceleration, Frame> {
     if (time >= initial_time() && time <= final_time()) {
       return direction_ * thrust_ /

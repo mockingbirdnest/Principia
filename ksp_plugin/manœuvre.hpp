@@ -3,6 +3,7 @@
 #include <experimental/optional>
 
 #include "geometry/named_quantities.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -11,6 +12,8 @@ namespace principia {
 using geometry::Instant;
 using geometry::Vector;
 using physics::Ephemeris;
+using physics::Frenet;
+using physics::DynamicFrame;
 using quantities::Force;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -21,13 +24,14 @@ using quantities::Variation;
 namespace ksp_plugin {
 
 // This class represents a constant-thrust inertial burn.
-template<typename Frame>
+template<typename Frame, typename InertialFrame>
 class Manœuvre {
  public:
   Manœuvre(Force const& thrust,
            Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
-           Vector<double, Frame> const& direction);
+           Vector<double, Frenet<Frame>> const& direction,
+           not_null<DynamicFrame<InertialFrame, Frame> const*> frame);
   ~Manœuvre() = default;
 
   Force const& thrust() const;
@@ -66,17 +70,20 @@ class Manœuvre {
   // Intensity and timing must have been set.
   Instant final_time() const;
 
-  // Intensity and timing must have been set.  The result is valid for until
-  // |*this| is destroyed.
-  typename Ephemeris<Frame>::IntrinsicAcceleration acceleration() const;
+  // Intensity and timing must have been set.  The result is valid until
+  // |*this| is destroyed.  |coasting_trajectory| must have a point at
+  // |initial_time()|.
+  typename Ephemeris<InertialFrame>::IntrinsicAcceleration acceleration(
+      DiscreteTrajectory<InertialFrame> const& coasting_trajectory) const;
 
  private:
   Force const thrust_;
   Mass const initial_mass_;
   SpecificImpulse const specific_impulse_;
-  Vector<double, Frame> const direction_;
+  Vector<double, Frenet<Frame>> const direction_;
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
+  DynamicFrame<InertialFrame, Frame> frame_;
 };
 
 }  // namespace ksp_plugin
