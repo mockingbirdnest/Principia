@@ -80,6 +80,7 @@ void SolveHarmonicOscillatorAndComputeError1D(
     Integrator const& integrator) {
   using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
+  state->PauseTiming();
   Length const q_initial = 1 * Metre;
   Speed const v_initial;
   Instant const t_initial;
@@ -91,6 +92,7 @@ void SolveHarmonicOscillatorAndComputeError1D(
   Time const step = 3.0E-4 * Second;
 
   std::vector<ODE::SystemState> solution;
+  solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D, _1, _2, _3);
@@ -100,24 +102,25 @@ void SolveHarmonicOscillatorAndComputeError1D(
   problem.initial_state = &initial_state;
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
-    solution.push_back(state);
+    solution.emplace_back(state);
   };
+  state->ResumeTiming();
 
   integrator.Solve(problem, step);
 
   state->PauseTiming();
   *q_error = Length();
   *v_error = Speed();
-  for (std::size_t i = 0; i < solution.size(); ++i) {
+  for (auto const& state : solution) {
     *q_error = std::max(*q_error,
-                        Abs(solution[i].positions[0].value  -
+                        Abs(state.positions[0].value  -
                             Metre *
-                            Cos((solution[i].time.value - t_initial) *
+                            Cos((state.time.value - t_initial) *
                                 (Radian / Second))));
     *v_error = std::max(*v_error,
-                        Abs(solution[i].velocities[0].value +
+                        Abs(state.velocities[0].value +
                             (Metre / Second) *
-                            Sin((solution[i].time.value - t_initial) *
+                            Sin((state.time.value - t_initial) *
                                 (Radian / Second))));
   }
   state->ResumeTiming();
@@ -131,6 +134,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
     Integrator const& integrator) {
   using ODE = SpecialSecondOrderDifferentialEquation<Position<World>>;
 
+  state->PauseTiming();
   Displacement<World> const q_initial({1 * Metre, 0 * Metre, 0 * Metre});
   Velocity<World> const v_initial;
   Instant const t_initial;
@@ -142,6 +146,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   Time const step = 3.0E-4 * Second;
 
   std::vector<ODE::SystemState> solution;
+  solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration3D, _1, _2, _3);
@@ -153,24 +158,25 @@ void SolveHarmonicOscillatorAndComputeError3D(
   problem.initial_state = &initial_state;
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
-    solution.push_back(state);
+    solution.emplace_back(state);
   };
+  state->ResumeTiming();
 
   integrator.Solve(problem, step);
 
   state->PauseTiming();
   *q_error = Length();
   *v_error = Speed();
-  for (std::size_t i = 0; i < solution.size(); ++i) {
+  for (auto const& state : solution) {
     *q_error = std::max(*q_error,
-                        ((solution[i].positions[0].value - World::origin) -
+                        ((state.positions[0].value - World::origin) -
                             q_initial *
-                            Cos((solution[i].time.value - t_initial) *
+                            Cos((state.time.value - t_initial) *
                                 (Radian / Second))).Norm());
     *v_error = std::max(*v_error,
-                        (solution[i].velocities[0].value +
+                        (state.velocities[0].value +
                             (q_initial / Second) *
-                            Sin((solution[i].time.value - t_initial) *
+                            Sin((state.time.value - t_initial) *
                                 (Radian / Second))).Norm());
   }
   state->ResumeTiming();

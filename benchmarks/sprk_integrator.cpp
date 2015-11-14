@@ -157,6 +157,7 @@ void SolveHarmonicOscillatorAndComputeError(
     not_null<Length*> const q_error,
     not_null<Speed*> const v_error,
     SRKNIntegrator const& integrator) {
+  state->PauseTiming();
   SRKNIntegrator::Solution<Length, Speed> solution;
   SRKNIntegrator::Parameters<Length, Speed> parameters;
 
@@ -172,6 +173,8 @@ void SolveHarmonicOscillatorAndComputeError(
   // in the new benchmarks.  Reducing to 3.0E-4 to permit comparisons.
   parameters.Δt = 3.0E-4 * SIUnit<Time>();
   parameters.sampling_period = 1;
+  state->ResumeTiming();
+
   integrator.SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters,
