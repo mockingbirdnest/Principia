@@ -89,8 +89,12 @@ DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::NewForkAtLast() {
-  CHECK(!timeline_.begin());
-  return this->NewFork(--timeline_.end());
+  auto end = timeline_.end();
+  if (timeline_.empty()) {
+    return this->NewFork(end);
+  } else {
+    return this->NewFork(--end);
+  }
 }
 
 template<typename Frame>
