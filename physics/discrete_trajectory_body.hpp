@@ -71,16 +71,26 @@ DiscreteTrajectory<Frame>::last() const {
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
-  auto const fork = this->NewFork(time);
-
-  // May be at |end()|.
+  // May be at |timeline_end()| if |time| is the fork time of this object.
   auto timeline_it = timeline_.find(time);
+  CHECK(timeline_it != timeline_end() ||
+        (!this->is_root() && time == this->Fork().time()))
+      << "NewFork at nonexistent time " << time;
+
+  auto const fork = this->NewFork(timeline_it);
 
   // Copy the tail of the trajectory in the child object.
   if (timeline_it != timeline_.end()) {
     fork->timeline_.insert(++timeline_it, timeline_.end());
   }
   return fork;
+}
+
+template<typename Frame>
+not_null<DiscreteTrajectory<Frame>*>
+DiscreteTrajectory<Frame>::NewForkAtLast() {
+  CHECK(!timeline_.begin());
+  return this->NewFork(--timeline_.end());
 }
 
 template<typename Frame>

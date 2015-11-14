@@ -163,14 +163,14 @@ class Forkable {
  protected:
   // The API that subclasses may use to implement their public operations.
 
-  // Creates a new child trajectory forked at time |time|, and returns it.  The
-  // child trajectory shares its data with the current trajectory for times less
-  // than or equal to |time|.  It may be changed independently from the parent
-  // trajectory for any time (strictly) greater than |time|.  The child
-  // trajectory is owned by its parent trajectory.  Deleting the parent
-  // trajectory deletes all child trajectories.  |time| must be one of the times
-  // of this trajectory, and must be at or after the fork time, if any.
-  not_null<Tr4jectory*> NewFork(Instant const& time);
+  // Creates a new child trajectory forked at the given |timeline_it|, and
+  // returns it.  The child trajectory shares its data with the current
+  // trajectory for times less than or equal to |timeline_it|.  It may be
+  // changed independently from the parent trajectory for any time (strictly)
+  // greater than |timeline_it|.  The child trajectory is owned by its parent
+  // trajectory.  Deleting the parent trajectory deletes all child trajectories.
+  // |timeline_it| may be at end if it denotes the fork time of this object.
+  not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.

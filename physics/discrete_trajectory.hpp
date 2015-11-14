@@ -94,6 +94,10 @@ class DiscreteTrajectory
   // of this trajectory, and must be at or after the fork time, if any.
   not_null<DiscreteTrajectory<Frame>*> NewForkWithCopy(Instant const& time);
 
+  // Same as above, except that the fork is created at the last point of the
+  // trajectory.
+  not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
+
   // Appends one point to the trajectory.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);

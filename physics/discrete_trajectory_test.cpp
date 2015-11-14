@@ -136,6 +136,14 @@ TEST_F(DiscreteTrajectoryTest, Destruction) {
   EXPECT_EQ(2, i);
 }
 
+TEST_F(DiscreteTrajectoryDeathTest, NewForkWithCopyError) {
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t1_, d1_);
+    massive_trajectory_->Append(t3_, d3_);
+    massive_trajectory_->NewForkWithCopy(t2_);
+  }, "nonexistent time");
+}
+
 TEST_F(DiscreteTrajectoryTest, NewForkWithCopySuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
