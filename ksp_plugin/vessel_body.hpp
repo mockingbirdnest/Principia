@@ -104,7 +104,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_synchronized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->NewForkWithCopy(time);
+  prolongation_ = history_->NewForkAtLast();
   owned_prolongation_.reset();
 }
 
