@@ -104,7 +104,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_synchronized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->NewForkWithCopy(time);
+  prolongation_ = history_->NewForkAtLast();
   owned_prolongation_.reset();
 }
 
@@ -129,12 +129,11 @@ inline void Vessel::UpdateFlightPlan(
     return;
   }
   DeleteFlightPlan();
-  flight_plan_.emplace_back(
-      mutable_history()->NewForkWithCopy(history().last().time()));
-  // If prolongation has no additional points this will do nothing (although it
-  // might warn).
-  flight_plan_.back()->Append(prolongation().last().time(),
-                              prolongation().last().degrees_of_freedom());
+  flight_plan_.emplace_back(mutable_history()->NewForkAtLast());
+  if (history().last().time() != prolongation().last().time()) {
+    flight_plan_.back()->Append(prolongation().last().time(),
+                                prolongation().last().degrees_of_freedom());
+  }
   for (auto const& manœuvre : manœuvres_) {
     not_null<DiscreteTrajectory<Barycentric>*> const coast_trajectory =
         flight_plan_.back();
@@ -155,8 +154,7 @@ inline void Vessel::UpdateFlightPlan(
                                     prolongation_speed_tolerance,
                                     integrator,
                                     manœuvre->final_time());
-    flight_plan_.emplace_back(
-        burn_trajectory->NewForkWithCopy(burn_trajectory->last().time()));
+    flight_plan_.emplace_back(burn_trajectory->NewForkAtLast());
   }
   ephemeris->FlowWithAdaptiveStep(
       flight_plan_.back(),
@@ -186,7 +184,7 @@ inline void Vessel::UpdatePrediction(
     return;
   }
   DeletePrediction();
-  prediction_ = mutable_history()->NewForkWithCopy(history().last().time());
+  prediction_ = mutable_history()->NewForkAtLast();
   if (history().last().time() != prolongation().last().time()) {
     prediction_->Append(prolongation().last().time(),
                         prolongation().last().degrees_of_freedom());

@@ -279,16 +279,15 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
 
 template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
-    Instant const & time) {
-  CHECK(timeline_find(time) != timeline_end() ||
-        (!is_root() &&
-         time == internal::ForkableTraits<Tr4jectory>::time(Fork().current_)))
-      << "NewFork at nonexistent time " << time;
-
-  // May be at |timeline_end()| if |time| is the fork time of this object.
-  auto timeline_it = timeline_find(time);
-
-  // First create a child in the multimap.
+    TimelineConstIterator const& timeline_it) {
+  // First create a child in the multimap.  To do th
+  Instant time;
+  if (timeline_it == timeline_end()) {
+    CHECK(!is_root());
+    time = (*position_in_parent_children_)->first;
+  } else {
+    time = internal::ForkableTraits<Tr4jectory>::time(timeline_it);
+  }
   auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
   typename Children::const_iterator const_child_it = child_it;
 
@@ -345,7 +344,7 @@ void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
   for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
     for (serialization::Trajectory const& child : litter.trajectories()) {
-      NewFork(fork_time)->FillSubTreeFromMessage(child);
+      NewFork(timeline_find(fork_time))->FillSubTreeFromMessage(child);
     }
   }
 }
