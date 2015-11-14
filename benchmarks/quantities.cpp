@@ -7,11 +7,11 @@
 #include "benchmark/benchmark.h"
 
 namespace principia {
-namespace benchmarks {
+namespace quantities {
 
 void BM_DimensionfulDiscreteCosineTransform(
     benchmark::State& state) {  // NOLINT(runtime/references)>
-  std::vector<quantities::Momentum> output;
+  std::vector<Momentum> output;
   while (state.KeepRunning()) {
     DimensionfulDiscreteCosineTransform(&output);
   }

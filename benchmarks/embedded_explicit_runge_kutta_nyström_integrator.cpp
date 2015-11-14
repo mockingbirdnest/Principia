@@ -28,10 +28,6 @@ using geometry::Frame;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::AdaptiveStepSize;
-using integrators::CompositionMethod;
-using integrators::IntegrationProblem;
-using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -47,7 +43,7 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-namespace benchmarks {
+namespace integrators {
 
 namespace {
 

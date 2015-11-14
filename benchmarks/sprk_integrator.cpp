@@ -141,8 +141,6 @@
 
 namespace principia {
 
-using integrators::SPRKIntegrator;
-using integrators::SRKNIntegrator;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -150,7 +148,7 @@ using quantities::Length;
 using quantities::SIUnit;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 
-namespace benchmarks {
+namespace integrators {
 
 void SolveHarmonicOscillatorAndComputeError(
     not_null<benchmark::State*> const state,

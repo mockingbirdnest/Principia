@@ -43,11 +43,10 @@ namespace principia {
 
 using astronomy::ICRFJ2000Ecliptic;
 using geometry::Displacement;
-using numerics::ЧебышёвSeries;
 using quantities::si::Metre;
 using quantities::si::Second;
 
-namespace benchmarks {
+namespace numerics {
 
 namespace {
 int const kEvaluationsPerIteration = 1000;

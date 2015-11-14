@@ -12,13 +12,9 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace quantities {
 
-using quantities::Cos;
-using quantities::Momentum;
-using quantities::SIUnit;
-using quantities::si::Radian;
-
-namespace benchmarks {
+using si::Radian;
 
 #define TRIGGER_DEAD_CODE_ELIMINATION
 
