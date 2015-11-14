@@ -28,9 +28,6 @@ using geometry::Frame;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::CompositionMethod;
-using integrators::IntegrationProblem;
-using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -46,7 +43,7 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-namespace benchmarks {
+namespace integrators {
 
 namespace {
 
@@ -212,69 +209,69 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::McLachlanAtela1992Order4Optimal<Length>()),
-    &integrators::McLachlanAtela1992Order4Optimal<Length>);
+    decltype(McLachlanAtela1992Order4Optimal<Length>()),
+    &McLachlanAtela1992Order4Optimal<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::McLachlan1995SB3A4<Length>()),
-    &integrators::McLachlan1995SB3A4<Length>);
+    decltype(McLachlan1995SB3A4<Length>()),
+    &McLachlan1995SB3A4<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::McLachlan1995SB3A5<Length>()),
-    &integrators::McLachlan1995SB3A5<Length>);
+    decltype(McLachlan1995SB3A5<Length>()),
+    &McLachlan1995SB3A5<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::BlanesMoan2002SRKN6B<Length>()),
-    &integrators::BlanesMoan2002SRKN6B<Length>);
+    decltype(BlanesMoan2002SRKN6B<Length>()),
+    &BlanesMoan2002SRKN6B<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::McLachlanAtela1992Order5Optimal<Length>()),
-    &integrators::McLachlanAtela1992Order5Optimal<Length>);
+    decltype(McLachlanAtela1992Order5Optimal<Length>()),
+    &McLachlanAtela1992Order5Optimal<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::OkunborSkeel1994Order6Method13<Length>()),
-    &integrators::OkunborSkeel1994Order6Method13<Length>);
+    decltype(OkunborSkeel1994Order6Method13<Length>()),
+    &OkunborSkeel1994Order6Method13<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::BlanesMoan2002SRKN11B<Length>()),
-    &integrators::BlanesMoan2002SRKN11B<Length>);
+    decltype(BlanesMoan2002SRKN11B<Length>()),
+    &BlanesMoan2002SRKN11B<Length>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::BlanesMoan2002SRKN14A<Length>()),
-    &integrators::BlanesMoan2002SRKN14A<Length>);
+    decltype(BlanesMoan2002SRKN14A<Length>()),
+    &BlanesMoan2002SRKN14A<Length>);
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::McLachlanAtela1992Order4Optimal<Position<World>>()),
-    &integrators::McLachlanAtela1992Order4Optimal<Position<World>>);
+    decltype(McLachlanAtela1992Order4Optimal<Position<World>>()),
+    &McLachlanAtela1992Order4Optimal<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::McLachlan1995SB3A4<Position<World>>()),
-    &integrators::McLachlan1995SB3A4<Position<World>>);
+    decltype(McLachlan1995SB3A4<Position<World>>()),
+    &McLachlan1995SB3A4<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::McLachlan1995SB3A5<Position<World>>()),
-    &integrators::McLachlan1995SB3A5<Position<World>>);
+    decltype(McLachlan1995SB3A5<Position<World>>()),
+    &McLachlan1995SB3A5<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::BlanesMoan2002SRKN6B<Position<World>>()),
-    &integrators::BlanesMoan2002SRKN6B<Position<World>>);
+    decltype(BlanesMoan2002SRKN6B<Position<World>>()),
+    &BlanesMoan2002SRKN6B<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::McLachlanAtela1992Order5Optimal<Position<World>>()),
-    &integrators::McLachlanAtela1992Order5Optimal<Position<World>>);
+    decltype(McLachlanAtela1992Order5Optimal<Position<World>>()),
+    &McLachlanAtela1992Order5Optimal<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::OkunborSkeel1994Order6Method13<Position<World>>()),
-    &integrators::OkunborSkeel1994Order6Method13<Position<World>>);
+    decltype(OkunborSkeel1994Order6Method13<Position<World>>()),
+    &OkunborSkeel1994Order6Method13<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::BlanesMoan2002SRKN11B<Position<World>>()),
-    &integrators::BlanesMoan2002SRKN11B<Position<World>>);
+    decltype(BlanesMoan2002SRKN11B<Position<World>>()),
+    &BlanesMoan2002SRKN11B<Position<World>>);
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::BlanesMoan2002SRKN14A<Position<World>>()),
-    &integrators::BlanesMoan2002SRKN14A<Position<World>>);
+    decltype(BlanesMoan2002SRKN14A<Position<World>>()),
+    &BlanesMoan2002SRKN14A<Position<World>>);
 
-}  // namespace benchmarks
+}  // namespace integrators
 }  // namespace principia

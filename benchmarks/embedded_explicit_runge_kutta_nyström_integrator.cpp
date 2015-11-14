@@ -28,10 +28,6 @@ using geometry::Frame;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::AdaptiveStepSize;
-using integrators::CompositionMethod;
-using integrators::IntegrationProblem;
-using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -47,7 +43,7 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-namespace benchmarks {
+namespace integrators {
 
 namespace {
 
@@ -238,13 +234,13 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Length>()),
-    &integrators::DormandElMikkawyPrince1986RKN434FM<Length>);
+    decltype(DormandElMikkawyPrince1986RKN434FM<Length>()),
+    &DormandElMikkawyPrince1986RKN434FM<Length>);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>()),  // NOLINT
-    &integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>);
+    decltype(DormandElMikkawyPrince1986RKN434FM<Position<World>>()),
+    &DormandElMikkawyPrince1986RKN434FM<Position<World>>);
 
-}  // namespace benchmarks
+}  // namespace integrators
 }  // namespace principia

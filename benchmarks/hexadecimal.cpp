@@ -40,14 +40,10 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::base::not_null;
-using principia::base::HexadecimalDecode;
-using principia::base::HexadecimalEncode;
-
 namespace principia {
-namespace benchmarks {
+namespace base {
 
-static char const kPi1000HexadecimalDigits[] =
+char constexpr kPi1000HexadecimalDigits[] =
     "3243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89452821E63"
     "8D01377BE5466CF34E90C6CC0AC29B7C97C50DD3F84D5B5B54709179216D5D98979FB1BD13"
     "10BA698DFB5AC2FFD72DBD01ADFB7B8E1AFED6A267E96BA7C9045F12C7F9924A19947B3916"
@@ -63,7 +59,7 @@ static char const kPi1000HexadecimalDigits[] =
     "9456F9FB47D84A5C33B8B5EBEE06F75D885C12073401A449F56C16AA64ED3AA62363F77061"
     "BFEDF72429B023D37D0D724D00A1248DB0FEAD";
 
-static char const kPi500Bytes[] =
+char constexpr kPi500Bytes[] =
     "\x32\x43\xF6\xA8\x88\x5A\x30\x8D\x31\x31\x98\xA2\xE0\x37\x07\x34\x4A\x40"
     "\x93\x82\x22\x99\xF3\x1D\x00\x82\xEF\xA9\x8E\xC4\xE6\xC8\x94\x52\x82\x1E"
     "\x63\x8D\x01\x37\x7B\xE5\x46\x6C\xF3\x4E\x90\xC6\xCC\x0A\xC2\x9B\x7C\x97"
@@ -109,7 +105,7 @@ void HexEncode(not_null<benchmark::State*> const state,
   state->ResumeTiming();
 }
 
-std::vector<uint8_t> Bytes() {
+std::vector<uint8_t> PiBytes() {
   std::string const pi_bytes(kPi500Bytes, 500);
   std::string bytes_str;
   bytes_str.reserve(500 * kCopiesOfPi);
@@ -119,7 +115,7 @@ std::vector<uint8_t> Bytes() {
   return std::vector<uint8_t>(bytes_str.begin(), bytes_str.end());
 }
 
-std::vector<uint8_t> Digits() {
+std::vector<uint8_t> PiDigits() {
   std::string digits_str;
   digits_str.reserve(1000 * kCopiesOfPi);
   for (int i = 0; i < kCopiesOfPi; ++i) {
@@ -130,8 +126,8 @@ std::vector<uint8_t> Digits() {
 
 void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   bool correct = true;
-  std::vector<uint8_t> const input_bytes = Bytes();
-  std::vector<uint8_t> const expected_digits = Digits();
+  std::vector<uint8_t> const input_bytes = PiBytes();
+  std::vector<uint8_t> const expected_digits = PiDigits();
   while (state.KeepRunning()) {
     HexEncode(&state, &correct, input_bytes, expected_digits);
   }
@@ -158,8 +154,8 @@ void HexDecode(not_null<benchmark::State*> const state,
 
 void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   bool correct = true;
-  std::vector<uint8_t> input_digits = Digits();
-  std::vector<uint8_t> expected_bytes = Bytes();
+  std::vector<uint8_t> input_digits = PiDigits();
+  std::vector<uint8_t> expected_bytes = PiBytes();
   while (state.KeepRunning()) {
     HexDecode(&state, &correct, input_digits, expected_bytes);
   }
@@ -170,5 +166,5 @@ void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
 
 BENCHMARK(BM_DecodePi);
 
-}  // namespace benchmarks
+}  // namespace base
 }  // namespace principia

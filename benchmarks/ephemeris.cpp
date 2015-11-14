@@ -86,10 +86,6 @@ using geometry::Quaternion;
 using geometry::Rotation;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::MasslessBody;
 using quantities::DebugString;
 using quantities::Sqrt;
 using quantities::astronomy::JulianYear;
@@ -101,7 +97,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using testing_utilities::SolarSystemFactory;
 
-namespace benchmarks {
+namespace physics {
 
 namespace {
 
@@ -134,7 +130,7 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                  Norm();
     state->ResumeTiming();
   }
-  state->SetLabel(DebugString(error / AstronomicalUnit) + " ua");
+  state->SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
 }
 
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
@@ -215,8 +211,10 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   std::stringstream ss;
   ss << steps;
   state->SetLabel(ss.str() + " steps, " +
-                  DebugString(sun_error / AstronomicalUnit) + " ua, " +
-                  DebugString(earth_error / AstronomicalUnit) + " ua");
+                  quantities::DebugString(sun_error / AstronomicalUnit) +
+                  " ua, " +
+                  quantities::DebugString(earth_error / AstronomicalUnit) +
+                  " ua");
 }
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
@@ -288,9 +286,11 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   std::stringstream ss;
   ss << steps;
   state->SetLabel(ss.str() + " steps, " +
-                  DebugString(sun_error / AstronomicalUnit) + " ua, " +
-                  DebugString((earth_error - 6371 * Kilo(Metre)) /
-                                  NauticalMile) + " nmi");
+                  quantities::DebugString(sun_error / AstronomicalUnit) +
+                  " ua, " +
+                  quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
+                                          NauticalMile) +
+                  " nmi");
 }
 
 }  // namespace
@@ -363,5 +363,5 @@ BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly);
 BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies);
 BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness);
 
-}  // namespace benchmarks
+}  // namespace physics
 }  // namespace principia

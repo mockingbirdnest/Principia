@@ -46,16 +46,6 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::AngularFrequency;
 using quantities::SIUnit;
 using quantities::Time;
-using physics::BarycentricRotatingDynamicFrame;
-using physics::Body;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DynamicFrame;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::SolarSystem;
 using quantities::astronomy::EarthMass;
 using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
@@ -66,7 +56,7 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 
-namespace benchmarks {
+namespace physics {
 
 namespace {
 const Length kTolerance = 0.01 * Metre;
@@ -233,5 +223,5 @@ int const kIter = (1000 << 10) + 1;
 BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(kIter);
 BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(kIter);
 
-}  // namespace benchmarks
+}  // namespace physics
 }  // namespace principia
