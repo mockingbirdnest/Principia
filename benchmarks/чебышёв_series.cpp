@@ -147,5 +147,5 @@ BENCHMARK(BM_EvaluateDisplacement)->
 BENCHMARK(BM_NewhallApproximation)->
     Arg(4)->Arg(8)->Arg(16);
 
-}  // namespace benchmarks
+}  // namespace integrators
 }  // namespace principia

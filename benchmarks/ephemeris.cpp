@@ -363,5 +363,5 @@ BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly);
 BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies);
 BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness);
 
-}  // namespace benchmarks
+}  // namespace physics
 }  // namespace principia

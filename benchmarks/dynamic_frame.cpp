@@ -223,5 +223,5 @@ int const kIter = (1000 << 10) + 1;
 BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(kIter);
 BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(kIter);
 
-}  // namespace benchmarks
+}  // namespace physics
 }  // namespace principia

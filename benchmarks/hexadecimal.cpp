@@ -166,5 +166,5 @@ void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
 
 BENCHMARK(BM_DecodePi);
 
-}  // namespace benchmarks
+}  // namespace base
 }  // namespace principia

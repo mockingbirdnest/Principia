@@ -234,13 +234,13 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Length>()),
-    &integrators::DormandElMikkawyPrince1986RKN434FM<Length>);
+    decltype(DormandElMikkawyPrince1986RKN434FM<Length>()),
+    &DormandElMikkawyPrince1986RKN434FM<Length>);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>()),  // NOLINT
-    &integrators::DormandElMikkawyPrince1986RKN434FM<Position<World>>);
+    decltype(DormandElMikkawyPrince1986RKN434FM<Position<World>>()),
+    &DormandElMikkawyPrince1986RKN434FM<Position<World>>);
 
-}  // namespace benchmarks
+}  // namespace integrators
 }  // namespace principia

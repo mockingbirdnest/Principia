@@ -17,7 +17,7 @@ inline void DimensionfulDiscreteCosineTransform(
 inline void DoubleDiscreteCosineTransform(
     not_null<std::vector<double>*> const result);
 
-}  // namespace benchmarks
+}  // namespace quantities
 }  // namespace principia
 
 #include "benchmarks/quantities_body.hpp"

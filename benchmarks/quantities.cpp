@@ -27,5 +27,5 @@ void BM_DoubleDiscreteCosineTransform(
 }
 BENCHMARK(BM_DoubleDiscreteCosineTransform);
 
-}  // namespace benchmarks
+}  // namespace quantities
 }  // namespace principia
