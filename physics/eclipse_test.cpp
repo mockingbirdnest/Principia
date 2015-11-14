@@ -63,9 +63,14 @@ namespace physics {
     // U14 have the same angle, also expressible 2 different ways:
     ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
     ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
+    // Or as egg suggests, finding the distance with an angle. But these need to have error ranges instead of exact value...
+    (r_sun - r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
+    (r_earth - r_moon) / Sin(alpha) == (q_moon - q_earth).Norm(); 
     // U23
     ArcSin((r_sun - r_moon)/(q_moon - q_sun).Norm());
     ArcSin((r_earth - r_moon)/(q_moon - q_earth).Norm());
+    (r_sun + r_moon) / Sin(alpha) == (q_moon + q_sun).Norm();
+    (r_earth + r_moon) / Sin(alpha) == (q_moon + q_earth).Norm(); 
     // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
