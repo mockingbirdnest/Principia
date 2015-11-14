@@ -65,8 +65,7 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
-  auto it = this->End();
-  return Iterator(--it);
+  return --this->End();
 }
 
 template<typename Frame>
@@ -88,18 +87,13 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  if (!this->is_root() && time <= Iterator(this->Fork()).time()) {
-    // TODO(egg): This is a logic error and it should CHECK.  Unfortunately, the
-    // plugin integration test fails this check.
-    LOG(ERROR) << "Append at " << time
-               << " which is before fork time "
-               << Iterator(this->Fork()).time();
-    return;
-  }
+  CHECK(this->is_root() || time > this->Fork().time())
+       << "Append at " << time << " which is before fork time "
+       << this->Fork().time();
 
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << Iterator(this->Begin()).time() << ", "
+                 << ", time range = [" << this->Begin().time() << ", "
                  << last().time() << "]";
     return;
   }

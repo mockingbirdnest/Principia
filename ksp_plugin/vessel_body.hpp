@@ -187,10 +187,10 @@ inline void Vessel::UpdatePrediction(
   }
   DeletePrediction();
   prediction_ = mutable_history()->NewForkWithCopy(history().last().time());
-  // If prolongation has no additional points this will do nothing (although it
-  // might warn).
-  prediction_->Append(prolongation().last().time(),
-                      prolongation().last().degrees_of_freedom());
+  if (history().last().time() != prolongation().last().time()) {
+    prediction_->Append(prolongation().last().time(),
+                        prolongation().last().degrees_of_freedom());
+  }
   ephemeris->FlowWithAdaptiveStep(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
