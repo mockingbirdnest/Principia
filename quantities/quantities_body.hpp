@@ -293,7 +293,8 @@ constexpr Quantity<D> Quantity<D>::operator*(double const right) const {
 }
 
 template<typename LDimensions, typename RDimensions>
-constexpr internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+FORCE_INLINE constexpr internal::Product<Quantity<LDimensions>,
+                                         Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
@@ -376,7 +377,7 @@ inline double Abs(double const x) {
 }
 
 template<typename D>
-Quantity<D> Abs(Quantity<D> const& quantity) {
+FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
   return Quantity<D>(std::abs(quantity.magnitude_));
 }
 

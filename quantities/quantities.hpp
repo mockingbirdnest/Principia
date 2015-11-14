@@ -192,7 +192,8 @@ class Quantity {
   friend constexpr Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
       Quantity<BaseDimensions> const& x);
 
-  friend Quantity<D> Abs<>(Quantity<D> const&);
+  template<typename E>
+  friend Quantity<E> Abs(Quantity<E> const&);
 
   template<typename ArgumentDimensions>
   friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
