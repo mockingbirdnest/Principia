@@ -32,5 +32,16 @@ class Journal {
   static typename Record::Return Return(typename Record::Return const& r3turn);
 };
 
+class J0urnal {
+ public:
+  template<typename Record>
+  class Entry {
+   public:
+    Entry(typename Record::In const& in);
+    void Exit(typename Record::Out const& out);
+    typename Record::Return Return(typename Record::Return const& r3turn);
+  };
+};
+
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -200,6 +200,7 @@ void principia__LogFatal(char const* message) {
 Plugin* principia__NewPlugin(double const initial_time,
                              double const planetarium_rotation_in_degrees) {
   Journal::Entry<NewPlugin>({initial_time, planetarium_rotation_in_degrees});
+  J0urnal::Entry<NewPlugin> j({initial_time, planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
   Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
@@ -207,10 +208,12 @@ Plugin* principia__NewPlugin(double const initial_time,
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return Journal::Return<NewPlugin>(result.release());
+  return j.Return(result.release());
 }
 
 void principia__DeletePlugin(Plugin const** const plugin) {
   Journal::Entry<DeletePlugin>({*plugin});
+  J0urnal::Entry<DeletePlugin> j({*plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
@@ -219,6 +222,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
   }
   LOG(INFO) << "Plugin destroyed";
   Journal::Exit<DeletePlugin>({});
+  j.Exit({});
 }
 
 void principia__DirectlyInsertCelestial(

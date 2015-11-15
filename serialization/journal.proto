@@ -7,6 +7,8 @@ message DeletePlugin {
     required fixed64 plugin = 1;
   }
   message Out {}
+  required In in = 1;
+  required Out out = 2;
 }
 
 message NewPlugin {
@@ -17,4 +19,6 @@ message NewPlugin {
   message Return {
     required fixed64 plugin = 1;
   }
+  required In in = 1;
+  required Return return = 3;
 }
