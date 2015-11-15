@@ -57,6 +57,7 @@ class Journ4l {
     Method(typename M::In const& in, typename M::Ou7 const& out);
     Method(typename M::In const& in);
     typename M::Return Return(typename M::Return const& r3turn);
+    void Return();
   };
 };
 

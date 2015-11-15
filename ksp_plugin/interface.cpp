@@ -230,6 +230,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 
   Journal::Exit<DeletePlugin>({*plugin});
   j.Exit({*plugin});
+  return m.Return();
 }
 
 void principia__DirectlyInsertCelestial(
