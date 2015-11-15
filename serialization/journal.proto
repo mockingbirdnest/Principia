@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package principia.serialization;
+
+message DeletePlugin {
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Out {}
+}
+
+message NewPlugin {
+  message In {
+    required double initial_time = 1;
+    required double planetarium_rotation_in_degrees = 2;
+  }
+  message Return {
+    required fixed64 plugin = 1;
+  }
+}

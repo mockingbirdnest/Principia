@@ -65,4 +65,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="journal.proto" />
+  </ItemGroup>
 </Project>

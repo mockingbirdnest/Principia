@@ -18,6 +18,7 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
+#include "ksp_plugin/journal.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
@@ -198,16 +199,18 @@ void principia__LogFatal(char const* message) {
 
 Plugin* principia__NewPlugin(double const initial_time,
                              double const planetarium_rotation_in_degrees) {
+  Journal::Entry<NewPlugin>({initial_time, planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
   Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
       t0 + initial_time * Second,
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
-  return result.release();
+  return Journal::Return<NewPlugin>(result.release());
 }
 
 void principia__DeletePlugin(Plugin const** const plugin) {
+  Journal::Entry<DeletePlugin>({*plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
@@ -215,6 +218,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
     TakeOwnership(plugin);
   }
   LOG(INFO) << "Plugin destroyed";
+  Journal::Exit<DeletePlugin>({});
 }
 
 void principia__DirectlyInsertCelestial(
