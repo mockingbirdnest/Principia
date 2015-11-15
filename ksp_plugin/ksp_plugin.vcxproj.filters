@@ -53,6 +53,9 @@
     <ClInclude Include="journal.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="journal_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">

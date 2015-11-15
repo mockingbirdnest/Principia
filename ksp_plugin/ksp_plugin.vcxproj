@@ -158,6 +158,7 @@
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="journal.hpp" />
+    <ClInclude Include="journal_body.hpp" />
     <ClInclude Include="manœuvre.hpp" />
     <ClInclude Include="manœuvre_body.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
