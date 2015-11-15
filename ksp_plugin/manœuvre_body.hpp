@@ -77,7 +77,8 @@ Speed Manœuvre<InertialFrame, Frame>::Δv() const {
 }
 
 template<typename InertialFrame, typename Frame>
-Vector<double, Frame> const& Manœuvre<InertialFrame, Frame>::direction() const {
+Vector<double, Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::direction() const {
   return direction_;
 }
 

@@ -45,7 +45,7 @@ class Manœuvre {
   // by the sum of the individual mass flows (where each mass flow is the
   // individual thrust divided by the exhaust velocity).
   SpecificImpulse const& specific_impulse() const;
-  Vector<double, Frame> const& direction() const;
+  Vector<double, Frenet<Frame>> const& direction() const;
 
   // Equivalent characterizations of intensity.  Only one of the mutators may be
   // called, and only once.

@@ -3,6 +3,8 @@
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/mock_dynamic_frame.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -11,6 +13,9 @@
 namespace principia {
 
 using geometry::Frame;
+using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
+using physics::MockDynamicFrame;
 using quantities::Pow;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -24,6 +29,7 @@ using testing_utilities::RelativeError;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::StrictMock;
 
 namespace ksp_plugin {
 
@@ -31,15 +37,27 @@ class ManœuvreTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
+  using Rendering = Frame<serialization::Frame::TestTag,
+                          serialization::Frame::TEST1, false>;
+
+  StrictMock<MockDynamicFrame<World, Rendering>> const mock_dynamic_frame_;
+  DiscreteTrajectory<World> discrete_trajectory_;
+  DegreesOfFreedom<World> const dof_ = {
+      World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
+      Velocity<World>({8 * Metre / Second,
+                       10 * Metre / Second,
+                       4 * Metre / Second})};
 };
 
 TEST_F(ManœuvreTest, TimedBurn) {
   Instant const t0 = Instant();
-  Vector<double, World> e_y({0, 1, 0});
-  Manœuvre<World> manœuvre(1 * Newton /*thrust*/,
-                           2 * Kilogram /*initial_mass*/,
-                           1 * Newton * Second / Kilogram /*specific_impulse*/,
-                           e_y /*direction*/);
+  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+  Manœuvre<World, Rendering> manœuvre(
+      1 * Newton /*thrust*/,
+      2 * Kilogram /*initial_mass*/,
+      1 * Newton * Second / Kilogram /*specific_impulse*/,
+      e_y /*direction*/,
+      &mock_dynamic_frame_);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -56,26 +74,31 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(t0, manœuvre.initial_time());
   EXPECT_EQ(t0 + 1 * Second, manœuvre.final_time());
   EXPECT_EQ(t0 + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
+
+  discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
+  auto const acceleration = manœuvre.acceleration(discrete_trajectory_);
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
-      manœuvre.acceleration()(manœuvre.initial_time() - 1 * Second).Norm());
+      acceleration(manœuvre.initial_time() - 1 * Second).Norm());
   EXPECT_EQ(0.5 * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.initial_time()).Norm());
-  EXPECT_THAT(manœuvre.acceleration()(manœuvre.time_of_half_Δv()).Norm(),
+            acceleration(manœuvre.initial_time()).Norm());
+  EXPECT_THAT(acceleration(manœuvre.time_of_half_Δv()).Norm(),
               AlmostEquals(Sqrt(0.5) * Metre / Pow<2>(Second), 1));
   EXPECT_EQ(1 * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.final_time()).Norm());
+            acceleration(manœuvre.final_time()).Norm());
   EXPECT_EQ(0 * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.final_time() + 1 * Second).Norm());
+            acceleration(manœuvre.final_time() + 1 * Second).Norm());
 }
 
 TEST_F(ManœuvreTest, TargetΔv) {
   Instant const t0 = Instant();
-  Vector<double, World> e_y({0, 1, 0});
-  Manœuvre<World> manœuvre(1 * Newton /*thrust*/,
-                           2 * Kilogram /*initial_mass*/,
-                           1 * Newton * Second / Kilogram /*specific_impulse*/,
-                           e_y /*direction*/);
+  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+  Manœuvre<World, Rendering> manœuvre(
+      1 * Newton /*thrust*/,
+      2 * Kilogram /*initial_mass*/,
+      1 * Newton * Second / Kilogram /*specific_impulse*/,
+      e_y /*direction*/,
+      &mock_dynamic_frame_);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -92,17 +115,20 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(t0 - (2 - 2 / Sqrt(e)) * Second, manœuvre.initial_time());
   EXPECT_EQ(t0 + (2 / Sqrt(e) - 2 / e) * Second, manœuvre.final_time());
   EXPECT_EQ(t0, manœuvre.time_of_half_Δv());
+
+  discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
+  auto const acceleration = manœuvre.acceleration(discrete_trajectory_);
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
-      manœuvre.acceleration()(manœuvre.initial_time() - 1 * Second).Norm());
+      acceleration(manœuvre.initial_time() - 1 * Second).Norm());
   EXPECT_EQ(0.5 * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.initial_time()).Norm());
+            acceleration(manœuvre.initial_time()).Norm());
   EXPECT_EQ(Sqrt(e) / 2 * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.time_of_half_Δv()).Norm());
+            acceleration(manœuvre.time_of_half_Δv()).Norm());
   EXPECT_EQ((e / 2) * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.final_time()).Norm());
+            acceleration(manœuvre.final_time()).Norm());
   EXPECT_EQ(0 * Metre / Pow<2>(Second),
-            manœuvre.acceleration()(manœuvre.final_time() + 1 * Second).Norm());
+            acceleration(manœuvre.final_time() + 1 * Second).Norm());
 }
 
 TEST_F(ManœuvreTest, Apollo8SIVB) {
@@ -141,11 +167,14 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Mass total_vehicle_at_s_ivb_2nd_eco               =  59285 * Kilogram;
 
   // An arbitrary direction, we're not testing this.
-  Vector<double, World> e_y({0, 1, 0});
+  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
 
-  Manœuvre<World> first_burn(thrust_1st,
-                             total_vehicle_at_s_ivb_1st_90_percent_thrust,
-                             specific_impulse_1st, e_y);
+  Manœuvre<World, Rendering> first_burn(
+      thrust_1st,
+      total_vehicle_at_s_ivb_1st_90_percent_thrust,
+      specific_impulse_1st,
+      e_y,
+      &mock_dynamic_frame_);
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_burn.mass_flow()),
               Lt(1E-4));
@@ -161,19 +190,24 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Accelerations from Figure 4-4. Ascent Trajectory Acceleration Comparison.
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
+  discrete_trajectory_.Append(first_burn.initial_time(), dof_);
+  auto const first_acceleration = first_burn.acceleration(discrete_trajectory_);
   EXPECT_THAT(
-      first_burn.acceleration()(first_burn.initial_time()).Norm(),
+      first_acceleration(first_burn.initial_time()).Norm(),
       AllOf(Gt(5 * Metre / Pow<2>(Second)), Lt(6.25 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(first_burn.acceleration()(range_zero + 600 * Second).Norm(),
+  EXPECT_THAT(first_acceleration(range_zero + 600 * Second).Norm(),
               AllOf(Gt(6.15 * Metre / Pow<2>(Second)),
                     Lt(6.35 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(first_burn.acceleration()(first_burn.final_time()).Norm(),
+  EXPECT_THAT(first_acceleration(first_burn.final_time()).Norm(),
               AllOf(Gt(7.03 * Metre / Pow<2>(Second)),
                     Lt(7.05 * Metre / Pow<2>(Second))));
 
-  Manœuvre<World> second_burn(thrust_2nd,
-                              total_vehicle_at_s_ivb_2nd_90_percent_thrust,
-                              specific_impulse_2nd, e_y);
+  Manœuvre<World, Rendering> second_burn(
+      thrust_2nd,
+      total_vehicle_at_s_ivb_2nd_90_percent_thrust,
+      specific_impulse_2nd,
+      e_y,
+      &mock_dynamic_frame_);
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_burn.mass_flow()),
               Lt(2E-4));
@@ -189,22 +223,25 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
-  EXPECT_THAT(second_burn.acceleration()(second_burn.initial_time()).Norm(),
+  discrete_trajectory_.Append(second_burn.initial_time(), dof_);
+  auto const second_acceleration =
+      second_burn.acceleration(discrete_trajectory_);
+  EXPECT_THAT(second_acceleration(second_burn.initial_time()).Norm(),
               AllOf(Gt(7 * Metre / Pow<2>(Second)),
                     Lt(7.5 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(second_burn.acceleration()(t6 + 650 * Second).Norm(),
+  EXPECT_THAT(second_acceleration(t6 + 650 * Second).Norm(),
               AllOf(Gt(8 * Metre / Pow<2>(Second)),
                     Lt(8.02 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(second_burn.acceleration()(t6 + 700 * Second).Norm(),
+  EXPECT_THAT(second_acceleration(t6 + 700 * Second).Norm(),
               AllOf(Gt(8.8 * Metre / Pow<2>(Second)),
                     Lt(9 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(second_burn.acceleration()(t6 + 750 * Second).Norm(),
+  EXPECT_THAT(second_acceleration(t6 + 750 * Second).Norm(),
               AllOf(Gt(9.9 * Metre / Pow<2>(Second)),
                     Lt(10 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(second_burn.acceleration()(t6 + 850 * Second).Norm(),
+  EXPECT_THAT(second_acceleration(t6 + 850 * Second).Norm(),
               AllOf(Gt(12.97 * Metre / Pow<2>(Second)),
                     Lt(13 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(second_burn.acceleration()(second_burn.final_time()).Norm(),
+  EXPECT_THAT(second_acceleration(second_burn.final_time()).Norm(),
               AllOf(Gt(15.12 * Metre / Pow<2>(Second)),
                     Lt(15.17 * Metre / Pow<2>(Second))));
 
