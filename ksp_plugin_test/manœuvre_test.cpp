@@ -16,6 +16,7 @@ using geometry::Frame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MockDynamicFrame;
+using physics::RigidTransformation;
 using quantities::Pow;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -29,6 +30,7 @@ using testing_utilities::RelativeError;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace ksp_plugin {
@@ -44,9 +46,20 @@ class ManœuvreTest : public ::testing::Test {
   DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
-      Velocity<World>({8 * Metre / Second,
-                       10 * Metre / Second,
-                       4 * Metre / Second})};
+      Velocity<World>(
+          {8 * Metre / Second, 10 * Metre / Second, 4 * Metre / Second})};
+  DegreesOfFreedom<Rendering> const rendering_dof_ = {
+      Rendering::origin +
+          Displacement<Rendering>({1 * Metre, 9 * Metre, 5 * Metre}),
+      Velocity<Rendering>(
+          {8 * Metre / Second, 10 * Metre / Second, 4 * Metre / Second})};
+  RigidMotion<World, Rendering> const rigid_motion_ =
+      RigidMotion<World, Rendering>(
+          RigidTransformation<World, Rendering>(
+              World::origin,
+              Rendering::origin,
+              OrthogonalMap<World, Rendering>::Identity()),
+          AngularVelocity<World>(), Velocity<World>());
 };
 
 TEST_F(ManœuvreTest, TimedBurn) {
@@ -76,6 +89,12 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(t0 + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
 
   discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
+  EXPECT_CALL(mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+      .WillOnce(Return(rigid_motion_));
+  EXPECT_CALL(mock_dynamic_frame_,
+              FrenetFrame(manœuvre.initial_time(), rendering_dof_))
+      .WillOnce(
+          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   auto const acceleration = manœuvre.acceleration(discrete_trajectory_);
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
@@ -117,6 +136,12 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(t0, manœuvre.time_of_half_Δv());
 
   discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
+  EXPECT_CALL(mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+      .WillOnce(Return(rigid_motion_));
+  EXPECT_CALL(mock_dynamic_frame_,
+              FrenetFrame(manœuvre.initial_time(), rendering_dof_))
+      .WillOnce(
+          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   auto const acceleration = manœuvre.acceleration(discrete_trajectory_);
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
@@ -191,6 +216,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   discrete_trajectory_.Append(first_burn.initial_time(), dof_);
+  EXPECT_CALL(mock_dynamic_frame_, ToThisFrameAtTime(first_burn.initial_time()))
+      .WillOnce(Return(rigid_motion_));
+  EXPECT_CALL(mock_dynamic_frame_,
+              FrenetFrame(first_burn.initial_time(), rendering_dof_))
+      .WillOnce(
+          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   auto const first_acceleration = first_burn.acceleration(discrete_trajectory_);
   EXPECT_THAT(
       first_acceleration(first_burn.initial_time()).Norm(),
@@ -224,6 +255,13 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   discrete_trajectory_.Append(second_burn.initial_time(), dof_);
+  EXPECT_CALL(mock_dynamic_frame_,
+              ToThisFrameAtTime(second_burn.initial_time()))
+      .WillOnce(Return(rigid_motion_));
+  EXPECT_CALL(mock_dynamic_frame_,
+              FrenetFrame(second_burn.initial_time(), rendering_dof_))
+      .WillOnce(
+          Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   auto const second_acceleration =
       second_burn.acceleration(discrete_trajectory_);
   EXPECT_THAT(second_acceleration(second_burn.initial_time()).Norm(),

@@ -8,6 +8,7 @@
 
 namespace principia {
 
+using physics::RigidMotion;
 using quantities::Sqrt;
 
 namespace ksp_plugin {
@@ -121,13 +122,15 @@ Manœuvre<InertialFrame, Frame>::acceleration(
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
       coasting_trajectory.Find(initial_time());
   CHECK(it != coasting_trajectory.End());
+  RigidMotion<InertialFrame, Frame> const to_frame_at_initial_time =
+      frame_->ToThisFrameAtTime(initial_time());
+  OrthogonalMap<Frame, InertialFrame> const from_frame_at_initial_time =
+      to_frame_at_initial_time.orthogonal_map().Inverse();
   Rotation<Frenet<Frame>, Frame> const from_frenet_frame = 
       frame_->FrenetFrame(initial_time(),
-                          frame_->ToThisFrameAtTime(initial_time())(
-                              it.degrees_of_freedom()));
+                          to_frame_at_initial_time(it.degrees_of_freedom()));
   Vector<double, InertialFrame> inertial_direction =
-      frame_->FromThisFrameAtTime(initial_time()).orthogonal_map()(
-          from_frenet_frame(direction_));
+      from_frame_at_initial_time(from_frenet_frame(direction_));
 
   return [this, inertial_direction](
       Instant const& time) -> Vector<Acceleration, InertialFrame> {
