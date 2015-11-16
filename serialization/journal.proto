@@ -8,7 +8,7 @@ message Method {
 
 message DeletePlugin {
   extend Method {
-    optional DeletePlugin delete_plugin = 5000;
+    optional DeletePlugin extension = 5000;
   }
   message In {
     required fixed64 plugin = 1;
@@ -22,7 +22,7 @@ message DeletePlugin {
 
 message NewPlugin {
   extend Method {
-    optional NewPlugin new_plugin = 5001;
+    optional NewPlugin extension = 5001;
   }
   message In {
     required double initial_time = 1;

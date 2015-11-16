@@ -55,6 +55,7 @@ Journal::Method<Profile>::~Method() {
   if (out_filler_ != nullptr) {
     out_filler_();
   }
+  AppendMessage<typename Profile::Message>(message_.release());
 }
 
 template<typename Profile>
@@ -72,6 +73,17 @@ typename P::Return Journal::Method<Profile>::Return(
   Profile::Fill(result, message_.get());
   return result;
 }
+
+template<typename Message>
+void Journal::AppendMessage(not_null<Message*> const message) {
+  if (journal_ == nullptr) {
+    journal_ = new std::list<serialization::Method>;
+  }
+  journal_->emplace_back();
+  journal_->back().SetAllocatedExtension(Message::extension, message);
+}
+
+std::list<serialization::Method>* Journal::journal_ = nullptr;
 
 }  // namespace ksp_plugin
 }  // namespace principia

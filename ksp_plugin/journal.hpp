@@ -2,6 +2,7 @@
 
 #include <experimental/optional>
 #include <functional>
+#include <list>
 #include <memory>
 
 #include "base/not_null.hpp"
@@ -60,10 +61,16 @@ class Journal {
     typename P::Return Return(typename P::Return const& result);
 
    private:
-    std::unique_ptr<typename Profile::Message> const message_;
+    std::unique_ptr<typename Profile::Message> message_;
     std::function<void()> out_filler_;
     bool returned_ = false;
   };
+
+  template<typename Message>
+  static void AppendMessage(not_null<Message*> const message);
+
+ private:
+  static std::list<serialization::Method>* journal_;
 };
 
 }  // namespace ksp_plugin
