@@ -1,6 +1,5 @@
 #pragma once
 
-#include <experimental/optional>
 #include <functional>
 #include <list>
 #include <memory>
