@@ -13,7 +13,9 @@ message DeletePlugin {
   message In {
     required fixed64 plugin = 1;
   }
-  message Out {}
+  message Out {
+    required fixed64 plugin = 1;
+  }
   required In in = 1;
   required Out out = 2;
 }

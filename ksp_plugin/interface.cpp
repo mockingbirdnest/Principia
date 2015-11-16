@@ -265,9 +265,6 @@ void principia__DirectlyInsertCelestial(
           SolarSystem<Barycentric>::MakeMassiveBody(gravity_model));
 }
 
-// NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
-// but it is more readable. This will be resolved once we have constexpr.
-
 void principia__InsertCelestial(Plugin* const plugin,
                                 int const celestial_index,
                                 double const gravitational_parameter,
