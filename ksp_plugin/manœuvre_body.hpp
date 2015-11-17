@@ -126,7 +126,7 @@ Manœuvre<InertialFrame, Frame>::acceleration(
       frame_->ToThisFrameAtTime(initial_time());
   OrthogonalMap<Frame, InertialFrame> const from_frame_at_initial_time =
       to_frame_at_initial_time.orthogonal_map().Inverse();
-  Rotation<Frenet<Frame>, Frame> const from_frenet_frame = 
+  Rotation<Frenet<Frame>, Frame> const from_frenet_frame =
       frame_->FrenetFrame(initial_time(),
                           to_frame_at_initial_time(it.degrees_of_freedom()));
   Vector<double, InertialFrame> inertial_direction =

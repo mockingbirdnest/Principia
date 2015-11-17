@@ -12,10 +12,10 @@ namespace principia {
 
 using geometry::Instant;
 using geometry::Vector;
-using physics::Ephemeris;
-using physics::Frenet;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
+using physics::Ephemeris;
+using physics::Frenet;
 using quantities::Force;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -25,7 +25,11 @@ using quantities::Variation;
 
 namespace ksp_plugin {
 
-// This class represents a constant-thrust inertial burn.
+// This class represents a constant-thrust inertial burn.  |InertialFrame| is
+// an underlying inertial reference frame, |Frame| is the reference frame used
+// to compute the Frenet frame.  |Frame| is defined by the parameter |frame|
+// given to the constructor.  The direction is given in the Frenet frame of the
+// trajectory at the beginning of the burn.
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:

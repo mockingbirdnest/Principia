@@ -38,4 +38,3 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 
 }  // namespace physics
 }  // namespace principia
-

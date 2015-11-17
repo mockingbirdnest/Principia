@@ -8,6 +8,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -26,6 +27,7 @@ using quantities::si::Second;
 using quantities::uk::Foot;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
 using testing_utilities::RelativeError;
 using ::testing::AllOf;
 using ::testing::Gt;
@@ -40,7 +42,7 @@ class ManœuvreTest : public ::testing::Test {
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
   using Rendering = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST1, false>;
+                          serialization::Frame::TEST2, false>;
 
   StrictMock<MockDynamicFrame<World, Rendering>> const mock_dynamic_frame_;
   DiscreteTrajectory<World> discrete_trajectory_;
@@ -105,6 +107,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
               AlmostEquals(Sqrt(0.5) * Metre / Pow<2>(Second), 1));
   EXPECT_EQ(1 * Metre / Pow<2>(Second),
             acceleration(manœuvre.final_time()).Norm());
+  EXPECT_THAT(
+      acceleration(manœuvre.final_time()),
+      Componentwise(0 * Metre / Pow<2>(Second), 1 * Metre / Pow<2>(Second),
+                    0 * Metre / Pow<2>(Second)));
   EXPECT_EQ(0 * Metre / Pow<2>(Second),
             acceleration(manœuvre.final_time() + 1 * Second).Norm());
 }
