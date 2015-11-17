@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="journal.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="physics_bubble.cpp" />
     <ClCompile Include="plugin.cpp" />

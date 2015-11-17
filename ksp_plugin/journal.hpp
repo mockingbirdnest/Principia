@@ -70,6 +70,7 @@ class Journal {
 
  private:
   static std::list<serialization::Method>* journal_;
+  friend class JournalTest;
 };
 
 }  // namespace ksp_plugin

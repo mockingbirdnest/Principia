@@ -210,6 +210,7 @@ Plugin* principia__NewPlugin(double const initial_time,
 }
 
 void principia__DeletePlugin(Plugin const** const plugin) {
+  CHECK_NOTNULL(plugin);
   Journal::Method<DeletePlugin> m({*plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty

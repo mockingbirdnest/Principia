@@ -113,7 +113,7 @@ TEST_F(InterfaceDeathTest, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     principia__DeletePlugin(nullptr);
-  }, "pointer.*non NULL");
+  }, "non NULL");
   EXPECT_DEATH({
     principia__InsertCelestial(plugin,
                                kCelestialIndex,
