@@ -1,5 +1,7 @@
 #include "ksp_plugin/journal.hpp"
 
+#include <list>
+
 #include "gtest/gtest.h"
 #include "ksp_plugin/mock_plugin.hpp"
 #include "serialization/journal.pb.h"

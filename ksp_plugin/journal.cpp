@@ -1,5 +1,7 @@
 #include "ksp_plugin/journal.hpp"
 
+#include <list>
+
 #include "glog/logging.h"
 
 namespace principia {
