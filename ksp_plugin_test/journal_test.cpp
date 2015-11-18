@@ -12,15 +12,39 @@ namespace ksp_plugin {
 class JournalTest : public testing::Test {
  protected:
   JournalTest() : plugin_(std::make_unique<MockPlugin>()) {
-    journal().clear();
+    if (journal() != nullptr) {
+      journal()->clear();
+    }
   }
 
-  std::list<serialization::Method>& journal() {
-    return *Journal::journal_;
+  std::list<serialization::Method>* journal() {
+    return Journal::journal_;
   }
 
   std::unique_ptr<MockPlugin> plugin_;
 };
+
+using JournalDeathTest = JournalTest;
+
+TEST_F(JournalDeathTest, Return) {
+  EXPECT_DEATH({
+    Journal::Method<NewPlugin> m({1, 2});
+    m.Return(plugin_.get());
+    m.Return();
+  },
+  "!returned_");
+  EXPECT_DEATH({
+    const Plugin* plugin = plugin_.get();
+    Journal::Method<DeletePlugin> m({plugin}, {&plugin});
+    m.Return();
+    m.Return();
+  },
+  "!returned_");
+  EXPECT_DEATH({
+    Journal::Method<NewPlugin> m({1, 2});
+  },
+  "returned_");
+}
 
 TEST_F(JournalTest, Journal) {
   {
@@ -33,7 +57,7 @@ TEST_F(JournalTest, Journal) {
     m.Return(plugin_.get());
   }
 
-  auto const j = journal();
+  auto const& j = *journal();
   EXPECT_EQ(2, j.size());
 
   auto it = j.begin();

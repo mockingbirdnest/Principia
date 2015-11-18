@@ -66,7 +66,7 @@ class Journal {
   };
 
   template<typename Message>
-  static void AppendMessage(not_null<Message*> const message);
+  static void AppendMessage(not_null<std::unique_ptr<Message>> message);
 
  private:
   static std::list<serialization::Method>* journal_;

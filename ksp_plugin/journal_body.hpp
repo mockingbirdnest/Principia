@@ -30,7 +30,7 @@ Journal::Method<Profile>::~Method() {
   if (out_filler_ != nullptr) {
     out_filler_();
   }
-  AppendMessage<typename Profile::Message>(message_.release());
+  AppendMessage<typename Profile::Message>(std::move(message_));
 }
 
 template<typename Profile>
@@ -50,12 +50,12 @@ typename P::Return Journal::Method<Profile>::Return(
 }
 
 template<typename Message>
-void Journal::AppendMessage(not_null<Message*> const message) {
+void Journal::AppendMessage(not_null<std::unique_ptr<Message>> message) {
   if (journal_ == nullptr) {
     journal_ = new std::list<serialization::Method>;
   }
   journal_->emplace_back();
-  journal_->back().SetAllocatedExtension(Message::extension, message);
+  journal_->back().SetAllocatedExtension(Message::extension, message.release());
 }
 
 }  // namespace ksp_plugin
