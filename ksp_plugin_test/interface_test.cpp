@@ -9,7 +9,7 @@
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/mock_dynamic_frame.h"
+#include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 

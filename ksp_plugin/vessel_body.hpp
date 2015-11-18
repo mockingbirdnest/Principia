@@ -149,7 +149,7 @@ inline void Vessel::UpdateFlightPlan(
     not_null<DiscreteTrajectory<Barycentric>*> const burn_trajectory =
         flight_plan_.back();
     ephemeris->FlowWithAdaptiveStep(burn_trajectory,
-                                    manœuvre->acceleration(),
+                                    manœuvre->acceleration(*coast_trajectory),
                                     prolongation_length_tolerance,
                                     prolongation_speed_tolerance,
                                     integrator,

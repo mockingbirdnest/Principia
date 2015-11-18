@@ -3,6 +3,8 @@
 #include <experimental/optional>
 
 #include "geometry/named_quantities.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -10,7 +12,10 @@ namespace principia {
 
 using geometry::Instant;
 using geometry::Vector;
+using physics::DiscreteTrajectory;
+using physics::DynamicFrame;
 using physics::Ephemeris;
+using physics::Frenet;
 using quantities::Force;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -20,14 +25,19 @@ using quantities::Variation;
 
 namespace ksp_plugin {
 
-// This class represents a constant-thrust inertial burn.
-template<typename Frame>
+// This class represents a constant-thrust inertial burn.  |InertialFrame| is
+// an underlying inertial reference frame, |Frame| is the reference frame used
+// to compute the Frenet frame.  |Frame| is defined by the parameter |frame|
+// given to the constructor.  The |direction| is given in the Frenet frame of
+// the trajectory at the beginning of the burn.
+template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
   Manœuvre(Force const& thrust,
            Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
-           Vector<double, Frame> const& direction);
+           Vector<double, Frenet<Frame>> const& direction,
+           not_null<DynamicFrame<InertialFrame, Frame> const*> frame);
   ~Manœuvre() = default;
 
   Force const& thrust() const;
@@ -39,7 +49,7 @@ class Manœuvre {
   // by the sum of the individual mass flows (where each mass flow is the
   // individual thrust divided by the exhaust velocity).
   SpecificImpulse const& specific_impulse() const;
-  Vector<double, Frame> const& direction() const;
+  Vector<double, Frenet<Frame>> const& direction() const;
 
   // Equivalent characterizations of intensity.  Only one of the mutators may be
   // called, and only once.
@@ -66,17 +76,20 @@ class Manœuvre {
   // Intensity and timing must have been set.
   Instant final_time() const;
 
-  // Intensity and timing must have been set.  The result is valid for until
-  // |*this| is destroyed.
-  typename Ephemeris<Frame>::IntrinsicAcceleration acceleration() const;
+  // Intensity and timing must have been set.  The result is valid until
+  // |*this| is destroyed.  |coasting_trajectory| must have a point at
+  // |initial_time()|.
+  typename Ephemeris<InertialFrame>::IntrinsicAcceleration acceleration(
+      DiscreteTrajectory<InertialFrame> const& coasting_trajectory) const;
 
  private:
   Force const thrust_;
   Mass const initial_mass_;
   SpecificImpulse const specific_impulse_;
-  Vector<double, Frame> const direction_;
+  Vector<double, Frenet<Frame>> const direction_;
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
+  not_null<DynamicFrame<InertialFrame, Frame> const*> frame_;
 };
 
 }  // namespace ksp_plugin

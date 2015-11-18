@@ -116,7 +116,7 @@
     <ClInclude Include="mock_continuous_trajectory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mock_dynamic_frame.h">
+    <ClInclude Include="mock_dynamic_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,11 +24,17 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
                        RigidMotion<ThisFrame, InertialFrame>(Instant const& t));
   MOCK_CONST_METHOD2_T(
       GeometricAcceleration,
-      Vector<Acceleration, ThisFrame> (
+      Vector<Acceleration, ThisFrame>(
           Instant const& t,
+          DegreesOfFreedom<ThisFrame> const& degrees_of_freedom));
+
+  using Rot = Rotation<Frenet<ThisFrame>, ThisFrame>;
+
+  MOCK_CONST_METHOD2_T(
+      FrenetFrame,
+      Rot(Instant const& t,
           DegreesOfFreedom<ThisFrame> const& degrees_of_freedom));
 };
 
 }  // namespace physics
 }  // namespace principia
-
