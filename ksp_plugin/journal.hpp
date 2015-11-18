@@ -28,6 +28,28 @@ struct DeletePlugin {
   static void Fill(Out const& out, not_null<Message*> const message);
 };
 
+struct DirectlyInsertCelestial {
+  struct In {
+    Plugin* plugin;
+    int celestial_index;
+    int const* parent_index;
+    char const* gravitational_parameter;
+    char const* axis_right_ascension;
+    char const* axis_declination;
+    char const* j2;
+    char const* reference_radius;
+    char const* x;
+    char const* y;
+    char const* z;
+    char const* vx;
+    char const* vy;
+    char const* vz;
+  };
+
+  using Message = serialization::DirectlyInsertCelestial;
+  static void Fill(In const& in, not_null<Message*> const message);
+};
+
 struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
 };

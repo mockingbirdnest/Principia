@@ -3,7 +3,7 @@ syntax = "proto2";
 package principia.serialization;
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5002.
+  extensions 5000 to 5999;  // Last used: 5003.
 }
 
 message DeletePlugin {
@@ -18,6 +18,29 @@ message DeletePlugin {
   }
   required In in = 1;
   required Out out = 2;
+}
+
+message DirectlyInsertCelestial {
+  extend Method {
+    optional DirectlyInsertCelestial extension = 5003;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 celestial_index = 2;
+    optional int32 parent_index = 3;
+    required string gravitational_parameter = 4;
+    optional string axis_right_ascension = 5;
+    optional string axis_declination = 6;
+    optional string j2 = 7;
+    optional string reference_radius = 8;
+    required string x = 9;
+    required string y = 10;
+    required string z = 11;
+    required string vx = 12;
+    required string vy = 13;
+    required string vz = 14;
+  }
+  required In in = 1;
 }
 
 message InitGoogleLogging {

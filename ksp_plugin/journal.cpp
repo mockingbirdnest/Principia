@@ -24,6 +24,35 @@ void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
   message->mutable_out()->set_plugin(SerializePointer(*out.plugin));
 }
 
+void DirectlyInsertCelestial::Fill(In const& in,
+                                   not_null<Message*> const message) {
+  Message::In* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+  if (in.parent_index != nullptr) {
+    m->set_parent_index(*in.parent_index);
+  }
+  m->set_gravitational_parameter(in.gravitational_parameter);
+  if (in.axis_right_ascension != nullptr) {
+    m->set_axis_right_ascension(in.axis_right_ascension);
+  }
+  if (in.axis_declination != nullptr) {
+    m->set_axis_declination(in.axis_declination);
+  }
+  if (in.j2 != nullptr) {
+    m->set_j2(in.j2);
+  }
+  if (in.reference_radius != nullptr) {
+    m->set_reference_radius(in.reference_radius);
+  }
+  m->set_x(in.x);
+  m->set_y(in.y);
+  m->set_z(in.z);
+  m->set_vx(in.vx);
+  m->set_vy(in.vy);
+  m->set_vz(in.vz);
+}
+
 void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* mutable_in = message->mutable_in();
   mutable_in->set_initial_time(in.initial_time);

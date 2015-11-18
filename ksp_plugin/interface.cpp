@@ -183,19 +183,19 @@ int principia__GetStderrLogging() {
   return FLAGS_stderrthreshold;
 }
 
-void principia__LogInfo(char const* message) {
+void principia__LogInfo(char const* const message) {
   LOG(INFO) << message;
 }
 
-void principia__LogWarning(char const* message) {
+void principia__LogWarning(char const* const message) {
   LOG(WARNING) << message;
 }
 
-void principia__LogError(char const* message) {
+void principia__LogError(char const* const message) {
   LOG(ERROR) << message;
 }
 
-void principia__LogFatal(char const* message) {
+void principia__LogFatal(char const* const message) {
   LOG(FATAL) << message;
 }
 
@@ -227,18 +227,28 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 void principia__DirectlyInsertCelestial(
     Plugin* const plugin,
     int const celestial_index,
-    int const* parent_index,
-    char const* gravitational_parameter,
-    char const* axis_right_ascension,
-    char const* axis_declination,
-    char const* j2,
-    char const* reference_radius,
-    char const* x,
-    char const* y,
-    char const* z,
-    char const* vx,
-    char const* vy,
-    char const* vz) {
+    int const* const parent_index,
+    char const* const gravitational_parameter,
+    char const* const axis_right_ascension,
+    char const* const axis_declination,
+    char const* const j2,
+    char const* const reference_radius,
+    char const* const x,
+    char const* const y,
+    char const* const z,
+    char const* const vx,
+    char const* const vy,
+    char const* const vz) {
+  Journal::Method<DirectlyInsertCelestial> m({plugin, 
+                                              celestial_index,
+                                              parent_index,
+                                              gravitational_parameter,
+                                              axis_right_ascension,
+                                              axis_declination,
+                                              j2,
+                                              reference_radius,
+                                              x, y, z,
+                                              vx, vy, vz});
   serialization::GravityModel::Body gravity_model;
   serialization::InitialState::Body initial_state;
   gravity_model.set_gravitational_parameter(gravitational_parameter);
@@ -266,6 +276,7 @@ void principia__DirectlyInsertCelestial(
           parent_index,
           SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
           SolarSystem<Barycentric>::MakeMassiveBody(gravity_model));
+  return m.Return();
 }
 
 void principia__InsertCelestial(Plugin* const plugin,
@@ -302,13 +313,13 @@ void principia__EndInitialization(Plugin* const plugin) {
 }
 
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
-                                   char const* vessel_guid,
+                                   char const* const vessel_guid,
                                    int const parent_index) {
   return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
 void principia__SetVesselStateOffset(Plugin* const plugin,
-                                     char const* vessel_guid,
+                                     char const* const vessel_guid,
                                      QP const from_parent) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
@@ -332,7 +343,7 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
 }
 
 QP principia__VesselFromParent(Plugin const* const plugin,
-                               char const* vessel_guid) {
+                               char const* const vessel_guid) {
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
   return {ToXYZ(result.displacement().coordinates() / Metre),
@@ -374,7 +385,7 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
-    char const* vessel_guid,
+    char const* const vessel_guid,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
@@ -396,7 +407,7 @@ bool principia__HasPrediction(Plugin const* const plugin,
 
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
-    char const* vessel_guid,
+    char const* const vessel_guid,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
@@ -418,7 +429,7 @@ int principia__FlightPlanSize(Plugin const* const plugin,
 
 LineAndIterator* principia__RenderedFlightPlan(
     Plugin* const plugin,
-    char const* vessel_guid,
+    char const* const vessel_guid,
     int const plan_phase,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
@@ -451,11 +462,11 @@ void principia__set_prediction_speed_tolerance(Plugin* const plugin,
 }
 
 bool principia__has_vessel(Plugin* const plugin,
-                           char const* vessel_guid) {
+                           char const* const vessel_guid) {
   return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
 }
 
-int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
+int principia__NumberOfSegments(LineAndIterator const* const line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
 
@@ -480,7 +491,7 @@ void principia__DeleteLineAndIterator(
 }
 
 void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
-                                             char const* vessel_guid,
+                                             char const* const vessel_guid,
                                              KSPPart const* const parts,
                                              int count) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
@@ -544,21 +555,21 @@ WXYZ principia__NavballOrientation(
 }
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
-                             char const* vessel_guid,
+                             char const* const vessel_guid,
                              RenderingFrame* const rendering_frame) {
   return ToXYZ(CHECK_NOTNULL(plugin)->
                    VesselTangent(vessel_guid, rendering_frame).coordinates());
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
-                             char const* vessel_guid,
+                             char const* const vessel_guid,
                              RenderingFrame* const rendering_frame) {
   return ToXYZ(CHECK_NOTNULL(plugin)->
                    VesselNormal(vessel_guid, rendering_frame).coordinates());
 }
 
 XYZ principia__VesselBinormal(Plugin const* const plugin,
-                             char const* vessel_guid,
+                             char const* const vessel_guid,
                              RenderingFrame* const rendering_frame) {
   return ToXYZ(CHECK_NOTNULL(plugin)->
                    VesselBinormal(vessel_guid, rendering_frame).coordinates());
