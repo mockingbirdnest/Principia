@@ -28,6 +28,10 @@ struct DeletePlugin {
   static void Fill(Out const& out, not_null<Message*> const message);
 };
 
+struct InitGoogleLogging {
+  using Message = serialization::InitGoogleLogging;
+};
+
 struct NewPlugin {
   struct In {
     double initial_time;
@@ -45,11 +49,17 @@ class Journal {
   template<typename Profile>
   class Method {
    public:
-    explicit Method(typename Profile::In const& in);
+    Method();
 
-    // Only declare this constructor if the profile has an |Out| type.
-    template<typename P = Profile, typename = typename P::Out>
-    Method(typename Profile::In const& in, typename P::Out const& out);
+    // Only declare this constructor if the profile has an |In| type.
+    template<typename P = Profile, typename = typename P::In>
+    explicit Method(typename P::In const& in);
+
+    // Only declare this constructor if the profile has an |In| and an |Out|
+    // type.
+    template<typename P = Profile,
+             typename = typename P::In, typename = typename P::Out>
+    Method(typename P::In const& in, typename P::Out const& out);
 
     ~Method();
 

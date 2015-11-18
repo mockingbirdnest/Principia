@@ -10,14 +10,19 @@ namespace principia {
 namespace ksp_plugin {
 
 template<typename Profile>
-Journal::Method<Profile>::Method(typename Profile::In const& in)
+Journal::Method<Profile>::Method()
+    : message_(std::make_unique<typename Profile::Message>()) {}
+
+template<typename Profile>
+template<typename P, typename>
+Journal::Method<Profile>::Method(typename P::In const& in)
     : message_(std::make_unique<typename Profile::Message>()) {
   Profile::Fill(in, message_.get());
 }
 
 template<typename Profile>
-template<typename P, typename>
-Journal::Method<Profile>::Method(typename Profile::In const& in,
+template<typename P, typename, typename>
+Journal::Method<Profile>::Method(typename P::In const& in,
                                  typename P::Out const& out)
     : message_(std::make_unique<typename Profile::Message>()),
       out_filler_([this, out]() { Profile::Fill(out, message_.get()); }) {

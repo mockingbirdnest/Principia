@@ -3,7 +3,7 @@ syntax = "proto2";
 package principia.serialization;
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5001.
+  extensions 5000 to 5999;  // Last used: 5002.
 }
 
 message DeletePlugin {
@@ -18,6 +18,12 @@ message DeletePlugin {
   }
   required In in = 1;
   required Out out = 2;
+}
+
+message InitGoogleLogging {
+  extend Method {
+    optional InitGoogleLogging extension = 5002;
+  }
 }
 
 message NewPlugin {

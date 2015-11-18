@@ -96,6 +96,7 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
 }  // namespace
 
 void principia__InitGoogleLogging() {
+  Journal::Method<InitGoogleLogging> m;
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -137,6 +138,7 @@ void principia__InitGoogleLogging() {
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
 #endif
   }
+  return m.Return();
 }
 
 void principia__SetBufferedLogging(int const max_severity) {
