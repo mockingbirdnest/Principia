@@ -41,6 +41,9 @@
     <ClInclude Include="astronomy.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="journal.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc">
@@ -64,5 +67,11 @@
     <ClCompile Include="astronomy.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="journal.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="journal.proto" />
   </ItemGroup>
 </Project>

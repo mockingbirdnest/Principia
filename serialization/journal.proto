@@ -1,0 +1,36 @@
+syntax = "proto2";
+
+package principia.serialization;
+
+message Method {
+  extensions 5000 to 5999;  // Last used: 5001.
+}
+
+message DeletePlugin {
+  extend Method {
+    optional DeletePlugin extension = 5000;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Out {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
+}
+
+message NewPlugin {
+  extend Method {
+    optional NewPlugin extension = 5001;
+  }
+  message In {
+    required double initial_time = 1;
+    required double planetarium_rotation_in_degrees = 2;
+  }
+  message Return {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}

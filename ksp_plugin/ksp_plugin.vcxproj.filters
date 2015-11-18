@@ -50,6 +50,12 @@
     <ClInclude Include="manœuvre_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="journal.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="journal_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -62,6 +68,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="physics_bubble.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="journal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
