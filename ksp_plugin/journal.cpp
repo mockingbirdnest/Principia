@@ -31,6 +31,17 @@ serialization::QP SerializeQP(QP const& qp) {
 
 }  // namespace
 
+void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
+  auto* mutable_in = message->mutable_in();
+  mutable_in->set_initial_time(in.initial_time);
+  mutable_in->set_planetarium_rotation_in_degrees(
+      in.planetarium_rotation_in_degrees);
+}
+
+void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_plugin(SerializePointer(result));
+}
+
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_plugin(SerializePointer(in.plugin));
 }
@@ -75,17 +86,6 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   m->set_gravitational_parameter(in.gravitational_parameter);
   m->set_parent_index(in.parent_index);
   *m->mutable_from_parent() = SerializeQP(in.from_parent);
-}
-
-void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
-  auto* mutable_in = message->mutable_in();
-  mutable_in->set_initial_time(in.initial_time);
-  mutable_in->set_planetarium_rotation_in_degrees(
-      in.planetarium_rotation_in_degrees);
-}
-
-void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_plugin(SerializePointer(result));
 }
 
 std::list<serialization::Method>* Journal::journal_ = nullptr;

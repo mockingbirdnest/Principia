@@ -14,6 +14,22 @@ using base::not_null;
 
 namespace ksp_plugin {
 
+struct InitGoogleLogging {
+  using Message = serialization::InitGoogleLogging;
+};
+
+struct NewPlugin {
+  struct In {
+    double initial_time;
+    double planetarium_rotation_in_degrees;
+  };
+  using Return = Plugin*;
+
+  using Message = serialization::NewPlugin;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+};
+
 struct DeletePlugin {
   struct In {
     Plugin const* plugin;
@@ -49,10 +65,6 @@ struct DirectlyInsertCelestial {
   static void Fill(In const& in, not_null<Message*> const message);
 };
 
-struct InitGoogleLogging {
-  using Message = serialization::InitGoogleLogging;
-};
-
 struct InsertCelestial {
   struct In {
     Plugin* plugin;
@@ -64,18 +76,6 @@ struct InsertCelestial {
 
   using Message = serialization::InsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
-};
-
-struct NewPlugin {
-  struct In {
-    double initial_time;
-    double planetarium_rotation_in_degrees;
-  };
-  using Return = Plugin*;
-
-  using Message = serialization::NewPlugin;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Return const& result, not_null<Message*> const message);
 };
 
 class Journal {
