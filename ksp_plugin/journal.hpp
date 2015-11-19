@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -12,8 +13,6 @@ namespace principia {
 using base::not_null;
 
 namespace ksp_plugin {
-
-class Plugin;
 
 struct DeletePlugin {
   struct In {
@@ -52,6 +51,19 @@ struct DirectlyInsertCelestial {
 
 struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
+};
+
+struct InsertCelestial {
+  struct In {
+    Plugin* plugin;
+    int celestial_index;
+    double gravitational_parameter;
+    int parent_index;
+    QP from_parent;
+  };
+
+  using Message = serialization::InsertCelestial;
+  static void Fill(In const& in, not_null<Message*> const message);
 };
 
 struct NewPlugin {

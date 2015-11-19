@@ -284,6 +284,11 @@ void principia__InsertCelestial(Plugin* const plugin,
                                 double const gravitational_parameter,
                                 int const parent_index,
                                 QP const from_parent) {
+  Journal::Method<InsertCelestial> m({plugin,
+                                      celestial_index,
+                                      gravitational_parameter,
+                                      parent_index,
+                                      from_parent});
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
@@ -291,6 +296,7 @@ void principia__InsertCelestial(Plugin* const plugin,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
           Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+  return m.Return();
 }
 
 void principia__InsertSun(Plugin* const plugin,

@@ -2,8 +2,19 @@ syntax = "proto2";
 
 package principia.serialization;
 
+message QP {
+  required XYZ q = 1;
+  required XYZ p = 2;
+}
+
+message XYZ {
+  required double x = 1;
+  required double y = 2;
+  required double z = 3;
+}
+
 message Method {
-  extensions 5000 to 5999;  // Last used: 5003.
+  extensions 5000 to 5999;  // Last used: 5004.
 }
 
 message DeletePlugin {
@@ -47,6 +58,20 @@ message InitGoogleLogging {
   extend Method {
     optional InitGoogleLogging extension = 5002;
   }
+}
+
+message InsertCelestial {
+  extend Method {
+    optional InsertCelestial extension = 5004;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 celestial_index = 2;
+    required double gravitational_parameter = 3;
+    required int32 parent_index = 4;
+    required QP from_parent = 5;
+  }
+  required In in = 1;
 }
 
 message NewPlugin {

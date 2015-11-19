@@ -14,6 +14,21 @@ std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
 }
 
+serialization::XYZ SerializeXYZ(XYZ const& xyz) {
+  serialization::XYZ m;
+  m.set_x(xyz.x);
+  m.set_y(xyz.y);
+  m.set_z(xyz.z);
+  return m;
+}
+
+serialization::QP SerializeQP(QP const& qp) {
+  serialization::QP m;
+  *m.mutable_p() = SerializeXYZ(qp.p);
+  *m.mutable_q() = SerializeXYZ(qp.q);
+  return m;
+}
+
 }  // namespace
 
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
@@ -51,6 +66,15 @@ void DirectlyInsertCelestial::Fill(In const& in,
   m->set_vx(in.vx);
   m->set_vy(in.vy);
   m->set_vz(in.vz);
+}
+
+void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
+  Message::In* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+  m->set_gravitational_parameter(in.gravitational_parameter);
+  m->set_parent_index(in.parent_index);
+  *m->mutable_from_parent() = SerializeQP(in.from_parent);
 }
 
 void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
