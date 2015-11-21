@@ -55,6 +55,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="differential_slider.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="ksp_plugin_interface.cs" />
     <Compile Include="logging.cs" />
