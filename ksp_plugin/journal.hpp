@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <functional>
 #include <list>
 #include <memory>
@@ -109,11 +110,23 @@ class Journal {
     bool returned_ = false;
   };
 
+  Journal(std::string const& filename);
+
+  void Write(serialization::Method const& method);
+
+  static void Activate(base::not_null<Journal*> const journal);
+  static void Deactivate();
+
   template<typename Message>
   static void AppendMessage(not_null<std::unique_ptr<Message>> message);
 
  private:
-  static std::list<serialization::Method>* journal_;
+  std::ofstream stream_;
+
+  static Journal* active_;
+
+  template<typename>
+  friend class Method;
   friend class JournalTest;
 };
 

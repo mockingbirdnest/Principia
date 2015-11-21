@@ -1,11 +1,18 @@
 #include "ksp_plugin/journal.hpp"
 
+#include <fstream>
 #include <list>
 
+#include "base/array.hpp"
+#include "base/hexadecimal.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
+
+using base::Bytes;
+using base::HexadecimalEncode;
+using base::UniqueBytes;
 
 namespace {
 
@@ -88,7 +95,32 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   *m->mutable_from_parent() = SerializeQP(in.from_parent);
 }
 
-std::list<serialization::Method>* Journal::journal_ = nullptr;
+Journal::Journal(std::string const& filename)
+    : stream_(filename.c_str(), std::ios::out) {}
+
+void Write(serialization::Method const& method) {
+  std::string const serialized_string = method.SerializeAsString();
+  Bytes serialized_bytes(static_cast<std::uint8_t const*>(serialized_string.c_str(),
+                         serialized_string.size());
+
+  std::int64_t const hexadecimal_size = (serialized_string.size() << 1) + 1;
+  UniqueBytes hexadecimal(hexadecimal_size);
+  HexadecimalEncode(bytes, hexadecimal.get());
+  stream_ << hexadecimal.data.get();
+}
+
+void Journal::Activate(base::not_null<Journal*> const journal) {
+  CHECK_EQ(active_, nullptr);
+  active_ = journal;
+}
+
+void Journal::Deactivate() {
+  CHECK_NE(active_, nullptr);
+  delete active_;
+  active_ = nullptr;
+}
+
+Journal* Journal::active_ = nullptr;
 
 }  // namespace ksp_plugin
 }  // namespace principia

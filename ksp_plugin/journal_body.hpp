@@ -35,7 +35,9 @@ Journal::Method<Profile>::~Method() {
   if (out_filler_ != nullptr) {
     out_filler_();
   }
-  AppendMessage<typename Profile::Message>(std::move(message_));
+  serialization::Method method;
+  method.SetAllocatedExtension(Message::extension, message.release());
+  active_->Write(method);
 }
 
 template<typename Profile>
