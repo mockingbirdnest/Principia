@@ -68,6 +68,8 @@ TEST_F(JournalTest, Journal) {
     m.Return(plugin_.get());
   }
 
+  // TODO(phl): Some of this code should be moved to the methods that replay a
+  // journal (TBD).
   std::vector<serialization::Method> methods;
   std::ifstream stream(test_name_, std::ios::in);
   std::string line(1000, ' ');
