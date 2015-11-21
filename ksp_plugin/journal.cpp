@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <list>
+#include <string>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"

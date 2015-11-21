@@ -2,6 +2,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"

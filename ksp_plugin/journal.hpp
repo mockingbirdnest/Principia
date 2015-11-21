@@ -4,6 +4,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <string>
 
 #include "base/not_null.hpp"
 #include "ksp_plugin/interface.hpp"
@@ -110,7 +111,7 @@ class Journal {
     bool returned_ = false;
   };
 
-  Journal(std::string const& filename);
+  explicit Journal(std::string const& filename);
   ~Journal();
 
   void Write(serialization::Method const& method);
