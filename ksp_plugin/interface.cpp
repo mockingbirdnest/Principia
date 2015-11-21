@@ -239,7 +239,7 @@ void principia__DirectlyInsertCelestial(
     char const* const vx,
     char const* const vy,
     char const* const vz) {
-  Journal::Method<DirectlyInsertCelestial> m({plugin, 
+  Journal::Method<DirectlyInsertCelestial> m({plugin,
                                               celestial_index,
                                               parent_index,
                                               gravitational_parameter,
@@ -472,7 +472,8 @@ bool principia__has_vessel(Plugin* const plugin,
   return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
 }
 
-int principia__NumberOfSegments(LineAndIterator const* const line_and_iterator) {
+int principia__NumberOfSegments(
+    LineAndIterator const* const line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
 

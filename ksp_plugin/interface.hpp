@@ -268,7 +268,8 @@ LineAndIterator* CDECL principia__RenderedFlightPlan(
 // Returns |line_and_iterator->rendered_trajectory.size()|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-int CDECL principia__NumberOfSegments(LineAndIterator const* const line_and_iterator);
+int CDECL principia__NumberOfSegments(
+    LineAndIterator const* const line_and_iterator);
 
 // Returns the |XYZSegment| corresponding to the |LineSegment|
 // |*line_and_iterator->it|, then increments |line_and_iterator->it|.
@@ -309,10 +310,11 @@ bool CDECL principia__has_vessel(Plugin* const plugin,
                                  char const* const vessel_guid);
 
 extern "C" DLLEXPORT
-void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
-                                                   char const* const vessel_guid,
-                                                   KSPPart const* const parts,
-                                                   int count);
+void CDECL principia__AddVesselToNextPhysicsBubble(
+    Plugin* const plugin,
+    char const* const vessel_guid,
+    KSPPart const* const parts,
+    int count);
 
 extern "C" DLLEXPORT
 bool CDECL principia__PhysicsBubbleIsEmpty(Plugin const* const plugin);
