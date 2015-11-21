@@ -66,17 +66,17 @@ class ManœuvreTest : public ::testing::Test {
 
 TEST_F(ManœuvreTest, TimedBurn) {
   Instant const t0 = Instant();
-  Vector<double, Frenet<Rendering>> e_y({0, 2, 0});
+  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
       1 * Newton /*thrust*/,
       2 * Kilogram /*initial_mass*/,
       1 * Newton * Second / Kilogram /*specific_impulse*/,
-      e_y /*direction*/,
+      2 * e_y /*direction*/,
       &mock_dynamic_frame_);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
-  EXPECT_EQ(e_y / 2, manœuvre.direction());
+  EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
 
   manœuvre.set_duration(1 * Second);
