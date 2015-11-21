@@ -118,9 +118,6 @@ class Journal {
   static void Activate(base::not_null<Journal*> const journal);
   static void Deactivate();
 
-  template<typename Message>
-  static void AppendMessage(not_null<std::unique_ptr<Message>> message);
-
  private:
   std::ofstream stream_;
 

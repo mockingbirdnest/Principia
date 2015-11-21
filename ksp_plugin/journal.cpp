@@ -108,10 +108,11 @@ void Journal::Write(serialization::Method const& method) {
 
   std::int64_t const hexadecimal_size = (bytes.size << 1) + 2;
   UniqueBytes hexadecimal(hexadecimal_size);
-  HexadecimalEncode(Bytes(bytes.data.get(), bytes.size), hexadecimal.get());
+  HexadecimalEncode({bytes.data.get(), bytes.size}, hexadecimal.get());
   hexadecimal.data.get()[hexadecimal_size - 2] = '\n';
   hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
   stream_ << hexadecimal.data.get();
+  stream_.flush();
 }
 
 void Journal::Activate(base::not_null<Journal*> const journal) {

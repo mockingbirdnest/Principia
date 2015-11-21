@@ -56,14 +56,5 @@ typename P::Return Journal::Method<Profile>::Return(
   return result;
 }
 
-template<typename Message>
-void Journal::AppendMessage(not_null<std::unique_ptr<Message>> message) {
-  if (journal_ == nullptr) {
-    journal_ = new std::list<serialization::Method>;
-  }
-  journal_->emplace_back();
-  journal_->back().SetAllocatedExtension(Message::extension, message.release());
-}
-
 }  // namespace ksp_plugin
 }  // namespace principia
