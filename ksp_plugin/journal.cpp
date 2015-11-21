@@ -98,24 +98,27 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
 Journal::Journal(std::string const& filename)
     : stream_(filename.c_str(), std::ios::out) {}
 
-void Write(serialization::Method const& method) {
-  std::string const serialized_string = method.SerializeAsString();
-  Bytes serialized_bytes(static_cast<std::uint8_t const*>(serialized_string.c_str(),
-                         serialized_string.size());
+Journal::~Journal() {
+  stream_.close();
+}
 
-  std::int64_t const hexadecimal_size = (serialized_string.size() << 1) + 1;
+void Journal::Write(serialization::Method const& method) {
+  UniqueBytes bytes(method.ByteSize());
+  method.SerializeToArray(bytes.data.get(), static_cast<int>(bytes.size));
+
+  std::int64_t const hexadecimal_size = (bytes.size << 1) + 1;
   UniqueBytes hexadecimal(hexadecimal_size);
-  HexadecimalEncode(bytes, hexadecimal.get());
+  HexadecimalEncode(Bytes(bytes.data.get(), bytes.size), hexadecimal.get());
   stream_ << hexadecimal.data.get();
 }
 
 void Journal::Activate(base::not_null<Journal*> const journal) {
-  CHECK_EQ(active_, nullptr);
+  CHECK(active_ == nullptr);
   active_ = journal;
 }
 
 void Journal::Deactivate() {
-  CHECK_NE(active_, nullptr);
+  CHECK(active_ != nullptr);
   delete active_;
   active_ = nullptr;
 }

@@ -111,6 +111,7 @@ class Journal {
   };
 
   Journal(std::string const& filename);
+  ~Journal();
 
   void Write(serialization::Method const& method);
 

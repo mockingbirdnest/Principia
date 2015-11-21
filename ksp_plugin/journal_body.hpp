@@ -36,7 +36,7 @@ Journal::Method<Profile>::~Method() {
     out_filler_();
   }
   serialization::Method method;
-  method.SetAllocatedExtension(Message::extension, message.release());
+  method.SetAllocatedExtension(Profile::Message::extension, message_.release());
   active_->Write(method);
 }
 
