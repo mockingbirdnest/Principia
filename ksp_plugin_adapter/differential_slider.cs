@@ -30,7 +30,7 @@ internal class DifferentialSlider {
              -double.NegativeInfinity,
              -double.PositiveInfinity) {}
 
-  // Rates are in unite of |value| per real-time second.
+  // Rates are in units of |value| per real-time second.
   public DifferentialSlider(string label,
                             string unit,
                             double log10_lower_rate,
@@ -47,7 +47,8 @@ internal class DifferentialSlider {
     max_value_ = max_value;
   }
 
-  // Returns true if and only if |value| changed.
+  // Renders the |DifferentialSlider|.  Returns true if and only if |value|
+  // changed.
   public bool Render() {
     UnityEngine.GUI.skin = null;
     UnityEngine.GUILayout.BeginHorizontal();
@@ -81,15 +82,13 @@ internal class DifferentialSlider {
       value_changed = true;
       value = 0;
     }
-    double log10_lower_rate = -3;
-    double log10_upper_rate = 3.5;
     if (slider_position_ != 0.0) {
       value_changed = true;
       value += Math.Sign(slider_position_) *
-                    Math.Pow(10, log10_lower_rate +
-                                     (log10_upper_rate - log10_lower_rate) *
-                                         Math.Abs(slider_position_)) *
-                    (System.DateTime.Now - last_time_).TotalSeconds;
+               Math.Pow(10, log10_lower_rate_ +
+                                (log10_upper_rate_ - log10_lower_rate_) *
+                                    Math.Abs(slider_position_)) *
+               (System.DateTime.Now - last_time_).TotalSeconds;
     }
     last_time_ = System.DateTime.Now;
 
