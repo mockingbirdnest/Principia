@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -13,19 +14,8 @@ using base::not_null;
 
 namespace ksp_plugin {
 
-class Plugin;
-
-struct DeletePlugin {
-  struct In {
-    Plugin const* plugin;
-  };
-  struct Out {
-    Plugin const** const plugin;
-  };
-
-  using Message = serialization::DeletePlugin;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Out const& out, not_null<Message*> const message);
+struct InitGoogleLogging {
+  using Message = serialization::InitGoogleLogging;
 };
 
 struct NewPlugin {
@@ -40,16 +30,70 @@ struct NewPlugin {
   static void Fill(Return const& result, not_null<Message*> const message);
 };
 
+struct DeletePlugin {
+  struct In {
+    Plugin const* plugin;
+  };
+  struct Out {
+    Plugin const** const plugin;
+  };
+
+  using Message = serialization::DeletePlugin;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+};
+
+struct DirectlyInsertCelestial {
+  struct In {
+    Plugin* plugin;
+    int celestial_index;
+    int const* parent_index;
+    char const* gravitational_parameter;
+    char const* axis_right_ascension;
+    char const* axis_declination;
+    char const* j2;
+    char const* reference_radius;
+    char const* x;
+    char const* y;
+    char const* z;
+    char const* vx;
+    char const* vy;
+    char const* vz;
+  };
+
+  using Message = serialization::DirectlyInsertCelestial;
+  static void Fill(In const& in, not_null<Message*> const message);
+};
+
+struct InsertCelestial {
+  struct In {
+    Plugin* plugin;
+    int celestial_index;
+    double gravitational_parameter;
+    int parent_index;
+    QP from_parent;
+  };
+
+  using Message = serialization::InsertCelestial;
+  static void Fill(In const& in, not_null<Message*> const message);
+};
+
 class Journal {
  public:
   template<typename Profile>
   class Method {
    public:
-    explicit Method(typename Profile::In const& in);
+    Method();
 
-    // Only declare this constructor if the profile has an |Out| type.
-    template<typename P = Profile, typename = typename P::Out>
-    Method(typename Profile::In const& in, typename P::Out const& out);
+    // Only declare this constructor if the profile has an |In| type.
+    template<typename P = Profile, typename = typename P::In>
+    explicit Method(typename P::In const& in);
+
+    // Only declare this constructor if the profile has an |In| and an |Out|
+    // type.
+    template<typename P = Profile,
+             typename = typename P::In, typename = typename P::Out>
+    Method(typename P::In const& in, typename P::Out const& out);
 
     ~Method();
 
