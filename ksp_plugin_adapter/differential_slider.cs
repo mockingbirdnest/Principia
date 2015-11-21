@@ -41,15 +41,15 @@ internal class DifferentialSlider {
                             double log10_upper_rate,
                             double min_value,
                             double max_value,
-                            ValueFormatter format = null) {
+                            ValueFormatter formatter = null) {
     label_ = label;
     unit_ = unit;
     culture_= new CultureInfo("");
     culture_.NumberFormat.NumberGroupSeparator = "'";
-    if (format == null) {
+    if (formatter == null) {
       format_ = v => v.ToString("#,0.000", culture_);
     } else {
-      format_ = format;
+      format_ = formatter;
     }
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;

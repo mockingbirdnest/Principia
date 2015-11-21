@@ -15,6 +15,8 @@ class BurnEditor {
 
   const double Log10ΔvLowerRate = -3.0;
   const double Log10ΔvUpperRate = 3.5;
+  const double Log10TimeLowerRate = 0.0;
+  const double Log10TimeUpperRate = 7.0;
 
   // Returns the equivalent of the .NET >= 4 format
   // span.ToString(@"ddd \d hh \h mm \m\i\n ss.FFF \s").
@@ -42,11 +44,11 @@ class BurnEditor {
         new DifferentialSlider(
                 label            : "t initial",
                 unit             : null,
-                log10_lower_rate : 0.0,
-                log10_upper_rate : 7.0,
+                log10_lower_rate : Log10TimeLowerRate,
+                log10_upper_rate : Log10TimeUpperRate,
                 min_value        : 0,
                 max_value        : double.PositiveInfinity,
-                format           : value => FormatTimeSpan(
+                formatter        : value => FormatTimeSpan(
                                                 TimeSpan.FromSeconds(value)));
   }
 
