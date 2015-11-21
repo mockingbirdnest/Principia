@@ -106,9 +106,11 @@ void Journal::Write(serialization::Method const& method) {
   UniqueBytes bytes(method.ByteSize());
   method.SerializeToArray(bytes.data.get(), static_cast<int>(bytes.size));
 
-  std::int64_t const hexadecimal_size = (bytes.size << 1) + 1;
+  std::int64_t const hexadecimal_size = (bytes.size << 1) + 2;
   UniqueBytes hexadecimal(hexadecimal_size);
   HexadecimalEncode(Bytes(bytes.data.get(), bytes.size), hexadecimal.get());
+  hexadecimal.data.get()[hexadecimal_size - 2] = '\n';
+  hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
   stream_ << hexadecimal.data.get();
 }
 
