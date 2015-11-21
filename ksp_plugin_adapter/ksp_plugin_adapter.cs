@@ -1051,7 +1051,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.GUILayout.EndHorizontal();
   }
 
-  DifferentialSlider test_slider_;
+  BurnEditor test_burn_editor_;
 
   private void PredictionSettings() {
     bool changed_settings = false;
@@ -1065,13 +1065,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
-    if (test_slider_ == null) {
-      test_slider_ = new DifferentialSlider(label            : "Δv_x",
-                                            unit             : "m / s",
-                                            log10_lower_rate : -3.0,
-                                            log10_upper_rate : 3.5);
+    if (test_burn_editor_ == null) {
+      test_burn_editor_ = new BurnEditor();
     }
-    bool changing = test_slider_.Render();
+    bool changing = test_burn_editor_.Render();
     UnityEngine.GUILayout.TextArea(
         changing ? "CHANGING" : "Nothing to see here",
         UnityEngine.GUILayout.Width(200));
