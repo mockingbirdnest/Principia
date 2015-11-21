@@ -23,7 +23,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
     : thrust_(thrust),
       initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
-      direction_(direction),
+      direction_(Normalize(direction)),
       frame_(frame) {}
 
 template<typename InertialFrame, typename Frame>
