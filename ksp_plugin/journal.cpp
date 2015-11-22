@@ -3,22 +3,39 @@
 #include <fstream>
 #include <list>
 #include <string>
+#include <type_traits>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
+#include "base/map_util.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
 
 using base::Bytes;
+using base::FindOrDie;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::UniqueBytes;
 
 namespace {
 
-int const kBufferSize = 10;
+int const kBufferSize = 100;
+
+template<typename T,
+         typename = typename std::enable_if<std::is_pointer<T>::value>::type>
+T Find(PointerMap const& pointer_map, std::uint64_t const address) {
+    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+}
+
+template<typename T>
+void Insert(not_null<PointerMap*> const pointer_map,
+            std::uint64_t const address,
+            T* const pointer) {
+  auto inserted = pointer_map->emplace(address, pointer);
+  CHECK(inserted.second) << address;
+}
 
 // Recursively reads a line of arbitrary length.
 std::string GetLine(not_null<std::ifstream*> const stream) {
@@ -63,12 +80,27 @@ void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
   message->mutable_return_()->set_plugin(SerializePointer(result));
 }
 
+void NewPlugin::Run(Message const& message,
+                    not_null<PointerMap*> const pointer_map) {
+  auto* plugin = principia__NewPlugin(
+                     message.in().initial_time(),
+                     message.in().planetarium_rotation_in_degrees());
+  Insert(pointer_map, message.return_().plugin(), plugin);
+}
+
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_plugin(SerializePointer(in.plugin));
 }
 
 void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
   message->mutable_out()->set_plugin(SerializePointer(*out.plugin));
+}
+
+void DeletePlugin::Run(Message const& message,
+                       not_null<PointerMap*> const pointer_map) {
+  auto* plugin = Find<Plugin const*>(*pointer_map, message.in().plugin());
+  principia__DeletePlugin(&plugin);
+  // TODO(phl): should we do something with out() here?
 }
 
 void DirectlyInsertCelestial::Fill(In const& in,
@@ -148,6 +180,9 @@ bool Player::Play() {
   if (method == nullptr) {
     return false;
   }
+
+  RunIfAppropriate<DeletePlugin>(*method);
+  RunIfAppropriate<NewPlugin>(*method);
 
   return true;
 }

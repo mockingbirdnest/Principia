@@ -71,7 +71,7 @@ TEST_F(JournalDeathTest, Return) {
   "returned_");
 }
 
-TEST_F(JournalTest, Journal) {
+TEST_F(JournalTest, Recording) {
   {
     const Plugin* plugin = plugin_.get();
     Journal::Method<DeletePlugin> m({plugin}, {&plugin});
@@ -106,6 +106,32 @@ TEST_F(JournalTest, Journal) {
     EXPECT_TRUE(extension.has_return_());
     EXPECT_NE(0, extension.return_().plugin());
   }
+}
+
+TEST_F(JournalTest, Playing) {
+  {
+    Journal::Method<NewPlugin> m({1, 2});
+    m.Return(plugin_.get());
+  }
+  {
+    const Plugin* plugin = plugin_.get();
+    Journal::Method<DeletePlugin> m({plugin}, {&plugin});
+    m.Return();
+  }
+
+  // Read all the messages to determine the current size of the journal.
+  std::vector<serialization::Method> methods1 = ReadAll(test_name_);
+  Player player(test_name_);
+
+  // Replay the part of the journal written so far.  Cannot use the boolean
+  // returned by Play because the journal grows as we replay.
+  for (int i = 0; i < methods1.size(); ++i) {
+    player.Play();
+  }
+
+  // Check that the journal has grown as expected.
+  std::vector<serialization::Method> methods2 = ReadAll(test_name_);
+  CHECK_EQ(2 * methods1.size(), methods2.size());
 }
 
 }  // namespace ksp_plugin

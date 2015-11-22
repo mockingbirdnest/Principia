@@ -68,5 +68,13 @@ typename P::Return Journal::Method<Profile>::Return(
   return result;
 }
 
+template<typename Profile>
+void Player::RunIfAppropriate(serialization::Method const& method) {
+  if (method.HasExtension(Profile::Message::extension)) {
+    Profile::Run(method.GetExtension(Profile::Message::extension),
+                 &pointer_map_);
+  }
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
