@@ -31,6 +31,19 @@ class JournalTest : public testing::Test {
     Journal::Deactivate();
   }
 
+  static std::vector<serialization::Method> ReadAll(
+      std::experimental::filesystem::path const& path) {
+    std::vector<serialization::Method> methods;
+    Player player(path);
+    for (std::unique_ptr<serialization::Method> method = player.Read();
+         method != nullptr;
+         method = player.Read()) {
+      methods.push_back(*method);
+    }
+    return methods;
+  }
+
+
   std::string const test_name_;
   std::unique_ptr<MockPlugin> plugin_;
   Journal* journal_;
@@ -69,23 +82,7 @@ TEST_F(JournalTest, Journal) {
     m.Return(plugin_.get());
   }
 
-  // TODO(phl): Some of this code should be moved to the methods that replay a
-  // journal (TBD).
-  std::vector<serialization::Method> methods;
-  std::ifstream stream(test_name_, std::ios::in);
-  std::string line(1000, ' ');
-  while (stream.getline(&line[0], line.size())) {
-    uint8_t const* const hexadecimal =
-        reinterpret_cast<uint8_t const*>(line.c_str());
-    int const hexadecimal_size = strlen(line.c_str());
-    UniqueBytes bytes(hexadecimal_size >> 1);
-    HexadecimalDecode({hexadecimal, hexadecimal_size},
-                      {bytes.data.get(), bytes.size});
-    methods.emplace_back();
-    CHECK(methods.back().ParseFromArray(bytes.data.get(),
-                                        static_cast<int>(bytes.size)));
-  }
-
+  std::vector<serialization::Method> methods = ReadAll(test_name_);
   EXPECT_EQ(2, methods.size());
   auto it = methods.begin();
   {

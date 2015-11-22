@@ -143,6 +143,8 @@ class Player {
   std::ifstream stream_;
 
   std::map<std::uint64_t, void*> pointers_;
+
+  friend class JournalTest;
 };
 
 }  // namespace ksp_plugin
