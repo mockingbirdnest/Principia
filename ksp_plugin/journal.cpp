@@ -12,10 +12,22 @@ namespace principia {
 namespace ksp_plugin {
 
 using base::Bytes;
+using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::UniqueBytes;
 
 namespace {
+
+int const kBufferSize = 10;
+
+// Recursively reads a line of arbitrary length.
+std::string GetLine(not_null<std::ifstream*> const stream) {
+  static char buffer[kBufferSize];
+  if (!stream->getline(&buffer[0], kBufferSize).eof() && stream->fail()) {
+    return buffer + GetLine(stream);
+  }
+  return buffer;
+}
 
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
@@ -96,8 +108,8 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   *m->mutable_from_parent() = SerializeQP(in.from_parent);
 }
 
-Journal::Journal(std::string const& filename)
-    : stream_(filename.c_str(), std::ios::out) {}
+Journal::Journal(std::experimental::filesystem::path const& path)
+    : stream_(path, std::ios::out) {}
 
 Journal::~Journal() {
   stream_.close();
@@ -125,6 +137,37 @@ void Journal::Deactivate() {
   CHECK(active_ != nullptr);
   delete active_;
   active_ = nullptr;
+}
+
+Player::Player(std::experimental::filesystem::path const& path)
+    : stream_(path, std::ios::in) {}
+
+bool Player::Play() {
+  std::unique_ptr<serialization::Method> method = Read();
+  if (method == nullptr) {
+    return false;
+  }
+
+  return true;
+}
+
+std::unique_ptr<serialization::Method> Player::Read() {
+  std::string const line = GetLine(&stream_);
+  if (line.empty()) {
+    return nullptr;
+  }
+
+  uint8_t const* const hexadecimal =
+      reinterpret_cast<uint8_t const*>(line.c_str());
+  int const hexadecimal_size = strlen(line.c_str());
+  UniqueBytes bytes(hexadecimal_size >> 1);
+  HexadecimalDecode({hexadecimal, hexadecimal_size},
+                    {bytes.data.get(), bytes.size});
+  auto method = std::make_unique<serialization::Method>();
+  CHECK(method->ParseFromArray(bytes.data.get(),
+                               static_cast<int>(bytes.size)));
+
+  return method;
 }
 
 Journal* Journal::active_ = nullptr;

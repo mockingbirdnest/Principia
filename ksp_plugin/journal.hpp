@@ -1,5 +1,6 @@
 #pragma once
 
+#include <experimental/filesystem>
 #include <fstream>
 #include <functional>
 #include <list>
@@ -111,7 +112,7 @@ class Journal {
     bool returned_ = false;
   };
 
-  explicit Journal(std::string const& filename);
+  explicit Journal(std::experimental::filesystem::path const& path);
   ~Journal();
 
   void Write(serialization::Method const& method);
@@ -127,6 +128,21 @@ class Journal {
   template<typename>
   friend class Method;
   friend class JournalTest;
+};
+
+class Player {
+ public:
+  explicit Player(std::experimental::filesystem::path const& path);
+
+  bool Play();
+
+ private:
+  // Reads one message from the stream.  Returns a |nullptr| at end of stream.
+  std::unique_ptr<serialization::Method> Read();
+
+  std::ifstream stream_;
+
+  std::map<std::uint64_t, void*> pointers_;
 };
 
 }  // namespace ksp_plugin
