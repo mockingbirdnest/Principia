@@ -22,8 +22,9 @@ int const kBufferSize = 10;
 
 // Recursively reads a line of arbitrary length.
 std::string GetLine(not_null<std::ifstream*> const stream) {
-  static char buffer[kBufferSize];
+  char buffer[kBufferSize];
   if (!stream->getline(&buffer[0], kBufferSize).eof() && stream->fail()) {
+    stream->clear();
     return buffer + GetLine(stream);
   }
   return buffer;
