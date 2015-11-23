@@ -2,6 +2,8 @@
 
 #include "base/get_line.hpp"
 
+#include <string>
+
 namespace principia {
 namespace base {
 
