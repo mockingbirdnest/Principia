@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include "base/array.hpp"
+#include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "glog/logging.h"
@@ -15,6 +16,7 @@ namespace ksp_plugin {
 
 using base::Bytes;
 using base::FindOrDie;
+using base::GetLine;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::UniqueBytes;
@@ -35,16 +37,6 @@ void Insert(not_null<PointerMap*> const pointer_map,
             T* const pointer) {
   auto inserted = pointer_map->emplace(address, pointer);
   CHECK(inserted.second) << address;
-}
-
-// Recursively reads a line of arbitrary length.
-std::string GetLine(not_null<std::ifstream*> const stream) {
-  char buffer[kBufferSize];
-  if (!stream->getline(&buffer[0], kBufferSize).eof() && stream->fail()) {
-    stream->clear();
-    return buffer + GetLine(stream);
-  }
-  return buffer;
 }
 
 template<typename T>
