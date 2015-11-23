@@ -7,7 +7,6 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "geometry/epoch.hpp"
 #include "geometry/named_quantities.hpp"
-
 #include "quantities/elementary_functions.hpp"
 #include "geometry/grassmann.hpp"
 
@@ -60,17 +59,24 @@ namespace physics {
     // Lunar eclipse
     // Earth/Sun lineup
     auto alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
+    auto q_U23 = q_earth + (q_sun - q_earth)/(q_sun - q_earth).Norm() * (r_earth - r_moon) / Sin(alpha);
+    auto q_U13 = q_earth + (q_sun - q_earth)/(q_sun - q_earth).Norm() * (r_earth + r_moon) / Sin(alpha);
+    // Earth/Moon lineup
+    // auto beta = ArcCos(InnerProduct(q_moon, q_earth) / (q_moon - q_earth).Norm()); // Does not work because InnerProduct doesn't seem to actually be used. Also wrong inputs, and does not work in principle since we'd need another vector
+    // Where we would compare angles if they were calculable
+
     // U14 have the same angle, also expressible 2 different ways:
-    ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
-    ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
+    // ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
+    // ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
     // Or as egg suggests, finding the distance with an angle. But these need to have error ranges instead of exact value...
-    (r_sun - r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
-    (r_earth - r_moon) / Sin(alpha) == (q_moon - q_earth).Norm(); 
+    // (r_sun - r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
+    // (r_earth - r_moon) / Sin(alpha) == (q_moon - q_earth).Norm(); 
     // U23
-    ArcSin((r_sun - r_moon)/(q_moon - q_sun).Norm());
-    ArcSin((r_earth - r_moon)/(q_moon - q_earth).Norm());
-    (r_sun + r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
-    (r_earth + r_moon) / Sin(alpha) == (q_moon - q_earth).Norm(); 
+    // ArcSin((r_sun - r_moon)/(q_moon - q_sun).Norm());
+    // ArcSin((r_earth - r_moon)/(q_moon - q_earth).Norm());
+    // (r_sun + r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
+    // (r_earth + r_moon) / Sin(alpha) == (q_moon - q_earth).Norm();
+
     // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
   };
