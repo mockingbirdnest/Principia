@@ -3,19 +3,41 @@
 #include <fstream>
 #include <list>
 #include <string>
+#include <type_traits>
 
 #include "base/array.hpp"
+#include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
+#include "base/map_util.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
 
 using base::Bytes;
+using base::FindOrDie;
+using base::GetLine;
+using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::UniqueBytes;
 
 namespace {
+
+int const kBufferSize = 100;
+
+template<typename T,
+         typename = typename std::enable_if<std::is_pointer<T>::value>::type>
+T Find(PointerMap const& pointer_map, std::uint64_t const address) {
+    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+}
+
+template<typename T>
+void Insert(not_null<PointerMap*> const pointer_map,
+            std::uint64_t const address,
+            T* const pointer) {
+  auto inserted = pointer_map->emplace(address, pointer);
+  CHECK(inserted.second) << address;
+}
 
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
@@ -50,12 +72,27 @@ void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
   message->mutable_return_()->set_plugin(SerializePointer(result));
 }
 
+void NewPlugin::Run(Message const& message,
+                    not_null<PointerMap*> const pointer_map) {
+  auto* plugin = principia__NewPlugin(
+                     message.in().initial_time(),
+                     message.in().planetarium_rotation_in_degrees());
+  Insert(pointer_map, message.return_().plugin(), plugin);
+}
+
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_plugin(SerializePointer(in.plugin));
 }
 
 void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
   message->mutable_out()->set_plugin(SerializePointer(*out.plugin));
+}
+
+void DeletePlugin::Run(Message const& message,
+                       not_null<PointerMap*> const pointer_map) {
+  auto* plugin = Find<Plugin const*>(*pointer_map, message.in().plugin());
+  principia__DeletePlugin(&plugin);
+  // TODO(phl): should we do something with out() here?
 }
 
 void DirectlyInsertCelestial::Fill(In const& in,
@@ -96,8 +133,8 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   *m->mutable_from_parent() = SerializeQP(in.from_parent);
 }
 
-Journal::Journal(std::string const& filename)
-    : stream_(filename.c_str(), std::ios::out) {}
+Journal::Journal(std::experimental::filesystem::path const& path)
+    : stream_(path, std::ios::out) {}
 
 Journal::~Journal() {
   stream_.close();
@@ -125,6 +162,40 @@ void Journal::Deactivate() {
   CHECK(active_ != nullptr);
   delete active_;
   active_ = nullptr;
+}
+
+Player::Player(std::experimental::filesystem::path const& path)
+    : stream_(path, std::ios::in) {}
+
+bool Player::Play() {
+  std::unique_ptr<serialization::Method> method = Read();
+  if (method == nullptr) {
+    return false;
+  }
+
+  RunIfAppropriate<DeletePlugin>(*method);
+  RunIfAppropriate<NewPlugin>(*method);
+
+  return true;
+}
+
+std::unique_ptr<serialization::Method> Player::Read() {
+  std::string const line = GetLine(&stream_);
+  if (line.empty()) {
+    return nullptr;
+  }
+
+  uint8_t const* const hexadecimal =
+      reinterpret_cast<uint8_t const*>(line.c_str());
+  int const hexadecimal_size = strlen(line.c_str());
+  UniqueBytes bytes(hexadecimal_size >> 1);
+  HexadecimalDecode({hexadecimal, hexadecimal_size},
+                    {bytes.data.get(), bytes.size});
+  auto method = std::make_unique<serialization::Method>();
+  CHECK(method->ParseFromArray(bytes.data.get(),
+                               static_cast<int>(bytes.size)));
+
+  return method;
 }
 
 Journal* Journal::active_ = nullptr;

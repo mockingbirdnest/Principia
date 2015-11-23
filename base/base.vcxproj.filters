@@ -68,6 +68,12 @@
     <ClInclude Include="array_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="get_line.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="get_line_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">

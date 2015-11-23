@@ -1,8 +1,9 @@
 #pragma once
 
+#include <experimental/filesystem>
 #include <fstream>
 #include <functional>
-#include <list>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -15,6 +16,8 @@ namespace principia {
 using base::not_null;
 
 namespace ksp_plugin {
+
+using PointerMap = std::map<std::uint64_t, void*>;
 
 struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
@@ -30,6 +33,8 @@ struct NewPlugin {
   using Message = serialization::NewPlugin;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 struct DeletePlugin {
@@ -43,6 +48,8 @@ struct DeletePlugin {
   using Message = serialization::DeletePlugin;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 struct DirectlyInsertCelestial {
@@ -111,7 +118,7 @@ class Journal {
     bool returned_ = false;
   };
 
-  explicit Journal(std::string const& filename);
+  explicit Journal(std::experimental::filesystem::path const& path);
   ~Journal();
 
   void Write(serialization::Method const& method);
@@ -126,6 +133,26 @@ class Journal {
 
   template<typename>
   friend class Method;
+  friend class JournalTest;
+};
+
+class Player {
+ public:
+  explicit Player(std::experimental::filesystem::path const& path);
+
+  // Replays the next message in the journal.  Returns false at end of journal.
+  bool Play();
+
+ private:
+  // Reads one message from the stream.  Returns a |nullptr| at end of stream.
+  std::unique_ptr<serialization::Method> Read();
+
+  template<typename Profile>
+  void RunIfAppropriate(serialization::Method const& method);
+
+  PointerMap pointer_map_;
+  std::ifstream stream_;
+
   friend class JournalTest;
 };
 
