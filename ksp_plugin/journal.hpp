@@ -23,6 +23,108 @@ struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
 };
 
+struct SetBufferedLogging {
+  struct In {
+    int const max_severity;
+  };
+
+  using Message = serialization::SetBufferedLogging;
+};
+
+struct GetBufferedLogging {
+  using Return = int;
+
+  using Message = serialization::GetBufferedLogging;
+};
+
+struct SetBufferDuration {
+  struct In {
+    int const seconds;
+  };
+
+  using Message = serialization::SetBufferDuration;
+};
+
+struct GetBufferDuration {
+  using Return = int;
+
+  using Message = serialization::GetBufferDuration;
+};
+
+struct SetSuppressedLogging {
+  struct In {
+    int const min_severity;
+  };
+
+  using Message = serialization::SetSuppressedLogging;
+};
+
+struct GetSuppressedLogging {
+  using Return = int;
+
+  using Message = serialization::GetSuppressedLogging;
+};
+
+struct SetVerboseLogging {
+  struct In {
+    int const level;
+  };
+
+  using Message = serialization::SetVerboseLogging;
+};
+
+struct GetVerboseLogging {
+  using Return = int;
+
+  using Message = serialization::GetVerboseLogging;
+};
+
+struct SetStderrLogging {
+  struct In {
+    int const min_severity;
+  };
+
+  using Message = serialization::SetStderrLogging;
+};
+
+struct GetStderrLogging {
+  using Return = int;
+
+  using Message = serialization::GetStderrLogging;
+};
+
+struct LogInfo {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogInfo;
+};
+
+struct LogWarning {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogWarning;
+};
+
+struct LogError {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogError;
+};
+
+struct LogFatal {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogFatal;
+};
+
 struct NewPlugin {
   struct In {
     double initial_time;
