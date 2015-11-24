@@ -46,7 +46,13 @@ namespace physics {
     auto moon = ephemeris->bodies()[solar_system_1950_.index("Moon")];
 
     // Get positions/trajectories/ephemeres for bodies
-    // Dates will have to be for U1, etc. (and all will have to be generated)
+    // Dates will have to be TDB Julian Day for U1, etc. (and all will have to be generated)
+    // P1 = 18:10:49 UT
+    // U1 = 19:09:19
+    // U2 = 20:30:38
+    // U3 = 20:57:33
+    // U4 = 22:18:54
+    // P4 = 23:17:21
     auto some_instant = JulianDate(2433374.5);
     auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
     auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
@@ -66,21 +72,20 @@ namespace physics {
     auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
     auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
     // Still need to compare angles
+    LOG(ERROR) << alpha;
+    LOG(ERROR) << beta;
+    LOG(ERROR) << gamma;
     
-    // U14 have the same angle, also expressible 2 different ways:
-    // ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
-    // ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
-    // Or as egg suggests, finding the distance with an angle. But these need to have error ranges instead of exact value...
-    // (r_sun - r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
-    // (r_earth - r_moon) / Sin(alpha) == (q_moon - q_earth).Norm(); 
-    // U23
-    // ArcSin((r_sun - r_moon)/(q_moon - q_sun).Norm());
-    // ArcSin((r_earth - r_moon)/(q_moon - q_earth).Norm());
-    // (r_sun + r_moon) / Sin(alpha) == (q_moon - q_sun).Norm();
-    // (r_earth + r_moon) / Sin(alpha) == (q_moon - q_earth).Norm();
+    // Later on for additional accuracy: 2 * ArcTan((x_norm_y - y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
+    // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 
-    // LOG(ERROR) << ArcTan(1.0);
     // Future: check 2048-01-01 Lunar eclipse
+    // P1 = 03:52:39 UT
+    // U1 = 05:05:17 UT
+    // U2 = 06:24:27
+    // U3 = 07:20:23
+    // U4 = 08:39:33
+    // P4 = 09:52:05
   };
         
 } // physics
