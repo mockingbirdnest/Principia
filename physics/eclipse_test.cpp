@@ -19,6 +19,7 @@ using quantities::si::Minute;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Kilo;
+using quantities::ArcCos; // This feels very cargocultish, especially since I don't need it for ArcSin.
 
 namespace physics {
 
@@ -59,12 +60,13 @@ namespace physics {
     // Lunar eclipse
     // Earth/Sun lineup
     auto alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
-    auto q_U23 = q_earth + (q_sun - q_earth)/(q_sun - q_earth).Norm() * (r_earth - r_moon) / Sin(alpha);
-    auto q_U13 = q_earth + (q_sun - q_earth)/(q_sun - q_earth).Norm() * (r_earth + r_moon) / Sin(alpha);
+    auto q_U23 = q_earth + Normalize(q_sun - q_earth) * (r_earth - r_moon) / Sin(alpha);
+    auto q_U14 = q_earth + Normalize(q_sun - q_earth) * (r_earth + r_moon) / Sin(alpha);
     // Earth/Moon lineup
-    // auto beta = ArcCos(InnerProduct(q_moon, q_earth) / (q_moon - q_earth).Norm()); // Does not work because InnerProduct doesn't seem to actually be used. Also wrong inputs, and does not work in principle since we'd need another vector
-    // Where we would compare angles if they were calculable
-
+    auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
+    auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
+    // Still need to compare angles
+    
     // U14 have the same angle, also expressible 2 different ways:
     // ArcSin((r_sun + r_moon)/(q_moon - q_sun).Norm());
     // ArcSin((r_earth + r_moon)/(q_moon - q_earth).Norm());
