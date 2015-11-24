@@ -14,7 +14,7 @@ message XYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5004.
+  extensions 5000 to 5999;  // Last used: 5018.
 }
 
 message DeletePlugin {
@@ -56,7 +56,7 @@ message DirectlyInsertCelestial {
 
 message GetBufferDuration {
   extend Method {
-    optional GetBufferDuration extension = ;
+    optional GetBufferDuration extension = 5005;
   }
   message Return {
     required int32 seconds = 1;
@@ -66,7 +66,7 @@ message GetBufferDuration {
 
 message GetBufferedLogging {
   extend Method {
-    optional GetBufferedLogging extension = ;
+    optional GetBufferedLogging extension = 5006;
   }
   message Return {
     required int32 max_severity = 1;
@@ -76,7 +76,7 @@ message GetBufferedLogging {
 
 message GetStderrLogging {
   extend Method {
-    optional GetStderrLogging extension = ;
+    optional GetStderrLogging extension = 5007;
   }
   message Return {
     required int32 min_severity = 1;
@@ -86,7 +86,7 @@ message GetStderrLogging {
 
 message GetSuppressedLogging {
   extend Method {
-    optional GetSuppressedLogging extension = ;
+    optional GetSuppressedLogging extension = 5008;
   }
   message Return {
     required int32 min_severity = 1;
@@ -96,7 +96,7 @@ message GetSuppressedLogging {
 
 message GetVerboseLogging {
   extend Method {
-    optional GetVerboseLogging extension = ;
+    optional GetVerboseLogging extension = 5009;
   }
   message Return {
     required int32 level = 1;
@@ -126,7 +126,7 @@ message InsertCelestial {
 
 message LogError {
   extend Method {
-    optional LogError extension = ;
+    optional LogError extension = 5010;
   }
   message In {
     required string message = 1;
@@ -136,7 +136,7 @@ message LogError {
 
 message LogFatal {
   extend Method {
-    optional LogFatal extension = ;
+    optional LogFatal extension = 5011;
   }
   message In {
     required string message = 1;
@@ -146,7 +146,7 @@ message LogFatal {
 
 message LogInfo {
   extend Method {
-    optional LogInfo extension = ;
+    optional LogInfo extension = 5012;
   }
   message In {
     required string message = 1;
@@ -156,7 +156,7 @@ message LogInfo {
 
 message LogWarning {
   extend Method {
-    optional LogWarning extension = ;
+    optional LogWarning extension = 5013;
   }
   message In {
     required string message = 1;
@@ -181,7 +181,7 @@ message NewPlugin {
 
 message SetBufferDuration {
   extend Method {
-    optional SetBufferDuration extension = ;
+    optional SetBufferDuration extension = 5014;
   }
   message In {
     required int32 seconds = 1;
@@ -191,7 +191,7 @@ message SetBufferDuration {
 
 message SetBufferedLogging {
   extend Method {
-    optional SetBufferedLogging extension = ;
+    optional SetBufferedLogging extension = 5015;
   }
   message In {
     required int32 max_severity = 1;
@@ -201,7 +201,7 @@ message SetBufferedLogging {
 
 message SetStderrLogging {
   extend Method {
-    optional SetStderrLogging extension = ;
+    optional SetStderrLogging extension = 5016;
   }
   message In {
     required int32 min_severity = 1;
@@ -211,7 +211,7 @@ message SetStderrLogging {
 
 message SetSuppressedLogging {
   extend Method {
-    optional SetSuppressedLogging extension = ;
+    optional SetSuppressedLogging extension = 5017;
   }
   message In {
     required int32 min_severity = 1;
@@ -221,7 +221,7 @@ message SetSuppressedLogging {
 
 message SetVerboseLogging {
   extend Method {
-    optional SetVerboseLogging extension = ;
+    optional SetVerboseLogging extension = 5018;
   }
   message In {
     required int32 level = 1;
