@@ -61,6 +61,138 @@ serialization::QP SerializeQP(QP const& qp) {
 
 }  // namespace
 
+void SetBufferedLogging::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_max_severity(in.max_severity);
+}
+
+void SetBufferedLogging::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {
+  principia__SetBufferedLogging(message.in().max_severity());
+}
+
+void GetBufferedLogging::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  message->mutable_return_()->set_max_severity(result);
+}
+
+void GetBufferedLogging::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().max_severity(), principia__GetBufferedLogging());
+}
+
+void SetBufferDuration::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_seconds(in.seconds);
+}
+
+void SetBufferDuration::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  principia__SetBufferDuration(message.in().seconds());
+}
+
+void GetBufferDuration::Fill(Return const& result,
+                             not_null<Message*> const message) {
+  message->mutable_return_()->set_seconds(result);
+}
+
+void GetBufferDuration::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().seconds(), principia__GetBufferDuration());
+}
+
+void SetSuppressedLogging::Fill(In const& in,
+                                not_null<Message*> const message) {
+  message->mutable_in()->set_min_severity(in.min_severity);
+}
+
+void SetSuppressedLogging::Run(Message const& message,
+                               not_null<PointerMap*> const pointer_map) {
+  principia__SetSuppressedLogging(message.in().min_severity());
+}
+
+void GetSuppressedLogging::Fill(Return const& result,
+                                not_null<Message*> const message) {
+  message->mutable_return_()->set_min_severity(result);
+}
+
+void GetSuppressedLogging::Run(Message const& message,
+                               not_null<PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().min_severity(), principia__GetSuppressedLogging());
+}
+
+void SetVerboseLogging::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_level(in.level);
+}
+
+void SetVerboseLogging::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  principia__SetVerboseLogging(message.in().level());
+}
+
+void GetVerboseLogging::Fill(Return const& result,
+                             not_null<Message*> const message) {
+  message->mutable_return_()->set_level(result);
+}
+
+void GetVerboseLogging::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().level(), principia__GetVerboseLogging());
+}
+
+void SetStderrLogging::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_min_severity(in.min_severity);
+}
+
+void SetStderrLogging::Run(Message const& message,
+                           not_null<PointerMap*> const pointer_map) {
+  principia__SetStderrLogging(message.in().min_severity());
+}
+
+void GetStderrLogging::Fill(Return const& result,
+                            not_null<Message*> const message) {
+  message->mutable_return_()->set_min_severity(result);
+}
+
+void GetStderrLogging::Run(Message const& message,
+                           not_null<PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().min_severity(), principia__GetStderrLogging());
+}
+
+void LogInfo::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogInfo::Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map) {
+  principia__LogInfo(message.in().message().c_str());
+}
+
+void LogWarning::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogWarning::Run(Message const& message,
+                     not_null<PointerMap*> const pointer_map) {
+  principia__LogWarning(message.in().message().c_str());
+}
+
+void LogError::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogError::Run(Message const& message,
+                   not_null<PointerMap*> const pointer_map) {
+  principia__LogError(message.in().message().c_str());
+}
+
+void LogFatal::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogFatal::Run(Message const& message,
+                   not_null<PointerMap*> const pointer_map) {
+  principia__LogFatal(message.in().message().c_str());
+}
+
 void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* mutable_in = message->mutable_in();
   mutable_in->set_initial_time(in.initial_time);

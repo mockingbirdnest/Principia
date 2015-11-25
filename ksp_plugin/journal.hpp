@@ -23,6 +23,150 @@ struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
 };
 
+struct SetBufferedLogging {
+  struct In {
+    int const max_severity;
+  };
+
+  using Message = serialization::SetBufferedLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetBufferedLogging {
+  using Return = int;
+
+  using Message = serialization::GetBufferedLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetBufferDuration {
+  struct In {
+    int const seconds;
+  };
+
+  using Message = serialization::SetBufferDuration;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetBufferDuration {
+  using Return = int;
+
+  using Message = serialization::GetBufferDuration;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetSuppressedLogging {
+  struct In {
+    int const min_severity;
+  };
+
+  using Message = serialization::SetSuppressedLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetSuppressedLogging {
+  using Return = int;
+
+  using Message = serialization::GetSuppressedLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetVerboseLogging {
+  struct In {
+    int const level;
+  };
+
+  using Message = serialization::SetVerboseLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetVerboseLogging {
+  using Return = int;
+
+  using Message = serialization::GetVerboseLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetStderrLogging {
+  struct In {
+    int const min_severity;
+  };
+
+  using Message = serialization::SetStderrLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetStderrLogging {
+  using Return = int;
+
+  using Message = serialization::GetStderrLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogInfo {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogInfo;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogWarning {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogWarning;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogError {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogError;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogFatal {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogFatal;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
 struct NewPlugin {
   struct In {
     double initial_time;

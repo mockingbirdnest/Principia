@@ -142,61 +142,84 @@ void principia__InitGoogleLogging() {
 }
 
 void principia__SetBufferedLogging(int const max_severity) {
+  Journal::Method<SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
+  return m.Return();
 }
 
 int principia__GetBufferedLogging() {
-  return FLAGS_logbuflevel;
+  Journal::Method<GetBufferedLogging> m;
+  return m.Return(FLAGS_logbuflevel);
 }
 
 void principia__SetBufferDuration(int const seconds) {
+  Journal::Method<SetBufferDuration> m({seconds});
   FLAGS_logbufsecs = seconds;
+  return m.Return();
 }
 
 int principia__GetBufferDuration() {
-  return FLAGS_logbufsecs;
+  Journal::Method<GetBufferDuration> m;
+  return m.Return(FLAGS_logbufsecs);
 }
 
 void principia__SetSuppressedLogging(int const min_severity) {
+  Journal::Method<SetSuppressedLogging> m({min_severity});
   FLAGS_minloglevel = min_severity;
+  return m.Return();
 }
 
 int principia__GetSuppressedLogging() {
-  return FLAGS_minloglevel;
+  Journal::Method<GetSuppressedLogging> m;
+  return m.Return(FLAGS_minloglevel);
 }
 
 void principia__SetVerboseLogging(int const level) {
+  Journal::Method<SetVerboseLogging> m({level});
   FLAGS_v = level;
+  return m.Return();
 }
 
 int principia__GetVerboseLogging() {
-  return FLAGS_v;
+  Journal::Method<GetVerboseLogging> m;
+  return m.Return(FLAGS_v);
 }
 
 void principia__SetStderrLogging(int const min_severity) {
+  Journal::Method<SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
   // seems to be a mutex.
   google::SetStderrLogging(min_severity);
+  return m.Return();
 }
 
 int principia__GetStderrLogging() {
-  return FLAGS_stderrthreshold;
+  Journal::Method<GetStderrLogging> m;
+  return m.Return(FLAGS_stderrthreshold);
 }
 
 void principia__LogInfo(char const* const message) {
+  Journal::Method<LogInfo> m({message});
   LOG(INFO) << message;
+  return m.Return();
 }
 
 void principia__LogWarning(char const* const message) {
+  Journal::Method<LogWarning> m({message});
   LOG(WARNING) << message;
+  return m.Return();
 }
 
 void principia__LogError(char const* const message) {
+  Journal::Method<LogError> m({message});
   LOG(ERROR) << message;
+  return m.Return();
 }
 
 void principia__LogFatal(char const* const message) {
+  Journal::Method<LogFatal> m({message});
   LOG(FATAL) << message;
+  return m.Return();
 }
 
 Plugin* principia__NewPlugin(double const initial_time,
