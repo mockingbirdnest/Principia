@@ -1051,7 +1051,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.GUILayout.EndHorizontal();
   }
 
-  BurnEditor test_burn_editor_;
+  FlightPlanner test_flight_planner_;
+  ReferenceFrameSelector test_reference_frame_selector_;
 
   private void PredictionSettings() {
     bool changed_settings = false;
@@ -1065,13 +1066,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
-    if (test_burn_editor_ == null) {
-      test_burn_editor_ = new BurnEditor();
+    if (test_flight_planner_ == null) {
+      test_flight_planner_ = new FlightPlanner();
     }
-    bool changing = test_burn_editor_.Render();
-    UnityEngine.GUILayout.TextArea(
-        changing ? "CHANGING" : "Nothing to see here",
-        UnityEngine.GUILayout.Width(200));
+    test_flight_planner_.Render();
+    if (test_reference_frame_selector_ == null) {
+      test_reference_frame_selector_ = new ReferenceFrameSelector();
+    }
+    test_reference_frame_selector_.Render();
   }
 
   private void KSPFeatures() {
