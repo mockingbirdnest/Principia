@@ -54,7 +54,7 @@ class ReferenceFrameSelector {
     UnityEngine.GUI.skin = null;
     if (show_selector_) {
       window_rectangle_ = UnityEngine.GUILayout.Window(
-                              id         : 2,
+                              id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
                               func       : RenderSelector,
                               text       : "Reference frame selection");

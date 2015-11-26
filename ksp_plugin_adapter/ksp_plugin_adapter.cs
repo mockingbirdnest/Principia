@@ -13,7 +13,6 @@ namespace ksp_plugin_adapter {
                                          GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter : ScenarioModule {
-
   public delegate void WindowRenderer();
 
   private const String kPrincipiaKey = "serialized_plugin";
