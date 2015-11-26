@@ -14,6 +14,8 @@ namespace ksp_plugin_adapter {
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter : ScenarioModule {
 
+  public delegate void WindowRenderer();
+
   private const String kPrincipiaKey = "serialized_plugin";
   private const String kPrincipiaInitialState = "principia_initial_state";
   private const String kPrincipiaGravityModel = "principia_gravity_model";
@@ -45,6 +47,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
+
+  private WindowRenderer render_windows_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -479,6 +483,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           options    : UnityEngine.GUILayout.MinWidth(500));
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
+      render_windows_();
     }
   }
 
@@ -1073,9 +1078,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
     test_flight_planner_.Render();
     if (test_reference_frame_selector_ == null) {
-      test_reference_frame_selector_ = new ReferenceFrameSelector();
+      test_reference_frame_selector_ =
+          new ReferenceFrameSelector(ref render_windows_);
     }
-    test_reference_frame_selector_.Render();
+    test_reference_frame_selector_.RenderButton();
   }
 
   private void KSPFeatures() {
