@@ -256,6 +256,9 @@ void DirectlyInsertCelestial::Fill(In const& in,
   m->set_vz(in.vz);
 }
 
+void DirectlyInsertCelestial::Run(Message const& message,
+                                  not_null<PointerMap*> const pointer_map) {}
+
 void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   Message::In* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
@@ -264,6 +267,50 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   m->set_parent_index(in.parent_index);
   *m->mutable_from_parent() = SerializeQP(in.from_parent);
 }
+
+void InsertCelestial::Run(Message const& message,
+                          not_null<PointerMap*> const pointer_map) {}
+
+void InsertSun::Fill(In const& in, not_null<Message*> const message) {}
+
+void InsertSun::Run(Message const& message,
+                    not_null<PointerMap*> const pointer_map) {}
+
+void UpdateCelestialHierarchy::Fill(In const& in,
+                                    not_null<Message*> const message) {}
+
+void UpdateCelestialHierarchy::Run(Message const& message,
+                                   not_null<PointerMap*> const pointer_map) {}
+
+void EndInitialization::Fill(In const& in, not_null<Message*> const message) {}
+
+void EndInitialization::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {}
+
+void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {}
+
+void InsertOrKeepVessel::Fill(Return const& result,
+                              not_null<Message*> const message) {}
+
+void InsertOrKeepVessel::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {}
+
+void SetVesselStateOffset::Fill(In const& in,
+                                not_null<Message*> const message) {}
+
+void SetVesselStateOffset::Run(Message const& message,
+                               not_null<PointerMap*> const pointer_map) {}
+
+void AdvanceTime::Fill(In const& in, not_null<Message*> const message) {}
+
+void AdvanceTime::Run(Message const& message,
+                      not_null<PointerMap*> const pointer_map) {}
+
+void ForgetAllHistoriesBefore::Fill(In const& in,
+                                    not_null<Message*> const message) {}
+
+void ForgetAllHistoriesBefore::Run(Message const& message,
+                                   not_null<PointerMap*> const pointer_map) {}
 
 Journal::Journal(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::out) {}
