@@ -169,8 +169,8 @@ struct LogFatal {
 
 struct NewPlugin {
   struct In {
-    double initial_time;
-    double planetarium_rotation_in_degrees;
+    double const initial_time;
+    double const planetarium_rotation_in_degrees;
   };
   using Return = Plugin*;
 
@@ -183,7 +183,7 @@ struct NewPlugin {
 
 struct DeletePlugin {
   struct In {
-    Plugin const* plugin;
+    Plugin const* const plugin;
   };
   struct Out {
     Plugin const** const plugin;
@@ -198,37 +198,131 @@ struct DeletePlugin {
 
 struct DirectlyInsertCelestial {
   struct In {
-    Plugin* plugin;
-    int celestial_index;
-    int const* parent_index;
-    char const* gravitational_parameter;
-    char const* axis_right_ascension;
-    char const* axis_declination;
-    char const* j2;
-    char const* reference_radius;
-    char const* x;
-    char const* y;
-    char const* z;
-    char const* vx;
-    char const* vy;
-    char const* vz;
+    Plugin* const plugin;
+    int const celestial_index;
+    int const* const parent_index;
+    char const* const gravitational_parameter;
+    char const* const axis_right_ascension;
+    char const* const axis_declination;
+    char const* const j2;
+    char const* const reference_radius;
+    char const* const x;
+    char const* const y;
+    char const* const z;
+    char const* const vx;
+    char const* const vy;
+    char const* const vz;
   };
 
   using Message = serialization::DirectlyInsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 struct InsertCelestial {
   struct In {
-    Plugin* plugin;
-    int celestial_index;
-    double gravitational_parameter;
-    int parent_index;
-    QP from_parent;
+    Plugin* const plugin;
+    int const celestial_index;
+    double const gravitational_parameter;
+    int const parent_index;
+    QP const from_parent;
   };
 
   using Message = serialization::InsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct InsertSun {
+  struct In {
+    Plugin* const plugin;
+    int const celestial_index;
+    double const gravitational_parameter;
+  };
+
+  using Message = serialization::InsertSun;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct UpdateCelestialHierarchy {
+  struct In {
+    Plugin const* const plugin;
+    int const celestial_index;
+    int const parent_index;
+  };
+
+  using Message = serialization::UpdateCelestialHierarchy;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct EndInitialization {
+  struct In {
+    Plugin const* const plugin;
+  };
+
+  using Message = serialization::EndInitialization;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct InsertOrKeepVessel {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    int const parent_index;
+  };
+  using Return = bool;
+
+  using Message = serialization::InsertOrKeepVessel;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetVesselStateOffset {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    QP const from_parent;
+  };
+
+  using Message = serialization::SetVesselStateOffset;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct AdvanceTime {
+  struct In {
+    Plugin* const plugin;
+    double const t;
+    double const planetarium_rotation;
+  };
+
+  using Message = serialization::AdvanceTime;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct ForgetAllHistoriesBefore {
+  struct In {
+    Plugin* const plugin;
+    double const t;
+  };
+
+  using Message = serialization::ForgetAllHistoriesBefore;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 class Journal {
@@ -292,7 +386,7 @@ class Player {
   std::unique_ptr<serialization::Method> Read();
 
   template<typename Profile>
-  void RunIfAppropriate(serialization::Method const& method);
+  bool RunIfAppropriate(serialization::Method const& method);
 
   PointerMap pointer_map_;
   std::ifstream stream_;

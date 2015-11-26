@@ -325,50 +325,68 @@ void principia__InsertCelestial(Plugin* const plugin,
 void principia__InsertSun(Plugin* const plugin,
                           int const celestial_index,
                           double const gravitational_parameter) {
+  Journal::Method<InsertSun> m({plugin,
+                                celestial_index,
+                                gravitational_parameter});
   CHECK_NOTNULL(plugin)->InsertSun(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>());
+  return m.Return();
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                          int const celestial_index,
                                          int const parent_index) {
+  Journal::Method<UpdateCelestialHierarchy> m({plugin,
+                                               celestial_index,
+                                               parent_index});
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
+  return m.Return();
 }
 
 void principia__EndInitialization(Plugin* const plugin) {
+  Journal::Method<EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin)->EndInitialization();
+  return m.Return();
 }
 
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
                                    int const parent_index) {
-  return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
+  Journal::Method<InsertOrKeepVessel> m({plugin, vessel_guid, parent_index});
+  return m.Return(
+      CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index));
 }
 
 void principia__SetVesselStateOffset(Plugin* const plugin,
                                      char const* const vessel_guid,
                                      QP const from_parent) {
+  Journal::Method<SetVesselStateOffset> m({plugin, vessel_guid, from_parent});
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
           Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+  return m.Return();
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
+  Journal::Method<AdvanceTime> m({plugin, t, planetarium_rotation});
   Instant const t0;
   CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
                                      planetarium_rotation * Degree);
+  return m.Return();
 }
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
+  Journal::Method<ForgetAllHistoriesBefore> m({plugin, t});
   Instant const t0;
   CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
+  return m.Return();
 }
 
 QP principia__VesselFromParent(Plugin const* const plugin,

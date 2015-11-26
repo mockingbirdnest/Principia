@@ -305,8 +305,10 @@ bool Player::Play() {
     return false;
   }
 
-  RunIfAppropriate<DeletePlugin>(*method);
-  RunIfAppropriate<NewPlugin>(*method);
+  bool ran = false;
+  ran |= RunIfAppropriate<DeletePlugin>(*method);
+  ran |= RunIfAppropriate<NewPlugin>(*method);
+  CHECK(ran);
 
   return true;
 }
