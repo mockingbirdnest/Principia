@@ -1051,6 +1051,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.GUILayout.EndHorizontal();
   }
 
+  // NOTE(egg): Dummy UI elements for testing purposes, rendered in an
+  // irrelevant part of the UI.
   FlightPlanner test_flight_planner_;
   ReferenceFrameSelector test_reference_frame_selector_;
 

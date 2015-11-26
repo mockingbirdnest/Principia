@@ -43,10 +43,13 @@ class ReferenceFrameSelector {
     UnityEngine.GUI.skin = null;
 
     UnityEngine.GUILayout.BeginHorizontal();
+
+    // Left-hand side: tree view for celestial selection.
     UnityEngine.GUILayout.BeginVertical(UnityEngine.GUILayout.Width(200));
     RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
     UnityEngine.GUILayout.EndVertical();
     
+    // Right-hand side: toggles for reference frame type selection.
     UnityEngine.GUILayout.BeginVertical();
     TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING,
                  "Non-rotating reference frame fixing the centre of " +
@@ -87,20 +90,24 @@ class ReferenceFrameSelector {
 #endif
   }
 
-  Dictionary<CelestialBody, bool> expanded_;
-  CelestialBody selected_celestial_;
-  FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
-
   private void RenderSubtree(CelestialBody celestial, int depth) {
+    // Horizontal offset between a node and its children.
     const int offset = 20;
     UnityEngine.GUILayout.BeginHorizontal();
     if (!celestial.is_root()) {
       UnityEngine.GUILayout.Label(
           "",
           UnityEngine.GUILayout.Width(offset * (depth - 1)));
-      if (UnityEngine.GUILayout.Button(
-              celestial.is_leaf() ? "" : (expanded_[celestial] ? "-" : "+"),
-              UnityEngine.GUILayout.Width(offset))) {
+      string button_text;
+      if (celestial.is_leaf()) {
+        button_text = "";
+      } else if (expanded_[celestial]) {
+        button_text = "-";
+      } else {
+        button_text = "+";
+      }
+      if (UnityEngine.GUILayout.Button(button_text,
+                                       UnityEngine.GUILayout.Width(offset))) {
         expanded_[celestial] = !expanded_[celestial];
       }
     }
@@ -127,6 +134,10 @@ class ReferenceFrameSelector {
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
+
+  private Dictionary<CelestialBody, bool> expanded_;
+  private CelestialBody selected_celestial_;
+  private FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
 }
 
 }  // namespace ksp_plugin_adapter
