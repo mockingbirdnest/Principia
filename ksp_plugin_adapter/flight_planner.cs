@@ -8,9 +8,6 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class FlightPlanner {
-
-  private List<BurnEditor> burns_;
-
   public FlightPlanner() {
     burns_ = new List<BurnEditor>();
   }
@@ -36,6 +33,8 @@ class FlightPlanner {
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;
   }
+
+  private List<BurnEditor> burns_;
 }
 
 }  // namespace ksp_plugin_adapter

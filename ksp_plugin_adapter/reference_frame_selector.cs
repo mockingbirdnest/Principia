@@ -20,59 +20,6 @@ static class CelestialExtensions {
 }
 
 class ReferenceFrameSelector {
-
-  private enum FrameType {
-    BODY_CENTRED_NON_ROTATING,
-#if HAS_SURFACE
-    SURFACE,
-#endif
-    BARYCENTRIC_ROTATING,
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-    BODY_CENTRED_ALIGNED_WITH_PARENT
-#endif
-  }
-
-  Dictionary<CelestialBody, bool> expanded_;
-  CelestialBody selected_celestial_;
-  FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
-
-  private void RenderSubtree(CelestialBody celestial, int depth) {
-    const int offset = 20;
-    UnityEngine.GUILayout.BeginHorizontal();
-    if (!celestial.is_root()) {
-      UnityEngine.GUILayout.Label(
-          "",
-          UnityEngine.GUILayout.Width(offset * (depth - 1)));
-      if (UnityEngine.GUILayout.Button(
-              celestial.is_leaf() ? "" : (expanded_[celestial] ? "-" : "+"),
-              UnityEngine.GUILayout.Width(offset))) {
-        expanded_[celestial] = !expanded_[celestial];
-      }
-    }
-    if (UnityEngine.GUILayout.Toggle(selected_celestial_ == celestial,
-                                     celestial.name)) {
-      selected_celestial_ = celestial;
-    }
-    UnityEngine.GUILayout.EndHorizontal();
-    if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
-      foreach (CelestialBody child in celestial.orbitingBodies) {
-        RenderSubtree(child, depth + 1);
-      }
-    }
-  }
-
-  private void TypeSelector(FrameType value, string text) {
-   bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
-   UnityEngine.GUI.skin.toggle.wordWrap = true;
-   if (UnityEngine.GUILayout.Toggle(selected_type_ == value,
-                                    text,
-                                    UnityEngine.GUILayout.Width(150),
-                                    UnityEngine.GUILayout.Height(75))) {
-      selected_type_ = value;
-    }
-    UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
-  }
-
   public ReferenceFrameSelector() {
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -127,6 +74,58 @@ class ReferenceFrameSelector {
     UnityEngine.GUILayout.EndHorizontal();
 
     UnityEngine.GUI.skin = old_skin;
+  }
+
+  private enum FrameType {
+    BODY_CENTRED_NON_ROTATING,
+#if HAS_SURFACE
+    SURFACE,
+#endif
+    BARYCENTRIC_ROTATING,
+#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+    BODY_CENTRED_ALIGNED_WITH_PARENT
+#endif
+  }
+
+  Dictionary<CelestialBody, bool> expanded_;
+  CelestialBody selected_celestial_;
+  FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
+
+  private void RenderSubtree(CelestialBody celestial, int depth) {
+    const int offset = 20;
+    UnityEngine.GUILayout.BeginHorizontal();
+    if (!celestial.is_root()) {
+      UnityEngine.GUILayout.Label(
+          "",
+          UnityEngine.GUILayout.Width(offset * (depth - 1)));
+      if (UnityEngine.GUILayout.Button(
+              celestial.is_leaf() ? "" : (expanded_[celestial] ? "-" : "+"),
+              UnityEngine.GUILayout.Width(offset))) {
+        expanded_[celestial] = !expanded_[celestial];
+      }
+    }
+    if (UnityEngine.GUILayout.Toggle(selected_celestial_ == celestial,
+                                     celestial.name)) {
+      selected_celestial_ = celestial;
+    }
+    UnityEngine.GUILayout.EndHorizontal();
+    if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
+      foreach (CelestialBody child in celestial.orbitingBodies) {
+        RenderSubtree(child, depth + 1);
+      }
+    }
+  }
+
+  private void TypeSelector(FrameType value, string text) {
+   bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
+   UnityEngine.GUI.skin.toggle.wordWrap = true;
+   if (UnityEngine.GUILayout.Toggle(selected_type_ == value,
+                                    text,
+                                    UnityEngine.GUILayout.Width(150),
+                                    UnityEngine.GUILayout.Height(75))) {
+      selected_type_ = value;
+    }
+    UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 }
 
