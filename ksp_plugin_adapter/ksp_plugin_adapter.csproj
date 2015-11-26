@@ -57,11 +57,13 @@
   <ItemGroup>
     <Compile Include="burn_editor.cs" />
     <Compile Include="differential_slider.cs" />
+    <Compile Include="flight_planner.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="ksp_plugin_interface.cs" />
     <Compile Include="logging.cs" />
     <Compile Include="map_renderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="reference_frame_selector.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\navball_barycentric.png">

@@ -5,21 +5,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider {
-  private float slider_position_ = 0.0f;
-  private DateTime last_time_;
-
-  private readonly string label_;
-  private readonly string unit_;
-  private readonly CultureInfo culture_;
-
-  private readonly double log10_lower_rate_ = -3;
-  private readonly double log10_upper_rate_ = 3.5;
-  private readonly double min_value_;
-  private readonly double max_value_;
-
-  private readonly ValueFormatter format_;
-
-  public double value { get; set; }
+  public delegate string ValueFormatter(double value);
 
   public DifferentialSlider(string label,
                             string unit,
@@ -31,8 +17,6 @@ internal class DifferentialSlider {
              log10_upper_rate,
              double.NegativeInfinity,
              double.PositiveInfinity) {}
-
-  public delegate string ValueFormatter(double value);
 
   // Rates are in units of |value| per real-time second.
   public DifferentialSlider(string label,
@@ -56,6 +40,8 @@ internal class DifferentialSlider {
     min_value_ = min_value;
     max_value_ = max_value;
   }
+
+  public double value { get; set; }
 
   // Renders the |DifferentialSlider|.  Returns true if and only if |value|
   // changed.
@@ -109,6 +95,20 @@ internal class DifferentialSlider {
     UnityEngine.GUI.skin = old_skin;
     return value_changed;
   }
+
+  private float slider_position_ = 0.0f;
+  private DateTime last_time_;
+
+  private readonly string label_;
+  private readonly string unit_;
+  private readonly CultureInfo culture_;
+
+  private readonly double log10_lower_rate_ = -3;
+  private readonly double log10_upper_rate_ = 3.5;
+  private readonly double min_value_;
+  private readonly double max_value_;
+
+  private readonly ValueFormatter format_;
 }
 
 }  // namespace ksp_plugin_adapter
