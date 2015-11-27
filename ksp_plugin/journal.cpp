@@ -39,6 +39,14 @@ void Insert(not_null<PointerMap*> const pointer_map,
   CHECK(inserted.second) << address;
 }
 
+XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
+  return {xyz.x(), xyz.y(), xyz.z()};
+}
+
+QP DeserializeQP(serialization::QP const& qp) {
+  return {DeserializeXYZ(qp.q()), DeserializeXYZ(qp.p())};
+}
+
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
@@ -206,9 +214,9 @@ void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
 
 void NewPlugin::Run(Message const& message,
                     not_null<PointerMap*> const pointer_map) {
-  auto* plugin = principia__NewPlugin(
-                     message.in().initial_time(),
-                     message.in().planetarium_rotation_in_degrees());
+  auto const& in = message.in();
+  auto* plugin = principia__NewPlugin(in.initial_time(),
+                                      in.planetarium_rotation_in_degrees());
   Insert(pointer_map, message.return_().plugin(), plugin);
 }
 
@@ -257,7 +265,23 @@ void DirectlyInsertCelestial::Fill(In const& in,
 }
 
 void DirectlyInsertCelestial::Run(Message const& message,
-                                  not_null<PointerMap*> const pointer_map) {}
+                                  not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, message.in().plugin());
+  int const parent_index = in.parent_index();
+  principia__DirectlyInsertCelestial(
+      plugin,
+      in.celestial_index(),
+      in.has_parent_index() ? &parent_index : nullptr,
+      in.gravitational_parameter().c_str(),
+      in.has_axis_right_ascension() ?
+          in.axis_right_ascension().c_str() : nullptr,
+      in.has_axis_declination() ? in.axis_declination().c_str() : nullptr,
+      in.has_j2() ? in.j2().c_str() : nullptr,
+      in.has_reference_radius() ? in.reference_radius().c_str() : nullptr,
+      in.x().c_str(), in.y().c_str(), in.z().c_str(),
+      in.vx().c_str(), in.vy().c_str(), in.vz().c_str());
+}
 
 void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   Message::In* m = message->mutable_in();
@@ -269,7 +293,16 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void InsertCelestial::Run(Message const& message,
-                          not_null<PointerMap*> const pointer_map) {}
+                          not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, message.in().plugin());
+  int const parent_index = in.parent_index();
+  principia__InsertCelestial(plugin,
+                             in.celestial_index(),
+                             in.gravitational_parameter(),
+                             in.parent_index(),
+                             DeserializeQP(in.from_parent()));
+}
 
 void InsertSun::Fill(In const& in, not_null<Message*> const message) {}
 
