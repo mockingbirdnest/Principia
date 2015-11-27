@@ -20,7 +20,9 @@ static class CelestialExtensions {
 }
 
 class ReferenceFrameSelector {
-  public ReferenceFrameSelector() {
+  public ReferenceFrameSelector(
+      ref PrincipiaPluginAdapter.WindowRenderer window_renderer) {
+    window_renderer += RenderWindow;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       if (!celestial.is_leaf() && !celestial.is_root()) {
@@ -38,7 +40,29 @@ class ReferenceFrameSelector {
     }
   }
 
-  public void Render() {
+  public void RenderButton() {
+    var old_skin = UnityEngine.GUI.skin;
+    UnityEngine.GUI.skin = null;
+    if (UnityEngine.GUILayout.Button("Reference frame selection...")) {
+      show_selector_ = !show_selector_;
+    }
+    UnityEngine.GUI.skin = old_skin;
+  }
+
+  public void RenderWindow() {
+    var old_skin = UnityEngine.GUI.skin;
+    UnityEngine.GUI.skin = null;
+    if (show_selector_) {
+      window_rectangle_ = UnityEngine.GUILayout.Window(
+                              id         : this.GetHashCode(),
+                              screenRect : window_rectangle_,
+                              func       : RenderSelector,
+                              text       : "Reference frame selection");
+    }
+    UnityEngine.GUI.skin = old_skin;
+  }
+
+  public void RenderSelector(int window_id) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
@@ -76,6 +100,10 @@ class ReferenceFrameSelector {
 
     UnityEngine.GUILayout.EndHorizontal();
 
+    UnityEngine.GUI.DragWindow(
+        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+                                        height : 10000f));
+
     UnityEngine.GUI.skin = old_skin;
   }
 
@@ -108,6 +136,7 @@ class ReferenceFrameSelector {
       }
       if (UnityEngine.GUILayout.Button(button_text,
                                        UnityEngine.GUILayout.Width(offset))) {
+        Shrink();
         expanded_[celestial] = !expanded_[celestial];
       }
     }
@@ -135,6 +164,13 @@ class ReferenceFrameSelector {
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
 
+  private void Shrink() {
+    window_rectangle_.height = 0.0f;
+    window_rectangle_.width = 0.0f;
+  }
+
+  private bool show_selector_;
+  private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private CelestialBody selected_celestial_;
   private FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
