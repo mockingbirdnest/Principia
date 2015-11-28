@@ -313,7 +313,7 @@ void InsertSun::Fill(In const& in, not_null<Message*> const message) {
 void InsertSun::Run(Message const& message,
                     not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map,in.plugin());
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
   principia__InsertSun(plugin,
                        in.celestial_index(),
                        in.gravitational_parameter());
