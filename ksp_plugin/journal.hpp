@@ -327,6 +327,8 @@ struct ForgetAllHistoriesBefore {
 
 struct VesselFromParent {
   struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
   };
 
   using Message = serialization::VesselFromParent;
@@ -337,16 +339,8 @@ struct VesselFromParent {
 
 struct CelestialFromParent {
   struct In {
-  };
-
-  using Message = serialization::CelestialFromParent;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
-};
-
-struct CelestialFromParent {
-  struct In {
+    Plugin const* const plugin;
+    int const celestial_index;
   };
 
   using Message = serialization::CelestialFromParent;
@@ -357,6 +351,8 @@ struct CelestialFromParent {
 
 struct NewBodyCentredNonRotatingRenderingFrame {
   struct In {
+    Plugin const* const plugin;
+    int const reference_body_index;
   };
 
   using Message = serialization::NewBodyCentredNonRotatingRenderingFrame;
@@ -367,6 +363,9 @@ struct NewBodyCentredNonRotatingRenderingFrame {
 
 struct NewBarycentricRotatingRenderingFrame {
   struct In {
+    Plugin const* const plugin;
+    int const primary_index;
+    int const secondary_index;
   };
 
   using Message = serialization::NewBarycentricRotatingRenderingFrame;
@@ -377,6 +376,7 @@ struct NewBarycentricRotatingRenderingFrame {
 
 struct DeleteRenderingFrame {
   struct In {
+    RenderingFrame* const rendering_frame;
   };
 
   using Message = serialization::DeleteRenderingFrame;
@@ -387,6 +387,8 @@ struct DeleteRenderingFrame {
 
 struct UpdatePrediction {
   struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
   };
 
   using Message = serialization::UpdatePrediction;
@@ -397,6 +399,10 @@ struct UpdatePrediction {
 
 struct RenderedVesselTrajectory {
   struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
   };
 
   using Message = serialization::RenderedVesselTrajectory;
@@ -407,6 +413,8 @@ struct RenderedVesselTrajectory {
 
 struct HasPrediction {
   struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
   };
 
   using Message = serialization::HasPrediction;
@@ -417,6 +425,10 @@ struct HasPrediction {
 
 struct RenderedPrediction {
   struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
   };
 
   using Message = serialization::RenderedPrediction;
