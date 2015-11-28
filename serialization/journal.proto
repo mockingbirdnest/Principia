@@ -322,7 +322,7 @@ message RenderedPrediction {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 rendered_vessel_trajectory = 1;
+    required fixed64 rendered_prediction = 1;
   }
   required In in = 1;
   required Return return = 3;

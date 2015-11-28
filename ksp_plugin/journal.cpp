@@ -428,7 +428,12 @@ void VesselFromParent::Fill(Return const& result,
       SerializeQP(result);
 }
 
-void VesselFromParent::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void VesselFromParent::Run(Message const& message,
+                           not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__VesselFromParent(plugin, in.vessel_guid().c_str());
+}
 
 void CelestialFromParent::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -442,7 +447,13 @@ void CelestialFromParent::Fill(Return const& result,
       SerializeQP(result);
 }
 
-void CelestialFromParent::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void CelestialFromParent::Run(Message const& message,
+                              not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__CelestialFromParent(plugin, in.celestial_index());
+  // TODO(phl): Check all the return values everywhere.
+}
 
 void NewBodyCentredNonRotatingRenderingFrame::Fill(
     In const& in,
@@ -459,7 +470,17 @@ void NewBodyCentredNonRotatingRenderingFrame::Fill(
       SerializePointer(result));
 }
 
-void NewBodyCentredNonRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void NewBodyCentredNonRotatingRenderingFrame::Run(
+    Message const& message,
+    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* rendering_frame = principia__NewBodyCentredNonRotatingRenderingFrame(
+                              plugin, in.reference_body_index());
+  Insert(pointer_map,
+         message.return_().new_body_centred_non_rotating_rendering_frame(),
+         rendering_frame);
+}
 
 void NewBarycentricRotatingRenderingFrame::Fill(
     In const& in,
@@ -477,7 +498,15 @@ void NewBarycentricRotatingRenderingFrame::Fill(
       SerializePointer(result));
 }
 
-void NewBarycentricRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void NewBarycentricRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* rendering_frame = principia__NewBarycentricRotatingRenderingFrame(
+                              plugin, in.primary_index(), in.secondary_index());
+  Insert(pointer_map,
+         message.return_().new_barycentric_rotating_rendering_frame(),
+         rendering_frame);
+}
 
 void DeleteRenderingFrame::Fill(In const& in,
                                 not_null<Message*> const message) {
@@ -488,7 +517,12 @@ void DeleteRenderingFrame::Fill(In const& in,
 void DeleteRenderingFrame::Fill(Out const& out, not_null<Message*> const message) {
 }
 
-void DeleteRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void DeleteRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {
+  auto* rendering_frame = DeserializePointer<RenderingFrame*>(
+                              *pointer_map, message.in().rendering_frame());
+  principia__DeleteRenderingFrame(&rendering_frame);
+  // TODO(phl): should we do something with out() here?
+}
 
 void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -496,7 +530,12 @@ void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
   m->set_vessel_guid(in.vessel_guid);
 }
 
-void UpdatePrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void UpdatePrediction::Run(Message const& message,
+                           not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__UpdatePrediction(plugin, in.vessel_guid().c_str());
+}
 
 void RenderedVesselTrajectory::Fill(In const& in,
                                     not_null<Message*> const message) {
@@ -513,7 +552,21 @@ void RenderedVesselTrajectory::Fill(Return const& result,
       SerializePointer(result));
 }
 
-void RenderedVesselTrajectory::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void RenderedVesselTrajectory::Run(Message const& message,
+                                   not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* rendering_frame = DeserializePointer<RenderingFrame*>(
+                              *pointer_map, in.rendering_frame());
+  auto* line_and_iterator = principia__RenderedVesselTrajectory(
+                                plugin,
+                                in.vessel_guid().c_str(),
+                                rendering_frame,
+                                DeserializeXYZ(in.sun_world_position()));
+  Insert(pointer_map,
+         message.return_().rendered_vessel_trajectory(),
+         line_and_iterator);
+}
 
 void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -526,7 +579,12 @@ void HasPrediction::Fill(Return const& result,
   message->mutable_return_()->set_has_prediction(result);
 }
 
-void HasPrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void HasPrediction::Run(Message const& message,
+                        not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasPrediction(plugin, in.vessel_guid().c_str());
+}
 
 void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -538,11 +596,25 @@ void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
 
 void RenderedPrediction::Fill(Return const& result,
                               not_null<Message*> const message) {
-  message->mutable_return_()->set_rendered_vessel_trajectory(
+  message->mutable_return_()->set_rendered_prediction(
       SerializePointer(result));
 }
 
-void RenderedPrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void RenderedPrediction::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* rendering_frame = DeserializePointer<RenderingFrame*>(
+                              *pointer_map, in.rendering_frame());
+  auto* line_and_iterator = principia__RenderedPrediction(
+                                plugin,
+                                in.vessel_guid().c_str(),
+                                rendering_frame,
+                                DeserializeXYZ(in.sun_world_position()));
+  Insert(pointer_map,
+         message.return_().rendered_prediction(),
+         line_and_iterator);
+}
 
 Journal::Journal(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::out) {}
