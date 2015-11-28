@@ -57,11 +57,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private VectorLine rendered_trajectory_;
 
   [KSPField(isPersistant = true)]
-  private int first_selected_celestial_ = 0;
-  [KSPField(isPersistant = true)]
-  private int second_selected_celestial_ = 0;
-
-  [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
@@ -509,10 +504,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       if (navball_changed_) {
         // Texture the ball.
         navball_changed_ = false;
+        // TODO(egg): switch over all frame types and have more navball textures
+        // when more frames are available.
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
           navball_.navBall.renderer.material.mainTexture =
               compass_navball_texture_;
-        } else if (first_selected_celestial_ == second_selected_celestial_) {
+        } else if (rendering_frame_selector_.frame_type ==
+                   ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
           navball_.navBall.renderer.material.mainTexture =
               inertial_navball_texture_;
         } else {

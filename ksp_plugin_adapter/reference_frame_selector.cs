@@ -21,6 +21,17 @@ static class CelestialExtensions {
 }
 
 class ReferenceFrameSelector {
+  public enum FrameType {
+    BODY_CENTRED_NON_ROTATING,
+#if HAS_SURFACE
+    SURFACE,
+#endif
+    BARYCENTRIC_ROTATING,
+#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+    BODY_CENTRED_ALIGNED_WITH_PARENT
+#endif
+  }
+
   public delegate void Callback();
 
   public ReferenceFrameSelector(
@@ -30,6 +41,7 @@ class ReferenceFrameSelector {
     plugin_ = plugin;
     on_change_ = on_change;
     window_renderer += RenderWindow;
+    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       if (!celestial.is_leaf() && !celestial.is_root()) {
@@ -53,6 +65,7 @@ class ReferenceFrameSelector {
   }
 
   public IntPtr frame { get { return frame_; } }
+  public FrameType frame_type { get; private set; }
 
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
@@ -121,17 +134,6 @@ class ReferenceFrameSelector {
     UnityEngine.GUI.skin = old_skin;
   }
 
-  private enum FrameType {
-    BODY_CENTRED_NON_ROTATING,
-#if HAS_SURFACE
-    SURFACE,
-#endif
-    BARYCENTRIC_ROTATING,
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-    BODY_CENTRED_ALIGNED_WITH_PARENT
-#endif
-  }
-
   private void RenderSubtree(CelestialBody celestial, int depth) {
     // Horizontal offset between a node and its children.
     const int offset = 20;
@@ -172,12 +174,12 @@ class ReferenceFrameSelector {
   private void TypeSelector(FrameType value, string text) {
    bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
    UnityEngine.GUI.skin.toggle.wordWrap = true;
-   if (UnityEngine.GUILayout.Toggle(selected_type_ == value,
+   if (UnityEngine.GUILayout.Toggle(frame_type == value,
                                     text,
                                     UnityEngine.GUILayout.Width(150),
                                     UnityEngine.GUILayout.Height(75))) {
-      if (selected_type_ != value) {
-        selected_type_ = value;
+      if (frame_type != value) {
+        frame_type = value;
         ResetFrame();
       }
     }
@@ -192,7 +194,7 @@ class ReferenceFrameSelector {
   private void ResetFrame() {
     on_change_();
     DeleteRenderingFrame(ref frame_);
-    switch (selected_type_) {
+    switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         frame_ = NewBodyCentredNonRotatingRenderingFrame(
                      plugin_,
@@ -247,7 +249,6 @@ class ReferenceFrameSelector {
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private CelestialBody selected_celestial_;
-  private FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
 }
 
 }  // namespace ksp_plugin_adapter
