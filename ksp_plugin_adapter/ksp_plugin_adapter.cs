@@ -49,11 +49,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private WindowRenderer render_windows_;
 
+  private ReferenceFrameSelector rendering_frame_selector_;
+
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
-  private IntPtr rendering_frame_ = IntPtr.Zero;
 
   [KSPField(isPersistant = true)]
   private int first_selected_celestial_ = 0;
@@ -84,8 +85,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private int history_length_index_ = 10;
 
-  [KSPField(isPersistant = true)]
-  private bool show_reference_frame_selection_ = true;
   [KSPField(isPersistant = true)]
   private bool show_prediction_settings_ = true;
   [KSPField(isPersistant = true)]
@@ -430,7 +429,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       }
       DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
-      UpdateRenderingFrame();
+      rendering_frame_selector_ =
+          new ReferenceFrameSelector(ref render_windows_,
+                                     plugin_,
+                                     UpdateRenderingFrame);
+
       plugin_construction_ = DateTime.Now;
       plugin_source_ = PluginSource.SAVED_STATE;
     } else {
@@ -524,7 +527,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
                 (UnityEngine.QuaternionD)NavballOrientation(
                     plugin_,
-                    rendering_frame_,
+                    rendering_frame_selector_.frame,
                     (XYZ)Planetarium.fetch.Sun.position,
                     (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
         // TODO(egg): the navball should be independent from the frame of the
@@ -540,17 +543,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           Vector3d prograde =
               (Vector3d)VesselTangent(plugin_,
                                       active_vessel.id.ToString(),
-                                      rendering_frame_);
+                                      rendering_frame_selector_.frame);
           Vector3d radial =
               (Vector3d)VesselNormal(plugin_,
                                      active_vessel.id.ToString(),
-                                     rendering_frame_);
+                                     rendering_frame_selector_.frame);
           // Yes, the astrodynamicist's normal is the mathematician's binormal.
           // Don't ask.
           Vector3d normal =
               (Vector3d)VesselBinormal(plugin_,
                                        active_vessel.id.ToString(),
-                                       rendering_frame_);
+                                       rendering_frame_selector_.frame);
 
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
@@ -733,7 +736,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       trajectory_iterator = RenderedVesselTrajectory(
                                 plugin_,
                                 active_vessel.id.ToString(),
-                                rendering_frame_,
+                                rendering_frame_selector_.frame,
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
@@ -741,7 +744,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         trajectory_iterator = RenderedPrediction(
                                   plugin_,
                                   active_vessel.id.ToString(),
-                                  rendering_frame_,
+                                  rendering_frame_selector_.frame,
                                   (XYZ)Planetarium.fetch.Sun.position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
                                   rendered_prediction_);
@@ -834,7 +837,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
+    rendering_frame_selector_ = null;
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -899,9 +902,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     force_2d_trajectories_ =
         UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
                                      "Force 2D trajectories");
-    ToggleableSection(name   : "Reference Frame Selection",
-                      show   : ref show_reference_frame_selection_,
-                      render : ReferenceFrameSelection);
+    ReferenceFrameSelection();
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
@@ -960,59 +961,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 #endif
 
   private void ReferenceFrameSelection() {
-    bool was_fixing_navball_in_plotting_frame =
-        fix_navball_in_plotting_frame_;
-    fix_navball_in_plotting_frame_ = 
-        UnityEngine.GUILayout.Toggle(
-            value : fix_navball_in_plotting_frame_,
-            text  : "Fix navball in plotting frame");
-    if (PluginRunning() &&
-        was_fixing_navball_in_plotting_frame !=
-        fix_navball_in_plotting_frame_) {
-      navball_changed_ = true;
-      reset_rsas_target_ = true;
-    }
-    bool barycentric_rotating =
-        first_selected_celestial_ != second_selected_celestial_;
-    String reference_frame_description =
-        "The trajectory of the active vessel is plotted in ";
-    if (barycentric_rotating) {
-      reference_frame_description +=
-          "the reference frame fixing the barycentre of " +
-          FlightGlobals.Bodies[first_selected_celestial_].theName + " and " +
-          FlightGlobals.Bodies[second_selected_celestial_].theName + ", " +
-          "the line through them, and the plane in which they move about the " +
-          "barycentre.";
-    } else {
-      reference_frame_description +=
-          "the nonrotating reference frame fixing the centre of " +
-          FlightGlobals.Bodies[first_selected_celestial_].theName + ".";
-    }
-    UnityEngine.GUILayout.TextArea(
-        text    : reference_frame_description,
-        options : UnityEngine.GUILayout.Height(100));
-    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      bool changed_rendering = false;
-      UnityEngine.GUILayout.BeginHorizontal();
-      if (UnityEngine.GUILayout.Toggle(
-              value : first_selected_celestial_ == celestial.flightGlobalsIndex,
-              text  : "") &&
-          first_selected_celestial_ != celestial.flightGlobalsIndex) {
-        first_selected_celestial_ = celestial.flightGlobalsIndex;
-        changed_rendering = true;
+    if (PluginRunning()) {
+      bool was_fixing_navball_in_plotting_frame =
+          fix_navball_in_plotting_frame_;
+      fix_navball_in_plotting_frame_ = 
+          UnityEngine.GUILayout.Toggle(
+              value : fix_navball_in_plotting_frame_,
+              text  : "Fix navball in plotting frame");
+      if (PluginRunning() &&
+          was_fixing_navball_in_plotting_frame !=
+          fix_navball_in_plotting_frame_) {
+        navball_changed_ = true;
+        reset_rsas_target_ = true;
       }
-      if (UnityEngine.GUILayout.Toggle(
-              value : second_selected_celestial_ ==
-                          celestial.flightGlobalsIndex,
-              text  : celestial.name) &&
-          second_selected_celestial_ != celestial.flightGlobalsIndex) {
-        second_selected_celestial_ = celestial.flightGlobalsIndex;
-        changed_rendering = true;
-      }
-      UnityEngine.GUILayout.EndHorizontal();
-      if (changed_rendering && PluginRunning()) {
-        UpdateRenderingFrame();
-      }
+      rendering_frame_selector_.RenderButton();
     }
   }
 
@@ -1058,7 +1020,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   // NOTE(egg): Dummy UI elements for testing purposes, rendered in an
   // irrelevant part of the UI.
   FlightPlanner test_flight_planner_;
-  ReferenceFrameSelector test_reference_frame_selector_;
 
   private void PredictionSettings() {
     bool changed_settings = false;
@@ -1076,11 +1037,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       test_flight_planner_ = new FlightPlanner();
     }
     test_flight_planner_.Render();
-    if (test_reference_frame_selector_ == null) {
-      test_reference_frame_selector_ =
-          new ReferenceFrameSelector(ref render_windows_);
-    }
-    test_reference_frame_selector_.RenderButton();
   }
 
   private void KSPFeatures() {
@@ -1209,17 +1165,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       navball_changed_ = true;
       reset_rsas_target_ = true;
     }
-    DeleteRenderingFrame(ref rendering_frame_);
-    if (first_selected_celestial_ == second_selected_celestial_) {
-      rendering_frame_ = NewBodyCentredNonRotatingRenderingFrame(
-                             plugin_,
-                             first_selected_celestial_);
-    } else {
-      rendering_frame_ = NewBarycentricRotatingRenderingFrame(
-                             plugin_,
-                             first_selected_celestial_,
-                             second_selected_celestial_);
-    }
   }
 
   private void ResetPlugin() {
@@ -1336,7 +1281,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       ApplyToBodyTree(insert_body);
       EndInitialization(plugin_);
     }
-    UpdateRenderingFrame();
+    rendering_frame_selector_ =
+        new ReferenceFrameSelector(ref render_windows_,
+                                   plugin_,
+                                   UpdateRenderingFrame);
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =

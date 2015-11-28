@@ -1,9 +1,10 @@
-﻿#define HAS_SURFACE
-#define HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+﻿#undef HAS_SURFACE
+#undef HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace principia {
@@ -20,8 +21,14 @@ static class CelestialExtensions {
 }
 
 class ReferenceFrameSelector {
+  public delegate void Callback();
+
   public ReferenceFrameSelector(
-      ref PrincipiaPluginAdapter.WindowRenderer window_renderer) {
+      ref PrincipiaPluginAdapter.WindowRenderer window_renderer,
+      IntPtr plugin,
+      Callback on_change) {
+    plugin_ = plugin;
+    on_change_ = on_change;
     window_renderer += RenderWindow;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -38,7 +45,14 @@ class ReferenceFrameSelector {
         expanded_[celestial] = true;
       }
     }
+    ResetFrame();
   }
+
+  ~ReferenceFrameSelector() {
+    DeleteRenderingFrame(ref frame_);
+  }
+
+  public IntPtr frame { get { return frame_; } }
 
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
@@ -142,7 +156,10 @@ class ReferenceFrameSelector {
     }
     if (UnityEngine.GUILayout.Toggle(selected_celestial_ == celestial,
                                      celestial.name)) {
-      selected_celestial_ = celestial;
+      if (selected_celestial_ != celestial) {
+        selected_celestial_ = celestial;
+        ResetFrame();
+      }
     }
     UnityEngine.GUILayout.EndHorizontal();
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
@@ -159,7 +176,10 @@ class ReferenceFrameSelector {
                                     text,
                                     UnityEngine.GUILayout.Width(150),
                                     UnityEngine.GUILayout.Height(75))) {
-      selected_type_ = value;
+      if (selected_type_ != value) {
+        selected_type_ = value;
+        ResetFrame();
+      }
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
@@ -169,6 +189,60 @@ class ReferenceFrameSelector {
     window_rectangle_.width = 0.0f;
   }
 
+  private void ResetFrame() {
+    on_change_();
+    DeleteRenderingFrame(ref frame_);
+    switch (selected_type_) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        frame_ = NewBodyCentredNonRotatingRenderingFrame(
+                     plugin_,
+                     selected_celestial_.flightGlobalsIndex);
+      break;
+#if HAS_SURFACE
+      case FrameType.SURFACE:
+      break;
+#endif
+      case FrameType.BARYCENTRIC_ROTATING:
+        frame_ =
+            NewBarycentricRotatingRenderingFrame(
+                plugin_,
+                primary_index   :
+                    selected_celestial_.referenceBody.flightGlobalsIndex,
+                secondary_index :
+                    selected_celestial_.flightGlobalsIndex);
+      break;
+#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+      case FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT:
+      break;
+#endif
+    }
+  }
+
+  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
+             EntryPoint        =
+                 "principia__NewBodyCentredNonRotatingRenderingFrame",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
+      IntPtr plugin,
+      int reference_body_index);
+
+  [DllImport(
+       dllName           : PrincipiaPluginAdapter.kDllPath,
+       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
+       CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewBarycentricRotatingRenderingFrame(
+      IntPtr plugin,
+      int primary_index,
+      int secondary_index);
+
+  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
+             EntryPoint        = "principia__DeleteRenderingFrame",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
+
+  private Callback on_change_;
+  private IntPtr plugin_;
+  private IntPtr frame_;
   private bool show_selector_;
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
