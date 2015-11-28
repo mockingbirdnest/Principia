@@ -79,12 +79,13 @@ void SetBufferedLogging::Run(Message const& message,
 
 void GetBufferedLogging::Fill(Return const& result,
                               not_null<Message*> const message) {
-  message->mutable_return_()->set_max_severity(result);
+  message->mutable_return_()->set_get_buffered_logging(result);
 }
 
 void GetBufferedLogging::Run(Message const& message,
                              not_null<PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().max_severity(), principia__GetBufferedLogging());
+  CHECK_EQ(message.return_().get_buffered_logging(),
+           principia__GetBufferedLogging());
 }
 
 void SetBufferDuration::Fill(In const& in, not_null<Message*> const message) {
@@ -98,12 +99,13 @@ void SetBufferDuration::Run(Message const& message,
 
 void GetBufferDuration::Fill(Return const& result,
                              not_null<Message*> const message) {
-  message->mutable_return_()->set_seconds(result);
+  message->mutable_return_()->set_get_buffer_duration(result);
 }
 
 void GetBufferDuration::Run(Message const& message,
                             not_null<PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().seconds(), principia__GetBufferDuration());
+  CHECK_EQ(message.return_().get_buffer_duration(),
+           principia__GetBufferDuration());
 }
 
 void SetSuppressedLogging::Fill(In const& in,
@@ -118,12 +120,13 @@ void SetSuppressedLogging::Run(Message const& message,
 
 void GetSuppressedLogging::Fill(Return const& result,
                                 not_null<Message*> const message) {
-  message->mutable_return_()->set_min_severity(result);
+  message->mutable_return_()->set_get_suppressed_logging(result);
 }
 
 void GetSuppressedLogging::Run(Message const& message,
                                not_null<PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().min_severity(), principia__GetSuppressedLogging());
+  CHECK_EQ(message.return_().get_suppressed_logging(),
+           principia__GetSuppressedLogging());
 }
 
 void SetVerboseLogging::Fill(In const& in, not_null<Message*> const message) {
@@ -137,12 +140,13 @@ void SetVerboseLogging::Run(Message const& message,
 
 void GetVerboseLogging::Fill(Return const& result,
                              not_null<Message*> const message) {
-  message->mutable_return_()->set_level(result);
+  message->mutable_return_()->set_get_verbose_logging(result);
 }
 
 void GetVerboseLogging::Run(Message const& message,
                             not_null<PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().level(), principia__GetVerboseLogging());
+  CHECK_EQ(message.return_().get_verbose_logging(),
+           principia__GetVerboseLogging());
 }
 
 void SetStderrLogging::Fill(In const& in, not_null<Message*> const message) {
@@ -156,12 +160,13 @@ void SetStderrLogging::Run(Message const& message,
 
 void GetStderrLogging::Fill(Return const& result,
                             not_null<Message*> const message) {
-  message->mutable_return_()->set_min_severity(result);
+  message->mutable_return_()->set_get_stderr_logging(result);
 }
 
 void GetStderrLogging::Run(Message const& message,
                            not_null<PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().min_severity(), principia__GetStderrLogging());
+  CHECK_EQ(message.return_().get_stderr_logging(),
+           principia__GetStderrLogging());
 }
 
 void LogInfo::Fill(In const& in, not_null<Message*> const message) {
@@ -208,7 +213,7 @@ void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_plugin(SerializePointer(result));
+  message->mutable_return_()->set_new_plugin(SerializePointer(result));
 }
 
 void NewPlugin::Run(Message const& message,
@@ -216,7 +221,7 @@ void NewPlugin::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = principia__NewPlugin(in.initial_time(),
                                       in.planetarium_rotation_in_degrees());
-  Insert(pointer_map, message.return_().plugin(), plugin);
+  Insert(pointer_map, message.return_().new_plugin(), plugin);
 }
 
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
@@ -358,7 +363,7 @@ void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {
 void InsertOrKeepVessel::Fill(Return const& result,
                               not_null<Message*> const message) {
   auto* m = message->mutable_return_();
-  m->set_inserted(result);
+  m->set_insert_or_keep_vessel(result);
 }
 
 void InsertOrKeepVessel::Run(Message const& message,

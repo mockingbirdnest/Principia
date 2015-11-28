@@ -14,7 +14,7 @@ message XYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5025.
+  extensions 5000 to 5999;  // Last used: 5034.
 }
 
 message AdvanceTime {
@@ -117,7 +117,7 @@ message GetBufferDuration {
     optional GetBufferDuration extension = 5005;
   }
   message Return {
-    required int32 seconds = 1;
+    required int32 get_buffer_duration = 1;
   }
   required Return return = 3;
 }
@@ -127,7 +127,7 @@ message GetBufferedLogging {
     optional GetBufferedLogging extension = 5006;
   }
   message Return {
-    required int32 max_severity = 1;
+    required int32 get_buffered_logging = 1;
   }
   required Return return = 3;
 }
@@ -137,7 +137,7 @@ message GetStderrLogging {
     optional GetStderrLogging extension = 5007;
   }
   message Return {
-    required int32 min_severity = 1;
+    required int32 get_stderr_logging = 1;
   }
   required Return return = 3;
 }
@@ -147,7 +147,7 @@ message GetSuppressedLogging {
     optional GetSuppressedLogging extension = 5008;
   }
   message Return {
-    required int32 min_severity = 1;
+    required int32 get_suppressed_logging = 1;
   }
   required Return return = 3;
 }
@@ -157,7 +157,7 @@ message GetVerboseLogging {
     optional GetVerboseLogging extension = 5009;
   }
   message Return {
-    required int32 level = 1;
+    required int32 get_verbose_logging = 1;
   }
   required Return return = 3;
 }
@@ -207,7 +207,7 @@ message InsertOrKeepVessel {
     required int32 parent_index = 3;
   }
   message Return {
-    required bool inserted = 1;
+    required bool insert_or_keep_vessel = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -305,7 +305,7 @@ message NewPlugin {
     required double planetarium_rotation_in_degrees = 2;
   }
   message Return {
-    required fixed64 plugin = 1;
+    required fixed64 new_plugin = 1;
   }
   required In in = 1;
   required Return return = 3;
