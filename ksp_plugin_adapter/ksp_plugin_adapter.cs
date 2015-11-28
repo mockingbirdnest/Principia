@@ -13,6 +13,7 @@ namespace ksp_plugin_adapter {
                                          GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter : ScenarioModule {
+  public delegate void WindowRenderer();
 
   private const String kPrincipiaKey = "serialized_plugin";
   private const String kPrincipiaInitialState = "principia_initial_state";
@@ -45,6 +46,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
+
+  private WindowRenderer render_windows_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -479,6 +482,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           options    : UnityEngine.GUILayout.MinWidth(500));
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
+      render_windows_();
     }
   }
 
@@ -1051,7 +1055,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.GUILayout.EndHorizontal();
   }
 
-  BurnEditor test_burn_editor_;
+  // NOTE(egg): Dummy UI elements for testing purposes, rendered in an
+  // irrelevant part of the UI.
+  FlightPlanner test_flight_planner_;
+  ReferenceFrameSelector test_reference_frame_selector_;
 
   private void PredictionSettings() {
     bool changed_settings = false;
@@ -1065,13 +1072,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
-    if (test_burn_editor_ == null) {
-      test_burn_editor_ = new BurnEditor();
+    if (test_flight_planner_ == null) {
+      test_flight_planner_ = new FlightPlanner();
     }
-    bool changing = test_burn_editor_.Render();
-    UnityEngine.GUILayout.TextArea(
-        changing ? "CHANGING" : "Nothing to see here",
-        UnityEngine.GUILayout.Width(200));
+    test_flight_planner_.Render();
+    if (test_reference_frame_selector_ == null) {
+      test_reference_frame_selector_ =
+          new ReferenceFrameSelector(ref render_windows_);
+    }
+    test_reference_frame_selector_.RenderButton();
   }
 
   private void KSPFeatures() {

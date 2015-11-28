@@ -7,26 +7,6 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class BurnEditor {
-  string name_ = "Manœuvre";
-  DifferentialSlider Δv_tangent_;
-  DifferentialSlider Δv_normal_;
-  DifferentialSlider Δv_binormal_;
-  DifferentialSlider initial_time_;
-
-  const double Log10ΔvLowerRate = -3.0;
-  const double Log10ΔvUpperRate = 3.5;
-  const double Log10TimeLowerRate = 0.0;
-  const double Log10TimeUpperRate = 7.0;
-
-  // Returns the equivalent of the .NET >= 4 format
-  // span.ToString(@"ddd \d hh \h mm \m\i\n ss.FFF \s").
-  private string FormatTimeSpan (TimeSpan span) {
-     return span.Days.ToString("000") + " d " +
-            span.Hours.ToString("00") + " h " +
-            span.Minutes.ToString("00") + " min " +
-            span.Seconds.ToString("00") + " s";
-  }
-
   public BurnEditor() {
     Δv_tangent_ = new DifferentialSlider(label            : "Δv tangent",
                                          unit             : "m / s",
@@ -73,6 +53,26 @@ class BurnEditor {
     UnityEngine.GUI.skin = old_skin;
     return changed;
   }
+
+  // Returns the equivalent of the .NET >= 4 format
+  // span.ToString(@"ddd \d hh \h mm \m\i\n ss.FFF \s").
+  private string FormatTimeSpan (TimeSpan span) {
+     return span.Days.ToString("000") + " d " +
+            span.Hours.ToString("00") + " h " +
+            span.Minutes.ToString("00") + " min " +
+            span.Seconds.ToString("00") + " s";
+  }
+
+  private string name_ = "Manœuvre";
+  private DifferentialSlider Δv_tangent_;
+  private DifferentialSlider Δv_normal_;
+  private DifferentialSlider Δv_binormal_;
+  private DifferentialSlider initial_time_;
+
+  private const double Log10ΔvLowerRate = -3.0;
+  private const double Log10ΔvUpperRate = 3.5;
+  private const double Log10TimeLowerRate = 0.0;
+  private const double Log10TimeUpperRate = 7.0;
 }
 
 }  // namespace ksp_plugin_adapter
