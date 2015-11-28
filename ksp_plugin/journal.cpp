@@ -424,6 +424,8 @@ void VesselFromParent::Fill(In const& in, not_null<Message*> const message) {
 
 void VesselFromParent::Fill(Return const& result,
                             not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_from_parent() =
+      SerializeQP(result);
 }
 
 void VesselFromParent::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
@@ -434,7 +436,10 @@ void CelestialFromParent::Fill(In const& in, not_null<Message*> const message) {
   m->set_celestial_index(in.celestial_index);
 }
 
-void CelestialFromParent::Fill(Return const& result, not_null<Message*> const message) {
+void CelestialFromParent::Fill(Return const& result,
+                               not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_celestial_from_parent() =
+      SerializeQP(result);
 }
 
 void CelestialFromParent::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
@@ -447,7 +452,11 @@ void NewBodyCentredNonRotatingRenderingFrame::Fill(
   m->set_reference_body_index(in.reference_body_index);
 }
 
-void NewBodyCentredNonRotatingRenderingFrame::Fill(Return const& result, not_null<Message*> const message) {
+void NewBodyCentredNonRotatingRenderingFrame::Fill(
+    Return const& result,
+    not_null<Message*> const message) {
+  message->mutable_return_()->set_new_body_centred_non_rotating_rendering_frame(
+      SerializePointer(result));
 }
 
 void NewBodyCentredNonRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
@@ -461,7 +470,11 @@ void NewBarycentricRotatingRenderingFrame::Fill(
   m->set_secondary_index(in.secondary_index);
 }
 
-void NewBarycentricRotatingRenderingFrame::Fill(Return const& result, not_null<Message*> const message) {
+void NewBarycentricRotatingRenderingFrame::Fill(
+    Return const& result,
+    not_null<Message*> const message) {
+  message->mutable_return_()->set_new_barycentric_rotating_rendering_frame(
+      SerializePointer(result));
 }
 
 void NewBarycentricRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
@@ -494,7 +507,10 @@ void RenderedVesselTrajectory::Fill(In const& in,
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
-void RenderedVesselTrajectory::Fill(Return const& result, not_null<Message*> const message) {
+void RenderedVesselTrajectory::Fill(Return const& result,
+                                    not_null<Message*> const message) {
+  message->mutable_return_()->set_rendered_vessel_trajectory(
+      SerializePointer(result));
 }
 
 void RenderedVesselTrajectory::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
@@ -505,7 +521,9 @@ void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
   m->set_vessel_guid(in.vessel_guid);
 }
 
-void HasPrediction::Fill(Return const& result, not_null<Message*> const message) {
+void HasPrediction::Fill(Return const& result,
+                         not_null<Message*> const message) {
+  message->mutable_return_()->set_has_prediction(result);
 }
 
 void HasPrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
@@ -518,7 +536,10 @@ void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
-void RenderedPrediction::Fill(Return const& result, not_null<Message*> const message) {
+void RenderedPrediction::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  message->mutable_return_()->set_rendered_vessel_trajectory(
+      SerializePointer(result));
 }
 
 void RenderedPrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
