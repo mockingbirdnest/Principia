@@ -23,20 +23,19 @@ using base::UniqueBytes;
 
 namespace {
 
-int const kBufferSize = 100;
-
-template<typename T,
-         typename = typename std::enable_if<std::is_pointer<T>::value>::type>
-T Find(PointerMap const& pointer_map, std::uint64_t const address) {
-    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
-}
-
 template<typename T>
 void Insert(not_null<PointerMap*> const pointer_map,
             std::uint64_t const address,
             T* const pointer) {
   auto inserted = pointer_map->emplace(address, pointer);
   CHECK(inserted.second) << address;
+}
+
+template<typename T,
+         typename = typename std::enable_if<std::is_pointer<T>::value>::type>
+T DeserializePointer(PointerMap const& pointer_map,
+                     std::uint64_t const address) {
+  return reinterpret_cast<T>(FindOrDie(pointer_map, address));
 }
 
 XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
@@ -230,7 +229,8 @@ void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
 
 void DeletePlugin::Run(Message const& message,
                        not_null<PointerMap*> const pointer_map) {
-  auto* plugin = Find<Plugin const*>(*pointer_map, message.in().plugin());
+  auto* plugin = DeserializePointer<Plugin const*>(*pointer_map,
+                                                   message.in().plugin());
   principia__DeletePlugin(&plugin);
   // TODO(phl): should we do something with out() here?
 }
@@ -267,7 +267,7 @@ void DirectlyInsertCelestial::Fill(In const& in,
 void DirectlyInsertCelestial::Run(Message const& message,
                                   not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   int const parent_index = in.parent_index();
   principia__DirectlyInsertCelestial(
       plugin,
@@ -295,7 +295,7 @@ void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
 void InsertCelestial::Run(Message const& message,
                           not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__InsertCelestial(plugin,
                              in.celestial_index(),
                              in.gravitational_parameter(),
@@ -313,7 +313,7 @@ void InsertSun::Fill(In const& in, not_null<Message*> const message) {
 void InsertSun::Run(Message const& message,
                     not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__InsertSun(plugin,
                        in.celestial_index(),
                        in.gravitational_parameter());
@@ -330,7 +330,7 @@ void UpdateCelestialHierarchy::Fill(In const& in,
 void UpdateCelestialHierarchy::Run(Message const& message,
                                    not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__UpdateCelestialHierarchy(plugin,
                                       in.celestial_index(),
                                       in.parent_index());
@@ -343,7 +343,8 @@ void EndInitialization::Fill(In const& in, not_null<Message*> const message) {
 
 void EndInitialization::Run(Message const& message,
                             not_null<PointerMap*> const pointer_map) {
-  auto* plugin = Find<Plugin*>(*pointer_map, message.in().plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map,
+                                             message.in().plugin());
   principia__EndInitialization(plugin);
 }
 
@@ -363,7 +364,7 @@ void InsertOrKeepVessel::Fill(Return const& result,
 void InsertOrKeepVessel::Run(Message const& message,
                              not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__InsertOrKeepVessel(plugin,
                                 in.vessel_guid().c_str(),
                                 in.parent_index());
@@ -381,7 +382,7 @@ void SetVesselStateOffset::Fill(In const& in,
 void SetVesselStateOffset::Run(Message const& message,
                                not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__SetVesselStateOffset(plugin,
                                   in.vessel_guid().c_str(),
                                   DeserializeQP(in.from_parent()));
@@ -397,7 +398,7 @@ void AdvanceTime::Fill(In const& in, not_null<Message*> const message) {
 void AdvanceTime::Run(Message const& message,
                       not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__AdvanceTime(plugin, in.t(), in.planetarium_rotation());
 }
 
@@ -411,7 +412,7 @@ void ForgetAllHistoriesBefore::Fill(In const& in,
 void ForgetAllHistoriesBefore::Run(Message const& message,
                                    not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__ForgetAllHistoriesBefore(plugin, in.t());
 }
 
