@@ -492,7 +492,8 @@ LineAndIterator* principia__RenderedPrediction(
 
 int principia__FlightPlanSize(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid);
+  Journal::Method<FlightPlanSize> m({plugin, vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid));
 }
 
 LineAndIterator* principia__RenderedFlightPlan(
@@ -501,6 +502,11 @@ LineAndIterator* principia__RenderedFlightPlan(
     int const plan_phase,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
+  Journal::Method<RenderedFlightPlan> m({plugin,
+                                         vessel_guid,
+                                         plan_phase,
+                                         rendering_frame,
+                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
@@ -511,7 +517,7 @@ LineAndIterator* principia__RenderedFlightPlan(
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 void principia__set_prediction_length(Plugin* const plugin,
