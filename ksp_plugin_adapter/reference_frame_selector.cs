@@ -114,8 +114,9 @@ class ReferenceFrameSelector {
       CelestialBody parent = selected_celestial_.orbit.referenceBody;
       TypeSelector(FrameType.BARYCENTRIC_ROTATING,
                    "Reference frame fixing the barycentre of " +
-                       selected_celestial_.theName + " and " + parent.theName +
-                       " and the line between them");
+                       selected_celestial_.theName + ", the plane in which" +
+                       " they move about the barycentre, and " +
+                       parent.theName + " and the line between them");
 #if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
       TypeSelector(FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT,
                    "Reference frame fixing the centre of " +
