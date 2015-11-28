@@ -325,6 +325,106 @@ struct ForgetAllHistoriesBefore {
                   not_null<PointerMap*> const pointer_map);
 };
 
+struct VesselFromParent {
+  struct In {
+  };
+
+  using Message = serialization::VesselFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct CelestialFromParent {
+  struct In {
+  };
+
+  using Message = serialization::CelestialFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct CelestialFromParent {
+  struct In {
+  };
+
+  using Message = serialization::CelestialFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NewBodyCentredNonRotatingRenderingFrame {
+  struct In {
+  };
+
+  using Message = serialization::NewBodyCentredNonRotatingRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NewBarycentricRotatingRenderingFrame {
+  struct In {
+  };
+
+  using Message = serialization::NewBarycentricRotatingRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeleteRenderingFrame {
+  struct In {
+  };
+
+  using Message = serialization::DeleteRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct UpdatePrediction {
+  struct In {
+  };
+
+  using Message = serialization::UpdatePrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedVesselTrajectory {
+  struct In {
+  };
+
+  using Message = serialization::RenderedVesselTrajectory;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct HasPrediction {
+  struct In {
+  };
+
+  using Message = serialization::HasPrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedPrediction {
+  struct In {
+  };
+
+  using Message = serialization::RenderedPrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
 class Journal {
  public:
   template<typename Profile>
