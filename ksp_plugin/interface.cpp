@@ -391,6 +391,7 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
 
 QP principia__VesselFromParent(Plugin const* const plugin,
                                char const* const vessel_guid) {
+  Journal::M
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
   return {ToXYZ(result.displacement().coordinates() / Metre),
