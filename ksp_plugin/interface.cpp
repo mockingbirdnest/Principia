@@ -391,43 +391,55 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
 
 QP principia__VesselFromParent(Plugin const* const plugin,
                                char const* const vessel_guid) {
+  Journal::Method<VesselFromParent> m({plugin, vessel_guid});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
-  return {ToXYZ(result.displacement().coordinates() / Metre),
-          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
 QP principia__CelestialFromParent(Plugin const* const plugin,
                                   int const celestial_index) {
+  Journal::Method<CelestialFromParent> m({plugin, celestial_index});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
-  return {ToXYZ(result.displacement().coordinates() / Metre),
-          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
 RenderingFrame* principia__NewBodyCentredNonRotatingRenderingFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
-  return CHECK_NOTNULL(plugin)->
-      NewBodyCentredNonRotatingRenderingFrame(reference_body_index).release();
+  Journal::Method<NewBodyCentredNonRotatingRenderingFrame> m(
+      {plugin, reference_body_index});
+  return m.Return(CHECK_NOTNULL(plugin)->
+      NewBodyCentredNonRotatingRenderingFrame(reference_body_index).release());
 }
 
 RenderingFrame* principia__NewBarycentricRotatingRenderingFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
-  return CHECK_NOTNULL(plugin)->
+  Journal::Method<NewBarycentricRotatingRenderingFrame> m({plugin,
+                                                           primary_index,
+                                                           secondary_index});
+  return m.Return(CHECK_NOTNULL(plugin)->
       NewBarycentricRotatingRenderingFrame(primary_index,
-                                           secondary_index).release();
+                                           secondary_index).release());
 }
 
 void principia__DeleteRenderingFrame(RenderingFrame** const rendering_frame) {
+  Journal::Method<DeleteRenderingFrame> m({*rendering_frame},
+                                          {rendering_frame});
   TakeOwnership(rendering_frame);
+  return m.Return();
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid) {
+  Journal::Method<UpdatePrediction> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
+  return m.Return();
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(
@@ -435,6 +447,10 @@ LineAndIterator* principia__RenderedVesselTrajectory(
     char const* const vessel_guid,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
+  Journal::Method<RenderedVesselTrajectory> m({plugin,
+                                               vessel_guid,
+                                               rendering_frame,
+                                               sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
@@ -444,12 +460,13 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 bool principia__HasPrediction(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid);
+  Journal::Method<HasPrediction> m({plugin, vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid));
 }
 
 LineAndIterator* principia__RenderedPrediction(
@@ -457,6 +474,10 @@ LineAndIterator* principia__RenderedPrediction(
     char const* const vessel_guid,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
+  Journal::Method<RenderedPrediction> m({plugin,
+                                         vessel_guid,
+                                         rendering_frame,
+                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
@@ -466,7 +487,7 @@ LineAndIterator* principia__RenderedPrediction(
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 int principia__FlightPlanSize(Plugin const* const plugin,

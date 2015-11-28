@@ -325,6 +325,136 @@ struct ForgetAllHistoriesBefore {
                   not_null<PointerMap*> const pointer_map);
 };
 
+struct VesselFromParent {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = QP;
+
+  using Message = serialization::VesselFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct CelestialFromParent {
+  struct In {
+    Plugin const* const plugin;
+    int const celestial_index;
+  };
+  using Return = QP;
+
+  using Message = serialization::CelestialFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NewBodyCentredNonRotatingRenderingFrame {
+  struct In {
+    Plugin const* const plugin;
+    int const reference_body_index;
+  };
+  using Return = RenderingFrame*;
+
+  using Message = serialization::NewBodyCentredNonRotatingRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NewBarycentricRotatingRenderingFrame {
+  struct In {
+    Plugin const* const plugin;
+    int const primary_index;
+    int const secondary_index;
+  };
+  using Return = RenderingFrame*;
+
+  using Message = serialization::NewBarycentricRotatingRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeleteRenderingFrame {
+  struct In {
+    RenderingFrame* const rendering_frame;
+  };
+  struct Out {
+    RenderingFrame** const rendering_frame;
+  };
+
+  using Message = serialization::DeleteRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct UpdatePrediction {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+
+  using Message = serialization::UpdatePrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedVesselTrajectory {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::RenderedVesselTrajectory;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct HasPrediction {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = bool;
+
+  using Message = serialization::HasPrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedPrediction {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::RenderedPrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
 class Journal {
  public:
   template<typename Profile>

@@ -104,7 +104,7 @@ TEST_F(JournalTest, Recording) {
     EXPECT_EQ(1, extension.in().initial_time());
     EXPECT_EQ(2, extension.in().planetarium_rotation_in_degrees());
     EXPECT_TRUE(extension.has_return_());
-    EXPECT_NE(0, extension.return_().plugin());
+    EXPECT_NE(0, extension.return_().new_plugin());
   }
 }
 
