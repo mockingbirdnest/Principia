@@ -37,7 +37,11 @@ message CelestialFromParent {
     required fixed64 plugin = 1;
     required int32 celestial_index = 2;
   }
+  message Return {
+    required QP celestial_from_parent = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message DeletePlugin {
@@ -166,7 +170,11 @@ message HasPrediction {
     required fixed64 plugin = 1;
     required string vessel_guid = 2;
   }
+  message Return {
+    required bool has_prediction = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message InitGoogleLogging {
@@ -266,7 +274,11 @@ message NewBarycentricRotatingRenderingFrame {
     required int32 primary_index = 2;
     required int32 secondary_index = 3;
   }
+  message Return {
+    required fixed64 new_barycentric_rotating_rendering_frame = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message NewBodyCentredNonRotatingRenderingFrame {
@@ -277,7 +289,11 @@ message NewBodyCentredNonRotatingRenderingFrame {
     required fixed64 plugin = 1;
     required int32 reference_body_index = 2;
   }
+  message Return {
+    required fixed64 new_body_centred_non_rotating_rendering_frame = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message NewPlugin {
@@ -305,7 +321,11 @@ message RenderedPrediction {
     required fixed64 rendering_frame = 3;
     required XYZ sun_world_position = 4;
   }
+  message Return {
+    required fixed64 rendered_vessel_trajectory = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message RenderedVesselTrajectory {
@@ -318,7 +338,11 @@ message RenderedVesselTrajectory {
     required fixed64 rendering_frame = 3;
     required XYZ sun_world_position = 4;
   }
+  message Return {
+    required fixed64 rendered_vessel_trajectory = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message SetBufferDuration {
@@ -414,5 +438,9 @@ message VesselFromParent {
     required fixed64 plugin = 1;
     required string vessel_guid = 2;
   }
+  message Return {
+    required QP vessel_from_parent = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }

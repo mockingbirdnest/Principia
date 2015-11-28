@@ -416,6 +416,113 @@ void ForgetAllHistoriesBefore::Run(Message const& message,
   principia__ForgetAllHistoriesBefore(plugin, in.t());
 }
 
+void VesselFromParent::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void VesselFromParent::Fill(Return const& result,
+                            not_null<Message*> const message) {
+}
+
+void VesselFromParent::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void CelestialFromParent::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+}
+
+void CelestialFromParent::Fill(Return const& result, not_null<Message*> const message) {
+}
+
+void CelestialFromParent::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void NewBodyCentredNonRotatingRenderingFrame::Fill(
+    In const& in,
+    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_reference_body_index(in.reference_body_index);
+}
+
+void NewBodyCentredNonRotatingRenderingFrame::Fill(Return const& result, not_null<Message*> const message) {
+}
+
+void NewBodyCentredNonRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void NewBarycentricRotatingRenderingFrame::Fill(
+    In const& in,
+    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_primary_index(in.primary_index);
+  m->set_secondary_index(in.secondary_index);
+}
+
+void NewBarycentricRotatingRenderingFrame::Fill(Return const& result, not_null<Message*> const message) {
+}
+
+void NewBarycentricRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void DeleteRenderingFrame::Fill(In const& in,
+                                not_null<Message*> const message) {
+  message->mutable_in()->set_rendering_frame(
+      SerializePointer(in.rendering_frame));
+}
+
+void DeleteRenderingFrame::Fill(Out const& out, not_null<Message*> const message) {
+}
+
+void DeleteRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void UpdatePrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void RenderedVesselTrajectory::Fill(In const& in,
+                                    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+}
+
+void RenderedVesselTrajectory::Fill(Return const& result, not_null<Message*> const message) {
+}
+
+void RenderedVesselTrajectory::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void HasPrediction::Fill(Return const& result, not_null<Message*> const message) {
+}
+
+void HasPrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+}
+
+void RenderedPrediction::Fill(Return const& result, not_null<Message*> const message) {
+}
+
+void RenderedPrediction::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
 Journal::Journal(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::out) {}
 
