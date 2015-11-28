@@ -65,7 +65,11 @@ message DeleteRenderingFrame {
   message In {
     required fixed64 rendering_frame = 1;
   }
+  message Out {
+    required fixed64 rendering_frame = 1;
+  }
   required In in = 1;
+  required Out out = 2;
 }
 
 message DirectlyInsertCelestial {

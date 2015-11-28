@@ -503,7 +503,9 @@ void NewBarycentricRotatingRenderingFrame::Fill(
       SerializePointer(result));
 }
 
-void NewBarycentricRotatingRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {
+void NewBarycentricRotatingRenderingFrame::Run(
+    Message const& message,
+    not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* rendering_frame = principia__NewBarycentricRotatingRenderingFrame(
@@ -519,10 +521,14 @@ void DeleteRenderingFrame::Fill(In const& in,
       SerializePointer(in.rendering_frame));
 }
 
-void DeleteRenderingFrame::Fill(Out const& out, not_null<Message*> const message) {
+void DeleteRenderingFrame::Fill(Out const& out,
+                                not_null<Message*> const message) {
+  message->mutable_out()->set_rendering_frame(
+      SerializePointer(*out.rendering_frame));
 }
 
-void DeleteRenderingFrame::Run(Message const& message, not_null<PointerMap*> const pointer_map) {
+void DeleteRenderingFrame::Run(Message const& message,
+                               not_null<PointerMap*> const pointer_map) {
   auto* rendering_frame = DeserializePointer<RenderingFrame*>(
                               *pointer_map, message.in().rendering_frame());
   principia__DeleteRenderingFrame(&rendering_frame);
