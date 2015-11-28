@@ -69,11 +69,13 @@ typename P::Return Journal::Method<Profile>::Return(
 }
 
 template<typename Profile>
-void Player::RunIfAppropriate(serialization::Method const& method) {
+bool Player::RunIfAppropriate(serialization::Method const& method) {
   if (method.HasExtension(Profile::Message::extension)) {
     Profile::Run(method.GetExtension(Profile::Message::extension),
                  &pointer_map_);
+    return true;
   }
+  return false;
 }
 
 }  // namespace ksp_plugin

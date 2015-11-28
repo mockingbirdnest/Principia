@@ -39,6 +39,14 @@ void Insert(not_null<PointerMap*> const pointer_map,
   CHECK(inserted.second) << address;
 }
 
+XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
+  return {xyz.x(), xyz.y(), xyz.z()};
+}
+
+QP DeserializeQP(serialization::QP const& qp) {
+  return {DeserializeXYZ(qp.q()), DeserializeXYZ(qp.p())};
+}
+
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
@@ -206,9 +214,9 @@ void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
 
 void NewPlugin::Run(Message const& message,
                     not_null<PointerMap*> const pointer_map) {
-  auto* plugin = principia__NewPlugin(
-                     message.in().initial_time(),
-                     message.in().planetarium_rotation_in_degrees());
+  auto const& in = message.in();
+  auto* plugin = principia__NewPlugin(in.initial_time(),
+                                      in.planetarium_rotation_in_degrees());
   Insert(pointer_map, message.return_().plugin(), plugin);
 }
 
@@ -229,7 +237,7 @@ void DeletePlugin::Run(Message const& message,
 
 void DirectlyInsertCelestial::Fill(In const& in,
                                    not_null<Message*> const message) {
-  Message::In* m = message->mutable_in();
+  auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_celestial_index(in.celestial_index);
   if (in.parent_index != nullptr) {
@@ -256,13 +264,155 @@ void DirectlyInsertCelestial::Fill(In const& in,
   m->set_vz(in.vz);
 }
 
+void DirectlyInsertCelestial::Run(Message const& message,
+                                  not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  int const parent_index = in.parent_index();
+  principia__DirectlyInsertCelestial(
+      plugin,
+      in.celestial_index(),
+      in.has_parent_index() ? &parent_index : nullptr,
+      in.gravitational_parameter().c_str(),
+      in.has_axis_right_ascension() ?
+          in.axis_right_ascension().c_str() : nullptr,
+      in.has_axis_declination() ? in.axis_declination().c_str() : nullptr,
+      in.has_j2() ? in.j2().c_str() : nullptr,
+      in.has_reference_radius() ? in.reference_radius().c_str() : nullptr,
+      in.x().c_str(), in.y().c_str(), in.z().c_str(),
+      in.vx().c_str(), in.vy().c_str(), in.vz().c_str());
+}
+
 void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
-  Message::In* m = message->mutable_in();
+  auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_celestial_index(in.celestial_index);
   m->set_gravitational_parameter(in.gravitational_parameter);
   m->set_parent_index(in.parent_index);
   *m->mutable_from_parent() = SerializeQP(in.from_parent);
+}
+
+void InsertCelestial::Run(Message const& message,
+                          not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__InsertCelestial(plugin,
+                             in.celestial_index(),
+                             in.gravitational_parameter(),
+                             in.parent_index(),
+                             DeserializeQP(in.from_parent()));
+}
+
+void InsertSun::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+  m->set_gravitational_parameter(in.gravitational_parameter);
+}
+
+void InsertSun::Run(Message const& message,
+                    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__InsertSun(plugin,
+                       in.celestial_index(),
+                       in.gravitational_parameter());
+}
+
+void UpdateCelestialHierarchy::Fill(In const& in,
+                                    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+  m->set_parent_index(in.parent_index);
+}
+
+void UpdateCelestialHierarchy::Run(Message const& message,
+                                   not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__UpdateCelestialHierarchy(plugin,
+                                      in.celestial_index(),
+                                      in.parent_index());
+}
+
+void EndInitialization::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+}
+
+void EndInitialization::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  auto* plugin = Find<Plugin*>(*pointer_map, message.in().plugin());
+  principia__EndInitialization(plugin);
+}
+
+void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_parent_index(in.parent_index);
+}
+
+void InsertOrKeepVessel::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  auto* m = message->mutable_return_();
+  m->set_inserted(result);
+}
+
+void InsertOrKeepVessel::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__InsertOrKeepVessel(plugin,
+                                in.vessel_guid().c_str(),
+                                in.parent_index());
+  // TODO(phl): should we do something with out() here?
+}
+
+void SetVesselStateOffset::Fill(In const& in,
+                                not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_from_parent() = SerializeQP(in.from_parent);
+}
+
+void SetVesselStateOffset::Run(Message const& message,
+                               not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__SetVesselStateOffset(plugin,
+                                  in.vessel_guid().c_str(),
+                                  DeserializeQP(in.from_parent()));
+}
+
+void AdvanceTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_t(in.t);
+  m->set_planetarium_rotation(in.planetarium_rotation);
+}
+
+void AdvanceTime::Run(Message const& message,
+                      not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__AdvanceTime(plugin, in.t(), in.planetarium_rotation());
+}
+
+void ForgetAllHistoriesBefore::Fill(In const& in,
+                                    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_t(in.t);
+}
+
+void ForgetAllHistoriesBefore::Run(Message const& message,
+                                   not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = Find<Plugin*>(*pointer_map, in.plugin());
+  principia__ForgetAllHistoriesBefore(plugin, in.t());
 }
 
 Journal::Journal(std::experimental::filesystem::path const& path)
@@ -305,8 +455,10 @@ bool Player::Play() {
     return false;
   }
 
-  RunIfAppropriate<DeletePlugin>(*method);
-  RunIfAppropriate<NewPlugin>(*method);
+  bool ran = false;
+  ran |= RunIfAppropriate<DeletePlugin>(*method);
+  ran |= RunIfAppropriate<NewPlugin>(*method);
+  CHECK(ran);
 
   return true;
 }
