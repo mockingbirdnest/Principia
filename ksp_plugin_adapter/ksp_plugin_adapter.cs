@@ -471,7 +471,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (hide_all_gui_) {
       return;
     } else if (show_main_window_) {
-      UnityEngine.GUI.skin = HighLogic.Skin;
+      UnityEngine.GUI.skin = null;
       main_window_rectangle_.xMin = main_window_x_;
       main_window_rectangle_.yMin = main_window_y_;
       main_window_rectangle_ = UnityEngine.GUILayout.Window(
