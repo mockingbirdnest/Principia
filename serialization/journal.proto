@@ -13,8 +13,68 @@ message XYZ {
   required double z = 3;
 }
 
+message XYZSegment {
+  required XYZ begin = 1;
+  required XYZ end = 2;
+}
+
 message Method {
-  extensions 5000 to 5999;  // Last used: 5004.
+  extensions 5000 to 5999;  // Last used: 5044.
+}
+
+message AdvanceTime {
+  extend Method {
+    optional AdvanceTime extension = 5019;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required double t = 2;
+    required double planetarium_rotation = 3;
+  }
+  required In in = 1;
+}
+
+message AtEnd {
+  extend Method {
+    optional AtEnd extension = 5035;
+  }
+  message In {
+    required fixed64 line_and_iterator = 1;
+  }
+  message Return {
+    required bool at_end = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message CelestialFromParent {
+  extend Method {
+    optional CelestialFromParent extension = 5026;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required QP celestial_from_parent = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message DeleteLineAndIterator {
+  extend Method {
+    optional DeleteLineAndIterator extension = 5036;
+  }
+  message In {
+    required fixed64 line_and_iterator = 1;
+  }
+  message Out {
+    required fixed64 line_and_iterator = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
 }
 
 message DeletePlugin {
@@ -26,6 +86,20 @@ message DeletePlugin {
   }
   message Out {
     required fixed64 plugin = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
+}
+
+message DeleteRenderingFrame {
+  extend Method {
+    optional DeleteRenderingFrame extension = 5027;
+  }
+  message In {
+    required fixed64 rendering_frame = 1;
+  }
+  message Out {
+    required fixed64 rendering_frame = 1;
   }
   required In in = 1;
   required Out out = 2;
@@ -54,6 +128,136 @@ message DirectlyInsertCelestial {
   required In in = 1;
 }
 
+message EndInitialization {
+  extend Method {
+    optional EndInitialization extension = 5020;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
+message FetchAndIncrement {
+  extend Method {
+    optional FetchAndIncrement extension = 5037;
+  }
+  message In {
+    required fixed64 line_and_iterator = 1;
+  }
+  message Return {
+    required XYZSegment fetch_and_increment = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanSize {
+  extend Method {
+    optional FlightPlanSize extension = 5038;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 flight_plan_size = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message ForgetAllHistoriesBefore {
+  extend Method {
+    optional ForgetAllHistoriesBefore extension = 5021;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required double t = 2;
+  }
+  required In in = 1;
+}
+
+message GetBufferDuration {
+  extend Method {
+    optional GetBufferDuration extension = 5005;
+  }
+  message Return {
+    required int32 get_buffer_duration = 1;
+  }
+  required Return return = 3;
+}
+
+message GetBufferedLogging {
+  extend Method {
+    optional GetBufferedLogging extension = 5006;
+  }
+  message Return {
+    required int32 get_buffered_logging = 1;
+  }
+  required Return return = 3;
+}
+
+message GetStderrLogging {
+  extend Method {
+    optional GetStderrLogging extension = 5007;
+  }
+  message Return {
+    required int32 get_stderr_logging = 1;
+  }
+  required Return return = 3;
+}
+
+message GetSuppressedLogging {
+  extend Method {
+    optional GetSuppressedLogging extension = 5008;
+  }
+  message Return {
+    required int32 get_suppressed_logging = 1;
+  }
+  required Return return = 3;
+}
+
+message GetVerboseLogging {
+  extend Method {
+    optional GetVerboseLogging extension = 5009;
+  }
+  message Return {
+    required int32 get_verbose_logging = 1;
+  }
+  required Return return = 3;
+}
+
+message HasPrediction {
+  extend Method {
+    optional HasPrediction extension = 5028;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool has_prediction = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message HasVessel {
+  extend Method {
+    optional HasVessel extension = 5039;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool has_vessel = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message InitGoogleLogging {
   extend Method {
     optional InitGoogleLogging extension = 5002;
@@ -74,6 +278,105 @@ message InsertCelestial {
   required In in = 1;
 }
 
+message InsertOrKeepVessel {
+  extend Method {
+    optional InsertOrKeepVessel extension = 5022;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required int32 parent_index = 3;
+  }
+  message Return {
+    required bool insert_or_keep_vessel = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message InsertSun {
+  extend Method {
+    optional InsertSun extension = 5023;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 celestial_index = 2;
+    required double gravitational_parameter = 3;
+  }
+  required In in = 1;
+}
+
+message LogError {
+  extend Method {
+    optional LogError extension = 5010;
+  }
+  message In {
+    required string message = 1;
+  }
+  required In in = 1;
+}
+
+message LogFatal {
+  extend Method {
+    optional LogFatal extension = 5011;
+  }
+  message In {
+    required string message = 1;
+  }
+  required In in = 1;
+}
+
+message LogInfo {
+  extend Method {
+    optional LogInfo extension = 5012;
+  }
+  message In {
+    required string message = 1;
+  }
+  required In in = 1;
+}
+
+message LogWarning {
+  extend Method {
+    optional LogWarning extension = 5013;
+  }
+  message In {
+    required string message = 1;
+  }
+  required In in = 1;
+}
+
+message NewBarycentricRotatingRenderingFrame {
+  extend Method {
+    optional NewBarycentricRotatingRenderingFrame extension = 5029;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 primary_index = 2;
+    required int32 secondary_index = 3;
+  }
+  message Return {
+    required fixed64 new_barycentric_rotating_rendering_frame = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message NewBodyCentredNonRotatingRenderingFrame {
+  extend Method {
+    optional NewBodyCentredNonRotatingRenderingFrame extension = 5030;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 reference_body_index = 2;
+  }
+  message Return {
+    required fixed64 new_body_centred_non_rotating_rendering_frame = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message NewPlugin {
   extend Method {
     optional NewPlugin extension = 5001;
@@ -83,7 +386,206 @@ message NewPlugin {
     required double planetarium_rotation_in_degrees = 2;
   }
   message Return {
+    required fixed64 new_plugin = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message NumberOfSegments {
+  extend Method {
+    optional NumberOfSegments extension = 5040;
+  }
+  message In {
+    required fixed64 line_and_iterator = 1;
+  }
+  message Return {
+    required int32 number_of_segments = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message RenderedFlightPlan {
+  extend Method {
+    optional RenderedFlightPlan extension = 5041;
+  }
+  message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required int32 plan_phase = 3;
+    required fixed64 rendering_frame = 4;
+    required XYZ sun_world_position = 5;
+  }
+  message Return {
+    required fixed64 rendered_flight_plan = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message RenderedPrediction {
+  extend Method {
+    optional RenderedPrediction extension = 5031;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required fixed64 rendering_frame = 3;
+    required XYZ sun_world_position = 4;
+  }
+  message Return {
+    required fixed64 rendered_prediction = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message RenderedVesselTrajectory {
+  extend Method {
+    optional RenderedVesselTrajectory extension = 5032;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required fixed64 rendering_frame = 3;
+    required XYZ sun_world_position = 4;
+  }
+  message Return {
+    required fixed64 rendered_vessel_trajectory = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message SetBufferDuration {
+  extend Method {
+    optional SetBufferDuration extension = 5014;
+  }
+  message In {
+    required int32 seconds = 1;
+  }
+  required In in = 1;
+}
+
+message SetBufferedLogging {
+  extend Method {
+    optional SetBufferedLogging extension = 5015;
+  }
+  message In {
+    required int32 max_severity = 1;
+  }
+  required In in = 1;
+}
+
+message SetPredictionLength {
+  extend Method {
+    optional SetPredictionLength extension = 5042;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required double t = 2;
+  }
+  required In in = 1;
+}
+
+message SetPredictionLengthTolerance {
+  extend Method {
+    optional SetPredictionLengthTolerance extension = 5043;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required double l = 2;
+  }
+  required In in = 1;
+}
+
+message SetPredictionSpeedTolerance {
+  extend Method {
+    optional SetPredictionSpeedTolerance extension = 5044;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required double v = 2;
+  }
+  required In in = 1;
+}
+
+message SetStderrLogging {
+  extend Method {
+    optional SetStderrLogging extension = 5016;
+  }
+  message In {
+    required int32 min_severity = 1;
+  }
+  required In in = 1;
+}
+
+message SetSuppressedLogging {
+  extend Method {
+    optional SetSuppressedLogging extension = 5017;
+  }
+  message In {
+    required int32 min_severity = 1;
+  }
+  required In in = 1;
+}
+
+message SetVerboseLogging {
+  extend Method {
+    optional SetVerboseLogging extension = 5018;
+  }
+  message In {
+    required int32 level = 1;
+  }
+  required In in = 1;
+}
+
+message SetVesselStateOffset {
+  extend Method {
+    optional SetVesselStateOffset extension = 5024;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required QP from_parent = 3;
+  }
+  required In in = 1;
+}
+
+message UpdateCelestialHierarchy {
+  extend Method {
+    optional UpdateCelestialHierarchy extension = 5025;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required int32 celestial_index = 2;
+    required int32 parent_index = 3;
+  }
+  required In in = 1;
+}
+
+message UpdatePrediction {
+  extend Method {
+    optional UpdatePrediction extension = 5033;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+  }
+  required In in = 1;
+}
+
+message VesselFromParent {
+  extend Method {
+    optional VesselFromParent extension = 5034;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required QP vessel_from_parent = 1;
   }
   required In in = 1;
   required Return return = 3;

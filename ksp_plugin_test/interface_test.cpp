@@ -307,13 +307,12 @@ TEST_F(InterfaceTest, EndInitialization) {
 TEST_F(InterfaceTest, InsertOrKeepVessel) {
   EXPECT_CALL(*plugin_,
               InsertOrKeepVessel(kVesselGUID, kParentIndex));
-  EXPECT_CALL(*plugin_,
-              has_vessel(kVesselGUID))
+  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
-  EXPECT_FALSE(plugin_->has_vessel(kVesselGUID));
+  EXPECT_FALSE(plugin_->HasVessel(kVesselGUID));
   principia__InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
-  EXPECT_TRUE(plugin_->has_vessel(kVesselGUID));
+  EXPECT_TRUE(plugin_->HasVessel(kVesselGUID));
 }
 
 TEST_F(InterfaceTest, SetVesselStateOffset) {
@@ -569,12 +568,12 @@ TEST_F(InterfaceTest, LineAndIterator) {
 }
 
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
-  EXPECT_CALL(*plugin_, set_prediction_length(42 * Second));
-  principia__set_prediction_length(plugin_.get(), 42);
-  EXPECT_CALL(*plugin_, set_prediction_length_tolerance(1729 * Metre));
-  principia__set_prediction_length_tolerance(plugin_.get(), 1729);
-  EXPECT_CALL(*plugin_, set_prediction_speed_tolerance(163 * Metre / Second));
-  principia__set_prediction_speed_tolerance(plugin_.get(), 163);
+  EXPECT_CALL(*plugin_, SetPredictionLength(42 * Second));
+  principia__SetPredictionLength(plugin_.get(), 42);
+  EXPECT_CALL(*plugin_, SetPredictionLengthTolerance(1729 * Metre));
+  principia__SetPredictionLengthTolerance(plugin_.get(), 1729);
+  EXPECT_CALL(*plugin_, SetPredictionSpeedTolerance(163 * Metre / Second));
+  principia__SetPredictionSpeedTolerance(plugin_.get(), 163);
 }
 
 TEST_F(InterfaceTest, PhysicsBubble) {

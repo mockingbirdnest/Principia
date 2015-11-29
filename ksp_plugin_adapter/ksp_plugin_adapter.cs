@@ -536,22 +536,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         // trajectory.  Right now when in space the navball is always linked to
         // the frame of the Frenet trihedron and the trajectory.
         if (has_active_vessel_in_space() &&
-            has_vessel(active_vessel.id.ToString())) {
+          plugin_.HasVessel(active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
           Vector3d prograde =
-              (Vector3d)VesselTangent(plugin_,
-                                      active_vessel.id.ToString(),
-                                      rendering_frame_selector_.frame);
+              (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString(),
+                                              rendering_frame_selector_.frame);
           Vector3d radial =
-              (Vector3d)VesselNormal(plugin_,
-                                     active_vessel.id.ToString(),
-                                     rendering_frame_selector_.frame);
+              (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString(),
+                                             rendering_frame_selector_.frame);
           // Yes, the astrodynamicist's normal is the mathematician's binormal.
           // Don't ask.
           Vector3d normal =
-              (Vector3d)VesselBinormal(plugin_,
-                                       active_vessel.id.ToString(),
-                                       rendering_frame_selector_.frame);
+              (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString(),
+                                               rendering_frame_selector_.frame);
 
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
@@ -612,7 +609,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      double plugin_time = current_time(plugin_);
+      double plugin_time = plugin_.current_time();
       if (plugin_time > universal_time) {
         // TODO(Egg): Make this resistant to bad floating points up to 2ULPs,
         // and make it fatal again.
@@ -632,36 +629,31 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
-          has_vessel(plugin_, active_vessel.id.ToString());
+          plugin_.HasVessel(active_vessel.id.ToString());
       if (ready_to_draw_active_vessel_trajectory) {
-        set_prediction_length_tolerance(
-            plugin_,
+        plugin_.SetPredictionLengthTolerance(
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
         // TODO(egg): make the speed tolerance independent.
-        set_prediction_speed_tolerance(
-            plugin_,
+        plugin_.SetPredictionSpeedTolerance(
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
-        set_prediction_length(plugin_,
-                              prediction_lengths_[prediction_length_index_]);
+        plugin_.SetPredictionLength(
+            prediction_lengths_[prediction_length_index_]);
       }
-      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
+      plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
       if (ready_to_draw_active_vessel_trajectory) {
-        UpdatePrediction(plugin_, active_vessel.id.ToString());
+        plugin_.UpdatePrediction(active_vessel.id.ToString());
       }
-      ForgetAllHistoriesBefore(
-          plugin_,
+      plugin_.ForgetAllHistoriesBefore(
           universal_time - history_lengths_[history_length_index_]);
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
-      if (!PhysicsBubbleIsEmpty(plugin_)) {
+      if (!plugin_.PhysicsBubbleIsEmpty()) {
         Vector3d displacement_offset =
-            (Vector3d)BubbleDisplacementCorrection(
-                          plugin_,
+            (Vector3d)plugin_.BubbleDisplacementCorrection(
                           (XYZ)Planetarium.fetch.Sun.position);
         Vector3d velocity_offset =
-            (Vector3d)BubbleVelocityCorrection(
-                          plugin_,
+            (Vector3d)plugin_.BubbleVelocityCorrection(
                           active_vessel.orbit.referenceBody.flightGlobalsIndex);
         if (krakensbane_ == null) {
           krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
@@ -689,7 +681,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
-        has_vessel(plugin_, active_vessel.id.ToString()); 
+        plugin_.HasVessel(active_vessel.id.ToString()); 
     if (ready_to_draw_active_vessel_trajectory) {
       active_vessel.patchedConicRenderer.relativityMode =
           PatchRendering.RelativityMode.RELATIVE;
@@ -731,16 +723,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         ResetRenderedTrajectory();
       }
       IntPtr trajectory_iterator = IntPtr.Zero;
-      trajectory_iterator = RenderedVesselTrajectory(
-                                plugin_,
+      trajectory_iterator = plugin_.RenderedVesselTrajectory(
                                 active_vessel.id.ToString(),
                                 rendering_frame_selector_.frame,
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
-      if (HasPrediction(plugin_, active_vessel.id.ToString())) {
-        trajectory_iterator = RenderedPrediction(
-                                  plugin_,
+      if (plugin_.HasPrediction(active_vessel.id.ToString())) {
+        trajectory_iterator = plugin_.RenderedPrediction(
                                   active_vessel.id.ToString(),
                                   rendering_frame_selector_.frame,
                                   (XYZ)Planetarium.fetch.Sun.position);
@@ -758,20 +748,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     try {
       LineSegment segment;
       int index_in_line_points = vector_line.points3.Length -
-          2 * NumberOfSegments(trajectory_iterator);
+          2 * trajectory_iterator.NumberOfSegments();
       // If the |VectorLine| is too big, make sure we're not keeping garbage.
       for (int i = vector_line.minDrawIndex; i < index_in_line_points; ++i) {
         vector_line.points3[i] = UnityEngine.Vector3.zero;
       }
       while (index_in_line_points < 0) {
-        FetchAndIncrement(trajectory_iterator);
+        trajectory_iterator.FetchAndIncrement();
         index_in_line_points += 2;
       }
       new_min_draw_index = index_in_line_points;
       vector_line.minDrawIndex = Math.Min(vector_line.minDrawIndex,
                                           new_min_draw_index);
-      while (!AtEnd(trajectory_iterator)) {
-        segment = FetchAndIncrement(trajectory_iterator);
+      while (!trajectory_iterator.AtEnd()) {
+        segment = trajectory_iterator.FetchAndIncrement();
         // TODO(egg): should we do the |LocalToScaledSpace| conversion in
         // native code?
         // TODO(egg): could we directly assign to
@@ -784,7 +774,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
       }
     } finally {
-      DeleteLineAndIterator(ref trajectory_iterator);
+      Interface.DeleteLineAndIterator(ref trajectory_iterator);
     }
     if (MapView.Draw3DLines && !force_2d_trajectories_) {
       Vector.DrawLine3D(vector_line);
@@ -834,7 +824,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
-    DeletePlugin(ref plugin_);
+    Interface.DeletePlugin(ref plugin_);
     rendering_frame_selector_ = null;
     DestroyRenderedTrajectory();
     navball_changed_ = true;
@@ -863,7 +853,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
       plugin_state = "holding";
-    } else if (PhysicsBubbleIsEmpty(plugin_)) {
+    } else if (plugin_.PhysicsBubbleIsEmpty()) {
       plugin_state = "running";
     } else {
       plugin_state = "managing physics bubble";
@@ -1185,8 +1175,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             GameDatabase.Instance.GetConfigs(kPrincipiaInitialState)[0].config;
         ConfigNode gravity_models =
             GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel)[0].config;
-        plugin_ = NewPlugin(double.Parse(initial_states.GetValue("epoch")),
-                            Planetarium.InverseRotAngle);
+        plugin_ =
+            Interface.NewPlugin(double.Parse(initial_states.GetValue("epoch")),
+                                Planetarium.InverseRotAngle);
         var name_to_initial_state = new Dictionary<String, ConfigNode>();
         var name_to_gravity_model = new Dictionary<String, ConfigNode>();
         foreach (ConfigNode node in initial_states.GetNodes("body")) {
@@ -1199,8 +1190,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             name_to_gravity_model[Planetarium.fetch.Sun.name];
         ConfigNode sun_initial_state =
             name_to_initial_state[Planetarium.fetch.Sun.name];
-        DirectlyInsertCelestial(
-            plugin: plugin_,
+        plugin_.DirectlyInsertCelestial(
             celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
             parent_index: IntPtr.Zero,
             gravitational_parameter:
@@ -1227,8 +1217,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           ConfigNode gravity_model = name_to_gravity_model[body.name];
           ConfigNode initial_state = name_to_initial_state[body.name];
           int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
-          DirectlyInsertCelestial(
-              plugin: plugin_,
+          plugin_.DirectlyInsertCelestial(
               celestial_index: body.flightGlobalsIndex,
               parent_index: ref parent_index,
               gravitational_parameter:
@@ -1252,31 +1241,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               vz: initial_state.GetValue("vz"));
         };
         ApplyToBodyTree(insert_body);
-        EndInitialization(plugin_);
-        AdvanceTime(plugin_,
-                    Planetarium.GetUniversalTime(),
-                    Planetarium.InverseRotAngle);
+        plugin_.EndInitialization();
+        plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
+                            Planetarium.InverseRotAngle);
       } catch (Exception e) {
         Log.Fatal("Exception while reading initial state: " + e.ToString());
       }
     } else {
       plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
-      plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
-                          Planetarium.InverseRotAngle);
-      InsertSun(plugin_,
-                Planetarium.fetch.Sun.flightGlobalsIndex,
-                Planetarium.fetch.Sun.gravParameter);
+      plugin_ = Interface.NewPlugin(Planetarium.GetUniversalTime(),
+                                    Planetarium.InverseRotAngle);
+      plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
+                        Planetarium.fetch.Sun.gravParameter);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        InsertCelestial(plugin_,
-                        body.flightGlobalsIndex,
-                        body.gravParameter,
-                        body.orbit.referenceBody.flightGlobalsIndex,
-                        new QP{q = (XYZ)body.orbit.pos,
-                               p = (XYZ)body.orbit.vel});
+        plugin_.InsertCelestial(body.flightGlobalsIndex,
+                                body.gravParameter,
+                                body.orbit.referenceBody.flightGlobalsIndex,
+                                new QP{q = (XYZ)body.orbit.pos,
+                                       p = (XYZ)body.orbit.vel});
       };
       ApplyToBodyTree(insert_body);
-      EndInitialization(plugin_);
+      plugin_.EndInitialization();
     }
     rendering_frame_selector_ =
         new ReferenceFrameSelector(ref render_windows_,
@@ -1285,16 +1271,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =
-          InsertOrKeepVessel(plugin_,
-                             vessel.id.ToString(),
-                             vessel.orbit.referenceBody.flightGlobalsIndex);
+          plugin_.InsertOrKeepVessel(
+              vessel.id.ToString(),
+              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
         Log.Fatal("Plugin initialization: vessel not inserted");
       } else {
-        SetVesselStateOffset(plugin_,
-                             vessel.id.ToString(),
-                             new QP{q = (XYZ)vessel.orbit.pos,
-                                    p = (XYZ)vessel.orbit.vel});
+        plugin_.SetVesselStateOffset(
+            vessel.id.ToString(),
+            new QP{q = (XYZ)vessel.orbit.pos,
+                   p = (XYZ)vessel.orbit.vel});
       }
     };
     ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(insert_vessel);

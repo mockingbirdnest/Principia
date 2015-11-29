@@ -601,9 +601,9 @@ TEST_F(PluginIntegrationTest, Prediction) {
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
-  plugin.set_prediction_length(2 * π * Second);
-  plugin.set_prediction_length_tolerance(1 * Milli(Metre));
-  plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
+  plugin.SetPredictionLength(2 * π * Second);
+  plugin.SetPredictionLengthTolerance(1 * Milli(Metre));
+  plugin.SetPredictionSpeedTolerance(1 * Milli(Metre) / Second);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
   RenderedTrajectory<World> rendered_prediction =

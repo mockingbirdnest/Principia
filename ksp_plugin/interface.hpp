@@ -284,7 +284,7 @@ XYZSegment CDECL principia__FetchAndIncrement(
 // |line_and_iterator->rendered_trajectory|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-bool CDECL principia__AtEnd(LineAndIterator* const line_and_iterator);
+bool CDECL principia__AtEnd(LineAndIterator const* const line_and_iterator);
 
 // Deletes and nulls |*line_and_iterator|.
 // |line_and_iterator| must not be null.  No transfer of ownership of
@@ -294,20 +294,20 @@ void CDECL principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_length(Plugin* const plugin,
-                                            double const t);
+void CDECL principia__SetPredictionLength(Plugin* const plugin,
+                                          double const t);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_length_tolerance(Plugin* const plugin,
-                                                      double const t);
+void CDECL principia__SetPredictionLengthTolerance(Plugin* const plugin,
+                                                   double const l);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_speed_tolerance(Plugin* const plugin,
-                                                     double const t);
+void CDECL principia__SetPredictionSpeedTolerance(Plugin* const plugin,
+                                                  double const v);
 
 extern "C" DLLEXPORT
-bool CDECL principia__has_vessel(Plugin* const plugin,
-                                 char const* const vessel_guid);
+bool CDECL principia__HasVessel(Plugin* const plugin,
+                                char const* const vessel_guid);
 
 extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(

@@ -47,7 +47,6 @@ internal struct KSPPart {
 }
 
 internal static class Interface {
-
 #if __MonoCS__
   internal const string kDllPath = "GameData/Principia/principia.so";
 #else
@@ -221,17 +220,17 @@ internal static class Interface {
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__NumberOfSegments",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int NumberOfSegments(IntPtr line);
+  internal static extern int NumberOfSegments(this IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FetchAndIncrement",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern LineSegment FetchAndIncrement(IntPtr line);
+  internal static extern LineSegment FetchAndIncrement(this IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__AtEnd",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern bool AtEnd(IntPtr line);
+  internal static extern bool AtEnd(this IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DeleteLineAndIterator",
@@ -239,27 +238,26 @@ internal static class Interface {
   internal static extern void DeleteLineAndIterator(ref IntPtr line);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_length",
+             EntryPoint        = "principia__SetPredictionLength",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void set_prediction_length(this IntPtr plugin,
-                                                    double t);
+  internal static extern void SetPredictionLength(this IntPtr plugin,
+                                                  double t);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_length_tolerance",
+             EntryPoint        = "principia__SetPredictionLengthTolerance",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void set_prediction_length_tolerance(
-      this IntPtr plugin,
-      double t);
+  internal static extern void SetPredictionLengthTolerance(this IntPtr plugin,
+                                                           double t);
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_speed_tolerance",
+             EntryPoint        = "principia__SetPredictionSpeedTolerance",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void set_prediction_speed_tolerance(this IntPtr plugin,
-                                                             double t);
+  internal static extern void SetPredictionSpeedTolerance(this IntPtr plugin,
+                                                          double t);
 
   [DllImport(dllName             : kDllPath,
-             EntryPoint =        "principia__has_vessel",
+             EntryPoint =        "principia__HasVessel",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern bool has_vessel(
+  internal static extern bool HasVessel(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
@@ -370,7 +368,6 @@ internal static class Interface {
              EntryPoint        = "principia__DeleteRenderingFrame",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
-
 }
 
 }  // namespace ksp_plugin_adapter

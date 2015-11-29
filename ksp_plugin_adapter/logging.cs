@@ -6,8 +6,8 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Log {
-
-  internal static String[] kSeverityNames = {"INFO", "WARNING", "ERROR", "FATAL"};
+  internal static String[] kSeverityNames = {"INFO", "WARNING", "ERROR",
+                                             "FATAL"};
 
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__InitGoogleLogging",
@@ -87,7 +87,6 @@ internal static class Log {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void Fatal(
       [MarshalAs(UnmanagedType.LPStr)] String message);
-
 }
 
 }  // namespace ksp_plugin_adapter

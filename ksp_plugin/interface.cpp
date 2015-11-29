@@ -142,61 +142,84 @@ void principia__InitGoogleLogging() {
 }
 
 void principia__SetBufferedLogging(int const max_severity) {
+  Journal::Method<SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
+  return m.Return();
 }
 
 int principia__GetBufferedLogging() {
-  return FLAGS_logbuflevel;
+  Journal::Method<GetBufferedLogging> m;
+  return m.Return(FLAGS_logbuflevel);
 }
 
 void principia__SetBufferDuration(int const seconds) {
+  Journal::Method<SetBufferDuration> m({seconds});
   FLAGS_logbufsecs = seconds;
+  return m.Return();
 }
 
 int principia__GetBufferDuration() {
-  return FLAGS_logbufsecs;
+  Journal::Method<GetBufferDuration> m;
+  return m.Return(FLAGS_logbufsecs);
 }
 
 void principia__SetSuppressedLogging(int const min_severity) {
+  Journal::Method<SetSuppressedLogging> m({min_severity});
   FLAGS_minloglevel = min_severity;
+  return m.Return();
 }
 
 int principia__GetSuppressedLogging() {
-  return FLAGS_minloglevel;
+  Journal::Method<GetSuppressedLogging> m;
+  return m.Return(FLAGS_minloglevel);
 }
 
 void principia__SetVerboseLogging(int const level) {
+  Journal::Method<SetVerboseLogging> m({level});
   FLAGS_v = level;
+  return m.Return();
 }
 
 int principia__GetVerboseLogging() {
-  return FLAGS_v;
+  Journal::Method<GetVerboseLogging> m;
+  return m.Return(FLAGS_v);
 }
 
 void principia__SetStderrLogging(int const min_severity) {
+  Journal::Method<SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
   // seems to be a mutex.
   google::SetStderrLogging(min_severity);
+  return m.Return();
 }
 
 int principia__GetStderrLogging() {
-  return FLAGS_stderrthreshold;
+  Journal::Method<GetStderrLogging> m;
+  return m.Return(FLAGS_stderrthreshold);
 }
 
 void principia__LogInfo(char const* const message) {
+  Journal::Method<LogInfo> m({message});
   LOG(INFO) << message;
+  return m.Return();
 }
 
 void principia__LogWarning(char const* const message) {
+  Journal::Method<LogWarning> m({message});
   LOG(WARNING) << message;
+  return m.Return();
 }
 
 void principia__LogError(char const* const message) {
+  Journal::Method<LogError> m({message});
   LOG(ERROR) << message;
+  return m.Return();
 }
 
 void principia__LogFatal(char const* const message) {
+  Journal::Method<LogFatal> m({message});
   LOG(FATAL) << message;
+  return m.Return();
 }
 
 Plugin* principia__NewPlugin(double const initial_time,
@@ -302,91 +325,121 @@ void principia__InsertCelestial(Plugin* const plugin,
 void principia__InsertSun(Plugin* const plugin,
                           int const celestial_index,
                           double const gravitational_parameter) {
+  Journal::Method<InsertSun> m({plugin,
+                                celestial_index,
+                                gravitational_parameter});
   CHECK_NOTNULL(plugin)->InsertSun(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>());
+  return m.Return();
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                          int const celestial_index,
                                          int const parent_index) {
+  Journal::Method<UpdateCelestialHierarchy> m({plugin,
+                                               celestial_index,
+                                               parent_index});
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
+  return m.Return();
 }
 
 void principia__EndInitialization(Plugin* const plugin) {
+  Journal::Method<EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin)->EndInitialization();
+  return m.Return();
 }
 
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
                                    int const parent_index) {
-  return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
+  Journal::Method<InsertOrKeepVessel> m({plugin, vessel_guid, parent_index});
+  return m.Return(
+      CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index));
 }
 
 void principia__SetVesselStateOffset(Plugin* const plugin,
                                      char const* const vessel_guid,
                                      QP const from_parent) {
+  Journal::Method<SetVesselStateOffset> m({plugin, vessel_guid, from_parent});
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
           Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+  return m.Return();
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
+  Journal::Method<AdvanceTime> m({plugin, t, planetarium_rotation});
   Instant const t0;
   CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
                                      planetarium_rotation * Degree);
+  return m.Return();
 }
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
+  Journal::Method<ForgetAllHistoriesBefore> m({plugin, t});
   Instant const t0;
   CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
+  return m.Return();
 }
 
 QP principia__VesselFromParent(Plugin const* const plugin,
                                char const* const vessel_guid) {
+  Journal::Method<VesselFromParent> m({plugin, vessel_guid});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
-  return {ToXYZ(result.displacement().coordinates() / Metre),
-          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
 QP principia__CelestialFromParent(Plugin const* const plugin,
                                   int const celestial_index) {
+  Journal::Method<CelestialFromParent> m({plugin, celestial_index});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
-  return {ToXYZ(result.displacement().coordinates() / Metre),
-          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
 RenderingFrame* principia__NewBodyCentredNonRotatingRenderingFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
-  return CHECK_NOTNULL(plugin)->
-      NewBodyCentredNonRotatingRenderingFrame(reference_body_index).release();
+  Journal::Method<NewBodyCentredNonRotatingRenderingFrame> m(
+      {plugin, reference_body_index});
+  return m.Return(CHECK_NOTNULL(plugin)->
+      NewBodyCentredNonRotatingRenderingFrame(reference_body_index).release());
 }
 
 RenderingFrame* principia__NewBarycentricRotatingRenderingFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
-  return CHECK_NOTNULL(plugin)->
+  Journal::Method<NewBarycentricRotatingRenderingFrame> m({plugin,
+                                                           primary_index,
+                                                           secondary_index});
+  return m.Return(CHECK_NOTNULL(plugin)->
       NewBarycentricRotatingRenderingFrame(primary_index,
-                                           secondary_index).release();
+                                           secondary_index).release());
 }
 
 void principia__DeleteRenderingFrame(RenderingFrame** const rendering_frame) {
+  Journal::Method<DeleteRenderingFrame> m({*rendering_frame},
+                                          {rendering_frame});
   TakeOwnership(rendering_frame);
+  return m.Return();
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid) {
+  Journal::Method<UpdatePrediction> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
+  return m.Return();
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(
@@ -394,6 +447,10 @@ LineAndIterator* principia__RenderedVesselTrajectory(
     char const* const vessel_guid,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
+  Journal::Method<RenderedVesselTrajectory> m({plugin,
+                                               vessel_guid,
+                                               rendering_frame,
+                                               sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
@@ -403,12 +460,13 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 bool principia__HasPrediction(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid);
+  Journal::Method<HasPrediction> m({plugin, vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid));
 }
 
 LineAndIterator* principia__RenderedPrediction(
@@ -416,6 +474,10 @@ LineAndIterator* principia__RenderedPrediction(
     char const* const vessel_guid,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
+  Journal::Method<RenderedPrediction> m({plugin,
+                                         vessel_guid,
+                                         rendering_frame,
+                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
@@ -425,12 +487,13 @@ LineAndIterator* principia__RenderedPrediction(
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 int principia__FlightPlanSize(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid);
+  Journal::Method<FlightPlanSize> m({plugin, vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid));
 }
 
 LineAndIterator* principia__RenderedFlightPlan(
@@ -439,6 +502,11 @@ LineAndIterator* principia__RenderedFlightPlan(
     int const plan_phase,
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position) {
+  Journal::Method<RenderedFlightPlan> m({plugin,
+                                         vessel_guid,
+                                         plan_phase,
+                                         rendering_frame,
+                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
@@ -449,52 +517,66 @@ LineAndIterator* principia__RenderedFlightPlan(
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
-void principia__set_prediction_length(Plugin* const plugin,
-                                      double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_length(t * Second);
+void principia__SetPredictionLength(Plugin* const plugin,
+                                    double const t) {
+  Journal::Method<SetPredictionLength> m({plugin, t});
+  CHECK_NOTNULL(plugin)->SetPredictionLength(t * Second);
+  return m.Return();
 }
 
-void principia__set_prediction_length_tolerance(Plugin* const plugin,
-                                                double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_length_tolerance(t * Metre);
+void principia__SetPredictionLengthTolerance(Plugin* const plugin,
+                                             double const l) {
+  Journal::Method<SetPredictionLengthTolerance> m({plugin, l});
+  CHECK_NOTNULL(plugin)->SetPredictionLengthTolerance(l * Metre);
+  return m.Return();
 }
 
-void principia__set_prediction_speed_tolerance(Plugin* const plugin,
-                                               double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_speed_tolerance(t * Metre / Second);
+void principia__SetPredictionSpeedTolerance(Plugin* const plugin,
+                                            double const v) {
+  Journal::Method<SetPredictionSpeedTolerance> m({plugin, v});
+  CHECK_NOTNULL(plugin)->SetPredictionSpeedTolerance(v * Metre / Second);
+  return m.Return();
 }
 
-bool principia__has_vessel(Plugin* const plugin,
-                           char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
+bool principia__HasVessel(Plugin* const plugin,
+                          char const* const vessel_guid) {
+  Journal::Method<HasVessel> m({plugin,  vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid));
 }
 
 int principia__NumberOfSegments(
     LineAndIterator const* const line_and_iterator) {
-  return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
+  Journal::Method<NumberOfSegments> m({line_and_iterator});
+  return m.Return(CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size());
 }
 
 XYZSegment principia__FetchAndIncrement(
     LineAndIterator* const line_and_iterator) {
+  Journal::Method<FetchAndIncrement> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
   ++line_and_iterator->it;
-  return {ToXYZ((result.begin - World::origin).coordinates() / Metre),
-          ToXYZ((result.end - World::origin).coordinates() / Metre)};
+  return m.Return({ToXYZ((result.begin - World::origin).coordinates() / Metre),
+                   ToXYZ((result.end - World::origin).coordinates() / Metre)});
 }
 
-bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
+bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
+  Journal::Method<AtEnd> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
-  return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
+  return m.Return(line_and_iterator->it ==
+                  line_and_iterator->rendered_trajectory.end());
 }
 
 void principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator) {
+  Journal::Method<DeleteLineAndIterator> m({*line_and_iterator},
+                                           {line_and_iterator});
   TakeOwnership(line_and_iterator);
+  return m.Return();
 }
 
 void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,

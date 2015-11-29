@@ -23,10 +23,154 @@ struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
 };
 
+struct SetBufferedLogging {
+  struct In {
+    int const max_severity;
+  };
+
+  using Message = serialization::SetBufferedLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetBufferedLogging {
+  using Return = int;
+
+  using Message = serialization::GetBufferedLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetBufferDuration {
+  struct In {
+    int const seconds;
+  };
+
+  using Message = serialization::SetBufferDuration;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetBufferDuration {
+  using Return = int;
+
+  using Message = serialization::GetBufferDuration;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetSuppressedLogging {
+  struct In {
+    int const min_severity;
+  };
+
+  using Message = serialization::SetSuppressedLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetSuppressedLogging {
+  using Return = int;
+
+  using Message = serialization::GetSuppressedLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetVerboseLogging {
+  struct In {
+    int const level;
+  };
+
+  using Message = serialization::SetVerboseLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetVerboseLogging {
+  using Return = int;
+
+  using Message = serialization::GetVerboseLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetStderrLogging {
+  struct In {
+    int const min_severity;
+  };
+
+  using Message = serialization::SetStderrLogging;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct GetStderrLogging {
+  using Return = int;
+
+  using Message = serialization::GetStderrLogging;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogInfo {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogInfo;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogWarning {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogWarning;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogError {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogError;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct LogFatal {
+  struct In {
+    char const* const message;
+  };
+
+  using Message = serialization::LogFatal;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
 struct NewPlugin {
   struct In {
-    double initial_time;
-    double planetarium_rotation_in_degrees;
+    double const initial_time;
+    double const planetarium_rotation_in_degrees;
   };
   using Return = Plugin*;
 
@@ -39,7 +183,7 @@ struct NewPlugin {
 
 struct DeletePlugin {
   struct In {
-    Plugin const* plugin;
+    Plugin const* const plugin;
   };
   struct Out {
     Plugin const** const plugin;
@@ -54,37 +198,396 @@ struct DeletePlugin {
 
 struct DirectlyInsertCelestial {
   struct In {
-    Plugin* plugin;
-    int celestial_index;
-    int const* parent_index;
-    char const* gravitational_parameter;
-    char const* axis_right_ascension;
-    char const* axis_declination;
-    char const* j2;
-    char const* reference_radius;
-    char const* x;
-    char const* y;
-    char const* z;
-    char const* vx;
-    char const* vy;
-    char const* vz;
+    Plugin* const plugin;
+    int const celestial_index;
+    int const* const parent_index;
+    char const* const gravitational_parameter;
+    char const* const axis_right_ascension;
+    char const* const axis_declination;
+    char const* const j2;
+    char const* const reference_radius;
+    char const* const x;
+    char const* const y;
+    char const* const z;
+    char const* const vx;
+    char const* const vy;
+    char const* const vz;
   };
 
   using Message = serialization::DirectlyInsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 struct InsertCelestial {
   struct In {
-    Plugin* plugin;
-    int celestial_index;
-    double gravitational_parameter;
-    int parent_index;
-    QP from_parent;
+    Plugin* const plugin;
+    int const celestial_index;
+    double const gravitational_parameter;
+    int const parent_index;
+    QP const from_parent;
   };
 
   using Message = serialization::InsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct InsertSun {
+  struct In {
+    Plugin* const plugin;
+    int const celestial_index;
+    double const gravitational_parameter;
+  };
+
+  using Message = serialization::InsertSun;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct UpdateCelestialHierarchy {
+  struct In {
+    Plugin const* const plugin;
+    int const celestial_index;
+    int const parent_index;
+  };
+
+  using Message = serialization::UpdateCelestialHierarchy;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct EndInitialization {
+  struct In {
+    Plugin const* const plugin;
+  };
+
+  using Message = serialization::EndInitialization;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct InsertOrKeepVessel {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    int const parent_index;
+  };
+  using Return = bool;
+
+  using Message = serialization::InsertOrKeepVessel;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetVesselStateOffset {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    QP const from_parent;
+  };
+
+  using Message = serialization::SetVesselStateOffset;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct AdvanceTime {
+  struct In {
+    Plugin* const plugin;
+    double const t;
+    double const planetarium_rotation;
+  };
+
+  using Message = serialization::AdvanceTime;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct ForgetAllHistoriesBefore {
+  struct In {
+    Plugin* const plugin;
+    double const t;
+  };
+
+  using Message = serialization::ForgetAllHistoriesBefore;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct VesselFromParent {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = QP;
+
+  using Message = serialization::VesselFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct CelestialFromParent {
+  struct In {
+    Plugin const* const plugin;
+    int const celestial_index;
+  };
+  using Return = QP;
+
+  using Message = serialization::CelestialFromParent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NewBodyCentredNonRotatingRenderingFrame {
+  struct In {
+    Plugin const* const plugin;
+    int const reference_body_index;
+  };
+  using Return = RenderingFrame*;
+
+  using Message = serialization::NewBodyCentredNonRotatingRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NewBarycentricRotatingRenderingFrame {
+  struct In {
+    Plugin const* const plugin;
+    int const primary_index;
+    int const secondary_index;
+  };
+  using Return = RenderingFrame*;
+
+  using Message = serialization::NewBarycentricRotatingRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeleteRenderingFrame {
+  struct In {
+    RenderingFrame* const rendering_frame;
+  };
+  struct Out {
+    RenderingFrame** const rendering_frame;
+  };
+
+  using Message = serialization::DeleteRenderingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct UpdatePrediction {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+
+  using Message = serialization::UpdatePrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedVesselTrajectory {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::RenderedVesselTrajectory;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct HasPrediction {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = bool;
+
+  using Message = serialization::HasPrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedPrediction {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::RenderedPrediction;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct FlightPlanSize {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = int;
+
+  using Message = serialization::FlightPlanSize;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedFlightPlan {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    int const plan_phase;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::RenderedFlightPlan;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetPredictionLength {
+  struct In {
+    Plugin* const plugin;
+    double const t;
+  };
+
+  using Message = serialization::SetPredictionLength;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetPredictionLengthTolerance {
+  struct In {
+    Plugin* const plugin;
+    double const l;
+  };
+
+  using Message = serialization::SetPredictionLengthTolerance;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetPredictionSpeedTolerance {
+  struct In {
+    Plugin* const plugin;
+    double const v;
+  };
+
+  using Message = serialization::SetPredictionSpeedTolerance;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct HasVessel {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = bool;
+
+  using Message = serialization::HasVessel;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NumberOfSegments {
+  struct In {
+    LineAndIterator const* const line_and_iterator;
+  };
+  using Return = int;
+
+  using Message = serialization::NumberOfSegments;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct FetchAndIncrement {
+  struct In {
+    LineAndIterator* const line_and_iterator;
+  };
+  using Return = XYZSegment;
+
+  using Message = serialization::FetchAndIncrement;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct AtEnd {
+  struct In {
+    LineAndIterator const* const line_and_iterator;
+  };
+  using Return = bool;
+
+  using Message = serialization::AtEnd;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeleteLineAndIterator {
+  struct In {
+    LineAndIterator* const line_and_iterator;
+  };
+  struct Out {
+    LineAndIterator** const line_and_iterator;
+  };
+
+  using Message = serialization::DeleteLineAndIterator;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 class Journal {
@@ -148,7 +651,7 @@ class Player {
   std::unique_ptr<serialization::Method> Read();
 
   template<typename Profile>
-  void RunIfAppropriate(serialization::Method const& method);
+  bool RunIfAppropriate(serialization::Method const& method);
 
   PointerMap pointer_map_;
   std::ifstream stream_;
