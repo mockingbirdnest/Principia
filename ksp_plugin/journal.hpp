@@ -464,6 +464,7 @@ struct FlightPlanSize {
 
   using Message = serialization::FlightPlanSize;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
@@ -480,6 +481,7 @@ struct RenderedFlightPlan {
 
   using Message = serialization::RenderedFlightPlan;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
@@ -529,6 +531,7 @@ struct HasVessel {
 
   using Message = serialization::HasVessel;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
@@ -541,6 +544,7 @@ struct NumberOfSegments {
 
   using Message = serialization::NumberOfSegments;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
@@ -553,6 +557,7 @@ struct FetchAndIncrement {
 
   using Message = serialization::FetchAndIncrement;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
@@ -565,6 +570,7 @@ struct AtEnd {
 
   using Message = serialization::AtEnd;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
@@ -573,9 +579,13 @@ struct DeleteLineAndIterator {
   struct In {
     LineAndIterator* const line_and_iterator;
   };
+  struct Out {
+    LineAndIterator** const line_and_iterator;
+  };
 
   using Message = serialization::DeleteLineAndIterator;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
