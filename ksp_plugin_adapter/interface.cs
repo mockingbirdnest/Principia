@@ -5,45 +5,45 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-  [StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct XYZ {
-    public double x, y, z;
-    public static explicit operator XYZ(Vector3d v) {
-      return new XYZ{x = v.x, y = v.y, z = v.z};
-    }
-    public static explicit operator Vector3d(XYZ v) {
-      return new Vector3d{x = v.x, y = v.y, z = v.z};
-    }
+  public double x, y, z;
+  public static explicit operator XYZ(Vector3d v) {
+    return new XYZ{x = v.x, y = v.y, z = v.z};
+  }
+  public static explicit operator Vector3d(XYZ v) {
+    return new Vector3d{x = v.x, y = v.y, z = v.z};
+  }
 }
 
-  [StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct WXYZ {
-    public double w, x, y, z;
-    public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
-      return new WXYZ{w = q.w, x = q.x, y = q.y, z = q.z};
-    }
-    public static explicit operator UnityEngine.QuaternionD(WXYZ q) {
-      return new UnityEngine.QuaternionD{w = q.w, x = q.x, y = q.y, z = q.z};
-    }
+  public double w, x, y, z;
+  public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
+    return new WXYZ{w = q.w, x = q.x, y = q.y, z = q.z};
+  }
+  public static explicit operator UnityEngine.QuaternionD(WXYZ q) {
+    return new UnityEngine.QuaternionD{w = q.w, x = q.x, y = q.y, z = q.z};
+  }
 }
 
-  [StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct LineSegment {
-    public XYZ begin, end;
-  };
+  public XYZ begin, end;
+};
 
-  [StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct QP {
-    public XYZ q, p;
+  public XYZ q, p;
 }
 
-  [StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)]
 internal struct KSPPart {
-    public XYZ world_position;
-    public XYZ world_velocity;
-    public double mass;
-    public XYZ gravitational_acceleration_to_be_applied_by_ksp;
-    public uint id;
+  public XYZ world_position;
+  public XYZ world_velocity;
+  public double mass;
+  public XYZ gravitational_acceleration_to_be_applied_by_ksp;
+  public uint id;
 }
 
 internal static class Interface {
@@ -169,7 +169,7 @@ internal static class Interface {
              EntryPoint        = "principia__ForgetAllHistoriesBefore",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void ForgetAllHistoriesBefore(this IntPtr plugin,
-                                                      double t);
+                                                       double t);
 
   [DllImport(dllName: kDllPath,
              EntryPoint        = "principia__VesselFromParent",
@@ -247,12 +247,12 @@ internal static class Interface {
              EntryPoint        = "principia__SetPredictionLengthTolerance",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetPredictionLengthTolerance(this IntPtr plugin,
-                                                          double t);
+                                                           double t);
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__SetPredictionSpeedTolerance",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetPredictionSpeedTolerance(this IntPtr plugin,
-                                                         double t);
+                                                          double t);
 
   [DllImport(dllName             : kDllPath,
              EntryPoint =        "principia__HasVessel",
@@ -279,14 +279,14 @@ internal static class Interface {
              EntryPoint        = "principia__BubbleDisplacementCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ BubbleDisplacementCorrection(this IntPtr plugin,
-                                                         XYZ sun_position);
+                                                          XYZ sun_position);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__BubbleVelocityCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ BubbleVelocityCorrection(
       this IntPtr plugin,
-                                                     int reference_body_index);
+      int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__NavballOrientation",

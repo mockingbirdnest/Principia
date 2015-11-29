@@ -109,8 +109,6 @@ class InterfaceTest : public testing::Test {
 
   static void TearDownTestCase() {
     Journal::Deactivate();
-    // Don't delete the journal here, it causes problems in the case of death
-    // tests.
   }
 
   InterfaceTest()

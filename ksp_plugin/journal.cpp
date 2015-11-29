@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "base/array.hpp"
 #include "base/get_line.hpp"
