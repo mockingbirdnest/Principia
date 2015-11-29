@@ -542,7 +542,7 @@ void principia__SetPredictionSpeedTolerance(Plugin* const plugin,
 }
 
 bool principia__HasVessel(Plugin* const plugin,
-                           char const* const vessel_guid) {
+                          char const* const vessel_guid) {
   Journal::Method<HasVessel> m({plugin,  vessel_guid});
   return m.Return(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid));
 }

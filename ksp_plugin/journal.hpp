@@ -457,6 +457,8 @@ struct RenderedPrediction {
 
 struct FlightPlanSize {
   struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
   };
 
   using Message = serialization::FlightPlanSize;
@@ -467,6 +469,11 @@ struct FlightPlanSize {
 
 struct RenderedFlightPlan {
   struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    int const plan_phase;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
   };
 
   using Message = serialization::RenderedFlightPlan;
@@ -477,6 +484,8 @@ struct RenderedFlightPlan {
 
 struct SetPredictionLength {
   struct In {
+    Plugin* const plugin;
+    double const t;
   };
 
   using Message = serialization::SetPredictionLength;
@@ -487,6 +496,8 @@ struct SetPredictionLength {
 
 struct SetPredictionLengthTolerance {
   struct In {
+    Plugin* const plugin;
+    double const l;
   };
 
   using Message = serialization::SetPredictionLengthTolerance;
@@ -497,6 +508,8 @@ struct SetPredictionLengthTolerance {
 
 struct SetPredictionSpeedTolerance {
   struct In {
+    Plugin* const plugin;
+    double const v;
   };
 
   using Message = serialization::SetPredictionSpeedTolerance;
@@ -507,6 +520,8 @@ struct SetPredictionSpeedTolerance {
 
 struct HasVessel {
   struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
   };
 
   using Message = serialization::HasVessel;
@@ -517,6 +532,7 @@ struct HasVessel {
 
 struct NumberOfSegments {
   struct In {
+    LineAndIterator const* const line_and_iterator;
   };
 
   using Message = serialization::NumberOfSegments;
@@ -527,6 +543,7 @@ struct NumberOfSegments {
 
 struct FetchAndIncrement {
   struct In {
+    LineAndIterator* const line_and_iterator;
   };
 
   using Message = serialization::FetchAndIncrement;
@@ -537,6 +554,7 @@ struct FetchAndIncrement {
 
 struct AtEnd {
   struct In {
+    LineAndIterator* const line_and_iterator;
   };
 
   using Message = serialization::AtEnd;
@@ -547,6 +565,7 @@ struct AtEnd {
 
 struct DeleteLineAndIterator {
   struct In {
+    LineAndIterator* const line_and_iterator;
   };
 
   using Message = serialization::DeleteLineAndIterator;
