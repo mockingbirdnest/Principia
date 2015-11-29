@@ -680,13 +680,13 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {
-  Journal::Method<> m({});
-  return (CHECK_NOTNULL(plugin)->CurrentTime() - Instant()) / Second;
+  Journal::Method<CurrentTime> m({plugin});
+  return m.Return((CHECK_NOTNULL(plugin)->CurrentTime() - Instant()) / Second);
 }
 
 char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
-  Journal::Method<> m({});
+  Journal::Method<SerializePlugin> m({plugin, *serializer}, {serializer});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
@@ -715,11 +715,12 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   UniqueBytes hexadecimal(hexadecimal_size);
   HexadecimalEncode(bytes, hexadecimal.get());
   hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
-  return reinterpret_cast<char const*>(hexadecimal.data.release());
+  return m.Return(reinterpret_cast<char const*>(hexadecimal.data.release()));
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
-  Journal::Method<> m({});
+  Journal::Method<DeletePluginSerialization> m({*serialization},
+                                               {serialization});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
 }
@@ -728,7 +729,11 @@ void principia__DeserializePlugin(char const* const serialization,
                                   int const serialization_size,
                                   PushDeserializer** const deserializer,
                                   Plugin const** const plugin) {
-  Journal::Method<> m({});
+  Journal::Method<DeserializePlugin> m({serialization,
+                                        serialization_size,
+                                        *deserializer,
+                                        *plugin},
+                                       {deserializer, plugin});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
@@ -768,8 +773,8 @@ void principia__DeserializePlugin(char const* const serialization,
 }
 
 char const* principia__SayHello() {
-  Journal::Method<> m({});
-  return "Hello from native C++!";
+  Journal::Method<SayHello> m;
+  return m.Return("Hello from native C++!");
 }
 
 }  // namespace ksp_plugin
