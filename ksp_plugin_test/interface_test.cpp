@@ -109,7 +109,8 @@ class InterfaceTest : public testing::Test {
 
   static void TearDownTestCase() {
     Journal::Deactivate();
-    //delete journal_;
+    // Don't delete the journal here, it causes problems in the case of death
+    // tests.
   }
 
   InterfaceTest()
@@ -295,7 +296,7 @@ TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
                                      &kParentIndex,
                                      "1.2345E6  km^3 / s^2",
                                      "42 deg",
-                                     "8°",
+                                     u8"8°",
                                      "123e-6",
                                      "1000 km",
                                      "0 m",

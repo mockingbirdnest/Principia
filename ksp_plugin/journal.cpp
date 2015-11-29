@@ -291,11 +291,9 @@ void DirectlyInsertCelestial::Fill(In const& in,
   m->set_gravitational_parameter(in.gravitational_parameter);
   if (in.axis_right_ascension != nullptr) {
     m->set_axis_right_ascension(in.axis_right_ascension);
-    LOG(ERROR)<<in.axis_right_ascension;
   }
   if (in.axis_declination != nullptr) {
     m->set_axis_declination(in.axis_declination);
-    LOG(ERROR)<<in.axis_declination;
   }
   if (in.j2 != nullptr) {
     m->set_j2(in.j2);
