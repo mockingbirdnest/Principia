@@ -460,6 +460,7 @@ struct FlightPlanSize {
     Plugin const* const plugin;
     char const* const vessel_guid;
   };
+  using Return = int;
 
   using Message = serialization::FlightPlanSize;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -475,6 +476,7 @@ struct RenderedFlightPlan {
     RenderingFrame* const rendering_frame;
     XYZ const sun_world_position;
   };
+  using Return = LineAndIterator*;
 
   using Message = serialization::RenderedFlightPlan;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -523,6 +525,7 @@ struct HasVessel {
     Plugin* const plugin;
     char const* const vessel_guid;
   };
+  using Return = bool;
 
   using Message = serialization::HasVessel;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -534,6 +537,7 @@ struct NumberOfSegments {
   struct In {
     LineAndIterator const* const line_and_iterator;
   };
+  using Return = int;
 
   using Message = serialization::NumberOfSegments;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -545,6 +549,7 @@ struct FetchAndIncrement {
   struct In {
     LineAndIterator* const line_and_iterator;
   };
+  using Return = XYZSegment;
 
   using Message = serialization::FetchAndIncrement;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -556,6 +561,7 @@ struct AtEnd {
   struct In {
     LineAndIterator* const line_and_iterator;
   };
+  using Return = bool;
 
   using Message = serialization::AtEnd;
   static void Fill(In const& in, not_null<Message*> const message);
