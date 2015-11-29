@@ -44,6 +44,11 @@ namespace physics {
     auto sun = ephemeris->bodies()[solar_system_1950_.index("Sun")];
     auto earth = ephemeris->bodies()[solar_system_1950_.index("Earth")];
     auto moon = ephemeris->bodies()[solar_system_1950_.index("Moon")];
+    
+    // Massive_body eventually needs radius information. Or non-hardcoded data pulled from https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
+    auto r_sun = 696000.0 * Kilo(Metre);
+    auto r_moon = 6378.1363 * Kilo(Metre);
+    auto r_earth = 1738.0 * Kilo(Metre);
 
     // Get positions/trajectories/ephemeres for bodies
     // Dates will have to be TDB Julian Day for U1, etc. (and all will have to be generated)
@@ -53,15 +58,14 @@ namespace physics {
     // U3 = 20:57:33
     // U4 = 22:18:54
     // P4 = 23:17:21
+    // 2433373.84121743  2433373.88184243  2433373.52164567  2433373.5403378 2433373.59683085  2433373.63742113
+    // float = etimes = [2433373.84121743, 2433373.88184243, 2433373.52164567, 2433373.5403378 2433373.59683085, 2433373.63742113];
+    // for(int i = 0; i < dim(etimes); i++) {
     auto some_instant = JulianDate(2433374.5);
     auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
     auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
     auto q_earth = ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
 
-    // Massive_body eventually needs radius information. Or non-hardcoded data pulled from https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
-    auto r_sun = 696000.0 * Kilo(Metre);
-    auto r_moon = 6378.1363 * Kilo(Metre);
-    auto r_earth = 1738.0 * Kilo(Metre);
     // check body angles at target times
     // Lunar eclipse
     // Earth/Sun lineup
@@ -75,6 +79,8 @@ namespace physics {
     LOG(ERROR) << alpha;
     LOG(ERROR) << beta;
     LOG(ERROR) << gamma;
+
+    // }
     
     // Later on for additional accuracy: 2 * ArcTan((x_norm_y - y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
     // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
@@ -86,6 +92,8 @@ namespace physics {
     // U3 = 07:20:23
     // U4 = 08:39:33
     // P4 = 09:52:05
+    // 2469076.66235167  2469076.71279148  2469076.76776833  2469076.80661092 2469076.86158778  2469076.91195815
+    // [2469076.66235167, 2469076.71279148, 2469076.76776833, 2469076.80661092 2469076.86158778, 2469076.91195815]
   };
         
 } // physics
