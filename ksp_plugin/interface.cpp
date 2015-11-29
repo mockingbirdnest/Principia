@@ -583,6 +583,10 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                              char const* const vessel_guid,
                                              KSPPart const* const parts,
                                              int count) {
+  Journal::Method<AddVesselToNextPhysicsBubble> m({plugin,
+                                                   vessel_guid,
+                                                   parts,
+                                                   count});
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
   std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
@@ -605,26 +609,30 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
   }
   CHECK_NOTNULL(plugin)->AddVesselToNextPhysicsBubble(vessel_guid,
                                                       std::move(vessel_parts));
+  return m.Return();
 }
 
 bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
-  return CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty();
+  Journal::Method<PhysicsBubbleIsEmpty> m({plugin});
+  return m.Return(CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty());
 }
 
 XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
                                             XYZ const sun_position) {
+  Journal::Method<BubbleDisplacementCorrection> m({plugin, sun_position});
   Displacement<World> const result =
       CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
           World::origin + Displacement<World>(
                               ToR3Element(sun_position) * Metre));
-  return ToXYZ(result.coordinates() / Metre);
+  return m.Return(ToXYZ(result.coordinates() / Metre));
 }
 
 XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                         int const reference_body_index) {
+  Journal::Method<BubbleVelocityCorrection> m({plugin, reference_body_index});
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
-  return ToXYZ(result.coordinates() / (Metre / Second));
+  return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
 }
 
 WXYZ principia__NavballOrientation(
@@ -632,44 +640,53 @@ WXYZ principia__NavballOrientation(
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
+  Journal::Method<NavballOrientation> m({plugin,
+                                         rendering_frame,
+                                         sun_world_position,
+                                         ship_world_position});
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
       rendering_frame,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
-  return ToWXYZ(
+  return m.Return(ToWXYZ(
       frame_field(
           World::origin +
               Displacement<World>(
-                  ToR3Element(ship_world_position) * Metre)).quaternion());
+                  ToR3Element(ship_world_position) * Metre)).quaternion()));
 }
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid,
                              RenderingFrame* const rendering_frame) {
-  return ToXYZ(CHECK_NOTNULL(plugin)->
-                   VesselTangent(vessel_guid, rendering_frame).coordinates());
+  Journal::Method<VesselTangent> m({plugin, vessel_guid, rendering_frame});
+  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
+             VesselTangent(vessel_guid, rendering_frame).coordinates()));
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
                              char const* const vessel_guid,
                              RenderingFrame* const rendering_frame) {
-  return ToXYZ(CHECK_NOTNULL(plugin)->
-                   VesselNormal(vessel_guid, rendering_frame).coordinates());
+  Journal::Method<VesselNormal> m({plugin, vessel_guid, rendering_frame});
+  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
+             VesselNormal(vessel_guid, rendering_frame).coordinates()));
 }
 
 XYZ principia__VesselBinormal(Plugin const* const plugin,
                              char const* const vessel_guid,
                              RenderingFrame* const rendering_frame) {
-  return ToXYZ(CHECK_NOTNULL(plugin)->
-                   VesselBinormal(vessel_guid, rendering_frame).coordinates());
+  Journal::Method<VesselBinormal> m({plugin, vessel_guid, rendering_frame});
+  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
+             VesselBinormal(vessel_guid, rendering_frame).coordinates()));
 }
 
 double principia__current_time(Plugin const* const plugin) {
+  Journal::Method<> m({});
   return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
 }
 
 char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
+  Journal::Method<> m({});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
@@ -702,6 +719,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
+  Journal::Method<> m({});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
 }
@@ -710,6 +728,7 @@ void principia__DeserializePlugin(char const* const serialization,
                                   int const serialization_size,
                                   PushDeserializer** const deserializer,
                                   Plugin const** const plugin) {
+  Journal::Method<> m({});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
@@ -749,6 +768,7 @@ void principia__DeserializePlugin(char const* const serialization,
 }
 
 char const* principia__SayHello() {
+  Journal::Method<> m({});
   return "Hello from native C++!";
 }
 
