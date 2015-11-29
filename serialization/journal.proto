@@ -35,6 +35,7 @@ message AtEnd {
   }
   message In {
     required fixed64 plugin = 1;
+    required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
 }
@@ -60,6 +61,7 @@ message DeleteLineAndIterator {
   }
   message In {
     required fixed64 plugin = 1;
+    required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
 }
@@ -131,6 +133,7 @@ message FetchAndIncrement {
   }
   message In {
     required fixed64 plugin = 1;
+    required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
 }
@@ -141,6 +144,7 @@ message FlightPlanSize {
   }
   message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
   }
   required In in = 1;
 }
@@ -227,6 +231,7 @@ message HasVessel {
   }
   message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
   }
   required In in = 1;
 }
@@ -371,6 +376,7 @@ message NumberOfSegments {
   }
   message In {
     required fixed64 plugin = 1;
+    required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
 }
@@ -381,6 +387,10 @@ message RenderedFlightPlan {
   }
   message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required int32 plan_phase = 3;
+    required fixed64 rendering_frame = 4;
+    required XYZ sun_world_position = 5;
   }
   required In in = 1;
 }
@@ -445,6 +455,7 @@ message SetPredictionLength {
   }
   message In {
     required fixed64 plugin = 1;
+    required double t = 2;
   }
   required In in = 1;
 }
@@ -455,6 +466,7 @@ message SetPredictionLengthTolerance {
   }
   message In {
     required fixed64 plugin = 1;
+    required double l = 2;
   }
   required In in = 1;
 }
@@ -465,6 +477,7 @@ message SetPredictionSpeedTolerance {
   }
   message In {
     required fixed64 plugin = 1;
+    required double v = 2;
   }
   required In in = 1;
 }
