@@ -707,7 +707,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // nullptr.
   if (bytes.size == 0) {
     TakeOwnership(serializer);
-    return nullptr;
+    return m.Return(nullptr);
   }
 
   // Convert to hexadecimal and return to the client.
@@ -723,6 +723,7 @@ void principia__DeletePluginSerialization(char const** const serialization) {
                                                {serialization});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
+  return m.Return();
 }
 
 void principia__DeserializePlugin(char const* const serialization,
@@ -770,6 +771,7 @@ void principia__DeserializePlugin(char const* const serialization,
   if (byte_size == 0) {
     delete *deserializer;
   }
+  return m.Return();
 }
 
 char const* principia__SayHello() {
