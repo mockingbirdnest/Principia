@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
+#include "ksp_plugin/journal.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
 namespace principia {
@@ -99,12 +100,27 @@ ACTION_TEMPLATE(FillUniquePtr,
 
 class InterfaceTest : public testing::Test {
  protected:
+  static void SetUpTestCase() {
+    journal_ =
+      new Journal(
+          testing::UnitTest::GetInstance()->current_test_case()->name());
+    Journal::Activate(journal_);
+  }
+
+  static void TearDownTestCase() {
+    Journal::Deactivate();
+    delete journal_;
+  }
+
   InterfaceTest()
       : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   Instant const t0_;
+  static Journal* journal_;
 };
+
+Journal* InterfaceTest::journal_ = nullptr;
 
 using InterfaceDeathTest = InterfaceTest;
 
