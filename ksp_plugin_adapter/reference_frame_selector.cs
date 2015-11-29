@@ -1,9 +1,10 @@
-﻿#define HAS_SURFACE
-#define HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+﻿#undef HAS_SURFACE
+#undef HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace principia {
@@ -20,9 +21,27 @@ static class CelestialExtensions {
 }
 
 class ReferenceFrameSelector {
+  public enum FrameType {
+    BODY_CENTRED_NON_ROTATING,
+#if HAS_SURFACE
+    SURFACE,
+#endif
+    BARYCENTRIC_ROTATING,
+#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+    BODY_CENTRED_ALIGNED_WITH_PARENT
+#endif
+  }
+
+  public delegate void Callback();
+
   public ReferenceFrameSelector(
-      ref PrincipiaPluginAdapter.WindowRenderer window_renderer) {
+      ref PrincipiaPluginAdapter.WindowRenderer window_renderer,
+      IntPtr plugin,
+      Callback on_change) {
+    plugin_ = plugin;
+    on_change_ = on_change;
     window_renderer += RenderWindow;
+    frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       if (!celestial.is_leaf() && !celestial.is_root()) {
@@ -38,7 +57,15 @@ class ReferenceFrameSelector {
         expanded_[celestial] = true;
       }
     }
+    ResetFrame();
   }
+
+  ~ReferenceFrameSelector() {
+    DeleteRenderingFrame(ref frame_);
+  }
+
+  public IntPtr frame { get { return frame_; } }
+  public FrameType frame_type { get; private set; }
 
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
@@ -87,8 +114,9 @@ class ReferenceFrameSelector {
       CelestialBody parent = selected_celestial_.orbit.referenceBody;
       TypeSelector(FrameType.BARYCENTRIC_ROTATING,
                    "Reference frame fixing the barycentre of " +
-                       selected_celestial_.theName + " and " + parent.theName +
-                       " and the line between them");
+                       selected_celestial_.theName + ", the plane in which" +
+                       " they move about the barycentre, and " +
+                       parent.theName + " and the line between them");
 #if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
       TypeSelector(FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT,
                    "Reference frame fixing the centre of " +
@@ -105,17 +133,6 @@ class ReferenceFrameSelector {
                                         height : 10000f));
 
     UnityEngine.GUI.skin = old_skin;
-  }
-
-  private enum FrameType {
-    BODY_CENTRED_NON_ROTATING,
-#if HAS_SURFACE
-    SURFACE,
-#endif
-    BARYCENTRIC_ROTATING,
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-    BODY_CENTRED_ALIGNED_WITH_PARENT
-#endif
   }
 
   private void RenderSubtree(CelestialBody celestial, int depth) {
@@ -142,7 +159,10 @@ class ReferenceFrameSelector {
     }
     if (UnityEngine.GUILayout.Toggle(selected_celestial_ == celestial,
                                      celestial.name)) {
-      selected_celestial_ = celestial;
+      if (selected_celestial_ != celestial) {
+        selected_celestial_ = celestial;
+        ResetFrame();
+      }
     }
     UnityEngine.GUILayout.EndHorizontal();
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
@@ -155,11 +175,14 @@ class ReferenceFrameSelector {
   private void TypeSelector(FrameType value, string text) {
    bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
    UnityEngine.GUI.skin.toggle.wordWrap = true;
-   if (UnityEngine.GUILayout.Toggle(selected_type_ == value,
+   if (UnityEngine.GUILayout.Toggle(frame_type == value,
                                     text,
                                     UnityEngine.GUILayout.Width(150),
                                     UnityEngine.GUILayout.Height(75))) {
-      selected_type_ = value;
+      if (frame_type != value) {
+        frame_type = value;
+        ResetFrame();
+      }
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
@@ -169,11 +192,64 @@ class ReferenceFrameSelector {
     window_rectangle_.width = 0.0f;
   }
 
+  private void ResetFrame() {
+    on_change_();
+    DeleteRenderingFrame(ref frame_);
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        frame_ = NewBodyCentredNonRotatingRenderingFrame(
+                     plugin_,
+                     selected_celestial_.flightGlobalsIndex);
+      break;
+#if HAS_SURFACE
+      case FrameType.SURFACE:
+      break;
+#endif
+      case FrameType.BARYCENTRIC_ROTATING:
+        frame_ =
+            NewBarycentricRotatingRenderingFrame(
+                plugin_,
+                primary_index   :
+                    selected_celestial_.referenceBody.flightGlobalsIndex,
+                secondary_index :
+                    selected_celestial_.flightGlobalsIndex);
+      break;
+#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
+      case FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT:
+      break;
+#endif
+    }
+  }
+
+  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
+             EntryPoint        =
+                 "principia__NewBodyCentredNonRotatingRenderingFrame",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
+      IntPtr plugin,
+      int reference_body_index);
+
+  [DllImport(
+       dllName           : PrincipiaPluginAdapter.kDllPath,
+       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
+       CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewBarycentricRotatingRenderingFrame(
+      IntPtr plugin,
+      int primary_index,
+      int secondary_index);
+
+  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
+             EntryPoint        = "principia__DeleteRenderingFrame",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
+
+  private Callback on_change_;
+  private IntPtr plugin_;
+  private IntPtr frame_;
   private bool show_selector_;
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private CelestialBody selected_celestial_;
-  private FrameType selected_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
 }
 
 }  // namespace ksp_plugin_adapter
