@@ -66,7 +66,7 @@ std::uint64_t SerializePointer(T* t) {
 
 serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {
   serialization::WXYZ m;
-  m.set_x(wxyz.w);
+  m.set_w(wxyz.w);
   m.set_x(wxyz.x);
   m.set_y(wxyz.y);
   m.set_z(wxyz.z);
@@ -291,9 +291,11 @@ void DirectlyInsertCelestial::Fill(In const& in,
   m->set_gravitational_parameter(in.gravitational_parameter);
   if (in.axis_right_ascension != nullptr) {
     m->set_axis_right_ascension(in.axis_right_ascension);
+    LOG(ERROR)<<in.axis_right_ascension;
   }
   if (in.axis_declination != nullptr) {
     m->set_axis_declination(in.axis_declination);
+    LOG(ERROR)<<in.axis_declination;
   }
   if (in.j2 != nullptr) {
     m->set_j2(in.j2);
@@ -935,6 +937,9 @@ void BubbleVelocityCorrection::Run(Message const& message,
 void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+  *m->mutable_ship_world_position() = SerializeXYZ(in.ship_world_position);
 }
 
 void NavballOrientation::Fill(Return const& result,
@@ -1053,7 +1058,9 @@ void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {
 
 void SerializePlugin::Fill(Return const& result,
                            not_null<Message*> const message) {
-  message->mutable_return_()->set_serialize_plugin(result);
+  if (result != nullptr) {
+    message->mutable_return_()->set_serialize_plugin(result);
+  }
 }
 
 void SerializePlugin::Run(Message const& message,

@@ -109,7 +109,7 @@ class InterfaceTest : public testing::Test {
 
   static void TearDownTestCase() {
     Journal::Deactivate();
-    delete journal_;
+    //delete journal_;
   }
 
   InterfaceTest()

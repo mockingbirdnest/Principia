@@ -617,7 +617,7 @@ message SerializePlugin {
   }
   required In in = 1;
   required Out out = 2;
-  required Return return = 3;
+  optional Return return = 3;
 }
 
 message SetBufferDuration {
