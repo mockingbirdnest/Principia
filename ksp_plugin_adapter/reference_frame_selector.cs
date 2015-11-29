@@ -61,7 +61,7 @@ class ReferenceFrameSelector {
   }
 
   ~ReferenceFrameSelector() {
-    DeleteRenderingFrame(ref frame_);
+    Interface.DeleteRenderingFrame(ref frame_);
   }
 
   public IntPtr frame { get { return frame_; } }
@@ -194,11 +194,10 @@ class ReferenceFrameSelector {
 
   private void ResetFrame() {
     on_change_();
-    DeleteRenderingFrame(ref frame_);
+    Interface.DeleteRenderingFrame(ref frame_);
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        frame_ = NewBodyCentredNonRotatingRenderingFrame(
-                     plugin_,
+        frame_ = plugin_.NewBodyCentredNonRotatingRenderingFrame(
                      selected_celestial_.flightGlobalsIndex);
       break;
 #if HAS_SURFACE
@@ -207,8 +206,7 @@ class ReferenceFrameSelector {
 #endif
       case FrameType.BARYCENTRIC_ROTATING:
         frame_ =
-            NewBarycentricRotatingRenderingFrame(
-                plugin_,
+            plugin_.NewBarycentricRotatingRenderingFrame(
                 primary_index   :
                     selected_celestial_.referenceBody.flightGlobalsIndex,
                 secondary_index :
@@ -220,28 +218,6 @@ class ReferenceFrameSelector {
 #endif
     }
   }
-
-  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
-             EntryPoint        =
-                 "principia__NewBodyCentredNonRotatingRenderingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
-      IntPtr plugin,
-      int reference_body_index);
-
-  [DllImport(
-       dllName           : PrincipiaPluginAdapter.kDllPath,
-       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
-       CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingRenderingFrame(
-      IntPtr plugin,
-      int primary_index,
-      int secondary_index);
-
-  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
-             EntryPoint        = "principia__DeleteRenderingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
 
   private Callback on_change_;
   private IntPtr plugin_;
