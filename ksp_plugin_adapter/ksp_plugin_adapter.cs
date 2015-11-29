@@ -966,8 +966,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           UnityEngine.GUILayout.Toggle(
               value : fix_navball_in_plotting_frame_,
               text  : "Fix navball in plotting frame");
-      if (PluginRunning() &&
-          was_fixing_navball_in_plotting_frame !=
+      if (was_fixing_navball_in_plotting_frame !=
           fix_navball_in_plotting_frame_) {
         navball_changed_ = true;
         reset_rsas_target_ = true;
