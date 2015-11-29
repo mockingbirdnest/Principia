@@ -192,10 +192,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void UpdateBody(CelestialBody body, double universal_time) {
-    UpdateCelestialHierarchy(plugin_,
-                             body.flightGlobalsIndex,
-                             body.orbit.referenceBody.flightGlobalsIndex);
-    QP from_parent = CelestialFromParent(plugin_, body.flightGlobalsIndex);
+    plugin_.UpdateCelestialHierarchy(
+        body.flightGlobalsIndex,
+        body.orbit.referenceBody.flightGlobalsIndex);
+    QP from_parent = plugin_.CelestialFromParent(body.flightGlobalsIndex);
     // TODO(egg): Some of this might be be superfluous and redundant.
     Orbit original = body.orbit;
     Orbit copy = new Orbit(original.inclination, original.eccentricity,
@@ -225,17 +225,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
-    bool inserted = InsertOrKeepVessel(
-        plugin_,
+    bool inserted = plugin_.InsertOrKeepVessel(
         vessel.id.ToString(),
         vessel.orbit.referenceBody.flightGlobalsIndex);
     if (inserted) {
-      SetVesselStateOffset(plugin      : plugin_,
-                           vessel_guid : vessel.id.ToString(),
-                           from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                                                p = (XYZ)vessel.orbit.vel});
+      plugin_.SetVesselStateOffset(
+          vessel_guid : vessel.id.ToString(),
+          from_parent : new QP{q = (XYZ)vessel.orbit.pos,
+                               p = (XYZ)vessel.orbit.vel});
     }
-    QP from_parent = VesselFromParent(plugin_, vessel.id.ToString());
+    QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
     // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
     // corresponds to the position one timestep in the future.  This is not
     // the case for celestial bodies.
@@ -261,8 +260,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
              id = part.flightID}).ToArray();
     if (parts.Count() > 0) {
-      bool inserted = InsertOrKeepVessel(
-          plugin_,
+      bool inserted = plugin_.InsertOrKeepVessel(
           vessel.id.ToString(),
           vessel.orbit.referenceBody.flightGlobalsIndex);
       if (inserted) {
@@ -270,15 +268,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         // appears with a new vessel (e.g. when exiting the atmosphere).
         // TODO(egg): these degrees of freedom are off by one Δt and we don't
         // compensate for the pos/vel synchronization bug.
-        SetVesselStateOffset(plugin      : plugin_,
-                             vessel_guid : vessel.id.ToString(),
-                             from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                                                  p = (XYZ)vessel.orbit.vel});
+        plugin_.SetVesselStateOffset(
+            vessel_guid : vessel.id.ToString(),
+            from_parent : new QP{q = (XYZ)vessel.orbit.pos,
+                                 p = (XYZ)vessel.orbit.vel});
       }
-      AddVesselToNextPhysicsBubble(plugin      : plugin_,
-                                   vessel_guid : vessel.id.ToString(),
-                                   parts       : parts,
-                                   count       : parts.Count());
+      plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
+                                           parts       : parts,
+                                           count       : parts.Count());
     }
   }
 
@@ -389,13 +386,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
         try {
-          serialization = SerializePlugin(plugin_, ref serializer);
+          serialization = plugin_.SerializePlugin(ref serializer);
           if (serialization == IntPtr.Zero) {
             break;
           }
           node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
         } finally {
-          DeletePluginSerialization(ref serialization);
+          Interface.DeletePluginSerialization(ref serialization);
         }
       }
     }
@@ -417,12 +414,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       foreach (String serialization in serializations) {
         Log.Info("serialization is " + serialization.Length +
                  " characters long");
-        DeserializePlugin(serialization,
-                          serialization.Length,
-                          ref deserializer,
-                          ref plugin_);
+        Interface.DeserializePlugin(serialization,
+                                    serialization.Length,
+                                    ref deserializer,
+                                    ref plugin_);
       }
-      DeserializePlugin("", 0, ref deserializer, ref plugin_);
+      Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
       rendering_frame_selector_ =
           new ReferenceFrameSelector(ref render_windows_,
@@ -527,8 +524,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         // Orient the ball.
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-                (UnityEngine.QuaternionD)NavballOrientation(
-                    plugin_,
+                (UnityEngine.QuaternionD)plugin_.NavballOrientation(
                     rendering_frame_selector_.frame,
                     (XYZ)Planetarium.fetch.Sun.position,
                     (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
@@ -540,7 +536,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         // trajectory.  Right now when in space the navball is always linked to
         // the frame of the Frenet trihedron and the trajectory.
         if (has_active_vessel_in_space() &&
-            has_vessel(plugin_, active_vessel.id.ToString())) {
+            has_vessel(active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
           Vector3d prograde =
               (Vector3d)VesselTangent(plugin_,

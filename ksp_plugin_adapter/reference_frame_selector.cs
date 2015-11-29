@@ -221,28 +221,6 @@ class ReferenceFrameSelector {
     }
   }
 
-  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
-             EntryPoint        =
-                 "principia__NewBodyCentredNonRotatingRenderingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
-      IntPtr plugin,
-      int reference_body_index);
-
-  [DllImport(
-       dllName           : PrincipiaPluginAdapter.kDllPath,
-       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
-       CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingRenderingFrame(
-      IntPtr plugin,
-      int primary_index,
-      int secondary_index);
-
-  [DllImport(dllName           : PrincipiaPluginAdapter.kDllPath,
-             EntryPoint        = "principia__DeleteRenderingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
-
   private Callback on_change_;
   private IntPtr plugin_;
   private IntPtr frame_;
