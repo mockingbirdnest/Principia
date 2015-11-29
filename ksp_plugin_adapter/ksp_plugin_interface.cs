@@ -188,28 +188,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       int celestial_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        =
-                 "principia__NewBodyCentredNonRotatingRenderingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
-      IntPtr plugin,
-      int reference_body_index);
-
-  [DllImport(
-       dllName           : kDllPath,
-       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
-       CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingRenderingFrame(
-      IntPtr plugin,
-      int primary_index,
-      int secondary_index);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteRenderingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
-
-  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr RenderedVesselTrajectory(
