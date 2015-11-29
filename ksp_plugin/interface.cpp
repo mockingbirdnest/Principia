@@ -520,24 +520,24 @@ LineAndIterator* principia__RenderedFlightPlan(
   return m.Return(result.release());
 }
 
-void principia__set_prediction_length(Plugin* const plugin,
-                                      double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_length(t * Second);
+void principia__SetPredictionLength(Plugin* const plugin,
+                                    double const t) {
+  CHECK_NOTNULL(plugin)->SetPredictionLength(t * Second);
 }
 
-void principia__set_prediction_length_tolerance(Plugin* const plugin,
-                                                double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_length_tolerance(t * Metre);
+void principia__SetPredictionLengthTolerance(Plugin* const plugin,
+                                             double const t) {
+  CHECK_NOTNULL(plugin)->SetPredictionLengthTolerance(t * Metre);
 }
 
-void principia__set_prediction_speed_tolerance(Plugin* const plugin,
-                                               double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_speed_tolerance(t * Metre / Second);
+void principia__SetPredictionSpeedTolerance(Plugin* const plugin,
+                                            double const t) {
+  CHECK_NOTNULL(plugin)->SetPredictionSpeedTolerance(t * Metre / Second);
 }
 
-bool principia__has_vessel(Plugin* const plugin,
+bool principia__HasVessel(Plugin* const plugin,
                            char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
+  return CHECK_NOTNULL(plugin)->HasVessel(vessel_guid);
 }
 
 int principia__NumberOfSegments(

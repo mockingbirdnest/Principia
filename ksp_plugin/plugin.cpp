@@ -386,19 +386,19 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
   return result;
 }
 
-void Plugin::set_prediction_length(Time const& t) {
+void Plugin::SetPredictionLength(Time const& t) {
   prediction_length_ = t;
 }
 
-void Plugin::set_prediction_length_tolerance(Length const& l) {
+void Plugin::SetPredictionLengthTolerance(Length const& l) {
   prediction_length_tolerance_ = l;
 }
 
-void Plugin::set_prediction_speed_tolerance(Speed const& v) {
+void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
   prediction_speed_tolerance_ = v;
 }
 
-bool Plugin::has_vessel(GUID const& vessel_guid) const {
+bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
 }
 

@@ -294,20 +294,20 @@ void CDECL principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_length(Plugin* const plugin,
-                                            double const t);
+void CDECL principia__SetPredictionLength(Plugin* const plugin,
+                                          double const t);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_length_tolerance(Plugin* const plugin,
-                                                      double const t);
+void CDECL principia__SetPredictionLengthTolerance(Plugin* const plugin,
+                                                   double const t);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_speed_tolerance(Plugin* const plugin,
-                                                     double const t);
+void CDECL principia__SetPredictionSpeedTolerance(Plugin* const plugin,
+                                                  double const t);
 
 extern "C" DLLEXPORT
-bool CDECL principia__has_vessel(Plugin* const plugin,
-                                 char const* const vessel_guid);
+bool CDECL principia__HasVessel(Plugin* const plugin,
+                                char const* const vessel_guid);
 
 extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(

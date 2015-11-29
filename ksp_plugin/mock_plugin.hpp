@@ -82,13 +82,13 @@ class MockPlugin : public Plugin {
           not_null<RenderingFrame*> const rendering_frame,
           Position<World> const& sun_world_position));
 
-  MOCK_METHOD1(set_prediction_length, void(Time const& t));
+  MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
-  MOCK_METHOD1(set_prediction_length_tolerance, void(Length const& t));
+  MOCK_METHOD1(SetPredictionLengthTolerance, void(Length const& t));
 
-  MOCK_METHOD1(set_prediction_speed_tolerance, void(Speed const& t));
+  MOCK_METHOD1(SetPredictionSpeedTolerance, void(Speed const& t));
 
-  MOCK_CONST_METHOD1(has_vessel, bool(GUID const& vessel_guid));
+  MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
 
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
