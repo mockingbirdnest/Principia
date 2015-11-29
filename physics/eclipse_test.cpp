@@ -59,28 +59,28 @@ namespace physics {
     // U4 = 22:18:54
     // P4 = 23:17:21
     // 2433373.84121743  2433373.88184243  2433373.52164567  2433373.5403378 2433373.59683085  2433373.63742113
-    // float = etimes = [2433373.84121743, 2433373.88184243, 2433373.52164567, 2433373.5403378 2433373.59683085, 2433373.63742113];
-    // for(int i = 0; i < dim(etimes); i++) {
-    auto some_instant = JulianDate(2433374.5);
-    auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
-    auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
-    auto q_earth = ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
+    float etimes[6] = {2433373.84121743, 2433373.88184243, 2433373.52164567, 2433373.5403378, 2433373.59683085, 2433373.63742113};
+      for(int i = 0; i < 5; i++) {
+      auto some_instant = JulianDate(etimes[i]);
+      auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
+      auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
+      auto q_earth = ephemeris->trajectory(earth)->EvaluatePosition(some_instant, nullptr);
 
-    // check body angles at target times
-    // Lunar eclipse
-    // Earth/Sun lineup
-    auto alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
-    auto q_U23 = q_earth + Normalize(q_sun - q_earth) * (r_earth - r_moon) / Sin(alpha);
-    auto q_U14 = q_earth + Normalize(q_sun - q_earth) * (r_earth + r_moon) / Sin(alpha);
-    // Earth/Moon lineup
-    auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
-    auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
-    // Still need to compare angles
-    LOG(ERROR) << alpha;
-    LOG(ERROR) << beta;
-    LOG(ERROR) << gamma;
+      // check body angles at target times
+      // Lunar eclipse
+      // Earth/Sun lineup
+      auto alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
+      auto q_U23 = q_earth + Normalize(q_sun - q_earth) * (r_earth - r_moon) / Sin(alpha);
+      auto q_U14 = q_earth + Normalize(q_sun - q_earth) * (r_earth + r_moon) / Sin(alpha);
+      // Earth/Moon lineup
+      auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
+      auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
+      // Still need to compare angles
+      LOG(ERROR) << alpha;
+      LOG(ERROR) << beta;
+      LOG(ERROR) << gamma;
 
-    // }
+      }
     
     // Later on for additional accuracy: 2 * ArcTan((x_norm_y - y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
     // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
