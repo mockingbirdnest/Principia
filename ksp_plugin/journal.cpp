@@ -59,6 +59,13 @@ serialization::XYZ SerializeXYZ(XYZ const& xyz) {
   return m;
 }
 
+serialization::XYZSegment SerializeXYZSegment(XYZSegment const& xyz_segment) {
+  serialization::XYZSegment m;
+  *m.mutable_begin() = SerializeXYZ(xyz_segment.begin);
+  *m.mutable_end() = SerializeXYZ(xyz_segment.end);
+  return m;
+}
+
 serialization::QP SerializeQP(QP const& qp) {
   serialization::QP m;
   *m.mutable_p() = SerializeXYZ(qp.p);
@@ -633,9 +640,17 @@ void FlightPlanSize::Fill(In const& in, not_null<Message*> const message) {
   m->set_vessel_guid(in.vessel_guid);
 }
 
-void FlightPlanSize::Fill(Return const& result, not_null<Message*> const message) {}
+void FlightPlanSize::Fill(Return const& result,
+                          not_null<Message*> const message) {
+  message->mutable_return_()->set_flight_plan_size(result);
+}
 
-void FlightPlanSize::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void FlightPlanSize::Run(Message const& message,
+                         not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__FlightPlanSize(plugin, in.vessel_guid().c_str());
+}
 
 void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -646,9 +661,27 @@ void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
-void RenderedFlightPlan::Fill(Return const& result, not_null<Message*> const message) {}
+void RenderedFlightPlan::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  message->mutable_return_()->set_rendered_flight_plan(
+      SerializePointer(result));
+}
 
-void RenderedFlightPlan::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void RenderedFlightPlan::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* line_and_iterator = principia__RenderedFlightPlan(
+                                plugin,
+                                in.vessel_guid().c_str(),
+                                in.plan_phase(),
+                                DeserializePointer<RenderingFrame*>(
+                                    *pointer_map, in.rendering_frame()),
+                                DeserializeXYZ(in.sun_world_position()));
+  Insert(pointer_map,
+         message.return_().rendered_flight_plan(),
+         line_and_iterator);
+}
 
 void SetPredictionLength::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -656,7 +689,12 @@ void SetPredictionLength::Fill(In const& in, not_null<Message*> const message) {
   m->set_t(in.t);
 }
 
-void SetPredictionLength::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void SetPredictionLength::Run(Message const& message,
+                              not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__SetPredictionLength(plugin, in.t());
+}
 
 void SetPredictionLengthTolerance::Fill(In const& in,
                                         not_null<Message*> const message) {
@@ -665,7 +703,13 @@ void SetPredictionLengthTolerance::Fill(In const& in,
   m->set_l(in.l);
 }
 
-void SetPredictionLengthTolerance::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void SetPredictionLengthTolerance::Run(
+    Message const& message,
+    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__SetPredictionLengthTolerance(plugin, in.l());
+}
 
 void SetPredictionSpeedTolerance::Fill(In const& in,
                                        not_null<Message*> const message) {
@@ -674,7 +718,12 @@ void SetPredictionSpeedTolerance::Fill(In const& in,
   m->set_v(in.v);
 }
 
-void SetPredictionSpeedTolerance::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void SetPredictionSpeedTolerance::Run(Message const& message,
+                                      not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__SetPredictionSpeedTolerance(plugin, in.v());
+}
 
 void HasVessel::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -682,45 +731,87 @@ void HasVessel::Fill(In const& in, not_null<Message*> const message) {
   m->set_vessel_guid(in.vessel_guid);
 }
 
-void HasVessel::Fill(Return const& result, not_null<Message*> const message) {}
+void HasVessel::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_has_vessel(result);
+}
 
-void HasVessel::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void HasVessel::Run(Message const& message,
+                    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void NumberOfSegments::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
 }
 
-void NumberOfSegments::Fill(Return const& result, not_null<Message*> const message) {}
+void NumberOfSegments::Fill(Return const& result,
+                            not_null<Message*> const message) {
+  message->mutable_return_()->set_number_of_segments(result);
+}
 
-void NumberOfSegments::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void NumberOfSegments::Run(Message const& message,
+                           not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  principia__NumberOfSegments(DeserializePointer<LineAndIterator const*>(
+                                  *pointer_map, in.line_and_iterator()));
+}
 
 void FetchAndIncrement::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
 }
 
-void FetchAndIncrement::Fill(Return const& result, not_null<Message*> const message) {}
+void FetchAndIncrement::Fill(Return const& result,
+                             not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_fetch_and_increment() =
+      SerializeXYZSegment(result);
+}
 
-void FetchAndIncrement::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void FetchAndIncrement::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  principia__FetchAndIncrement(DeserializePointer<LineAndIterator*>(
+                                   *pointer_map, in.line_and_iterator()));
+}
 
 void AtEnd::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
 }
 
-void AtEnd::Fill(Return const& result, not_null<Message*> const message) {}
+void AtEnd::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_at_end(result);
+}
 
-void AtEnd::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void AtEnd::Run(Message const& message,
+                not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  principia__AtEnd(DeserializePointer<LineAndIterator*>(
+                       *pointer_map, in.line_and_iterator()));
+}
 
-void DeleteLineAndIterator::Fill(In const& in, not_null<Message*> const message) {
+void DeleteLineAndIterator::Fill(In const& in,
+                                 not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
 }
 
-void DeleteLineAndIterator::Fill(Out const& out, not_null<Message*> const message) {}
+void DeleteLineAndIterator::Fill(Out const& out,
+                                 not_null<Message*> const message) {
+  message->mutable_out()->set_line_and_iterator(
+      SerializePointer(*out.line_and_iterator));
+}
 
-void DeleteLineAndIterator::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+void DeleteLineAndIterator::Run(Message const& message,
+                                not_null<PointerMap*> const pointer_map) {
+  auto* line_and_iterator = DeserializePointer<LineAndIterator*>(
+                                *pointer_map, message.in().line_and_iterator());
+  principia__DeleteLineAndIterator(&line_and_iterator);
+  // TODO(phl): should we do something with out() here?
+}
 
 Journal::Journal(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::out) {}

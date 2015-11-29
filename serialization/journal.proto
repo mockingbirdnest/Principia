@@ -13,6 +13,11 @@ message XYZ {
   required double z = 3;
 }
 
+message XYZSegment {
+  required XYZ begin = 1;
+  required XYZ end = 2;
+}
+
 message Method {
   extensions 5000 to 5999;  // Last used: 5044.
 }
@@ -34,9 +39,13 @@ message AtEnd {
     optional AtEnd extension = 5035;
   }
   message In {
-    required fixed64 line_and_iterator = 2;
+    required fixed64 line_and_iterator = 1;
+  }
+  message Return {
+    required bool at_end = 1;
   }
   required In in = 1;
+  required Return return = 3;
 }
 
 message CelestialFromParent {
@@ -59,9 +68,13 @@ message DeleteLineAndIterator {
     optional DeleteLineAndIterator extension = 5036;
   }
   message In {
-    required fixed64 line_and_iterator = 2;
+    required fixed64 line_and_iterator = 1;
+  }
+  message Out {
+    required fixed64 line_and_iterator = 1;
   }
   required In in = 1;
+  required Out out = 2;
 }
 
 message DeletePlugin {
@@ -130,9 +143,13 @@ message FetchAndIncrement {
     optional FetchAndIncrement extension = 5037;
   }
   message In {
-    required fixed64 line_and_iterator = 2;
+    required fixed64 line_and_iterator = 1;
+  }
+  message Return {
+    required XYZSegment fetch_and_increment = 1;
   }
   required In in = 1;
+  required Return return = 3;
 }
 
 message FlightPlanSize {
@@ -143,7 +160,11 @@ message FlightPlanSize {
     required fixed64 plugin = 1;
     required string vessel_guid = 2;
   }
+  message Return {
+    required int32 flight_plan_size = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message ForgetAllHistoriesBefore {
@@ -230,7 +251,11 @@ message HasVessel {
     required fixed64 plugin = 1;
     required string vessel_guid = 2;
   }
+  message Return {
+    required bool has_vessel = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message InitGoogleLogging {
@@ -372,9 +397,13 @@ message NumberOfSegments {
     optional NumberOfSegments extension = 5040;
   }
   message In {
-    required fixed64 line_and_iterator = 2;
+    required fixed64 line_and_iterator = 1;
+  }
+  message Return {
+    required int32 number_of_segments = 1;
   }
   required In in = 1;
+  required Return return = 3;
 }
 
 message RenderedFlightPlan {
@@ -388,7 +417,11 @@ message RenderedFlightPlan {
     required fixed64 rendering_frame = 4;
     required XYZ sun_world_position = 5;
   }
+  message Return {
+    required fixed64 rendered_flight_plan = 1;
+  }
   required In in = 1;
+  required Return return = 3;
 }
 
 message RenderedPrediction {

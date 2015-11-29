@@ -564,7 +564,7 @@ struct FetchAndIncrement {
 
 struct AtEnd {
   struct In {
-    LineAndIterator* const line_and_iterator;
+    LineAndIterator const* const line_and_iterator;
   };
   using Return = bool;
 

@@ -284,7 +284,7 @@ XYZSegment CDECL principia__FetchAndIncrement(
 // |line_and_iterator->rendered_trajectory|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-bool CDECL principia__AtEnd(LineAndIterator* const line_and_iterator);
+bool CDECL principia__AtEnd(LineAndIterator const* const line_and_iterator);
 
 // Deletes and nulls |*line_and_iterator|.
 // |line_and_iterator| must not be null.  No transfer of ownership of

@@ -564,7 +564,7 @@ XYZSegment principia__FetchAndIncrement(
                    ToXYZ((result.end - World::origin).coordinates() / Metre)});
 }
 
-bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
+bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
   Journal::Method<AtEnd> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
   return m.Return(line_and_iterator->it ==
