@@ -96,6 +96,7 @@ message BubbleVelocityCorrection {
   }
   message In {
     required fixed64 plugin = 1;
+    required int32 reference_body_index = 2;
   }
   message Return {
     required XYZ bubble_velocity_correction = 1;
@@ -758,6 +759,8 @@ message VesselBinormal {
   }
   message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required fixed64 rendering_frame = 3;
   }
   message Return {
     required XYZ vessel_binormal = 1;
@@ -772,6 +775,8 @@ message VesselNormal {
   }
   message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required fixed64 rendering_frame = 3;
   }
   message Return {
     required XYZ vessel_normal = 1;
@@ -786,6 +791,8 @@ message VesselTangent {
   }
   message In {
     required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    required fixed64 rendering_frame = 3;
   }
   message Return {
     required XYZ vessel_tangent = 1;
