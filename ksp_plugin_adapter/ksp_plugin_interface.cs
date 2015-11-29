@@ -240,25 +240,25 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern void DeleteLineAndIterator(ref IntPtr line);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_length",
+             EntryPoint        = "principia__SetPredictionLength",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void set_prediction_length(IntPtr plugin, double t);
+  private static extern void SetPredictionLength(IntPtr plugin, double t);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_length_tolerance",
+             EntryPoint        = "principia__SetPredictionLengthTolerance",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void set_prediction_length_tolerance(IntPtr plugin,
-                                                             double t);
+  private static extern void SetPredictionLengthTolerance(IntPtr plugin,
+                                                          double t);
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_speed_tolerance",
+             EntryPoint        = "principia__SetPredictionSpeedTolerance",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void set_prediction_speed_tolerance(IntPtr plugin,
-                                                            double t);
+  private static extern void SetPredictionSpeedTolerance(IntPtr plugin,
+                                                         double t);
 
   [DllImport(dllName             : kDllPath,
-             EntryPoint =        "principia__has_vessel",
+             EntryPoint =        "principia__HasVessel",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern bool has_vessel(
+  private static extern bool HasVessel(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 

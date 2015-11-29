@@ -536,7 +536,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         // trajectory.  Right now when in space the navball is always linked to
         // the frame of the Frenet trihedron and the trajectory.
         if (has_active_vessel_in_space() &&
-            has_vessel(plugin_, active_vessel.id.ToString())) {
+            HasVessel(plugin_, active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
           Vector3d prograde =
               (Vector3d)VesselTangent(plugin_,
@@ -632,17 +632,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
-          has_vessel(plugin_, active_vessel.id.ToString());
+          HasVessel(plugin_, active_vessel.id.ToString());
       if (ready_to_draw_active_vessel_trajectory) {
-        set_prediction_length_tolerance(
+        SetPredictionLengthTolerance(
             plugin_,
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
         // TODO(egg): make the speed tolerance independent.
-        set_prediction_speed_tolerance(
+        SetPredictionSpeedTolerance(
             plugin_,
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
-        set_prediction_length(plugin_,
-                              prediction_lengths_[prediction_length_index_]);
+        SetPredictionLength(plugin_,
+                            prediction_lengths_[prediction_length_index_]);
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       if (ready_to_draw_active_vessel_trajectory) {
@@ -689,7 +689,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
-        has_vessel(plugin_, active_vessel.id.ToString()); 
+        HasVessel(plugin_, active_vessel.id.ToString()); 
     if (ready_to_draw_active_vessel_trajectory) {
       active_vessel.patchedConicRenderer.relativityMode =
           PatchRendering.RelativityMode.RELATIVE;

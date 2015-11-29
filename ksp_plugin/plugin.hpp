@@ -235,12 +235,12 @@ class Plugin {
       not_null<RenderingFrame*> const rendering_frame,
       Position<World> const& sun_world_position);
 
-  virtual void set_prediction_length(Time const& t);
+  virtual void SetPredictionLength(Time const& t);
 
-  virtual void set_prediction_length_tolerance(Length const& l);
-  virtual void set_prediction_speed_tolerance(Speed const& v);
+  virtual void SetPredictionLengthTolerance(Length const& l);
+  virtual void SetPredictionSpeedTolerance(Speed const& v);
 
-  virtual bool has_vessel(GUID const& vessel_guid) const;
+  virtual bool HasVessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<RenderingFrame>>
   NewBodyCentredNonRotatingRenderingFrame(
