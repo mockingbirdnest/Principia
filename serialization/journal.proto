@@ -14,7 +14,7 @@ message XYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5034.
+  extensions 5000 to 5999;  // Last used: 5044.
 }
 
 message AdvanceTime {
@@ -25,6 +25,16 @@ message AdvanceTime {
     required fixed64 plugin = 1;
     required double t = 2;
     required double planetarium_rotation = 3;
+  }
+  required In in = 1;
+}
+
+message AtEnd {
+  extend Method {
+    optional AtEnd extension = 5035;
+  }
+  message In {
+    required fixed64 plugin = 1;
   }
   required In in = 1;
 }
@@ -42,6 +52,16 @@ message CelestialFromParent {
   }
   required In in = 1;
   required Return return = 3;
+}
+
+message DeleteLineAndIterator {
+  extend Method {
+    optional DeleteLineAndIterator extension = 5036;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
 }
 
 message DeletePlugin {
@@ -98,6 +118,26 @@ message DirectlyInsertCelestial {
 message EndInitialization {
   extend Method {
     optional EndInitialization extension = 5020;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
+message FetchAndIncrement {
+  extend Method {
+    optional FetchAndIncrement extension = 5037;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
+message FlightPlanSize {
+  extend Method {
+    optional FlightPlanSize extension = 5038;
   }
   message In {
     required fixed64 plugin = 1;
@@ -179,6 +219,16 @@ message HasPrediction {
   }
   required In in = 1;
   required Return return = 3;
+}
+
+message HasVessel {
+  extend Method {
+    optional HasVessel extension = 5039;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
 }
 
 message InitGoogleLogging {
@@ -315,6 +365,26 @@ message NewPlugin {
   required Return return = 3;
 }
 
+message NumberOfSegments {
+  extend Method {
+    optional NumberOfSegments extension = 5040;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
+message RenderedFlightPlan {
+  extend Method {
+    optional RenderedFlightPlan extension = 5041;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
 message RenderedPrediction {
   extend Method {
     optional RenderedPrediction extension = 5031;
@@ -365,6 +435,36 @@ message SetBufferedLogging {
   }
   message In {
     required int32 max_severity = 1;
+  }
+  required In in = 1;
+}
+
+message SetPredictionLength {
+  extend Method {
+    optional SetPredictionLength extension = 5042;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
+message SetPredictionLengthTolerance {
+  extend Method {
+    optional SetPredictionLengthTolerance extension = 5043;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  required In in = 1;
+}
+
+message SetPredictionSpeedTolerance {
+  extend Method {
+    optional SetPredictionSpeedTolerance extension = 5044;
+  }
+  message In {
+    required fixed64 plugin = 1;
   }
   required In in = 1;
 }
