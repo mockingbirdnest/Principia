@@ -480,7 +480,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           options    : UnityEngine.GUILayout.MinWidth(500));
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
-      render_windows_();
+      if (render_windows_ != null) {
+        // TODO(egg): figure out whether this thing keeps growing...
+        render_windows_();
+      }
     }
   }
 
