@@ -299,11 +299,11 @@ void CDECL principia__SetPredictionLength(Plugin* const plugin,
 
 extern "C" DLLEXPORT
 void CDECL principia__SetPredictionLengthTolerance(Plugin* const plugin,
-                                                   double const t);
+                                                   double const l);
 
 extern "C" DLLEXPORT
 void CDECL principia__SetPredictionSpeedTolerance(Plugin* const plugin,
-                                                  double const t);
+                                                  double const v);
 
 extern "C" DLLEXPORT
 bool CDECL principia__HasVessel(Plugin* const plugin,
