@@ -481,7 +481,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
       if (render_windows_ != null) {
-        // TODO(egg): figure out whether this thing keeps growing...
+        // TODO(egg): This thing keeps growing...  In any case ownership should
+        // be revised, the selector should not own its frame.
         render_windows_();
       }
     }
