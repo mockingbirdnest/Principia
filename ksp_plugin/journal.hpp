@@ -455,6 +455,106 @@ struct RenderedPrediction {
                   not_null<PointerMap*> const pointer_map);
 };
 
+struct FlightPlanSize {
+  struct In {
+  };
+
+  using Message = serialization::FlightPlanSize;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct RenderedFlightPlan {
+  struct In {
+  };
+
+  using Message = serialization::RenderedFlightPlan;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetPredictionLength {
+  struct In {
+  };
+
+  using Message = serialization::SetPredictionLength;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetPredictionLengthTolerance {
+  struct In {
+  };
+
+  using Message = serialization::SetPredictionLengthTolerance;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SetPredictionSpeedTolerance {
+  struct In {
+  };
+
+  using Message = serialization::SetPredictionSpeedTolerance;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct HasVessel {
+  struct In {
+  };
+
+  using Message = serialization::HasVessel;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NumberOfSegments {
+  struct In {
+  };
+
+  using Message = serialization::NumberOfSegments;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct FetchAndIncrement {
+  struct In {
+  };
+
+  using Message = serialization::FetchAndIncrement;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct AtEnd {
+  struct In {
+  };
+
+  using Message = serialization::AtEnd;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeleteLineAndIterator {
+  struct In {
+  };
+
+  using Message = serialization::DeleteLineAndIterator;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
 class Journal {
  public:
   template<typename Profile>
