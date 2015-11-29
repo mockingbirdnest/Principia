@@ -152,7 +152,7 @@ class MockPlugin : public Plugin {
                          GUID const& vessel_guid,
                          not_null<RenderingFrame*> const rendering_frame));
 
-  MOCK_CONST_METHOD0(current_time, Instant());
+  MOCK_CONST_METHOD0(CurrentTime, Instant());
 
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Plugin*> const message));

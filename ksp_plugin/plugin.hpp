@@ -215,8 +215,8 @@ class Plugin {
   bool HasPrediction(GUID const& vessel_guid) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
-  // |predicted_vessel_| from |current_time()| to
-  // |current_time() + prediction_length_| in the frame defined by
+  // |predicted_vessel_| from |CurrentTime()| to
+  // |CurrentTime() + prediction_length_| in the frame defined by
   // |rendering_frame|.  |sun_world_position| is the current position of the sun
   // in |World| space as returned by |Planetarium.fetch.Sun.position|.  It is
   // used to define the relation between |WorldSun| and |World|.
@@ -292,7 +292,7 @@ class Plugin {
       GUID const& vessel_guid,
       not_null<RenderingFrame*> const rendering_frame) const;
 
-  virtual Instant current_time() const;
+  virtual Instant CurrentTime() const;
 
   // Must be called after initialization.
   virtual void WriteToMessage(

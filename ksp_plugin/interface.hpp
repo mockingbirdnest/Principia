@@ -349,7 +349,7 @@ XYZ CDECL principia__VesselBinormal(Plugin const* const plugin,
                                     RenderingFrame* const rendering_frame);
 
 extern "C" DLLEXPORT
-double CDECL principia__current_time(Plugin const* const plugin);
+double CDECL principia__CurrentTime(Plugin const* const plugin);
 
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of

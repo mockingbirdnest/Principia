@@ -679,9 +679,9 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
              VesselBinormal(vessel_guid, rendering_frame).coordinates()));
 }
 
-double principia__current_time(Plugin const* const plugin) {
+double principia__CurrentTime(Plugin const* const plugin) {
   Journal::Method<> m({});
-  return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
+  return (CHECK_NOTNULL(plugin)->CurrentTime() - Instant()) / Second;
 }
 
 char const* principia__SerializePlugin(Plugin const* const plugin,

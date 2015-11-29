@@ -122,8 +122,8 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
 
   // Do some operations on the plugin.
   plugin->KeepAllVessels();
-  plugin->AdvanceTime(plugin->current_time() + 1 * Second, 2 * Radian);
-  plugin->AdvanceTime(plugin->current_time() + 1 * Hour, 3 * Radian);
+  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Second, 2 * Radian);
+  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
 
   // Serialize and deserialize it in the new format.
   serialization::Plugin post_bourbaki_serialized_plugin;

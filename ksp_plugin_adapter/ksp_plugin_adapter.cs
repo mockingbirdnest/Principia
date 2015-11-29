@@ -611,7 +611,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      double plugin_time = current_time(plugin_);
+      double plugin_time = CurrentTime(plugin_);
       if (plugin_time > universal_time) {
         // TODO(Egg): Make this resistant to bad floating points up to 2ULPs,
         // and make it fatal again.

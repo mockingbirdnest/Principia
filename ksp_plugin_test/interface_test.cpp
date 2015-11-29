@@ -715,8 +715,8 @@ TEST_F(InterfaceTest, Frenet) {
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
-  EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
-  double const current_time = principia__current_time(plugin_.get());
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(kUnixEpoch));
+  double const current_time = principia__CurrentTime(plugin_.get());
   EXPECT_THAT(t0_ + current_time * Second, Eq(kUnixEpoch));
 }
 
@@ -750,7 +750,7 @@ TEST_F(InterfaceTest, DeserializePlugin) {
                                &deserializer,
                                &plugin);
   EXPECT_THAT(plugin, NotNull());
-  EXPECT_EQ(Instant(), plugin->current_time());
+  EXPECT_EQ(Instant(), plugin->CurrentTime());
   principia__DeletePlugin(&plugin);
 }
 

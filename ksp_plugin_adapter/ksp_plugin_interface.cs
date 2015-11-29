@@ -344,9 +344,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       IntPtr rendering_frame);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__current_time",
+             EntryPoint        = "principia__CurrentTime",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern double current_time(IntPtr plugin);
+  private static extern double CurrentTime(IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__SerializePlugin",
