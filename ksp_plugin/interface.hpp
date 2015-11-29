@@ -8,6 +8,10 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
+
+using base::PullSerializer;
+using base::PushDeserializer;
+
 namespace ksp_plugin {
 
 struct LineAndIterator {
@@ -51,6 +55,7 @@ static_assert(std::is_standard_layout<WXYZ>::value,
 
 extern "C"
 struct KSPPart {
+  // TODO(egg): Y U NO USE QP?
   XYZ world_position;
   XYZ world_velocity;
   double mass;
@@ -358,7 +363,7 @@ double CDECL principia__CurrentTime(Plugin const* const plugin);
 extern "C" DLLEXPORT
 char const* CDECL principia__SerializePlugin(
     Plugin const* const plugin,
-    base::PullSerializer** const serializer);
+    PullSerializer** const serializer);
 
 // Deletes and nulls |*serialization|.
 // |serialization| must not be null.  No transfer of ownership of
@@ -377,7 +382,7 @@ extern "C" DLLEXPORT
 void CDECL principia__DeserializePlugin(
     char const* const serialization,
     int const serialization_size,
-    base::PushDeserializer** const deserializer,
+    PushDeserializer** const deserializer,
     Plugin const** const plugin);
 
 // Says hello, convenient for checking that calls to the DLL work.

@@ -2,9 +2,24 @@ syntax = "proto2";
 
 package principia.serialization;
 
+message KSPPart {
+  required XYZ world_position = 1;
+  required XYZ world_velocity = 2;
+  required double mass = 3;
+  required XYZ gravitational_acceleration_to_be_applied_by_ksp = 4;
+  required uint32 id = 5;
+}
+
 message QP {
   required XYZ q = 1;
   required XYZ p = 2;
+}
+
+message WXYZ {
+  required double w = 1;
+  required double x = 2;
+  required double y = 3;
+  required double z = 4;
 }
 
 message XYZ {
@@ -19,7 +34,19 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5044.
+  extensions 5000 to 5999;  // Last used: 5057.
+}
+
+message AddVesselToNextPhysicsBubble {
+  extend Method {
+    optional AddVesselToNextPhysicsBubble extension = 5045;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required string vessel_guid = 2;
+    repeated KSPPart parts = 3;
+  }
+  required In in = 1;
 }
 
 message AdvanceTime {
@@ -48,6 +75,35 @@ message AtEnd {
   required Return return = 3;
 }
 
+message BubbleDisplacementCorrection {
+  extend Method {
+    optional BubbleDisplacementCorrection extension = 5046;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required XYZ sun_position = 2;
+  }
+  message Return {
+    required XYZ bubble_displacement_correction = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message BubbleVelocityCorrection {
+  extend Method {
+    optional BubbleVelocityCorrection extension = 5047;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required XYZ bubble_velocity_correction = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message CelestialFromParent {
   extend Method {
     optional CelestialFromParent extension = 5026;
@@ -58,6 +114,20 @@ message CelestialFromParent {
   }
   message Return {
     required QP celestial_from_parent = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message CurrentTime {
+  extend Method {
+    optional CurrentTime extension = 5048;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required double current_time = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -91,6 +161,20 @@ message DeletePlugin {
   required Out out = 2;
 }
 
+message DeletePluginSerialization {
+  extend Method {
+    optional DeletePluginSerialization extension = 5049;
+  }
+  message In {
+    required fixed64 serialization = 1;
+  }
+  message Out {
+    required fixed64 serialization = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
+}
+
 message DeleteRenderingFrame {
   extend Method {
     optional DeleteRenderingFrame extension = 5027;
@@ -100,6 +184,23 @@ message DeleteRenderingFrame {
   }
   message Out {
     required fixed64 rendering_frame = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
+}
+
+message DeserializePlugin {
+  extend Method {
+    optional DeserializePlugin extension = 5050;
+  }
+  message In {
+    required string serialization = 1;
+    required fixed64 deserializer = 2;
+    required fixed64 plugin = 3;
+  }
+  message Out {
+    required fixed64 deserializer = 1;
+    required fixed64 plugin = 2;
   }
   required In in = 1;
   required Out out = 2;
@@ -346,6 +447,23 @@ message LogWarning {
   required In in = 1;
 }
 
+message NavballOrientation {
+  extend Method {
+    optional NavballOrientation extension = 5051;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required fixed64 rendering_frame = 2;
+    required XYZ sun_world_position = 3;
+    required XYZ ship_world_position = 4;
+  }
+  message Return {
+    required WXYZ navball_orientation = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message NewBarycentricRotatingRenderingFrame {
   extend Method {
     optional NewBarycentricRotatingRenderingFrame extension = 5029;
@@ -406,6 +524,20 @@ message NumberOfSegments {
   required Return return = 3;
 }
 
+message PhysicsBubbleIsEmpty {
+  extend Method {
+    optional PhysicsBubbleIsEmpty extension = 5052;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required bool physics_buble_is_empty = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message RenderedFlightPlan {
   extend Method {
     optional RenderedFlightPlan extension = 5041;
@@ -455,6 +587,35 @@ message RenderedVesselTrajectory {
     required fixed64 rendered_vessel_trajectory = 1;
   }
   required In in = 1;
+  required Return return = 3;
+}
+
+message SayHello {
+  extend Method {
+    optional SayHello extension = 5053;
+  }
+  message Return {
+    required string say_hello = 1;
+  }
+  required Return return = 3;
+}
+
+message SerializePlugin {
+  extend Method {
+    optional SerializePlugin extension = 5054;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required fixed64 serializer = 2;
+  }
+  message Out {
+    required fixed64 serializer = 1;
+  }
+  message Return {
+    required string serialize_plugin = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
   required Return return = 3;
 }
 
@@ -586,6 +747,48 @@ message VesselFromParent {
   }
   message Return {
     required QP vessel_from_parent = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message VesselBinormal {
+  extend Method {
+    optional VesselBinormal extension = 5055;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required XYZ vessel_binormal = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message VesselNormal {
+  extend Method {
+    optional VesselNormal extension = 5056;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required XYZ vessel_normal = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message VesselTangent {
+  extend Method {
+    optional VesselTangent extension = 5057;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required XYZ vessel_tangent = 1;
   }
   required In in = 1;
   required Return return = 3;
