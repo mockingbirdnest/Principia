@@ -61,6 +61,15 @@ std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
 }
 
+serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {
+  serialization::WXYZ m;
+  m.set_x(wxyz.w);
+  m.set_x(wxyz.x);
+  m.set_y(wxyz.y);
+  m.set_z(wxyz.z);
+  return m;
+}
+
 serialization::XYZ SerializeXYZ(XYZ const& xyz) {
   serialization::XYZ m;
   m.set_x(xyz.x);
@@ -844,7 +853,9 @@ void PhysicsBubbleIsEmpty::Fill(In const& in,
 }
 
 void PhysicsBubbleIsEmpty::Fill(Return const& result,
-                                not_null<Message*> const message) {}
+                                not_null<Message*> const message) {
+  message->mutable_return_()->set_physics_buble_is_empty(result);
+}
 
 void PhysicsBubbleIsEmpty::Run(Message const& message,
                                not_null<PointerMap*> const pointer_map) {}
@@ -857,7 +868,10 @@ void BubbleDisplacementCorrection::Fill(In const& in,
 }
 
 void BubbleDisplacementCorrection::Fill(Return const& result,
-                                        not_null<Message*> const message) {}
+                                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_bubble_displacement_correction() =
+      SerializeXYZ(result);
+}
 
 void BubbleDisplacementCorrection::Run(Message const& message,
                                        not_null<PointerMap*> const pointer_map) {}
@@ -870,7 +884,10 @@ void BubbleVelocityCorrection::Fill(In const& in,
 }
 
 void BubbleVelocityCorrection::Fill(Return const& result,
-                                    not_null<Message*> const message) {}
+                                    not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_bubble_velocity_correction() =
+      SerializeXYZ(result);
+}
 
 void BubbleVelocityCorrection::Run(Message const& message,
                                    not_null<PointerMap*> const pointer_map) {}
@@ -881,7 +898,10 @@ void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void NavballOrientation::Fill(Return const& result,
-                              not_null<Message*> const message) {}
+                              not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_navball_orientation() =
+      SerializeWXYZ(result);
+}
 
 void NavballOrientation::Run(Message const& message,
                              not_null<PointerMap*> const pointer_map) {}
@@ -894,7 +914,10 @@ void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void VesselTangent::Fill(Return const& result,
-                         not_null<Message*> const message) {}
+                         not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_tangent() =
+      SerializeXYZ(result);
+}
 
 void VesselTangent::Run(Message const& message,
                         not_null<PointerMap*> const pointer_map) {}
@@ -907,7 +930,10 @@ void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void VesselNormal::Fill(Return const& result,
-                        not_null<Message*> const message) {}
+                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_normal() =
+      SerializeXYZ(result);
+}
 
 void VesselNormal::Run(Message const& message,
                        not_null<PointerMap*> const pointer_map) {}
@@ -920,7 +946,10 @@ void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void VesselBinormal::Fill(Return const& result,
-                          not_null<Message*> const message) {}
+                          not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_binormal() =
+      SerializeXYZ(result);
+}
 
 void VesselBinormal::Run(Message const& message,
                          not_null<PointerMap*> const pointer_map) {}
@@ -931,7 +960,9 @@ void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
 }
 
 void CurrentTime::Fill(Return const& result,
-                       not_null<Message*> const message) {}
+                       not_null<Message*> const message) {
+  message->mutable_return_()->set_current_time(result);
+}
 
 void CurrentTime::Run(Message const& message,
                       not_null<PointerMap*> const pointer_map) {}
@@ -945,7 +976,9 @@ void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
 void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {}
 
 void SerializePlugin::Fill(Return const& result,
-                           not_null<Message*> const message) {}
+                           not_null<Message*> const message) {
+  message->mutable_return_()->set_serialize_plugin(result);
+}
 
 void SerializePlugin::Run(Message const& message,
                           not_null<PointerMap*> const pointer_map) {}
@@ -974,7 +1007,9 @@ void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
 void DeserializePlugin::Run(Message const& message,
                             not_null<PointerMap*> const pointer_map) {}
 
-void SayHello::Fill(Return const& result, not_null<Message*> const message) {}
+void SayHello::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_say_hello(result);
+}
 
 void SayHello::Run(Message const& message,
                    not_null<PointerMap*> const pointer_map) {}
