@@ -8,6 +8,10 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
+
+using base::PullSerializer;
+using base::PushDeserializer;
+
 namespace ksp_plugin {
 
 struct LineAndIterator {
@@ -51,6 +55,7 @@ static_assert(std::is_standard_layout<WXYZ>::value,
 
 extern "C"
 struct KSPPart {
+  // TODO(egg): Y U NO USE QP?
   XYZ world_position;
   XYZ world_velocity;
   double mass;
@@ -265,6 +270,22 @@ LineAndIterator* CDECL principia__RenderedFlightPlan(
     RenderingFrame* const rendering_frame,
     XYZ const sun_world_position);
 
+extern "C" DLLEXPORT
+void CDECL principia__SetPredictionLength(Plugin* const plugin,
+                                          double const t);
+
+extern "C" DLLEXPORT
+void CDECL principia__SetPredictionLengthTolerance(Plugin* const plugin,
+                                                   double const l);
+
+extern "C" DLLEXPORT
+void CDECL principia__SetPredictionSpeedTolerance(Plugin* const plugin,
+                                                  double const v);
+
+extern "C" DLLEXPORT
+bool CDECL principia__HasVessel(Plugin* const plugin,
+                                char const* const vessel_guid);
+
 // Returns |line_and_iterator->rendered_trajectory.size()|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
@@ -292,22 +313,6 @@ bool CDECL principia__AtEnd(LineAndIterator const* const line_and_iterator);
 extern "C" DLLEXPORT
 void CDECL principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator);
-
-extern "C" DLLEXPORT
-void CDECL principia__SetPredictionLength(Plugin* const plugin,
-                                          double const t);
-
-extern "C" DLLEXPORT
-void CDECL principia__SetPredictionLengthTolerance(Plugin* const plugin,
-                                                   double const l);
-
-extern "C" DLLEXPORT
-void CDECL principia__SetPredictionSpeedTolerance(Plugin* const plugin,
-                                                  double const v);
-
-extern "C" DLLEXPORT
-bool CDECL principia__HasVessel(Plugin* const plugin,
-                                char const* const vessel_guid);
 
 extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(
@@ -349,7 +354,7 @@ XYZ CDECL principia__VesselBinormal(Plugin const* const plugin,
                                     RenderingFrame* const rendering_frame);
 
 extern "C" DLLEXPORT
-double CDECL principia__current_time(Plugin const* const plugin);
+double CDECL principia__CurrentTime(Plugin const* const plugin);
 
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
@@ -358,7 +363,7 @@ double CDECL principia__current_time(Plugin const* const plugin);
 extern "C" DLLEXPORT
 char const* CDECL principia__SerializePlugin(
     Plugin const* const plugin,
-    base::PullSerializer** const serializer);
+    PullSerializer** const serializer);
 
 // Deletes and nulls |*serialization|.
 // |serialization| must not be null.  No transfer of ownership of
@@ -377,7 +382,7 @@ extern "C" DLLEXPORT
 void CDECL principia__DeserializePlugin(
     char const* const serialization,
     int const serialization_size,
-    base::PushDeserializer** const deserializer,
+    PushDeserializer** const deserializer,
     Plugin const** const plugin);
 
 // Says hello, convenient for checking that calls to the DLL work.

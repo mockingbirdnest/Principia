@@ -322,9 +322,9 @@ internal static class Interface {
       IntPtr rendering_frame);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__current_time",
+             EntryPoint        = "principia__CurrentTime",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double current_time(this IntPtr plugin);
+  internal static extern double CurrentTime(this IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__SerializePlugin",

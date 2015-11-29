@@ -609,7 +609,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      double plugin_time = plugin_.current_time();
+      double plugin_time = plugin_.CurrentTime();
       if (plugin_time > universal_time) {
         // TODO(Egg): Make this resistant to bad floating points up to 2ULPs,
         // and make it fatal again.
@@ -1277,10 +1277,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       if (!inserted) {
         Log.Fatal("Plugin initialization: vessel not inserted");
       } else {
-        plugin_.SetVesselStateOffset(
-            vessel.id.ToString(),
-            new QP{q = (XYZ)vessel.orbit.pos,
-                   p = (XYZ)vessel.orbit.vel});
+        plugin_.SetVesselStateOffset(vessel.id.ToString(),
+                                     new QP{q = (XYZ)vessel.orbit.pos,
+                                            p = (XYZ)vessel.orbit.vel});
       }
     };
     ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(insert_vessel);

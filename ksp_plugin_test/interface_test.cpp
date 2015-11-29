@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
+#include "ksp_plugin/journal.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
 namespace principia {
@@ -99,12 +100,26 @@ ACTION_TEMPLATE(FillUniquePtr,
 
 class InterfaceTest : public testing::Test {
  protected:
+  static void SetUpTestCase() {
+    journal_ =
+      new Journal(
+          testing::UnitTest::GetInstance()->current_test_case()->name());
+    Journal::Activate(journal_);
+  }
+
+  static void TearDownTestCase() {
+    Journal::Deactivate();
+  }
+
   InterfaceTest()
       : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   Instant const t0_;
+  static Journal* journal_;
 };
+
+Journal* InterfaceTest::journal_ = nullptr;
 
 using InterfaceDeathTest = InterfaceTest;
 
@@ -279,7 +294,7 @@ TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
                                      &kParentIndex,
                                      "1.2345E6  km^3 / s^2",
                                      "42 deg",
-                                     "8°",
+                                     u8"8°",
                                      "123e-6",
                                      "1000 km",
                                      "0 m",
@@ -715,8 +730,8 @@ TEST_F(InterfaceTest, Frenet) {
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
-  EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
-  double const current_time = principia__current_time(plugin_.get());
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(kUnixEpoch));
+  double const current_time = principia__CurrentTime(plugin_.get());
   EXPECT_THAT(t0_ + current_time * Second, Eq(kUnixEpoch));
 }
 
@@ -750,7 +765,7 @@ TEST_F(InterfaceTest, DeserializePlugin) {
                                &deserializer,
                                &plugin);
   EXPECT_THAT(plugin, NotNull());
-  EXPECT_EQ(Instant(), plugin->current_time());
+  EXPECT_EQ(Instant(), plugin->CurrentTime());
   principia__DeletePlugin(&plugin);
 }
 

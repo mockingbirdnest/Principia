@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "base/array.hpp"
 #include "base/get_line.hpp"
@@ -38,6 +39,10 @@ T DeserializePointer(PointerMap const& pointer_map,
   return reinterpret_cast<T>(FindOrDie(pointer_map, address));
 }
 
+WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
+  return {wxyz.w(), wxyz.x(), wxyz.y(), wxyz.z()};
+}
+
 XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
   return {xyz.x(), xyz.y(), xyz.z()};
 }
@@ -46,9 +51,27 @@ QP DeserializeQP(serialization::QP const& qp) {
   return {DeserializeXYZ(qp.q()), DeserializeXYZ(qp.p())};
 }
 
+KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
+  return {DeserializeXYZ(ksp_part.world_position()),
+          DeserializeXYZ(ksp_part.world_velocity()),
+          ksp_part.mass(),
+          DeserializeXYZ(
+              ksp_part.gravitational_acceleration_to_be_applied_by_ksp()),
+          ksp_part.id()};
+}
+
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
+}
+
+serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {
+  serialization::WXYZ m;
+  m.set_w(wxyz.w);
+  m.set_x(wxyz.x);
+  m.set_y(wxyz.y);
+  m.set_z(wxyz.z);
+  return m;
 }
 
 serialization::XYZ SerializeXYZ(XYZ const& xyz) {
@@ -70,6 +93,17 @@ serialization::QP SerializeQP(QP const& qp) {
   serialization::QP m;
   *m.mutable_p() = SerializeXYZ(qp.p);
   *m.mutable_q() = SerializeXYZ(qp.q);
+  return m;
+}
+
+serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
+  serialization::KSPPart m;
+  *m.mutable_world_position() = SerializeXYZ(ksp_part.world_position);
+  *m.mutable_world_velocity() = SerializeXYZ(ksp_part.world_velocity);
+  m.set_mass(ksp_part.mass);
+  *m.mutable_gravitational_acceleration_to_be_applied_by_ksp() =
+      SerializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp);
+  m.set_id(ksp_part.id);
   return m;
 }
 
@@ -232,7 +266,7 @@ void NewPlugin::Run(Message const& message,
 }
 
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_plugin(SerializePointer(in.plugin));
+  message->mutable_in()->set_plugin(SerializePointer(*in.plugin));
 }
 
 void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
@@ -525,7 +559,7 @@ void NewBarycentricRotatingRenderingFrame::Run(
 void DeleteRenderingFrame::Fill(In const& in,
                                 not_null<Message*> const message) {
   message->mutable_in()->set_rendering_frame(
-      SerializePointer(in.rendering_frame));
+      SerializePointer(*in.rendering_frame));
 }
 
 void DeleteRenderingFrame::Fill(Out const& out,
@@ -796,7 +830,7 @@ void AtEnd::Run(Message const& message,
 void DeleteLineAndIterator::Fill(In const& in,
                                  not_null<Message*> const message) {
   auto* m = message->mutable_in();
-  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+  m->set_line_and_iterator(SerializePointer(*in.line_and_iterator));
 }
 
 void DeleteLineAndIterator::Fill(Out const& out,
@@ -811,6 +845,284 @@ void DeleteLineAndIterator::Run(Message const& message,
                                 *pointer_map, message.in().line_and_iterator());
   principia__DeleteLineAndIterator(&line_and_iterator);
   // TODO(phl): should we do something with out() here?
+}
+
+void AddVesselToNextPhysicsBubble::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  for (KSPPart const* part = in.parts; part < in.parts + in.count; ++part) {
+    *m->add_parts() = SerializeKSPPart(*part);
+  }
+}
+
+void AddVesselToNextPhysicsBubble::Run(
+    Message const& message,
+    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  std::vector<KSPPart> deserialized_parts;
+  deserialized_parts.reserve(in.parts_size());
+  for (auto const& part : in.parts()) {
+    deserialized_parts.push_back(DeserializeKSPPart(part));
+  }
+  principia__AddVesselToNextPhysicsBubble(plugin,
+                                          in.vessel_guid().c_str(),
+                                          &deserialized_parts[0],
+                                          deserialized_parts.size());
+}
+
+void PhysicsBubbleIsEmpty::Fill(In const& in,
+                                not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+}
+
+void PhysicsBubbleIsEmpty::Fill(Return const& result,
+                                not_null<Message*> const message) {
+  message->mutable_return_()->set_physics_buble_is_empty(result);
+}
+
+void PhysicsBubbleIsEmpty::Run(Message const& message,
+                               not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__PhysicsBubbleIsEmpty(plugin);
+}
+
+void BubbleDisplacementCorrection::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  *m->mutable_sun_position() = SerializeXYZ(in.sun_position);
+}
+
+void BubbleDisplacementCorrection::Fill(Return const& result,
+                                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_bubble_displacement_correction() =
+      SerializeXYZ(result);
+}
+
+void BubbleDisplacementCorrection::Run(
+    Message const& message,
+    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__BubbleDisplacementCorrection(plugin,
+                                          DeserializeXYZ(in.sun_position()));
+}
+
+void BubbleVelocityCorrection::Fill(In const& in,
+                                    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_reference_body_index(in.reference_body_index);
+}
+
+void BubbleVelocityCorrection::Fill(Return const& result,
+                                    not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_bubble_velocity_correction() =
+      SerializeXYZ(result);
+}
+
+void BubbleVelocityCorrection::Run(Message const& message,
+                                   not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__BubbleVelocityCorrection(plugin, in.reference_body_index());
+}
+
+void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+  *m->mutable_ship_world_position() = SerializeXYZ(in.ship_world_position);
+}
+
+void NavballOrientation::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_navball_orientation() =
+      SerializeWXYZ(result);
+}
+
+void NavballOrientation::Run(Message const& message,
+                             not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__NavballOrientation(plugin,
+                                DeserializePointer<RenderingFrame*>(
+                                    *pointer_map, in.rendering_frame()),
+                                DeserializeXYZ(in.sun_world_position()),
+                                DeserializeXYZ(in.ship_world_position()));
+}
+
+void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+}
+
+void VesselTangent::Fill(Return const& result,
+                         not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_tangent() =
+      SerializeXYZ(result);
+}
+
+void VesselTangent::Run(Message const& message,
+                        not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__VesselTangent(plugin,
+                           in.vessel_guid().c_str(),
+                           DeserializePointer<RenderingFrame*>(
+                               *pointer_map, in.rendering_frame()));
+}
+
+void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+}
+
+void VesselNormal::Fill(Return const& result,
+                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_normal() =
+      SerializeXYZ(result);
+}
+
+void VesselNormal::Run(Message const& message,
+                       not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__VesselNormal(plugin,
+                          in.vessel_guid().c_str(),
+                          DeserializePointer<RenderingFrame*>(
+                              *pointer_map, in.rendering_frame()));
+}
+
+void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+}
+
+void VesselBinormal::Fill(Return const& result,
+                          not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_binormal() =
+      SerializeXYZ(result);
+}
+
+void VesselBinormal::Run(Message const& message,
+                         not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__VesselBinormal(plugin,
+                            in.vessel_guid().c_str(),
+                            DeserializePointer<RenderingFrame*>(
+                                *pointer_map, in.rendering_frame()));
+}
+
+void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+}
+
+void CurrentTime::Fill(Return const& result,
+                       not_null<Message*> const message) {
+  message->mutable_return_()->set_current_time(result);
+}
+
+void CurrentTime::Run(Message const& message,
+                      not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__CurrentTime(plugin);
+}
+
+void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_serializer(SerializePointer(*in.serializer));
+}
+
+void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {
+  auto* m = message->mutable_out();
+  m->set_serializer(SerializePointer(*out.serializer));
+}
+
+void SerializePlugin::Fill(Return const& result,
+                           not_null<Message*> const message) {
+  if (result != nullptr) {
+    message->mutable_return_()->set_serialize_plugin(result);
+  }
+}
+
+void SerializePlugin::Run(Message const& message,
+                          not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* serializer = DeserializePointer<PullSerializer*>(
+                         *pointer_map, in.serializer());
+  principia__SerializePlugin(plugin, &serializer);
+}
+
+void DeletePluginSerialization::Fill(In const& in,
+                                     not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_serialization(SerializePointer(*in.serialization));
+}
+
+void DeletePluginSerialization::Fill(Out const& out,
+                                     not_null<Message*> const message) {
+  auto* m = message->mutable_out();
+  m->set_serialization(SerializePointer(*out.serialization));
+}
+
+void DeletePluginSerialization::Run(Message const& message,
+                                    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* serialization = DeserializePointer<char const*>(
+                            *pointer_map, in.serialization());
+  principia__DeletePluginSerialization(&serialization);
+}
+
+void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_serialization(std::string(in.serialization, in.serialization_size));
+  m->set_deserializer(SerializePointer(*in.deserializer));
+  m->set_plugin(SerializePointer(*in.plugin));
+}
+
+void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
+  auto* m = message->mutable_out();
+  m->set_deserializer(SerializePointer(*out.deserializer));
+  m->set_plugin(SerializePointer(*out.plugin));
+}
+
+void DeserializePlugin::Run(Message const& message,
+                            not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto* deserializer = DeserializePointer<PushDeserializer*>(
+                           *pointer_map, in.deserializer());
+  principia__DeserializePlugin(in.serialization().c_str(),
+                               in.serialization().size(),
+                               &deserializer,
+                               &plugin);
+}
+
+void SayHello::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_say_hello(result);
+}
+
+void SayHello::Run(Message const& message,
+                   not_null<PointerMap*> const pointer_map) {
+  principia__SayHello();
 }
 
 Journal::Journal(std::experimental::filesystem::path const& path)

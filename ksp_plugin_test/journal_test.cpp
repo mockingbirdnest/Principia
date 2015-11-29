@@ -60,7 +60,7 @@ TEST_F(JournalDeathTest, Return) {
   "!returned_");
   EXPECT_DEATH({
     const Plugin* plugin = plugin_.get();
-    Journal::Method<DeletePlugin> m({plugin}, {&plugin});
+    Journal::Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
     m.Return();
   },
@@ -74,7 +74,7 @@ TEST_F(JournalDeathTest, Return) {
 TEST_F(JournalTest, Recording) {
   {
     const Plugin* plugin = plugin_.get();
-    Journal::Method<DeletePlugin> m({plugin}, {&plugin});
+    Journal::Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
   }
   {
@@ -115,7 +115,7 @@ TEST_F(JournalTest, Playing) {
   }
   {
     const Plugin* plugin = plugin_.get();
-    Journal::Method<DeletePlugin> m({plugin}, {&plugin});
+    Journal::Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
   }
 

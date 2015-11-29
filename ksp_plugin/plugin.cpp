@@ -288,8 +288,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      celestial.current_degrees_of_freedom(current_time()) -
-      celestial.parent()->current_degrees_of_freedom(current_time());
+      celestial.current_degrees_of_freedom(CurrentTime()) -
+      celestial.parent()->current_degrees_of_freedom(CurrentTime());
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Celestial at index " << celestial_index
@@ -512,7 +512,7 @@ Vector<double, World> Plugin::VesselBinormal(
                                Vector<double, Frenet<Rendering>>({0, 0, 1}));
 }
 
-Instant Plugin::current_time() const {
+Instant Plugin::CurrentTime() const {
   return current_time_;
 }
 

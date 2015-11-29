@@ -183,7 +183,7 @@ struct NewPlugin {
 
 struct DeletePlugin {
   struct In {
-    Plugin const* const plugin;
+    Plugin const** const plugin;
   };
   struct Out {
     Plugin const** const plugin;
@@ -384,7 +384,7 @@ struct NewBarycentricRotatingRenderingFrame {
 
 struct DeleteRenderingFrame {
   struct In {
-    RenderingFrame* const rendering_frame;
+    RenderingFrame** const rendering_frame;
   };
   struct Out {
     RenderingFrame** const rendering_frame;
@@ -577,7 +577,7 @@ struct AtEnd {
 
 struct DeleteLineAndIterator {
   struct In {
-    LineAndIterator* const line_and_iterator;
+    LineAndIterator** const line_and_iterator;
   };
   struct Out {
     LineAndIterator** const line_and_iterator;
@@ -586,6 +586,196 @@ struct DeleteLineAndIterator {
   using Message = serialization::DeleteLineAndIterator;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct AddVesselToNextPhysicsBubble {
+  struct In {
+    Plugin* const plugin;
+    char const* const vessel_guid;
+    KSPPart const* const parts;
+    int count;
+  };
+
+  using Message = serialization::AddVesselToNextPhysicsBubble;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct PhysicsBubbleIsEmpty {
+  struct In {
+    Plugin const* const plugin;
+  };
+  using Return = bool;
+
+  using Message = serialization::PhysicsBubbleIsEmpty;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct BubbleDisplacementCorrection {
+  struct In {
+    Plugin const* const plugin;
+    XYZ const sun_position;
+  };
+  using Return = XYZ;
+
+  using Message = serialization::BubbleDisplacementCorrection;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct BubbleVelocityCorrection {
+  struct In {
+    Plugin const* const plugin;
+    int const reference_body_index;
+  };
+  using Return = XYZ;
+
+  using Message = serialization::BubbleVelocityCorrection;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct NavballOrientation {
+  struct In {
+    Plugin const* const plugin;
+    RenderingFrame* const rendering_frame;
+    XYZ const sun_world_position;
+    XYZ const ship_world_position;
+  };
+  using Return = WXYZ;
+
+  using Message = serialization::NavballOrientation;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct VesselTangent {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+  };
+  using Return = XYZ;
+
+  using Message = serialization::VesselTangent;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct VesselNormal {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+  };
+  using Return = XYZ;
+
+  using Message = serialization::VesselNormal;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct VesselBinormal {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    RenderingFrame* const rendering_frame;
+  };
+  using Return = XYZ;
+
+  using Message = serialization::VesselBinormal;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct CurrentTime {
+  struct In {
+    Plugin const* const plugin;
+  };
+  using Return = double;
+
+  using Message = serialization::CurrentTime;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SerializePlugin {
+  struct In {
+    Plugin const* const plugin;
+    PullSerializer** const serializer;
+  };
+  struct Out {
+    PullSerializer** const serializer;
+  };
+  using Return = char const*;
+
+  using Message = serialization::SerializePlugin;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeletePluginSerialization {
+  struct In {
+    char const** const serialization;
+  };
+  struct Out {
+    char const** const serialization;
+  };
+
+  using Message = serialization::DeletePluginSerialization;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct DeserializePlugin {
+  struct In {
+    char const* const serialization;
+    int const serialization_size;
+    PushDeserializer** const deserializer;
+    Plugin const** const plugin;
+  };
+  struct Out {
+    PushDeserializer** const deserializer;
+    Plugin const** const plugin;
+  };
+
+  using Message = serialization::DeserializePlugin;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
+struct SayHello {
+  using Return = char const*;
+
+  using Message = serialization::SayHello;
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);
 };
