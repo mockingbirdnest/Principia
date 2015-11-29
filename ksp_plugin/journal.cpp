@@ -627,6 +627,101 @@ void RenderedPrediction::Run(Message const& message,
          line_and_iterator);
 }
 
+void FlightPlanSize::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanSize::Fill(Return const& result, not_null<Message*> const message) {}
+
+void FlightPlanSize::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_plan_phase(in.plan_phase);
+  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+}
+
+void RenderedFlightPlan::Fill(Return const& result, not_null<Message*> const message) {}
+
+void RenderedFlightPlan::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void SetPredictionLength::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_t(in.t);
+}
+
+void SetPredictionLength::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void SetPredictionLengthTolerance::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_l(in.l);
+}
+
+void SetPredictionLengthTolerance::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void SetPredictionSpeedTolerance::Fill(In const& in,
+                                       not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_v(in.v);
+}
+
+void SetPredictionSpeedTolerance::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void HasVessel::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void HasVessel::Fill(Return const& result, not_null<Message*> const message) {}
+
+void HasVessel::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void NumberOfSegments::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+}
+
+void NumberOfSegments::Fill(Return const& result, not_null<Message*> const message) {}
+
+void NumberOfSegments::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void FetchAndIncrement::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+}
+
+void FetchAndIncrement::Fill(Return const& result, not_null<Message*> const message) {}
+
+void FetchAndIncrement::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void AtEnd::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+}
+
+void AtEnd::Fill(Return const& result, not_null<Message*> const message) {}
+
+void AtEnd::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
+void DeleteLineAndIterator::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+}
+
+void DeleteLineAndIterator::Fill(Out const& out, not_null<Message*> const message) {}
+
+void DeleteLineAndIterator::Run(Message const& message, not_null<PointerMap*> const pointer_map) {}
+
 Journal::Journal(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::out) {}
 

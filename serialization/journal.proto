@@ -34,7 +34,6 @@ message AtEnd {
     optional AtEnd extension = 5035;
   }
   message In {
-    required fixed64 plugin = 1;
     required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
@@ -60,7 +59,6 @@ message DeleteLineAndIterator {
     optional DeleteLineAndIterator extension = 5036;
   }
   message In {
-    required fixed64 plugin = 1;
     required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
@@ -132,7 +130,6 @@ message FetchAndIncrement {
     optional FetchAndIncrement extension = 5037;
   }
   message In {
-    required fixed64 plugin = 1;
     required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
@@ -375,7 +372,6 @@ message NumberOfSegments {
     optional NumberOfSegments extension = 5040;
   }
   message In {
-    required fixed64 plugin = 1;
     required fixed64 line_and_iterator = 2;
   }
   required In in = 1;
