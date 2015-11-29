@@ -236,7 +236,7 @@ Plugin* principia__NewPlugin(double const initial_time,
 
 void principia__DeletePlugin(Plugin const** const plugin) {
   CHECK_NOTNULL(plugin);
-  Journal::Method<DeletePlugin> m({*plugin}, {plugin});
+  Journal::Method<DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
@@ -429,8 +429,7 @@ RenderingFrame* principia__NewBarycentricRotatingRenderingFrame(
 }
 
 void principia__DeleteRenderingFrame(RenderingFrame** const rendering_frame) {
-  Journal::Method<DeleteRenderingFrame> m({*rendering_frame},
-                                          {rendering_frame});
+  Journal::Method<DeleteRenderingFrame> m({rendering_frame}, {rendering_frame});
   TakeOwnership(rendering_frame);
   return m.Return();
 }
@@ -573,7 +572,7 @@ bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
 
 void principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator) {
-  Journal::Method<DeleteLineAndIterator> m({*line_and_iterator},
+  Journal::Method<DeleteLineAndIterator> m({line_and_iterator},
                                            {line_and_iterator});
   TakeOwnership(line_and_iterator);
   return m.Return();
@@ -686,7 +685,7 @@ double principia__CurrentTime(Plugin const* const plugin) {
 
 char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
-  Journal::Method<SerializePlugin> m({plugin, *serializer}, {serializer});
+  Journal::Method<SerializePlugin> m({plugin, serializer}, {serializer});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
@@ -719,7 +718,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
-  Journal::Method<DeletePluginSerialization> m({*serialization},
+  Journal::Method<DeletePluginSerialization> m({serialization},
                                                {serialization});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
@@ -732,8 +731,8 @@ void principia__DeserializePlugin(char const* const serialization,
                                   Plugin const** const plugin) {
   Journal::Method<DeserializePlugin> m({serialization,
                                         serialization_size,
-                                        *deserializer,
-                                        *plugin},
+                                        deserializer,
+                                        plugin},
                                        {deserializer, plugin});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);

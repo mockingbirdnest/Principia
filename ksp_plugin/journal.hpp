@@ -183,7 +183,7 @@ struct NewPlugin {
 
 struct DeletePlugin {
   struct In {
-    Plugin const* const plugin;
+    Plugin const** const plugin;
   };
   struct Out {
     Plugin const** const plugin;
@@ -384,7 +384,7 @@ struct NewBarycentricRotatingRenderingFrame {
 
 struct DeleteRenderingFrame {
   struct In {
-    RenderingFrame* const rendering_frame;
+    RenderingFrame** const rendering_frame;
   };
   struct Out {
     RenderingFrame** const rendering_frame;
@@ -577,7 +577,7 @@ struct AtEnd {
 
 struct DeleteLineAndIterator {
   struct In {
-    LineAndIterator* const line_and_iterator;
+    LineAndIterator** const line_and_iterator;
   };
   struct Out {
     LineAndIterator** const line_and_iterator;
@@ -722,7 +722,7 @@ struct CurrentTime {
 struct SerializePlugin {
   struct In {
     Plugin const* const plugin;
-    PullSerializer* const serializer;
+    PullSerializer** const serializer;
   };
   struct Out {
     PullSerializer** const serializer;
@@ -739,7 +739,7 @@ struct SerializePlugin {
 
 struct DeletePluginSerialization {
   struct In {
-    char const* const serialization;
+    char const** const serialization;
   };
   struct Out {
     char const** const serialization;
@@ -756,8 +756,8 @@ struct DeserializePlugin {
   struct In {
     char const* const serialization;
     int const serialization_size;
-    PushDeserializer* const deserializer;
-    Plugin const* const plugin;
+    PushDeserializer** const deserializer;
+    Plugin const** const plugin;
   };
   struct Out {
     PushDeserializer** const deserializer;

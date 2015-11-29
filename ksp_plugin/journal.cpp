@@ -265,7 +265,7 @@ void NewPlugin::Run(Message const& message,
 }
 
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_plugin(SerializePointer(in.plugin));
+  message->mutable_in()->set_plugin(SerializePointer(*in.plugin));
 }
 
 void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
@@ -558,7 +558,7 @@ void NewBarycentricRotatingRenderingFrame::Run(
 void DeleteRenderingFrame::Fill(In const& in,
                                 not_null<Message*> const message) {
   message->mutable_in()->set_rendering_frame(
-      SerializePointer(in.rendering_frame));
+      SerializePointer(*in.rendering_frame));
 }
 
 void DeleteRenderingFrame::Fill(Out const& out,
@@ -829,7 +829,7 @@ void AtEnd::Run(Message const& message,
 void DeleteLineAndIterator::Fill(In const& in,
                                  not_null<Message*> const message) {
   auto* m = message->mutable_in();
-  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+  m->set_line_and_iterator(SerializePointer(*in.line_and_iterator));
 }
 
 void DeleteLineAndIterator::Fill(Out const& out,
@@ -1043,12 +1043,12 @@ void CurrentTime::Run(Message const& message,
 void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  m->set_serializer(SerializePointer(in.serializer));
+  m->set_serializer(SerializePointer(*in.serializer));
 }
 
 void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {
   auto* m = message->mutable_out();
-  m->set_serializer(SerializePointer(out.serializer));
+  m->set_serializer(SerializePointer(*out.serializer));
 }
 
 void SerializePlugin::Fill(Return const& result,
@@ -1068,7 +1068,7 @@ void SerializePlugin::Run(Message const& message,
 void DeletePluginSerialization::Fill(In const& in,
                                      not_null<Message*> const message) {
   auto* m = message->mutable_in();
-  m->set_serialization(SerializePointer(in.serialization));
+  m->set_serialization(SerializePointer(*in.serialization));
 }
 
 void DeletePluginSerialization::Fill(Out const& out,
@@ -1088,8 +1088,8 @@ void DeletePluginSerialization::Run(Message const& message,
 void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_serialization(std::string(in.serialization, in.serialization_size));
-  m->set_deserializer(SerializePointer(in.deserializer));
-  m->set_plugin(SerializePointer(in.plugin));
+  m->set_deserializer(SerializePointer(*in.deserializer));
+  m->set_plugin(SerializePointer(*in.plugin));
 }
 
 void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
