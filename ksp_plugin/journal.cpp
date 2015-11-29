@@ -844,7 +844,18 @@ void AddVesselToNextPhysicsBubble::Fill(In const& in,
 
 void AddVesselToNextPhysicsBubble::Run(
     Message const& message,
-    not_null<PointerMap*> const pointer_map) {}
+    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  std::vector<KSPPart> deserialized_parts;
+  deserialized_parts.reserve(in.parts_size());
+  for (auto const& part : in.parts()) {
+    deserialized_parts.push_back(DeserializeKSPPart(part));
+  }
+  principia__AddVesselToNextPhysicsBubble(plugin,
+                                          in.vessel_guid().c_str(),
+                                          );
+}
 
 void PhysicsBubbleIsEmpty::Fill(In const& in,
                                 not_null<Message*> const message) {
@@ -858,7 +869,11 @@ void PhysicsBubbleIsEmpty::Fill(Return const& result,
 }
 
 void PhysicsBubbleIsEmpty::Run(Message const& message,
-                               not_null<PointerMap*> const pointer_map) {}
+                               not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void BubbleDisplacementCorrection::Fill(In const& in,
                                         not_null<Message*> const message) {
@@ -873,8 +888,13 @@ void BubbleDisplacementCorrection::Fill(Return const& result,
       SerializeXYZ(result);
 }
 
-void BubbleDisplacementCorrection::Run(Message const& message,
-                                       not_null<PointerMap*> const pointer_map) {}
+void BubbleDisplacementCorrection::Run(
+    Message const& message,
+    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void BubbleVelocityCorrection::Fill(In const& in,
                                     not_null<Message*> const message) {
@@ -890,7 +910,11 @@ void BubbleVelocityCorrection::Fill(Return const& result,
 }
 
 void BubbleVelocityCorrection::Run(Message const& message,
-                                   not_null<PointerMap*> const pointer_map) {}
+                                   not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -904,7 +928,11 @@ void NavballOrientation::Fill(Return const& result,
 }
 
 void NavballOrientation::Run(Message const& message,
-                             not_null<PointerMap*> const pointer_map) {}
+                             not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -920,7 +948,11 @@ void VesselTangent::Fill(Return const& result,
 }
 
 void VesselTangent::Run(Message const& message,
-                        not_null<PointerMap*> const pointer_map) {}
+                        not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -936,7 +968,11 @@ void VesselNormal::Fill(Return const& result,
 }
 
 void VesselNormal::Run(Message const& message,
-                       not_null<PointerMap*> const pointer_map) {}
+                       not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -952,7 +988,11 @@ void VesselBinormal::Fill(Return const& result,
 }
 
 void VesselBinormal::Run(Message const& message,
-                         not_null<PointerMap*> const pointer_map) {}
+                         not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -965,7 +1005,11 @@ void CurrentTime::Fill(Return const& result,
 }
 
 void CurrentTime::Run(Message const& message,
-                      not_null<PointerMap*> const pointer_map) {}
+                      not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -981,7 +1025,11 @@ void SerializePlugin::Fill(Return const& result,
 }
 
 void SerializePlugin::Run(Message const& message,
-                          not_null<PointerMap*> const pointer_map) {}
+                          not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void DeletePluginSerialization::Fill(In const& in,
                                      not_null<Message*> const message) {
@@ -993,7 +1041,11 @@ void DeletePluginSerialization::Fill(Out const& out,
                                      not_null<Message*> const message) {}
 
 void DeletePluginSerialization::Run(Message const& message,
-                                    not_null<PointerMap*> const pointer_map) {}
+                                    not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -1005,14 +1057,22 @@ void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
 void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {}
 
 void DeserializePlugin::Run(Message const& message,
-                            not_null<PointerMap*> const pointer_map) {}
+                            not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 void SayHello::Fill(Return const& result, not_null<Message*> const message) {
   message->mutable_return_()->set_say_hello(result);
 }
 
 void SayHello::Run(Message const& message,
-                   not_null<PointerMap*> const pointer_map) {}
+                   not_null<PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  principia__HasVessel(plugin, in.vessel_guid().c_str());
+}
 
 Journal::Journal(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::out) {}
