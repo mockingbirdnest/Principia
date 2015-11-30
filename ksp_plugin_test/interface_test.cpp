@@ -47,14 +47,6 @@ using ::testing::_;
 
 namespace ksp_plugin {
 
-bool operator==(XYZ const& left, XYZ const& right) {
-  return left.x == right.x && left.y == right.y && left.z == right.z;
-}
-
-bool operator==(QP const& left, QP const& right) {
-  return left.q == right.q && left.p == right.p;
-}
-
 char const kSerializedBoringPlugin[] =
     "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
     "\xB9\x1\n\xAE\x1\n\x12\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\0\x12"
