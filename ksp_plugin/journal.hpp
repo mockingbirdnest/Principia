@@ -21,6 +21,8 @@ using PointerMap = std::map<std::uint64_t, void*>;
 
 struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
 };
 
 struct SetBufferedLogging {
