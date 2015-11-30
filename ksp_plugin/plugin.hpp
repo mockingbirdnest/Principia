@@ -72,7 +72,7 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
-using RenderingFrame = DynamicFrame<Barycentric, Rendering>;
+using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 
 class Plugin {
  public:
@@ -202,13 +202,13 @@ class Plugin {
                         Instant const& last_time) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
-  // with the given |GUID| in the frame defined by |rendering_frame|.
+  // with the given |GUID| in the frame defined by |navigation_frame|.
   // |sun_world_position| is the current position of the sun in |World| space as
   // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
   // relation between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      not_null<RenderingFrame*> const rendering_frame,
+      not_null<NavigationFrame*> const navigation_frame,
       Position<World> const& sun_world_position) const;
 
   int FlightPlanSize(GUID const& vessel_guid) const;
@@ -217,22 +217,22 @@ class Plugin {
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |CurrentTime()| to
   // |CurrentTime() + prediction_length_| in the frame defined by
-  // |rendering_frame|.  |sun_world_position| is the current position of the sun
+  // |navigation_frame|.  |sun_world_position| is the current position of the sun
   // in |World| space as returned by |Planetarium.fetch.Sun.position|.  It is
   // used to define the relation between |WorldSun| and |World|.
   // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
   // called after |predicted_vessel_| was set.  Not const because of the stupid
-  // global variable |rendering_frame_are_operating_on_predictions_|.
+  // global variable |navigation_frame_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
-      not_null<RenderingFrame*> const rendering_frame,
+      not_null<NavigationFrame*> const navigation_frame,
       Position<World> const& sun_world_position);
 
   virtual RenderedTrajectory<World> RenderedFlightPlan(
       GUID const& vessel_guid,
       int const plan_phase,
-      not_null<RenderingFrame*> const rendering_frame,
+      not_null<NavigationFrame*> const navigation_frame,
       Position<World> const& sun_world_position);
 
   virtual void SetPredictionLength(Time const& t);
@@ -242,13 +242,13 @@ class Plugin {
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
 
-  virtual not_null<std::unique_ptr<RenderingFrame>>
-  NewBodyCentredNonRotatingRenderingFrame(
+  virtual not_null<std::unique_ptr<NavigationFrame>>
+  NewBodyCentredNonRotatingNavigationFrame(
       Index const reference_body_index) const;
 
-  virtual not_null<std::unique_ptr<RenderingFrame>>
-  NewBarycentricRotatingRenderingFrame(Index const primary_index,
-                                       Index const secondary_index) const;
+  virtual not_null<std::unique_ptr<NavigationFrame>>
+  NewBarycentricRotatingNavigationFrame(Index const primary_index,
+                                        Index const secondary_index) const;
 
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
@@ -275,22 +275,22 @@ class Plugin {
   virtual Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
-  // The navball field at |current_time| for the given |rendering_frame|.
+  // The navball field at |current_time| for the given |navigation_frame|.
   virtual FrameField<World> Navball(
-      not_null<RenderingFrame*> const rendering_frame,
+      not_null<NavigationFrame*> const navigation_frame,
       Position<World> const& sun_world_position) const;
 
   // The unit tangent vector to the trajectory of the vessel with the given GUID
-  // in the frame given by |rendering_frame|.
+  // in the frame given by |navigation_frame|.
   virtual Vector<double, World> VesselTangent(
       GUID const& vessel_guid,
-      not_null<RenderingFrame*> const rendering_frame) const;
+      not_null<NavigationFrame*> const navigation_frame) const;
   virtual Vector<double, World> VesselNormal(
       GUID const& vessel_guid,
-      not_null<RenderingFrame*> const rendering_frame) const;
+      not_null<NavigationFrame*> const navigation_frame) const;
   virtual Vector<double, World> VesselBinormal(
       GUID const& vessel_guid,
-      not_null<RenderingFrame*> const rendering_frame) const;
+      not_null<NavigationFrame*> const navigation_frame) const;
 
   virtual Instant CurrentTime() const;
 
@@ -387,18 +387,18 @@ class Plugin {
   void EvolveProlongationsAndBubble(Instant const& t);
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
-  // returns a |RenderedTrajectory| as computed by the given |rendering_frame|
+  // returns a |RenderedTrajectory| as computed by the given |navigation_frame|
   // from the trajectory defined by |begin| and |end|.
   RenderedTrajectory<World> RenderTrajectory(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      not_null<RenderingFrame*>const rendering_frame,
+      not_null<NavigationFrame*>const navigation_frame,
       Position<World> const& sun_world_position) const;
 
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
-      not_null<RenderingFrame*> const rendering_frame,
-      Vector<double, Frenet<Rendering>> const& vector) const;
+      not_null<NavigationFrame*> const navigation_frame,
+      Vector<double, Frenet<Navigation>> const& vector) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
   // |celestial_messages| (which may be pre- or post-Bourbaki).

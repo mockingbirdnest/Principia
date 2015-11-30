@@ -501,7 +501,7 @@ void CelestialFromParent::Run(Message const& message,
   // TODO(phl): Check all the return values everywhere.
 }
 
-void NewBodyCentredNonRotatingRenderingFrame::Fill(
+void NewBodyCentredNonRotatingNavigationFrame::Fill(
     In const& in,
     not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -509,26 +509,26 @@ void NewBodyCentredNonRotatingRenderingFrame::Fill(
   m->set_reference_body_index(in.reference_body_index);
 }
 
-void NewBodyCentredNonRotatingRenderingFrame::Fill(
+void NewBodyCentredNonRotatingNavigationFrame::Fill(
     Return const& result,
     not_null<Message*> const message) {
-  message->mutable_return_()->set_new_body_centred_non_rotating_rendering_frame(
+  message->mutable_return_()->set_new_body_centred_non_rotating_navigation_frame(
       SerializePointer(result));
 }
 
-void NewBodyCentredNonRotatingRenderingFrame::Run(
+void NewBodyCentredNonRotatingNavigationFrame::Run(
     Message const& message,
     not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* rendering_frame = principia__NewBodyCentredNonRotatingRenderingFrame(
-                              plugin, in.reference_body_index());
+  auto* navigation_frame = principia__NewBodyCentredNonRotatingNavigationFrame(
+                               plugin, in.reference_body_index());
   Insert(pointer_map,
-         message.return_().new_body_centred_non_rotating_rendering_frame(),
-         rendering_frame);
+         message.return_().new_body_centred_non_rotating_navigation_frame(),
+         navigation_frame);
 }
 
-void NewBarycentricRotatingRenderingFrame::Fill(
+void NewBarycentricRotatingNavigationFrame::Fill(
     In const& in,
     not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -537,42 +537,42 @@ void NewBarycentricRotatingRenderingFrame::Fill(
   m->set_secondary_index(in.secondary_index);
 }
 
-void NewBarycentricRotatingRenderingFrame::Fill(
+void NewBarycentricRotatingNavigationFrame::Fill(
     Return const& result,
     not_null<Message*> const message) {
-  message->mutable_return_()->set_new_barycentric_rotating_rendering_frame(
+  message->mutable_return_()->set_new_barycentric_rotating_navigation_frame(
       SerializePointer(result));
 }
 
-void NewBarycentricRotatingRenderingFrame::Run(
+void NewBarycentricRotatingNavigationFrame::Run(
     Message const& message,
     not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* rendering_frame = principia__NewBarycentricRotatingRenderingFrame(
+  auto* navigation_frame = principia__NewBarycentricRotatingNavigationFrame(
                               plugin, in.primary_index(), in.secondary_index());
   Insert(pointer_map,
-         message.return_().new_barycentric_rotating_rendering_frame(),
-         rendering_frame);
+         message.return_().new_barycentric_rotating_navigation_frame(),
+         navigation_frame);
 }
 
-void DeleteRenderingFrame::Fill(In const& in,
+void DeleteNavigationFrame::Fill(In const& in,
                                 not_null<Message*> const message) {
-  message->mutable_in()->set_rendering_frame(
-      SerializePointer(*in.rendering_frame));
+  message->mutable_in()->set_navigation_frame(
+      SerializePointer(*in.navigation_frame));
 }
 
-void DeleteRenderingFrame::Fill(Out const& out,
+void DeleteNavigationFrame::Fill(Out const& out,
                                 not_null<Message*> const message) {
-  message->mutable_out()->set_rendering_frame(
-      SerializePointer(*out.rendering_frame));
+  message->mutable_out()->set_navigation_frame(
+      SerializePointer(*out.navigation_frame));
 }
 
-void DeleteRenderingFrame::Run(Message const& message,
+void DeleteNavigationFrame::Run(Message const& message,
                                not_null<PointerMap*> const pointer_map) {
-  auto* rendering_frame = DeserializePointer<RenderingFrame*>(
-                              *pointer_map, message.in().rendering_frame());
-  principia__DeleteRenderingFrame(&rendering_frame);
+  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
+                               *pointer_map, message.in().navigation_frame());
+  principia__DeleteNavigationFrame(&navigation_frame);
   // TODO(phl): should we do something with out() here?
 }
 
@@ -594,7 +594,7 @@ void RenderedVesselTrajectory::Fill(In const& in,
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
@@ -608,12 +608,12 @@ void RenderedVesselTrajectory::Run(Message const& message,
                                    not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* rendering_frame = DeserializePointer<RenderingFrame*>(
-                              *pointer_map, in.rendering_frame());
+  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
+                              *pointer_map, in.navigation_frame());
   auto* line_and_iterator = principia__RenderedVesselTrajectory(
                                 plugin,
                                 in.vessel_guid().c_str(),
-                                rendering_frame,
+                                navigation_frame,
                                 DeserializeXYZ(in.sun_world_position()));
   Insert(pointer_map,
          message.return_().rendered_vessel_trajectory(),
@@ -642,7 +642,7 @@ void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
@@ -656,12 +656,12 @@ void RenderedPrediction::Run(Message const& message,
                              not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* rendering_frame = DeserializePointer<RenderingFrame*>(
-                              *pointer_map, in.rendering_frame());
+  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
+                              *pointer_map, in.navigation_frame());
   auto* line_and_iterator = principia__RenderedPrediction(
                                 plugin,
                                 in.vessel_guid().c_str(),
-                                rendering_frame,
+                                navigation_frame,
                                 DeserializeXYZ(in.sun_world_position()));
   Insert(pointer_map,
          message.return_().rendered_prediction(),
@@ -691,7 +691,7 @@ void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
   m->set_plan_phase(in.plan_phase);
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
@@ -709,8 +709,8 @@ void RenderedFlightPlan::Run(Message const& message,
                                 plugin,
                                 in.vessel_guid().c_str(),
                                 in.plan_phase(),
-                                DeserializePointer<RenderingFrame*>(
-                                    *pointer_map, in.rendering_frame()),
+                                DeserializePointer<NavigationFrame*>(
+                                    *pointer_map, in.navigation_frame()),
                                 DeserializeXYZ(in.sun_world_position()));
   Insert(pointer_map,
          message.return_().rendered_flight_plan(),
@@ -936,7 +936,7 @@ void BubbleVelocityCorrection::Run(Message const& message,
 void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
   *m->mutable_ship_world_position() = SerializeXYZ(in.ship_world_position);
 }
@@ -952,8 +952,8 @@ void NavballOrientation::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__NavballOrientation(plugin,
-                                DeserializePointer<RenderingFrame*>(
-                                    *pointer_map, in.rendering_frame()),
+                                DeserializePointer<NavigationFrame*>(
+                                    *pointer_map, in.navigation_frame()),
                                 DeserializeXYZ(in.sun_world_position()),
                                 DeserializeXYZ(in.ship_world_position()));
 }
@@ -962,7 +962,7 @@ void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
 }
 
 void VesselTangent::Fill(Return const& result,
@@ -977,15 +977,15 @@ void VesselTangent::Run(Message const& message,
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__VesselTangent(plugin,
                            in.vessel_guid().c_str(),
-                           DeserializePointer<RenderingFrame*>(
-                               *pointer_map, in.rendering_frame()));
+                           DeserializePointer<NavigationFrame*>(
+                               *pointer_map, in.navigation_frame()));
 }
 
 void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
 }
 
 void VesselNormal::Fill(Return const& result,
@@ -1000,15 +1000,15 @@ void VesselNormal::Run(Message const& message,
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__VesselNormal(plugin,
                           in.vessel_guid().c_str(),
-                          DeserializePointer<RenderingFrame*>(
-                              *pointer_map, in.rendering_frame()));
+                          DeserializePointer<NavigationFrame*>(
+                              *pointer_map, in.navigation_frame()));
 }
 
 void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_rendering_frame(SerializePointer(in.rendering_frame));
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
 }
 
 void VesselBinormal::Fill(Return const& result,
@@ -1023,8 +1023,8 @@ void VesselBinormal::Run(Message const& message,
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   principia__VesselBinormal(plugin,
                             in.vessel_guid().c_str(),
-                            DeserializePointer<RenderingFrame*>(
-                                *pointer_map, in.rendering_frame()));
+                            DeserializePointer<NavigationFrame*>(
+                                *pointer_map, in.navigation_frame()));
 }
 
 void CurrentTime::Fill(In const& in, not_null<Message*> const message) {

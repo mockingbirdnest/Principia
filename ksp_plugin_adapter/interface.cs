@@ -191,7 +191,7 @@ internal static class Interface {
   internal static extern IntPtr RenderedVesselTrajectory(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr rendering_frame,
+      IntPtr navigation_frame,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -214,7 +214,7 @@ internal static class Interface {
   internal static extern IntPtr RenderedPrediction(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr rendering_frame,
+      IntPtr navigation_frame,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -293,7 +293,7 @@ internal static class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern WXYZ NavballOrientation(
       this IntPtr plugin,
-      IntPtr rendering_frame,
+      IntPtr navigation_frame,
       XYZ sun_world_position,
       XYZ ship_world_position);
 
@@ -303,7 +303,7 @@ internal static class Interface {
   internal static extern XYZ VesselTangent(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr rendering_frame);
+      IntPtr navigation_frame);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselNormal",
@@ -311,7 +311,7 @@ internal static class Interface {
   internal static extern XYZ VesselNormal(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr rendering_frame);
+      IntPtr navigation_frame);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselBinormal",
@@ -319,7 +319,7 @@ internal static class Interface {
   internal static extern XYZ VesselBinormal(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr rendering_frame);
+      IntPtr navigation_frame);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__CurrentTime",
@@ -349,25 +349,25 @@ internal static class Interface {
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        =
-                 "principia__NewBodyCentredNonRotatingRenderingFrame",
+                 "principia__NewBodyCentredNonRotatingNavigationFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr NewBodyCentredNonRotatingRenderingFrame(
+  internal static extern IntPtr NewBodyCentredNonRotatingNavigationFrame(
       this IntPtr plugin,
       int reference_body_index);
 
   [DllImport(
        dllName           : kDllPath,
-       EntryPoint        = "principia__NewBarycentricRotatingRenderingFrame",
+       EntryPoint        = "principia__NewBarycentricRotatingNavigationFrame",
        CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr NewBarycentricRotatingRenderingFrame(
+  internal static extern IntPtr NewBarycentricRotatingNavigationFrame(
       this IntPtr plugin,
       int primary_index,
       int secondary_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteRenderingFrame",
+             EntryPoint        = "principia__DeleteNavigationFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteRenderingFrame(ref IntPtr rendering_frame);
+  internal static extern void DeleteNavigationFrame(ref IntPtr navigation_frame);
 }
 
 }  // namespace ksp_plugin_adapter

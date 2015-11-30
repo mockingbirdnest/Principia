@@ -564,8 +564,8 @@ TEST_F(PluginTest, Navball) {
                 0 * Radian);
   plugin.InsertSun(SolarSystemFactory::kSun, sun_gravitational_parameter_);
   plugin.EndInitialization();
-  not_null<std::unique_ptr<RenderingFrame>> const heliocentric =
-      plugin.NewBodyCentredNonRotatingRenderingFrame(SolarSystemFactory::kSun);
+  not_null<std::unique_ptr<NavigationFrame>> const heliocentric =
+      plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::kSun);
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
@@ -600,8 +600,8 @@ TEST_F(PluginTest, Frenet) {
                                 Normalize(-satellite_initial_displacement_));
   // World is left-handed, but the Frenet trihedron is right-handed.
   Vector<double, World> b(-geometry::Cross(t.coordinates(), n.coordinates()));
-  not_null<std::unique_ptr<RenderingFrame>> const geocentric =
-      plugin.NewBodyCentredNonRotatingRenderingFrame(
+  not_null<std::unique_ptr<NavigationFrame>> const geocentric =
+      plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::kEarth);
   EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
               AlmostEquals(t, 2));

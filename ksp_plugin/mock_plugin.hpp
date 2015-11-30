@@ -72,14 +72,14 @@ class MockPlugin : public Plugin {
       RenderedVesselTrajectory,
       RenderedTrajectory<World>(
           GUID const& vessel_guid,
-          not_null<RenderingFrame*> const rendering_frame,
+          not_null<NavigationFrame*> const navigation_frame,
           Position<World> const& sun_world_position));
 
   MOCK_METHOD3(
       RenderedPrediction,
       RenderedTrajectory<World>(
           GUID const& vessel_guid,
-          not_null<RenderingFrame*> const rendering_frame,
+          not_null<NavigationFrame*> const navigation_frame,
           Position<World> const& sun_world_position));
 
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
@@ -93,25 +93,25 @@ class MockPlugin : public Plugin {
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
   // call mock functions which fill a std::unique_ptr<> instead of returning it.
-  not_null<std::unique_ptr<RenderingFrame>>
-  NewBodyCentredNonRotatingRenderingFrame(
+  not_null<std::unique_ptr<NavigationFrame>>
+  NewBodyCentredNonRotatingNavigationFrame(
       Index const reference_body_index) const override;
 
-  not_null<std::unique_ptr<RenderingFrame>>
-  NewBarycentricRotatingRenderingFrame(
+  not_null<std::unique_ptr<NavigationFrame>>
+  NewBarycentricRotatingNavigationFrame(
       Index const primary_index,
       Index const secondary_index) const override;
 
   MOCK_CONST_METHOD2(
-      FillBodyCentredNonRotatingRenderingFrame,
+      FillBodyCentredNonRotatingNavigationFrame,
       void(Index const reference_body_index,
-           std::unique_ptr<RenderingFrame>* rendering_frame));
+           std::unique_ptr<NavigationFrame>* navigation_frame));
 
   MOCK_CONST_METHOD3(
-      FillBarycentricRotatingRenderingFrame,
+      FillBarycentricRotatingNavigationFrame,
       void(Index const primary_index,
            Index const secondary_index,
-           std::unique_ptr<RenderingFrame>* rendering_frame));
+           std::unique_ptr<NavigationFrame>* navigation_frame));
 
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
@@ -134,23 +134,23 @@ class MockPlugin : public Plugin {
 
   MOCK_CONST_METHOD2(Navball,
                      FrameField<World>(
-                         not_null<RenderingFrame*> const rendering_frame,
+                         not_null<NavigationFrame*> const navigation_frame,
                          Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD2(VesselTangent,
                      Vector<double, World>(
                          GUID const& vessel_guid,
-                         not_null<RenderingFrame*> const rendering_frame));
+                         not_null<NavigationFrame*> const navigation_frame));
 
   MOCK_CONST_METHOD2(VesselNormal,
                      Vector<double, World>(
                          GUID const& vessel_guid,
-                         not_null<RenderingFrame*> const rendering_frame));
+                         not_null<NavigationFrame*> const navigation_frame));
 
   MOCK_CONST_METHOD2(VesselBinormal,
                      Vector<double, World>(
                          GUID const& vessel_guid,
-                         not_null<RenderingFrame*> const rendering_frame));
+                         not_null<NavigationFrame*> const navigation_frame));
 
   MOCK_CONST_METHOD0(CurrentTime, Instant());
 

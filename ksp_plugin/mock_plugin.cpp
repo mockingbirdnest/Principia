@@ -22,24 +22,24 @@ void MockPlugin::DirectlyInsertCelestial(
                                   body);
 }
 
-not_null<std::unique_ptr<RenderingFrame>>
-MockPlugin::NewBodyCentredNonRotatingRenderingFrame(
+not_null<std::unique_ptr<NavigationFrame>>
+MockPlugin::NewBodyCentredNonRotatingNavigationFrame(
     Index const reference_body_index) const {
-  std::unique_ptr<RenderingFrame> rendering_frame;
-  FillBodyCentredNonRotatingRenderingFrame(reference_body_index,
-                                           &rendering_frame);
-  return std::move(rendering_frame);
+  std::unique_ptr<NavigationFrame> navigation_frame;
+  FillBodyCentredNonRotatingNavigationFrame(reference_body_index,
+                                            &navigation_frame);
+  return std::move(navigation_frame);
 }
 
-not_null<std::unique_ptr<RenderingFrame>>
-MockPlugin::NewBarycentricRotatingRenderingFrame(
+not_null<std::unique_ptr<NavigationFrame>>
+MockPlugin::NewBarycentricRotatingNavigationFrame(
     Index const primary_index,
     Index const secondary_index) const {
-  std::unique_ptr<RenderingFrame> rendering_frame;
-  FillBarycentricRotatingRenderingFrame(primary_index,
-                                        secondary_index,
-                                        &rendering_frame);
-  return std::move(rendering_frame);
+  std::unique_ptr<NavigationFrame> navigation_frame;
+  FillBarycentricRotatingNavigationFrame(primary_index,
+                                         secondary_index,
+                                         &navigation_frame);
+  return std::move(navigation_frame);
 }
 
 void MockPlugin::AddVesselToNextPhysicsBubble(
