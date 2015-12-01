@@ -59,8 +59,8 @@ namespace physics {
     // U4 = 22:18:54
     // P4 = 23:17:21
     // 2433373.84121743  2433373.88184243  2433373.52164567  2433373.5403378 2433373.59683085  2433373.63742113
-    float etimes[6] = {2433373.84121743, 2433373.88184243, 2433373.52164567, 2433373.5403378, 2433373.59683085, 2433373.63742113};
-      for(int i = 0; i <= 5; i++) {
+    double etimes[6] = {2433373.84121743, 2433373.88184243, 2433373.52164567, 2433373.5403378, 2433373.59683085, 2433373.63742113};
+    for(int i = 0; i <= 5; i++) {
       auto some_instant = JulianDate(etimes[i]);
       auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
       auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(some_instant, nullptr);
@@ -70,8 +70,8 @@ namespace physics {
       // Lunar eclipse
       // Earth/Sun lineup
       auto alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
-      auto q_U23 = q_earth + Normalize(q_sun - q_earth) * (r_earth - r_moon) / Sin(alpha);
-      auto q_U14 = q_earth + Normalize(q_sun - q_earth) * (r_earth + r_moon) / Sin(alpha);
+      auto q_U23 = q_earth + Normalize(q_earth - q_sun) * (r_earth - r_moon) / Sin(alpha);
+      auto q_U14 = q_earth + Normalize(q_earth - q_sun) * (r_earth + r_moon) / Sin(alpha);
       // Earth/Moon lineup
       auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
       auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
