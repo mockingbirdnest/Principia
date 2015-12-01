@@ -950,7 +950,8 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   for (auto it = begin; it != end; ++it) {
     intermediate_trajectory.Append(
         it.time(),
-        navigation_frame->ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+        navigation_frame->ToThisFrameAtTime(it.time())(
+            it.degrees_of_freedom()));
   }
 
   // Render the trajectory at current time in |World|.

@@ -428,7 +428,8 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
                                            secondary_index).release());
 }
 
-void principia__DeleteNavigationFrame(NavigationFrame** const navigation_frame) {
+void principia__DeleteNavigationFrame(
+    NavigationFrame** const navigation_frame) {
   Journal::Method<DeleteNavigationFrame> m({navigation_frame},
                                            {navigation_frame});
   TakeOwnership(navigation_frame);

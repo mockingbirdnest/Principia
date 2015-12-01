@@ -217,9 +217,9 @@ class Plugin {
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |CurrentTime()| to
   // |CurrentTime() + prediction_length_| in the frame defined by
-  // |navigation_frame|.  |sun_world_position| is the current position of the sun
-  // in |World| space as returned by |Planetarium.fetch.Sun.position|.  It is
-  // used to define the relation between |WorldSun| and |World|.
+  // |navigation_frame|.  |sun_world_position| is the current position of the
+  // sun in |World| space as returned by |Planetarium.fetch.Sun.position|.  It
+  // is used to define the relation between |WorldSun| and |World|.
   // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
   // called after |predicted_vessel_| was set.  Not const because of the stupid

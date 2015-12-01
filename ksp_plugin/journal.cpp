@@ -512,8 +512,9 @@ void NewBodyCentredNonRotatingNavigationFrame::Fill(
 void NewBodyCentredNonRotatingNavigationFrame::Fill(
     Return const& result,
     not_null<Message*> const message) {
-  message->mutable_return_()->set_new_body_centred_non_rotating_navigation_frame(
-      SerializePointer(result));
+  message->mutable_return_()->
+      set_new_body_centred_non_rotating_navigation_frame(
+          SerializePointer(result));
 }
 
 void NewBodyCentredNonRotatingNavigationFrame::Run(

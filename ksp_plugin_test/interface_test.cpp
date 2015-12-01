@@ -157,7 +157,8 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialFromParent(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__NewBodyCentredNonRotatingNavigationFrame(plugin, kCelestialIndex);
+    principia__NewBodyCentredNonRotatingNavigationFrame(plugin,
+                                                        kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__LogFatal("a fatal error");

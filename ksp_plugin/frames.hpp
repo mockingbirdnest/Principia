@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <functional>
 
@@ -42,7 +42,7 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
 
-// The frame used for trajectory plotting and man�uvre planning.  Its definition
+// The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
                          serialization::Frame::NAVIGATION, false>;
