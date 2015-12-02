@@ -34,7 +34,17 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5057.
+  extensions 5000 to 5999;  // Last used: 5058.
+}
+
+message ActivateJournal {
+  extend Method {
+    optional ActivateJournal extension = 5058;
+  }
+  message In {
+    required bool activate = 1;
+  }
+  required In in = 1;
 }
 
 message AddVesselToNextPhysicsBubble {

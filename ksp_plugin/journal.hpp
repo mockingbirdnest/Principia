@@ -25,6 +25,17 @@ struct InitGoogleLogging {
                   not_null<PointerMap*> const pointer_map);
 };
 
+struct ActivateJournal {
+  struct In {
+    bool const activate;
+  };
+
+  using Message = serialization::ActivateJournal;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<PointerMap*> const pointer_map);
+};
+
 struct SetBufferedLogging {
   struct In {
     int const max_severity;

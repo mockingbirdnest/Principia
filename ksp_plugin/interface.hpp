@@ -84,6 +84,9 @@ static_assert(std::is_standard_layout<KSPPart>::value,
 extern "C" DLLEXPORT
 void CDECL principia__InitGoogleLogging();
 
+extern "C" DLLEXPORT
+void CDECL principia__ActivateJournal(bool const activate);
+
 // Log messages at a level |<= max_severity| are buffered.
 // Log messages at a higher level are flushed immediately.
 extern "C" DLLEXPORT

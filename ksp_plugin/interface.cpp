@@ -158,6 +158,25 @@ void principia__InitGoogleLogging() {
   return m.Return();
 }
 
+void principia__ActivateJournal(bool const activate) {
+  Journal::Method<ActivateJournal> m({activate});
+  if (activate) {
+    // Build a name somewhat similar to that of the log files.
+    auto const now = std::chrono::system_clock::now();
+    std::time_t const time = std::chrono::system_clock::to_time_t(now);
+    std::tm* const localtime = std::localtime(&time);
+    std::stringstream name;
+    name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
+    Journal* const journal =
+        new Journal(std::experimental::filesystem::path("glog") /
+                    "Principia" / name.str());
+    Journal::Activate(journal);
+  } else {
+    Journal::Deactivate();
+  }
+  return m.Return();
+}
+
 void principia__SetBufferedLogging(int const max_severity) {
   Journal::Method<SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;

@@ -117,6 +117,16 @@ serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
 void InitGoogleLogging::Run(Message const& message,
                             not_null<PointerMap*> const pointer_map) {}
 
+void ActivateJournal::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_activate(in.activate);
+}
+
+void ActivateJournal::Run(Message const& message,
+                          not_null<PointerMap*> const pointer_map) {
+  // Do not run ActivateJournal when replaying because it might create another
+  // journal and we must go deeper.
+}
+
 void SetBufferedLogging::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_max_severity(in.max_severity);
 }
