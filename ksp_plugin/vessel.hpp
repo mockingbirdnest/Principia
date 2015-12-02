@@ -27,7 +27,7 @@ class Vessel {
  public:
   using Manœuvres =
       std::vector<
-          not_null<std::unique_ptr<Manœuvre<Barycentric, Rendering> const>>>;
+          not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
 
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
