@@ -172,6 +172,13 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
   }, ExitedWithCode(kExitCode), "");
 }
 
+TEST_F(InterfaceDeathTest, ActivateJournal) {
+  EXPECT_DEATH({
+    // Fails because the glog directory doesn't exist.
+    principia__ActivateJournal(true);
+  }, "glog.Principia.JOURNAL");
+}
+
 TEST_F(InterfaceTest, Log) {
   principia__LogInfo("An info");
   principia__LogWarning("A warning");

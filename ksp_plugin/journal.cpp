@@ -1164,7 +1164,9 @@ void SayHello::Run(Message const& message,
 }
 
 Journal::Journal(std::experimental::filesystem::path const& path)
-    : stream_(path, std::ios::out) {}
+    : stream_(path, std::ios::out) {
+  CHECK(!stream_.fail()) << path;
+}
 
 Journal::~Journal() {
   stream_.close();
@@ -1204,6 +1206,7 @@ bool Player::Play() {
   }
 
   bool ran = false;
+  ran |= RunIfAppropriate<ActivateJournal>(*method);
   ran |= RunIfAppropriate<AddVesselToNextPhysicsBubble>(*method);
   ran |= RunIfAppropriate<AdvanceTime>(*method);
   ran |= RunIfAppropriate<AtEnd>(*method);
