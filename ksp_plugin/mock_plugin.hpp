@@ -75,7 +75,7 @@ class MockPlugin : public Plugin {
           not_null<NavigationFrame*> const navigation_frame,
           Position<World> const& sun_world_position));
 
-  MOCK_METHOD3(
+  MOCK_CONST_METHOD3(
       RenderedPrediction,
       RenderedTrajectory<World>(
           GUID const& vessel_guid,
