@@ -659,11 +659,8 @@ TEST_F(InterfaceTest, NavballOrientation) {
       Rotation<World, World>(π / 2 * Radian,
                              Bivector<double, World>({4, 5, 6}));
   EXPECT_CALL(*plugin_, Navball(navigation_frame, sun_position))
-    .WillOnce(
-         Return(
-             [rotation](Position<World> const& q) {
-               return rotation;
-             }));
+      .WillOnce(
+          Return([rotation](Position<World> const& q) { return rotation; }));
   WXYZ q = principia__NavballOrientation(plugin_.get(),
                                          navigation_frame,
                                          {1, 2, 3},
@@ -694,7 +691,7 @@ TEST_F(InterfaceTest, Frenet) {
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
     EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID, navigation_frame))
-      .WillOnce(Return(tangent));
+        .WillOnce(Return(tangent));
     XYZ t =
         principia__VesselTangent(plugin_.get(), kVesselGUID, navigation_frame);
     EXPECT_EQ(t.x, tangent.coordinates().x);
@@ -704,7 +701,7 @@ TEST_F(InterfaceTest, Frenet) {
   {
     auto const normal = Vector<double, World>({-13, 7, 5});
     EXPECT_CALL(*plugin_, VesselNormal(kVesselGUID, navigation_frame))
-      .WillOnce(Return(normal));
+        .WillOnce(Return(normal));
     XYZ n =
         principia__VesselNormal(plugin_.get(), kVesselGUID, navigation_frame);
     EXPECT_EQ(n.x, normal.coordinates().x);
@@ -714,7 +711,7 @@ TEST_F(InterfaceTest, Frenet) {
   {
     auto const binormal = Vector<double, World>({43, 67, 163});
     EXPECT_CALL(*plugin_, VesselBinormal(kVesselGUID, navigation_frame))
-      .WillOnce(Return(binormal));
+        .WillOnce(Return(binormal));
     XYZ b =
         principia__VesselBinormal(plugin_.get(), kVesselGUID, navigation_frame);
     EXPECT_EQ(b.x, binormal.coordinates().x);
