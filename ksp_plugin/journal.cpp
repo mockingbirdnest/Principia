@@ -987,7 +987,7 @@ void NavballOrientation::Run(Message const& message,
                 plugin,
                 DeserializePointer<NavigationFrame*>(
                     *pointer_map, in.navigation_frame()),
-                                DeserializeXYZ(in.sun_world_position()),
+                DeserializeXYZ(in.sun_world_position()),
                 DeserializeXYZ(in.ship_world_position())));
 }
 
