@@ -95,6 +95,23 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
 
 }  // namespace
 
+bool operator==(XYZ const& left, XYZ const& right) {
+  return left.x == right.x && left.y == right.y && left.z == right.z;
+}
+
+bool operator==(XYZSegment const& left, XYZSegment const& right) {
+  return left.begin == right.begin && left.end == right.end;
+}
+
+bool operator==(WXYZ const& left, WXYZ const& right) {
+  return left.w == right.w && left.x == right.x &&
+         left.y == right.y && left.z == right.z;
+}
+
+bool operator==(QP const& left, QP const& right) {
+  return left.q == right.q && left.p == right.p;
+}
+
 void principia__InitGoogleLogging() {
   Journal::Method<InitGoogleLogging> m;
   if (google::IsGoogleLoggingInitialized()) {
@@ -137,6 +154,25 @@ void principia__InitGoogleLogging() {
                              sizeof(module_info)));
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
 #endif
+  }
+  return m.Return();
+}
+
+void principia__ActivateJournal(bool const activate) {
+  Journal::Method<ActivateJournal> m({activate});
+  if (activate) {
+    // Build a name somewhat similar to that of the log files.
+    auto const now = std::chrono::system_clock::now();
+    std::time_t const time = std::chrono::system_clock::to_time_t(now);
+    std::tm* const localtime = std::localtime(&time);
+    std::stringstream name;
+    name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
+    Journal* const journal =
+        new Journal(std::experimental::filesystem::path("glog") /
+                    "Principia" / name.str());
+    Journal::Activate(journal);
+  } else {
+    Journal::Deactivate();
   }
   return m.Return();
 }

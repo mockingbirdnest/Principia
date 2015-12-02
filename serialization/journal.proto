@@ -34,7 +34,17 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5057.
+  extensions 5000 to 5999;  // Last used: 5058.
+}
+
+message ActivateJournal {
+  extend Method {
+    optional ActivateJournal extension = 5058;
+  }
+  message In {
+    required bool activate = 1;
+  }
+  required In in = 1;
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -533,7 +543,7 @@ message PhysicsBubbleIsEmpty {
     required fixed64 plugin = 1;
   }
   message Return {
-    required bool physics_buble_is_empty = 1;
+    required bool physics_bubble_is_empty = 1;
   }
   required In in = 1;
   required Return return = 3;

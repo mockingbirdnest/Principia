@@ -29,6 +29,8 @@ struct XYZ {
 static_assert(std::is_standard_layout<XYZ>::value,
               "XYZ is used for interfacing");
 
+bool operator==(XYZ const& left, XYZ const& right);
+
 extern "C"
 struct XYZSegment {
   XYZ begin, end;
@@ -36,6 +38,18 @@ struct XYZSegment {
 
 static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
+
+bool operator==(XYZSegment const& left, XYZSegment const& right);
+
+extern "C"
+struct WXYZ {
+  double w, x, y, z;
+};
+
+static_assert(std::is_standard_layout<WXYZ>::value,
+              "WXYZ is used for interfacing");
+
+bool operator==(WXYZ const& left, WXYZ const& right);
 
 extern "C"
 struct QP {
@@ -45,13 +59,7 @@ struct QP {
 static_assert(std::is_standard_layout<QP>::value,
               "QP is used for interfacing");
 
-extern "C"
-struct WXYZ {
-  double w, x, y, z;
-};
-
-static_assert(std::is_standard_layout<WXYZ>::value,
-              "WXYZ is used for interfacing");
+bool operator==(QP const& left, QP const& right);
 
 extern "C"
 struct KSPPart {
@@ -75,6 +83,9 @@ static_assert(std::is_standard_layout<KSPPart>::value,
 // where date and time are in ISO 8601 basic format.
 extern "C" DLLEXPORT
 void CDECL principia__InitGoogleLogging();
+
+extern "C" DLLEXPORT
+void CDECL principia__ActivateJournal(bool const activate);
 
 // Log messages at a level |<= max_severity| are buffered.
 // Log messages at a higher level are flushed immediately.

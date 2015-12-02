@@ -15,6 +15,11 @@ internal static class Log {
   internal static extern void InitGoogleLogging();
 
   [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__ActivateJournal",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void ActivateJournal(bool activate);
+
+  [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__SetBufferedLogging",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetBufferedLogging(int max_severity);

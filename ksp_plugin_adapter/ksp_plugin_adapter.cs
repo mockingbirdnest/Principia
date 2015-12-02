@@ -97,6 +97,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int stderr_logging_ = 2;
   [KSPField(isPersistant = true)]
   private int buffered_logging_ = 0;
+
+  [KSPField(isPersistant = true)]
+  private bool must_record_journal_ = false;
 #if CRASH_BUTTON
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
@@ -400,6 +403,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
+    if (must_record_journal_) {
+      Log.ActivateJournal(true);
+    }
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       SetRotatingFrameThresholds();
