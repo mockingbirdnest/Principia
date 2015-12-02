@@ -149,7 +149,8 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialFromParent(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__NewBodyCentredNonRotatingRenderingFrame(plugin, kCelestialIndex);
+    principia__NewBodyCentredNonRotatingNavigationFrame(plugin,
+                                                        kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__LogFatal("a fatal error");
@@ -394,64 +395,64 @@ TEST_F(InterfaceTest, CelestialFromParent) {
   EXPECT_THAT(result, Eq(kParentRelativeDegreesOfFreedom));
 }
 
-TEST_F(InterfaceTest, NewBodyCentredNonRotatingRenderingFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+TEST_F(InterfaceTest, NewBodyCentredNonRotatingNavigationFrame) {
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingRenderingFrame(kCelestialIndex, _))
-      .WillOnce(FillUniquePtr<1>(mock_rendering_frame));
-  std::unique_ptr<RenderingFrame> rendering_frame(
-      principia__NewBodyCentredNonRotatingRenderingFrame(plugin_.get(),
-                                                         kCelestialIndex));
-  EXPECT_EQ(mock_rendering_frame, rendering_frame.get());
+              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr<1>(mock_navigation_frame));
+  std::unique_ptr<NavigationFrame> navigation_frame(
+      principia__NewBodyCentredNonRotatingNavigationFrame(plugin_.get(),
+                                                          kCelestialIndex));
+  EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
-TEST_F(InterfaceTest, NewBarycentricRotatingRenderingFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+TEST_F(InterfaceTest, NewBarycentricRotatingNavigationFrame) {
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
-                                                    kParentIndex,
-                                                    _))
-      .WillOnce(FillUniquePtr<2>(mock_rendering_frame));
-  std::unique_ptr<RenderingFrame> rendering_frame(
-      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
-                                                      kCelestialIndex,
-                                                      kParentIndex));
-  EXPECT_EQ(mock_rendering_frame, rendering_frame.get());
+              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
+                                                     kParentIndex,
+                                                     _))
+      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+  std::unique_ptr<NavigationFrame> navigation_frame(
+      principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
+                                                       kCelestialIndex,
+                                                       kParentIndex));
+  EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
-TEST_F(InterfaceTest, DeleteRenderingFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+TEST_F(InterfaceTest, DeleteNavigationFrame) {
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
-                                                    kParentIndex,
-                                                    _))
-      .WillOnce(FillUniquePtr<2>(mock_rendering_frame));
-  RenderingFrame* rendering_frame(
-      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
-                                                      kCelestialIndex,
-                                                      kParentIndex));
-  EXPECT_EQ(mock_rendering_frame, rendering_frame);
-  principia__DeleteRenderingFrame(&rendering_frame);
-  EXPECT_THAT(rendering_frame, IsNull());
+              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
+                                                     kParentIndex,
+                                                     _))
+      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+  NavigationFrame* navigation_frame(
+      principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
+                                                       kCelestialIndex,
+                                                       kParentIndex));
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, RenderedPrediction) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
+              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
                                                     kParentIndex,
                                                     _))
-      .WillOnce(FillUniquePtr<2>(mock_rendering_frame));
-  RenderingFrame* rendering_frame =
-      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
+      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+  NavigationFrame* navigation_frame =
+      principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
                                                       kCelestialIndex,
                                                       kParentIndex);
 
@@ -474,7 +475,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_CALL(*plugin_,
               RenderedPrediction(
                   kVesselGUID,
-                  check_not_null(rendering_frame),
+                  check_not_null(navigation_frame),
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
@@ -483,7 +484,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   LineAndIterator* line_and_iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     kVesselGUID,
-                                    rendering_frame,
+                                    navigation_frame,
                                     kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
   EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
@@ -505,24 +506,24 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
-  EXPECT_EQ(mock_rendering_frame, rendering_frame);
-  principia__DeleteRenderingFrame(&rendering_frame);
-  EXPECT_THAT(rendering_frame, IsNull());
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, LineAndIterator) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
-                                                    kParentIndex,
-                                                    _))
-      .WillOnce(FillUniquePtr<2>(mock_rendering_frame));
-  RenderingFrame* rendering_frame =
-      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
-                                                      kCelestialIndex,
-                                                      kParentIndex);
+              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
+                                                     kParentIndex,
+                                                     _))
+      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+  NavigationFrame* navigation_frame =
+      principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
+                                                       kCelestialIndex,
+                                                       kParentIndex);
 
   // Construct a test rendered trajectory.
   RenderedTrajectory<World> rendered_trajectory;
@@ -545,7 +546,7 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_CALL(*plugin_,
               RenderedVesselTrajectory(
                   kVesselGUID,
-                  check_not_null(rendering_frame),
+                  check_not_null(navigation_frame),
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
@@ -554,7 +555,7 @@ TEST_F(InterfaceTest, LineAndIterator) {
   LineAndIterator* line_and_iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
-                                          rendering_frame,
+                                          navigation_frame,
                                           kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
   EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
@@ -576,9 +577,9 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
-  EXPECT_EQ(mock_rendering_frame, rendering_frame);
-  principia__DeleteRenderingFrame(&rendering_frame);
-  EXPECT_THAT(rendering_frame, IsNull());
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
@@ -636,18 +637,18 @@ TEST_F(InterfaceTest, PhysicsBubble) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
+              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
-      .WillOnce(FillUniquePtr<2>(mock_rendering_frame));
-  RenderingFrame* rendering_frame =
-      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
-                                                  kCelestialIndex,
-                                                  kParentIndex);
+      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+  NavigationFrame* navigation_frame =
+      principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
+                                                       kCelestialIndex,
+                                                       kParentIndex);
   Position<World> sun_position =
       World::origin + Displacement<World>(
                           {1 * SIUnit<Length>(),
@@ -656,14 +657,11 @@ TEST_F(InterfaceTest, NavballOrientation) {
   auto const rotation =
       Rotation<World, World>(π / 2 * Radian,
                              Bivector<double, World>({4, 5, 6}));
-  EXPECT_CALL(*plugin_, Navball(check_not_null(rendering_frame), sun_position))
-    .WillOnce(
-         Return(
-             [rotation](Position<World> const& q) {
-               return rotation;
-             }));
+  EXPECT_CALL(*plugin_, Navball(check_not_null(navigation_frame), sun_position))
+      .WillOnce(
+          Return([rotation](Position<World> const& q) { return rotation; }));
   WXYZ q = principia__NavballOrientation(plugin_.get(),
-                                         rendering_frame,
+                                         navigation_frame,
                                          {1, 2, 3},
                                          {2, 3, 5});
   EXPECT_EQ(q.w, rotation.quaternion().real_part());
@@ -671,61 +669,61 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_EQ(q.y, rotation.quaternion().imaginary_part().y);
   EXPECT_EQ(q.z, rotation.quaternion().imaginary_part().z);
 
-  EXPECT_EQ(mock_rendering_frame, rendering_frame);
-  principia__DeleteRenderingFrame(&rendering_frame);
-  EXPECT_THAT(rendering_frame, IsNull());
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, Frenet) {
-  StrictMock<MockDynamicFrame<Barycentric, Rendering>>* const
-     mock_rendering_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Rendering>>;
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+     mock_navigation_frame =
+         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingRenderingFrame(kCelestialIndex,
+              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
-      .WillOnce(FillUniquePtr<2>(mock_rendering_frame));
-  RenderingFrame* rendering_frame =
-      principia__NewBarycentricRotatingRenderingFrame(plugin_.get(),
-                                                  kCelestialIndex,
-                                                  kParentIndex);
+      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
+  NavigationFrame* navigation_frame =
+      principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
+                                                       kCelestialIndex,
+                                                       kParentIndex);
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
-    EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID,
-                                        check_not_null(rendering_frame)))
-      .WillOnce(Return(tangent));
+    EXPECT_CALL(*plugin_,
+                VesselTangent(kVesselGUID, check_not_null(navigation_frame)))
+        .WillOnce(Return(tangent));
     XYZ t =
-        principia__VesselTangent(plugin_.get(), kVesselGUID, rendering_frame);
+        principia__VesselTangent(plugin_.get(), kVesselGUID, navigation_frame);
     EXPECT_EQ(t.x, tangent.coordinates().x);
     EXPECT_EQ(t.y, tangent.coordinates().y);
     EXPECT_EQ(t.z, tangent.coordinates().z);
   }
   {
     auto const normal = Vector<double, World>({-13, 7, 5});
-    EXPECT_CALL(*plugin_, VesselNormal(kVesselGUID,
-                                       check_not_null(rendering_frame)))
-      .WillOnce(Return(normal));
+    EXPECT_CALL(*plugin_,
+                VesselNormal(kVesselGUID, check_not_null(navigation_frame)))
+        .WillOnce(Return(normal));
     XYZ n =
-        principia__VesselNormal(plugin_.get(), kVesselGUID, rendering_frame);
+        principia__VesselNormal(plugin_.get(), kVesselGUID, navigation_frame);
     EXPECT_EQ(n.x, normal.coordinates().x);
     EXPECT_EQ(n.y, normal.coordinates().y);
     EXPECT_EQ(n.z, normal.coordinates().z);
   }
   {
     auto const binormal = Vector<double, World>({43, 67, 163});
-    EXPECT_CALL(*plugin_, VesselBinormal(kVesselGUID,
-                                         check_not_null(rendering_frame)))
-      .WillOnce(Return(binormal));
+    EXPECT_CALL(*plugin_,
+                VesselBinormal(kVesselGUID, check_not_null(navigation_frame)))
+        .WillOnce(Return(binormal));
     XYZ b =
-        principia__VesselBinormal(plugin_.get(), kVesselGUID, rendering_frame);
+        principia__VesselBinormal(plugin_.get(), kVesselGUID, navigation_frame);
     EXPECT_EQ(b.x, binormal.coordinates().x);
     EXPECT_EQ(b.y, binormal.coordinates().y);
     EXPECT_EQ(b.z, binormal.coordinates().z);
   }
 
-  EXPECT_EQ(mock_rendering_frame, rendering_frame);
-  principia__DeleteRenderingFrame(&rendering_frame);
-  EXPECT_THAT(rendering_frame, IsNull());
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, CurrentTime) {

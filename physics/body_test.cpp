@@ -287,7 +287,7 @@ TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::PluginTag,
                    serialization::Frame::PRE_BOREL_BARYCENTRIC>();
   TestRotatingBody<serialization::Frame::PluginTag,
-                   serialization::Frame::RENDERING>();
+                   serialization::Frame::NAVIGATION>();
   TestRotatingBody<serialization::Frame::PluginTag,
                   serialization::Frame::WORLD>();
   TestRotatingBody<serialization::Frame::PluginTag,

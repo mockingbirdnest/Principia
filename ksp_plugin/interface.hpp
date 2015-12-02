@@ -223,24 +223,24 @@ QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-RenderingFrame* CDECL principia__NewBodyCentredNonRotatingRenderingFrame(
+NavigationFrame* CDECL principia__NewBodyCentredNonRotatingNavigationFrame(
     Plugin const* const plugin,
     int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-RenderingFrame* CDECL principia__NewBarycentricRotatingRenderingFrame(
+NavigationFrame* CDECL principia__NewBarycentricRotatingNavigationFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index);
 
-// Deletes and nulls |*rendering_frame|.
-// |rendering_frame| must not be null.  No transfer of ownership of
-// |*rendering_frame|, takes ownership of |**rendering_frame|.
+// Deletes and nulls |*navigation_frame|.
+// |navigation_frame| must not be null.  No transfer of ownership of
+// |*navigation_frame|, takes ownership of |**navigation_frame|.
 extern "C" DLLEXPORT
-void CDECL principia__DeleteRenderingFrame(
-    RenderingFrame** const rendering_frame);
+void CDECL principia__DeleteNavigationFrame(
+    NavigationFrame** const navigation_frame);
 
 extern "C" DLLEXPORT
 void principia__UpdatePrediction(Plugin const* const plugin,
@@ -255,7 +255,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    RenderingFrame* const rendering_frame,
+    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -266,7 +266,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedPrediction(
     Plugin* const plugin,
     char const* const vessel_guid,
-    RenderingFrame* const rendering_frame,
+    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -278,7 +278,7 @@ LineAndIterator* CDECL principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* const vessel_guid,
     int const plan_phase,
-    RenderingFrame* const rendering_frame,
+    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
@@ -344,25 +344,26 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                               int const reference_body_index);
 
 extern "C" DLLEXPORT
-WXYZ CDECL principia__NavballOrientation(Plugin const* const plugin,
-                                         RenderingFrame* const rendering_frame,
-                                         XYZ const sun_world_position,
-                                         XYZ const ship_world_position);
+WXYZ CDECL principia__NavballOrientation(
+    Plugin const* const plugin,
+    NavigationFrame* const navigation_frame,
+    XYZ const sun_world_position,
+    XYZ const ship_world_position);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
                                    char const* const vessel_guid,
-                                   RenderingFrame* const rendering_frame);
+                                   NavigationFrame* const navigation_frame);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselNormal(Plugin const* const plugin,
                                   char const* const vessel_guid,
-                                  RenderingFrame* const rendering_frame);
+                                  NavigationFrame* const navigation_frame);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselBinormal(Plugin const* const plugin,
                                     char const* const vessel_guid,
-                                    RenderingFrame* const rendering_frame);
+                                    NavigationFrame* const navigation_frame);
 
 extern "C" DLLEXPORT
 double CDECL principia__CurrentTime(Plugin const* const plugin);

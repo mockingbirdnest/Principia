@@ -61,7 +61,7 @@ class ReferenceFrameSelector {
   }
 
   ~ReferenceFrameSelector() {
-    Interface.DeleteRenderingFrame(ref frame_);
+    Interface.DeleteNavigationFrame(ref frame_);
   }
 
   public IntPtr frame { get { return frame_; } }
@@ -194,10 +194,10 @@ class ReferenceFrameSelector {
 
   private void ResetFrame() {
     on_change_();
-    Interface.DeleteRenderingFrame(ref frame_);
+    Interface.DeleteNavigationFrame(ref frame_);
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        frame_ = plugin_.NewBodyCentredNonRotatingRenderingFrame(
+        frame_ = plugin_.NewBodyCentredNonRotatingNavigationFrame(
                      selected_celestial_.flightGlobalsIndex);
       break;
 #if HAS_SURFACE
@@ -206,7 +206,7 @@ class ReferenceFrameSelector {
 #endif
       case FrameType.BARYCENTRIC_ROTATING:
         frame_ =
-            plugin_.NewBarycentricRotatingRenderingFrame(
+            plugin_.NewBarycentricRotatingNavigationFrame(
                 primary_index   :
                     selected_celestial_.referenceBody.flightGlobalsIndex,
                 secondary_index :
