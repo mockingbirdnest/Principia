@@ -329,7 +329,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized());
-  VLOG(1) << "Navigation a trajectory for the vessel with GUID " << vessel_guid;
+  VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
   if (!vessel->is_synchronized()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
@@ -356,7 +356,7 @@ bool Plugin::HasPrediction(GUID const& vessel_guid) const {
 RenderedTrajectory<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
     not_null<NavigationFrame*> const navigation_frame,
-    Position<World> const& sun_world_position) {
+    Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   RenderedTrajectory<World> result =
@@ -473,7 +473,7 @@ FrameField<World> Plugin::Navball(
           sun_world_position,
           sun_->current_position(current_time_),
           to_world.Inverse());
-  return [navigation_frame, to_world, positions_from_world, this](
+  return [this, navigation_frame, positions_from_world, to_world](
       Position<World> const& q) -> Rotation<World, World> {
     // KSP's navball has x west, y up, z south.
     // we want x north, y west, z up.

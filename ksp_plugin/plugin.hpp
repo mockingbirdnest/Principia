@@ -222,12 +222,11 @@ class Plugin {
   // is used to define the relation between |WorldSun| and |World|.
   // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
-  // called after |predicted_vessel_| was set.  Not const because of the stupid
-  // global variable |navigation_frame_are_operating_on_predictions_|.
+  // called after |predicted_vessel_| was set.
   virtual RenderedTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
       not_null<NavigationFrame*> const navigation_frame,
-      Position<World> const& sun_world_position);
+      Position<World> const& sun_world_position) const;
 
   virtual RenderedTrajectory<World> RenderedFlightPlan(
       GUID const& vessel_guid,
