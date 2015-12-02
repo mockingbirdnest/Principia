@@ -9,13 +9,13 @@ internal static class Log {
   internal static String[] kSeverityNames = {"INFO", "WARNING", "ERROR",
                                              "FATAL"};
 
-  [DllImport(dllName: Interface.kDllPath,
-              EntryPoint = "principia__InitGoogleLogging",
+  [DllImport(dllName            : Interface.kDllPath,
+              EntryPoint        = "principia__InitGoogleLogging",
               CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitGoogleLogging();
 
-  [DllImport(dllName: Interface.kDllPath,
-              EntryPoint = "principia__ActivateJournal",
+  [DllImport(dllName            : Interface.kDllPath,
+              EntryPoint        = "principia__ActivateJournal",
               CallingConvention = CallingConvention.Cdecl)]
   internal static extern void ActivateJournal(bool activate);
 

@@ -105,7 +105,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool show_crash_options_ = false;
 #endif
 
-      private bool time_is_advancing_;
+  private bool time_is_advancing_;
 
   private DateTime plugin_construction_;
 

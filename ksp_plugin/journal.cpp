@@ -430,8 +430,8 @@ void InsertOrKeepVessel::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   CHECK_EQ(message.return_().insert_or_keep_vessel(),
-  principia__InsertOrKeepVessel(plugin,
-                                in.vessel_guid().c_str(),
+           principia__InsertOrKeepVessel(plugin,
+                                         in.vessel_guid().c_str(),
                                          in.parent_index()));
 }
 
@@ -533,7 +533,7 @@ void NewBodyCentredNonRotatingNavigationFrame::Fill(
     not_null<Message*> const message) {
   message->mutable_return_()->
       set_new_body_centred_non_rotating_navigation_frame(
-      SerializePointer(result));
+          SerializePointer(result));
 }
 
 void NewBodyCentredNonRotatingNavigationFrame::Run(
@@ -542,7 +542,7 @@ void NewBodyCentredNonRotatingNavigationFrame::Run(
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* navigation_frame = principia__NewBodyCentredNonRotatingNavigationFrame(
-                              plugin, in.reference_body_index());
+                               plugin, in.reference_body_index());
   Insert(pointer_map,
          message.return_().new_body_centred_non_rotating_navigation_frame(),
          navigation_frame);
@@ -833,7 +833,7 @@ void FetchAndIncrement::Run(Message const& message,
                             not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   CHECK(DeserializeXYZSegment(message.return_().fetch_and_increment()) ==
-  principia__FetchAndIncrement(DeserializePointer<LineAndIterator*>(
+            principia__FetchAndIncrement(DeserializePointer<LineAndIterator*>(
                 *pointer_map, in.line_and_iterator())));
 }
 
@@ -850,7 +850,7 @@ void AtEnd::Run(Message const& message,
                 not_null<PointerMap*> const pointer_map) {
   auto const& in = message.in();
   CHECK_EQ(message.return_().at_end(),
-  principia__AtEnd(DeserializePointer<LineAndIterator*>(
+           principia__AtEnd(DeserializePointer<LineAndIterator*>(
                *pointer_map, in.line_and_iterator())));
 }
 
@@ -1009,10 +1009,10 @@ void VesselTangent::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   CHECK(DeserializeXYZ(message.return_().vessel_tangent()) ==
-  principia__VesselTangent(plugin,
-                           in.vessel_guid().c_str(),
-                           DeserializePointer<NavigationFrame*>(
-                               *pointer_map, in.navigation_frame()));
+            principia__VesselTangent(plugin,
+                                     in.vessel_guid().c_str(),
+                                     DeserializePointer<NavigationFrame*>(
+                                         *pointer_map, in.navigation_frame())));
 }
 
 void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
@@ -1033,10 +1033,10 @@ void VesselNormal::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   CHECK(DeserializeXYZ(message.return_().vessel_normal()) ==
-  principia__VesselNormal(plugin,
-                          in.vessel_guid().c_str(),
-                          DeserializePointer<NavigationFrame*>(
-                              *pointer_map, in.navigation_frame()));
+            principia__VesselNormal(plugin,
+                                    in.vessel_guid().c_str(),
+                                    DeserializePointer<NavigationFrame*>(
+                                        *pointer_map, in.navigation_frame())));
 }
 
 void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
@@ -1057,10 +1057,11 @@ void VesselBinormal::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   CHECK(DeserializeXYZ(message.return_().vessel_binormal()) ==
-  principia__VesselBinormal(plugin,
-                            in.vessel_guid().c_str(),
-                            DeserializePointer<NavigationFrame*>(
-                                *pointer_map, in.navigation_frame()));
+            principia__VesselBinormal(
+                plugin,
+                in.vessel_guid().c_str(),
+                DeserializePointer<NavigationFrame*>(
+                    *pointer_map, in.navigation_frame())));
 }
 
 void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
@@ -1216,9 +1217,9 @@ bool Player::Play() {
   ran |= RunIfAppropriate<CelestialFromParent>(*method);
   ran |= RunIfAppropriate<CurrentTime>(*method);
   ran |= RunIfAppropriate<DeleteLineAndIterator>(*method);
+  ran |= RunIfAppropriate<DeleteNavigationFrame>(*method);
   ran |= RunIfAppropriate<DeletePlugin>(*method);
   ran |= RunIfAppropriate<DeletePluginSerialization>(*method);
-  ran |= RunIfAppropriate<DeleteRenderingFrame>(*method);
   ran |= RunIfAppropriate<DeserializePlugin>(*method);
   ran |= RunIfAppropriate<DirectlyInsertCelestial>(*method);
   ran |= RunIfAppropriate<EndInitialization>(*method);
@@ -1241,8 +1242,8 @@ bool Player::Play() {
   ran |= RunIfAppropriate<LogInfo>(*method);
   ran |= RunIfAppropriate<LogWarning>(*method);
   ran |= RunIfAppropriate<NavballOrientation>(*method);
-  ran |= RunIfAppropriate<NewBarycentricRotatingRenderingFrame>(*method);
-  ran |= RunIfAppropriate<NewBodyCentredNonRotatingRenderingFrame>(*method);
+  ran |= RunIfAppropriate<NewBarycentricRotatingNavigationFrame>(*method);
+  ran |= RunIfAppropriate<NewBodyCentredNonRotatingNavigationFrame>(*method);
   ran |= RunIfAppropriate<NewPlugin>(*method);
   ran |= RunIfAppropriate<NumberOfSegments>(*method);
   ran |= RunIfAppropriate<PhysicsBubbleIsEmpty>(*method);
