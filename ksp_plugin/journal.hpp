@@ -831,6 +831,7 @@ class Journal {
 
   static void Activate(base::not_null<Journal*> const journal);
   static void Deactivate();
+  static bool IsActivated();
 
  private:
   std::ofstream stream_;

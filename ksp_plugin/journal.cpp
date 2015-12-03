@@ -1198,6 +1198,10 @@ void Journal::Deactivate() {
   active_ = nullptr;
 }
 
+bool Journal::IsActivated() {
+  return active_ != nullptr;
+}
+
 Player::Player(std::experimental::filesystem::path const& path)
     : stream_(path, std::ios::in) {}
 
