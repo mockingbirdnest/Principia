@@ -84,6 +84,10 @@ static_assert(std::is_standard_layout<KSPPart>::value,
 extern "C" DLLEXPORT
 void CDECL principia__InitGoogleLogging();
 
+// If |activate| is true and there is no active journal, create one and
+// activate it.  If |activate| is false and there is an active journal,
+// deactivate it.  Does nothing if there is already a journal in the desired
+// state.
 extern "C" DLLEXPORT
 void CDECL principia__ActivateJournal(bool const activate);
 

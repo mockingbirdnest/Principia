@@ -175,6 +175,7 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
 
 TEST_F(InterfaceDeathTest, ActivateJournal) {
   EXPECT_DEATH({
+    Journal::Deactivate();
     // Fails because the glog directory doesn't exist.
     principia__ActivateJournal(true);
   }, "glog.Principia.JOURNAL");

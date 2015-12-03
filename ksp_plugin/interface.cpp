@@ -160,7 +160,7 @@ void principia__InitGoogleLogging() {
 
 void principia__ActivateJournal(bool const activate) {
   Journal::Method<ActivateJournal> m({activate});
-  if (activate) {
+  if (activate && !Journal::IsActivated()) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
     std::time_t const time = std::chrono::system_clock::to_time_t(now);
@@ -171,7 +171,7 @@ void principia__ActivateJournal(bool const activate) {
         new Journal(std::experimental::filesystem::path("glog") /
                     "Principia" / name.str());
     Journal::Activate(journal);
-  } else {
+  } else if (!activate && Journal::IsActivated()) {
     Journal::Deactivate();
   }
   return m.Return();
