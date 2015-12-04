@@ -88,6 +88,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy", "astronomy\astr
 		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal", "journal\journal.vcxproj", "{972E4E09-3B2C-4A23-9338-74D97D589207}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -425,6 +427,24 @@ Global
 		{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}.Release|Win32.ActiveCfg = Release|Win32
 		{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}.Release|Win32.Build.0 = Release|Win32
 		{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}.Release|x64.ActiveCfg = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Debug|Win32.ActiveCfg = Debug|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Debug|Win32.Build.0 = Debug|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Debug|x64.ActiveCfg = Debug|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release_LLVM|Any CPU.ActiveCfg = Release_LLVM|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release_LLVM|Mixed Platforms.ActiveCfg = Release_LLVM|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release_LLVM|Mixed Platforms.Build.0 = Release_LLVM|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release_LLVM|Win32.ActiveCfg = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release_LLVM|Win32.Build.0 = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release_LLVM|x64.ActiveCfg = Release_LLVM|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Any CPU.ActiveCfg = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Win32.ActiveCfg = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Win32.Build.0 = Release|Win32
+		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
