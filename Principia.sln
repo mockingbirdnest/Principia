@@ -89,6 +89,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy", "astronomy\astr
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal", "journal\journal.vcxproj", "{972E4E09-3B2C-4A23-9338-74D97D589207}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

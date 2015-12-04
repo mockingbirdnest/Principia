@@ -13,4 +13,20 @@
       <UniqueIdentifier>{b39d2db5-c070-4ed4-a0ed-4e61067e2694}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="journal.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="journal_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="journal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="journal_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

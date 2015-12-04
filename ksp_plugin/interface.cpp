@@ -18,7 +18,7 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
-#include "ksp_plugin/journal.hpp"
+#include "journal/journal.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
