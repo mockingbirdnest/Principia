@@ -11,6 +11,10 @@
 #include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
 
+#if PRINCIPIA_DLL_IMPORT
+#pragma message ("FIXME: Code removed because...")
+#endif
+
 namespace principia {
 
 using base::not_null;

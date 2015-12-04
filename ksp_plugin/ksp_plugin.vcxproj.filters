@@ -50,6 +50,9 @@
     <ClInclude Include="manœuvre_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="interface_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
