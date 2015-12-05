@@ -92,13 +92,17 @@ char const* const kArchitecture = "x86-64";
 #endif
 
 // DLL-exported functions for interfacing with Platform Invocation Services.
-#if defined(DLLEXPORT)
-#  error "DLLEXPORT already defined"
+#if defined(PRINCIPIA_DLL)
+#  error "PRINCIPIA_DLL already defined"
 #else
 #  if OS_WIN
-#    define DLLEXPORT __declspec(dllexport)
+#    if PRINCIPIA_DLL_IMPORT
+#      define PRINCIPIA_DLL __declspec(dllimport)
+#    else
+#      define PRINCIPIA_DLL __declspec(dllexport)
+#    endif
 #  else
-#    define DLLEXPORT __attribute__((visibility("default")))
+#    define PRINCIPIA_DLL __attribute__((visibility("default")))
 #  endif
 #endif
 

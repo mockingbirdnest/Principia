@@ -53,10 +53,7 @@
     <ClCompile Include="manœuvre_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="journal_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ksp_plugin\journal.cpp">
+    <ClCompile Include="..\journal\journal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

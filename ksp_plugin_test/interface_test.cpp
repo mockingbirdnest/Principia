@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
-#include "ksp_plugin/journal.hpp"
+#include "journal/journal.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
 namespace principia {

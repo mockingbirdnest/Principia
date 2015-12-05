@@ -7,9 +7,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-MockPlugin::MockPlugin()
-    : Plugin(Instant(),
-      Angle()) {}
+MockPlugin::MockPlugin() : Plugin(Instant(), Angle()) {}
 
 void MockPlugin::DirectlyInsertCelestial(
     Index const celestial_index,
