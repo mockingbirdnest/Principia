@@ -56,10 +56,12 @@ TEST_F(PlayerTest, PlayTiny) {
   EXPECT_EQ(2, count);
 }
 
+#if 0
 TEST_F(PlayerTest, PlayForReal) {
   Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151203-220350");
   while (player.Play()) {}
 }
+#endif
 
 }  // namespace journal
 }  // namespace principia

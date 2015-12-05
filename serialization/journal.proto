@@ -613,7 +613,7 @@ message SerializePlugin {
     required fixed64 serializer = 1;
   }
   message Return {
-    required string serialize_plugin = 1;
+    required fixed64 serialize_plugin = 2;
   }
   required In in = 1;
   required Out out = 2;

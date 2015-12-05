@@ -1109,7 +1109,7 @@ void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {
 void SerializePlugin::Fill(Return const& result,
                            not_null<Message*> const message) {
   if (result != nullptr) {
-    message->mutable_return_()->set_serialize_plugin(result);
+    message->mutable_return_()->set_serialize_plugin(SerializePointer(result));
   }
 }
 
@@ -1119,8 +1119,9 @@ void SerializePlugin::Run(Message const& message,
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* serializer = DeserializePointer<PullSerializer*>(
                          *pointer_map, in.serializer());
-  CHECK_EQ(message.return_().serialize_plugin(),
-           ksp_plugin::principia__SerializePlugin(plugin, &serializer));
+  char const* serialize_plugin =
+      ksp_plugin::principia__SerializePlugin(plugin, &serializer);
+  Insert(pointer_map, message.return_().serialize_plugin(), serialize_plugin);
 }
 
 void DeletePluginSerialization::Fill(In const& in,
