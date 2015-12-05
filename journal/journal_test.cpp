@@ -7,7 +7,7 @@
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "gtest/gtest.h"
-#include "ksp_plugin/mock_plugin.hpp"
+#include "ksp_plugin/plugin.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -22,7 +22,7 @@ class JournalTest : public testing::Test {
   JournalTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(std::make_unique<MockPlugin>()),
+        plugin_(principia__NewPlugin(1, 2)),
         journal_(new Journal(test_name_)) {
     Journal::Activate(journal_);
   }
@@ -45,7 +45,7 @@ class JournalTest : public testing::Test {
 
 
   std::string const test_name_;
-  std::unique_ptr<MockPlugin> plugin_;
+  std::unique_ptr<Plugin> plugin_;
   Journal* journal_;
 };
 
