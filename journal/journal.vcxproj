@@ -152,10 +152,11 @@
     <ClInclude Include="recorder.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="journal_test.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="player_test.cpp" />
     <ClCompile Include="profiles.cpp" />
     <ClCompile Include="recorder.cpp" />
+    <ClCompile Include="recorder_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">

@@ -29,7 +29,8 @@ class Player {
   PointerMap pointer_map_;
   std::ifstream stream_;
 
-  friend class JournalTest;
+  friend class PlayerTest;
+  friend class RecorderTest;
 };
 
 }  // namespace journal
