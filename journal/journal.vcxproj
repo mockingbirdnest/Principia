@@ -157,6 +157,7 @@
     <ClCompile Include="journal.cpp" />
     <ClCompile Include="journal_test.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="profiles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">
