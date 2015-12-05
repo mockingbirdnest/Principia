@@ -167,9 +167,9 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
                                     satellite_initial_velocity_));
-  not_null<std::unique_ptr<NavigationFrame>> const geocentric =
+  plugin_->SetPlottingFrame(
       plugin_->NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::kEarth);
+          SolarSystemFactory::kEarth));
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -204,7 +204,6 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
     RenderedTrajectory<World> const rendered_trajectory =
         plugin_->RenderedVesselTrajectory(satellite,
-                                          geocentric.get(),
                                           sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
@@ -248,9 +247,10 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
               from_the_earth_to_the_moon.velocity());
   plugin_->SetVesselStateOffset(satellite,
                                 {from_the_earth_to_l5, initial_velocity});
-  not_null<std::unique_ptr<NavigationFrame>> const earth_moon_barycentric =
-      plugin_->NewBarycentricRotatingNavigationFrame(SolarSystemFactory::kEarth,
-                                                    SolarSystemFactory::kMoon);
+  plugin_->SetPlottingFrame(
+      plugin_->NewBarycentricRotatingNavigationFrame(
+          SolarSystemFactory::kEarth,
+          SolarSystemFactory::kMoon));
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -287,7 +287,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
   RenderedTrajectory<World> const rendered_trajectory =
       plugin_->RenderedVesselTrajectory(satellite,
-                                        earth_moon_barycentric.get(),
                                         sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
@@ -594,8 +593,8 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
-  auto const navigation_frame =
-      plugin.NewBodyCentredNonRotatingNavigationFrame(celestial);
+  plugin.SetPlottingFrame(
+      plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
   plugin.SetVesselStateOffset(
       satellite,
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
@@ -608,7 +607,6 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.UpdatePrediction(satellite);
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(satellite,
-                                navigation_frame.get(),
                                 World::origin);
   EXPECT_EQ(14, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
