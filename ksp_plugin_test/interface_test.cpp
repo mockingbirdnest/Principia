@@ -93,9 +93,9 @@ ACTION_TEMPLATE(FillUniquePtr,
 class InterfaceTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
-    recorder_ =
-      new journal::Recorder(
-          testing::UnitTest::GetInstance()->current_test_case()->name());
+    std::string const test_case_name =
+        testing::UnitTest::GetInstance()->current_test_case()->name();
+    recorder_ = new journal::Recorder(test_case_name + ".journal.hex");
     journal::Recorder::Activate(recorder_);
   }
 
