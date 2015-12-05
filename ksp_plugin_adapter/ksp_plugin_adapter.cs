@@ -404,7 +404,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
     if (must_record_journal_) {
-      Log.ActivateJournal(true);
+      Log.ActivateRecorder(true);
     }
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();

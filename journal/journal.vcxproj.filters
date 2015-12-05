@@ -14,18 +14,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="journal.hpp">
+    <ClInclude Include="method.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="journal_body.hpp">
+    <ClInclude Include="player.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profiles.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="recorder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="method_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="player_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="journal.cpp">
+    <ClCompile Include="player.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="journal_test.cpp">
+    <ClCompile Include="profiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="recorder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="player_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="recorder_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

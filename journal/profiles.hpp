@@ -1,39 +1,39 @@
 #pragma once
 
-#include <experimental/filesystem>
-#include <fstream>
-#include <functional>
-#include <map>
-#include <memory>
-#include <string>
-
 #include "base/not_null.hpp"
+#include "journal/player.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
 
 using base::not_null;
+using ksp_plugin::KSPPart;
+using ksp_plugin::LineAndIterator;
+using ksp_plugin::NavigationFrame;
+using ksp_plugin::Plugin;
+using ksp_plugin::QP;
+using ksp_plugin::WXYZ;
+using ksp_plugin::XYZ;
+using ksp_plugin::XYZSegment;
 
-namespace ksp_plugin {
-
-using PointerMap = std::map<std::uint64_t, void*>;
+namespace journal {
 
 struct InitGoogleLogging {
   using Message = serialization::InitGoogleLogging;
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct ActivateJournal {
+struct ActivateRecorder {
   struct In {
     bool const activate;
   };
 
-  using Message = serialization::ActivateJournal;
+  using Message = serialization::ActivateRecorder;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetBufferedLogging {
@@ -44,7 +44,7 @@ struct SetBufferedLogging {
   using Message = serialization::SetBufferedLogging;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct GetBufferedLogging {
@@ -53,7 +53,7 @@ struct GetBufferedLogging {
   using Message = serialization::GetBufferedLogging;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetBufferDuration {
@@ -64,7 +64,7 @@ struct SetBufferDuration {
   using Message = serialization::SetBufferDuration;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct GetBufferDuration {
@@ -73,7 +73,7 @@ struct GetBufferDuration {
   using Message = serialization::GetBufferDuration;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetSuppressedLogging {
@@ -84,7 +84,7 @@ struct SetSuppressedLogging {
   using Message = serialization::SetSuppressedLogging;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct GetSuppressedLogging {
@@ -93,7 +93,7 @@ struct GetSuppressedLogging {
   using Message = serialization::GetSuppressedLogging;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetVerboseLogging {
@@ -104,7 +104,7 @@ struct SetVerboseLogging {
   using Message = serialization::SetVerboseLogging;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct GetVerboseLogging {
@@ -113,7 +113,7 @@ struct GetVerboseLogging {
   using Message = serialization::GetVerboseLogging;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetStderrLogging {
@@ -124,7 +124,7 @@ struct SetStderrLogging {
   using Message = serialization::SetStderrLogging;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct GetStderrLogging {
@@ -133,7 +133,7 @@ struct GetStderrLogging {
   using Message = serialization::GetStderrLogging;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct LogInfo {
@@ -144,7 +144,7 @@ struct LogInfo {
   using Message = serialization::LogInfo;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct LogWarning {
@@ -155,7 +155,7 @@ struct LogWarning {
   using Message = serialization::LogWarning;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct LogError {
@@ -166,7 +166,7 @@ struct LogError {
   using Message = serialization::LogError;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct LogFatal {
@@ -177,7 +177,7 @@ struct LogFatal {
   using Message = serialization::LogFatal;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct NewPlugin {
@@ -191,7 +191,7 @@ struct NewPlugin {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct DeletePlugin {
@@ -206,7 +206,7 @@ struct DeletePlugin {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct DirectlyInsertCelestial {
@@ -230,7 +230,7 @@ struct DirectlyInsertCelestial {
   using Message = serialization::DirectlyInsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct InsertCelestial {
@@ -245,7 +245,7 @@ struct InsertCelestial {
   using Message = serialization::InsertCelestial;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct InsertSun {
@@ -258,7 +258,7 @@ struct InsertSun {
   using Message = serialization::InsertSun;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct UpdateCelestialHierarchy {
@@ -271,7 +271,7 @@ struct UpdateCelestialHierarchy {
   using Message = serialization::UpdateCelestialHierarchy;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct EndInitialization {
@@ -282,7 +282,7 @@ struct EndInitialization {
   using Message = serialization::EndInitialization;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct InsertOrKeepVessel {
@@ -297,7 +297,7 @@ struct InsertOrKeepVessel {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetVesselStateOffset {
@@ -310,7 +310,7 @@ struct SetVesselStateOffset {
   using Message = serialization::SetVesselStateOffset;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct AdvanceTime {
@@ -323,7 +323,7 @@ struct AdvanceTime {
   using Message = serialization::AdvanceTime;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct ForgetAllHistoriesBefore {
@@ -335,7 +335,7 @@ struct ForgetAllHistoriesBefore {
   using Message = serialization::ForgetAllHistoriesBefore;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct VesselFromParent {
@@ -349,7 +349,7 @@ struct VesselFromParent {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct CelestialFromParent {
@@ -363,7 +363,7 @@ struct CelestialFromParent {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct NewBodyCentredNonRotatingNavigationFrame {
@@ -377,7 +377,7 @@ struct NewBodyCentredNonRotatingNavigationFrame {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct NewBarycentricRotatingNavigationFrame {
@@ -392,7 +392,7 @@ struct NewBarycentricRotatingNavigationFrame {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct DeleteNavigationFrame {
@@ -407,7 +407,7 @@ struct DeleteNavigationFrame {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct UpdatePrediction {
@@ -419,7 +419,7 @@ struct UpdatePrediction {
   using Message = serialization::UpdatePrediction;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct RenderedVesselTrajectory {
@@ -435,7 +435,7 @@ struct RenderedVesselTrajectory {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct HasPrediction {
@@ -449,7 +449,7 @@ struct HasPrediction {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct RenderedPrediction {
@@ -465,7 +465,7 @@ struct RenderedPrediction {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct FlightPlanSize {
@@ -479,7 +479,7 @@ struct FlightPlanSize {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct RenderedFlightPlan {
@@ -496,7 +496,7 @@ struct RenderedFlightPlan {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetPredictionLength {
@@ -508,7 +508,7 @@ struct SetPredictionLength {
   using Message = serialization::SetPredictionLength;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetPredictionLengthTolerance {
@@ -520,7 +520,7 @@ struct SetPredictionLengthTolerance {
   using Message = serialization::SetPredictionLengthTolerance;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SetPredictionSpeedTolerance {
@@ -532,7 +532,7 @@ struct SetPredictionSpeedTolerance {
   using Message = serialization::SetPredictionSpeedTolerance;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct HasVessel {
@@ -546,7 +546,7 @@ struct HasVessel {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct NumberOfSegments {
@@ -559,7 +559,7 @@ struct NumberOfSegments {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct FetchAndIncrement {
@@ -572,7 +572,7 @@ struct FetchAndIncrement {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct AtEnd {
@@ -585,7 +585,7 @@ struct AtEnd {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct DeleteLineAndIterator {
@@ -600,7 +600,7 @@ struct DeleteLineAndIterator {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct AddVesselToNextPhysicsBubble {
@@ -614,7 +614,7 @@ struct AddVesselToNextPhysicsBubble {
   using Message = serialization::AddVesselToNextPhysicsBubble;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct PhysicsBubbleIsEmpty {
@@ -627,7 +627,7 @@ struct PhysicsBubbleIsEmpty {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct BubbleDisplacementCorrection {
@@ -641,7 +641,7 @@ struct BubbleDisplacementCorrection {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct BubbleVelocityCorrection {
@@ -655,7 +655,7 @@ struct BubbleVelocityCorrection {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct NavballOrientation {
@@ -671,7 +671,7 @@ struct NavballOrientation {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct VesselTangent {
@@ -686,7 +686,7 @@ struct VesselTangent {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct VesselNormal {
@@ -701,7 +701,7 @@ struct VesselNormal {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct VesselBinormal {
@@ -716,7 +716,7 @@ struct VesselBinormal {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct CurrentTime {
@@ -729,7 +729,7 @@ struct CurrentTime {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SerializePlugin {
@@ -747,7 +747,7 @@ struct SerializePlugin {
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct DeletePluginSerialization {
@@ -762,7 +762,7 @@ struct DeletePluginSerialization {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct DeserializePlugin {
@@ -781,7 +781,7 @@ struct DeserializePlugin {
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
 struct SayHello {
@@ -790,80 +790,8 @@ struct SayHello {
   using Message = serialization::SayHello;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
-                  not_null<PointerMap*> const pointer_map);
+                  not_null<Player::PointerMap*> const pointer_map);
 };
 
-class Journal {
- public:
-  template<typename Profile>
-  class Method {
-   public:
-    Method();
-
-    // Only declare this constructor if the profile has an |In| type.
-    template<typename P = Profile, typename = typename P::In>
-    explicit Method(typename P::In const& in);
-
-    // Only declare this constructor if the profile has an |In| and an |Out|
-    // type.
-    template<typename P = Profile,
-             typename = typename P::In, typename = typename P::Out>
-    Method(typename P::In const& in, typename P::Out const& out);
-
-    ~Method();
-
-    void Return();
-
-    // Only declare this method if the profile has a |Return| type.
-    template<typename P = Profile, typename = typename P::Return>
-    typename P::Return Return(typename P::Return const& result);
-
-   private:
-    std::unique_ptr<typename Profile::Message> message_;
-    std::function<void()> out_filler_;
-    bool returned_ = false;
-  };
-
-  explicit Journal(std::experimental::filesystem::path const& path);
-  ~Journal();
-
-  void Write(serialization::Method const& method);
-
-  static void Activate(base::not_null<Journal*> const journal);
-  static void Deactivate();
-  static bool IsActivated();
-
- private:
-  std::ofstream stream_;
-
-  static Journal* active_;
-
-  template<typename>
-  friend class Method;
-  friend class JournalTest;
-};
-
-class Player {
- public:
-  explicit Player(std::experimental::filesystem::path const& path);
-
-  // Replays the next message in the journal.  Returns false at end of journal.
-  bool Play();
-
- private:
-  // Reads one message from the stream.  Returns a |nullptr| at end of stream.
-  std::unique_ptr<serialization::Method> Read();
-
-  template<typename Profile>
-  bool RunIfAppropriate(serialization::Method const& method);
-
-  PointerMap pointer_map_;
-  std::ifstream stream_;
-
-  friend class JournalTest;
-};
-
-}  // namespace ksp_plugin
+}  // namespace journal
 }  // namespace principia
-
-#include "journal/journal_body.hpp"

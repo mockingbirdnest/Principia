@@ -107,6 +107,9 @@ packages/
 *.generated.wl
 *.cdf
 
+# Journal Files
+*.journal.hex
+
 # git version header
 base/version.hpp
 deps/

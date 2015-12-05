@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
-#include "journal/journal.hpp"
+#include "journal/recorder.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
 namespace principia {
@@ -93,14 +93,14 @@ ACTION_TEMPLATE(FillUniquePtr,
 class InterfaceTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
-    journal_ =
-      new Journal(
-          testing::UnitTest::GetInstance()->current_test_case()->name());
-    Journal::Activate(journal_);
+    std::string const test_case_name =
+        testing::UnitTest::GetInstance()->current_test_case()->name();
+    recorder_ = new journal::Recorder(test_case_name + ".journal.hex");
+    journal::Recorder::Activate(recorder_);
   }
 
   static void TearDownTestCase() {
-    Journal::Deactivate();
+    journal::Recorder::Deactivate();
   }
 
   InterfaceTest()
@@ -108,10 +108,10 @@ class InterfaceTest : public testing::Test {
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   Instant const t0_;
-  static Journal* journal_;
+  static journal::Recorder* recorder_;
 };
 
-Journal* InterfaceTest::journal_ = nullptr;
+journal::Recorder* InterfaceTest::recorder_ = nullptr;
 
 using InterfaceDeathTest = InterfaceTest;
 
@@ -173,11 +173,11 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
   }, ExitedWithCode(kExitCode), "");
 }
 
-TEST_F(InterfaceDeathTest, ActivateJournal) {
+TEST_F(InterfaceDeathTest, ActivateRecorder) {
   EXPECT_DEATH({
-    Journal::Deactivate();
+    journal::Recorder::Deactivate();
     // Fails because the glog directory doesn't exist.
-    principia__ActivateJournal(true);
+    principia__ActivateRecorder(true);
   }, "glog.Principia.JOURNAL");
 }
 

@@ -53,7 +53,10 @@
     <ClCompile Include="manœuvre_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\journal\journal.cpp">
+    <ClCompile Include="..\journal\recorder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\journal\profiles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

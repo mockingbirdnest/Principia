@@ -1,4 +1,4 @@
-#include "journal/journal.hpp"
+#include "journal/recorder.hpp"
 
 #include <list>
 #include <string>
@@ -7,28 +7,27 @@
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "gtest/gtest.h"
+#include "journal/method.hpp"
+#include "journal/profiles.hpp"
+#include "ksp_plugin/interface.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
+namespace journal {
 
-using base::HexadecimalDecode;
-using base::UniqueBytes;
-
-namespace ksp_plugin {
-
-class JournalTest : public testing::Test {
+class RecorderTest : public testing::Test {
  protected:
-  JournalTest()
+  RecorderTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(principia__NewPlugin(1, 2)),
-        journal_(new Journal(test_name_)) {
-    Journal::Activate(journal_);
+        plugin_(ksp_plugin::principia__NewPlugin(1, 2)),
+        recorder_(new Recorder(test_name_ + ".journal.hex")) {
+    Recorder::Activate(recorder_);
   }
 
-  ~JournalTest() override {
-    Journal::Deactivate();
+  ~RecorderTest() override {
+    Recorder::Deactivate();
   }
 
   static std::vector<serialization::Method> ReadAll(
@@ -45,44 +44,45 @@ class JournalTest : public testing::Test {
 
 
   std::string const test_name_;
-  std::unique_ptr<Plugin> plugin_;
-  Journal* journal_;
+  std::unique_ptr<ksp_plugin::Plugin> plugin_;
+  Recorder* recorder_;
 };
 
-using JournalDeathTest = JournalTest;
+using JournalDeathTest = RecorderTest;
 
 TEST_F(JournalDeathTest, Return) {
   EXPECT_DEATH({
-    Journal::Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({1, 2});
     m.Return(plugin_.get());
     m.Return();
   },
   "!returned_");
   EXPECT_DEATH({
-    const Plugin* plugin = plugin_.get();
-    Journal::Method<DeletePlugin> m({&plugin}, {&plugin});
+    const ksp_plugin::Plugin* plugin = plugin_.get();
+    Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
     m.Return();
   },
   "!returned_");
   EXPECT_DEATH({
-    Journal::Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({1, 2});
   },
   "returned_");
 }
 
-TEST_F(JournalTest, Recording) {
+TEST_F(RecorderTest, Recording) {
   {
-    const Plugin* plugin = plugin_.get();
-    Journal::Method<DeletePlugin> m({&plugin}, {&plugin});
+    const ksp_plugin::Plugin* plugin = plugin_.get();
+    Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
   }
   {
-    Journal::Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({1, 2});
     m.Return(plugin_.get());
   }
 
-  std::vector<serialization::Method> methods = ReadAll(test_name_);
+  std::vector<serialization::Method> const methods =
+      ReadAll(test_name_ + ".journal.hex");
   EXPECT_EQ(2, methods.size());
   auto it = methods.begin();
   {
@@ -108,26 +108,5 @@ TEST_F(JournalTest, Recording) {
   }
 }
 
-TEST_F(JournalTest, Playing) {
-  {
-    Journal::Method<NewPlugin> m({1, 2});
-    m.Return(plugin_.get());
-  }
-  {
-    const Plugin* plugin = plugin_.get();
-    Journal::Method<DeletePlugin> m({&plugin}, {&plugin});
-    m.Return();
-  }
-
-  // Read all the messages to determine the current size of the journal.
-  std::vector<serialization::Method> methods1 = ReadAll(test_name_);
-  Player player(test_name_);
-
-  // Replay the journal.  Note that the journal doesn't grow as we replay
-  // because we didn't call principia__ActivateJournal so there is no active
-  // journal in the ksp_plugin assembly.
-  while (player.Play()) {}
-}
-
-}  // namespace ksp_plugin
+}  // namespace journal
 }  // namespace principia
