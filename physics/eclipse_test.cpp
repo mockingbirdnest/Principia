@@ -9,6 +9,7 @@
 #include "geometry/named_quantities.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "geometry/grassmann.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
@@ -20,6 +21,10 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Kilo;
 using quantities::ArcCos; // This feels very cargocultish, especially since I don't need it for ArcSin.
+using testing_utilities::AbsoluteError;
+using ::testing::Gt;
+using ::testing::Lt;
+using testing::AllOf;
 
 namespace physics {
 
@@ -47,8 +52,8 @@ namespace physics {
     
     // Massive_body eventually needs radius information. Or non-hardcoded data pulled from https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
     auto r_sun = 696000.0 * Kilo(Metre);
-    auto r_moon = 6378.1363 * Kilo(Metre);
-    auto r_earth = 1738.0 * Kilo(Metre);
+    auto r_earth = 6378.1363 * Kilo(Metre);
+    auto r_moon = 1738.0 * Kilo(Metre);
 
     // Get positions/trajectories/ephemeres for bodies
     // Dates will have to be TDB Julian Day for U1, etc. (and all will have to be generated)
@@ -80,6 +85,7 @@ namespace physics {
       LOG(ERROR) << beta;
       LOG(ERROR) << gamma;
 
+      EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1e-3), Gt(1e-9)));
       }
     
     // Later on for additional accuracy: 2 * ArcTan((x_norm_y - y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
@@ -93,7 +99,7 @@ namespace physics {
     // U4 = 08:39:33
     // P4 = 09:52:05
     // 2469076.66235167  2469076.71279148  2469076.76776833  2469076.80661092  2469076.86158778  2469076.91195815
-    // [2469076.66235167, 2469076.71279148, 2469076.76776833, 2469076.80661092, 2469076.86158778, 2469076.91195815]
+    // etimes = {2469076.66235167, 2469076.71279148, 2469076.76776833, 2469076.80661092, 2469076.86158778, 2469076.91195815};
   };
         
 } // physics
