@@ -1,5 +1,7 @@
 #include "journal/player.hpp"
 
+#include <string>
+
 #include "base/array.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"

@@ -387,8 +387,9 @@ void UpdateCelestialHierarchy::Fill(In const& in,
   m->set_parent_index(in.parent_index);
 }
 
-void UpdateCelestialHierarchy::Run(Message const& message,
-                                   not_null<Player::PointerMap*> const pointer_map) {
+void UpdateCelestialHierarchy::Run(
+    Message const& message,
+    not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   ksp_plugin::principia__UpdateCelestialHierarchy(plugin,

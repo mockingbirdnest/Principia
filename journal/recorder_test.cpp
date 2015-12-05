@@ -81,7 +81,8 @@ TEST_F(RecorderTest, Recording) {
     m.Return(plugin_.get());
   }
 
-  std::vector<serialization::Method> methods = ReadAll(test_name_);
+  std::vector<serialization::Method> const methods =
+      ReadAll(test_name_ + ".journal.hex");
   EXPECT_EQ(2, methods.size());
   auto it = methods.begin();
   {

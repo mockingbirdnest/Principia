@@ -58,7 +58,9 @@ TEST_F(PlayerTest, Playing) {
   }
 
   // Read all the messages to determine the current size of the journal.
-  std::vector<serialization::Method> methods1 = ReadAll(test_name_);
+  std::vector<serialization::Method> const methods =
+      ReadAll(test_name_ + ".journal.hex");
+  CHECK_EQ(2, methods.size());
   Player player(test_name_);
 
   // Replay the journal.  Note that the journal doesn't grow as we replay
