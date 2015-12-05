@@ -1,4 +1,4 @@
-#include "ksp_plugin/journal.hpp"
+#include "journal/journal.hpp"
 
 #include <fstream>
 #include <list>

@@ -1,4 +1,4 @@
-#include "ksp_plugin/journal.hpp"
+#include "journal/journal.hpp"
 
 #include <list>
 #include <string>
@@ -7,7 +7,7 @@
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "gtest/gtest.h"
-#include "ksp_plugin/mock_plugin.hpp"
+#include "ksp_plugin/plugin.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -22,7 +22,7 @@ class JournalTest : public testing::Test {
   JournalTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(std::make_unique<MockPlugin>()),
+        plugin_(principia__NewPlugin(1, 2)),
         journal_(new Journal(test_name_)) {
     Journal::Activate(journal_);
   }
@@ -45,7 +45,7 @@ class JournalTest : public testing::Test {
 
 
   std::string const test_name_;
-  std::unique_ptr<MockPlugin> plugin_;
+  std::unique_ptr<Plugin> plugin_;
   Journal* journal_;
 };
 
@@ -123,15 +123,10 @@ TEST_F(JournalTest, Playing) {
   std::vector<serialization::Method> methods1 = ReadAll(test_name_);
   Player player(test_name_);
 
-  // Replay the part of the journal written so far.  Cannot use the boolean
-  // returned by Play because the journal grows as we replay.
-  for (int i = 0; i < methods1.size(); ++i) {
-    player.Play();
-  }
-
-  // Check that the journal has grown as expected.
-  std::vector<serialization::Method> methods2 = ReadAll(test_name_);
-  CHECK_EQ(2 * methods1.size(), methods2.size());
+  // Replay the journal.  Note that the journal doesn't grow as we replay
+  // because we didn't call principia__ActivateJournal so there is no active
+  // journal in the ksp_plugin assembly.
+  while (player.Play()) {}
 }
 
 }  // namespace ksp_plugin

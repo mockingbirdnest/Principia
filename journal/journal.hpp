@@ -866,4 +866,4 @@ class Player {
 }  // namespace ksp_plugin
 }  // namespace principia
 
-#include "ksp_plugin/journal_body.hpp"
+#include "journal/journal_body.hpp"
