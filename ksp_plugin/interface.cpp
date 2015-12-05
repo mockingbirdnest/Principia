@@ -154,7 +154,7 @@ void principia__ActivateRecorder(bool const activate) {
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
     journal::Recorder* const recorder =
         new journal::Recorder(std::experimental::filesystem::path("glog") /
-                    "Principia" / name.str());
+                              "Principia" / name.str());
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();
