@@ -147,6 +147,8 @@
     <ClInclude Include="journal.hpp" />
     <ClInclude Include="journal_body.hpp" />
     <ClInclude Include="method.hpp" />
+    <ClInclude Include="player.hpp" />
+    <ClInclude Include="profiles.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="journal.cpp" />

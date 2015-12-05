@@ -25,7 +25,7 @@ namespace journal {
 //    static void Fill(Return const& result, not_null<Message*> const message);
 //
 //    static void Run(Message const& message,
-//                    not_null<PointerMap*> const pointer_map);
+//                    not_null<Player::PointerMap*> const pointer_map);
 //  };
 
 template<typename Profile>
@@ -60,4 +60,4 @@ class Method {
 }  // namespace journal
 }  // namespace principia
 
-#include "journal/journal_body.hpp"
+#include "journal/method_body.hpp"
