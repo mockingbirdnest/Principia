@@ -149,6 +149,7 @@
     <ClInclude Include="method.hpp" />
     <ClInclude Include="player.hpp" />
     <ClInclude Include="profiles.hpp" />
+    <ClInclude Include="recorder.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="journal.cpp" />
