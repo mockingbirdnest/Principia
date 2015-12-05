@@ -109,13 +109,13 @@ serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
 void InitGoogleLogging::Run(Message const& message,
                             not_null<Player::PointerMap*> const pointer_map) {}
 
-void ActivateJournal::Fill(In const& in, not_null<Message*> const message) {
+void ActivateRecorder::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_activate(in.activate);
 }
 
-void ActivateJournal::Run(Message const& message,
+void ActivateRecorder::Run(Message const& message,
                           not_null<Player::PointerMap*> const pointer_map) {
-  // Do not run ActivateJournal when replaying because it might create another
+  // Do not run ActivateRecorder when replaying because it might create another
   // journal and we must go deeper.
 }
 

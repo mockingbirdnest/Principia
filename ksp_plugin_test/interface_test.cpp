@@ -173,11 +173,11 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
   }, ExitedWithCode(kExitCode), "");
 }
 
-TEST_F(InterfaceDeathTest, ActivateJournal) {
+TEST_F(InterfaceDeathTest, ActivateRecorder) {
   EXPECT_DEATH({
     Journal::Deactivate();
     // Fails because the glog directory doesn't exist.
-    principia__ActivateJournal(true);
+    principia__ActivateRecorder(true);
   }, "glog.Principia.JOURNAL");
 }
 

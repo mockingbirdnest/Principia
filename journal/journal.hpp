@@ -33,12 +33,12 @@ struct InitGoogleLogging {
                   not_null<PointerMap*> const pointer_map);
 };
 
-struct ActivateJournal {
+struct ActivateRecorder {
   struct In {
     bool const activate;
   };
 
-  using Message = serialization::ActivateJournal;
+  using Message = serialization::ActivateRecorder;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<PointerMap*> const pointer_map);

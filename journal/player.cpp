@@ -24,7 +24,7 @@ bool Player::Play() {
   }
 
   bool ran = false;
-  ran |= RunIfAppropriate<ActivateJournal>(*method);
+  ran |= RunIfAppropriate<ActivateRecorder>(*method);
   ran |= RunIfAppropriate<AddVesselToNextPhysicsBubble>(*method);
   ran |= RunIfAppropriate<AdvanceTime>(*method);
   ran |= RunIfAppropriate<AtEnd>(*method);

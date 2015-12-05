@@ -125,7 +125,7 @@ TEST_F(JournalTest, Playing) {
   Player player(test_name_);
 
   // Replay the journal.  Note that the journal doesn't grow as we replay
-  // because we didn't call principia__ActivateJournal so there is no active
+  // because we didn't call principia__ActivateRecorder so there is no active
   // journal in the ksp_plugin assembly.
   while (player.Play()) {}
 }

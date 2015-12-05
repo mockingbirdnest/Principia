@@ -37,9 +37,9 @@ message Method {
   extensions 5000 to 5999;  // Last used: 5058.
 }
 
-message ActivateJournal {
+message ActivateRecorder {
   extend Method {
-    optional ActivateJournal extension = 5058;
+    optional ActivateRecorder extension = 5058;
   }
   message In {
     required bool activate = 1;

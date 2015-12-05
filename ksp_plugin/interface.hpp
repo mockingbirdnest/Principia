@@ -89,7 +89,7 @@ void CDECL principia__InitGoogleLogging();
 // deactivate it.  Does nothing if there is already a journal in the desired
 // state.
 extern "C" PRINCIPIA_DLL
-void CDECL principia__ActivateJournal(bool const activate);
+void CDECL principia__ActivateRecorder(bool const activate);
 
 // Log messages at a level |<= max_severity| are buffered.
 // Log messages at a higher level are flushed immediately.

@@ -18,7 +18,9 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
-#include "journal/journal.hpp"
+#include "journal/method.hpp"
+#include "journal/profiles.hpp"
+#include "journal/recorder.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
@@ -96,7 +98,7 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
 }  // namespace
 
 void principia__InitGoogleLogging() {
-  Journal::Method<InitGoogleLogging> m;
+  journal::Method<journal::InitGoogleLogging> m;
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -141,71 +143,71 @@ void principia__InitGoogleLogging() {
   return m.Return();
 }
 
-void principia__ActivateJournal(bool const activate) {
-  Journal::Method<ActivateJournal> m({activate});
-  if (activate && !Journal::IsActivated()) {
+void principia__ActivateRecorder(bool const activate) {
+  journal::Method<journal::ActivateRecorder> m({activate});
+  if (activate && !journal::Recorder::IsActivated()) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
     std::time_t const time = std::chrono::system_clock::to_time_t(now);
     std::tm* const localtime = std::localtime(&time);
     std::stringstream name;
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    Journal* const journal =
-        new Journal(std::experimental::filesystem::path("glog") /
-                    "Principia" / name.str());
-    Journal::Activate(journal);
-  } else if (!activate && Journal::IsActivated()) {
-    Journal::Deactivate();
+    journal::Recorder* const recorder =
+        new journal::Recorder(std::experimental::filesystem::path("glog") /
+                              "Principia" / name.str());
+    journal::Recorder::Activate(recorder);
+  } else if (!activate && journal::Recorder::IsActivated()) {
+    journal::Recorder::Deactivate();
   }
   return m.Return();
 }
 
 void principia__SetBufferedLogging(int const max_severity) {
-  Journal::Method<SetBufferedLogging> m({max_severity});
+  journal::Method<journal::SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
   return m.Return();
 }
 
 int principia__GetBufferedLogging() {
-  Journal::Method<GetBufferedLogging> m;
+  journal::Method<journal::GetBufferedLogging> m;
   return m.Return(FLAGS_logbuflevel);
 }
 
 void principia__SetBufferDuration(int const seconds) {
-  Journal::Method<SetBufferDuration> m({seconds});
+  journal::Method<journal::SetBufferDuration> m({seconds});
   FLAGS_logbufsecs = seconds;
   return m.Return();
 }
 
 int principia__GetBufferDuration() {
-  Journal::Method<GetBufferDuration> m;
+  journal::Method<journal::GetBufferDuration> m;
   return m.Return(FLAGS_logbufsecs);
 }
 
 void principia__SetSuppressedLogging(int const min_severity) {
-  Journal::Method<SetSuppressedLogging> m({min_severity});
+  journal::Method<journal::SetSuppressedLogging> m({min_severity});
   FLAGS_minloglevel = min_severity;
   return m.Return();
 }
 
 int principia__GetSuppressedLogging() {
-  Journal::Method<GetSuppressedLogging> m;
+  journal::Method<journal::GetSuppressedLogging> m;
   return m.Return(FLAGS_minloglevel);
 }
 
 void principia__SetVerboseLogging(int const level) {
-  Journal::Method<SetVerboseLogging> m({level});
+  journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
   return m.Return();
 }
 
 int principia__GetVerboseLogging() {
-  Journal::Method<GetVerboseLogging> m;
+  journal::Method<journal::GetVerboseLogging> m;
   return m.Return(FLAGS_v);
 }
 
 void principia__SetStderrLogging(int const min_severity) {
-  Journal::Method<SetStderrLogging> m({min_severity});
+  journal::Method<journal::SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
   // seems to be a mutex.
   google::SetStderrLogging(min_severity);
@@ -213,37 +215,38 @@ void principia__SetStderrLogging(int const min_severity) {
 }
 
 int principia__GetStderrLogging() {
-  Journal::Method<GetStderrLogging> m;
+  journal::Method<journal::GetStderrLogging> m;
   return m.Return(FLAGS_stderrthreshold);
 }
 
 void principia__LogInfo(char const* const message) {
-  Journal::Method<LogInfo> m({message});
+  journal::Method<journal::LogInfo> m({message});
   LOG(INFO) << message;
   return m.Return();
 }
 
 void principia__LogWarning(char const* const message) {
-  Journal::Method<LogWarning> m({message});
+  journal::Method<journal::LogWarning> m({message});
   LOG(WARNING) << message;
   return m.Return();
 }
 
 void principia__LogError(char const* const message) {
-  Journal::Method<LogError> m({message});
+  journal::Method<journal::LogError> m({message});
   LOG(ERROR) << message;
   return m.Return();
 }
 
 void principia__LogFatal(char const* const message) {
-  Journal::Method<LogFatal> m({message});
+  journal::Method<journal::LogFatal> m({message});
   LOG(FATAL) << message;
   return m.Return();
 }
 
 Plugin* principia__NewPlugin(double const initial_time,
                              double const planetarium_rotation_in_degrees) {
-  Journal::Method<NewPlugin> m({initial_time, planetarium_rotation_in_degrees});
+  journal::Method<journal::NewPlugin> m({initial_time,
+                                         planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
   Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
@@ -255,7 +258,7 @@ Plugin* principia__NewPlugin(double const initial_time,
 
 void principia__DeletePlugin(Plugin const** const plugin) {
   CHECK_NOTNULL(plugin);
-  Journal::Method<DeletePlugin> m({plugin}, {plugin});
+  journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
@@ -281,16 +284,16 @@ void principia__DirectlyInsertCelestial(
     char const* const vx,
     char const* const vy,
     char const* const vz) {
-  Journal::Method<DirectlyInsertCelestial> m({plugin,
-                                              celestial_index,
-                                              parent_index,
-                                              gravitational_parameter,
-                                              axis_right_ascension,
-                                              axis_declination,
-                                              j2,
-                                              reference_radius,
-                                              x, y, z,
-                                              vx, vy, vz});
+  journal::Method<journal::DirectlyInsertCelestial> m({plugin,
+                                                       celestial_index,
+                                                       parent_index,
+                                                       gravitational_parameter,
+                                                       axis_right_ascension,
+                                                       axis_declination,
+                                                       j2,
+                                                       reference_radius,
+                                                       x, y, z,
+                                                       vx, vy, vz});
   serialization::GravityModel::Body gravity_model;
   serialization::InitialState::Body initial_state;
   gravity_model.set_gravitational_parameter(gravitational_parameter);
@@ -326,11 +329,11 @@ void principia__InsertCelestial(Plugin* const plugin,
                                 double const gravitational_parameter,
                                 int const parent_index,
                                 QP const from_parent) {
-  Journal::Method<InsertCelestial> m({plugin,
-                                      celestial_index,
-                                      gravitational_parameter,
-                                      parent_index,
-                                      from_parent});
+  journal::Method<journal::InsertCelestial> m({plugin,
+                                               celestial_index,
+                                               gravitational_parameter,
+                                               parent_index,
+                                               from_parent});
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
@@ -344,9 +347,9 @@ void principia__InsertCelestial(Plugin* const plugin,
 void principia__InsertSun(Plugin* const plugin,
                           int const celestial_index,
                           double const gravitational_parameter) {
-  Journal::Method<InsertSun> m({plugin,
-                                celestial_index,
-                                gravitational_parameter});
+  journal::Method<journal::InsertSun> m({plugin,
+                                         celestial_index,
+                                         gravitational_parameter});
   CHECK_NOTNULL(plugin)->InsertSun(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>());
@@ -356,16 +359,16 @@ void principia__InsertSun(Plugin* const plugin,
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                          int const celestial_index,
                                          int const parent_index) {
-  Journal::Method<UpdateCelestialHierarchy> m({plugin,
-                                               celestial_index,
-                                               parent_index});
+  journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
+                                                        celestial_index,
+                                                        parent_index});
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
   return m.Return();
 }
 
 void principia__EndInitialization(Plugin* const plugin) {
-  Journal::Method<EndInitialization> m({plugin});
+  journal::Method<journal::EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin)->EndInitialization();
   return m.Return();
 }
@@ -373,7 +376,9 @@ void principia__EndInitialization(Plugin* const plugin) {
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
                                    int const parent_index) {
-  Journal::Method<InsertOrKeepVessel> m({plugin, vessel_guid, parent_index});
+  journal::Method<journal::InsertOrKeepVessel> m({plugin,
+                                                  vessel_guid,
+                                                  parent_index});
   return m.Return(
       CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index));
 }
@@ -381,7 +386,9 @@ bool principia__InsertOrKeepVessel(Plugin* const plugin,
 void principia__SetVesselStateOffset(Plugin* const plugin,
                                      char const* const vessel_guid,
                                      QP const from_parent) {
-  Journal::Method<SetVesselStateOffset> m({plugin, vessel_guid, from_parent});
+  journal::Method<journal::SetVesselStateOffset> m({plugin,
+                                                    vessel_guid,
+                                                    from_parent});
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
@@ -393,7 +400,7 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
-  Journal::Method<AdvanceTime> m({plugin, t, planetarium_rotation});
+  journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
   Instant const t0;
   CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
                                      planetarium_rotation * Degree);
@@ -402,7 +409,7 @@ void principia__AdvanceTime(Plugin* const plugin,
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
-  Journal::Method<ForgetAllHistoriesBefore> m({plugin, t});
+  journal::Method<journal::ForgetAllHistoriesBefore> m({plugin, t});
   Instant const t0;
   CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
   return m.Return();
@@ -410,7 +417,7 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
 
 QP principia__VesselFromParent(Plugin const* const plugin,
                                char const* const vessel_guid) {
-  Journal::Method<VesselFromParent> m({plugin, vessel_guid});
+  journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
@@ -419,7 +426,7 @@ QP principia__VesselFromParent(Plugin const* const plugin,
 
 QP principia__CelestialFromParent(Plugin const* const plugin,
                                   int const celestial_index) {
-  Journal::Method<CelestialFromParent> m({plugin, celestial_index});
+  journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
@@ -429,7 +436,7 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
 NavigationFrame* principia__NewBodyCentredNonRotatingNavigationFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
-  Journal::Method<NewBodyCentredNonRotatingNavigationFrame> m(
+  journal::Method<journal::NewBodyCentredNonRotatingNavigationFrame> m(
       {plugin, reference_body_index});
   return m.Return(CHECK_NOTNULL(plugin)->
       NewBodyCentredNonRotatingNavigationFrame(reference_body_index).release());
@@ -439,9 +446,8 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
-  Journal::Method<NewBarycentricRotatingNavigationFrame> m({plugin,
-                                                            primary_index,
-                                                            secondary_index});
+  journal::Method<journal::NewBarycentricRotatingNavigationFrame> m(
+      {plugin, primary_index, secondary_index});
   return m.Return(CHECK_NOTNULL(plugin)->
       NewBarycentricRotatingNavigationFrame(primary_index,
                                            secondary_index).release());
@@ -449,15 +455,15 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
 
 void principia__DeleteNavigationFrame(
     NavigationFrame** const navigation_frame) {
-  Journal::Method<DeleteNavigationFrame> m({navigation_frame},
-                                           {navigation_frame});
+  journal::Method<journal::DeleteNavigationFrame> m({navigation_frame},
+                                                    {navigation_frame});
   TakeOwnership(navigation_frame);
   return m.Return();
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid) {
-  Journal::Method<UpdatePrediction> m({plugin, vessel_guid});
+  journal::Method<journal::UpdatePrediction> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
   return m.Return();
 }
@@ -467,10 +473,10 @@ LineAndIterator* principia__RenderedVesselTrajectory(
     char const* const vessel_guid,
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
-  Journal::Method<RenderedVesselTrajectory> m({plugin,
-                                               vessel_guid,
-                                               navigation_frame,
-                                               sun_world_position});
+  journal::Method<journal::RenderedVesselTrajectory> m({plugin,
+                                                        vessel_guid,
+                                                        navigation_frame,
+                                                        sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
@@ -485,7 +491,7 @@ LineAndIterator* principia__RenderedVesselTrajectory(
 
 bool principia__HasPrediction(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  Journal::Method<HasPrediction> m({plugin, vessel_guid});
+  journal::Method<journal::HasPrediction> m({plugin, vessel_guid});
   return m.Return(CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid));
 }
 
@@ -494,10 +500,10 @@ LineAndIterator* principia__RenderedPrediction(
     char const* const vessel_guid,
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
-  Journal::Method<RenderedPrediction> m({plugin,
-                                         vessel_guid,
-                                         navigation_frame,
-                                         sun_world_position});
+  journal::Method<journal::RenderedPrediction> m({plugin,
+                                                  vessel_guid,
+                                                  navigation_frame,
+                                                  sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
@@ -512,7 +518,7 @@ LineAndIterator* principia__RenderedPrediction(
 
 int principia__FlightPlanSize(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  Journal::Method<FlightPlanSize> m({plugin, vessel_guid});
+  journal::Method<journal::FlightPlanSize> m({plugin, vessel_guid});
   return m.Return(CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid));
 }
 
@@ -522,11 +528,11 @@ LineAndIterator* principia__RenderedFlightPlan(
     int const plan_phase,
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
-  Journal::Method<RenderedFlightPlan> m({plugin,
-                                         vessel_guid,
-                                         plan_phase,
-                                         navigation_frame,
-                                         sun_world_position});
+  journal::Method<journal::RenderedFlightPlan> m({plugin,
+                                                  vessel_guid,
+                                                  plan_phase,
+                                                  navigation_frame,
+                                                  sun_world_position});
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
@@ -542,40 +548,40 @@ LineAndIterator* principia__RenderedFlightPlan(
 
 void principia__SetPredictionLength(Plugin* const plugin,
                                     double const t) {
-  Journal::Method<SetPredictionLength> m({plugin, t});
+  journal::Method<journal::SetPredictionLength> m({plugin, t});
   CHECK_NOTNULL(plugin)->SetPredictionLength(t * Second);
   return m.Return();
 }
 
 void principia__SetPredictionLengthTolerance(Plugin* const plugin,
                                              double const l) {
-  Journal::Method<SetPredictionLengthTolerance> m({plugin, l});
+  journal::Method<journal::SetPredictionLengthTolerance> m({plugin, l});
   CHECK_NOTNULL(plugin)->SetPredictionLengthTolerance(l * Metre);
   return m.Return();
 }
 
 void principia__SetPredictionSpeedTolerance(Plugin* const plugin,
                                             double const v) {
-  Journal::Method<SetPredictionSpeedTolerance> m({plugin, v});
+  journal::Method<journal::SetPredictionSpeedTolerance> m({plugin, v});
   CHECK_NOTNULL(plugin)->SetPredictionSpeedTolerance(v * Metre / Second);
   return m.Return();
 }
 
 bool principia__HasVessel(Plugin* const plugin,
                           char const* const vessel_guid) {
-  Journal::Method<HasVessel> m({plugin,  vessel_guid});
+  journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   return m.Return(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid));
 }
 
 int principia__NumberOfSegments(
     LineAndIterator const* const line_and_iterator) {
-  Journal::Method<NumberOfSegments> m({line_and_iterator});
+  journal::Method<journal::NumberOfSegments> m({line_and_iterator});
   return m.Return(CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size());
 }
 
 XYZSegment principia__FetchAndIncrement(
     LineAndIterator* const line_and_iterator) {
-  Journal::Method<FetchAndIncrement> m({line_and_iterator});
+  journal::Method<journal::FetchAndIncrement> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
@@ -585,7 +591,7 @@ XYZSegment principia__FetchAndIncrement(
 }
 
 bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
-  Journal::Method<AtEnd> m({line_and_iterator});
+  journal::Method<journal::AtEnd> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
   return m.Return(line_and_iterator->it ==
                   line_and_iterator->rendered_trajectory.end());
@@ -593,8 +599,8 @@ bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
 
 void principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator) {
-  Journal::Method<DeleteLineAndIterator> m({line_and_iterator},
-                                           {line_and_iterator});
+  journal::Method<journal::DeleteLineAndIterator> m({line_and_iterator},
+                                                    {line_and_iterator});
   TakeOwnership(line_and_iterator);
   return m.Return();
 }
@@ -603,10 +609,10 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                              char const* const vessel_guid,
                                              KSPPart const* const parts,
                                              int count) {
-  Journal::Method<AddVesselToNextPhysicsBubble> m({plugin,
-                                                   vessel_guid,
-                                                   parts,
-                                                   count});
+  journal::Method<journal::AddVesselToNextPhysicsBubble> m({plugin,
+                                                            vessel_guid,
+                                                            parts,
+                                                            count});
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
   std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
@@ -633,13 +639,14 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
 }
 
 bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
-  Journal::Method<PhysicsBubbleIsEmpty> m({plugin});
+  journal::Method<journal::PhysicsBubbleIsEmpty> m({plugin});
   return m.Return(CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty());
 }
 
 XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
                                             XYZ const sun_position) {
-  Journal::Method<BubbleDisplacementCorrection> m({plugin, sun_position});
+  journal::Method<journal::BubbleDisplacementCorrection> m({plugin,
+                                                            sun_position});
   Displacement<World> const result =
       CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
           World::origin + Displacement<World>(
@@ -649,7 +656,8 @@ XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
 
 XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                         int const reference_body_index) {
-  Journal::Method<BubbleVelocityCorrection> m({plugin, reference_body_index});
+  journal::Method<journal::BubbleVelocityCorrection> m({plugin,
+                                                        reference_body_index});
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
   return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
@@ -660,7 +668,7 @@ WXYZ principia__NavballOrientation(
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
-  Journal::Method<NavballOrientation> m({plugin,
+  journal::Method<journal::NavballOrientation> m({plugin,
                                          navigation_frame,
                                          sun_world_position,
                                          ship_world_position});
@@ -678,7 +686,9 @@ WXYZ principia__NavballOrientation(
 XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid,
                              NavigationFrame* const navigation_frame) {
-  Journal::Method<VesselTangent> m({plugin, vessel_guid, navigation_frame});
+  journal::Method<journal::VesselTangent> m({plugin,
+                                             vessel_guid,
+                                             navigation_frame});
   return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
              VesselTangent(vessel_guid, navigation_frame).coordinates()));
 }
@@ -686,7 +696,9 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
 XYZ principia__VesselNormal(Plugin const* const plugin,
                             char const* const vessel_guid,
                             NavigationFrame* const navigation_frame) {
-  Journal::Method<VesselNormal> m({plugin, vessel_guid, navigation_frame});
+  journal::Method<journal::VesselNormal> m({plugin,
+                                            vessel_guid,
+                                            navigation_frame});
   return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
              VesselNormal(vessel_guid, navigation_frame).coordinates()));
 }
@@ -694,19 +706,22 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
 XYZ principia__VesselBinormal(Plugin const* const plugin,
                               char const* const vessel_guid,
                               NavigationFrame* const navigation_frame) {
-  Journal::Method<VesselBinormal> m({plugin, vessel_guid, navigation_frame});
+  journal::Method<journal::VesselBinormal> m({plugin,
+                                              vessel_guid,
+                                              navigation_frame});
   return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
              VesselBinormal(vessel_guid, navigation_frame).coordinates()));
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {
-  Journal::Method<CurrentTime> m({plugin});
+  journal::Method<journal::CurrentTime> m({plugin});
   return m.Return((CHECK_NOTNULL(plugin)->CurrentTime() - Instant()) / Second);
 }
 
 char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
-  Journal::Method<SerializePlugin> m({plugin, serializer}, {serializer});
+  journal::Method<journal::SerializePlugin> m({plugin, serializer},
+                                              {serializer});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
@@ -739,8 +754,8 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
-  Journal::Method<DeletePluginSerialization> m({serialization},
-                                               {serialization});
+  journal::Method<journal::DeletePluginSerialization> m({serialization},
+                                                        {serialization});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
   return m.Return();
@@ -750,11 +765,11 @@ void principia__DeserializePlugin(char const* const serialization,
                                   int const serialization_size,
                                   PushDeserializer** const deserializer,
                                   Plugin const** const plugin) {
-  Journal::Method<DeserializePlugin> m({serialization,
-                                        serialization_size,
-                                        deserializer,
-                                        plugin},
-                                       {deserializer, plugin});
+  journal::Method<journal::DeserializePlugin> m({serialization,
+                                                 serialization_size,
+                                                 deserializer,
+                                                 plugin},
+                                                {deserializer, plugin});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
@@ -795,7 +810,7 @@ void principia__DeserializePlugin(char const* const serialization,
 }
 
 char const* principia__SayHello() {
-  Journal::Method<SayHello> m;
+  journal::Method<journal::SayHello> m;
   return m.Return("Hello from native C++!");
 }
 

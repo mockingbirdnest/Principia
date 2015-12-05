@@ -11,7 +11,7 @@ namespace journal {
 
 template<typename Profile>
 Method<Profile>::Method() {
-  if (active_ != nullptr) {
+  if (Recorder::active_recorder_ != nullptr) {
     message_ = std::make_unique<typename Profile::Message>();
   }
 }
@@ -19,7 +19,7 @@ Method<Profile>::Method() {
 template<typename Profile>
 template<typename P, typename>
 Method<Profile>::Method(typename P::In const& in) {
-  if (active_ != nullptr) {
+  if (Recorder::active_recorder_ != nullptr) {
     message_ = std::make_unique<typename Profile::Message>();
     Profile::Fill(in, message_.get());
   }
@@ -28,7 +28,7 @@ Method<Profile>::Method(typename P::In const& in) {
 template<typename Profile>
 template<typename P, typename, typename>
 Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
-  if (active_ != nullptr) {
+  if (Recorder::active_recorder_ != nullptr) {
     message_ = std::make_unique<typename Profile::Message>();
     out_filler_ = [this, out]() { Profile::Fill(out, message_.get()); };
     Profile::Fill(in, message_.get());
@@ -38,14 +38,14 @@ Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
 template<typename Profile>
 Method<Profile>::~Method() {
   CHECK(returned_);
-  if (active_ != nullptr) {
+  if (Recorder::active_recorder_ != nullptr) {
     if (out_filler_ != nullptr) {
       out_filler_();
     }
     serialization::Method method;
     method.SetAllocatedExtension(
         Profile::Message::extension, message_.release());
-    active_->Write(method);
+    Recorder::active_recorder_->Write(method);
   }
 }
 
@@ -61,7 +61,7 @@ typename P::Return Method<Profile>::Return(
     typename P::Return const& result) {
   CHECK(!returned_);
   returned_ = true;
-  if (active_ != nullptr) {
+  if (Recorder::active_recorder_ != nullptr) {
     Profile::Fill(result, message_.get());
   }
   return result;
