@@ -118,6 +118,10 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationName)"</Command>
+      <Message>Copies the principia DLL to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -135,6 +139,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(OutDir)\..\..\$(TargetName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationName)"</Command>
+      <Message>Copies the principia DLL to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
     <ClCompile>
@@ -152,6 +160,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(OutDir)\..\..\$(TargetName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationName)"</Command>
+      <Message>Copies the principia DLL to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
