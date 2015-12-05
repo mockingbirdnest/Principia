@@ -531,7 +531,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
                 (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-                    IntPtr.Zero /*TODO(phl)*/,
                     (XYZ)Planetarium.fetch.Sun.position,
                     (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
         // TODO(egg): the navball should be independent from the frame of the
@@ -545,16 +544,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           plugin_.HasVessel(active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
           Vector3d prograde =
-              (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString(),
-                                              IntPtr.Zero /*TODO(phl)*/);
+              (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString());
           Vector3d radial =
-              (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString(),
-                                             IntPtr.Zero /*TODO(phl)*/);
+              (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString());
           // Yes, the astrodynamicist's normal is the mathematician's binormal.
           // Don't ask.
           Vector3d normal =
-              (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString(),
-                                               IntPtr.Zero /*TODO(phl)*/);
+              (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
 
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
@@ -731,14 +727,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       IntPtr trajectory_iterator = IntPtr.Zero;
       trajectory_iterator = plugin_.RenderedVesselTrajectory(
                                 active_vessel.id.ToString(),
-                                IntPtr.Zero /*TODO(phl)*/,
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
       if (plugin_.HasPrediction(active_vessel.id.ToString())) {
         trajectory_iterator = plugin_.RenderedPrediction(
                                   active_vessel.id.ToString(),
-                                  IntPtr.Zero /*TODO(phl)*/,
                                   (XYZ)Planetarium.fetch.Sun.position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
                                   rendered_prediction_);

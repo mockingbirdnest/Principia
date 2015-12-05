@@ -36,7 +36,6 @@ bool Player::Play() {
   ran |= RunIfAppropriate<CelestialFromParent>(*method);
   ran |= RunIfAppropriate<CurrentTime>(*method);
   ran |= RunIfAppropriate<DeleteLineAndIterator>(*method);
-  ran |= RunIfAppropriate<DeleteNavigationFrame>(*method);
   ran |= RunIfAppropriate<DeletePlugin>(*method);
   ran |= RunIfAppropriate<DeletePluginSerialization>(*method);
   ran |= RunIfAppropriate<DeserializePlugin>(*method);
@@ -73,6 +72,7 @@ bool Player::Play() {
   ran |= RunIfAppropriate<SerializePlugin>(*method);
   ran |= RunIfAppropriate<SetBufferDuration>(*method);
   ran |= RunIfAppropriate<SetBufferedLogging>(*method);
+  ran |= RunIfAppropriate<SetPlottingFrame>(*method);
   ran |= RunIfAppropriate<SetPredictionLength>(*method);
   ran |= RunIfAppropriate<SetPredictionLengthTolerance>(*method);
   ran |= RunIfAppropriate<SetPredictionSpeedTolerance>(*method);

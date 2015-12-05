@@ -34,7 +34,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5058.
+  extensions 5000 to 5999;  // Last used: 5059.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -143,20 +143,6 @@ message DeleteLineAndIterator {
   }
   message Out {
     required fixed64 line_and_iterator = 1;
-  }
-  required In in = 1;
-  required Out out = 2;
-}
-
-message DeleteNavigationFrame {
-  extend Method {
-    optional DeleteNavigationFrame extension = 5027;
-  }
-  message In {
-    required fixed64 navigation_frame = 1;
-  }
-  message Out {
-    required fixed64 navigation_frame = 1;
   }
   required In in = 1;
   required Out out = 2;
@@ -638,6 +624,21 @@ message SetBufferedLogging {
     required int32 max_severity = 1;
   }
   required In in = 1;
+}
+
+message SetPlottingFrame {
+  extend Method {
+    optional SetPlottingFrame extension = 5059;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required fixed64 navigation_frame = 2;
+  }
+  message Out {
+    required fixed64 navigation_frame = 1;
+  }
+  required In in = 1;
+  required Out out = 2;
 }
 
 message SetPredictionLength {

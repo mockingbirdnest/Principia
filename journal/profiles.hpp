@@ -384,15 +384,16 @@ struct NewBarycentricRotatingNavigationFrame {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct DeleteNavigationFrame {
+struct SetPlottingFrame {
   struct In {
+    Plugin* const plugin;
     NavigationFrame** const navigation_frame;
   };
   struct Out {
     NavigationFrame** const navigation_frame;
   };
 
-  using Message = serialization::DeleteNavigationFrame;
+  using Message = serialization::SetPlottingFrame;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,

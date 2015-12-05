@@ -456,14 +456,9 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
 // TODO(phl): Journalling.
 void principia__SetPlottingFrame(Plugin* const plugin,
                                  NavigationFrame** const navigation_frame) {
+  journal::Method<journal::SetPlottingFrame> m({plugin, navigation_frame},
+                                               {navigation_frame});
   CHECK_NOTNULL(plugin)->SetPlottingFrame(TakeOwnership(navigation_frame));
-}
-
-void principia__DeleteNavigationFrame(
-    NavigationFrame** const navigation_frame) {
-  journal::Method<journal::DeleteNavigationFrame> m({navigation_frame},
-                                                    {navigation_frame});
-  TakeOwnership(navigation_frame);
   return m.Return();
 }
 
