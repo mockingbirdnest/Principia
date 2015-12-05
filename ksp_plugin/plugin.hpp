@@ -247,6 +247,9 @@ class Plugin {
   NewBarycentricRotatingNavigationFrame(Index const primary_index,
                                         Index const secondary_index) const;
 
+  virtual void SetPlottingFrame(
+      not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
+
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
@@ -452,8 +455,8 @@ class Plugin {
 
   Celestial* sun_ = nullptr;  // Not owning, not null after InsertSun is called.
 
-  // Not null after InsertSun is called; set to the heliocentric frame by
-  // InsertSun.
+  // Not null after initialization. |EndInitialization| sets it to the
+  // heliocentric frame.
   std::unique_ptr<NavigationFrame> plotting_frame_;
 
   friend class TestablePlugin;

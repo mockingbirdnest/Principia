@@ -156,6 +156,16 @@ void Plugin::EndInitialization() {
     auto& celestial = *pair.second;
     celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
   }
+
+  // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
+  // the sun's index at hand.
+  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
+  // then export |FindOrDie(celestials_, _)|.
+  SetPlottingFrame(
+      make_not_null_unique<
+          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+          ephemeris_.get(),
+          sun_->body()));
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
@@ -420,6 +430,11 @@ Plugin::NewBarycentricRotatingNavigationFrame(
           ephemeris_.get(),
           primary.body(),
           secondary.body());
+}
+
+void Plugin::SetPlottingFrame(
+    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
+  plotting_frame_ = std::move(plotting_frame);
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
