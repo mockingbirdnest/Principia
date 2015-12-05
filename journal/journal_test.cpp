@@ -123,15 +123,10 @@ TEST_F(JournalTest, Playing) {
   std::vector<serialization::Method> methods1 = ReadAll(test_name_);
   Player player(test_name_);
 
-  // Replay the part of the journal written so far.  Cannot use the boolean
-  // returned by Play because the journal grows as we replay.
-  for (int i = 0; i < methods1.size(); ++i) {
-    player.Play();
-  }
-
-  // Check that the journal has grown as expected.
-  std::vector<serialization::Method> methods2 = ReadAll(test_name_);
-  CHECK_EQ(2 * methods1.size(), methods2.size());
+  // Replay the journal.  Note that the journal doesn't grow as we replay
+  // because we didn't call principia__ActivateJournal so there is no active
+  // journal in the ksp_plugin assembly.
+  while (player.Play());
 }
 
 }  // namespace ksp_plugin
