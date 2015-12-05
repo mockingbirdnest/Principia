@@ -13,7 +13,6 @@
 #include "glog/logging.h"
 
 namespace principia {
-namespace ksp_plugin {
 
 using base::Bytes;
 using base::FindOrDie;
@@ -22,6 +21,7 @@ using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::UniqueBytes;
 
+namespace journal {
 namespace {
 
 template<typename T>
@@ -1297,5 +1297,5 @@ std::unique_ptr<serialization::Method> Player::Read() {
 
 Journal* Journal::active_ = nullptr;
 
-}  // namespace ksp_plugin
+}  // namespace journal
 }  // namespace principia

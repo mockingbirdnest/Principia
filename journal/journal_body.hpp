@@ -7,7 +7,7 @@
 #include "glog/logging.h"
 
 namespace principia {
-namespace ksp_plugin {
+namespace journal {
 
 template<typename Profile>
 Journal::Method<Profile>::Method() {
@@ -78,5 +78,5 @@ bool Player::RunIfAppropriate(serialization::Method const& method) {
   return false;
 }
 
-}  // namespace ksp_plugin
+}  // namespace journal
 }  // namespace principia

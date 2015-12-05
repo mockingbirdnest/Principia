@@ -14,8 +14,16 @@
 namespace principia {
 
 using base::not_null;
+using ksp_plugin::KSPPart;
+using ksp_plugin::LineAndIterator;
+using ksp_plugin::NavigationFrame;
+using ksp_plugin::Plugin;
+using ksp_plugin::QP;
+using ksp_plugin::WXYZ;
+using ksp_plugin::XYZ;
+using ksp_plugin::XYZSegment;
 
-namespace ksp_plugin {
+namespace journal {
 
 using PointerMap = std::map<std::uint64_t, void*>;
 
@@ -863,7 +871,7 @@ class Player {
   friend class JournalTest;
 };
 
-}  // namespace ksp_plugin
+}  // namespace journal
 }  // namespace principia
 
 #include "journal/journal_body.hpp"

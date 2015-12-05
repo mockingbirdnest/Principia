@@ -14,8 +14,9 @@ namespace principia {
 
 using base::HexadecimalDecode;
 using base::UniqueBytes;
+using ksp_plugin::principia__NewPlugin;
 
-namespace ksp_plugin {
+namespace journal {
 
 class JournalTest : public testing::Test {
  protected:
@@ -129,5 +130,5 @@ TEST_F(JournalTest, Playing) {
   while (player.Play()) {}
 }
 
-}  // namespace ksp_plugin
+}  // namespace journal
 }  // namespace principia
