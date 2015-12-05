@@ -17,7 +17,9 @@ using base::UniqueBytes;
 namespace journal {
 
 Player::Player(std::experimental::filesystem::path const& path)
-    : stream_(path, std::ios::in) {}
+    : stream_(path, std::ios::in) {
+  CHECK(!stream_.fail());
+}
 
 bool Player::Play() {
   std::unique_ptr<serialization::Method> method = Read();
@@ -26,7 +28,6 @@ bool Player::Play() {
   }
 
   bool ran = false;
-  ran |= RunIfAppropriate<ActivateRecorder>(*method);
   ran |= RunIfAppropriate<AddVesselToNextPhysicsBubble>(*method);
   ran |= RunIfAppropriate<AdvanceTime>(*method);
   ran |= RunIfAppropriate<AtEnd>(*method);

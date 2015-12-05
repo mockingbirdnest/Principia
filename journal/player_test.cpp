@@ -28,25 +28,12 @@ class PlayerTest : public testing::Test {
     Recorder::Deactivate();
   }
 
-  static std::vector<serialization::Method> ReadAll(
-      std::experimental::filesystem::path const& path) {
-    std::vector<serialization::Method> methods;
-    Player player(path);
-    for (std::unique_ptr<serialization::Method> method = player.Read();
-         method != nullptr;
-         method = player.Read()) {
-      methods.push_back(*method);
-    }
-    return methods;
-  }
-
-
   std::string const test_name_;
   std::unique_ptr<ksp_plugin::Plugin> plugin_;
   Recorder* recorder_;
 };
 
-TEST_F(PlayerTest, Playing) {
+TEST_F(PlayerTest, PlayTiny) {
   {
     Method<NewPlugin> m({1, 2});
     m.Return(plugin_.get());
@@ -57,17 +44,24 @@ TEST_F(PlayerTest, Playing) {
     m.Return();
   }
 
-  // Read all the messages to determine the current size of the journal.
-  std::vector<serialization::Method> const methods =
-      ReadAll(test_name_ + ".journal.hex");
-  CHECK_EQ(2, methods.size());
-  Player player(test_name_);
+  Player player(test_name_ + ".journal.hex");
 
   // Replay the journal.  Note that the journal doesn't grow as we replay
   // because we didn't call principia__ActivateRecorder so there is no active
   // journal in the ksp_plugin assembly.
+  int count = 0;
+  while (player.Play()) {
+    ++count;
+  }
+  EXPECT_EQ(2, count);
+}
+
+#if 0
+TEST_F(PlayerTest, PlayForReal) {
+  Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151203-220350");
   while (player.Play()) {}
 }
+#endif
 
 }  // namespace journal
 }  // namespace principia

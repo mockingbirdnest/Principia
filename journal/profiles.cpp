@@ -20,15 +20,22 @@ template<typename T>
 void Insert(not_null<Player::PointerMap*> const pointer_map,
             std::uint64_t const address,
             T* const pointer) {
-  auto inserted = pointer_map->emplace(address, pointer);
-  CHECK(inserted.second) << address;
+  auto const inserted_pointer = const_cast<std::remove_cv<T>::type*>(pointer);
+  auto inserted = pointer_map->emplace(address, inserted_pointer);
+  if (!inserted.second) {
+    CHECK_EQ(inserted.first->second, inserted_pointer);
+  }
 }
 
 template<typename T,
          typename = typename std::enable_if<std::is_pointer<T>::value>::type>
 T DeserializePointer(Player::PointerMap const& pointer_map,
                      std::uint64_t const address) {
-  return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+  if (reinterpret_cast<T>(address) == nullptr) {
+    return nullptr;
+  } else {
+    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+  }
 }
 
 WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
@@ -108,16 +115,6 @@ serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
 
 void InitGoogleLogging::Run(Message const& message,
                             not_null<Player::PointerMap*> const pointer_map) {}
-
-void ActivateRecorder::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_activate(in.activate);
-}
-
-void ActivateRecorder::Run(Message const& message,
-                          not_null<Player::PointerMap*> const pointer_map) {
-  // Do not run ActivateRecorder when replaying because it might create another
-  // journal and we must go deeper.
-}
 
 void SetBufferedLogging::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_max_severity(in.max_severity);
@@ -1112,7 +1109,7 @@ void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {
 void SerializePlugin::Fill(Return const& result,
                            not_null<Message*> const message) {
   if (result != nullptr) {
-    message->mutable_return_()->set_serialize_plugin(result);
+    message->mutable_return_()->set_serialize_plugin(SerializePointer(result));
   }
 }
 
@@ -1122,8 +1119,9 @@ void SerializePlugin::Run(Message const& message,
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* serializer = DeserializePointer<PullSerializer*>(
                          *pointer_map, in.serializer());
-  CHECK_EQ(message.return_().serialize_plugin(),
-           ksp_plugin::principia__SerializePlugin(plugin, &serializer));
+  char const* serialize_plugin =
+      ksp_plugin::principia__SerializePlugin(plugin, &serializer);
+  Insert(pointer_map, message.return_().serialize_plugin(), serialize_plugin);
 }
 
 void DeletePluginSerialization::Fill(In const& in,
@@ -1170,6 +1168,8 @@ void DeserializePlugin::Run(Message const& message,
                                            in.serialization().size(),
                                            &deserializer,
                                            &plugin);
+  Insert(pointer_map, message.out().plugin(), plugin);
+  Insert(pointer_map, message.out().deserializer(), deserializer);
 }
 
 void SayHello::Fill(Return const& result, not_null<Message*> const message) {
