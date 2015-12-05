@@ -24,10 +24,8 @@ Player::Player(std::experimental::filesystem::path const& path)
 bool Player::Play() {
   std::unique_ptr<serialization::Method> method = Read();
   if (method == nullptr) {
-    LOG(ERROR)<<"null";
-    return true;//false;
+    return false;
   }
-  LOG(ERROR)<<method->DebugString();
 
   bool ran = false;
   ran |= RunIfAppropriate<ActivateRecorder>(*method);
