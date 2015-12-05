@@ -60,11 +60,6 @@ class ReferenceFrameSelector {
     ResetFrame();
   }
 
-  ~ReferenceFrameSelector() {
-    Interface.DeleteNavigationFrame(ref frame_);
-  }
-
-  public IntPtr frame { get { return frame_; } }
   public FrameType frame_type { get; private set; }
 
   public void RenderButton() {
@@ -194,18 +189,18 @@ class ReferenceFrameSelector {
 
   private void ResetFrame() {
     on_change_();
-    Interface.DeleteNavigationFrame(ref frame_);
+    IntPtr navigation_frame = IntPtr.Zero;
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-        frame_ = plugin_.NewBodyCentredNonRotatingNavigationFrame(
-                     selected_celestial_.flightGlobalsIndex);
+        navigation_frame = plugin_.NewBodyCentredNonRotatingNavigationFrame(
+                               selected_celestial_.flightGlobalsIndex);
       break;
 #if HAS_SURFACE
       case FrameType.SURFACE:
       break;
 #endif
       case FrameType.BARYCENTRIC_ROTATING:
-        frame_ =
+        navigation_frame =
             plugin_.NewBarycentricRotatingNavigationFrame(
                 primary_index   :
                     selected_celestial_.referenceBody.flightGlobalsIndex,
@@ -217,11 +212,12 @@ class ReferenceFrameSelector {
       break;
 #endif
     }
+    plugin_.SetPlottingFrame(ref navigation_frame);
   }
 
   private Callback on_change_;
+  // Not owned.
   private IntPtr plugin_;
-  private IntPtr frame_;
   private bool show_selector_;
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;

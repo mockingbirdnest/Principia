@@ -239,9 +239,16 @@ NavigationFrame* CDECL principia__NewBarycentricRotatingNavigationFrame(
     int const primary_index,
     int const secondary_index);
 
-// Deletes and nulls |*navigation_frame|.
 // |navigation_frame| must not be null.  No transfer of ownership of
-// |*navigation_frame|, takes ownership of |**navigation_frame|.
+// |*navigation_frame|, takes ownership of |**navigation_frame|, nulls
+// |*navigation_frame|.
+// TODO(phl): test.
+extern "C" PRINCIPIA_DLL
+void CDECL principia__SetPlottingFrame(
+    Plugin* const plugin,
+    NavigationFrame** const navigation_frame);
+
+// TODO(phl): remove.
 extern "C" PRINCIPIA_DLL
 void CDECL principia__DeleteNavigationFrame(
     NavigationFrame** const navigation_frame);
