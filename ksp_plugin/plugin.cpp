@@ -323,7 +323,6 @@ void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    not_null<NavigationFrame*> const navigation_frame,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
@@ -355,7 +354,6 @@ bool Plugin::HasPrediction(GUID const& vessel_guid) const {
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
-    not_null<NavigationFrame*> const navigation_frame,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
@@ -370,7 +368,6 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
 RenderedTrajectory<World> Plugin::RenderedFlightPlan(
     GUID const& vessel_guid,
     int const plan_phase,
-    not_null<NavigationFrame*> const navigation_frame,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
@@ -463,7 +460,6 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 }
 
 FrameField<World> Plugin::Navball(
-    not_null<NavigationFrame*> const navigation_frame,
     Position<World> const& sun_world_position) const {
   auto const to_world =
       OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
@@ -488,25 +484,19 @@ FrameField<World> Plugin::Navball(
   };
 }
 
-Vector<double, World> Plugin::VesselTangent(
-    GUID const& vessel_guid,
-    not_null<NavigationFrame*> const navigation_frame) const {
+Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {
   return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
                                navigation_frame,
                                Vector<double, Frenet<Navigation>>({1, 0, 0}));
 }
 
-Vector<double, World> Plugin::VesselNormal(
-    GUID const& vessel_guid,
-    not_null<NavigationFrame*> const navigation_frame) const {
+Vector<double, World> Plugin::VesselNormal(GUID const& vessel_guid) const {
   return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
                                navigation_frame,
                                Vector<double, Frenet<Navigation>>({0, 1, 0}));
 }
 
-Vector<double, World> Plugin::VesselBinormal(
-    GUID const& vessel_guid,
-    not_null<NavigationFrame*> const navigation_frame) const {
+Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
   return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
                                navigation_frame,
                                Vector<double, Frenet<Navigation>>({0, 0, 1}));
@@ -936,7 +926,6 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 RenderedTrajectory<World> Plugin::RenderTrajectory(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    not_null<NavigationFrame*> const navigation_frame,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
   auto const to_world =
