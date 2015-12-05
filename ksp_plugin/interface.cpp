@@ -154,7 +154,7 @@ void principia__ActivateRecorder(bool const activate) {
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
     journal::Recorder* const recorder =
         new journal::Recorder(std::experimental::filesystem::path("glog") /
-                              "Principia" / name.str());
+                    "Principia" / name.str());
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();
@@ -285,15 +285,15 @@ void principia__DirectlyInsertCelestial(
     char const* const vy,
     char const* const vz) {
   journal::Method<journal::DirectlyInsertCelestial> m({plugin,
-                                                       celestial_index,
-                                                       parent_index,
-                                                       gravitational_parameter,
-                                                       axis_right_ascension,
-                                                       axis_declination,
-                                                       j2,
-                                                       reference_radius,
-                                                       x, y, z,
-                                                       vx, vy, vz});
+                                              celestial_index,
+                                              parent_index,
+                                              gravitational_parameter,
+                                              axis_right_ascension,
+                                              axis_declination,
+                                              j2,
+                                              reference_radius,
+                                              x, y, z,
+                                              vx, vy, vz});
   serialization::GravityModel::Body gravity_model;
   serialization::InitialState::Body initial_state;
   gravity_model.set_gravitational_parameter(gravitational_parameter);
@@ -330,10 +330,10 @@ void principia__InsertCelestial(Plugin* const plugin,
                                 int const parent_index,
                                 QP const from_parent) {
   journal::Method<journal::InsertCelestial> m({plugin,
-                                               celestial_index,
-                                               gravitational_parameter,
-                                               parent_index,
-                                               from_parent});
+                                      celestial_index,
+                                      gravitational_parameter,
+                                      parent_index,
+                                      from_parent});
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
@@ -348,8 +348,8 @@ void principia__InsertSun(Plugin* const plugin,
                           int const celestial_index,
                           double const gravitational_parameter) {
   journal::Method<journal::InsertSun> m({plugin,
-                                         celestial_index,
-                                         gravitational_parameter});
+                                celestial_index,
+                                gravitational_parameter});
   CHECK_NOTNULL(plugin)->InsertSun(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>());
@@ -360,8 +360,8 @@ void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                          int const celestial_index,
                                          int const parent_index) {
   journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
-                                                        celestial_index,
-                                                        parent_index});
+                                               celestial_index,
+                                               parent_index});
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
   return m.Return();
@@ -453,10 +453,16 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
                                            secondary_index).release());
 }
 
+// TODO(phl): Journalling.
+void principia__SetPlottingFrame(Plugin* const plugin,
+                                 NavigationFrame** const navigation_frame) {
+  CHECK_NOTNULL(plugin)->SetPlottingFrame(TakeOwnership(navigation_frame));
+}
+
 void principia__DeleteNavigationFrame(
     NavigationFrame** const navigation_frame) {
   journal::Method<journal::DeleteNavigationFrame> m({navigation_frame},
-                                                    {navigation_frame});
+                                           {navigation_frame});
   TakeOwnership(navigation_frame);
   return m.Return();
 }
@@ -474,13 +480,12 @@ LineAndIterator* principia__RenderedVesselTrajectory(
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
   journal::Method<journal::RenderedVesselTrajectory> m({plugin,
-                                                        vessel_guid,
-                                                        navigation_frame,
-                                                        sun_world_position});
+                                               vessel_guid,
+                                               navigation_frame,
+                                               sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          navigation_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -501,13 +506,12 @@ LineAndIterator* principia__RenderedPrediction(
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
   journal::Method<journal::RenderedPrediction> m({plugin,
-                                                  vessel_guid,
-                                                  navigation_frame,
-                                                  sun_world_position});
+                                         vessel_guid,
+                                         navigation_frame,
+                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
-          navigation_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -529,15 +533,14 @@ LineAndIterator* principia__RenderedFlightPlan(
     NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
   journal::Method<journal::RenderedFlightPlan> m({plugin,
-                                                  vessel_guid,
-                                                  plan_phase,
-                                                  navigation_frame,
-                                                  sun_world_position});
+                                         vessel_guid,
+                                         plan_phase,
+                                         navigation_frame,
+                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
           plan_phase,
-          navigation_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -600,7 +603,7 @@ bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
 void principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator) {
   journal::Method<journal::DeleteLineAndIterator> m({line_and_iterator},
-                                                    {line_and_iterator});
+                                           {line_and_iterator});
   TakeOwnership(line_and_iterator);
   return m.Return();
 }
@@ -610,9 +613,9 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                              KSPPart const* const parts,
                                              int count) {
   journal::Method<journal::AddVesselToNextPhysicsBubble> m({plugin,
-                                                            vessel_guid,
-                                                            parts,
-                                                            count});
+                                                   vessel_guid,
+                                                   parts,
+                                                   count});
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
   std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
@@ -673,7 +676,6 @@ WXYZ principia__NavballOrientation(
                                          sun_world_position,
                                          ship_world_position});
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
-      navigation_frame,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
   return m.Return(ToWXYZ(
@@ -689,8 +691,8 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
   journal::Method<journal::VesselTangent> m({plugin,
                                              vessel_guid,
                                              navigation_frame});
-  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
-             VesselTangent(vessel_guid, navigation_frame).coordinates()));
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
@@ -699,8 +701,8 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
   journal::Method<journal::VesselNormal> m({plugin,
                                             vessel_guid,
                                             navigation_frame});
-  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
-             VesselNormal(vessel_guid, navigation_frame).coordinates()));
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselBinormal(Plugin const* const plugin,
@@ -709,8 +711,8 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
   journal::Method<journal::VesselBinormal> m({plugin,
                                               vessel_guid,
                                               navigation_frame});
-  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
-             VesselBinormal(vessel_guid, navigation_frame).coordinates()));
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {
@@ -755,7 +757,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 
 void principia__DeletePluginSerialization(char const** const serialization) {
   journal::Method<journal::DeletePluginSerialization> m({serialization},
-                                                        {serialization});
+                                               {serialization});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
   return m.Return();
@@ -766,10 +768,10 @@ void principia__DeserializePlugin(char const* const serialization,
                                   PushDeserializer** const deserializer,
                                   Plugin const** const plugin) {
   journal::Method<journal::DeserializePlugin> m({serialization,
-                                                 serialization_size,
-                                                 deserializer,
-                                                 plugin},
-                                                {deserializer, plugin});
+                                        serialization_size,
+                                        deserializer,
+                                        plugin},
+                                       {deserializer, plugin});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);

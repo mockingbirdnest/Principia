@@ -68,19 +68,15 @@ class MockPlugin : public Plugin {
                      RelativeDegreesOfFreedom<AliceSun>(
                          Index const celestial_index));
 
-  MOCK_CONST_METHOD3(
+  MOCK_CONST_METHOD2(
       RenderedVesselTrajectory,
-      RenderedTrajectory<World>(
-          GUID const& vessel_guid,
-          not_null<NavigationFrame*> const navigation_frame,
-          Position<World> const& sun_world_position));
+      RenderedTrajectory<World>(GUID const& vessel_guid,
+                                Position<World> const& sun_world_position));
 
-  MOCK_CONST_METHOD3(
+  MOCK_CONST_METHOD2(
       RenderedPrediction,
-      RenderedTrajectory<World>(
-          GUID const& vessel_guid,
-          not_null<NavigationFrame*> const navigation_frame,
-          Position<World> const& sun_world_position));
+      RenderedTrajectory<World>(GUID const& vessel_guid,
+                                Position<World> const& sun_world_position));
 
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
@@ -132,25 +128,18 @@ class MockPlugin : public Plugin {
                      Velocity<World>(
                          Index const reference_body_index));
 
-  MOCK_CONST_METHOD2(Navball,
+  MOCK_CONST_METHOD1(Navball,
                      FrameField<World>(
-                         not_null<NavigationFrame*> const navigation_frame,
                          Position<World> const& sun_world_position));
 
-  MOCK_CONST_METHOD2(VesselTangent,
-                     Vector<double, World>(
-                         GUID const& vessel_guid,
-                         not_null<NavigationFrame*> const navigation_frame));
+  MOCK_CONST_METHOD1(VesselTangent,
+                     Vector<double, World>(GUID const& vessel_guid));
 
-  MOCK_CONST_METHOD2(VesselNormal,
-                     Vector<double, World>(
-                         GUID const& vessel_guid,
-                         not_null<NavigationFrame*> const navigation_frame));
+  MOCK_CONST_METHOD1(VesselNormal,
+                     Vector<double, World>(GUID const& vessel_guid));
 
-  MOCK_CONST_METHOD2(VesselBinormal,
-                     Vector<double, World>(
-                         GUID const& vessel_guid,
-                         not_null<NavigationFrame*> const navigation_frame));
+  MOCK_CONST_METHOD1(VesselBinormal,
+                     Vector<double, World>(GUID const& vessel_guid));
 
   MOCK_CONST_METHOD0(CurrentTime, Instant());
 
