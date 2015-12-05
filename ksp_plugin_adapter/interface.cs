@@ -365,9 +365,10 @@ internal static class Interface {
       int secondary_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteNavigationFrame",
+             EntryPoint        = "principia__SetPlottingFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteNavigationFrame(ref IntPtr navigation_frame);
+  internal static extern void SetPlottingFrame(this IntPtr plugin,
+                                               ref IntPtr navigation_frame);
 }
 
 }  // namespace ksp_plugin_adapter

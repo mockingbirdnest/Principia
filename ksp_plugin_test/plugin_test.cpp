@@ -564,12 +564,13 @@ TEST_F(PluginTest, Navball) {
                 0 * Radian);
   plugin.InsertSun(SolarSystemFactory::kSun, sun_gravitational_parameter_);
   plugin.EndInitialization();
-  not_null<std::unique_ptr<NavigationFrame>> const heliocentric =
-      plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::kSun);
+  plugin.SetPlottingFrame(
+      plugin.NewBodyCentredNonRotatingNavigationFrame(
+          SolarSystemFactory::kSun));
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
-  auto navball = plugin.Navball(heliocentric.get(), World::origin);
+  auto navball = plugin.Navball(World::origin);
   EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(x)),
               Lt(2 * std::numeric_limits<double>::epsilon()));
   EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
@@ -603,12 +604,9 @@ TEST_F(PluginTest, Frenet) {
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::kEarth);
-  EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
-              AlmostEquals(t, 2));
-  EXPECT_THAT(plugin.VesselNormal(satellite, geocentric.get()),
-              AlmostEquals(n, 3));
-  EXPECT_THAT(plugin.VesselBinormal(satellite, geocentric.get()),
-              AlmostEquals(b, 4));
+  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 2));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3));
+  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 4));
 }
 
 }  // namespace ksp_plugin
