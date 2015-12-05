@@ -144,7 +144,8 @@ void principia__InitGoogleLogging() {
 }
 
 void principia__ActivateRecorder(bool const activate) {
-  journal::Method<journal::ActivateRecorder> m({activate});
+  // NOTE: Do not journal!  You'd end up with half a message in the journal and
+  // that would cause trouble.
   if (activate && !journal::Recorder::IsActivated()) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
@@ -159,7 +160,6 @@ void principia__ActivateRecorder(bool const activate) {
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();
   }
-  return m.Return();
 }
 
 void principia__SetBufferedLogging(int const max_severity) {

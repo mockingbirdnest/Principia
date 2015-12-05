@@ -25,17 +25,6 @@ struct InitGoogleLogging {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct ActivateRecorder {
-  struct In {
-    bool const activate;
-  };
-
-  using Message = serialization::ActivateRecorder;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
 struct SetBufferedLogging {
   struct In {
     int const max_severity;
