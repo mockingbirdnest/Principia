@@ -491,7 +491,6 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          navigation_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -518,7 +517,6 @@ LineAndIterator* principia__RenderedPrediction(
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
-          navigation_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -548,7 +546,6 @@ LineAndIterator* principia__RenderedFlightPlan(
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
           plan_phase,
-          navigation_frame,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
@@ -682,7 +679,6 @@ WXYZ principia__NavballOrientation(
                                          sun_world_position,
                                          ship_world_position});
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
-      navigation_frame,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
   return m.Return(ToWXYZ(
@@ -696,24 +692,24 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid,
                              NavigationFrame* const navigation_frame) {
   Journal::Method<VesselTangent> m({plugin, vessel_guid, navigation_frame});
-  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
-             VesselTangent(vessel_guid, navigation_frame).coordinates()));
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
                             char const* const vessel_guid,
                             NavigationFrame* const navigation_frame) {
   Journal::Method<VesselNormal> m({plugin, vessel_guid, navigation_frame});
-  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
-             VesselNormal(vessel_guid, navigation_frame).coordinates()));
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselBinormal(Plugin const* const plugin,
                               char const* const vessel_guid,
                               NavigationFrame* const navigation_frame) {
   Journal::Method<VesselBinormal> m({plugin, vessel_guid, navigation_frame});
-  return m.Return(ToXYZ(CHECK_NOTNULL(plugin)->
-             VesselBinormal(vessel_guid, navigation_frame).coordinates()));
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {

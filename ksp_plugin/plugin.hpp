@@ -386,7 +386,6 @@ class Plugin {
 
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
-      not_null<NavigationFrame*> const navigation_frame,
       Vector<double, Frenet<Navigation>> const& vector) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
