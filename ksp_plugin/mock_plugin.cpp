@@ -40,6 +40,12 @@ MockPlugin::NewBarycentricRotatingNavigationFrame(
   return std::move(navigation_frame);
 }
 
+void MockPlugin::SetPlottingFrame(
+    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
+  SetPlottingFrameConstRef(*plotting_frame);
+  plotting_frame.release();
+}
+
 void MockPlugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {
