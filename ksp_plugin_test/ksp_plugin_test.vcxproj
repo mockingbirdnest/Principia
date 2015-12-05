@@ -15,7 +15,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\journal\journal.cpp" />
+    <ClCompile Include="..\journal\profiles.cpp" />
+    <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
     <ClCompile Include="..\ksp_plugin\mock_plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\physics_bubble.cpp" />

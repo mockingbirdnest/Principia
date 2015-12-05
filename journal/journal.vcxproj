@@ -144,8 +144,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="journal.hpp" />
-    <ClInclude Include="journal_body.hpp" />
     <ClInclude Include="method.hpp" />
     <ClInclude Include="method_body.hpp" />
     <ClInclude Include="player.hpp" />
@@ -154,7 +152,6 @@
     <ClInclude Include="recorder.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="journal.cpp" />
     <ClCompile Include="journal_test.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="profiles.cpp" />
