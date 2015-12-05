@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="journal.hpp" />
     <ClInclude Include="journal_body.hpp" />
+    <ClInclude Include="method.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="journal.cpp" />

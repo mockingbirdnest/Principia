@@ -20,6 +20,9 @@
     <ClInclude Include="journal_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="method.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="journal.cpp">
