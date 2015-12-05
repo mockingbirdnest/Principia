@@ -21,6 +21,7 @@ Recorder::~Recorder() {
 }
 
 void Recorder::Write(serialization::Method const& method) {
+  CHECK_LT(0, method.ByteSize()) << method.DebugString();
   UniqueBytes bytes(method.ByteSize());
   method.SerializeToArray(bytes.data.get(), static_cast<int>(bytes.size));
 

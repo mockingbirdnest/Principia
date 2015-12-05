@@ -20,15 +20,22 @@ template<typename T>
 void Insert(not_null<Player::PointerMap*> const pointer_map,
             std::uint64_t const address,
             T* const pointer) {
-  auto inserted = pointer_map->emplace(address, pointer);
-  CHECK(inserted.second) << address;
+  auto const inserted_pointer = const_cast<std::remove_cv<T>::type*>(pointer);
+  auto inserted = pointer_map->emplace(address, inserted_pointer);
+  if (!inserted.second) {
+    CHECK_EQ(inserted.first->second, inserted_pointer);
+  }
 }
 
 template<typename T,
          typename = typename std::enable_if<std::is_pointer<T>::value>::type>
 T DeserializePointer(Player::PointerMap const& pointer_map,
                      std::uint64_t const address) {
-  return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+  if (reinterpret_cast<T>(address) == nullptr) {
+    return nullptr;
+  } else {
+    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+  }
 }
 
 WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
@@ -1170,6 +1177,8 @@ void DeserializePlugin::Run(Message const& message,
                                            in.serialization().size(),
                                            &deserializer,
                                            &plugin);
+  Insert(pointer_map, message.out().plugin(), plugin);
+  Insert(pointer_map, message.out().deserializer(), deserializer);
 }
 
 void SayHello::Fill(Return const& result, not_null<Message*> const message) {
