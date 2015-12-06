@@ -260,7 +260,6 @@ extern "C" PRINCIPIA_DLL
 LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position);
 
 extern "C" PRINCIPIA_DLL
@@ -271,7 +270,6 @@ extern "C" PRINCIPIA_DLL
 LineAndIterator* CDECL principia__RenderedPrediction(
     Plugin* const plugin,
     char const* const vessel_guid,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position);
 
 extern "C" PRINCIPIA_DLL
@@ -283,7 +281,6 @@ LineAndIterator* CDECL principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* const vessel_guid,
     int const plan_phase,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position);
 
 extern "C" PRINCIPIA_DLL
@@ -351,24 +348,20 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
 extern "C" PRINCIPIA_DLL
 WXYZ CDECL principia__NavballOrientation(
     Plugin const* const plugin,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position,
     XYZ const ship_world_position);
 
 extern "C" PRINCIPIA_DLL
 XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
-                                   char const* const vessel_guid,
-                                   NavigationFrame* const navigation_frame);
+                                   char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
 XYZ CDECL principia__VesselNormal(Plugin const* const plugin,
-                                  char const* const vessel_guid,
-                                  NavigationFrame* const navigation_frame);
+                                  char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
 XYZ CDECL principia__VesselBinormal(Plugin const* const plugin,
-                                    char const* const vessel_guid,
-                                    NavigationFrame* const navigation_frame);
+                                    char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
 double CDECL principia__CurrentTime(Plugin const* const plugin);

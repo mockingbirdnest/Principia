@@ -471,11 +471,9 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
   journal::Method<journal::RenderedVesselTrajectory> m({plugin,
                                                         vessel_guid,
-                                                        navigation_frame,
                                                         sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
@@ -497,11 +495,9 @@ bool principia__HasPrediction(Plugin const* const plugin,
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
     char const* const vessel_guid,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
   journal::Method<journal::RenderedPrediction> m({plugin,
                                                   vessel_guid,
-                                                  navigation_frame,
                                                   sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
@@ -524,12 +520,10 @@ LineAndIterator* principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* const vessel_guid,
     int const plan_phase,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position) {
   journal::Method<journal::RenderedFlightPlan> m({plugin,
                                                   vessel_guid,
                                                   plan_phase,
-                                                  navigation_frame,
                                                   sun_world_position});
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
@@ -662,13 +656,11 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 WXYZ principia__NavballOrientation(
     Plugin const* const plugin,
-    NavigationFrame* const navigation_frame,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
   journal::Method<journal::NavballOrientation> m({plugin,
-                                         navigation_frame,
-                                         sun_world_position,
-                                         ship_world_position});
+                                                  sun_world_position,
+                                                  ship_world_position});
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
@@ -680,31 +672,22 @@ WXYZ principia__NavballOrientation(
 }
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
-                             char const* const vessel_guid,
-                             NavigationFrame* const navigation_frame) {
-  journal::Method<journal::VesselTangent> m({plugin,
-                                             vessel_guid,
-                                             navigation_frame});
+                             char const* const vessel_guid) {
+  journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
   return m.Return(
       ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
-                            char const* const vessel_guid,
-                            NavigationFrame* const navigation_frame) {
-  journal::Method<journal::VesselNormal> m({plugin,
-                                            vessel_guid,
-                                            navigation_frame});
+                            char const* const vessel_guid) {
+  journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
   return m.Return(
       ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselBinormal(Plugin const* const plugin,
-                              char const* const vessel_guid,
-                              NavigationFrame* const navigation_frame) {
-  journal::Method<journal::VesselBinormal> m({plugin,
-                                              vessel_guid,
-                                              navigation_frame});
+                              char const* const vessel_guid) {
+  journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
   return m.Return(
       ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
 }

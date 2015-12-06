@@ -457,6 +457,11 @@ TEST_F(InterfaceTest, RenderedPrediction) {
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
                                                       kCelestialIndex,
                                                       kParentIndex);
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
   RenderedTrajectory<World> rendered_trajectory;
@@ -485,7 +490,6 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   LineAndIterator* line_and_iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     kVesselGUID,
-                                    navigation_frame,
                                     kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
   EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
@@ -507,10 +511,6 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, LineAndIterator) {
@@ -526,6 +526,11 @@ TEST_F(InterfaceTest, LineAndIterator) {
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
                                                        kCelestialIndex,
                                                        kParentIndex);
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
   RenderedTrajectory<World> rendered_trajectory;
@@ -556,7 +561,6 @@ TEST_F(InterfaceTest, LineAndIterator) {
   LineAndIterator* line_and_iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
-                                          navigation_frame,
                                           kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
   EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
@@ -578,10 +582,6 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
@@ -651,6 +651,12 @@ TEST_F(InterfaceTest, NavballOrientation) {
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
                                                        kCelestialIndex,
                                                        kParentIndex);
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
+
   Position<World> sun_position =
       World::origin + Displacement<World>(
                           {1 * SIUnit<Length>(),
@@ -663,18 +669,12 @@ TEST_F(InterfaceTest, NavballOrientation) {
       .WillOnce(
           Return([rotation](Position<World> const& q) { return rotation; }));
   WXYZ q = principia__NavballOrientation(plugin_.get(),
-                                         navigation_frame,
                                          {1, 2, 3},
                                          {2, 3, 5});
   EXPECT_EQ(q.w, rotation.quaternion().real_part());
   EXPECT_EQ(q.x, rotation.quaternion().imaginary_part().x);
   EXPECT_EQ(q.y, rotation.quaternion().imaginary_part().y);
   EXPECT_EQ(q.z, rotation.quaternion().imaginary_part().z);
-
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, Frenet) {
@@ -690,11 +690,17 @@ TEST_F(InterfaceTest, Frenet) {
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
                                                        kCelestialIndex,
                                                        kParentIndex);
+  EXPECT_EQ(mock_navigation_frame, navigation_frame);
+
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
+  EXPECT_THAT(navigation_frame, IsNull());
+
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
     EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID)).WillOnce(Return(tangent));
     XYZ t =
-        principia__VesselTangent(plugin_.get(), kVesselGUID, navigation_frame);
+        principia__VesselTangent(plugin_.get(), kVesselGUID);
     EXPECT_EQ(t.x, tangent.coordinates().x);
     EXPECT_EQ(t.y, tangent.coordinates().y);
     EXPECT_EQ(t.z, tangent.coordinates().z);
@@ -703,7 +709,7 @@ TEST_F(InterfaceTest, Frenet) {
     auto const normal = Vector<double, World>({-13, 7, 5});
     EXPECT_CALL(*plugin_, VesselNormal(kVesselGUID)).WillOnce(Return(normal));
     XYZ n =
-        principia__VesselNormal(plugin_.get(), kVesselGUID, navigation_frame);
+        principia__VesselNormal(plugin_.get(), kVesselGUID);
     EXPECT_EQ(n.x, normal.coordinates().x);
     EXPECT_EQ(n.y, normal.coordinates().y);
     EXPECT_EQ(n.z, normal.coordinates().z);
@@ -713,16 +719,11 @@ TEST_F(InterfaceTest, Frenet) {
     EXPECT_CALL(*plugin_, VesselBinormal(kVesselGUID))
         .WillOnce(Return(binormal));
     XYZ b =
-        principia__VesselBinormal(plugin_.get(), kVesselGUID, navigation_frame);
+        principia__VesselBinormal(plugin_.get(), kVesselGUID);
     EXPECT_EQ(b.x, binormal.coordinates().x);
     EXPECT_EQ(b.y, binormal.coordinates().y);
     EXPECT_EQ(b.z, binormal.coordinates().z);
   }
-
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
