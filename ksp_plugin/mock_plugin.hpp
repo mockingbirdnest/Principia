@@ -109,6 +109,13 @@ class MockPlugin : public Plugin {
            Index const secondary_index,
            std::unique_ptr<NavigationFrame>* navigation_frame));
 
+  // NOTE(phl): Needed because gMock 1.7.0 wants to copy the unique_ptr<>.
+  void SetPlottingFrame(
+    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) override;
+
+  MOCK_METHOD1(SetPlottingFrameConstRef,
+               void(NavigationFrame const& plotting_frame));
+
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
   void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,

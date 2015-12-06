@@ -576,24 +576,26 @@ void NewBarycentricRotatingNavigationFrame::Run(
          navigation_frame);
 }
 
-void DeleteNavigationFrame::Fill(In const& in,
-                                not_null<Message*> const message) {
-  message->mutable_in()->set_navigation_frame(
-      SerializePointer(*in.navigation_frame));
+void SetPlottingFrame::Fill(In const& in,
+                            not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_navigation_frame(SerializePointer(*in.navigation_frame));
 }
 
-void DeleteNavigationFrame::Fill(Out const& out,
-                                not_null<Message*> const message) {
+void SetPlottingFrame::Fill(Out const& out,
+                            not_null<Message*> const message) {
   message->mutable_out()->set_navigation_frame(
       SerializePointer(*out.navigation_frame));
 }
 
-void DeleteNavigationFrame::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
+void SetPlottingFrame::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* navigation_frame = DeserializePointer<NavigationFrame*>(
-                               *pointer_map, message.in().navigation_frame());
-  ksp_plugin::principia__DeleteNavigationFrame(&navigation_frame);
+                               *pointer_map, in.navigation_frame());
+  ksp_plugin::principia__SetPlottingFrame(plugin, &navigation_frame);
   // TODO(phl): should we do something with out() here?
 }
 

@@ -425,7 +425,7 @@ TEST_F(InterfaceTest, NewBarycentricRotatingNavigationFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
-TEST_F(InterfaceTest, DeleteNavigationFrame) {
+TEST_F(InterfaceTest, SetPlottingFrame) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
@@ -439,7 +439,8 @@ TEST_F(InterfaceTest, DeleteNavigationFrame) {
                                                        kCelestialIndex,
                                                        kParentIndex));
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 }
 
@@ -507,7 +508,8 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 }
 
@@ -577,7 +579,8 @@ TEST_F(InterfaceTest, LineAndIterator) {
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 }
 
@@ -669,7 +672,8 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_EQ(q.z, rotation.quaternion().imaginary_part().z);
 
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 }
 
@@ -716,7 +720,8 @@ TEST_F(InterfaceTest, Frenet) {
   }
 
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  principia__DeleteNavigationFrame(&navigation_frame);
+  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 }
 

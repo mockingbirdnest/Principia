@@ -191,7 +191,6 @@ internal static class Interface {
   internal static extern IntPtr RenderedVesselTrajectory(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr navigation_frame,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -214,7 +213,6 @@ internal static class Interface {
   internal static extern IntPtr RenderedPrediction(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr navigation_frame,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -293,7 +291,6 @@ internal static class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern WXYZ NavballOrientation(
       this IntPtr plugin,
-      IntPtr navigation_frame,
       XYZ sun_world_position,
       XYZ ship_world_position);
 
@@ -302,24 +299,21 @@ internal static class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ VesselTangent(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr navigation_frame);
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselNormal",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ VesselNormal(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr navigation_frame);
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselBinormal",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ VesselBinormal(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr navigation_frame);
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__CurrentTime",
