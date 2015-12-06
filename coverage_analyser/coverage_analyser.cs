@@ -35,9 +35,10 @@ class CoverageAnalyser {
       Regex regex;
       if (tested_unit == "ksp_plugin") {
         Console.WriteLine("Covering principia::" + tested_unit +
+                          " and principia::journal," +
                           " as well as extern \"C\" interface functions" +
                           " (of the form ::principia__Identifier)");
-        regex = new Regex("^principia(::" + tested_unit + "|__)");
+        regex = new Regex("^principia(::(ksp_plugin|journal)|__)");
       } else {
         Console.WriteLine("Covering principia::" + tested_unit);
         regex = new Regex("^principia::" + tested_unit);
