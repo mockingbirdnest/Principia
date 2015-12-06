@@ -18,13 +18,14 @@ using geometry::JulianDate;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::si::Minute;
 using quantities::si::Metre;
+using quantities::si::Nano;
 using quantities::si::Milli;
 using quantities::si::Kilo;
 using quantities::ArcCos; // This feels very cargocultish, especially since I don't need it for ArcSin.
 using testing_utilities::AbsoluteError;
 using ::testing::Gt;
 using ::testing::Lt;
-using testing::AllOf;
+using ::testing::AllOf;
 
 namespace physics {
 
@@ -78,14 +79,15 @@ namespace physics {
       auto q_U23 = q_earth + Normalize(q_earth - q_sun) * (r_earth - r_moon) / Sin(alpha);
       auto q_U14 = q_earth + Normalize(q_earth - q_sun) * (r_earth + r_moon) / Sin(alpha);
       // Earth/Moon lineup
-      auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
-      auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
+      auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm())); // Angle for U23
+      auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm())); // Angle for U14
       // Still need to compare angles
       LOG(ERROR) << alpha;
       LOG(ERROR) << beta;
       LOG(ERROR) << gamma;
 
-      EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1e-3), Gt(1e-9)));
+      EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1 * Milli(Radian)), Gt(1 * Nano(Radian)))); // Should work for 3rd & 4th times
+      EXPECT_THAT(AbsoluteError(alpha, gamma), AllOf(Lt(1 * Milli(Radian)), Gt(1 * Nano(Radian)))); // Should work for 2nd & 5th times
       }
     
     // Later on for additional accuracy: 2 * ArcTan((x_norm_y - y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
