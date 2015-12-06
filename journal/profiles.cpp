@@ -631,7 +631,6 @@ void RenderedVesselTrajectory::Fill(In const& in,
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
@@ -646,13 +645,10 @@ void RenderedVesselTrajectory::Run(
     not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
-                              *pointer_map, in.navigation_frame());
   auto* line_and_iterator =
     ksp_plugin::principia__RenderedVesselTrajectory(
         plugin,
         in.vessel_guid().c_str(),
-        navigation_frame,
         DeserializeXYZ(in.sun_world_position()));
   Insert(pointer_map,
          message.return_().rendered_vessel_trajectory(),
@@ -683,7 +679,6 @@ void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
@@ -697,12 +692,9 @@ void RenderedPrediction::Run(Message const& message,
                              not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
-                              *pointer_map, in.navigation_frame());
   auto* line_and_iterator = ksp_plugin::principia__RenderedPrediction(
                                 plugin,
                                 in.vessel_guid().c_str(),
-                                navigation_frame,
                                 DeserializeXYZ(in.sun_world_position()));
   Insert(pointer_map,
          message.return_().rendered_prediction(),
@@ -734,7 +726,6 @@ void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
   m->set_plan_phase(in.plan_phase);
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
@@ -752,8 +743,6 @@ void RenderedFlightPlan::Run(Message const& message,
                                 plugin,
                                 in.vessel_guid().c_str(),
                                 in.plan_phase(),
-                                DeserializePointer<NavigationFrame*>(
-                                    *pointer_map, in.navigation_frame()),
                                 DeserializeXYZ(in.sun_world_position()));
   Insert(pointer_map,
          message.return_().rendered_flight_plan(),
@@ -995,7 +984,6 @@ void BubbleVelocityCorrection::Run(
 void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
   *m->mutable_ship_world_position() = SerializeXYZ(in.ship_world_position);
 }
@@ -1013,8 +1001,6 @@ void NavballOrientation::Run(Message const& message,
   CHECK(DeserializeWXYZ(message.return_().navball_orientation()) ==
             ksp_plugin::principia__NavballOrientation(
                 plugin,
-                DeserializePointer<NavigationFrame*>(
-                    *pointer_map, in.navigation_frame()),
                 DeserializeXYZ(in.sun_world_position()),
                 DeserializeXYZ(in.ship_world_position())));
 }
@@ -1023,7 +1009,6 @@ void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
 }
 
 void VesselTangent::Fill(Return const& result,
@@ -1039,16 +1024,13 @@ void VesselTangent::Run(Message const& message,
   CHECK(DeserializeXYZ(message.return_().vessel_tangent()) ==
             ksp_plugin::principia__VesselTangent(
                 plugin,
-                in.vessel_guid().c_str(),
-                DeserializePointer<NavigationFrame*>(
-                    *pointer_map, in.navigation_frame())));
+                in.vessel_guid().c_str()));
 }
 
 void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
 }
 
 void VesselNormal::Fill(Return const& result,
@@ -1064,16 +1046,13 @@ void VesselNormal::Run(Message const& message,
   CHECK(DeserializeXYZ(message.return_().vessel_normal()) ==
             ksp_plugin::principia__VesselNormal(
                 plugin,
-                in.vessel_guid().c_str(),
-                DeserializePointer<NavigationFrame*>(
-                    *pointer_map, in.navigation_frame())));
+                in.vessel_guid().c_str()));
 }
 
 void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
-  m->set_navigation_frame(SerializePointer(in.navigation_frame));
 }
 
 void VesselBinormal::Fill(Return const& result,
@@ -1089,9 +1068,7 @@ void VesselBinormal::Run(Message const& message,
   CHECK(DeserializeXYZ(message.return_().vessel_binormal()) ==
             ksp_plugin::principia__VesselBinormal(
                 plugin,
-                in.vessel_guid().c_str(),
-                DeserializePointer<NavigationFrame*>(
-                    *pointer_map, in.navigation_frame())));
+                in.vessel_guid().c_str()));
 }
 
 void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
