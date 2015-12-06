@@ -416,7 +416,6 @@ struct RenderedVesselTrajectory {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
-    NavigationFrame* const navigation_frame;
     XYZ const sun_world_position;
   };
   using Return = LineAndIterator*;
@@ -446,7 +445,6 @@ struct RenderedPrediction {
   struct In {
     Plugin* const plugin;
     char const* const vessel_guid;
-    NavigationFrame* const navigation_frame;
     XYZ const sun_world_position;
   };
   using Return = LineAndIterator*;
@@ -477,7 +475,6 @@ struct RenderedFlightPlan {
     Plugin* const plugin;
     char const* const vessel_guid;
     int const plan_phase;
-    NavigationFrame* const navigation_frame;
     XYZ const sun_world_position;
   };
   using Return = LineAndIterator*;
@@ -651,7 +648,6 @@ struct BubbleVelocityCorrection {
 struct NavballOrientation {
   struct In {
     Plugin const* const plugin;
-    NavigationFrame* const navigation_frame;
     XYZ const sun_world_position;
     XYZ const ship_world_position;
   };
@@ -668,7 +664,6 @@ struct VesselTangent {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
-    NavigationFrame* const navigation_frame;
   };
   using Return = XYZ;
 
@@ -683,7 +678,6 @@ struct VesselNormal {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
-    NavigationFrame* const navigation_frame;
   };
   using Return = XYZ;
 
@@ -698,7 +692,6 @@ struct VesselBinormal {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
-    NavigationFrame* const navigation_frame;
   };
   using Return = XYZ;
 
