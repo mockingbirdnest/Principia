@@ -20,10 +20,20 @@ template<typename T>
 void Insert(not_null<Player::PointerMap*> const pointer_map,
             std::uint64_t const address,
             T* const pointer) {
-  auto const inserted_pointer = const_cast<std::remove_cv<T>::type*>(pointer);
+  void* const inserted_pointer =
+      static_cast<void*>(const_cast<std::remove_cv<T>::type*>(pointer));
   auto inserted = pointer_map->emplace(address, inserted_pointer);
   if (!inserted.second) {
     CHECK_EQ(inserted.first->second, inserted_pointer);
+  }
+}
+
+void Delete(not_null<Player::PointerMap*> const pointer_map,
+            std::uint64_t const address) {
+  if (reinterpret_cast<void*>(address) != nullptr) {
+    auto const it = pointer_map->find(address);
+    CHECK(it != pointer_map->end()) << address;
+    pointer_map->erase(it);
   }
 }
 
@@ -288,6 +298,7 @@ void DeletePlugin::Run(Message const& message,
   auto* plugin = DeserializePointer<Plugin const*>(*pointer_map,
                                                    message.in().plugin());
   ksp_plugin::principia__DeletePlugin(&plugin);
+  Delete(pointer_map, message.in().plugin());
   // TODO(phl): should we do something with out() here?
 }
 
@@ -596,6 +607,8 @@ void SetPlottingFrame::Run(Message const& message,
   auto* navigation_frame = DeserializePointer<NavigationFrame*>(
                                *pointer_map, in.navigation_frame());
   ksp_plugin::principia__SetPlottingFrame(plugin, &navigation_frame);
+  // TODO(phl): This may delete the previous plotting frame, which should thus
+  // be removed from |pointer_map|.
   // TODO(phl): should we do something with out() here?
 }
 
@@ -881,6 +894,7 @@ void DeleteLineAndIterator::Run(
   auto* line_and_iterator = DeserializePointer<LineAndIterator*>(
                                 *pointer_map, message.in().line_and_iterator());
   ksp_plugin::principia__DeleteLineAndIterator(&line_and_iterator);
+  Delete(pointer_map, message.in().line_and_iterator());
   // TODO(phl): should we do something with out() here?
 }
 
@@ -1123,7 +1137,12 @@ void SerializePlugin::Run(Message const& message,
                          *pointer_map, in.serializer());
   char const* serialize_plugin =
       ksp_plugin::principia__SerializePlugin(plugin, &serializer);
-  Insert(pointer_map, message.return_().serialize_plugin(), serialize_plugin);
+  if (serialize_plugin == nullptr) {
+    Delete(pointer_map, in.serializer());
+  } else {
+    Insert(pointer_map, message.out().serializer(), serializer);
+    Insert(pointer_map, message.return_().serialize_plugin(), serialize_plugin);
+  }
 }
 
 void DeletePluginSerialization::Fill(In const& in,
@@ -1145,6 +1164,7 @@ void DeletePluginSerialization::Run(
   auto* serialization = DeserializePointer<char const*>(
                             *pointer_map, in.serialization());
   ksp_plugin::principia__DeletePluginSerialization(&serialization);
+  Delete(pointer_map, in.serialization());
 }
 
 void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
@@ -1170,8 +1190,12 @@ void DeserializePlugin::Run(Message const& message,
                                            in.serialization().size(),
                                            &deserializer,
                                            &plugin);
+  if (in.serialization().size() == 0) {
+    Delete(pointer_map, in.deserializer());
+  } else {
+    Insert(pointer_map, message.out().deserializer(), deserializer);
+  }
   Insert(pointer_map, message.out().plugin(), plugin);
-  Insert(pointer_map, message.out().deserializer(), deserializer);
 }
 
 void SayHello::Fill(Return const& result, not_null<Message*> const message) {
