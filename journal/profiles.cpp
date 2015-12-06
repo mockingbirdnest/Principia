@@ -607,8 +607,9 @@ void SetPlottingFrame::Run(Message const& message,
   auto* navigation_frame = DeserializePointer<NavigationFrame*>(
                                *pointer_map, in.navigation_frame());
   ksp_plugin::principia__SetPlottingFrame(plugin, &navigation_frame);
-  // TODO(phl): This may delete the previous plotting frame, which should thus
-  // be removed from |pointer_map|.
+  // While the |navigation_frame| is not deleted by this function, it is handed
+  // over to the plugin so we should not see it cross the interface again.
+  Delete(pointer_map, in.navigation_frame());
   // TODO(phl): should we do something with out() here?
 }
 
