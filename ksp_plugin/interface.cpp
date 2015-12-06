@@ -783,7 +783,7 @@ void principia__DeserializePlugin(char const* const serialization,
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
   if (byte_size == 0) {
-    delete *deserializer;
+    TakeOwnership(deserializer);
   }
   return m.Return();
 }
