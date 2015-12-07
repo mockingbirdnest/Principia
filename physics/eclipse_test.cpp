@@ -56,16 +56,80 @@ namespace physics {
     auto r_earth = 6378.1363 * Kilo(Metre);
     auto r_moon = 1738.0 * Kilo(Metre);
 
-    // Get positions/trajectories/ephemeres for bodies
-    // Dates will have to be TDB Julian Day for U1, etc. (and all will have to be generated)
-    // P1 = 18:10:49 UT
-    // U1 = 19:09:19
-    // U2 = 20:30:38
-    // U3 = 20:57:33
-    // U4 = 22:18:54
-    // P4 = 23:17:21
-    // 2433374.25788409, 2433374.29850909, 2433374.354979, 2433374.37367113, 2433374.43016419, 2433374.47075446
-    double etimes[6] = {2433374.25788409, 2433374.29850909, 2433374.354979, 2433374.37367113, 2433374.43016419, 2433374.47075446};
+    // Dates are TDB Julian Day for 1948-04-02
+    auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
+    auto U1 = JulianDate(2433374.29850909);  // 19:09:19
+    auto U2 = JulianDate(2433374.354979);  // 20:30:38
+    auto U3 = JulianDate(2433374.37367113);  // 20:57:33
+    auto U4 = JulianDate(2433374.43016419);  // 22:18:54
+    auto P4 = JulianDate(2433374.47075446);  // 23:17:21
+
+    // Lunar eclipse -- U1 (time is start of umbral phase)
+    auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U1, nullptr);
+    auto q_moon = ephemeris->trajectory(moon)->EvaluatePosition(U1, nullptr);
+    auto q_earth = ephemeris->trajectory(earth)->EvaluatePosition(U1, nullptr);
+
+    // check body angles at target time
+    // Earth/Sun lineup
+    auto alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
+    auto q_U14 = q_earth + Normalize(q_earth - q_sun) * (r_earth + r_moon) / Sin(alpha);
+    // Earth/Moon lineup
+    auto gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm())); // Angle for U14
+    // Do the angles work?
+    LOG(ERROR) << alpha;
+    LOG(ERROR) << gamma;
+    EXPECT_THAT(AbsoluteError(alpha, gamma), AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))));
+
+    // Lunar eclipse -- U2 (time is start of full eclipse)
+    q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U2, nullptr);
+    q_moon = ephemeris->trajectory(moon)->EvaluatePosition(U2, nullptr);
+    q_earth = ephemeris->trajectory(earth)->EvaluatePosition(U2, nullptr);
+
+    // check body angles at target time
+    // Earth/Sun lineup
+    alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
+    auto q_U23 = q_earth + Normalize(q_earth - q_sun) * (r_earth - r_moon) / Sin(alpha);
+    // Earth/Moon lineup
+    auto beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm())); // Angle for U23
+    // Do the angles work?
+    LOG(ERROR) << alpha;
+    LOG(ERROR) << beta;
+    EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))));
+
+    // Lunar eclipse -- U3 (time is end of full eclipse)
+    q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U3, nullptr);
+    q_moon = ephemeris->trajectory(moon)->EvaluatePosition(U3, nullptr);
+    q_earth = ephemeris->trajectory(earth)->EvaluatePosition(U3, nullptr);
+
+    // check body angles at target time
+    // Earth/Sun lineup
+    alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
+    q_U23 = q_earth + Normalize(q_earth - q_sun) * (r_earth - r_moon) / Sin(alpha);
+    // Earth/Moon lineup
+    beta = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) / ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm())); // Angle for U23
+    // Do the angles work?
+    LOG(ERROR) << alpha;
+    LOG(ERROR) << beta;
+    EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))));
+
+    // Lunar eclipse -- U4 (time is end of umbral phase)
+    q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U4, nullptr);
+    q_moon = ephemeris->trajectory(moon)->EvaluatePosition(U4, nullptr);
+    q_earth = ephemeris->trajectory(earth)->EvaluatePosition(U4, nullptr);
+
+    // check body angles at target time
+    // Earth/Sun lineup
+    alpha = ArcSin((r_sun - r_earth)/(q_sun - q_earth).Norm());
+    q_U14 = q_earth + Normalize(q_earth - q_sun) * (r_earth + r_moon) / Sin(alpha);
+    // Earth/Moon lineup
+    gamma = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) / ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm())); // Angle for U14
+    // Do the angles work?
+    LOG(ERROR) << alpha;
+    LOG(ERROR) << gamma;
+    EXPECT_THAT(AbsoluteError(alpha, gamma), AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))));
+
+/*
+    etimes = {2433374.25788409, 2433374.29850909, 2433374.354979, 2433374.37367113, 2433374.43016419, 2433374.47075446};
     for(int i = 0; i <= 5; i++) {
       auto some_instant = JulianDate(etimes[i]);
       auto q_sun = ephemeris->trajectory(sun)->EvaluatePosition(some_instant, nullptr);
@@ -86,10 +150,10 @@ namespace physics {
       LOG(ERROR) << beta;
       LOG(ERROR) << gamma;
 
-      EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1 * Milli(Radian)), Gt(1 * Nano(Radian)))); // Should work for 3rd & 4th times
-      EXPECT_THAT(AbsoluteError(alpha, gamma), AllOf(Lt(1 * Milli(Radian)), Gt(1 * Nano(Radian)))); // Should work for 2nd & 5th times
+      EXPECT_THAT(AbsoluteError(alpha, beta), AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))); // Should work for 3rd & 4th times
+      EXPECT_THAT(AbsoluteError(alpha, gamma), AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))); // Should work for 2nd & 5th times
       }
-    
+*/    
     // Later on for additional accuracy: 2 * ArcTan((x_norm_y - y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
     // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 
