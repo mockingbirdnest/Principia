@@ -8,18 +8,25 @@ namespace principia {
 namespace base {
 
 namespace {
-int constexpr kBufferSize = 100;
-}  // namespace
 
-// This implementation is in O(N^2) because of the fixed-size buffer.  We could
-// double the buffer size at each recursive call to make it O(N).
-std::string GetLine(not_null<std::ifstream*> const stream) {
-  char buffer[kBufferSize];
-  if (!stream->getline(&buffer[0], kBufferSize).eof() && stream->fail()) {
+int constexpr kBufferSize = 100;
+
+std::string GetLineWithSize(std::size_t const size,
+                            not_null<std::ifstream*> const stream) {
+  char* buffer = new char[size];
+  if (!stream->getline(buffer, size).eof() && stream->fail()) {
     stream->clear();
-    return buffer + GetLine(stream);
+    std::string string_buffer(buffer);
+    string_buffer += GetLineWithSize(2 * size, stream);
+    return std::move(string_buffer);
   }
   return buffer;
+}
+
+}  // namespace
+
+std::string GetLine(not_null<std::ifstream*> const stream) {
+  return GetLineWithSize(kBufferSize, stream);
 }
 
 }  // namespace base
