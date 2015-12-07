@@ -141,9 +141,9 @@ void BM_NewhallApproximation(
 }
 
 BENCHMARK(BM_EvaluateDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
 BENCHMARK(BM_EvaluateDisplacement)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
 BENCHMARK(BM_NewhallApproximation)->
     Arg(4)->Arg(8)->Arg(16);
 

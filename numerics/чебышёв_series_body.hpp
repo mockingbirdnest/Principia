@@ -111,13 +111,16 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   //return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
 
 #define CLENSHAW_STEP1(n) \
-  Vector const& b ## n = coefficients_[n];
+  b ## n = coefficients_[n];
 #define CLENSHAW_STEP2(n, nplus1) \
-  Vector const b ## n = coefficients_[n] + two_scaled_t * b ## nplus1;
+  b ## n = coefficients_[n] + two_scaled_t * b ## nplus1;
 #define CLENSHAW_STEP3(n, nplus1, nplus2) \
-  Vector const b ## n = coefficients_[n] + two_scaled_t * b ## nplus1 - b ## nplus2;
+  b ## n = coefficients_[n] + two_scaled_t * b ## nplus1 - \
+                        b ## nplus2;
 
-  switch (k) {
+  Vector b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
+      b16, b17;
+  switch (degree_) {
     case 17:
       CLENSHAW_STEP1(17);
       CLENSHAW_STEP2(16, 17);
@@ -178,38 +181,50 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
       CLENSHAW_STEP1(3);
       CLENSHAW_STEP2(2, 3);
       break;
+    case 2:
+      CLENSHAW_STEP1(2);
+      CLENSHAW_STEP2(1, 2);
+      break;
+    case 1:
+      b2 = Vector{};
+      CLENSHAW_STEP1(1);
+      break;
+    case 0:
+      b2 = Vector{};
+      b1 = Vector{};
+      break;
   }
-  switch (k) {
-  case 17:
-    CLENSHAW_STEP3(15, 16, 17);
-  case 16:
-    CLENSHAW_STEP3(14, 15, 16);
-  case 15:
-    CLENSHAW_STEP3(13, 14, 15);
-  case 14:
-    CLENSHAW_STEP3(12, 13, 14);
-  case 13:
-    CLENSHAW_STEP3(11, 12, 13);
-  case 12:
-    CLENSHAW_STEP3(10, 11, 12);
-  case 11:
-    CLENSHAW_STEP3(9, 10, 11);
-  case 10:
-    CLENSHAW_STEP3(8, 9, 10);
-  case 9:
-    CLENSHAW_STEP3(7, 8, 9);
-  case 8:
-    CLENSHAW_STEP3(6, 7, 8);
-  case 7:
-    CLENSHAW_STEP3(5, 6, 7);
-  case 6:
-    CLENSHAW_STEP3(4, 5, 6);
-  case 5:
-    CLENSHAW_STEP3(3, 4, 5);
-  case 4:
-    CLENSHAW_STEP3(2, 3, 4);
-  case 3:
-    CLENSHAW_STEP3(1, 2, 3);
+  switch (degree_) {
+    case 17:
+      CLENSHAW_STEP3(15, 16, 17);
+    case 16:
+      CLENSHAW_STEP3(14, 15, 16);
+    case 15:
+      CLENSHAW_STEP3(13, 14, 15);
+    case 14:
+      CLENSHAW_STEP3(12, 13, 14);
+    case 13:
+      CLENSHAW_STEP3(11, 12, 13);
+    case 12:
+      CLENSHAW_STEP3(10, 11, 12);
+    case 11:
+      CLENSHAW_STEP3(9, 10, 11);
+    case 10:
+      CLENSHAW_STEP3(8, 9, 10);
+    case 9:
+      CLENSHAW_STEP3(7, 8, 9);
+    case 8:
+      CLENSHAW_STEP3(6, 7, 8);
+    case 7:
+      CLENSHAW_STEP3(5, 6, 7);
+    case 6:
+      CLENSHAW_STEP3(4, 5, 6);
+    case 5:
+      CLENSHAW_STEP3(3, 4, 5);
+    case 4:
+      CLENSHAW_STEP3(2, 3, 4);
+    case 3:
+      CLENSHAW_STEP3(1, 2, 3);
   }
   return coefficients_[0] + scaled_t * b1 - b2;
 }
