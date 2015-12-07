@@ -56,7 +56,7 @@ TEST_F(PlayerTest, PlayTiny) {
   EXPECT_EQ(2, count);
 }
 
-#if 0
+#if 1
 TEST_F(PlayerTest, PlayForReal) {
   Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151206-170008");
   int count = 0;

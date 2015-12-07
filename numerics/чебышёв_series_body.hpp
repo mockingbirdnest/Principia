@@ -92,23 +92,126 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  // This code is tricky for performance reasons.  Naively we would have three
-  // |Vector|s, |b_k|, |b_kplus1| and |b_kplus2| and we would copy them in the
-  // loop below.  But it's more efficient to copy pointers than |Vector|s.
-  // Also, we can save some memory by noticing that |b_k| and |b_kplus2| are
-  // never needed at the same time and overlaying them.
-  Vector b_kplus2_vector{};
-  Vector b_kplus1_vector{};
-  Vector* b_kplus2 = &b_kplus2_vector;
-  Vector* b_kplus1 = &b_kplus1_vector;
-  Vector* const& b_k = b_kplus2;  // An overlay.
-  for (int k = degree_; k >= 1; --k) {
-    *b_k = coefficients_[k] + two_scaled_t * *b_kplus1 - *b_kplus2;
-    Vector* const last_b_k = b_k;
-    b_kplus2 = b_kplus1;
-    b_kplus1 = last_b_k;
+  //// This code is tricky for performance reasons.  Naively we would have three
+  //// |Vector|s, |b_k|, |b_kplus1| and |b_kplus2| and we would copy them in the
+  //// loop below.  But it's more efficient to copy pointers than |Vector|s.
+  //// Also, we can save some memory by noticing that |b_k| and |b_kplus2| are
+  //// never needed at the same time and overlaying them.
+  //Vector b_kplus2_vector{};
+  //Vector b_kplus1_vector{};
+  //Vector* b_kplus2 = &b_kplus2_vector;
+  //Vector* b_kplus1 = &b_kplus1_vector;
+  //Vector* const& b_k = b_kplus2;  // An overlay.
+  //for (int k = degree_; k >= 1; --k) {
+  //  *b_k = coefficients_[k] + two_scaled_t * *b_kplus1 - *b_kplus2;
+  //  Vector* const last_b_k = b_k;
+  //  b_kplus2 = b_kplus1;
+  //  b_kplus1 = last_b_k;
+  //}
+  //return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
+
+#define CLENSHAW_STEP1(n) \
+  Vector const& b ## n = coefficients_[n];
+#define CLENSHAW_STEP2(n, nplus1) \
+  Vector const b ## n = coefficients_[n] + two_scaled_t * b ## nplus1;
+#define CLENSHAW_STEP3(n, nplus1, nplus2) \
+  Vector const b ## n = coefficients_[n] + two_scaled_t * b ## nplus1 - b ## nplus2;
+
+  switch (k) {
+    case 17:
+      CLENSHAW_STEP1(17);
+      CLENSHAW_STEP2(16, 17);
+      break;
+    case 16:
+      CLENSHAW_STEP1(16);
+      CLENSHAW_STEP2(15, 16);
+      break;
+    case 15:
+      CLENSHAW_STEP1(15);
+      CLENSHAW_STEP2(14, 15);
+      break;
+    case 14:
+      CLENSHAW_STEP1(14);
+      CLENSHAW_STEP2(13, 14);
+      break;
+    case 13:
+      CLENSHAW_STEP1(13);
+      CLENSHAW_STEP2(12, 13);
+      break;
+    case 12:
+      CLENSHAW_STEP1(12);
+      CLENSHAW_STEP2(11, 12);
+      break;
+    case 11:
+      CLENSHAW_STEP1(11);
+      CLENSHAW_STEP2(10, 11);
+      break;
+    case 10:
+      CLENSHAW_STEP1(10);
+      CLENSHAW_STEP2(9, 10);
+      break;
+    case 9:
+      CLENSHAW_STEP1(9);
+      CLENSHAW_STEP2(8, 9);
+      break;
+    case 8:
+      CLENSHAW_STEP1(8);
+      CLENSHAW_STEP2(7, 8);
+      break;
+    case 7:
+      CLENSHAW_STEP1(7);
+      CLENSHAW_STEP2(6, 7);
+      break;
+    case 6:
+      CLENSHAW_STEP1(6);
+      CLENSHAW_STEP2(5, 6);
+      break;
+    case 5:
+      CLENSHAW_STEP1(5);
+      CLENSHAW_STEP2(4, 5);
+      break;
+    case 4:
+      CLENSHAW_STEP1(4);
+      CLENSHAW_STEP2(3, 4);
+      break;
+    case 3:
+      CLENSHAW_STEP1(3);
+      CLENSHAW_STEP2(2, 3);
+      break;
   }
-  return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
+  switch (k) {
+  case 17:
+    CLENSHAW_STEP3(15, 16, 17);
+  case 16:
+    CLENSHAW_STEP3(14, 15, 16);
+  case 15:
+    CLENSHAW_STEP3(13, 14, 15);
+  case 14:
+    CLENSHAW_STEP3(12, 13, 14);
+  case 13:
+    CLENSHAW_STEP3(11, 12, 13);
+  case 12:
+    CLENSHAW_STEP3(10, 11, 12);
+  case 11:
+    CLENSHAW_STEP3(9, 10, 11);
+  case 10:
+    CLENSHAW_STEP3(8, 9, 10);
+  case 9:
+    CLENSHAW_STEP3(7, 8, 9);
+  case 8:
+    CLENSHAW_STEP3(6, 7, 8);
+  case 7:
+    CLENSHAW_STEP3(5, 6, 7);
+  case 6:
+    CLENSHAW_STEP3(4, 5, 6);
+  case 5:
+    CLENSHAW_STEP3(3, 4, 5);
+  case 4:
+    CLENSHAW_STEP3(2, 3, 4);
+  case 3:
+    CLENSHAW_STEP3(1, 2, 3);
+  }
+  return coefficients_[0] + scaled_t * b1 - b2;
 }
 
 template<typename Vector>
