@@ -58,8 +58,13 @@ TEST_F(PlayerTest, PlayTiny) {
 
 #if 0
 TEST_F(PlayerTest, PlayForReal) {
-  Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151203-220350");
-  while (player.Play()) {}
+  Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151206-170008");
+  int count = 0;
+  while (player.Play()) {
+    ++count;
+    LOG_IF(ERROR, (count % 10'000) == 0)
+        << count << " journal entries replayed";
+  }
 }
 #endif
 
