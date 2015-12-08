@@ -80,8 +80,9 @@ Vector const& ЧебышёвSeries<Vector>::last_coefficient() const {
 }
 
 template<typename Vector>
-Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
-  double const scaled_t = (t - t_mean_) * two_over_duration_;
+Vector EvaluateImplementation(std::vector<Vector> const& coefficients,
+                              int const degree,
+                              double const scaled_t) {
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
@@ -92,25 +93,30 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Vector const c0 = coefficients_[0];
-  switch (degree_) {
-  case 0:
-    return c0;
-  case 1:
-    return c0 + scaled_t * coefficients_[1];
-  default:
-    Vector b_kplus2 = coefficients_[degree_];
-    Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
-    Vector b_k;
-    for (int k = degree_ - 2; k >= 1; --k) {
-      b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus2 = b_kplus1;
-      b_kplus1 = b_k;
-    }
-    return c0 + scaled_t * b_kplus1 - b_kplus2;
+  Vector const c0 = coefficients[0];
+  switch (degree) {
+    case 0:
+      return c0;
+    case 1:
+      return c0 + scaled_t * coefficients[1];
+    default:
+      Vector b_kplus2 = coefficients[degree];
+      Vector b_kplus1 = coefficients[degree - 1] + two_scaled_t * b_kplus2;
+      Vector b_k;
+      for (int k = degree - 2; k >= 1; --k) {
+        b_k = coefficients[k] + two_scaled_t * b_kplus1 - b_kplus2;
+        b_kplus2 = b_kplus1;
+        b_kplus1 = b_k;
+      }
+      return c0 + scaled_t * b_kplus1 - b_kplus2;
   }
+}
 
-//#define CLENSHAW_STEP1(n) \
+template<typename Vector>
+Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
+  double const scaled_t = (t - t_mean_) * two_over_duration_;
+  return EvaluateImplementation<Vector>(coefficients_, degree_, scaled_t);
+  //#define CLENSHAW_STEP1(n) \
 //  bnplus2 = coefficients_[n];
 //#define CLENSHAW_STEP2(n, nplus1) \
 //  bnplus1 = coefficients_[n] + two_scaled_t * bnplus2;
