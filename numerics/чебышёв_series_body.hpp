@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "geometry/grassmann.hpp"
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -11,6 +12,7 @@
 namespace principia {
 
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::Multivector;
 
 namespace numerics {
 
@@ -109,6 +111,41 @@ Vector EvaluateImplementation(std::vector<Vector> const& coefficients,
         b_kplus1 = b_k;
       }
       return c0 + scaled_t * b_kplus1 - b_kplus2;
+  }
+}
+
+template<typename Scalar, typename Frame, int rank>
+Multivector<Scalar, Frame, rank> EvaluateImplementation(
+    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
+    int const degree,
+    double const scaled_t) {
+  using Vector = Multivector<Scalar, Frame, rank>;
+  double const two_scaled_t = scaled_t + scaled_t;
+  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
+  // computation errors.  But if it goes too far, something is broken.
+  // TODO(phl): This should use DCHECK but these macros don't work because the
+  // Principia projects don't define NDEBUG.
+#ifdef _DEBUG
+  CHECK_LE(scaled_t, 1.1);
+  CHECK_GE(scaled_t, -1.1);
+#endif
+
+  Vector const c0 = coefficients[0];
+  switch (degree) {
+  case 0:
+    return c0;
+  case 1:
+    return c0 + scaled_t * coefficients[1];
+  default:
+    Vector b_kplus2 = coefficients[degree];
+    Vector b_kplus1 = coefficients[degree - 1] + two_scaled_t * b_kplus2;
+    Vector b_k;
+    for (int k = degree - 2; k >= 1; --k) {
+      b_k = coefficients[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    return c0 + scaled_t * b_kplus1 - b_kplus2;
   }
 }
 
