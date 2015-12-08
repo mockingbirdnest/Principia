@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using geometry::Multivector;
+using geometry::R3Element;
 
 namespace numerics {
 
@@ -82,77 +84,110 @@ Vector const& ЧебышёвSeries<Vector>::last_coefficient() const {
 }
 
 template<typename Vector>
-Vector EvaluateImplementation(std::vector<Vector> const& coefficients,
-                              int const degree,
-                              double const scaled_t) {
-  double const two_scaled_t = scaled_t + scaled_t;
-  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
-  // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): This should use DCHECK but these macros don't work because the
-  // Principia projects don't define NDEBUG.
-#ifdef _DEBUG
-  CHECK_LE(scaled_t, 1.1);
-  CHECK_GE(scaled_t, -1.1);
-#endif
+class WTF {
+ public:
+  static Vector EvaluateImplementation(std::vector<Vector> const& coefficients,
+                                       int const degree,
+                                       double const scaled_t) {
+    double const two_scaled_t = scaled_t + scaled_t;
+    // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
+    // computation errors.  But if it goes too far, something is broken.
+    // TODO(phl): This should use DCHECK but these macros don't work because the
+    // Principia projects don't define NDEBUG.
+  #ifdef _DEBUG
+    CHECK_LE(scaled_t, 1.1);
+    CHECK_GE(scaled_t, -1.1);
+  #endif
 
-  Vector const c0 = coefficients[0];
-  switch (degree) {
-    case 0:
-      return c0;
-    case 1:
-      return c0 + scaled_t * coefficients[1];
-    default:
-      Vector b_kplus2 = coefficients[degree];
-      Vector b_kplus1 = coefficients[degree - 1] + two_scaled_t * b_kplus2;
-      Vector b_k;
-      for (int k = degree - 2; k >= 1; --k) {
-        b_k = coefficients[k] + two_scaled_t * b_kplus1 - b_kplus2;
-        b_kplus2 = b_kplus1;
-        b_kplus1 = b_k;
-      }
-      return c0 + scaled_t * b_kplus1 - b_kplus2;
+    Vector const c0 = coefficients[0];
+    switch (degree) {
+      case 0:
+        return c0;
+      case 1:
+        return c0 + scaled_t * coefficients[1];
+      default:
+        Vector b_kplus2 = coefficients[degree];
+        Vector b_kplus1 = coefficients[degree - 1] + two_scaled_t * b_kplus2;
+        Vector b_k;
+        for (int k = degree - 2; k >= 1; --k) {
+          b_k = coefficients[k] + two_scaled_t * b_kplus1 - b_kplus2;
+          b_kplus2 = b_kplus1;
+          b_kplus1 = b_k;
+        }
+        return c0 + scaled_t * b_kplus1 - b_kplus2;
+    }
   }
-}
+};
 
 template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> EvaluateImplementation(
-    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
-    int const degree,
-    double const scaled_t) {
-  using Vector = Multivector<Scalar, Frame, rank>;
-  double const two_scaled_t = scaled_t + scaled_t;
-  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
-  // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): This should use DCHECK but these macros don't work because the
-  // Principia projects don't define NDEBUG.
-#ifdef _DEBUG
-  CHECK_LE(scaled_t, 1.1);
-  CHECK_GE(scaled_t, -1.1);
-#endif
+class WTF<Multivector<Scalar, Frame, rank>> {
+ public:
+  static Multivector<Scalar, Frame, rank> EvaluateImplementation(
+      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
+      int const degree,
+      double const scaled_t) {
+    double const two_scaled_t = scaled_t + scaled_t;
+    // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
+    // computation errors.  But if it goes too far, something is broken.
+    // TODO(phl): This should use DCHECK but these macros don't work because the
+    // Principia projects don't define NDEBUG.
+  #ifdef _DEBUG
+    CHECK_LE(scaled_t, 1.1);
+    CHECK_GE(scaled_t, -1.1);
+  #endif
 
-  Vector const c0 = coefficients[0];
-  switch (degree) {
-  case 0:
-    return c0;
-  case 1:
-    return c0 + scaled_t * coefficients[1];
-  default:
-    Vector b_kplus2 = coefficients[degree];
-    Vector b_kplus1 = coefficients[degree - 1] + two_scaled_t * b_kplus2;
-    Vector b_k;
-    for (int k = degree - 2; k >= 1; --k) {
-      b_k = coefficients[k] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus2 = b_kplus1;
-      b_kplus1 = b_k;
+    R3Element<Scalar> const c0 = coefficients[0].coordinates();
+    Scalar const c0x = c0.x;
+    Scalar const c0y = c0.y;
+    Scalar const c0z = c0.z;
+    switch (degree) {
+      case 0: {
+        return Multivector<Scalar, Frame, rank>({c0x, c0y, c0z});
+      }
+      case 1: {
+        R3Element<Scalar> const c1 = coefficients[1].coordinates();
+        Scalar const c1x = c1.x;
+        Scalar const c1y = c1.y;
+        Scalar const c1z = c1.z;
+        return Multivector<Scalar, Frame, rank>({c0x + scaled_t * c1x,
+                                                 c0y + scaled_t * c1y,
+                                                 c0z + scaled_t * c1z});
+      }
+      default: {
+        R3Element<Scalar> const cd = coefficients[degree].coordinates();
+        Scalar b_kplus2x = cd.x;
+        Scalar b_kplus2y = cd.y;
+        Scalar b_kplus2z = cd.z;
+        R3Element<Scalar> const cdm1 = coefficients[degree - 1].coordinates();
+        Scalar b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
+        Scalar b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
+        Scalar b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
+        Scalar b_k;
+        for (int k = degree - 2; k >= 1; --k) {
+          R3Element<Scalar> const ck = coefficients[k].coordinates();
+          b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
+          b_kplus2x = b_kplus1x;
+          b_kplus1x = b_k;
+          b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
+          b_kplus2y = b_kplus1y;
+          b_kplus1y = b_k;
+          b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
+          b_kplus2z = b_kplus1z;
+          b_kplus1z = b_k;
+        }
+        return Multivector<Scalar, Frame, rank>(
+            {c0x + scaled_t * b_kplus1x - b_kplus2x,
+             c0y + scaled_t * b_kplus1y - b_kplus2y,
+             c0z + scaled_t * b_kplus1z - b_kplus2z});
+      }
     }
-    return c0 + scaled_t * b_kplus1 - b_kplus2;
   }
-}
+};
 
 template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
-  return EvaluateImplementation<Vector>(coefficients_, degree_, scaled_t);
+  return WTF<Vector>::EvaluateImplementation(coefficients_, degree_, scaled_t);
   //#define CLENSHAW_STEP1(n) \
 //  bnplus2 = coefficients_[n];
 //#define CLENSHAW_STEP2(n, nplus1) \
