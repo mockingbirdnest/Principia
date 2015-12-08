@@ -92,21 +92,23 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Vector b_kplus2 = coefficients_[degree_];
-  if (degree_ == 0) {
-    return b_kplus2;
+  Vector const c0 = coefficients_[0];
+  switch (degree_) {
+  case 0:
+    return c0;
+  case 1:
+    return c0 + scaled_t * coefficients_[1];
+  default:
+    Vector b_kplus2 = coefficients_[degree_];
+    Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
+    Vector b_k;
+    for (int k = degree_ - 2; k >= 1; --k) {
+      b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    return c0 + scaled_t * b_kplus1 - b_kplus2;
   }
-  if (degree_ == 1) {
-    return coefficients_[0] + scaled_t * b_kplus2;
-  }
-  Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
-  Vector b_k;
-  for (int k = degree_ - 2; k >= 1; --k) {
-    b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-    b_kplus2 = b_kplus1;
-    b_kplus1 = b_k;
-  }
-  return coefficients_[0] + scaled_t * b_kplus1 - b_kplus2;
 
 //#define CLENSHAW_STEP1(n) \
 //  bnplus2 = coefficients_[n];
