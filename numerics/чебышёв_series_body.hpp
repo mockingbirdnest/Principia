@@ -111,15 +111,17 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   //return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
 
 #define CLENSHAW_STEP1(n) \
-  b ## n = coefficients_[n];
+  bnplus2 = coefficients_[n];
 #define CLENSHAW_STEP2(n, nplus1) \
-  b ## n = coefficients_[n] + two_scaled_t * b ## nplus1;
+  bnplus1 = coefficients_[n] + two_scaled_t * bnplus2;
 #define CLENSHAW_STEP3(n, nplus1, nplus2) \
-  b ## n = coefficients_[n] + two_scaled_t * b ## nplus1 - \
-                        b ## nplus2;
+  bn = coefficients_[n] + two_scaled_t * bnplus1 - bnplus2;  \
+  bnplus2 = bnplus1; \
+  bnplus1 = bn;
 
-  Vector b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
-      b16, b17;
+  //Vector b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
+  //    b16, b17;
+  Vector bn, bnplus1, bnplus2;
   switch (degree_) {
     case 17:
       CLENSHAW_STEP1(17);
@@ -186,12 +188,12 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
       CLENSHAW_STEP2(1, 2);
       break;
     case 1:
-      b2 = Vector{};
-      CLENSHAW_STEP1(1);
+      bnplus2 = Vector{};
+      CLENSHAW_STEP2(1, 2);
       break;
     case 0:
-      b2 = Vector{};
-      b1 = Vector{};
+      bnplus2 = Vector{};
+      bnplus1 = Vector{};
       break;
   }
   switch (degree_) {
@@ -226,7 +228,7 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
     case 3:
       CLENSHAW_STEP3(1, 2, 3);
   }
-  return coefficients_[0] + scaled_t * b1 - b2;
+  return coefficients_[0] + scaled_t * bnplus1 - bnplus2;
 }
 
 template<typename Vector>
