@@ -91,7 +91,6 @@ WTF<Vector>::WTF(std::vector<Vector> const& coefficients)
 
 template<typename Vector>
 Vector WTF<Vector>::EvaluateImplementation(
-    std::vector<Vector> const& coefficients,
     int const degree,
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
@@ -104,18 +103,18 @@ Vector WTF<Vector>::EvaluateImplementation(
   CHECK_GE(scaled_t, -1.1);
   #endif
 
-  Vector const c0 = coefficients[0];
+  Vector const c0 = coefficients_[0];
   switch (degree) {
     case 0:
       return c0;
     case 1:
-      return c0 + scaled_t * coefficients[1];
+      return c0 + scaled_t * coefficients_[1];
     default:
-      Vector b_kplus2 = coefficients[degree];
-      Vector b_kplus1 = coefficients[degree - 1] + two_scaled_t * b_kplus2;
+      Vector b_kplus2 = coefficients_[degree];
+      Vector b_kplus1 = coefficients_[degree - 1] + two_scaled_t * b_kplus2;
       Vector b_k;
       for (int k = degree - 2; k >= 1; --k) {
-        b_k = coefficients[k] + two_scaled_t * b_kplus1 - b_kplus2;
+        b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
         b_kplus2 = b_kplus1;
         b_kplus1 = b_k;
       }
@@ -124,20 +123,46 @@ Vector WTF<Vector>::EvaluateImplementation(
 }
 
 template<typename Scalar, typename Frame, int rank>
+std::vector<Scalar> CoefficientsX(
+  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
+  std::vector<Scalar> coefficients_x;
+  for (auto const& coefficient : coefficients) {
+    coefficients_x.push_back(coefficient.coordinates().x);
+  }
+  return coefficients_x;
+}
+
+template<typename Scalar, typename Frame, int rank>
+std::vector<Scalar> CoefficientsY(
+  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
+  std::vector<Scalar> coefficients_y;
+  for (auto const& coefficient : coefficients) {
+    coefficients_y.push_back(coefficient.coordinates().y);
+  }
+  return coefficients_y;
+}
+
+template<typename Scalar, typename Frame, int rank>
+std::vector<Scalar> CoefficientsZ(
+  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
+  std::vector<Scalar> coefficients_z;
+  for (auto const& coefficient : coefficients) {
+    coefficients_z.push_back(coefficient.coordinates().z);
+  }
+  return coefficients_z;
+}
+
+template<typename Scalar, typename Frame, int rank>
 WTF<Multivector<Scalar, Frame, rank>>::WTF(
   std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients)
-    : coefficients_(coefficients) {
-  for (auto const& coefficient : coefficients_) {
-    coefficients_x_.push_back(coefficient.coordinates().x);
-    coefficients_y_.push_back(coefficient.coordinates().y);
-    coefficients_z_.push_back(coefficient.coordinates().z);
-  }
-}
+    : coefficients_(coefficients),
+      wtf_x_(CoefficientsX(coefficients)),
+      wtf_y_(CoefficientsY(coefficients)),
+      wtf_z_(CoefficientsZ(coefficients)) {}
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> WTF<Multivector<Scalar, Frame, rank>>::
 EvaluateImplementation(
-    std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients,
     int const degree,
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
@@ -150,51 +175,16 @@ EvaluateImplementation(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Scalar result_x;
-  Scalar result_y;
-  Scalar result_z;
-  {
-    Scalar b_kplus2{};
-    Scalar b_kplus1{};
-    Scalar b_k;
-    for (int k = degree; k >= 1; --k) {
-      b_k = coefficients_x_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus2 = b_kplus1;
-      b_kplus1 = b_k;
-    }
-    result_x = coefficients_x_[0] + scaled_t * b_kplus1 - b_kplus2;
-  }
-  {
-    Scalar b_kplus2{};
-    Scalar b_kplus1{};
-    Scalar b_k;
-    for (int k = degree; k >= 1; --k) {
-      b_k = coefficients_y_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus2 = b_kplus1;
-      b_kplus1 = b_k;
-    }
-    result_y = coefficients_y_[0] + scaled_t * b_kplus1 - b_kplus2;
-  }
-  {
-    Scalar b_kplus2{};
-    Scalar b_kplus1{};
-    Scalar b_k;
-    for (int k = degree; k >= 1; --k) {
-      b_k = coefficients_x_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus2 = b_kplus1;
-      b_kplus1 = b_k;
-    }
-    result_z = coefficients_z_[0] + scaled_t * b_kplus1 - b_kplus2;
-  }
-
   return typename Multivector<Scalar, Frame, rank>(
-      {result_x, result_y, result_z});
+      {wtf_x_.EvaluateImplementation(degree, scaled_t),
+       wtf_y_.EvaluateImplementation(degree, scaled_t),
+       wtf_z_.EvaluateImplementation(degree, scaled_t)});
 }
 
 template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
-  return wtf_.EvaluateImplementation(coefficients_, degree_, scaled_t);
+  return wtf_.EvaluateImplementation(degree_, scaled_t);
   //#define CLENSHAW_STEP1(n) \
 //  bnplus2 = coefficients_[n];
 //#define CLENSHAW_STEP2(n, nplus1) \
