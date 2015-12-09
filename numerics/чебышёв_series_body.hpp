@@ -126,7 +126,13 @@ Vector WTF<Vector>::EvaluateImplementation(
 template<typename Scalar, typename Frame, int rank>
 WTF<Multivector<Scalar, Frame, rank>>::WTF(
   std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients)
-    : coefficients_(coefficients) {}
+    : coefficients_(coefficients) {
+  for (auto const& coefficient : coefficients_) {
+    coefficients_x_.push_back(coefficient.coordinates().x);
+    coefficients_y_.push_back(coefficient.coordinates().y);
+    coefficients_z_.push_back(coefficient.coordinates().z);
+  }
+}
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> WTF<Multivector<Scalar, Frame, rank>>::
@@ -144,33 +150,45 @@ EvaluateImplementation(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Scalar b_kplus2x{};
-  Scalar b_kplus2y{};
-  Scalar b_kplus2z{};
-  Scalar b_kplus1x{};
-  Scalar b_kplus1y{};
-  Scalar b_kplus1z{};
-  Scalar b_k;
-  for (int k = degree; k >= 1; --k) {
-    R3Element<Scalar> const ck = coefficients[k].coordinates();
-    b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
-    b_kplus2x = b_kplus1x;
-    b_kplus1x = b_k;
-    b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
-    b_kplus2y = b_kplus1y;
-    b_kplus1y = b_k;
-    b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
-    b_kplus2z = b_kplus1z;
-    b_kplus1z = b_k;
+  Scalar result_x;
+  Scalar result_y;
+  Scalar result_z;
+  {
+    Scalar b_kplus2{};
+    Scalar b_kplus1{};
+    Scalar b_k;
+    for (int k = degree; k >= 1; --k) {
+      b_k = coefficients_x_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    result_x = coefficients_x_[0] + scaled_t * b_kplus1 - b_kplus2;
   }
-  R3Element<Scalar> const c0 = coefficients[0].coordinates();
-  Scalar const c0x = c0.x;
-  Scalar const c0y = c0.y;
-  Scalar const c0z = c0.z;
+  {
+    Scalar b_kplus2{};
+    Scalar b_kplus1{};
+    Scalar b_k;
+    for (int k = degree; k >= 1; --k) {
+      b_k = coefficients_y_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    result_y = coefficients_y_[0] + scaled_t * b_kplus1 - b_kplus2;
+  }
+  {
+    Scalar b_kplus2{};
+    Scalar b_kplus1{};
+    Scalar b_k;
+    for (int k = degree; k >= 1; --k) {
+      b_k = coefficients_x_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    result_z = coefficients_z_[0] + scaled_t * b_kplus1 - b_kplus2;
+  }
+
   return typename Multivector<Scalar, Frame, rank>(
-      {c0x + scaled_t * b_kplus1x - b_kplus2x,
-        c0y + scaled_t * b_kplus1y - b_kplus2y,
-        c0z + scaled_t * b_kplus1z - b_kplus2z});
+      {result_x, result_y, result_z});
 }
 
 template<typename Vector>

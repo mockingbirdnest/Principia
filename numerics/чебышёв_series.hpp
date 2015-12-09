@@ -41,6 +41,9 @@ public:
     int const degree,
     double const scaled_t) const;
   std::vector<typename Multivector<Scalar, Frame, rank>> coefficients_;
+  std::vector<Scalar> coefficients_x_;
+  std::vector<Scalar> coefficients_y_;
+  std::vector<Scalar> coefficients_z_;
 };
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
