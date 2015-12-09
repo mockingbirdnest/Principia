@@ -4,6 +4,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -16,6 +17,7 @@ using ЧебышёвSeries = ChebyshevSeries;
 
 using geometry::Instant;
 using geometry::Multivector;
+using geometry::R3Element;
 using quantities::Time;
 using quantities::Variation;
 
@@ -38,10 +40,7 @@ public:
   Multivector<Scalar, Frame, rank> EvaluateImplementation(
       int const degree,
       double const scaled_t) const;
-  std::vector<Multivector<Scalar, Frame, rank>> coefficients_;
-  WTF<double> wtf_x_;
-  WTF<double> wtf_y_;
-  WTF<double> wtf_z_;
+  std::vector<R3Element<double>> coefficients_;
 };
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is

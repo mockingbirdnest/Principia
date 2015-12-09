@@ -123,42 +123,12 @@ Vector WTF<Vector>::EvaluateImplementation(
 }
 
 template<typename Scalar, typename Frame, int rank>
-std::vector<double> CoefficientsX(
-  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
-  std::vector<double> coefficients_x;
-  for (auto const& coefficient : coefficients) {
-    coefficients_x.push_back(coefficient.coordinates().x / SIUnit<Scalar>());
-  }
-  return coefficients_x;
-}
-
-template<typename Scalar, typename Frame, int rank>
-std::vector<double> CoefficientsY(
-  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
-  std::vector<double> coefficients_y;
-  for (auto const& coefficient : coefficients) {
-    coefficients_y.push_back(coefficient.coordinates().y / SIUnit<Scalar>());
-  }
-  return coefficients_y;
-}
-
-template<typename Scalar, typename Frame, int rank>
-std::vector<double> CoefficientsZ(
-  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
-  std::vector<double> coefficients_z;
-  for (auto const& coefficient : coefficients) {
-    coefficients_z.push_back(coefficient.coordinates().z / SIUnit<Scalar>());
-  }
-  return coefficients_z;
-}
-
-template<typename Scalar, typename Frame, int rank>
 WTF<Multivector<Scalar, Frame, rank>>::WTF(
-    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients)
-    : coefficients_(coefficients),
-      wtf_x_(CoefficientsX(coefficients)),
-      wtf_y_(CoefficientsY(coefficients)),
-      wtf_z_(CoefficientsZ(coefficients)) {}
+    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients) {
+  for (auto const& coefficient : coefficients) {
+    coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
+  }
+}
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> WTF<Multivector<Scalar, Frame, rank>>::
@@ -175,11 +145,51 @@ EvaluateImplementation(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  R3Element<double> r3_element =
-      {wtf_x_.EvaluateImplementation(degree, scaled_t),
-       wtf_y_.EvaluateImplementation(degree, scaled_t),
-       wtf_z_.EvaluateImplementation(degree, scaled_t)};
-  return Multivector<Scalar, Frame, rank>(r3_element * SIUnit<Scalar>());
+  R3Element<double> const c0 = coefficients_[0];
+  double const c0x = c0.x;
+  double const c0y = c0.y;
+  double const c0z = c0.z;
+  switch (degree) {
+    case 0: {
+      return Multivector<double, Frame, rank>({c0x, c0y, c0z}) * SIUnit<Scalar>();
+    }
+    case 1: {
+      R3Element<double> const c1 = coefficients_[1];
+      double const c1x = c1.x;
+      double const c1y = c1.y;
+      double const c1z = c1.z;
+      return Multivector<double, Frame, rank>({c0x + scaled_t * c1x,
+                                               c0y + scaled_t * c1y,
+                                               c0z + scaled_t * c1z}) * SIUnit<Scalar>();
+    }
+    default: {
+      R3Element<double> const cd = coefficients_[degree];
+      double b_kplus2x = cd.x;
+      double b_kplus2y = cd.y;
+      double b_kplus2z = cd.z;
+      R3Element<double> const cdm1 = coefficients_[degree - 1];
+      double b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
+      double b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
+      double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
+      double b_k;
+      for (int k = degree - 2; k >= 1; --k) {
+          R3Element<double> const ck = coefficients_[k];
+          b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
+          b_kplus2x = b_kplus1x;
+          b_kplus1x = b_k;
+          b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
+          b_kplus2y = b_kplus1y;
+          b_kplus1y = b_k;
+          b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
+          b_kplus2z = b_kplus1z;
+          b_kplus1z = b_k;
+        }
+      return Multivector<double, Frame, rank>(
+            {c0x + scaled_t * b_kplus1x - b_kplus2x,
+              c0y + scaled_t * b_kplus1y - b_kplus2y,
+              c0z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
+    }
+  }
 }
 
 template<typename Vector>
