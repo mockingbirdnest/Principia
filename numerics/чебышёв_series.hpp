@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -14,10 +15,33 @@ using ЧебышёвSeries = ChebyshevSeries;
 }  // namespace serialization
 
 using geometry::Instant;
+using geometry::Multivector;
 using quantities::Time;
 using quantities::Variation;
 
 namespace numerics {
+
+template<typename Vector>
+class WTF {
+public:
+  explicit WTF(std::vector<Vector> const& coefficients);
+  Vector EvaluateImplementation(std::vector<Vector> const& coefficients,
+                                int const degree,
+                                double const scaled_t) const;
+  std::vector<Vector> coefficients_;
+};
+
+template<typename Scalar, typename Frame, int rank>
+class WTF<Multivector<Scalar, Frame, rank>> {
+public:
+  explicit WTF(
+      std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients);
+  Multivector<Scalar, Frame, rank> EvaluateImplementation(
+    std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients,
+    int const degree,
+    double const scaled_t) const;
+  std::vector<typename Multivector<Scalar, Frame, rank>> coefficients_;
+};
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
 // an |Instant|.
@@ -63,6 +87,7 @@ class ЧебышёвSeries {
       Instant const& t_max);
 
  private:
+  WTF<Vector> wtf_;
   std::vector<Vector> coefficients_;
   int degree_;
   Instant t_min_;
