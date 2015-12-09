@@ -123,38 +123,38 @@ Vector WTF<Vector>::EvaluateImplementation(
 }
 
 template<typename Scalar, typename Frame, int rank>
-std::vector<Scalar> CoefficientsX(
+std::vector<double> CoefficientsX(
   std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
-  std::vector<Scalar> coefficients_x;
+  std::vector<double> coefficients_x;
   for (auto const& coefficient : coefficients) {
-    coefficients_x.push_back(coefficient.coordinates().x);
+    coefficients_x.push_back(coefficient.coordinates().x / SIUnit<Scalar>());
   }
   return coefficients_x;
 }
 
 template<typename Scalar, typename Frame, int rank>
-std::vector<Scalar> CoefficientsY(
+std::vector<double> CoefficientsY(
   std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
-  std::vector<Scalar> coefficients_y;
+  std::vector<double> coefficients_y;
   for (auto const& coefficient : coefficients) {
-    coefficients_y.push_back(coefficient.coordinates().y);
+    coefficients_y.push_back(coefficient.coordinates().y / SIUnit<Scalar>());
   }
   return coefficients_y;
 }
 
 template<typename Scalar, typename Frame, int rank>
-std::vector<Scalar> CoefficientsZ(
+std::vector<double> CoefficientsZ(
   std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients) {
-  std::vector<Scalar> coefficients_z;
+  std::vector<double> coefficients_z;
   for (auto const& coefficient : coefficients) {
-    coefficients_z.push_back(coefficient.coordinates().z);
+    coefficients_z.push_back(coefficient.coordinates().z / SIUnit<Scalar>());
   }
   return coefficients_z;
 }
 
 template<typename Scalar, typename Frame, int rank>
 WTF<Multivector<Scalar, Frame, rank>>::WTF(
-  std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients)
+    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients)
     : coefficients_(coefficients),
       wtf_x_(CoefficientsX(coefficients)),
       wtf_y_(CoefficientsY(coefficients)),
@@ -175,10 +175,11 @@ EvaluateImplementation(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  return typename Multivector<Scalar, Frame, rank>(
+  R3Element<double> r3_element =
       {wtf_x_.EvaluateImplementation(degree, scaled_t),
        wtf_y_.EvaluateImplementation(degree, scaled_t),
-       wtf_z_.EvaluateImplementation(degree, scaled_t)});
+       wtf_z_.EvaluateImplementation(degree, scaled_t)};
+  return Multivector<Scalar, Frame, rank>(r3_element * SIUnit<Scalar>());
 }
 
 template<typename Vector>

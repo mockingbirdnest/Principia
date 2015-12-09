@@ -34,14 +34,14 @@ template<typename Scalar, typename Frame, int rank>
 class WTF<Multivector<Scalar, Frame, rank>> {
 public:
   explicit WTF(
-      std::vector<typename Multivector<Scalar, Frame, rank>> const& coefficients);
-  __declspec(noinline) Multivector<Scalar, Frame, rank> EvaluateImplementation(
-    int const degree,
-    double const scaled_t) const;
-  std::vector<typename Multivector<Scalar, Frame, rank>> coefficients_;
-  WTF<Scalar> wtf_x_;
-  WTF<Scalar> wtf_y_;
-  WTF<Scalar> wtf_z_;
+      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients);
+  Multivector<Scalar, Frame, rank> EvaluateImplementation(
+      int const degree,
+      double const scaled_t) const;
+  std::vector<Multivector<Scalar, Frame, rank>> coefficients_;
+  WTF<double> wtf_x_;
+  WTF<double> wtf_y_;
+  WTF<double> wtf_z_;
 };
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
