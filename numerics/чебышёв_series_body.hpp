@@ -23,7 +23,7 @@ namespace internal {
 // |Vector<Quantity>| so we specialize this case.
 template<typename Scalar, typename Frame, int rank>
 class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
-public:
+ public:
   EvaluationHelper(
       std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
       int const degree);
