@@ -28,13 +28,14 @@ namespace internal {
 template<typename Vector>
 class EvaluationHelper {
  public:
-  explicit EvaluationHelper(std::vector<Vector> const& coefficients);
+  EvaluationHelper(std::vector<Vector> const& coefficients,
+                   int const degree);
 
-  Vector EvaluateImplementation(int const degree,
-                                double const scaled_t) const;
+  Vector EvaluateImplementation(double const scaled_t) const;
 
  private:
   std::vector<Vector> coefficients_;
+  int const degree_;
 };
 
 }  // namespace internal
@@ -83,13 +84,13 @@ class ЧебышёвSeries {
       Instant const& t_max);
 
  private:
-  internal::EvaluationHelper<Vector> helper_;
   std::vector<Vector> coefficients_;
   int degree_;
   Instant t_min_;
   Instant t_max_;
   Instant t_mean_;
   Time::Inverse two_over_duration_;
+  internal::EvaluationHelper<Vector> helper_;
 };
 
 }  // namespace numerics

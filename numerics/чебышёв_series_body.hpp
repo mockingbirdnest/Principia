@@ -24,38 +24,38 @@ namespace internal {
 template<typename Scalar, typename Frame, int rank>
 class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
 public:
-  explicit EvaluationHelper(
-      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients);
+  EvaluationHelper(
+      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
+      int const degree);
 
   Multivector<Scalar, Frame, rank> EvaluateImplementation(
-      int const degree,
       double const scaled_t) const;
 
  private:
   std::vector<R3Element<double>> coefficients_;
+  int const degree_;
 };
 
 template<typename Vector>
 EvaluationHelper<Vector>::EvaluationHelper(
-    std::vector<Vector> const& coefficients)
-  : coefficients_(coefficients) {}
+    std::vector<Vector> const& coefficients,
+    int const degree) : coefficients_(coefficients), degree_(degree) {}
 
 template<typename Vector>
 Vector EvaluationHelper<Vector>::EvaluateImplementation(
-    int const degree,
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
   Vector const c0 = coefficients_[0];
-  switch (degree) {
+  switch (degree_) {
   case 0:
     return c0;
   case 1:
     return c0 + scaled_t * coefficients_[1];
   default:
-    Vector b_kplus2 = coefficients_[degree];
-    Vector b_kplus1 = coefficients_[degree - 1] + two_scaled_t * b_kplus2;
+    Vector b_kplus2 = coefficients_[degree_];
+    Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
     Vector b_k;
-    for (int k = degree - 2; k >= 1; --k) {
+    for (int k = degree_ - 2; k >= 1; --k) {
       b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
       b_kplus2 = b_kplus1;
       b_kplus1 = b_k;
@@ -66,23 +66,23 @@ Vector EvaluationHelper<Vector>::EvaluateImplementation(
 
 template<typename Scalar, typename Frame, int rank>
 EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
-    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients) {
+    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
+    int const degree) : degree_(degree) {
   for (auto const& coefficient : coefficients) {
     coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
   }
 }
 
 template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> EvaluationHelper<Multivector<Scalar, Frame, rank>>::
-EvaluateImplementation(
-    int const degree,
+Multivector<Scalar, Frame, rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
   R3Element<double> const c0 = coefficients_[0];
   double const c0x = c0.x;
   double const c0y = c0.y;
   double const c0z = c0.z;
-  switch (degree) {
+  switch (degree_) {
     case 0: {
       return Multivector<double, Frame, rank>(
                  {c0x, c0y, c0z}) * SIUnit<Scalar>();
@@ -98,16 +98,16 @@ EvaluateImplementation(
                   c0z + scaled_t * c1z}) * SIUnit<Scalar>();
     }
     default: {
-      R3Element<double> const cd = coefficients_[degree];
+      R3Element<double> const cd = coefficients_[degree_];
       double b_kplus2x = cd.x;
       double b_kplus2y = cd.y;
       double b_kplus2z = cd.z;
-      R3Element<double> const cdm1 = coefficients_[degree - 1];
+      R3Element<double> const cdm1 = coefficients_[degree_ - 1];
       double b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
       double b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
       double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
       double b_k;
-      for (int k = degree - 2; k >= 1; --k) {
+      for (int k = degree_ - 2; k >= 1; --k) {
         R3Element<double> const ck = coefficients_[k];
         b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
         b_kplus2x = b_kplus1x;
@@ -133,11 +133,11 @@ template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
                                      Instant const& t_min,
                                      Instant const& t_max)
-    : helper_(coefficients),
-      coefficients_(coefficients),
+    : coefficients_(coefficients),
       degree_(static_cast<int>(coefficients_.size()) - 1),
       t_min_(t_min),
-      t_max_(t_max) {
+      t_max_(t_max),
+      helper_(coefficients_, degree_) {
   CHECK_LE(0, degree_) << "Degree must be at least 0";
   CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
   // Precomputed to save operations at the expense of some accuracy loss.
@@ -149,13 +149,13 @@ template<typename Vector>
 
 template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
-    : helper_(other.coefficients_),
-      coefficients_(std::move(other.coefficients_)),
+    : coefficients_(std::move(other.coefficients_)),
       degree_(std::move(other.degree_)),
       t_min_(std::move(other.t_min_)),
       t_max_(std::move(other.t_max_)),
       t_mean_(std::move(other.t_mean_)),
-      two_over_duration_(std::move(other.two_over_duration_)) {}
+      two_over_duration_(std::move(other.two_over_duration_)),
+      helper_(coefficients_, degree_) {}
 
 template<typename Vector>
 ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(
@@ -208,7 +208,7 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  return helper_.EvaluateImplementation(degree_, scaled_t);
+  return helper_.EvaluateImplementation(scaled_t);
 }
 
 template<typename Vector>
