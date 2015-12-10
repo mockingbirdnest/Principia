@@ -17,12 +17,123 @@ using geometry::Multivector;
 using geometry::R3Element;
 
 namespace numerics {
+namespace internal {
+
+// The compiler does a much better job on an |R3Element<double>| than on a
+// |Vector<Quantity>| so we specialize this case.
+template<typename Scalar, typename Frame, int rank>
+class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
+public:
+  explicit EvaluationHelper(
+      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients);
+
+  Multivector<Scalar, Frame, rank> EvaluateImplementation(
+      int const degree,
+      double const scaled_t) const;
+
+ private:
+  std::vector<R3Element<double>> coefficients_;
+};
+
+template<typename Vector>
+EvaluationHelper<Vector>::EvaluationHelper(
+    std::vector<Vector> const& coefficients)
+  : coefficients_(coefficients) {}
+
+template<typename Vector>
+Vector EvaluationHelper<Vector>::EvaluateImplementation(
+    int const degree,
+    double const scaled_t) const {
+  double const two_scaled_t = scaled_t + scaled_t;
+  Vector const c0 = coefficients_[0];
+  switch (degree) {
+  case 0:
+    return c0;
+  case 1:
+    return c0 + scaled_t * coefficients_[1];
+  default:
+    Vector b_kplus2 = coefficients_[degree];
+    Vector b_kplus1 = coefficients_[degree - 1] + two_scaled_t * b_kplus2;
+    Vector b_k;
+    for (int k = degree - 2; k >= 1; --k) {
+      b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    return c0 + scaled_t * b_kplus1 - b_kplus2;
+  }
+}
+
+template<typename Scalar, typename Frame, int rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
+    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients) {
+  for (auto const& coefficient : coefficients) {
+    coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
+  }
+}
+
+template<typename Scalar, typename Frame, int rank>
+Multivector<Scalar, Frame, rank> EvaluationHelper<Multivector<Scalar, Frame, rank>>::
+EvaluateImplementation(
+    int const degree,
+    double const scaled_t) const {
+  double const two_scaled_t = scaled_t + scaled_t;
+  R3Element<double> const c0 = coefficients_[0];
+  double const c0x = c0.x;
+  double const c0y = c0.y;
+  double const c0z = c0.z;
+  switch (degree) {
+    case 0: {
+      return Multivector<double, Frame, rank>(
+                 {c0x, c0y, c0z}) * SIUnit<Scalar>();
+    }
+    case 1: {
+      R3Element<double> const c1 = coefficients_[1];
+      double const c1x = c1.x;
+      double const c1y = c1.y;
+      double const c1z = c1.z;
+      return Multivector<double, Frame, rank>(
+                 {c0x + scaled_t * c1x,
+                  c0y + scaled_t * c1y,
+                  c0z + scaled_t * c1z}) * SIUnit<Scalar>();
+    }
+    default: {
+      R3Element<double> const cd = coefficients_[degree];
+      double b_kplus2x = cd.x;
+      double b_kplus2y = cd.y;
+      double b_kplus2z = cd.z;
+      R3Element<double> const cdm1 = coefficients_[degree - 1];
+      double b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
+      double b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
+      double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
+      double b_k;
+      for (int k = degree - 2; k >= 1; --k) {
+        R3Element<double> const ck = coefficients_[k];
+        b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
+        b_kplus2x = b_kplus1x;
+        b_kplus1x = b_k;
+        b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
+        b_kplus2y = b_kplus1y;
+        b_kplus1y = b_k;
+        b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
+        b_kplus2z = b_kplus1z;
+        b_kplus1z = b_k;
+      }
+      return Multivector<double, Frame, rank>(
+                 {c0x + scaled_t * b_kplus1x - b_kplus2x,
+                  c0y + scaled_t * b_kplus1y - b_kplus2y,
+                  c0z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
+    }
+  }
+}
+
+}  // namespace internal
 
 template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
                                      Instant const& t_min,
                                      Instant const& t_max)
-    : wtf_(coefficients),
+    : helper_(coefficients),
       coefficients_(coefficients),
       degree_(static_cast<int>(coefficients_.size()) - 1),
       t_min_(t_min),
@@ -38,7 +149,7 @@ template<typename Vector>
 
 template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
-    : wtf_(other.coefficients_),
+    : helper_(other.coefficients_),
       coefficients_(std::move(other.coefficients_)),
       degree_(std::move(other.degree_)),
       t_min_(std::move(other.t_min_)),
@@ -86,56 +197,8 @@ Vector const& ЧебышёвSeries<Vector>::last_coefficient() const {
 }
 
 template<typename Vector>
-WTF<Vector>::WTF(std::vector<Vector> const& coefficients)
-    : coefficients_(coefficients) {}
-
-template<typename Vector>
-Vector WTF<Vector>::EvaluateImplementation(
-    int const degree,
-    double const scaled_t) const {
-  double const two_scaled_t = scaled_t + scaled_t;
-  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
-  // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): This should use DCHECK but these macros don't work because the
-  // Principia projects don't define NDEBUG.
-  #ifdef _DEBUG
-  CHECK_LE(scaled_t, 1.1);
-  CHECK_GE(scaled_t, -1.1);
-  #endif
-
-  Vector const c0 = coefficients_[0];
-  switch (degree) {
-    case 0:
-      return c0;
-    case 1:
-      return c0 + scaled_t * coefficients_[1];
-    default:
-      Vector b_kplus2 = coefficients_[degree];
-      Vector b_kplus1 = coefficients_[degree - 1] + two_scaled_t * b_kplus2;
-      Vector b_k;
-      for (int k = degree - 2; k >= 1; --k) {
-        b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-        b_kplus2 = b_kplus1;
-        b_kplus1 = b_k;
-      }
-      return c0 + scaled_t * b_kplus1 - b_kplus2;
-  }
-}
-
-template<typename Scalar, typename Frame, int rank>
-WTF<Multivector<Scalar, Frame, rank>>::WTF(
-    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients) {
-  for (auto const& coefficient : coefficients) {
-    coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
-  }
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> WTF<Multivector<Scalar, Frame, rank>>::
-EvaluateImplementation(
-    int const degree,
-    double const scaled_t) const {
-  double const two_scaled_t = scaled_t + scaled_t;
+Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
+  double const scaled_t = (t - t_mean_) * two_over_duration_;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
   // TODO(phl): This should use DCHECK but these macros don't work because the
@@ -145,65 +208,7 @@ EvaluateImplementation(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  R3Element<double> const c0 = coefficients_[0];
-  double const c0x = c0.x;
-  double const c0y = c0.y;
-  double const c0z = c0.z;
-  switch (degree) {
-    case 0: {
-      return Multivector<double, Frame, rank>({c0x, c0y, c0z}) * SIUnit<Scalar>();
-    }
-    case 1: {
-      R3Element<double> const c1 = coefficients_[1];
-      double const c1x = c1.x;
-      double const c1y = c1.y;
-      double const c1z = c1.z;
-      return Multivector<double, Frame, rank>({c0x + scaled_t * c1x,
-                                               c0y + scaled_t * c1y,
-                                               c0z + scaled_t * c1z}) * SIUnit<Scalar>();
-    }
-    default: {
-      R3Element<double> const cd = coefficients_[degree];
-      double b_kplus2x = cd.x;
-      double b_kplus2y = cd.y;
-      double b_kplus2z = cd.z;
-      R3Element<double> const cdm1 = coefficients_[degree - 1];
-      double b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
-      double b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
-      double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
-      double b_k;
-      for (int k = degree - 2; k >= 1; --k) {
-        R3Element<double> const ck = coefficients_[k];
-        b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
-        b_kplus2x = b_kplus1x;
-        b_kplus1x = b_k;
-        b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
-        b_kplus2y = b_kplus1y;
-        b_kplus1y = b_k;
-        b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
-        b_kplus2z = b_kplus1z;
-        b_kplus1z = b_k;
-      }
-      return Multivector<double, Frame, rank>(
-            {c0x + scaled_t * b_kplus1x - b_kplus2x,
-              c0y + scaled_t * b_kplus1y - b_kplus2y,
-              c0z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
-    }
-  }
-}
-
-template<typename Vector>
-Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
-  double const scaled_t = (t - t_mean_) * two_over_duration_;
-  return wtf_.EvaluateImplementation(degree_, scaled_t);
-  //#define CLENSHAW_STEP1(n) \
-//  bnplus2 = coefficients_[n];
-//#define CLENSHAW_STEP2(n, nplus1) \
-//  bnplus1 = coefficients_[n] + two_scaled_t * bnplus2;
-//#define CLENSHAW_STEP3(n, nplus1, nplus2) \
-//  bn = coefficients_[n] + two_scaled_t * bnplus1 - bnplus2;  \
-//  bnplus2 = bnplus1; \
-//  bnplus1 = bn;
+  return helper_.EvaluateImplementation(degree_, scaled_t);
 }
 
 template<typename Vector>

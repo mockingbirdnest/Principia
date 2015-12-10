@@ -22,26 +22,22 @@ using quantities::Time;
 using quantities::Variation;
 
 namespace numerics {
+namespace internal {
 
+// A helper class for implementing |Evaluate| that can be specialized for speed.
 template<typename Vector>
-class WTF {
-public:
-  explicit WTF(std::vector<Vector> const& coefficients);
+class EvaluationHelper {
+ public:
+  explicit EvaluationHelper(std::vector<Vector> const& coefficients);
+
   Vector EvaluateImplementation(int const degree,
                                 double const scaled_t) const;
+
+ private:
   std::vector<Vector> coefficients_;
 };
 
-template<typename Scalar, typename Frame, int rank>
-class WTF<Multivector<Scalar, Frame, rank>> {
-public:
-  explicit WTF(
-      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients);
-  Multivector<Scalar, Frame, rank> EvaluateImplementation(
-      int const degree,
-      double const scaled_t) const;
-  std::vector<R3Element<double>> coefficients_;
-};
+}  // namespace internal
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
 // an |Instant|.
@@ -87,7 +83,7 @@ class ЧебышёвSeries {
       Instant const& t_max);
 
  private:
-  WTF<Vector> wtf_;
+  internal::EvaluationHelper<Vector> helper_;
   std::vector<Vector> coefficients_;
   int degree_;
   Instant t_min_;
