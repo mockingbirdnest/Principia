@@ -173,17 +173,17 @@ EvaluateImplementation(
       double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
       double b_k;
       for (int k = degree - 2; k >= 1; --k) {
-          R3Element<double> const ck = coefficients_[k];
-          b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
-          b_kplus2x = b_kplus1x;
-          b_kplus1x = b_k;
-          b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
-          b_kplus2y = b_kplus1y;
-          b_kplus1y = b_k;
-          b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
-          b_kplus2z = b_kplus1z;
-          b_kplus1z = b_k;
-        }
+        R3Element<double> const ck = coefficients_[k];
+        b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
+        b_kplus2x = b_kplus1x;
+        b_kplus1x = b_k;
+        b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
+        b_kplus2y = b_kplus1y;
+        b_kplus1y = b_k;
+        b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
+        b_kplus2z = b_kplus1z;
+        b_kplus1z = b_k;
+      }
       return Multivector<double, Frame, rank>(
             {c0x + scaled_t * b_kplus1x - b_kplus2x,
               c0y + scaled_t * b_kplus1y - b_kplus2y,
