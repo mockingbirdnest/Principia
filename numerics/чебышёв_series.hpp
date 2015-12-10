@@ -2,9 +2,7 @@
 
 #include <vector>
 
-#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
-#include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -16,8 +14,6 @@ using ЧебышёвSeries = ChebyshevSeries;
 }  // namespace serialization
 
 using geometry::Instant;
-using geometry::Multivector;
-using geometry::R3Element;
 using quantities::Time;
 using quantities::Variation;
 
@@ -30,12 +26,15 @@ class EvaluationHelper {
  public:
   EvaluationHelper(std::vector<Vector> const& coefficients,
                    int const degree);
+  EvaluationHelper(EvaluationHelper&& other);
+
+  EvaluationHelper& operator=(EvaluationHelper&& other);
 
   Vector EvaluateImplementation(double const scaled_t) const;
 
  private:
   std::vector<Vector> coefficients_;
-  int const degree_;
+  int degree_;
 };
 
 }  // namespace internal

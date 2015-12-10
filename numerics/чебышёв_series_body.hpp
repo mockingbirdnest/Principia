@@ -27,19 +27,35 @@ public:
   EvaluationHelper(
       std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
       int const degree);
+  EvaluationHelper(EvaluationHelper&& other);
+
+  EvaluationHelper& operator=(EvaluationHelper&& other);
 
   Multivector<Scalar, Frame, rank> EvaluateImplementation(
       double const scaled_t) const;
 
  private:
   std::vector<R3Element<double>> coefficients_;
-  int const degree_;
+  int degree_;
 };
 
 template<typename Vector>
 EvaluationHelper<Vector>::EvaluationHelper(
     std::vector<Vector> const& coefficients,
     int const degree) : coefficients_(coefficients), degree_(degree) {}
+
+template<typename Vector>
+EvaluationHelper<Vector>::EvaluationHelper(EvaluationHelper&& other)
+    : coefficients_(std::move(other.coefficients_)),
+      degree_(other.degree_) {}
+
+template<typename Vector>
+EvaluationHelper<Vector>& EvaluationHelper<Vector>::operator=(
+    EvaluationHelper&& other) {
+  coefficients_ = std::move(other.coefficients_);
+  degree_ = other.degree_;
+  return *this;
+}
 
 template<typename Vector>
 Vector EvaluationHelper<Vector>::EvaluateImplementation(
@@ -71,6 +87,21 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
   for (auto const& coefficient : coefficients) {
     coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
   }
+}
+
+template<typename Scalar, typename Frame, int rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
+    EvaluationHelper&& other)
+    : coefficients_(std::move(other.coefficients_)),
+      degree_(other.degree_) {}
+
+template<typename Scalar, typename Frame, int rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>&
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::operator=(
+    EvaluationHelper&& other) {
+  coefficients_ = std::move(other.coefficients_);
+  degree_ = other.degree_;
+  return *this;
 }
 
 template<typename Scalar, typename Frame, int rank>
@@ -148,7 +179,7 @@ template<typename Vector>
       t_max_(std::move(other.t_max_)),
       t_mean_(std::move(other.t_mean_)),
       two_over_duration_(std::move(other.two_over_duration_)),
-      helper_(coefficients_, degree_) {}
+      helper_(std::move(other.helper_)) {}
 
 template<typename Vector>
 ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(
@@ -159,6 +190,7 @@ template<typename Vector>
   t_max_ = std::move(other.t_max_);
   t_mean_ = std::move(other.t_mean_);
   two_over_duration_ = std::move(other.two_over_duration_);
+  helper_ = std::move(other.helper_);
   return *this;
 }
 
