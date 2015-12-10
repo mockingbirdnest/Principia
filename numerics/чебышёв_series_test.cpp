@@ -5,6 +5,8 @@
 #include <cmath>
 #include <vector>
 
+#include "astronomy/frames.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -15,7 +17,9 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using geometry::Instant;
+using geometry::Vector;
 using quantities::Length;
 using quantities::Speed;
 using quantities::si::Metre;
@@ -181,6 +185,29 @@ TEST_F(ЧебышёвSeriesTest, T2Dimension) {
   EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + -1 * Second));
   EXPECT_EQ(-1 * Metre, t2.Evaluate(t0_ + 1 * Second));
   EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + 3 * Second));
+}
+
+TEST_F(ЧебышёвSeriesTest, X6Vector) {
+  using V = Vector<Length, ICRFJ2000Ecliptic>;
+  // {T3, X5, X6}
+  V const c0 = V({0.0 * Metre, 0.0 * Metre, 10.0 / 32.0 * Metre});
+  V const c1 = V({0.0 * Metre, 10.0 / 16.0 * Metre, 0.0 * Metre});
+  V const c2 = V({0.0 * Metre, 0.0 * Metre, 15.0 / 32.0 * Metre});
+  V const c3 = V({1.0 * Metre, 5.0 / 16.0 * Metre, 0.0 * Metre});
+  V const c4 = V({0.0 * Metre, 0.0 * Metre, 6.0 / 32.0 * Metre});
+  V const c5 = V({0.0 * Metre, 1.0 / 16.0 * Metre, 0 * Metre});
+  V const c6 = V({0.0 * Metre, 0.0 * Metre, 1.0 / 32.0 * Metre});
+  ЧебышёвSeries<Vector<Length, ICRFJ2000Ecliptic>> x6(
+      {c0, c1, c2, c3, c4, c5, c6},
+      t_min_, t_max_);
+  EXPECT_EQ(V({-1 * Metre, -1 * Metre, 1 * Metre}),
+            x6.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(V({0 * Metre, 0 * Metre, 0 * Metre}),
+            x6.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(V({-1 * Metre, 1.0 / 32.0 * Metre, 1 / 64.0 * Metre}),
+            x6.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(V({1 * Metre, 1 * Metre, 1 * Metre}),
+            x6.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesDeathTest, SerializationError) {

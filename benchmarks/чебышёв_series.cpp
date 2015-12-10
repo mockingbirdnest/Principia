@@ -242,15 +242,15 @@ void BM_NewhallApproximation(
 }
 
 BENCHMARK(BM_EvaluateDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_EvaluateQuantity)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_EvaluateR3ElementDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_EvaluateVectorDouble)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_EvaluateDisplacement)->
-    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17);
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_NewhallApproximation)->
     Arg(4)->Arg(8)->Arg(16);
 
