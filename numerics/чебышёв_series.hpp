@@ -18,6 +18,26 @@ using quantities::Time;
 using quantities::Variation;
 
 namespace numerics {
+namespace internal {
+
+// A helper class for implementing |Evaluate| that can be specialized for speed.
+template<typename Vector>
+class EvaluationHelper {
+ public:
+  EvaluationHelper(std::vector<Vector> const& coefficients,
+                   int const degree);
+  EvaluationHelper(EvaluationHelper&& other);
+
+  EvaluationHelper& operator=(EvaluationHelper&& other);
+
+  Vector EvaluateImplementation(double const scaled_t) const;
+
+ private:
+  std::vector<Vector> coefficients_;
+  int degree_;
+};
+
+}  // namespace internal
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
 // an |Instant|.
@@ -69,6 +89,7 @@ class ЧебышёвSeries {
   Instant t_max_;
   Instant t_mean_;
   Time::Inverse two_over_duration_;
+  internal::EvaluationHelper<Vector> helper_;
 };
 
 }  // namespace numerics

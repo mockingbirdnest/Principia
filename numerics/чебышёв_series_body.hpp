@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -11,8 +13,145 @@
 namespace principia {
 
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::Multivector;
+using geometry::R3Element;
 
 namespace numerics {
+namespace internal {
+
+// The compiler does a much better job on an |R3Element<double>| than on a
+// |Vector<Quantity>| so we specialize this case.
+template<typename Scalar, typename Frame, int rank>
+class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
+ public:
+  EvaluationHelper(
+      std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
+      int const degree);
+  EvaluationHelper(EvaluationHelper&& other);
+
+  EvaluationHelper& operator=(EvaluationHelper&& other);
+
+  Multivector<Scalar, Frame, rank> EvaluateImplementation(
+      double const scaled_t) const;
+
+ private:
+  std::vector<R3Element<double>> coefficients_;
+  int degree_;
+};
+
+template<typename Vector>
+EvaluationHelper<Vector>::EvaluationHelper(
+    std::vector<Vector> const& coefficients,
+    int const degree) : coefficients_(coefficients), degree_(degree) {}
+
+template<typename Vector>
+EvaluationHelper<Vector>::EvaluationHelper(EvaluationHelper&& other)
+    : coefficients_(std::move(other.coefficients_)),
+      degree_(other.degree_) {}
+
+template<typename Vector>
+EvaluationHelper<Vector>& EvaluationHelper<Vector>::operator=(
+    EvaluationHelper&& other) {
+  coefficients_ = std::move(other.coefficients_);
+  degree_ = other.degree_;
+  return *this;
+}
+
+template<typename Vector>
+Vector EvaluationHelper<Vector>::EvaluateImplementation(
+    double const scaled_t) const {
+  double const two_scaled_t = scaled_t + scaled_t;
+  Vector const c0 = coefficients_[0];
+  switch (degree_) {
+  case 0:
+    return c0;
+  case 1:
+    return c0 + scaled_t * coefficients_[1];
+  default:
+    Vector b_kplus2 = coefficients_[degree_];
+    Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
+    Vector b_k;
+    for (int k = degree_ - 2; k >= 1; --k) {
+      b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus2 = b_kplus1;
+      b_kplus1 = b_k;
+    }
+    return c0 + scaled_t * b_kplus1 - b_kplus2;
+  }
+}
+
+template<typename Scalar, typename Frame, int rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
+    std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
+    int const degree) : degree_(degree) {
+  for (auto const& coefficient : coefficients) {
+    coefficients_.push_back(coefficient.coordinates() / SIUnit<Scalar>());
+  }
+}
+
+template<typename Scalar, typename Frame, int rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
+    EvaluationHelper&& other)
+    : coefficients_(std::move(other.coefficients_)),
+      degree_(other.degree_) {}
+
+template<typename Scalar, typename Frame, int rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>&
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::operator=(
+    EvaluationHelper&& other) {
+  coefficients_ = std::move(other.coefficients_);
+  degree_ = other.degree_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame, int rank>
+Multivector<Scalar, Frame, rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
+    double const scaled_t) const {
+  double const two_scaled_t = scaled_t + scaled_t;
+  R3Element<double> const c0 = coefficients_[0];
+  switch (degree_) {
+    case 0: {
+      return Multivector<double, Frame, rank>(c0) * SIUnit<Scalar>();
+    }
+    case 1: {
+      R3Element<double> const c1 = coefficients_[1];
+      return Multivector<double, Frame, rank>(
+                 {c0.x + scaled_t * c1.x,
+                  c0.y + scaled_t * c1.y,
+                  c0.z + scaled_t * c1.z}) * SIUnit<Scalar>();
+    }
+    default: {
+      R3Element<double> const cd = coefficients_[degree_];
+      double b_kplus2x = cd.x;
+      double b_kplus2y = cd.y;
+      double b_kplus2z = cd.z;
+      R3Element<double> const cdm1 = coefficients_[degree_ - 1];
+      double b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
+      double b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
+      double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
+      double b_k;
+      for (int k = degree_ - 2; k >= 1; --k) {
+        R3Element<double> const ck = coefficients_[k];
+        b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
+        b_kplus2x = b_kplus1x;
+        b_kplus1x = b_k;
+        b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
+        b_kplus2y = b_kplus1y;
+        b_kplus1y = b_k;
+        b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
+        b_kplus2z = b_kplus1z;
+        b_kplus1z = b_k;
+      }
+      return Multivector<double, Frame, rank>(
+                 {c0.x + scaled_t * b_kplus1x - b_kplus2x,
+                  c0.y + scaled_t * b_kplus1y - b_kplus2y,
+                  c0.z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
+    }
+  }
+}
+
+}  // namespace internal
 
 template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
@@ -21,7 +160,8 @@ template<typename Vector>
     : coefficients_(coefficients),
       degree_(static_cast<int>(coefficients_.size()) - 1),
       t_min_(t_min),
-      t_max_(t_max) {
+      t_max_(t_max),
+      helper_(coefficients_, degree_) {
   CHECK_LE(0, degree_) << "Degree must be at least 0";
   CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
   // Precomputed to save operations at the expense of some accuracy loss.
@@ -38,7 +178,8 @@ template<typename Vector>
       t_min_(std::move(other.t_min_)),
       t_max_(std::move(other.t_max_)),
       t_mean_(std::move(other.t_mean_)),
-      two_over_duration_(std::move(other.two_over_duration_)) {}
+      two_over_duration_(std::move(other.two_over_duration_)),
+      helper_(std::move(other.helper_)) {}
 
 template<typename Vector>
 ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(
@@ -49,6 +190,7 @@ template<typename Vector>
   t_max_ = std::move(other.t_max_);
   t_mean_ = std::move(other.t_mean_);
   two_over_duration_ = std::move(other.two_over_duration_);
+  helper_ = std::move(other.helper_);
   return *this;
 }
 
@@ -82,7 +224,6 @@ Vector const& ЧебышёвSeries<Vector>::last_coefficient() const {
 template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
-  double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
   // TODO(phl): This should use DCHECK but these macros don't work because the
@@ -92,23 +233,7 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  // This code is tricky for performance reasons.  Naively we would have three
-  // |Vector|s, |b_k|, |b_kplus1| and |b_kplus2| and we would copy them in the
-  // loop below.  But it's more efficient to copy pointers than |Vector|s.
-  // Also, we can save some memory by noticing that |b_k| and |b_kplus2| are
-  // never needed at the same time and overlaying them.
-  Vector b_kplus2_vector{};
-  Vector b_kplus1_vector{};
-  Vector* b_kplus2 = &b_kplus2_vector;
-  Vector* b_kplus1 = &b_kplus1_vector;
-  Vector* const& b_k = b_kplus2;  // An overlay.
-  for (int k = degree_; k >= 1; --k) {
-    *b_k = coefficients_[k] + two_scaled_t * *b_kplus1 - *b_kplus2;
-    Vector* const last_b_k = b_k;
-    b_kplus2 = b_kplus1;
-    b_kplus1 = last_b_k;
-  }
-  return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
+  return helper_.EvaluateImplementation(scaled_t);
 }
 
 template<typename Vector>
