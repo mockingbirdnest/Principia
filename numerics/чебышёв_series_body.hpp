@@ -79,23 +79,16 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
   R3Element<double> const c0 = coefficients_[0];
-  double const c0x = c0.x;
-  double const c0y = c0.y;
-  double const c0z = c0.z;
   switch (degree_) {
     case 0: {
-      return Multivector<double, Frame, rank>(
-                 {c0x, c0y, c0z}) * SIUnit<Scalar>();
+      return Multivector<double, Frame, rank>(c0) * SIUnit<Scalar>();
     }
     case 1: {
       R3Element<double> const c1 = coefficients_[1];
-      double const c1x = c1.x;
-      double const c1y = c1.y;
-      double const c1z = c1.z;
       return Multivector<double, Frame, rank>(
-                 {c0x + scaled_t * c1x,
-                  c0y + scaled_t * c1y,
-                  c0z + scaled_t * c1z}) * SIUnit<Scalar>();
+                 {c0.x + scaled_t * c1.x,
+                  c0.y + scaled_t * c1.y,
+                  c0.z + scaled_t * c1.z}) * SIUnit<Scalar>();
     }
     default: {
       R3Element<double> const cd = coefficients_[degree_];
@@ -120,9 +113,9 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
         b_kplus1z = b_k;
       }
       return Multivector<double, Frame, rank>(
-                 {c0x + scaled_t * b_kplus1x - b_kplus2x,
-                  c0y + scaled_t * b_kplus1y - b_kplus2y,
-                  c0z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
+                 {c0.x + scaled_t * b_kplus1x - b_kplus2x,
+                  c0.y + scaled_t * b_kplus1y - b_kplus2y,
+                  c0.z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
     }
   }
 }
