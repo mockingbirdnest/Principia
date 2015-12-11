@@ -182,12 +182,11 @@ template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
                                      Instant const& t_min,
                                      Instant const& t_max)
-    : coefficients_(coefficients),
-      degree_(static_cast<int>(coefficients_.size()) - 1),
-      t_min_(t_min),
+    : t_min_(t_min),
       t_max_(t_max),
-      helper_(coefficients_, degree_) {
-  CHECK_LE(0, degree_) << "Degree must be at least 0";
+      helper_(coefficients,
+              /*degree=*/static_cast<int>(coefficients.size()) - 1) {
+  CHECK_LE(0, helper_.degree()) << "Degree must be at least 0";
   CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
   // Precomputed to save operations at the expense of some accuracy loss.
   Time const duration = t_max_ - t_min_;
@@ -221,8 +220,15 @@ template<typename Vector>
 
 template<typename Vector>
 bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right) const {
-  return coefficients_ == right.coefficients_ &&
-         t_min_ == right.t_min_ &&
+  if (helper_.degree() != right.helper_.degree()) {
+    return false;
+  }
+  for (int k = 0; k < helper_.degree(); ++k) {
+    if (helper_.coefficients(k) != right.helper_.coefficients(k)) {
+      return false;
+    }
+  }
+  return t_min_ == right.t_min_ &&
          t_max_ == right.t_max_;
 }
 
@@ -279,14 +285,14 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
   Vector* b_kplus2 = &b_kplus2_vector;
   Vector* b_kplus1 = &b_kplus1_vector;
   Vector* const& b_k = b_kplus2;  // An overlay.
-  for (int k = degree_ - 1; k >= 1; --k) {
-    *b_k = coefficients_[k + 1] * (k + 1) +
+  for (int k = helper_.degree() - 1; k >= 1; --k) {
+    *b_k = helper_.coefficients(k + 1) * (k + 1) +
            two_scaled_t * *b_kplus1 - *b_kplus2;
     Vector* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
     b_kplus1 = last_b_k;
   }
-  return (coefficients_[1] + two_scaled_t * *b_kplus1 - *b_kplus2) *
+  return (helper_.coefficients(1) + two_scaled_t * *b_kplus1 - *b_kplus2) *
              two_over_duration_;
 }
 
@@ -297,8 +303,9 @@ void ЧебышёвSeries<Vector>::WriteToMessage(
                           Vector,
                           serialization::ЧебышёвSeries::Coefficient>;
 
-  for (auto const& coefficient : coefficients_) {
-    Serializer::WriteToMessage(coefficient, message->add_coefficient());
+  for (int k = 0; k <= helper_.degree(); ++k) {
+    Serializer::WriteToMessage(helper_.coefficients(k),
+                               message->add_coefficient());
   }
   t_min_.WriteToMessage(message->mutable_t_min());
   t_max_.WriteToMessage(message->mutable_t_max());

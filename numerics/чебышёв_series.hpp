@@ -86,8 +86,6 @@ class ЧебышёвSeries {
       Instant const& t_max);
 
  private:
-  std::vector<Vector> coefficients_;
-  int degree_;
   Instant t_min_;
   Instant t_max_;
   Instant t_mean_;
