@@ -50,26 +50,33 @@ template<typename Vector>
 Vector EvaluationHelper<Vector>::EvaluateImplementation(
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
-  Vector const c0 = coefficients_[0];
+  Vector const c_0 = coefficients_[0];
   switch (degree_) {
-  case 0:
-    return c0;
-  case 1:
-    return c0 + scaled_t * coefficients_[1];
-  default:
-    Vector b_kplus2 = coefficients_[degree_];
-    Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
-    int k = degree_ - 3;
-    for (; k >= 1; k -= 2) {
-      b_kplus2 = coefficients_[k + 1] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus1 = coefficients_[k] + two_scaled_t * b_kplus2 - b_kplus1;
-    }
-    if (k == 0) {
-      b_kplus2 = coefficients_[1] + two_scaled_t * b_kplus1 - b_kplus2;
-      return c0 + scaled_t * b_kplus2 - b_kplus1;
-    } else {
-      return c0 + scaled_t * b_kplus1 - b_kplus2;
-    }
+    case 0:
+      return c_0;
+    case 1:
+      return c_0 + scaled_t * coefficients_[1];
+    default:
+      // b_degree   = c_degree.
+      Vector b_i = coefficients_[degree_];
+      // b_degree-1 = c_degree-1 + 2 t b_degree.
+      Vector b_j = coefficients_[degree_ - 1] + two_scaled_t * b_i;
+      int k = degree_ - 3;
+      for (; k >= 1; k -= 2) {
+        // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
+        b_i = coefficients_[k + 1] + two_scaled_t * b_j - b_i;
+        // b_k   = c_k   + 2 t b_k+1 - b_k+2.
+        b_j = coefficients_[k] + two_scaled_t * b_i - b_j;
+      }
+      if (k == 0) {
+        // b_1 = c_1 + 2 t b_2 - b_3.
+        b_i = coefficients_[1] + two_scaled_t * b_j - b_i;
+        // c_0 + t b_1 - b_2.
+        return c_0 + scaled_t * b_i - b_j;
+      } else {
+        // c_0 + t b_1 - b_2.
+        return c_0 + scaled_t * b_j - b_i;
+      }
   }
 }
 
