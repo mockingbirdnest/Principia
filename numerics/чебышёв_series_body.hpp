@@ -59,13 +59,17 @@ Vector EvaluationHelper<Vector>::EvaluateImplementation(
   default:
     Vector b_kplus2 = coefficients_[degree_];
     Vector b_kplus1 = coefficients_[degree_ - 1] + two_scaled_t * b_kplus2;
-    Vector b_k;
-    for (int k = degree_ - 2; k >= 1; --k) {
-      b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
-      b_kplus2 = b_kplus1;
-      b_kplus1 = b_k;
+    int k = degree_ - 3;
+    for (; k >= 1; k -= 2) {
+      b_kplus2 = coefficients_[k + 1] + two_scaled_t * b_kplus1 - b_kplus2;
+      b_kplus1 = coefficients_[k] + two_scaled_t * b_kplus2 - b_kplus1;
     }
-    return c0 + scaled_t * b_kplus1 - b_kplus2;
+    if (k == 0) {
+      b_kplus2 = coefficients_[1] + two_scaled_t * b_kplus1 - b_kplus2;
+      return c0 + scaled_t * b_kplus2 - b_kplus1;
+    } else {
+      return c0 + scaled_t * b_kplus1 - b_kplus2;
+    }
   }
 }
 
