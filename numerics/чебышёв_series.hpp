@@ -32,6 +32,9 @@ class EvaluationHelper {
 
   Vector EvaluateImplementation(double const scaled_t) const;
 
+  Vector coefficients(int const index) const;
+  int degree() const;
+
  private:
   std::vector<Vector> coefficients_;
   int degree_;

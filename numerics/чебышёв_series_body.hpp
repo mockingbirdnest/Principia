@@ -24,7 +24,7 @@ namespace internal {
 template<typename Scalar, typename Frame, int rank>
 class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
  public:
-  EvaluationHelper(
+  explicit EvaluationHelper(
       std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
       int const degree);
   EvaluationHelper(EvaluationHelper&& other);
@@ -34,7 +34,10 @@ class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
   Multivector<Scalar, Frame, rank> EvaluateImplementation(
       double const scaled_t) const;
 
- private:
+  Multivector<Scalar, Frame, rank> coefficients(int const index) const;
+  int degree() const;
+
+private:
   std::vector<R3Element<double>> coefficients_;
   int degree_;
 };
@@ -78,6 +81,16 @@ Vector EvaluationHelper<Vector>::EvaluateImplementation(
     }
     return c0 + scaled_t * b_kplus1 - b_kplus2;
   }
+}
+
+template<typename Vector>
+Vector EvaluationHelper<Vector>::coefficients(int const index) const {
+  return coefficients_[index];
+}
+
+template<typename Vector>
+int EvaluationHelper<Vector>::degree() const {
+  return degree_;
 }
 
 template<typename Scalar, typename Frame, int rank>
@@ -149,6 +162,18 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
                   c0.z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
     }
   }
+}
+
+template<typename Scalar, typename Frame, int rank>
+Multivector<Scalar, Frame, rank>
+EvaluationHelper<Multivector<Scalar, Frame, rank>>::coefficients(
+    int const index) const {
+  return coefficients_[index] * SIUnit<Scalar>();
+}
+
+template<typename Scalar, typename Frame, int rank>
+int EvaluationHelper<Multivector<Scalar, Frame, rank>>::degree() const {
+  return degree_;
 }
 
 }  // namespace internal
