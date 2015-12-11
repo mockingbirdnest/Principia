@@ -36,7 +36,7 @@ class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
   Multivector<Scalar, Frame, rank> coefficients(int const index) const;
   int degree() const;
 
-private:
+ private:
   std::vector<R3Element<double>> coefficients_;
   int degree_;
 };
