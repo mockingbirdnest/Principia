@@ -104,46 +104,43 @@ Multivector<Scalar, Frame, rank>
 EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
-  R3Element<double> const c0 = coefficients_[0];
+  R3Element<double> const c_0 = coefficients_[0];
   switch (degree_) {
-    case 0: {
-      return Multivector<double, Frame, rank>(c0) * SIUnit<Scalar>();
-    }
-    case 1: {
-      R3Element<double> const c1 = coefficients_[1];
+    case 0:
+      return Multivector<double, Frame, rank>(c_0) * SIUnit<Scalar>();
+    case 1:
       return Multivector<double, Frame, rank>(
-                 {c0.x + scaled_t * c1.x,
-                  c0.y + scaled_t * c1.y,
-                  c0.z + scaled_t * c1.z}) * SIUnit<Scalar>();
-    }
-    default: {
-      R3Element<double> const cd = coefficients_[degree_];
-      double b_kplus2x = cd.x;
-      double b_kplus2y = cd.y;
-      double b_kplus2z = cd.z;
-      R3Element<double> const cdm1 = coefficients_[degree_ - 1];
-      double b_kplus1x = cdm1.x + two_scaled_t * b_kplus2x;
-      double b_kplus1y = cdm1.y + two_scaled_t * b_kplus2y;
-      double b_kplus1z = cdm1.z + two_scaled_t * b_kplus2z;
-      double b_k;
-      for (int k = degree_ - 2; k >= 1; --k) {
-        R3Element<double> const ck = coefficients_[k];
-        b_k = ck.x + two_scaled_t * b_kplus1x - b_kplus2x;
-        b_kplus2x = b_kplus1x;
-        b_kplus1x = b_k;
-        b_k = ck.y + two_scaled_t * b_kplus1y - b_kplus2y;
-        b_kplus2y = b_kplus1y;
-        b_kplus1y = b_k;
-        b_k = ck.z + two_scaled_t * b_kplus1z - b_kplus2z;
-        b_kplus2z = b_kplus1z;
-        b_kplus1z = b_k;
+                 c_0 + scaled_t * coefficients_[1]) * SIUnit<Scalar>();
+    default:
+      // b_degree   = c_degree.
+      R3Element<double> b_i = coefficients_[degree_];
+      // b_degree-1 = c_degree-1 + 2 t b_degree.
+      R3Element<double> b_j = coefficients_[degree_ - 1] + two_scaled_t * b_i;
+      int k = degree_ - 3;
+      for (; k >= 1; k -= 2) {
+        // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
+        R3Element<double> const c_kplus1 = coefficients_[k + 1];
+        b_i.x = c_kplus1.x + two_scaled_t * b_j.x - b_i.x;
+        b_i.y = c_kplus1.y + two_scaled_t * b_j.y - b_i.y;
+        b_i.z = c_kplus1.z + two_scaled_t * b_j.z - b_i.z;
+        // b_k   = c_k   + 2 t b_k+1 - b_k+2.
+        R3Element<double> const c_k = coefficients_[k];
+        b_j.x = c_k.x + two_scaled_t * b_i.x - b_j.x;
+        b_j.y = c_k.y + two_scaled_t * b_i.y - b_j.y;
+        b_j.z = c_k.z + two_scaled_t * b_i.z - b_j.z;
       }
-      return Multivector<double, Frame, rank>(
-                 {c0.x + scaled_t * b_kplus1x - b_kplus2x,
-                  c0.y + scaled_t * b_kplus1y - b_kplus2y,
-                  c0.z + scaled_t * b_kplus1z - b_kplus2z}) * SIUnit<Scalar>();
+      if (k == 0) {
+        // b_1 = c_1 + 2 t b_2 - b_3.
+        b_i = coefficients_[1] + two_scaled_t * b_j - b_i;
+        // c_0 + t b_1 - b_2.
+        return Multivector<double, Frame, rank>(
+                   c_0 + scaled_t * b_i - b_j) * SIUnit<Scalar>();
+      } else {
+        // c_0 + t b_1 - b_2.
+        return Multivector<double, Frame, rank>(
+                   c_0 + scaled_t * b_j - b_i) * SIUnit<Scalar>();
+      }
     }
-  }
 }
 
 template<typename Scalar, typename Frame, int rank>
