@@ -24,7 +24,7 @@ namespace internal {
 template<typename Scalar, typename Frame, int rank>
 class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
  public:
-  explicit EvaluationHelper(
+  EvaluationHelper(
       std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,
       int const degree);
   EvaluationHelper(EvaluationHelper&& other) = default;
