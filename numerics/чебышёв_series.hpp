@@ -26,9 +26,8 @@ class EvaluationHelper {
  public:
   EvaluationHelper(std::vector<Vector> const& coefficients,
                    int const degree);
-  EvaluationHelper(EvaluationHelper&& other);
-
-  EvaluationHelper& operator=(EvaluationHelper&& other);
+  EvaluationHelper(EvaluationHelper&& other) = default;
+  EvaluationHelper& operator=(EvaluationHelper&& other) = default;
 
   Vector EvaluateImplementation(double const scaled_t) const;
 
@@ -53,9 +52,8 @@ class ЧебышёвSeries {
   ЧебышёвSeries(std::vector<Vector> const& coefficients,
                 Instant const& t_min,
                 Instant const& t_max);
-  ЧебышёвSeries(ЧебышёвSeries&& other);
-
-  ЧебышёвSeries& operator=(ЧебышёвSeries&& other);
+  ЧебышёвSeries(ЧебышёвSeries&& other) = default;
+  ЧебышёвSeries& operator=(ЧебышёвSeries&& other) = default;
 
   bool operator==(ЧебышёвSeries const& right) const;
   bool operator!=(ЧебышёвSeries const& right) const;
@@ -65,7 +63,7 @@ class ЧебышёвSeries {
 
   // The value of the last coefficient of the series.  Smaller values indicate a
   // a better approximation.
-  Vector const& last_coefficient() const;
+  Vector last_coefficient() const;
 
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
   Vector Evaluate(Instant const& t) const;
