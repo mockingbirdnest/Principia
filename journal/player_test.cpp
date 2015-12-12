@@ -15,7 +15,7 @@
 namespace principia {
 namespace journal {
 
-void BM_PlayForReal(benchmark::State& state) {
+void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151206-170008");
     int count = 0;
