@@ -40,7 +40,14 @@ class BarycentricRotatingDynamicFrame
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
- private:
+  void WriteToMessage(
+      not_null<serialization::DynamicFrame*> message) override;
+
+  static not_null<std::unique_ptr<BarycentricRotatingDynamicFrame>>
+      ReadFromMessage(
+          serialization::BarycentricRotatingDynamicFrame const& message);
+
+private:
   // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
   // to the basis of |ThisFrame|.  Fills |*angular_frequency| with the
   // corresponding angular velocity.

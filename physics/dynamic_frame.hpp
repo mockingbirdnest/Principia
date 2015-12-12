@@ -43,6 +43,14 @@ class DynamicFrame {
   virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
+
+  virtual void WriteToMessage(
+      not_null<serialization::DynamicFrame*> message) const = 0;
+
+  // Dispatches to one of the subclasses depending on the contents of the
+  // message.
+  static not_null<std::unique_ptr<DynamicFrame>> ReadFromMessage(
+    serialization::DynamicFrame const& message);
 };
 
 }  // namespace physics

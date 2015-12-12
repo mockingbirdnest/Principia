@@ -54,7 +54,7 @@ class Ephemeris {
   virtual ~Ephemeris() = default;
 
   // Returns the bodies in the order in which they were given at construction.
-  virtual std::vector<MassiveBody const*> const& bodies() const;
+  virtual std::vector<not_null<MassiveBody const*>> const& bodies() const;
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
@@ -122,6 +122,11 @@ class Ephemeris {
   virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
       not_null<MassiveBody const*> const body,
       Instant const& t) const;
+
+  // Returns the index of the given body in the serialization produced by
+  // |WriteToMessage| and read by the |Read...| functions.  This index is not
+  // suitable for other uses.
+  virtual void serialization_index(not_null<MassiveBody const*> const body);
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
