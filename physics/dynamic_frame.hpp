@@ -4,6 +4,7 @@
 #include "geometry/rotation.hpp"
 #include "physics/rigid_motion.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -45,7 +46,7 @@ class DynamicFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const = 0;
+      not_null<serialization::DynamicFrame*> const message) const = 0;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.

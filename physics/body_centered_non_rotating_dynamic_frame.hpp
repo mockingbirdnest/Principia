@@ -37,7 +37,7 @@ class BodyCentredNonRotatingDynamicFrame
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) override;
+      not_null<serialization::DynamicFrame*> const message) const override;
 
   static not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>
       ReadFromMessage(

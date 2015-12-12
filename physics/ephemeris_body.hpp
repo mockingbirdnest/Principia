@@ -156,7 +156,8 @@ Ephemeris<Frame>::Ephemeris(
 }
 
 template<typename Frame>
-std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
+std::vector<not_null<MassiveBody const*>> const&
+Ephemeris<Frame>::bodies() const {
   return unowned_bodies_;
 }
 

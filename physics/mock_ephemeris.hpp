@@ -13,7 +13,8 @@ class MockEphemeris : public Ephemeris<Frame> {
  public:
   MockEphemeris() : Ephemeris<Frame>() {}
 
-  MOCK_CONST_METHOD0_T(bodies, std::vector<MassiveBody const*> const&());
+  MOCK_CONST_METHOD0_T(bodies,
+                       std::vector<not_null<MassiveBody const*>> const&());
   MOCK_CONST_METHOD1_T(trajectory,
                        not_null<ContinuousTrajectory<Frame> const*>(
                            not_null<MassiveBody const*> body));
@@ -55,6 +56,9 @@ class MockEphemeris : public Ephemeris<Frame> {
   // NOTE(phl): Can't mock the other overloads of
   // ComputeGravitationalAcceleration, it causes an internal error in the
   // compiler.
+
+  MOCK_CONST_METHOD1_T(serialization_index,
+                       int(not_null<MassiveBody const*> const body));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));

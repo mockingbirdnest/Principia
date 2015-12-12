@@ -65,5 +65,22 @@ GeometricAcceleration(
   return gravitational_acceleration_at_point + fictitious_acceleration;
 }
 
+template<typename InertialFrame, typename ThisFrame>
+void BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
+  message->MutableExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::
+          body_centred_non_rotating_dynamic_frame)->set_centre(
+              ephemeris_->serialization_index(centre_));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<std::unique_ptr<
+    BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>>>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    serialization::BodyCentredNonRotatingDynamicFrame const& message) {
+  return not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>();
+}
+
 }  // namespace physics
 }  // namespace principia

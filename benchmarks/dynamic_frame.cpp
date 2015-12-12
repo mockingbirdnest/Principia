@@ -28,6 +28,7 @@
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 
 // This must come last because apparently it redefines CDECL.
 #include "benchmark/benchmark.h"

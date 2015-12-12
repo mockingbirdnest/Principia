@@ -126,7 +126,8 @@ class Ephemeris {
   // Returns the index of the given body in the serialization produced by
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
   // suitable for other uses.
-  virtual void serialization_index(not_null<MassiveBody const*> const body);
+  virtual int serialization_index(
+      not_null<MassiveBody const*> const body) const;
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
@@ -223,7 +224,7 @@ class Ephemeris {
       typename NewtonianMotionEquation::SystemStateError const& error);
 
   // The bodies in the order in which they were given at construction.
-  std::vector<MassiveBody const*> unowned_bodies_;
+  std::vector<not_null<MassiveBody const*>> unowned_bodies_;
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
