@@ -27,7 +27,7 @@ void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   }
 }
 
-#if 1
+#if 0
 BENCHMARK(BM_PlayForReal);
 #endif
 
