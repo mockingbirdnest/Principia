@@ -60,6 +60,9 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,6 +80,9 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\generate_version_header.props" />
     <Import Project="..\define_ndebug.props" />
   </ImportGroup>
@@ -95,6 +101,9 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />

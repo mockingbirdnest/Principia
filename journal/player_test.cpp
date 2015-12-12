@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "benchmark/benchmark.h"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
@@ -14,8 +15,28 @@
 namespace principia {
 namespace journal {
 
+void BM_PlayForReal(benchmark::State& state) {
+  while (state.KeepRunning()) {
+    Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151206-170008");
+    int count = 0;
+    while (player.Play()) {
+      ++count;
+      LOG_IF(INFO, (count % 10'000) == 0)
+        << count << " journal entries replayed";
+    }
+  }
+}
+
+#if 0
+BENCHMARK(BM_PlayForReal);
+#endif
+
 class PlayerTest : public testing::Test {
  protected:
+  static void SetUpTestCase() {
+    benchmark::RunSpecifiedBenchmarks();
+  }
+
   PlayerTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
@@ -55,18 +76,6 @@ TEST_F(PlayerTest, PlayTiny) {
   }
   EXPECT_EQ(2, count);
 }
-
-#if 0
-TEST_F(PlayerTest, PlayForReal) {
-  Player player("P:\\Public Mockingbird\\Principia\\JOURNAL.20151206-170008");
-  int count = 0;
-  while (player.Play()) {
-    ++count;
-    LOG_IF(ERROR, (count % 10'000) == 0)
-        << count << " journal entries replayed";
-  }
-}
-#endif
 
 }  // namespace journal
 }  // namespace principia
