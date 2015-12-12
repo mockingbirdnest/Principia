@@ -128,7 +128,8 @@ GeometricAcceleration(
               {primary_acceleration,
                secondary_acceleration},
               {primary_->gravitational_parameter(),
-               secondary_->gravitational_parameter()}));
+               secondary_->gravitational_parameter()}
+  ));
   Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
       -2 * Ω * degrees_of_freedom.velocity() / Radian;
   Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =
@@ -143,6 +144,26 @@ GeometricAcceleration(
       euler_acceleration_at_point;
   return gravitational_acceleration_at_point + fictitious_acceleration;
 }
+
+template<typename InertialFrame, typename ThisFrame>
+void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
+  auto* const extension =
+    message->MutableExtension(
+        serialization::BarycentricRotatingDynamicFrame::
+            barycentric_rotating_dynamic_frame);
+  extension->set_primary(ephemeris_->serialization_index(primary_));
+  extension->set_secondary(ephemeris_->serialization_index(secondary_));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<std::unique_ptr<
+    BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>>>
+BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    serialization::BarycentricRotatingDynamicFrame const & message) {
+  return not_null<std::unique_ptr<BarycentricRotatingDynamicFrame>>();
+}
+
 
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
