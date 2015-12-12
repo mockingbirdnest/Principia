@@ -21,13 +21,13 @@ void BM_PlayForReal(benchmark::State& state) {
     int count = 0;
     while (player.Play()) {
       ++count;
-      LOG_IF(INFO, (count % 10'000) == 0)
-        << count << " journal entries replayed";
+      LOG_IF(ERROR, (count % 100'000) == 0)
+          << count << " journal entries replayed";
     }
   }
 }
 
-#if 0
+#if 1
 BENCHMARK(BM_PlayForReal);
 #endif
 
