@@ -41,6 +41,7 @@ class BodyCentredNonRotatingDynamicFrame
 
   static not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>
       ReadFromMessage(
+          not_null<Ephemeris<InertialFrame> const*> const ephemeris,
           serialization::BodyCentredNonRotatingDynamicFrame const& message);
 
 private:

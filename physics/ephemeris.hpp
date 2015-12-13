@@ -126,8 +126,11 @@ class Ephemeris {
   // Returns the index of the given body in the serialization produced by
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
   // suitable for other uses.
-  virtual int serialization_index(
+  virtual int serialization_index_for_body(
       not_null<MassiveBody const*> const body) const;
+
+  virtual not_null<MassiveBody const*> body_for_serialization_index(
+      int const serialization_index) const;
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;

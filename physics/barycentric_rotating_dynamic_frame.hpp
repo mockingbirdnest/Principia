@@ -45,6 +45,7 @@ class BarycentricRotatingDynamicFrame
 
   static not_null<std::unique_ptr<BarycentricRotatingDynamicFrame>>
       ReadFromMessage(
+          not_null<Ephemeris<InertialFrame> const*> const ephemeris,
           serialization::BarycentricRotatingDynamicFrame const& message);
 
 private:

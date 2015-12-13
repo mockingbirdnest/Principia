@@ -2,6 +2,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
@@ -50,8 +51,9 @@ class DynamicFrame {
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
-  static not_null<std::unique_ptr<DynamicFrame>> ReadFromMessage(
-    serialization::DynamicFrame const& message);
+  static not_null<std::unique_ptr<DynamicFrame>>
+      ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+                      serialization::DynamicFrame const& message);
 };
 
 }  // namespace physics
