@@ -74,13 +74,13 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
         SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
     t0_ = solar_system_.epoch();
-    big_ = solar_system_.massive_body(*ephemeris_, kBig);
-    small_ = solar_system_.massive_body(*ephemeris_, kSmall);
     ephemeris_ = solar_system_.MakeEphemeris(
                      integrators::McLachlanAtela1992Order4Optimal<
                          Position<ICRFJ2000Equator>>(),
                      10 * Milli(Second),
                      1 * Milli(Metre));
+    big_ = solar_system_.massive_body(*ephemeris_, kBig);
+    small_ = solar_system_.massive_body(*ephemeris_, kSmall);
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_initial_state_ = solar_system_.initial_state(kBig);
     big_gravitational_parameter_ = solar_system_.gravitational_parameter(kBig);
@@ -247,13 +247,15 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
   {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(big_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(small_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
@@ -311,13 +313,15 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
   {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(big_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(small_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
@@ -376,13 +380,15 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
     // The acceleration is centripetal + tangential.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(big_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (120 - 160) * Metre / Pow<2>(Second),
                              (160 + 120) * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(small_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-300 + 400) * Metre / Pow<2>(Second),
                              (-400 - 300) * Metre / Pow<2>(Second),
@@ -442,13 +448,15 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
     // The acceleration is linear + centripetal.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(big_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 + 120) * Metre / Pow<2>(Second),
                              (120 + 160) * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(small_, t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    base::check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 - 300) * Metre / Pow<2>(Second),
                              (120 - 400) * Metre / Pow<2>(Second),
@@ -478,9 +486,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                               1E3 * Metre / Pow<2>(Second),
-                               2 * Metre / Pow<2>(Second),
-                               300 * Metre / Pow<2>(Second)}), 2));
+                  2.32786248002527236E3 * Metre / Pow<2>(Second),
+                  -3.61670567977415587E1 * Metre / Pow<2>(Second),
+                  -5.38007972376415182e+01 * Metre / Pow<2>(Second)}), 0));
 }
 
 }  // namespace physics
