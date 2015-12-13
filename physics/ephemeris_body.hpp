@@ -373,7 +373,8 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+Vector<Acceleration, Frame> Ephemeris<Frame>::
+ComputeGravitationalAccelerationOnMasslessBody(
     Position<Frame> const& position,
     Instant const& t) const {
   // To avoid intrinsic accelerations.
@@ -392,16 +393,19 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+Vector<Acceleration, Frame> Ephemeris<Frame>::
+ComputeGravitationalAccelerationOnMasslessBody(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->Find(t);
   DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
-  return ComputeGravitationalAcceleration(degrees_of_freedom.position(), t);
+  return ComputeGravitationalAccelerationOnMasslessBody(
+             degrees_of_freedom.position(), t);
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+Vector<Acceleration, Frame> Ephemeris<Frame>::
+ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
   bool const body_is_oblate = body->is_oblate();

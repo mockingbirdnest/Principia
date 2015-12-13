@@ -53,12 +53,13 @@ GeometricAcceleration(
 
   Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
       to_this_frame.orthogonal_map()(
-          ephemeris_->ComputeGravitationalAcceleration(
+          ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
               from_this_frame.rigid_transformation()(
                   degrees_of_freedom.position()), t));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       to_this_frame.orthogonal_map()(
-          -ephemeris_->ComputeGravitationalAcceleration(centre_, t));
+          -ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+              centre_, t));
 
   Vector<Acceleration, ThisFrame> const& fictitious_acceleration =
       linear_acceleration;

@@ -872,7 +872,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
     elephant_positions.push_back(it.degrees_of_freedom().position() -
                                  EarthMoonOrbitPlane::origin);
     elephant_accelerations.push_back(
-        ephemeris.ComputeGravitationalAcceleration(&trajectory, it.time()));
+        ephemeris.ComputeGravitationalAccelerationOnMasslessBody(
+            &trajectory, it.time()));
   }
   EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
@@ -954,7 +955,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   ephemeris.Prolong(t0_ + kDuration);
 
   Vector<Acceleration, World> actual_acceleration0 =
-      ephemeris.ComputeGravitationalAcceleration(b0, t0_);
+      ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b0, t0_);
   Vector<Acceleration, World> expected_acceleration0 =
       GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
                                m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
@@ -969,7 +970,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
               AlmostEquals(expected_acceleration0, 0, 6));
 
   Vector<Acceleration, World> actual_acceleration1 =
-      ephemeris.ComputeGravitationalAcceleration(b1, t0_);
+      ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b1, t0_);
   Vector<Acceleration, World> expected_acceleration1 =
       GravitationalConstant * (m0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
                                m2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
@@ -983,7 +984,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
               AlmostEquals(expected_acceleration1, 0, 2));
 
   Vector<Acceleration, World> actual_acceleration2 =
-      ephemeris.ComputeGravitationalAcceleration(b2, t0_);
+      ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b2, t0_);
   Vector<Acceleration, World> expected_acceleration2 =
       GravitationalConstant * (m0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
                                m1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
@@ -998,7 +999,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
               AlmostEquals(expected_acceleration2, 0, 3));
 
   Vector<Acceleration, World> actual_acceleration3 =
-      ephemeris.ComputeGravitationalAcceleration(b3, t0_);
+      ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b3, t0_);
   Vector<Acceleration, World> expected_acceleration3 =
       GravitationalConstant * (m0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
                                m1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +

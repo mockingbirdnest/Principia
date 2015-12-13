@@ -26,6 +26,7 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using base::check_not_null;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Instant;
@@ -82,6 +83,8 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
                          Position<ICRFJ2000Equator>>(),
                      10 * Milli(Second),
                      1 * Milli(Metre));
+    big_ = solar_system_.massive_body(*ephemeris_, kBig);
+    small_ = solar_system_.massive_body(*ephemeris_, kSmall);
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_initial_state_ = solar_system_.initial_state(kBig);
     big_gravitational_parameter_ = solar_system_.gravitational_parameter(kBig);
@@ -95,9 +98,7 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
     big_small_frame_ =
         std::make_unique<
             BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
-                ephemeris_.get(),
-                solar_system_.massive_body(*ephemeris_, kBig),
-                solar_system_.massive_body(*ephemeris_, kSmall));
+                ephemeris_.get(), big_, small_);
 
     mock_ephemeris_ =
        std::make_unique<StrictMock<MockEphemeris<ICRFJ2000Equator>>>();
@@ -111,13 +112,13 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         std::make_unique<
             StrictMock<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
                        MockFrame>>>(
-                mock_ephemeris_.get(),
-                solar_system_.massive_body(*ephemeris_, kBig),
-                solar_system_.massive_body(*ephemeris_, kSmall));
+                mock_ephemeris_.get(), big_, small_);
   }
 
   Time const period_;
   Instant t0_;
+  MassiveBody const* big_;
+  MassiveBody const* small_;
   DegreesOfFreedom<ICRFJ2000Equator> centre_of_mass_initial_state_;
   DegreesOfFreedom<ICRFJ2000Equator> big_initial_state_;
   DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
@@ -250,19 +251,21 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
   {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(big_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(small_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
@@ -314,19 +317,21 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
   {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(big_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(small_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
@@ -379,19 +384,21 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
     // The acceleration is centripetal + tangential.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(big_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (120 - 160) * Metre / Pow<2>(Second),
                              (160 + 120) * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(small_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-300 + 400) * Metre / Pow<2>(Second),
                              (-400 - 300) * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
@@ -445,19 +452,21 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
     // The acceleration is linear + centripetal.
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(big_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 + 120) * Metre / Pow<2>(Second),
                              (120 + 160) * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(small_dof.position(), t))
+                ComputeGravitationalAccelerationOnMassiveBody(
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 - 300) * Metre / Pow<2>(Second),
                              (120 - 400) * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAcceleration(_, t))
+                ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
@@ -469,26 +478,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
                                300 * Metre / Pow<2>(Second)}), 2));
 }
 
-TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
-  serialization::DynamicFrame message;
-  big_small_frame_->WriteToMessage(&message);
-
-  EXPECT_TRUE(message.HasExtension(
-              serialization::BarycentricRotatingDynamicFrame::
-                  barycentric_rotating_dynamic_frame));
-  auto const extension =
-      message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
-                               barycentric_rotating_dynamic_frame);
-  EXPECT_TRUE(extension.has_primary());
-  EXPECT_TRUE(extension.has_secondary());
-  EXPECT_EQ(0, extension.primary());
-  EXPECT_EQ(1, extension.secondary());
-
-  auto const read_big_small_frame =
-      DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
-          ephemeris_.get(), message);
-  EXPECT_THAT(read_big_small_frame, Not(IsNull()));
-
+TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
   Instant const t = t0_ + period_;
   DegreesOfFreedom<BigSmallFrame> const point_dof =
       {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
@@ -496,6 +486,42 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
        Velocity<BigSmallFrame>({3 * Metre / Second,
                                 2 * Metre / Second,
                                 1 * Metre / Second})};
+  // We trust the functions to compute the values correctly, but this test
+  // ensures that we don't get NaNs.
+  EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
+              AlmostEquals(Vector<Acceleration, BigSmallFrame>({
+                  2.32786248002527236E3 * Metre / Pow<2>(Second),
+                  -3.61670567977415587E1 * Metre / Pow<2>(Second),
+                  -5.38007972376415182E1 * Metre / Pow<2>(Second)}), 0));
+}
+
+TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
+  serialization::DynamicFrame message;
+  big_small_frame_->WriteToMessage(&message);
+
+  EXPECT_TRUE(message.HasExtension(
+    serialization::BarycentricRotatingDynamicFrame::
+    barycentric_rotating_dynamic_frame));
+  auto const extension =
+    message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
+                         barycentric_rotating_dynamic_frame);
+  EXPECT_TRUE(extension.has_primary());
+  EXPECT_TRUE(extension.has_secondary());
+  EXPECT_EQ(0, extension.primary());
+  EXPECT_EQ(1, extension.secondary());
+
+  auto const read_big_small_frame =
+    DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
+      ephemeris_.get(), message);
+  EXPECT_THAT(read_big_small_frame, Not(IsNull()));
+
+  Instant const t = t0_ + period_;
+  DegreesOfFreedom<BigSmallFrame> const point_dof =
+  {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
+    BigSmallFrame::origin,
+    Velocity<BigSmallFrame>({3 * Metre / Second,
+                            2 * Metre / Second,
+                            1 * Metre / Second})};
   EXPECT_EQ(big_small_frame_->GeometricAcceleration(t, point_dof),
             read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
