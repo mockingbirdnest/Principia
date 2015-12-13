@@ -290,6 +290,8 @@ TEST_F(PluginTest, Serialization) {
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
   plugin->AdvanceTime(HistoryTime(sync_time, 6), Angle());
   plugin->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+  plugin->SetPlottingFrame(plugin->NewBodyCentredNonRotatingNavigationFrame(
+      SolarSystemFactory::kSun + 1));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -322,6 +324,14 @@ TEST_F(PluginTest, Serialization) {
             vessel_0_history.timeline(0).instant().scalar().magnitude());
 #endif
   EXPECT_FALSE(message.bubble().has_current());
+  EXPECT_TRUE(message.has_plotting_frame());
+  EXPECT_TRUE(message.plotting_frame().HasExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::
+          body_centred_non_rotating_dynamic_frame));
+  EXPECT_EQ(SolarSystemFactory::kSun + 1,
+            message.plotting_frame().GetExtension(
+                serialization::BodyCentredNonRotatingDynamicFrame::
+                    body_centred_non_rotating_dynamic_frame).centre());
 }
 
 TEST_F(PluginTest, Initialization) {
