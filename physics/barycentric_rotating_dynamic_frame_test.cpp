@@ -503,8 +503,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
       serialization::BarycentricRotatingDynamicFrame::
           barycentric_rotating_dynamic_frame));
   auto const extension =
-    message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
-                             barycentric_rotating_dynamic_frame);
+      message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
+                               barycentric_rotating_dynamic_frame);
   EXPECT_TRUE(extension.has_primary());
   EXPECT_TRUE(extension.has_secondary());
   EXPECT_EQ(0, extension.primary());

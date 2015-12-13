@@ -44,7 +44,7 @@ class BodyCentredNonRotatingDynamicFrame
           not_null<Ephemeris<InertialFrame> const*> const ephemeris,
           serialization::BodyCentredNonRotatingDynamicFrame const& message);
 
-private:
+ private:
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;

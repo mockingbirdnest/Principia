@@ -59,7 +59,7 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> message) const override;
 
-private:
+ private:
   DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
   Instant const epoch_;
   OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;

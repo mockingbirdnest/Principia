@@ -48,7 +48,7 @@ class BarycentricRotatingDynamicFrame
           not_null<Ephemeris<InertialFrame> const*> const ephemeris,
           serialization::BarycentricRotatingDynamicFrame const& message);
 
-private:
+ private:
   // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
   // to the basis of |ThisFrame|.  Fills |*angular_frequency| with the
   // corresponding angular velocity.
