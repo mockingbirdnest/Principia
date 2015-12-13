@@ -19,6 +19,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -40,7 +41,9 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::IsNull;
 using ::testing::Lt;
+using ::testing::Not;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -120,15 +123,17 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
   DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
   GravitationalParameter big_gravitational_parameter_;
   GravitationalParameter small_gravitational_parameter_;
-  std::unique_ptr<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
-                  BigSmallFrame>> big_small_frame_;
+  std::unique_ptr<
+      BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>
+          big_small_frame_;
   std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
   SolarSystem<ICRFJ2000Equator> solar_system_;
 
   StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>> mock_big_trajectory_;
   StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>> mock_small_trajectory_;
-  std::unique_ptr<StrictMock<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
-                             MockFrame>>> mock_frame_;
+  std::unique_ptr<StrictMock<
+      BarycentricRotatingDynamicFrame<ICRFJ2000Equator, MockFrame>>>
+          mock_frame_;
   std::unique_ptr<StrictMock<MockEphemeris<ICRFJ2000Equator>>> mock_ephemeris_;
 };
 
@@ -462,6 +467,37 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
                                1E3 * Metre / Pow<2>(Second),
                                (-200 + 2E3) * Metre / Pow<2>(Second),
                                300 * Metre / Pow<2>(Second)}), 2));
+}
+
+TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
+  serialization::DynamicFrame message;
+  big_small_frame_->WriteToMessage(&message);
+
+  EXPECT_TRUE(message.HasExtension(
+              serialization::BarycentricRotatingDynamicFrame::
+                  barycentric_rotating_dynamic_frame));
+  auto const extension =
+      message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
+                               barycentric_rotating_dynamic_frame);
+  EXPECT_TRUE(extension.has_primary());
+  EXPECT_TRUE(extension.has_secondary());
+  EXPECT_EQ(0, extension.primary());
+  EXPECT_EQ(1, extension.secondary());
+
+  auto const read_big_small_frame =
+      DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
+          ephemeris_.get(), message);
+  EXPECT_THAT(read_big_small_frame, Not(IsNull()));
+
+  Instant const t = t0_ + period_;
+  DegreesOfFreedom<BigSmallFrame> const point_dof =
+      {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
+           BigSmallFrame::origin,
+       Velocity<BigSmallFrame>({3 * Metre / Second,
+                                2 * Metre / Second,
+                                1 * Metre / Second})};
+  EXPECT_EQ(big_small_frame_->GeometricAcceleration(t, point_dof),
+            read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
 
 }  // namespace physics
