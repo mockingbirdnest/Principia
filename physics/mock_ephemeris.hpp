@@ -57,8 +57,11 @@ class MockEphemeris : public Ephemeris<Frame> {
   // ComputeGravitationalAcceleration, it causes an internal error in the
   // compiler.
 
-  MOCK_CONST_METHOD1_T(serialization_index,
+  MOCK_CONST_METHOD1_T(serialization_index_for_body,
                        int(not_null<MassiveBody const*> const body));
+  MOCK_CONST_METHOD1_T(
+      body_for_serialization_index,
+      not_null<MassiveBody const*>(int const serialization_index));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));

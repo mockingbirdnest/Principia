@@ -762,6 +762,11 @@ TEST_F(EphemerisTest, Serialization) {
           5 * Milli(Metre));
   ephemeris.Prolong(t0_ + period);
 
+  EXPECT_EQ(0, ephemeris.serialization_index_for_body(earth));
+  EXPECT_EQ(1, ephemeris.serialization_index_for_body(moon));
+  EXPECT_EQ(earth, ephemeris.body_for_serialization_index(0));
+  EXPECT_EQ(moon, ephemeris.body_for_serialization_index(1));
+
   serialization::Ephemeris message;
   ephemeris.WriteToMessage(&message);
 
@@ -770,6 +775,10 @@ TEST_F(EphemerisTest, Serialization) {
   MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
   MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
 
+  EXPECT_EQ(0, ephemeris_read->serialization_index_for_body(earth_read));
+  EXPECT_EQ(1, ephemeris_read->serialization_index_for_body(moon_read));
+  EXPECT_EQ(earth_read, ephemeris_read->body_for_serialization_index(0));
+  EXPECT_EQ(moon_read, ephemeris_read->body_for_serialization_index(1));
 
   EXPECT_EQ(ephemeris.t_min(), ephemeris_read->t_min());
   EXPECT_EQ(ephemeris.t_max(), ephemeris_read->t_max());
