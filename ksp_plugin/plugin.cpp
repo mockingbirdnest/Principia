@@ -649,9 +649,17 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  current_time,
                  history_time,
                  message.sun_index()));
-  plugin->SetPlottingFrame(
-      NavigationFrame::ReadFromMessage(ephemeris.get(),
-                                       message.plotting_frame()));
+  std::unique_ptr<NavigationFrame> plotting_frame =
+      NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
+                                       message.plotting_frame());
+  if (plotting_frame == nullptr) {
+    // In the pre-Brouwer compatibility case you get a plotting frame centered
+    // on the Sun.
+    plugin->SetPlottingFrame(
+        plugin->NewBodyCentredNonRotatingNavigationFrame(message.sun_index()));
+  } else {
+    plugin->SetPlottingFrame(std::move(plotting_frame));
+  }
   return std::move(plugin);
 }
 

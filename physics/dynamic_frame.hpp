@@ -50,8 +50,8 @@ class DynamicFrame {
       not_null<serialization::DynamicFrame*> const message) const = 0;
 
   // Dispatches to one of the subclasses depending on the contents of the
-  // message.
-  static not_null<std::unique_ptr<DynamicFrame>>
+  // message.  Returns |nullptr| if no dynamic frame extension is found.
+  static std::unique_ptr<DynamicFrame>
       ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> const ephemeris,
                       serialization::DynamicFrame const& message);
 };
