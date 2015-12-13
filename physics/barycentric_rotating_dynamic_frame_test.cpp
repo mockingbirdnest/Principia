@@ -500,28 +500,28 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
   big_small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
-    serialization::BarycentricRotatingDynamicFrame::
-    barycentric_rotating_dynamic_frame));
+      serialization::BarycentricRotatingDynamicFrame::
+          barycentric_rotating_dynamic_frame));
   auto const extension =
     message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
-                         barycentric_rotating_dynamic_frame);
+                             barycentric_rotating_dynamic_frame);
   EXPECT_TRUE(extension.has_primary());
   EXPECT_TRUE(extension.has_secondary());
   EXPECT_EQ(0, extension.primary());
   EXPECT_EQ(1, extension.secondary());
 
   auto const read_big_small_frame =
-    DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
-      ephemeris_.get(), message);
+      DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
+          ephemeris_.get(), message);
   EXPECT_THAT(read_big_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
   DegreesOfFreedom<BigSmallFrame> const point_dof =
-  {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
-    BigSmallFrame::origin,
-    Velocity<BigSmallFrame>({3 * Metre / Second,
-                            2 * Metre / Second,
-                            1 * Metre / Second})};
+      {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
+           BigSmallFrame::origin,
+       Velocity<BigSmallFrame>({3 * Metre / Second,
+                                2 * Metre / Second,
+                                1 * Metre / Second})};
   EXPECT_EQ(big_small_frame_->GeometricAcceleration(t, point_dof),
             read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
