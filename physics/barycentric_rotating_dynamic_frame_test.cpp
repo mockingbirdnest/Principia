@@ -25,6 +25,7 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using base::check_not_null;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Instant;
@@ -248,14 +249,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(big_), t))
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(small_), t))
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
@@ -314,14 +315,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(big_), t))
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(small_), t))
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
@@ -381,14 +382,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(big_), t))
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (120 - 160) * Metre / Pow<2>(Second),
                              (160 + 120) * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(small_), t))
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-300 + 400) * Metre / Pow<2>(Second),
                              (-400 - 300) * Metre / Pow<2>(Second),
@@ -449,14 +450,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
     InSequence s;
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(big_), t))
+                    check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 + 120) * Metre / Pow<2>(Second),
                              (120 + 160) * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
-                    base::check_not_null(small_), t))
+                    check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 - 300) * Metre / Pow<2>(Second),
                              (120 - 400) * Metre / Pow<2>(Second),
@@ -488,7 +489,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
                   2.32786248002527236E3 * Metre / Pow<2>(Second),
                   -3.61670567977415587E1 * Metre / Pow<2>(Second),
-                  -5.38007972376415182e+01 * Metre / Pow<2>(Second)}), 0));
+                  -5.38007972376415182E1 * Metre / Pow<2>(Second)}), 0));
 }
 
 }  // namespace physics

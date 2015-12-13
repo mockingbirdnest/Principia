@@ -64,7 +64,7 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_CONST_METHOD2_T(
       ComputeGravitationalAccelerationOnMassiveBody,
       Vector<Acceleration, Frame>(
-        not_null<MassiveBody const*> /*const*/ body,
+          not_null<MassiveBody const*> /*const*/ body,
           Instant const& t));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
