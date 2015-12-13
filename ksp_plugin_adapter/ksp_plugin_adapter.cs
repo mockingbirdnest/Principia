@@ -12,8 +12,9 @@ namespace ksp_plugin_adapter {
              tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
                                          GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
-public partial class PrincipiaPluginAdapter : ScenarioModule {
-  public delegate void WindowRenderer();
+public partial class PrincipiaPluginAdapter
+    : ScenarioModule,
+      WindowRenderer.ManagerInterface {
 
   private const String kPrincipiaKey = "serialized_plugin";
   private const String kPrincipiaInitialState = "principia_initial_state";
@@ -46,8 +47,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
-
-  private WindowRenderer render_windows_;
 
   private ReferenceFrameSelector rendering_frame_selector_;
 
@@ -136,6 +135,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool override_rsas_target_ = false;
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
+
+  public event Action render_windows;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -428,7 +429,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
       rendering_frame_selector_ =
-          new ReferenceFrameSelector(ref render_windows_,
+          new ReferenceFrameSelector(this,
                                      plugin_,
                                      UpdateRenderingFrame);
 
@@ -483,10 +484,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           options    : UnityEngine.GUILayout.MinWidth(500));
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
-      if (render_windows_ != null) {
-        // TODO(egg): This thing keeps growing...  In any case ownership should
-        // be revised, the selector should not own its frame.
-        render_windows_();
+
+      // We need to call this event safely, because it is shortened in the
+      // finalizer thread.
+      Action safely_render_windows;
+      lock(this) { safely_render_windows = render_windows; }
+      if (safely_render_windows != null) {
+        render_windows();
       }
     }
   }
@@ -1265,7 +1269,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       plugin_.EndInitialization();
     }
     rendering_frame_selector_ =
-        new ReferenceFrameSelector(ref render_windows_,
+        new ReferenceFrameSelector(this,
                                    plugin_,
                                    UpdateRenderingFrame);
     VesselProcessor insert_vessel = vessel => {
