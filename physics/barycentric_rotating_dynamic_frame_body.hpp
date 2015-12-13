@@ -96,11 +96,11 @@ GeometricAcceleration(
       to_this_frame.orthogonal_map()(Ω_inertial);
 
   Vector<Acceleration, InertialFrame> const primary_acceleration =
-      ephemeris_->ComputeGravitationalAcceleration(
-          primary_degrees_of_freedom.position(), t);
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+          primary_, t);
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
-      ephemeris_->ComputeGravitationalAcceleration(
-          secondary_degrees_of_freedom.position(), t);
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+          secondary_, t);
 
   // TODO(egg): TeX and reference.
   RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
@@ -118,7 +118,7 @@ GeometricAcceleration(
       degrees_of_freedom.position() - ThisFrame::origin;
   Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
       to_this_frame.orthogonal_map()(
-          ephemeris_->ComputeGravitationalAcceleration(
+          ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
               from_this_frame.rigid_transformation()(
                   degrees_of_freedom.position()), t));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
