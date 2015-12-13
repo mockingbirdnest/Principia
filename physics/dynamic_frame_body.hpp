@@ -49,7 +49,8 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   if (message.HasExtension(serialization::BarycentricRotatingDynamicFrame::
                                barycentric_rotating_dynamic_frame)) {
     ++extensions_found;
-    return BarycentricRotatingDynamicFrame::ReadFromMessage(
+    return BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+           ReadFromMessage(
                ephemeris,
                message.GetExtension(
                   serialization::BarycentricRotatingDynamicFrame::
@@ -58,7 +59,8 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   if (message.HasExtension(serialization::BodyCentredNonRotatingDynamicFrame::
                                body_centred_non_rotating_dynamic_frame)) {
     ++extensions_found;
-    return BodyCentredNonRotatingDynamicFrame::ReadFromMessage(
+    return BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+           ReadFromMessage(
                ephemeris,
                message.GetExtension(
                    serialization::BodyCentredNonRotatingDynamicFrame::

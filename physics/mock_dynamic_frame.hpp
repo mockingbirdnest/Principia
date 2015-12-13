@@ -34,6 +34,10 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
       FrenetFrame,
       Rot(Instant const& t,
           DegreesOfFreedom<ThisFrame> const& degrees_of_freedom));
+
+  MOCK_CONST_METHOD1_T(
+      WriteToMessage,
+      void(not_null<serialization::DynamicFrame*> const message));
 };
 
 }  // namespace physics

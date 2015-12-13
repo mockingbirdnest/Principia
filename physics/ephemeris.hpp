@@ -229,6 +229,9 @@ class Ephemeris {
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;
 
+  // The indices of bodies in |unowned_bodies_|.
+  std::map<not_null<MassiveBody const*>, int> unowned_bodies_indices_;
+
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
