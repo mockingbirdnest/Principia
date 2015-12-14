@@ -48,7 +48,7 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
-  private ReferenceFrameSelector rendering_frame_selector_;
+  private Controlled<ReferenceFrameSelector> plotting_frame_selector_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -428,7 +428,7 @@ public partial class PrincipiaPluginAdapter
       }
       Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
-      rendering_frame_selector_ =
+      plotting_frame_selector_.renderer =
           new ReferenceFrameSelector(this,
                                      plugin_,
                                      UpdateRenderingFrame);
@@ -485,13 +485,7 @@ public partial class PrincipiaPluginAdapter
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
 
-      // We need to call this event safely, because it is shortened in the
-      // finalizer thread.
-      Action safely_render_windows;
-      lock(this) { safely_render_windows = render_windows; }
-      if (safely_render_windows != null) {
-        render_windows();
-      }
+      render_windows();
     }
   }
 
@@ -520,7 +514,7 @@ public partial class PrincipiaPluginAdapter
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
           navball_.navBall.renderer.material.mainTexture =
               compass_navball_texture_;
-        } else if (rendering_frame_selector_.frame_type ==
+        } else if (plotting_frame_selector_.renderer.frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
           navball_.navBall.renderer.material.mainTexture =
               inertial_navball_texture_;
@@ -829,7 +823,7 @@ public partial class PrincipiaPluginAdapter
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
-    rendering_frame_selector_ = null;
+    plotting_frame_selector_.renderer = null;
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -965,7 +959,7 @@ public partial class PrincipiaPluginAdapter
         navball_changed_ = true;
         reset_rsas_target_ = true;
       }
-      rendering_frame_selector_.RenderButton();
+      plotting_frame_selector_.renderer.RenderButton();
     }
   }
 
@@ -1268,7 +1262,7 @@ public partial class PrincipiaPluginAdapter
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();
     }
-    rendering_frame_selector_ =
+    plotting_frame_selector_.renderer =
         new ReferenceFrameSelector(this,
                                    plugin_,
                                    UpdateRenderingFrame);
