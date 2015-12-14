@@ -32,7 +32,9 @@ internal abstract class WindowRenderer : IDisposable {
 
 internal struct Controlled<T> where T : IDisposable {
   public T all {
-    get { return all_; }
+    get {
+      return all_;
+    }
     set {
       if (all_ != null) {
         all_.Dispose();
@@ -44,5 +46,5 @@ internal struct Controlled<T> where T : IDisposable {
   private T all_;
 }
 
-}  // namespace principia
 }  // namespace ksp_plugin_adapter
+}  // namespace principia
