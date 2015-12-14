@@ -6,7 +6,7 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal abstract class WindowRenderer {
+internal abstract class WindowRenderer : IDisposable {
   public interface ManagerInterface {
     event Action render_windows;
   }
@@ -16,8 +16,13 @@ internal abstract class WindowRenderer {
     manager_.render_windows += RenderWindow;
   }
 
-  public void Deregister() {
+  ~WindowRenderer() {
     manager_.render_windows -= RenderWindow;
+  }
+
+  public void Dispose() {
+    manager_.render_windows -= RenderWindow;
+    GC.SuppressFinalize(this);
   }
 
   abstract protected void RenderWindow();
@@ -25,18 +30,18 @@ internal abstract class WindowRenderer {
   private ManagerInterface manager_;
 }
 
-internal struct Controlled<T> where T : WindowRenderer {
-  public T renderer {
-    get { return renderer_; }
+internal struct Controlled<T> where T : IDisposable {
+  public T all {
+    get { return all_; }
     set {
-      if (renderer_ != null) {
-        renderer_.Deregister();
+      if (all_ != null) {
+        all_.Dispose();
       }
-      renderer_ = value;
+      all_ = value;
     }
   }
 
-  private T renderer_;
+  private T all_;
 }
 
 }  // namespace principia

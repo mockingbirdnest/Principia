@@ -428,7 +428,7 @@ public partial class PrincipiaPluginAdapter
       }
       Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
-      plotting_frame_selector_.renderer =
+      plotting_frame_selector_.all =
           new ReferenceFrameSelector(this,
                                      plugin_,
                                      UpdateRenderingFrame);
@@ -514,7 +514,7 @@ public partial class PrincipiaPluginAdapter
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
           navball_.navBall.renderer.material.mainTexture =
               compass_navball_texture_;
-        } else if (plotting_frame_selector_.renderer.frame_type ==
+        } else if (plotting_frame_selector_.all.frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
           navball_.navBall.renderer.material.mainTexture =
               inertial_navball_texture_;
@@ -823,7 +823,7 @@ public partial class PrincipiaPluginAdapter
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
-    plotting_frame_selector_.renderer = null;
+    plotting_frame_selector_.all = null;
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -959,7 +959,7 @@ public partial class PrincipiaPluginAdapter
         navball_changed_ = true;
         reset_rsas_target_ = true;
       }
-      plotting_frame_selector_.renderer.RenderButton();
+      plotting_frame_selector_.all.RenderButton();
     }
   }
 
@@ -1262,7 +1262,7 @@ public partial class PrincipiaPluginAdapter
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();
     }
-    plotting_frame_selector_.renderer =
+    plotting_frame_selector_.all =
         new ReferenceFrameSelector(this,
                                    plugin_,
                                    UpdateRenderingFrame);
