@@ -69,7 +69,7 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                 serialization::BodyCentredNonRotatingDynamicFrame::
                     body_centred_non_rotating_dynamic_frame)).release());
   }
-  CHECK_GE(1, extensions_found) << message.DebugString();
+  CHECK_LE(extensions_found, 1) << message.DebugString();
   // For pre-Brouwer compatibility, return a null pointer if no extension is
   // found.
   return result;
