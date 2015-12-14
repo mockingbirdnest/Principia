@@ -1,5 +1,7 @@
 #pragma once
 
+#include "physics/barycentric_rotating_dynamic_frame.hpp"
+#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -36,6 +38,41 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
       R3x3Matrix(tangent.coordinates(),
                  normal.coordinates(),
                  binormal.coordinates()).Transpose());
+}
+
+template<typename InertialFrame, typename ThisFrame>
+std::unique_ptr<DynamicFrame<InertialFrame, ThisFrame>>
+DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    serialization::DynamicFrame const& message) {
+  std::unique_ptr<DynamicFrame> result;
+  int extensions_found = 0;
+  // TODO(egg): See if the reset/release pairs could be avoided by smart
+  // conversions of |not_null|.
+  if (message.HasExtension(serialization::BarycentricRotatingDynamicFrame::
+                               barycentric_rotating_dynamic_frame)) {
+    ++extensions_found;
+    result.reset(BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+        ReadFromMessage(
+            ephemeris,
+            message.GetExtension(
+              serialization::BarycentricRotatingDynamicFrame::
+                  barycentric_rotating_dynamic_frame)).release());
+  }
+  if (message.HasExtension(serialization::BodyCentredNonRotatingDynamicFrame::
+                               body_centred_non_rotating_dynamic_frame)) {
+    ++extensions_found;
+    result.reset(BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+        ReadFromMessage(
+            ephemeris,
+            message.GetExtension(
+                serialization::BodyCentredNonRotatingDynamicFrame::
+                    body_centred_non_rotating_dynamic_frame)).release());
+  }
+  CHECK_LE(extensions_found, 1) << message.DebugString();
+  // For pre-Brouwer compatibility, return a null pointer if no extension is
+  // found.
+  return result;
 }
 
 }  // namespace physics

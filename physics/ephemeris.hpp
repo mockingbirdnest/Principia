@@ -54,7 +54,7 @@ class Ephemeris {
   virtual ~Ephemeris() = default;
 
   // Returns the bodies in the order in which they were given at construction.
-  virtual std::vector<MassiveBody const*> const& bodies() const;
+  virtual std::vector<not_null<MassiveBody const*>> const& bodies() const;
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
@@ -125,6 +125,15 @@ class Ephemeris {
   ComputeGravitationalAccelerationOnMassiveBody(
       not_null<MassiveBody const*> const body,
       Instant const& t) const;
+
+  // Returns the index of the given body in the serialization produced by
+  // |WriteToMessage| and read by the |Read...| functions.  This index is not
+  // suitable for other uses.
+  virtual int serialization_index_for_body(
+      not_null<MassiveBody const*> const body) const;
+
+  virtual not_null<MassiveBody const*> body_for_serialization_index(
+      int const serialization_index) const;
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
@@ -221,7 +230,10 @@ class Ephemeris {
       typename NewtonianMotionEquation::SystemStateError const& error);
 
   // The bodies in the order in which they were given at construction.
-  std::vector<MassiveBody const*> unowned_bodies_;
+  std::vector<not_null<MassiveBody const*>> unowned_bodies_;
+
+  // The indices of bodies in |unowned_bodies_|.
+  std::map<not_null<MassiveBody const*>, int> unowned_bodies_indices_;
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.

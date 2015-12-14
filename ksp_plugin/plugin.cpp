@@ -22,6 +22,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+#include "physics/dynamic_frame.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -40,6 +41,7 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::DynamicFrame;
 using physics::Frenet;
 using quantities::Force;
 using quantities::si::Milli;
@@ -565,6 +567,7 @@ void Plugin::WriteToMessage(
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
+  plotting_frame_->WriteToMessage(message->mutable_plotting_frame());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -634,7 +637,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   }
 
   // Can't use |make_unique| here without implementation-dependent friendships.
-  return std::unique_ptr<Plugin>(
+  auto plugin = std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
                  std::move(celestials),
                  std::move(dirty_vessels),
@@ -646,6 +649,18 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  current_time,
                  history_time,
                  message.sun_index()));
+  std::unique_ptr<NavigationFrame> plotting_frame =
+      NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
+                                       message.plotting_frame());
+  if (plotting_frame == nullptr) {
+    // In the pre-Brouwer compatibility case you get a plotting frame centered
+    // on the Sun.
+    plugin->SetPlottingFrame(
+        plugin->NewBodyCentredNonRotatingNavigationFrame(message.sun_index()));
+  } else {
+    plugin->SetPlottingFrame(std::move(plotting_frame));
+  }
+  return std::move(plugin);
 }
 
 Plugin::Plugin(GUIDToOwnedVessel vessels,

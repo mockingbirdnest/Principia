@@ -116,6 +116,7 @@ Ephemeris<Frame>::Ephemeris(
     DegreesOfFreedom<Frame> const& degrees_of_freedom = initial_state[i];
 
     unowned_bodies_.emplace_back(body.get());
+    unowned_bodies_indices_.emplace(body.get(), i);
 
     auto const inserted = bodies_to_trajectories_.emplace(
                               body.get(),
@@ -156,7 +157,8 @@ Ephemeris<Frame>::Ephemeris(
 }
 
 template<typename Frame>
-std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
+std::vector<not_null<MassiveBody const*>> const&
+Ephemeris<Frame>::bodies() const {
   return unowned_bodies_;
 }
 
@@ -475,6 +477,18 @@ ComputeGravitationalAccelerationOnMassiveBody(
 }
 
 template<typename Frame>
+int Ephemeris<Frame>::serialization_index_for_body(
+    not_null<MassiveBody const*> const body) const {
+  return FindOrDie(unowned_bodies_indices_, body);
+}
+
+template<typename Frame>
+not_null<MassiveBody const*> Ephemeris<Frame>::body_for_serialization_index(
+    int const serialization_index) const {
+  return unowned_bodies_[serialization_index];
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
@@ -588,18 +602,9 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   // trajectories.
   std::set<Instant> last_state_time;
   for (int i = 0; i < histories.size(); ++i) {
-    auto* const body = ephemeris->unowned_bodies_[i];
+    not_null<MassiveBody const*> const body = ephemeris->unowned_bodies_[i];
     auto const& history = histories[i];
-
-    // Apologies about the linear search here but we need the index |j| to fill
-    // |last_state_| and I don't feel like introducing another data structure
-    // just to speed up the compatibility case.
-    int j = 0;
-    for (; j < ephemeris->bodies_.size(); ++j) {
-      if (body == ephemeris->bodies_[j].get()) {
-        break;
-      }
-    }
+    int const j = ephemeris->serialization_index_for_body(body);
     auto continuous_trajectory = ephemeris->trajectories_[j];
 
     typename DiscreteTrajectory<Frame>::Iterator it = history->Begin();

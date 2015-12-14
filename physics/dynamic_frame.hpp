@@ -2,8 +2,10 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -43,6 +45,15 @@ class DynamicFrame {
   virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
+
+  virtual void WriteToMessage(
+      not_null<serialization::DynamicFrame*> const message) const = 0;
+
+  // Dispatches to one of the subclasses depending on the contents of the
+  // message.  Returns |nullptr| if no dynamic frame extension is found.
+  static std::unique_ptr<DynamicFrame>
+      ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+                      serialization::DynamicFrame const& message);
 };
 
 }  // namespace physics

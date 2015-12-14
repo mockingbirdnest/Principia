@@ -36,6 +36,14 @@ class BodyCentredNonRotatingDynamicFrame
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
+  void WriteToMessage(
+      not_null<serialization::DynamicFrame*> const message) const override;
+
+  static not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>
+      ReadFromMessage(
+          not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+          serialization::BodyCentredNonRotatingDynamicFrame const& message);
+
  private:
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const centre_;

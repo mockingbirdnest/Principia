@@ -146,6 +146,30 @@ GeometricAcceleration(
 
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
+  auto* const extension =
+      message->MutableExtension(
+          serialization::BarycentricRotatingDynamicFrame::
+              barycentric_rotating_dynamic_frame);
+  extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  extension->set_secondary(
+      ephemeris_->serialization_index_for_body(secondary_));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<std::unique_ptr<
+    BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>>>
+BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    serialization::BarycentricRotatingDynamicFrame const & message) {
+  return std::make_unique<BarycentricRotatingDynamicFrame>(
+      ephemeris,
+      ephemeris->body_for_serialization_index(message.primary()),
+      ephemeris->body_for_serialization_index(message.secondary()));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 ComputeAngularDegreesOfFreedom(
     DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,

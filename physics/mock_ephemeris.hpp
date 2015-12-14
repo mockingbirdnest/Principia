@@ -13,7 +13,8 @@ class MockEphemeris : public Ephemeris<Frame> {
  public:
   MockEphemeris() : Ephemeris<Frame>() {}
 
-  MOCK_CONST_METHOD0_T(bodies, std::vector<MassiveBody const*> const&());
+  MOCK_CONST_METHOD0_T(bodies,
+                       std::vector<not_null<MassiveBody const*>> const&());
   MOCK_CONST_METHOD1_T(trajectory,
                        not_null<ContinuousTrajectory<Frame> const*>(
                            not_null<MassiveBody const*> body));
@@ -66,6 +67,12 @@ class MockEphemeris : public Ephemeris<Frame> {
       Vector<Acceleration, Frame>(
           not_null<MassiveBody const*> /*const*/ body,
           Instant const& t));
+
+  MOCK_CONST_METHOD1_T(serialization_index_for_body,
+                       int(not_null<MassiveBody const*> const body));
+  MOCK_CONST_METHOD1_T(
+      body_for_serialization_index,
+      not_null<MassiveBody const*>(int const serialization_index));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));

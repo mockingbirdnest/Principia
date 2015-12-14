@@ -19,6 +19,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -41,7 +42,9 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::IsNull;
 using ::testing::Lt;
+using ::testing::Not;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -490,6 +493,37 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
                   2.32786248002527236E3 * Metre / Pow<2>(Second),
                   -3.61670567977415587E1 * Metre / Pow<2>(Second),
                   -5.38007972376415182E1 * Metre / Pow<2>(Second)}), 0));
+}
+
+TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
+  serialization::DynamicFrame message;
+  big_small_frame_->WriteToMessage(&message);
+
+  EXPECT_TRUE(message.HasExtension(
+      serialization::BarycentricRotatingDynamicFrame::
+          barycentric_rotating_dynamic_frame));
+  auto const extension =
+      message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
+                               barycentric_rotating_dynamic_frame);
+  EXPECT_TRUE(extension.has_primary());
+  EXPECT_TRUE(extension.has_secondary());
+  EXPECT_EQ(0, extension.primary());
+  EXPECT_EQ(1, extension.secondary());
+
+  auto const read_big_small_frame =
+      DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
+          ephemeris_.get(), message);
+  EXPECT_THAT(read_big_small_frame, Not(IsNull()));
+
+  Instant const t = t0_ + period_;
+  DegreesOfFreedom<BigSmallFrame> const point_dof =
+      {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
+           BigSmallFrame::origin,
+       Velocity<BigSmallFrame>({3 * Metre / Second,
+                                2 * Metre / Second,
+                                1 * Metre / Second})};
+  EXPECT_EQ(big_small_frame_->GeometricAcceleration(t, point_dof),
+            read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
 
 }  // namespace physics
