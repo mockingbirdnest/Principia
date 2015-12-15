@@ -82,7 +82,7 @@ TEST_F(EclipseTest, Dummy) {
                       ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) << 
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
               NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
 
   // Lunar eclipse -- U2 (time is start of full eclipse).
@@ -100,7 +100,7 @@ TEST_F(EclipseTest, Dummy) {
                      ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) << 
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
               NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
 
   // Lunar eclipse -- U3 (time is end of full eclipse).
@@ -118,7 +118,7 @@ TEST_F(EclipseTest, Dummy) {
                 ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) << 
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
               NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
 
   // Lunar eclipse -- U4 (time is end of umbral phase).
@@ -136,7 +136,7 @@ TEST_F(EclipseTest, Dummy) {
                  ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) << 
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
               NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
