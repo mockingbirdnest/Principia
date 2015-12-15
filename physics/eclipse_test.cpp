@@ -45,9 +45,10 @@ TEST_F(EclipseTest, Dummy) {
       McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
       45 * Minute, 5 * Milli(Metre));
 
-  ephemeris->Prolong(JulianDate(2433374.5));  // Prolong just past date of eclipse
-                                              // (Eclipse was 1950-04-02 but JD
-                                              // is 1950-04-03:00:00:00).
+  ephemeris->Prolong(
+      JulianDate(2433374.5));  // Prolong just past date of eclipse
+                               // (Eclipse was 1950-04-02 but JD
+                               // is 1950-04-03:00:00:00).
   // Pass body to Ephemeris.trajectory.
   auto const sun = solar_system_1950_.massive_body(*ephemeris, "Sun");
   auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
@@ -74,16 +75,20 @@ TEST_F(EclipseTest, Dummy) {
 
   // Check body angles at target time.
   // Earth/Sun lineup.
-  auto half_sun_earth_aperture = ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-  auto q_U14 =
-      q_earth + Normalize(q_earth - q_sun) * (r_earth + r_moon) / Sin(half_sun_earth_aperture);
+  auto half_sun_earth_aperture =
+      ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
+  auto q_U14 = q_earth +
+               Normalize(q_earth - q_sun) * (r_earth + r_moon) /
+                   Sin(half_sun_earth_aperture);
   // Earth/Moon lineup for U14.
-  auto half_earth_moon_aperture = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) /
-                      ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
+  auto half_earth_moon_aperture =
+      ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) /
+             ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
-              NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+      << NAMED(half_sun_earth_aperture) << ", "
+      << NAMED(half_earth_moon_aperture);
 
   // Lunar eclipse -- U2 (time is start of full eclipse).
   q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U2, nullptr);
@@ -92,16 +97,20 @@ TEST_F(EclipseTest, Dummy) {
 
   // Check body angles at target time.
   // Earth/Sun lineup.
-  half_sun_earth_aperture = ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-  auto q_U23 =
-      q_earth + Normalize(q_earth - q_sun) * (r_earth - r_moon) / Sin(half_sun_earth_aperture);
+  half_sun_earth_aperture =
+      ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
+  auto q_U23 = q_earth +
+               Normalize(q_earth - q_sun) * (r_earth - r_moon) /
+                   Sin(half_sun_earth_aperture);
   // Earth/Moon lineup for U23.
-  half_earth_moon_aperture = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) /
-                     ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
+  half_earth_moon_aperture =
+      ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) /
+             ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
-              NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+      << NAMED(half_sun_earth_aperture) << ", "
+      << NAMED(half_earth_moon_aperture);
 
   // Lunar eclipse -- U3 (time is end of full eclipse).
   q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U3, nullptr);
@@ -110,16 +119,20 @@ TEST_F(EclipseTest, Dummy) {
 
   // Check body angles at target time.
   // Earth/Sun lineup.
-  half_sun_earth_aperture = ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-  q_U23 =
-      q_earth + Normalize(q_earth - q_sun) * (r_earth - r_moon) / Sin(half_sun_earth_aperture);
+  half_sun_earth_aperture =
+      ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
+  q_U23 = q_earth +
+          Normalize(q_earth - q_sun) * (r_earth - r_moon) /
+              Sin(half_sun_earth_aperture);
   // Earth/Moon lineup for U23.
-  half_earth_moon_aperture = ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) /
-                ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
+  half_earth_moon_aperture =
+      ArcCos(InnerProduct(q_U23 - q_earth, q_U23 - q_moon) /
+             ((q_U23 - q_moon).Norm() * (q_U23 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
-              NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+      << NAMED(half_sun_earth_aperture) << ", "
+      << NAMED(half_earth_moon_aperture);
 
   // Lunar eclipse -- U4 (time is end of umbral phase).
   q_sun = ephemeris->trajectory(sun)->EvaluatePosition(U4, nullptr);
@@ -128,16 +141,20 @@ TEST_F(EclipseTest, Dummy) {
 
   // Check body angles at target time.
   // Earth/Sun lineup.
-  half_sun_earth_aperture = ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-  q_U14 =
-      q_earth + Normalize(q_earth - q_sun) * (r_earth + r_moon) / Sin(half_sun_earth_aperture);
+  half_sun_earth_aperture =
+      ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
+  q_U14 = q_earth +
+          Normalize(q_earth - q_sun) * (r_earth + r_moon) /
+              Sin(half_sun_earth_aperture);
   // Earth/Moon lineup for U14.
-  half_earth_moon_aperture = ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) /
-                 ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
+  half_earth_moon_aperture =
+      ArcCos(InnerProduct(q_U14 - q_earth, q_U14 - q_moon) /
+             ((q_U14 - q_moon).Norm() * (q_U14 - q_earth).Norm()));
   // Do the angles work?
   EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian)))) <<
-              NAMED(half_sun_earth_aperture) << ", " << NAMED(half_earth_moon_aperture);
+              AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+      << NAMED(half_sun_earth_aperture) << ", "
+      << NAMED(half_earth_moon_aperture);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
