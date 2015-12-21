@@ -38,7 +38,8 @@ class EclipseTest : public testing::Test {
             "initial_state_jd_2433282_500000000.proto.txt");
   }
 
-  void CheckLunarEclipse(Instant const& current_time, Sign const moon_offset) {
+  void CheckLunarEclipse(Instant const& current_time,
+                         Sign const moon_offset_sign) {
     auto ephemeris = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
         45 * Minute, 5 * Milli(Metre));
@@ -51,12 +52,12 @@ class EclipseTest : public testing::Test {
     auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris, "Moon");
 
-    auto const q_sun = ephemeris->trajectory(sun)->EvaluatePosition(
-        current_time, /* hint= */ nullptr);
-    auto const q_moon = ephemeris->trajectory(moon)->EvaluatePosition(
-        current_time, /* hint= */ nullptr);
-    auto const q_earth = ephemeris->trajectory(earth)->EvaluatePosition(
-        current_time, /* hint= */ nullptr);
+    auto const q_sun = ephemeris->trajectory(sun)
+                           ->EvaluatePosition(current_time, /*hint=*/nullptr);
+    auto const q_moon = ephemeris->trajectory(moon)
+                            ->EvaluatePosition(current_time, /*hint=*/nullptr);
+    auto const q_earth = ephemeris->trajectory(earth)
+                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
 
     // MassiveBody eventually needs radius information.
     // Or non-hardcoded data from
@@ -66,27 +67,26 @@ class EclipseTest : public testing::Test {
     auto const r_moon = 1738.0 * Kilo(Metre);
 
     // Check body angles at target time.
-    // Earth/Sun lineup.
-    auto half_sun_earth_aperture =
+    // Angle formed by a right circular cone with sides defined by tangent lines
+    // between Sun and Earth, and axis running through the centers of each.
+    auto const half_sun_earth_aperture =
         ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-    auto q_U = q_earth;
-    if (Sign(moon_offset).Positive()) {
-      q_U += Normalize(q_earth - q_sun) * (r_earth + r_moon) /
-             Sin(half_sun_earth_aperture);
-    } else if (Sign(moon_offset).Negative()) {
-      q_U += Normalize(q_earth - q_sun) * (r_earth - r_moon) /
-             Sin(half_sun_earth_aperture);
-    }
-    // Earth/Moon lineup.
-    auto half_earth_moon_aperture =
+    auto const q_U = q_earth +
+                     Normalize(q_earth - q_sun) *
+                         (r_earth + moon_offset_sign * r_moon) /
+                         Sin(half_sun_earth_aperture);
+    // Angle between Earth and Moon as seen at q_U.
+    auto const earth_moon_angle =
         ArcCos(InnerProduct(q_U - q_earth, q_U - q_moon) /
                ((q_U - q_moon).Norm() * (q_U - q_earth).Norm()));
-    // Do the angles match up?
-    EXPECT_THAT(
-        AbsoluteError(half_sun_earth_aperture, half_earth_moon_aperture),
-        AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
-        << NAMED(half_sun_earth_aperture) << ", "
-        << NAMED(half_earth_moon_aperture) << ", " << NAMED(current_time);
+    // We are at the desired contact if the angle between Earth and Moon from
+    // the apex of the conical locus of Moon at that contact matches the
+    // half-aperture of that locus, which is the half-aperture of the umbra
+    // (Earth-Sun cone).
+    EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, earth_moon_angle),
+                AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+        << NAMED(half_sun_earth_aperture) << ", " << NAMED(earth_moon_angle)
+        << ", " << NAMED(current_time);
     return;
   }
 
