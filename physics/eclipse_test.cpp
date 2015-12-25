@@ -59,14 +59,13 @@ class EclipseTest : public testing::Test {
     auto const q_earth = ephemeris->trajectory(earth)
                              ->EvaluatePosition(current_time, /*hint=*/nullptr);
 
-    // MassiveBody eventually needs radius information.
-    // Or non-hardcoded data from
+    // MassiveBody will need radius information.  Or non-hardcoded data from
     // https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
     auto const r_sun = 696000.0 * Kilo(Metre);
     auto const r_earth = 6378.1363 * Kilo(Metre);
     auto const r_moon = 1738.0 * Kilo(Metre);
 
-    // Check body angles at target time.
+    // Checking body angles at the target time.
     // Angle formed by a right circular cone with sides defined by tangent lines
     // between Sun and Earth, and axis running through the centers of each.
     auto const half_sun_earth_aperture =
@@ -80,9 +79,8 @@ class EclipseTest : public testing::Test {
         ArcCos(InnerProduct(q_U - q_earth, q_U - q_moon) /
                ((q_U - q_moon).Norm() * (q_U - q_earth).Norm()));
     // We are at the desired contact if the angle between Earth and Moon from
-    // the apex of the conical locus of Moon at that contact matches the
-    // half-aperture of that locus, which is the half-aperture of the umbra
-    // (Earth-Sun cone).
+    // the apex of the umbra (Earth-Sun cone) matches the half-aperture of said
+    // cone.
     EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, earth_moon_angle),
                 AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
         << NAMED(half_sun_earth_aperture) << ", " << NAMED(earth_moon_angle)
