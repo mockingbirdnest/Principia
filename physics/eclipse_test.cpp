@@ -82,8 +82,8 @@ class EclipseTest : public testing::Test {
                ((apex_of_moon_locus_at_umbral_contact - q_moon).Norm() *
                 (apex_of_moon_locus_at_umbral_contact - q_earth).Norm()));
     // We are at the desired contact if the angle between Earth and Moon from
-    // the apex of the umbra (Earth-Sun cone) is the same value (though offset
-    // from) the half-aperture of said cone.
+    // the apex of locus of the moon at that contact is the same value (though
+    // offset from) the half-aperture of the umbra (Earth-Sun cone).
     EXPECT_THAT(AbsoluteError(umbral_half_aperture, earth_moon_angle),
                 AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
         << NAMED(umbral_half_aperture) << ", " << NAMED(earth_moon_angle)
