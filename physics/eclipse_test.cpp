@@ -68,22 +68,25 @@ class EclipseTest : public testing::Test {
     // Checking body angles at the target time.
     // Angle formed by a right circular cone with sides defined by tangent lines
     // between Sun and Earth, and axis running through the centers of each.
-    auto const half_sun_earth_aperture =
+    auto const umbral_half_aperture =
         ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-    auto const q_U = q_earth +
-                     Normalize(q_earth - q_sun) *
-                         (r_earth + moon_offset_sign * r_moon) /
-                         Sin(half_sun_earth_aperture);
-    // Angle between Earth and Moon as seen at q_U.
+    auto const apex_of_moon_locus_at_umbral_contact =
+        q_earth +
+        Normalize(q_earth - q_sun) * (r_earth + moon_offset_sign * r_moon) /
+            Sin(umbral_half_aperture);
+    // Angle between Earth and Moon as seen at
+    // apex_of_moon_locus_at_umbral_contact.
     auto const earth_moon_angle =
-        ArcCos(InnerProduct(q_U - q_earth, q_U - q_moon) /
-               ((q_U - q_moon).Norm() * (q_U - q_earth).Norm()));
+        ArcCos(InnerProduct(apex_of_moon_locus_at_umbral_contact - q_earth,
+                            apex_of_moon_locus_at_umbral_contact - q_moon) /
+               ((apex_of_moon_locus_at_umbral_contact - q_moon).Norm() *
+                (apex_of_moon_locus_at_umbral_contact - q_earth).Norm()));
     // We are at the desired contact if the angle between Earth and Moon from
-    // the apex of the umbra (Earth-Sun cone) matches the half-aperture of said
-    // cone.
-    EXPECT_THAT(AbsoluteError(half_sun_earth_aperture, earth_moon_angle),
+    // the apex of the umbra (Earth-Sun cone) is the same value (though offset
+    // from) the half-aperture of said cone.
+    EXPECT_THAT(AbsoluteError(umbral_half_aperture, earth_moon_angle),
                 AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
-        << NAMED(half_sun_earth_aperture) << ", " << NAMED(earth_moon_angle)
+        << NAMED(umbral_half_aperture) << ", " << NAMED(earth_moon_angle)
         << ", " << NAMED(current_time);
     return;
   }
