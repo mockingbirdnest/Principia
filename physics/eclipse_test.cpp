@@ -38,7 +38,7 @@ class EclipseTest : public testing::Test {
             "initial_state_jd_2433282_500000000.proto.txt");
   }
 
-  void CheckLunarEclipse(Instant const& current_time,
+  void CheckLunarUmbralEclipse(Instant const& current_time,
                          Sign const moon_offset_sign) {
     auto ephemeris = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
@@ -90,6 +90,55 @@ class EclipseTest : public testing::Test {
         << ", " << NAMED(current_time);
   }
 
+  void CheckLunarPenumbralEclipse(Instant const& current_time,
+                         Sign const moon_offset_sign) {
+    auto ephemeris = solar_system_1950_.MakeEphemeris(
+        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        45 * Minute, 5 * Milli(Metre));
+
+    ephemeris->Prolong(
+        JulianDate(2433374.5));  // Prolong just past date of eclipse
+                                 // (Eclipse was 1950-04-02 but JD
+                                 // is 1950-04-03 00:00:00).
+    auto const sun = solar_system_1950_.massive_body(*ephemeris, "Sun");
+    auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
+    auto const moon = solar_system_1950_.massive_body(*ephemeris, "Moon");
+
+    auto const q_sun = ephemeris->trajectory(sun)
+                           ->EvaluatePosition(current_time, /*hint=*/nullptr);
+    auto const q_moon = ephemeris->trajectory(moon)
+                            ->EvaluatePosition(current_time, /*hint=*/nullptr);
+    auto const q_earth = ephemeris->trajectory(earth)
+                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
+
+    // MassiveBody will need radius information.  Or non-hardcoded data from
+    // https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
+    auto const r_sun = 696000.0 * Kilo(Metre);
+    auto const r_earth = 6378.1363 * Kilo(Metre);
+    auto const r_moon = 1738.0 * Kilo(Metre);
+
+    auto const penumbral_half_aperture =
+        ArcSin((r_sun + r_earth) / (q_sun - q_earth).Norm());
+    auto const apex_of_moon_locus_at_penumbral_contact =
+        q_earth +
+        Normalize(q_sun - q_earth) * (r_earth + moon_offset_sign * r_moon) /
+            Sin(penumbral_half_aperture);
+    // Angle between Earth and Moon as seen at
+    // apex_of_moon_locus_at_penumbral_contact.
+    auto const earth_moon_angle =
+        ArcCos(InnerProduct(apex_of_moon_locus_at_penumbral_contact - q_earth,
+                            apex_of_moon_locus_at_penumbral_contact - q_moon) /
+               ((apex_of_moon_locus_at_penumbral_contact - q_moon).Norm() *
+                (apex_of_moon_locus_at_penumbral_contact - q_earth).Norm()));
+    // We are at the desired contact if the angle between Earth and Moon from
+    // the apex of locus of the moon at that contact is the same value as the
+    // half-aperture of the penumbra.
+    EXPECT_THAT(AbsoluteError(penumbral_half_aperture, earth_moon_angle),
+                AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+        << NAMED(penumbral_half_aperture) << ", " << NAMED(earth_moon_angle)
+        << ", " << NAMED(current_time);
+  }
+
   SolarSystem<ICRFJ2000Equator> solar_system_1950_;
 };
 
@@ -104,10 +153,12 @@ TEST_F(EclipseTest, Dummy) {
 
   Sign const U14 = Sign(1);
   Sign const U23 = Sign(-1);
-  CheckLunarEclipse(U1, U14);
-  CheckLunarEclipse(U2, U23);
-  CheckLunarEclipse(U3, U23);
-  CheckLunarEclipse(U4, U14);
+  CheckLunarPenumbralEclipse(P1, U14);
+  CheckLunarUmbralEclipse(U1, U14);
+  CheckLunarUmbralEclipse(U2, U23);
+  CheckLunarUmbralEclipse(U3, U23);
+  CheckLunarUmbralEclipse(U4, U14);
+  CheckLunarPenumbralEclipse(P4, U14);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
