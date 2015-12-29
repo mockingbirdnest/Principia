@@ -699,7 +699,6 @@ void GetPlottingFrame::Run(Message const& message,
   Insert(pointer_map,
          message.return_().get_plotting_frame(),
          navigation_frame);
-
 }
 
 void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
