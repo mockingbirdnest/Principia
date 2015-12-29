@@ -12,6 +12,21 @@ from astropy.time import Time
 # U4 = 22:18:54
 # P4 = 23:17:21
 
+# Additional total and 2x partial eclipses in 1950/51
+# 1950-09-26
+# P1 = 01:21:43 UT
+# U1 = 02:31:48
+# U2 = 03:54:33
+# U3 = 04:38:49
+# U4 = 06:01:33
+# P4 = 07:11:47
+# 1951-04-23
+# P1 = 08:50:00
+# P4 = 12:24:19
+# 1951-09-15
+# P1 = 10:29:16
+# P4 = 14:23:52
+
 # Last Lunar Eclipse will be 2048-01-01 
 # P1 = 03:52:39 UT
 # U1 = 05:05:17
@@ -26,6 +41,26 @@ P1U1234P4 = ['1950-04-02T18:10:49', '1950-04-02T19:09:19', \
 eclipseTimes = Time(P1U1234P4, format='isot', scale='utc')
 et2 = eclipseTimes.tdb
 csv = open('eclipsetimes.csv', 'w')
+csv.write(str(et2.jd))
+csv.write('\n')
+
+P1U1234P4 = ['1950-09-26T01:21:43', '1950-09-26T02:31:48', \
+             '1950-09-26T03:54:33', '1950-09-26T04:38:49', \
+             '1950-09-26T06:01:33', '1950-09-26T07:11:47']
+eclipseTimes = Time(P1U1234P4, format='isot', scale='utc')
+et2 = eclipseTimes.tdb
+csv.write(str(et2.jd))
+csv.write('\n')
+
+P1P4 = ['1951-04-23T08:50:00', '1951-04-23T12:24:19']
+eclipseTimes = Time(P1P4, format='isot', scale='utc')
+et2 = eclipseTimes.tdb
+csv.write(str(et2.jd))
+csv.write('\n')
+
+P1P4 = ['1951-09-15T10:29:16', '1951-09-15T14:23:52']
+eclipseTimes = Time(P1P4, format='isot', scale='utc')
+et2 = eclipseTimes.tdb
 csv.write(str(et2.jd))
 csv.write('\n')
 
