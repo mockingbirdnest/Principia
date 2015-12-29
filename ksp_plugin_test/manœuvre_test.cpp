@@ -69,11 +69,11 @@ TEST_F(ManœuvreTest, TimedBurn) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
       1 * Newton /*thrust*/,
+      2 * Kilogram /*initial_mass*/,
       1 * Newton * Second / Kilogram /*specific_impulse*/,
       2 * e_y /*direction*/,
       &mock_dynamic_frame_);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
-  manœuvre.set_initial_mass(2 * Kilogram);
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
   EXPECT_EQ(e_y, manœuvre.direction());
@@ -120,11 +120,11 @@ TEST_F(ManœuvreTest, TargetΔv) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
       1 * Newton /*thrust*/,
+      2 * Kilogram /*initial_mass*/,
       1 * Newton * Second / Kilogram /*specific_impulse*/,
       e_y /*direction*/,
       &mock_dynamic_frame_);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
-  manœuvre.set_initial_mass(2 * Kilogram);
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
   EXPECT_EQ(e_y, manœuvre.direction());
@@ -202,14 +202,13 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 
   Manœuvre<World, Rendering> first_burn(
       thrust_1st,
+      total_vehicle_at_s_ivb_1st_90_percent_thrust,
       specific_impulse_1st,
       e_y,
       &mock_dynamic_frame_);
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_burn.mass_flow()),
               Lt(1E-4));
-
-  first_burn.set_initial_mass(total_vehicle_at_s_ivb_1st_90_percent_thrust);
 
   first_burn.set_duration(s_ivb_1st_eco - s_ivb_1st_90_percent_thrust);
   EXPECT_THAT(
@@ -242,14 +241,13 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 
   Manœuvre<World, Rendering> second_burn(
       thrust_2nd,
+      total_vehicle_at_s_ivb_2nd_90_percent_thrust,
       specific_impulse_2nd,
       e_y,
       &mock_dynamic_frame_);
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_burn.mass_flow()),
               Lt(2E-4));
-
-  second_burn.set_initial_mass(total_vehicle_at_s_ivb_2nd_90_percent_thrust);
 
   second_burn.set_duration(s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust);
   EXPECT_THAT(

@@ -34,14 +34,13 @@ template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
   Manœuvre(Force const& thrust,
+           Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
            Vector<double, Frenet<Frame>> const& direction,
            not_null<DynamicFrame<InertialFrame, Frame> const*> frame);
   ~Manœuvre() = default;
 
   Force const& thrust() const;
-  // This mutator may only be called once.
-  void set_initial_mass(Mass const& mass);
   Mass const& initial_mass() const;
   // Specific impulse by mass, because specific impulse by weight is insane.
   // This is defined as the ratio of thrust to mass flow.
@@ -84,14 +83,11 @@ class Manœuvre {
       DiscreteTrajectory<InertialFrame> const& coasting_trajectory) const;
 
  private:
-  void CompleteDurationAndΔv();
-
   Force const thrust_;
-  std::experimental::optional<Mass> initial_mass_;
+  Mass const initial_mass_;
   SpecificImpulse const specific_impulse_;
   Vector<double, Frenet<Frame>> const direction_;
   std::experimental::optional<Time> duration_;
-  std::experimental::optional<Speed> Δv_;
   std::experimental::optional<Instant> initial_time_;
   not_null<DynamicFrame<InertialFrame, Frame> const*> frame_;
 };
