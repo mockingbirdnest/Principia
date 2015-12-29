@@ -11,6 +11,7 @@ using base::not_null;
 using ksp_plugin::KSPPart;
 using ksp_plugin::LineAndIterator;
 using ksp_plugin::NavigationFrame;
+using ksp_plugin::NavigationFrameParameters;
 using ksp_plugin::Plugin;
 using ksp_plugin::QP;
 using ksp_plugin::WXYZ;
@@ -384,6 +385,33 @@ struct NewBarycentricRotatingNavigationFrame {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
+struct NewNavigationFrame {
+  struct In {
+    Plugin const* const plugin;
+    NavigationFrameParameters const parameters;
+  };
+  using Return = NavigationFrame*;
+
+  using Message = serialization::NewNavigationFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct GetNavigationFrameParameters {
+  struct In {
+    NavigationFrame const* const navigation_frame;
+  };
+  using Return = NavigationFrameParameters;
+
+  using Message = serialization::GetNavigationFrameParameters;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
 struct SetPlottingFrame {
   struct In {
     Plugin* const plugin;
@@ -396,6 +424,19 @@ struct SetPlottingFrame {
   using Message = serialization::SetPlottingFrame;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct GetPlottingFrame {
+  struct In {
+    Plugin* const plugin;
+  };
+  using Return = NavigationFrame const*;
+
+  using Message = serialization::GetPlottingFrame;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
 };

@@ -264,13 +264,13 @@ NavigationFrameParameters CDECL principia__GetNavigationFrameParameters(
 // |*navigation_frame|.
 extern "C" PRINCIPIA_DLL
 void CDECL principia__SetPlottingFrame(
-    Plugin* const plugin,
+    Plugin const* const plugin,
     NavigationFrame** const navigation_frame);
 
 // Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
 // ownership.  The returned pointer is never null.
 extern "C" PRINCIPIA_DLL
-NavigationFrame* CDECL principia__GetPlottingFrame(Plugin* const plugin);
+NavigationFrame const* CDECL principia__GetPlottingFrame(Plugin* const plugin);
 
 extern "C" PRINCIPIA_DLL
 void principia__UpdatePrediction(Plugin const* const plugin,

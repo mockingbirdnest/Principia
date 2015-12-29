@@ -513,7 +513,7 @@ void principia__SetPlottingFrame(Plugin* const plugin,
   return m.Return();
 }
 
-NavigationFrame* principia__GetPlottingFrame(Plugin* const plugin) {
+NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
   journal::Method<journal::GetPlottingFrame> m(plugin);
   return m.Return(plugin->GetPlottingFrame());
 }
