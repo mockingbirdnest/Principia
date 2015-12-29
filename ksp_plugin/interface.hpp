@@ -82,6 +82,9 @@ struct NavigationFrameParameters {
   int secondary_index;
 };
 
+static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
+              "NavigationFrameParameters is used for interfacing");
+
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log".  This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
@@ -264,13 +267,14 @@ NavigationFrameParameters CDECL principia__GetNavigationFrameParameters(
 // |*navigation_frame|.
 extern "C" PRINCIPIA_DLL
 void CDECL principia__SetPlottingFrame(
-    Plugin const* const plugin,
+    Plugin* const plugin,
     NavigationFrame** const navigation_frame);
 
 // Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
 // ownership.  The returned pointer is never null.
 extern "C" PRINCIPIA_DLL
-NavigationFrame const* CDECL principia__GetPlottingFrame(Plugin* const plugin);
+NavigationFrame const* CDECL principia__GetPlottingFrame(
+    Plugin const* const plugin);
 
 extern "C" PRINCIPIA_DLL
 void principia__UpdatePrediction(Plugin const* const plugin,

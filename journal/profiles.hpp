@@ -430,7 +430,7 @@ struct SetPlottingFrame {
 
 struct GetPlottingFrame {
   struct In {
-    Plugin* const plugin;
+    Plugin const* const plugin;
   };
   using Return = NavigationFrame const*;
 

@@ -456,7 +456,7 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
 NavigationFrame* principia__NewNavigationFrame(
     Plugin const* const plugin,
     NavigationFrameParameters const parameters) {
-  journal::Method<journal::NewNavigationFrame> m(plugin, parameters);
+  journal::Method<journal::NewNavigationFrame> m({plugin, parameters});
   switch (parameters.extension) {
     case serialization::BarycentricRotatingDynamicFrame::
              kBarycentricRotatingDynamicFrameFieldNumber:
@@ -476,11 +476,11 @@ NavigationFrame* principia__NewNavigationFrame(
 
 NavigationFrameParameters principia__GetNavigationFrameParameters(
     NavigationFrame const* const navigation_frame) {
-  journal::Method<journal::GetNavigationFrameParameters> m(navigation_frame);
+  journal::Method<journal::GetNavigationFrameParameters> m({navigation_frame});
 
   NavigationFrameParameters parameters;
   serialization::DynamicFrame message;
-  navigation_frame->WriteToMessage(&message);
+  CHECK_NOTNULL(navigation_frame)->WriteToMessage(&message);
   if (message.HasExtension(
           serialization::BarycentricRotatingDynamicFrame::
               barycentric_rotating_dynamic_frame)) {
@@ -514,8 +514,8 @@ void principia__SetPlottingFrame(Plugin* const plugin,
 }
 
 NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
-  journal::Method<journal::GetPlottingFrame> m(plugin);
-  return m.Return(plugin->GetPlottingFrame());
+  journal::Method<journal::GetPlottingFrame> m({plugin});
+  return m.Return(CHECK_NOTNULL(plugin)->GetPlottingFrame());
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,

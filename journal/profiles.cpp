@@ -48,6 +48,14 @@ T DeserializePointer(Player::PointerMap const& pointer_map,
   }
 }
 
+NavigationFrameParameters DeserializeNavigationFrameParameters(
+    serialization::NavigationFrameParameters const& parameters) {
+  return {parameters.extension(),
+          parameters.centre_index(),
+          parameters.primary_index(),
+          parameters.secondary_index()};
+}
+
 WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
   return {wxyz.w(), wxyz.x(), wxyz.y(), wxyz.z()};
 }
@@ -77,6 +85,16 @@ KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
+}
+
+serialization::NavigationFrameParameters SerializeNavigationFrameParameters(
+    NavigationFrameParameters const& parameters) {
+  serialization::NavigationFrameParameters m;
+  m.set_extension(parameters.extension);
+  m.set_centre_index(parameters.centre_index);
+  m.set_primary_index(parameters.primary_index);
+  m.set_secondary_index(parameters.secondary_index);
+  return m;
 }
 
 serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {
@@ -587,6 +605,54 @@ void NewBarycentricRotatingNavigationFrame::Run(
          navigation_frame);
 }
 
+void NewNavigationFrame::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  *m->mutable_parameters() =
+      SerializeNavigationFrameParameters(in.parameters);
+}
+
+void NewNavigationFrame::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  message->mutable_return_()->set_new_navigation_frame(
+      SerializePointer(result));
+}
+
+void NewNavigationFrame::Run(Message const& message,
+                             not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* navigation_frame =
+    ksp_plugin::principia__NewNavigationFrame(
+        plugin, DeserializeNavigationFrameParameters(in.parameters()));
+  Insert(pointer_map,
+         message.return_().new_navigation_frame(),
+         navigation_frame);
+}
+
+void GetNavigationFrameParameters::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_navigation_frame(SerializePointer(in.navigation_frame));
+}
+
+void GetNavigationFrameParameters::Fill(Return const& result,
+                                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_get_navigation_frame_parameters() =
+      SerializeNavigationFrameParameters(result);
+}
+
+void GetNavigationFrameParameters::Run(
+    Message const& message,
+    not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* navigation_frame =
+      DeserializePointer<NavigationFrame const*>(*pointer_map,
+                                                 in.navigation_frame());
+  ksp_plugin::principia__GetNavigationFrameParameters(navigation_frame);
+  // TODO(phl): Should we check return_() here?
+}
+
 void SetPlottingFrame::Fill(In const& in,
                             not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -611,6 +677,27 @@ void SetPlottingFrame::Run(Message const& message,
   // over to the plugin so we should not see it cross the interface again.
   Delete(pointer_map, in.navigation_frame());
   // TODO(phl): should we do something with out() here?
+}
+
+void GetPlottingFrame::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+}
+
+void GetPlottingFrame::Fill(Return const& result,
+                            not_null<Message*> const message) {
+  message->mutable_return_()->set_get_plotting_frame(SerializePointer(result));
+}
+
+void GetPlottingFrame::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* navigation_frame = ksp_plugin::principia__GetPlottingFrame(plugin);
+  Insert(pointer_map,
+         message.return_().get_plotting_frame(),
+         navigation_frame);
+
 }
 
 void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {

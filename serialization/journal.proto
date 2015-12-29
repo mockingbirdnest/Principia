@@ -10,6 +10,13 @@ message KSPPart {
   required uint32 id = 5;
 }
 
+message NavigationFrameParameters {
+  required int32 extension = 1;
+  optional int32 centre_index = 2;
+  optional int32 primary_index = 3;
+  optional int32 secondary_index = 4;
+}
+
 message QP {
   required XYZ q = 1;
   required XYZ p = 2;
@@ -34,7 +41,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5059.
+  extensions 5000 to 5999;  // Last used: 5062.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -286,6 +293,34 @@ message GetBufferedLogging {
   required Return return = 3;
 }
 
+message GetNavigationFrameParameters {
+  extend Method {
+    optional GetNavigationFrameParameters extension = 5060;
+  }
+  message In {
+    required fixed64 navigation_frame = 1;
+  }
+  message Return {
+    required NavigationFrameParameters get_navigation_frame_parameters = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message GetPlottingFrame {
+  extend Method {
+    optional GetPlottingFrame extension = 5061;
+  }
+  message In {
+    required fixed64 plugin = 1;
+  }
+  message Return {
+    required fixed64 get_plotting_frame = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message GetStderrLogging {
   extend Method {
     optional GetStderrLogging extension = 5007;
@@ -476,6 +511,21 @@ message NewBodyCentredNonRotatingNavigationFrame {
   }
   message Return {
     required fixed64 new_body_centred_non_rotating_navigation_frame = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message NewNavigationFrame {
+  extend Method {
+    optional NewNavigationFrame extension = 5062;
+  }
+  message In {
+    required fixed64 plugin = 1;
+    required NavigationFrameParameters parameters = 2;
+  }
+  message Return {
+    required fixed64 new_navigation_frame = 1;
   }
   required In in = 1;
   required Return return = 3;
