@@ -74,6 +74,14 @@ struct KSPPart {
 static_assert(std::is_standard_layout<KSPPart>::value,
               "KSPPart is used for interfacing");
 
+extern "C"
+struct NavigationFrameParameters {
+  int extension;  // 6000 to 6999, see serialization::DynamicFrame.
+  int centre_index;
+  int primary_index;
+  int secondary_index;
+};
+
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log".  This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
@@ -226,6 +234,7 @@ QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
+// TODO(phl): The parameter should be named |centre_index|.
 extern "C" PRINCIPIA_DLL
 NavigationFrame* CDECL principia__NewBodyCentredNonRotatingNavigationFrame(
     Plugin const* const plugin,
@@ -239,6 +248,17 @@ NavigationFrame* CDECL principia__NewBarycentricRotatingNavigationFrame(
     int const primary_index,
     int const secondary_index);
 
+// Calls |plugin| to create a |NavigationFrame| using the given |parameters|.
+extern "C" PRINCIPIA_DLL
+NavigationFrame* CDECL principia__NewNavigationFrame(
+    Plugin const* const plugin,
+    NavigationFrameParameters const parameters);
+
+// Returns the parameters for the given frame, which must not be null.
+extern "C" PRINCIPIA_DLL
+NavigationFrameParameters CDECL principia__GetNavigationFrameParameters(
+    NavigationFrame const* const navigation_frame);
+
 // |navigation_frame| must not be null.  No transfer of ownership of
 // |*navigation_frame|, takes ownership of |**navigation_frame|, nulls
 // |*navigation_frame|.
@@ -246,6 +266,11 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__SetPlottingFrame(
     Plugin* const plugin,
     NavigationFrame** const navigation_frame);
+
+// Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
+// ownership.  The returned pointer is never null.
+extern "C" PRINCIPIA_DLL
+NavigationFrame* CDECL principia__GetPlottingFrame(Plugin* const plugin);
 
 extern "C" PRINCIPIA_DLL
 void principia__UpdatePrediction(Plugin const* const plugin,

@@ -28,7 +28,6 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
-namespace ksp_plugin {
 
 using geometry::Displacement;
 using geometry::Instant;
@@ -47,6 +46,8 @@ using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
+
+namespace ksp_plugin {
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -249,6 +250,7 @@ class Plugin {
 
   virtual void SetPlottingFrame(
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
+  virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
