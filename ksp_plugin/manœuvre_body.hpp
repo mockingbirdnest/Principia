@@ -16,12 +16,10 @@ namespace ksp_plugin {
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(
     Force const& thrust,
-    Mass const& initial_mass,
     SpecificImpulse const& specific_impulse,
     Vector<double, Frenet<Frame>> const& direction,
     not_null<DynamicFrame<InertialFrame, Frame> const*> frame)
     : thrust_(thrust),
-      initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
       direction_(Normalize(direction)),
       frame_(frame) {}
@@ -45,6 +43,7 @@ Instant Manœuvre<InertialFrame, Frame>::final_time() const {
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_initial_time(
     Instant const& initial_time) {
+  CHECK(!initial_time_);
   initial_time_ = initial_time;
 }
 
@@ -62,19 +61,26 @@ Time Manœuvre<InertialFrame, Frame>::duration() const {
 
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_duration(Time const& duration) {
+  CHECK(!duration_ && !Δv_);
   duration_ = duration;
+  if (initial_mass_) {
+    CompleteDurationAndΔv();
+  }
 }
 
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_Δv(Speed const& Δv) {
-  set_duration(initial_mass_ * specific_impulse_ *
-               (1 - std::exp(-Δv / specific_impulse_)) / thrust_);
+  CHECK(!duration_ && !Δv_);
+  Δv_ = Δv;
+  if (initial_mass_) {
+    CompleteDurationAndΔv();
+  }
 }
 
 template<typename InertialFrame, typename Frame>
 Speed Manœuvre<InertialFrame, Frame>::Δv() const {
-  // Циолко́вский's equation.
-  return specific_impulse_ * std::log(initial_mass_ / final_mass());
+  CHECK(Δv_);
+  return Δv_;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -95,8 +101,15 @@ Force const& Manœuvre<InertialFrame, Frame>::thrust() const {
 }
 
 template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::set_initial_mass(Mass const & mass) {
+  CHECK(!initial_mass_);
+  initial_mass_ = mass;
+}
+
+template<typename InertialFrame, typename Frame>
 Mass const& Manœuvre<InertialFrame, Frame>::initial_mass() const {
-  return initial_mass_;
+  CHECK(initial_mass_);
+  return *initial_mass_;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -106,13 +119,13 @@ Variation<Mass> Manœuvre<InertialFrame, Frame>::mass_flow() const {
 
 template<typename InertialFrame, typename Frame>
 Mass Manœuvre<InertialFrame, Frame>::final_mass() const {
-  return initial_mass_ - mass_flow() * duration();
+  return initial_mass() - mass_flow() * duration();
 }
 
 template<typename InertialFrame, typename Frame>
 Time Manœuvre<InertialFrame, Frame>::time_to_half_Δv() const {
-  return specific_impulse_ * initial_mass_*
-         (1 - std::sqrt(final_mass() / initial_mass_)) / thrust_;
+  return specific_impulse_ * initial_mass() *
+         (1 - std::sqrt(final_mass() / initial_mass())) / thrust_;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -136,11 +149,23 @@ Manœuvre<InertialFrame, Frame>::acceleration(
       Instant const& time) -> Vector<Acceleration, InertialFrame> {
     if (time >= initial_time() && time <= final_time()) {
       return inertial_direction * thrust_ /
-             (initial_mass_ - (time - initial_time()) * mass_flow());
+             (initial_mass() - (time - initial_time()) * mass_flow());
     } else {
       return Vector<Acceleration, InertialFrame>();
     }
   };
+}
+
+template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::CompleteDurationAndΔv() {
+  CHECK(duration_ ^ Δv_);
+  if (duration_) {
+    duration_ = initial_mass() * specific_impulse_ *
+                (1 - std::exp(-Δ v / specific_impulse_)) / thrust_);
+  } else {
+    // Циолко́вский's equation.
+    Δv_ = specific_impulse_ * std::log(initial_mass() / final_mass());
+  }
 }
 
 }  // namespace ksp_plugin
