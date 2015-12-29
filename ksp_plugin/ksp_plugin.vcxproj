@@ -168,6 +168,7 @@
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
+    <ClInclude Include="flight_plan.hpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="interface_body.hpp" />
     <ClInclude Include="manœuvre.hpp" />

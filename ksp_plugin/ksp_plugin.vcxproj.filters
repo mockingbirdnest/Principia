@@ -53,6 +53,9 @@
     <ClInclude Include="interface_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="flight_plan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
