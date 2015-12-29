@@ -22,5 +22,13 @@ inline bool operator==(QP const& left, QP const& right) {
   return left.q == right.q && left.p == right.p;
 }
 
+inline bool operator==(NavigationFrameParameters const& left,
+                       NavigationFrameParameters const& right) {
+  return left.extension == right.extension &&
+         left.centre_index == right.centre_index &&
+         left.primary_index == right.primary_index &&
+         left.secondary_index == right.secondary_index;
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -85,6 +85,9 @@ struct NavigationFrameParameters {
 static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
               "NavigationFrameParameters is used for interfacing");
 
+bool operator==(NavigationFrameParameters const& left,
+                NavigationFrameParameters const& right);
+
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log".  This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of

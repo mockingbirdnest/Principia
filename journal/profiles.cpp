@@ -649,8 +649,10 @@ void GetNavigationFrameParameters::Run(
   auto* navigation_frame =
       DeserializePointer<NavigationFrame const*>(*pointer_map,
                                                  in.navigation_frame());
-  ksp_plugin::principia__GetNavigationFrameParameters(navigation_frame);
-  // TODO(phl): Should we check return_() here?
+  CHECK(DeserializeNavigationFrameParameters(
+            message.return_().get_navigation_frame_parameters()) ==
+            ksp_plugin::principia__GetNavigationFrameParameters(
+                navigation_frame));
 }
 
 void SetPlottingFrame::Fill(In const& in,
