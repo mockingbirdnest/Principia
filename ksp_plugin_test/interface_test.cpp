@@ -467,6 +467,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(mock_navigation_frame));
+  navigation_frame.release();
   navigation_frame.reset(
       principia__NewNavigationFrame(plugin_.get(), parameters));
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
@@ -513,6 +514,8 @@ TEST_F(InterfaceTest, SetPlottingFrame) {
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
+  EXPECT_CALL(*plugin_, GetPlottingFrame())
+      .WillOnce(Return(mock_navigation_frame));
   EXPECT_EQ(mock_navigation_frame, principia__GetPlottingFrame(plugin_.get()));
 }
 

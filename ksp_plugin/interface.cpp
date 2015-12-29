@@ -471,6 +471,7 @@ NavigationFrame* principia__NewNavigationFrame(
               release());
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;
+      base::noreturn();
   }
 }
 
