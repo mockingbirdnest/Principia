@@ -1,3 +1,5 @@
+#include "tools/generate_profiles.hpp"
+
 #include <algorithm>
 #include <experimental/filesystem>
 #include <fstream>
@@ -36,28 +38,21 @@ class Generator {
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
 
   void ProcessRequiredFixed64Field(FieldDescriptor const* descriptor);
-
   void ProcessRequiredMessageField(FieldDescriptor const* descriptor);
-
   void ProcessRequiredBoolField(FieldDescriptor const* descriptor);
-
   void ProcessRequiredDoubleField(FieldDescriptor const* descriptor);
-
   void ProcessRequiredInt32Field(FieldDescriptor const* descriptor);
 
   void ProcessSingleStringField(FieldDescriptor const* descriptor);
 
   void ProcessOptionalField(FieldDescriptor const* descriptor);
-
   void ProcessRepeatedField(FieldDescriptor const* descriptor);
-
   void ProcessRequiredField(FieldDescriptor const* descriptor);
 
   void ProcessField(FieldDescriptor const* descriptor);
 
   void ProcessInOut(Descriptor const* descriptor,
                     std::vector<FieldDescriptor const*>* field_descriptors);
-
   void ProcessReturn(Descriptor const* descriptor);
 
   void ProcessMethodExtension(Descriptor const* descriptor);
@@ -68,6 +63,7 @@ class Generator {
   std::set<FieldDescriptor const*> in_out_field_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
+  std::map<FieldDescriptor const*, std::string> cpp_setter_;
 };
 
 void Generator::ProcessMethods() {
