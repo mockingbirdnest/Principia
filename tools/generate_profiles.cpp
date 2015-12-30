@@ -76,6 +76,7 @@ class Generator {
   std::map<FieldDescriptor const*, std::string> cpp_field_setter_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
   std::map<Descriptor const*, std::string> cpp_fill_body_;
+  std::map<Descriptor const*, std::string> cpp_method_impl_;
   std::map<Descriptor const*, std::string> cpp_method_type_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;
 };
@@ -165,6 +166,7 @@ void Generator::ProcessRequiredInt32Field(FieldDescriptor const* descriptor) {
 
 void Generator::ProcessSingleStringField(FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = "char const*";
+  cpp_field_setter_[descriptor] = "set_" + descriptor->name();
 }
 
 void Generator::ProcessOptionalField(FieldDescriptor const* descriptor) {
@@ -228,14 +230,15 @@ void Generator::ProcessSingleField(FieldDescriptor const* descriptor) {
   bool const is_in_out = in_out_field_.find(descriptor) != in_out_field_.end();
   bool const needs_serialization =
       serializer_name_.find(descriptor) != serializer_name_.end();
-  cpp_field_copy_[descriptor] = "*to->" + cpp_field_setter_[descriptor] + "(";
+  cpp_field_copy_[descriptor] = "m->" + cpp_field_setter_[descriptor] + "(";
   if (needs_serialization) {
     cpp_field_copy_[descriptor] += serializer_name_[descriptor] + "(";
   }
   if (is_in_out) {
     cpp_field_copy_[descriptor] += "*";
   }
-  cpp_field_copy_[descriptor] += "from." + descriptor->name();
+  cpp_field_copy_[descriptor] +=
+      ToLower(descriptor->containing_type()->name()) + "." + descriptor->name();
   if (needs_serialization) {
     cpp_field_copy_[descriptor] += ")";
   }
@@ -266,7 +269,7 @@ void Generator::ProcessInOut(
     Descriptor const* descriptor,
     std::vector<FieldDescriptor const*>* field_descriptors) {
   std::string const& name = descriptor->name();
-  cpp_fill_body_[descriptor] = "  auto* to = message->mutable_" +
+  cpp_fill_body_[descriptor] = "  auto* const m = message->mutable_" +
                                ToLower(name) + "();\n";
   cpp_nested_type_[descriptor] = "  struct " + name + " {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -289,7 +292,6 @@ void Generator::ProcessInOut(
     }
   }
   cpp_nested_type_[descriptor] += "  };\n";
-  LOG(ERROR)<<cpp_fill_body_[descriptor];
 }
 
 void Generator::ProcessReturn(Descriptor const* descriptor) {
@@ -302,6 +304,7 @@ void Generator::ProcessReturn(Descriptor const* descriptor) {
 }
 
 void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
+  std::string const& name = descriptor->name();
   bool has_in = false;
   bool has_out = false;
   bool has_return = false;
@@ -343,14 +346,22 @@ void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
   }
 
   // The second pass that produces the actual output.
-  cpp_method_type_[descriptor] = "struct " + descriptor->name() + " {\n";
+  cpp_method_type_[descriptor] = "struct " + name + " {\n";
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
     if (nested_name == kIn) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
+      cpp_method_impl_[descriptor] += "void " + name + "::Fill(In const& in, "
+                                      "not_null<Message*> const message) {\n" +
+                                      cpp_fill_body_[nested_descriptor] +
+                                      "}\n\n";
     } else if (nested_name == kOut) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
+      cpp_method_impl_[descriptor] += "void " + name + "::Fill(Out const& out, "
+                                      "not_null<Message*> const message) {\n" +
+                                      cpp_fill_body_[nested_descriptor] +
+                                      "}\n\n";
     } else if (nested_name == kReturn) {
       ProcessReturn(nested_descriptor);
     }
@@ -360,8 +371,7 @@ void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
     cpp_method_type_[descriptor] += "\n";
   }
   cpp_method_type_[descriptor] +=
-      "  using Message = serialization::" +
-      descriptor->name() + ";\n";
+      "  using Message = serialization::" + name + ";\n";
   if (has_in) {
     cpp_method_type_[descriptor] += "  static void Fill(In const& in, "
                                     "not_null<Message*> const message);\n";
@@ -381,6 +391,7 @@ void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
                                   "Player::PointerMap*> const pointer_map);"
                                   "\n";
   cpp_method_type_[descriptor] += "};\n\n";
+  LOG(ERROR)<<cpp_method_impl_[descriptor];
 }
 
 }  // namespace
