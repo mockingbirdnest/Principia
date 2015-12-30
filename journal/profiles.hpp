@@ -24,7 +24,7 @@ struct AddVesselToNextPhysicsBubble {
     Plugin* const plugin;
     char const* const vessel_guid;
     KSPPart const* const parts;
-    int count;
+    int const count;
   };
 
   using Message = serialization::AddVesselToNextPhysicsBubble;
