@@ -87,7 +87,7 @@ void GenerateConfiguration(Instant const& game_epoch,
   initial_state_cfg << "}\n";
 }
 
-}  // namespace astronomy
+}  // namespace tools
 }  // namespace principia
 
 int main(int argc, char const* argv[]) {
