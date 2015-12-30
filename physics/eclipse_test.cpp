@@ -138,7 +138,7 @@ class EclipseTest : public testing::Test {
 };
 
 TEST_F(EclipseTest, Dummy) {
-  // Dates are TDB Julian Day for 1948-04-02.
+  // Dates are TDB Julian Day for 1950-04-02.
   auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
   auto U1 = JulianDate(2433374.29850909);  // 19:09:19
   auto U2 = JulianDate(2433374.354979);    // 20:30:38
@@ -155,12 +155,63 @@ TEST_F(EclipseTest, Dummy) {
   CheckLunarUmbralEclipse(U4, U14);
   CheckLunarPenumbralEclipse(P4, U14);
 
+  // Dates are TDB Julian Day for 1950-09-26.
+  P1 = JulianDate(2433550.55712016);  // 01:21:43 UT
+  U1 = JulianDate(2433550.60578913);  // 02:31:48 
+  U2 = JulianDate(2433550.66325441);  // 03:54:33 
+  U3 = JulianDate(2433550.69399515);  // 04:38:49
+  U4 = JulianDate(2433550.75144885);  // 06:01:33
+  P4 = JulianDate(2433550.800222);  // 07:11:47
+
+  CheckLunarPenumbralEclipse(P1, U14);
+  CheckLunarUmbralEclipse(U1, U14);
+  CheckLunarUmbralEclipse(U2, U23);
+  CheckLunarUmbralEclipse(U3, U23);
+  CheckLunarUmbralEclipse(U4, U14);
+  CheckLunarPenumbralEclipse(P4, U14);
+
+  // Dates are TDB Julian Day for 1951-03-23.
+  P1 = JulianDate(2433728.86842806);  // 08:50:50
+  P4 = JulianDate(2433729.01725909);  // 12:24:19
+
+  CheckLunarPenumbralEclipse(P1, U14);
+  CheckLunarPenumbralEclipse(P4, U14);
+
+  // Dates are TDB Julian Day for 1951-09-15.
+  P1 = JulianDate(2433904.93736321);  // 10:29:16 
+  P4 = JulianDate(2433905.1002799);  // 14:23:52
+
+  CheckLunarPenumbralEclipse(P1, U14);
+  CheckLunarPenumbralEclipse(P4, U14);
+
+  // Dates are TDB Julian Day for 1952-02-11 (or 10 for P1).
+  P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
+  U1 = JulianDate(2434053.50334705);  // U1 = 00:04:17
+  U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
+  P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
+
+  CheckLunarPenumbralEclipse(P1, U14);
+  CheckLunarUmbralEclipse(U1, U14);
+  CheckLunarUmbralEclipse(U4, U14);
+  CheckLunarPenumbralEclipse(P4, U14);
+
+  // Dates are TDB Julian Day for 1952-08-05.
+  P1 = JulianDate(2434230.22830075);  // P1 = 17:28:13 UT
+  U1 = JulianDate(2434230.27385631);  // U1 = 18:33:49
+  U4 = JulianDate(2434230.37606695);  // U4 = 21:01:00
+  P4 = JulianDate(2434230.42161093);  // P4 = 22:06:35
+
+  CheckLunarPenumbralEclipse(P1, U14);
+  CheckLunarUmbralEclipse(U1, U14);
+  CheckLunarUmbralEclipse(U4, U14);
+  CheckLunarPenumbralEclipse(P4, U14);
+
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 
-  // Future is now: check 2048-01-01 Lunar eclipse.
-  P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
+  // Future is not now: check 2048-01-01 Lunar eclipse.
+  /*P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
   U1 = JulianDate(2469076.71279148);  // 05:05:17
   U2 = JulianDate(2469076.76776833);  // 06:24:27
   U3 = JulianDate(2469076.80661092);  // 07:20:23
@@ -172,7 +223,7 @@ TEST_F(EclipseTest, Dummy) {
   CheckLunarUmbralEclipse(U2, U23);
   CheckLunarUmbralEclipse(U3, U23);
   CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P4, U14); */
 }
 
 }  // namespace physics
