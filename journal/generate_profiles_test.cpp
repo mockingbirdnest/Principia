@@ -13,7 +13,53 @@ using ::google::protobuf::FileDescriptor;
 
 namespace journal {
 
+namespace {
+char const kIn[] = "In";
+char const kReturn[] = "Return";
+char const kOut[] = "Out";
+}  // namespace
+
 class GeneratorTest : public testing::Test {
+ protected:
+  void ProcessField(const FieldDescriptor* descriptor) {
+  }
+
+  void ProcessIn(const Descriptor* descriptor) {
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+      const FieldDescriptor* field_descriptor = descriptor->field(i);
+      ProcessField(field_descriptor);
+    }
+  }
+
+  void ProcessOut(const Descriptor* descriptor) {
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+      const FieldDescriptor* field_descriptor = descriptor->field(i);
+      ProcessField(field_descriptor);
+    }
+  }
+
+  void ProcessReturn(const Descriptor* descriptor) {
+    CHECK_EQ(1, descriptor->field_count())
+        << descriptor->full_name() << " must have exactly one field";
+    ProcessField(descriptor->field(0));
+  }
+
+  void ProcessMethodExtension(const Descriptor* descriptor) {
+    for (int i = 0; i < descriptor->nested_type_count(); ++i) {
+      const Descriptor* nested_descriptor = descriptor->nested_type(i);
+      const std::string& nested_name = nested_descriptor->name();
+      if (nested_name == kIn) {
+        ProcessIn(nested_descriptor);
+      } else if (nested_name == kOut) {
+        ProcessOut(nested_descriptor);
+      } else if (nested_name == kReturn) {
+        ProcessReturn(nested_descriptor);
+      } else {
+        LOG(FATAL) << "Unexpected nested message "
+                   << nested_descriptor->full_name();
+      }
+    }
+  }
 };
 
 TEST_F(GeneratorTest, JustDoIt) {
@@ -37,6 +83,7 @@ TEST_F(GeneratorTest, JustDoIt) {
         CHECK_EQ(method_descriptor, containing_type)
             << message_descriptor->name() << " extends a message other than "
             << method_descriptor->name() << ": " << containing_type->name();
+        ProcessMethodExtension(message_descriptor);
         break;
       }
       default: {
