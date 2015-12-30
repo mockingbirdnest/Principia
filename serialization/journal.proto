@@ -1,5 +1,7 @@
 syntax = "proto2";
 
+import "google/protobuf/descriptor.proto";
+
 package principia.serialization;
 
 message KSPPart {
@@ -42,7 +44,7 @@ message AddVesselToNextPhysicsBubble {
     optional AddVesselToNextPhysicsBubble extension = 5045;
   }
   message In {
-    required fixed64 plugin = 1;
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin*"];
     required string vessel_guid = 2;
     repeated KSPPart parts = 3;
   }
@@ -793,4 +795,9 @@ message VesselTangent {
   }
   required In in = 1;
   required Return return = 3;
+}
+
+extend google.protobuf.FieldOptions {
+  optional string pointer_to = 50000;
+  optional bool by_pointer = 50001;
 }
