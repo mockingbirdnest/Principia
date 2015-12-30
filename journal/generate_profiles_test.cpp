@@ -1,5 +1,7 @@
 //TODO(phl): This should totally no be a test.
 
+#include <vector>
+
 #include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
@@ -28,9 +30,8 @@ class GeneratorTest : public testing::Test {
     }
   }
 
-   void ProcessOptionalScalarField(FieldDescriptor const* descriptor) {
-     cpp_field_type_[descriptor] = std::string(descriptor->cpp_type_name()) +
-                                   " const*";
+   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor) {
+     cpp_field_type_[descriptor] = "int const*";
    }
 
    void ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
@@ -46,8 +47,16 @@ class GeneratorTest : public testing::Test {
     cpp_field_type_[descriptor] = descriptor->message_type()->name();
   }
 
-  void ProcessRequiredScalarField(FieldDescriptor const* descriptor) {
+  void ProcessRequiredBoolField(FieldDescriptor const* descriptor) {
     cpp_field_type_[descriptor] = descriptor->cpp_type_name();
+  }
+
+  void ProcessRequiredDoubleField(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = descriptor->cpp_type_name();
+  }
+
+  void ProcessRequiredInt32Field(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = "int";
   }
 
   void ProcessSingleStringField(FieldDescriptor const* descriptor) {
@@ -57,7 +66,7 @@ class GeneratorTest : public testing::Test {
   void ProcessOptionalField(FieldDescriptor const* descriptor) {
     switch (descriptor->type()) {
     case FieldDescriptor::TYPE_INT32:
-      ProcessOptionalScalarField(descriptor);
+      ProcessOptionalInt32Field(descriptor);
       break;
     case FieldDescriptor::TYPE_STRING:
       ProcessSingleStringField(descriptor);
@@ -73,12 +82,16 @@ class GeneratorTest : public testing::Test {
   void ProcessRequiredField(FieldDescriptor const* descriptor) {
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BOOL:
+        ProcessRequiredBoolField(descriptor);
+        break;
       case FieldDescriptor::TYPE_DOUBLE:
-      case FieldDescriptor::TYPE_INT32:
-        ProcessRequiredScalarField(descriptor);
+        ProcessRequiredDoubleField(descriptor);
         break;
       case FieldDescriptor::TYPE_FIXED64:
         ProcessRequiredFixed64Field(descriptor);
+        break;
+      case FieldDescriptor::TYPE_INT32:
+        ProcessRequiredInt32Field(descriptor);
         break;
       case FieldDescriptor::TYPE_MESSAGE:
         ProcessRequiredMessageField(descriptor);
@@ -89,6 +102,12 @@ class GeneratorTest : public testing::Test {
       default:
         LOG(FATAL) << descriptor->full_name() << " has unexpected type "
                    << descriptor->type_name();
+    }
+
+    // For in-out fields the data is actually passed with an extra level of
+    // indirection.
+    if (in_out_field_.find(descriptor) != in_out_field_.end()) {
+      cpp_field_type_[descriptor] += "*";
     }
   }
 
@@ -106,10 +125,14 @@ class GeneratorTest : public testing::Test {
     }
   }
 
-  void ProcessInOut(Descriptor const* descriptor) {
+  void ProcessInOut(Descriptor const* descriptor,
+                    std::vector<FieldDescriptor const*>* field_descriptors) {
     cpp_nested_type_[descriptor] = "  struct " + descriptor->name() + " {\n";
     for (int i = 0; i < descriptor->field_count(); ++i) {
       FieldDescriptor const* field_descriptor = descriptor->field(i);
+      if (field_descriptors != nullptr) {
+        field_descriptors->push_back(field_descriptor);
+      }
       ProcessField(field_descriptor);
       cpp_nested_type_[descriptor] += "    " +
                                       cpp_field_type_[field_descriptor] +
@@ -132,29 +155,63 @@ class GeneratorTest : public testing::Test {
     bool has_in = false;
     bool has_out = false;
     bool has_return = false;
-    cpp_method_type_[descriptor] = "struct " + descriptor->name() + " {\n";
+
+    // Do a first pass to determine which fields are in-out.  The data produced
+    // here will be overwritten by the next pass.
+    std::vector<FieldDescriptor const*> field_descriptors;
     for (int i = 0; i < descriptor->nested_type_count(); ++i) {
       Descriptor const* nested_descriptor = descriptor->nested_type(i);
       const std::string& nested_name = nested_descriptor->name();
       if (nested_name == kIn) {
         has_in = true;
-        ProcessInOut(nested_descriptor);
+        ProcessInOut(nested_descriptor, &field_descriptors);
       } else if (nested_name == kOut) {
         has_out = true;
-        ProcessInOut(nested_descriptor);
+        ProcessInOut(nested_descriptor, &field_descriptors);
       } else if (nested_name == kReturn) {
         has_return = true;
-        ProcessReturn(nested_descriptor);
       } else {
         LOG(FATAL) << "Unexpected nested message "
                    << nested_descriptor->full_name();
       }
+    }
+
+    // Now mark the fields that have the same name in In and Out as in-out.
+    if (has_in || has_out) {
+      std::sort(field_descriptors.begin(),
+                field_descriptors.end(),
+                [](FieldDescriptor const* left,
+                   FieldDescriptor const* right) {
+                    return left->name() < right->name();
+                });
+      for (int i = 0; i < field_descriptors.size() - 1; ++i) {
+        if (field_descriptors[i]->name() == field_descriptors[i + 1]->name()) {
+          in_out_field_.insert(field_descriptors[i]);
+          in_out_field_.insert(field_descriptors[i + 1]);
+        }
+      }
+    }
+
+    // The second pass that produces the actual output.
+    cpp_method_type_[descriptor] = "struct " + descriptor->name() + " {\n";
+    for (int i = 0; i < descriptor->nested_type_count(); ++i) {
+      Descriptor const* nested_descriptor = descriptor->nested_type(i);
+      const std::string& nested_name = nested_descriptor->name();
+      if (nested_name == kIn) {
+        ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
+      } else if (nested_name == kOut) {
+        ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
+      } else if (nested_name == kReturn) {
+        ProcessReturn(nested_descriptor);
+      }
       cpp_method_type_[descriptor] += cpp_nested_type_[nested_descriptor];
     }
-    cpp_method_type_[descriptor] += std::string("\n") +
-                                    "  using Message = serialization::" +
-                                    descriptor->name() +
-                                    ";\n";
+    if (has_in || has_out || has_return) {
+      cpp_method_type_[descriptor] += "\n";
+    }
+    cpp_method_type_[descriptor] +=
+        std::string("  using Message = serialization::") +
+        descriptor->name() + ";\n";
     if (has_in) {
       cpp_method_type_[descriptor] += "  static void Fill(In const& in, "
                                       "not_null<Message*> const message);\n";
@@ -177,6 +234,7 @@ class GeneratorTest : public testing::Test {
   }
 
  private:
+  std::set<FieldDescriptor const*> in_out_field_;
   std::map<Descriptor const*, std::string> cpp_method_type_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;

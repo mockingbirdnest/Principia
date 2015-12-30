@@ -87,15 +87,6 @@ struct BubbleVelocityCorrection {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct GetBufferedLogging {
-  using Return = int;
-
-  using Message = serialization::GetBufferedLogging;
-  static void Fill(Return const& result, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
 struct CelestialFromParent {
   struct In {
     Plugin const* const plugin;
@@ -265,6 +256,15 @@ struct GetBufferDuration {
   using Return = int;
 
   using Message = serialization::GetBufferDuration;
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct GetBufferedLogging {
+  using Return = int;
+
+  using Message = serialization::GetBufferedLogging;
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
