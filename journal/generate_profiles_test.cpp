@@ -9,6 +9,7 @@ namespace principia {
 
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::FieldDescriptor;
+using ::google::protobuf::FieldOptions;
 using ::google::protobuf::FileDescriptor;
 
 namespace journal {
@@ -21,7 +22,61 @@ char const kOut[] = "Out";
 
 class GeneratorTest : public testing::Test {
  protected:
+  void ProcessOptionalField(const FieldDescriptor* descriptor) {
+    switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_INT32:
+      break;
+    case FieldDescriptor::TYPE_STRING:
+      break;
+    default:
+      LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+        << descriptor->type_name();
+    }
+  }
+
+  void ProcessRepeatedField(const FieldDescriptor* descriptor) {}
+
+  void ProcessRequiredFixed64Field(const FieldDescriptor* descriptor) {
+    FieldOptions const& options = descriptor->options();
+    CHECK(options.HasExtension(serialization::pointer_to))
+        << descriptor->full_name() << " is missing a pointer_to option";
+    std::string const& pointer_to =
+        options.GetExtension(serialization::pointer_to);
+  }
+
+  void ProcessRequiredField(const FieldDescriptor* descriptor) {
+    switch (descriptor->type()) {
+      case FieldDescriptor::TYPE_BOOL:
+        break;
+      case FieldDescriptor::TYPE_DOUBLE:
+        break;
+      case FieldDescriptor::TYPE_FIXED64:
+        ProcessRequiredFixed64Field(descriptor);
+        break;
+      case FieldDescriptor::TYPE_INT32:
+        break;
+      case FieldDescriptor::TYPE_MESSAGE:
+        break;
+      case FieldDescriptor::TYPE_STRING:
+        break;
+      default:
+        LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+                   << descriptor->type_name();
+    }
+  }
+
   void ProcessField(const FieldDescriptor* descriptor) {
+    switch (descriptor->label()) {
+      case FieldDescriptor::LABEL_OPTIONAL:
+        ProcessOptionalField(descriptor);
+        break;
+      case FieldDescriptor::LABEL_REPEATED:
+        ProcessRepeatedField(descriptor);
+        break;
+      case FieldDescriptor::LABEL_REQUIRED:
+        ProcessRequiredField(descriptor);
+        break;
+    }
   }
 
   void ProcessIn(const Descriptor* descriptor) {
