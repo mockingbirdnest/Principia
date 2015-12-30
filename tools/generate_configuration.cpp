@@ -12,6 +12,7 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Equator;
 using physics::SolarSystem;
 using quantities::si::Second;
 
@@ -20,7 +21,7 @@ constexpr char kCfg[] = "cfg";
 constexpr char kProtoTxt[] = "proto.txt";
 }  // namespace
 
-namespace astronomy {
+namespace tools {
 
 void GenerateConfiguration(Instant const& game_epoch,
                            std::string const& gravity_model_stem,
@@ -93,6 +94,7 @@ int main(int argc, char const* argv[]) {
   google::InitGoogleLogging(argv[0]);
   google::LogToStderr();
   if (argc != 4) {
+    // tools.exe 2433647.5 gravity_model initial_state_jd_2433282_500000000
     std::cerr << "Usage: " << argv[0] << " "
               << "game_epoch_jd gravity_model_stem initial_state_stem";
     return 1;
@@ -102,8 +104,8 @@ int main(int argc, char const* argv[]) {
           principia::quantities::ParseQuantity<double>(argv[1]));
   std::string const gravity_model_stem = argv[2];
   std::string const initial_state_stem = argv[3];
-  principia::astronomy::GenerateConfiguration(game_epoch,
-                                              gravity_model_stem,
-                                              initial_state_stem);
+  principia::tools::GenerateConfiguration(game_epoch,
+                                          gravity_model_stem,
+                                          initial_state_stem);
   return 0;
 }
