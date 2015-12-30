@@ -1,6 +1,7 @@
 #include "tools/generate_profiles.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <experimental/filesystem>  // NOLINT
 #include <fstream>
 #include <map>
@@ -22,9 +23,18 @@ using ::google::protobuf::FileDescriptor;
 namespace tools {
 
 namespace {
+
 char const kIn[] = "In";
 char const kReturn[] = "Return";
 char const kOut[] = "Out";
+
+std::string ToLower(std::string const& s) {
+  std::string lower(s.size(), ' ');
+  for (int i = 0; i < s.size(); ++i) {
+    lower[i] = std::tolower(s[i]);
+  }
+  return lower;
+}
 
 class Generator {
  public:
@@ -48,6 +58,7 @@ class Generator {
   void ProcessOptionalField(FieldDescriptor const* descriptor);
   void ProcessRepeatedField(FieldDescriptor const* descriptor);
   void ProcessRequiredField(FieldDescriptor const* descriptor);
+  void ProcessSingleField(FieldDescriptor const* descriptor);
 
   void ProcessField(FieldDescriptor const* descriptor);
 
@@ -58,11 +69,15 @@ class Generator {
   void ProcessMethodExtension(Descriptor const* descriptor);
 
  private:
-  std::map<Descriptor const*, std::string> cpp_method_type_;
-  std::map<FieldDescriptor const*, std::string> size_field_;
+  std::map<FieldDescriptor const*, std::string> serializer_name_;
+  std::map<FieldDescriptor const*, std::string> size_field_name_;
   std::set<FieldDescriptor const*> in_out_field_;
-  std::map<Descriptor const*, std::string> cpp_nested_type_;
+  std::map<FieldDescriptor const*, std::string> cpp_field_copy_;
+  std::map<FieldDescriptor const*, std::string> cpp_field_setter_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
+  std::map<Descriptor const*, std::string> cpp_fill_body_;
+  std::map<Descriptor const*, std::string> cpp_method_type_;
+  std::map<Descriptor const*, std::string> cpp_nested_type_;
 };
 
 void Generator::ProcessMethods() {
@@ -122,14 +137,15 @@ void Generator::ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
       options.GetExtension(serialization::pointer_to);
   cpp_field_type_[descriptor] = pointer_to + "*";
   cpp_field_setter_[descriptor] = "set_" + descriptor->name();
+  serializer_name_[descriptor] = "SerializePointer";
 }
 
 void Generator::ProcessRequiredMessageField(FieldDescriptor const* descriptor) {
   std::string const& message_type_name = descriptor->message_type()->name();
   cpp_field_type_[descriptor] = message_type_name;
-  cpp_member_serializer_[descriptor] = "Serialize" + message_type_name;
   cpp_field_setter_[descriptor] =
       "mutable_" + descriptor->name() + "()->CopyFrom";
+  serializer_name_[descriptor] = "Serialize" + message_type_name;
 }
 
 void Generator::ProcessRequiredBoolField(FieldDescriptor const* descriptor) {
@@ -208,46 +224,72 @@ void Generator::ProcessRequiredField(FieldDescriptor const* descriptor) {
   }
 }
 
+void Generator::ProcessSingleField(FieldDescriptor const* descriptor) {
+  bool const is_in_out = in_out_field_.find(descriptor) != in_out_field_.end();
+  bool const needs_serialization =
+      serializer_name_.find(descriptor) != serializer_name_.end();
+  cpp_field_copy_[descriptor] = "*to->" + cpp_field_setter_[descriptor] + "(";
+  if (needs_serialization) {
+    cpp_field_copy_[descriptor] += serializer_name_[descriptor] + "(";
+  }
+  if (is_in_out) {
+    cpp_field_copy_[descriptor] += "*";
+  }
+  cpp_field_copy_[descriptor] += "from." + descriptor->name();
+  if (needs_serialization) {
+    cpp_field_copy_[descriptor] += ")";
+  }
+  cpp_field_copy_[descriptor] += ");";
+}
+
 void Generator::ProcessField(FieldDescriptor const* descriptor) {
   switch (descriptor->label()) {
     case FieldDescriptor::LABEL_OPTIONAL:
       ProcessOptionalField(descriptor);
+      ProcessSingleField(descriptor);
       break;
     case FieldDescriptor::LABEL_REPEATED:
       ProcessRepeatedField(descriptor);
       break;
     case FieldDescriptor::LABEL_REQUIRED:
       ProcessRequiredField(descriptor);
+      ProcessSingleField(descriptor);
       break;
   }
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
-    size_field_[descriptor] = options.GetExtension(serialization::size);
+    size_field_name_[descriptor] = options.GetExtension(serialization::size);
   }
 }
 
 void Generator::ProcessInOut(
     Descriptor const* descriptor,
     std::vector<FieldDescriptor const*>* field_descriptors) {
-  cpp_nested_type_[descriptor] = "  struct " + descriptor->name() + " {\n";
+  std::string const& name = descriptor->name();
+  cpp_fill_body_[descriptor] = "  auto* to = message->mutable_" +
+                               ToLower(name) + "();\n";
+  cpp_nested_type_[descriptor] = "  struct " + name + " {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     if (field_descriptors != nullptr) {
       field_descriptors->push_back(field_descriptor);
     }
     ProcessField(field_descriptor);
+    cpp_fill_body_[descriptor] += "  " +
+                                  cpp_field_copy_[field_descriptor] + "\n";
     cpp_nested_type_[descriptor] += "    " +
                                     cpp_field_type_[field_descriptor] +
                                     " const " +
                                     field_descriptor->name() + ";\n";
 
     // This this field has a size, generate it now.
-    if (size_field_.find(field_descriptor) != size_field_.end()) {
-      cpp_nested_type_[descriptor] += "    int const " +
-                                      size_field_[field_descriptor] + ";\n";
+    if (size_field_name_.find(field_descriptor) != size_field_name_.end()) {
+      cpp_nested_type_[descriptor] +=
+          "    int const " + size_field_name_[field_descriptor] + ";\n";
     }
   }
   cpp_nested_type_[descriptor] += "  };\n";
+  LOG(ERROR)<<cpp_fill_body_[descriptor];
 }
 
 void Generator::ProcessReturn(Descriptor const* descriptor) {
