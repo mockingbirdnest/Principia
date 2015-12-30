@@ -129,15 +129,21 @@ class GeneratorTest : public testing::Test {
   }
 
   void ProcessMethodExtension(Descriptor const* descriptor) {
+    bool has_in = false;
+    bool has_out = false;
+    bool has_return = false;
     cpp_method_type_[descriptor] = "struct " + descriptor->name() + " {\n";
     for (int i = 0; i < descriptor->nested_type_count(); ++i) {
       Descriptor const* nested_descriptor = descriptor->nested_type(i);
       const std::string& nested_name = nested_descriptor->name();
       if (nested_name == kIn) {
+        has_in = true;
         ProcessInOut(nested_descriptor);
       } else if (nested_name == kOut) {
+        has_out = true;
         ProcessInOut(nested_descriptor);
       } else if (nested_name == kReturn) {
+        has_return = true;
         ProcessReturn(nested_descriptor);
       } else {
         LOG(FATAL) << "Unexpected nested message "
@@ -145,6 +151,28 @@ class GeneratorTest : public testing::Test {
       }
       cpp_method_type_[descriptor] += cpp_nested_type_[nested_descriptor];
     }
+    cpp_method_type_[descriptor] += std::string("\n") +
+                                    "  using Message = serialization::" +
+                                    descriptor->name() +
+                                    ";\n";
+    if (has_in) {
+      cpp_method_type_[descriptor] += "  static void Fill(In const& in, "
+                                      "not_null<Message*> const message);\n";
+    }
+    if (has_out) {
+      cpp_method_type_[descriptor] += "  static void Fill(Out const& out, "
+                                      "not_null<Message*> const message);\n";
+    }
+    if (has_return) {
+      cpp_method_type_[descriptor] += "  static void Fill("
+                                      "Return const& result, "
+                                      "not_null<Message*> const message);\n";
+    }
+    cpp_method_type_[descriptor] += "  static void Run("
+                                    "Message const& message,\n"
+                                    "                  not_null<"
+                                    "Player::PointerMap*> const pointer_map);"
+                                    "\n";
     cpp_method_type_[descriptor] += "};\n\n";
   }
 
