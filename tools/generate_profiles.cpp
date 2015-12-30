@@ -121,22 +121,30 @@ void Generator::ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
   std::string const& pointer_to =
       options.GetExtension(serialization::pointer_to);
   cpp_field_type_[descriptor] = pointer_to + "*";
+  cpp_field_setter_[descriptor] = "set_" + descriptor->name();
 }
 
 void Generator::ProcessRequiredMessageField(FieldDescriptor const* descriptor) {
-  cpp_field_type_[descriptor] = descriptor->message_type()->name();
+  std::string const& message_type_name = descriptor->message_type()->name();
+  cpp_field_type_[descriptor] = message_type_name;
+  cpp_member_serializer_[descriptor] = "Serialize" + message_type_name;
+  cpp_field_setter_[descriptor] =
+      "mutable_" + descriptor->name() + "()->CopyFrom";
 }
 
 void Generator::ProcessRequiredBoolField(FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = descriptor->cpp_type_name();
+  cpp_field_setter_[descriptor] = "set_" + descriptor->name();
 }
 
 void Generator::ProcessRequiredDoubleField(FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = descriptor->cpp_type_name();
+  cpp_field_setter_[descriptor] = "set_" + descriptor->name();
 }
 
 void Generator::ProcessRequiredInt32Field(FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = "int";
+  cpp_field_setter_[descriptor] = "set_" + descriptor->name();
 }
 
 void Generator::ProcessSingleStringField(FieldDescriptor const* descriptor) {
