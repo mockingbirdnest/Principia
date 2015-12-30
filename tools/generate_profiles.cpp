@@ -63,7 +63,6 @@ class Generator {
   std::set<FieldDescriptor const*> in_out_field_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
-  std::map<FieldDescriptor const*, std::string> cpp_setter_;
 };
 
 void Generator::ProcessMethods() {
