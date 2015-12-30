@@ -20,7 +20,7 @@ static class CelestialExtensions {
   }
 }
 
-class ReferenceFrameSelector {
+class ReferenceFrameSelector : WindowRenderer {
   public enum FrameType {
     BODY_CENTRED_NON_ROTATING,
 #if HAS_SURFACE
@@ -35,12 +35,11 @@ class ReferenceFrameSelector {
   public delegate void Callback();
 
   public ReferenceFrameSelector(
-      ref PrincipiaPluginAdapter.WindowRenderer window_renderer,
+      ManagerInterface manager,
       IntPtr plugin,
-      Callback on_change) {
+      Callback on_change) : base(manager) {
     plugin_ = plugin;
     on_change_ = on_change;
-    window_renderer += RenderWindow;
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -71,7 +70,7 @@ class ReferenceFrameSelector {
     UnityEngine.GUI.skin = old_skin;
   }
 
-  public void RenderWindow() {
+  protected override void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (show_selector_) {
@@ -84,7 +83,7 @@ class ReferenceFrameSelector {
     UnityEngine.GUI.skin = old_skin;
   }
 
-  public void RenderSelector(int window_id) {
+  private void RenderSelector(int window_id) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
@@ -94,7 +93,7 @@ class ReferenceFrameSelector {
     UnityEngine.GUILayout.BeginVertical(UnityEngine.GUILayout.Width(200));
     RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
     UnityEngine.GUILayout.EndVertical();
-    
+
     // Right-hand side: toggles for reference frame type selection.
     UnityEngine.GUILayout.BeginVertical();
     TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING,

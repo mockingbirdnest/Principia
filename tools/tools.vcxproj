@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5EEA5210-0FA9-4B44-8466-C40B22D24E8E}</ProjectGuid>
-    <RootNamespace>astronomy</RootNamespace>
+    <ProjectGuid>{873680B3-2406-4A30-9EE7-569E9B9DA661}</ProjectGuid>
+    <RootNamespace>tools</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -42,9 +42,6 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
-    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
-    <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock_main.props" />
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
@@ -57,9 +54,6 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
-    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
-    <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock_main.props" />
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
@@ -95,30 +89,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="generate_initial_state.awk" />
-    <None Include="generate_initial_state.sh" />
-    <None Include="gravity_model.cfg" />
-    <None Include="initial_state_jd_2433282_500000000.cfg" />
-    <None Include="query.f" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="gravity_model.proto.txt" />
-    <Text Include="gravity_model_two_bodies_test.proto.txt" />
-    <Text Include="initial_state_jd_2433282_500000000.proto.txt" />
-    <Text Include="initial_state_jd_2436116_311504629.proto.txt" />
-    <Text Include="initial_state_jd_2436145_604166667.proto.txt" />
-    <Text Include="initial_state_two_bodies_test.proto.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="frames.hpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\physics\eclipse_test.cpp" />
+    <ClCompile Include="generate_configuration.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
