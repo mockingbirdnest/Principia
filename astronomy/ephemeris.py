@@ -76,8 +76,8 @@ et2 = eclipseTimes.tdb
 csv.write(str(et2.jd))
 csv.write('\n')
 
-P1U14P4 = ['1952-02-11T22:08:20', '1952-02-12T00:04:17', \
-           '1952-02-12T01:14:24', '1952-02-12T03:10:15']
+P1U14P4 = ['1952-02-10T22:08:20', '1952-02-11T00:04:17', \
+           '1952-02-11T01:14:24', '1952-02-11T03:10:15']
 eclipseTimes = Time(P1U14P4, format='isot', scale='utc')
 et2 = eclipseTimes.tdb
 csv.write(str(et2.jd))
