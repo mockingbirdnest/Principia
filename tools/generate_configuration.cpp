@@ -89,23 +89,3 @@ void GenerateConfiguration(Instant const& game_epoch,
 
 }  // namespace tools
 }  // namespace principia
-
-int main(int argc, char const* argv[]) {
-  google::InitGoogleLogging(argv[0]);
-  google::LogToStderr();
-  if (argc != 4) {
-    // tools.exe 2433647.5 gravity_model initial_state_jd_2433282_500000000
-    std::cerr << "Usage: " << argv[0] << " "
-              << "game_epoch_jd gravity_model_stem initial_state_stem";
-    return 1;
-  }
-  principia::geometry::Instant game_epoch =
-      principia::geometry::JulianDate(
-          principia::quantities::ParseQuantity<double>(argv[1]));
-  std::string const gravity_model_stem = argv[2];
-  std::string const initial_state_stem = argv[3];
-  principia::tools::GenerateConfiguration(game_epoch,
-                                          gravity_model_stem,
-                                          initial_state_stem);
-  return 0;
-}

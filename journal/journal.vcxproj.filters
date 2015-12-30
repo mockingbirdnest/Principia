@@ -49,8 +49,5 @@
     <ClCompile Include="recorder_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="generate_profiles_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
