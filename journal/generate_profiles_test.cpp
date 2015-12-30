@@ -22,11 +22,45 @@ char const kOut[] = "Out";
 
 class GeneratorTest : public testing::Test {
  protected:
-  void ProcessOptionalField(const FieldDescriptor* descriptor) {
+  ~GeneratorTest() {
+    for (auto const& pair : cpp_method_type_) {
+      std::cout<<pair.second;
+    }
+  }
+
+   void ProcessOptionalScalarField(FieldDescriptor const* descriptor) {
+     cpp_field_type_[descriptor] = std::string(descriptor->cpp_type_name()) +
+                                   " const*";
+   }
+
+   void ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
+    FieldOptions const& options = descriptor->options();
+    CHECK(options.HasExtension(serialization::pointer_to))
+        << descriptor->full_name() << " is missing a pointer_to option";
+    std::string const& pointer_to =
+        options.GetExtension(serialization::pointer_to);
+    cpp_field_type_[descriptor] = pointer_to + "*";
+  }
+
+  void ProcessRequiredMessageField(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = descriptor->message_type()->name();
+  }
+
+  void ProcessRequiredScalarField(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = descriptor->cpp_type_name();
+  }
+
+  void ProcessSingleStringField(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = "char const*";
+  }
+
+  void ProcessOptionalField(FieldDescriptor const* descriptor) {
     switch (descriptor->type()) {
     case FieldDescriptor::TYPE_INT32:
+      ProcessOptionalScalarField(descriptor);
       break;
     case FieldDescriptor::TYPE_STRING:
+      ProcessSingleStringField(descriptor);
       break;
     default:
       LOG(FATAL) << descriptor->full_name() << " has unexpected type "
@@ -34,30 +68,23 @@ class GeneratorTest : public testing::Test {
     }
   }
 
-  void ProcessRepeatedField(const FieldDescriptor* descriptor) {}
+  void ProcessRepeatedField(FieldDescriptor const* descriptor) {}
 
-  void ProcessRequiredFixed64Field(const FieldDescriptor* descriptor) {
-    FieldOptions const& options = descriptor->options();
-    CHECK(options.HasExtension(serialization::pointer_to))
-        << descriptor->full_name() << " is missing a pointer_to option";
-    std::string const& pointer_to =
-        options.GetExtension(serialization::pointer_to);
-  }
-
-  void ProcessRequiredField(const FieldDescriptor* descriptor) {
+  void ProcessRequiredField(FieldDescriptor const* descriptor) {
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BOOL:
-        break;
       case FieldDescriptor::TYPE_DOUBLE:
+      case FieldDescriptor::TYPE_INT32:
+        ProcessRequiredScalarField(descriptor);
         break;
       case FieldDescriptor::TYPE_FIXED64:
         ProcessRequiredFixed64Field(descriptor);
         break;
-      case FieldDescriptor::TYPE_INT32:
-        break;
       case FieldDescriptor::TYPE_MESSAGE:
+        ProcessRequiredMessageField(descriptor);
         break;
       case FieldDescriptor::TYPE_STRING:
+        ProcessSingleStringField(descriptor);
         break;
       default:
         LOG(FATAL) << descriptor->full_name() << " has unexpected type "
@@ -65,7 +92,7 @@ class GeneratorTest : public testing::Test {
     }
   }
 
-  void ProcessField(const FieldDescriptor* descriptor) {
+  void ProcessField(FieldDescriptor const* descriptor) {
     switch (descriptor->label()) {
       case FieldDescriptor::LABEL_OPTIONAL:
         ProcessOptionalField(descriptor);
@@ -79,52 +106,62 @@ class GeneratorTest : public testing::Test {
     }
   }
 
-  void ProcessIn(const Descriptor* descriptor) {
+  void ProcessInOut(Descriptor const* descriptor) {
+    cpp_nested_type_[descriptor] = "  struct " + descriptor->name() + " {\n";
     for (int i = 0; i < descriptor->field_count(); ++i) {
-      const FieldDescriptor* field_descriptor = descriptor->field(i);
+      FieldDescriptor const* field_descriptor = descriptor->field(i);
       ProcessField(field_descriptor);
+      cpp_nested_type_[descriptor] += "    " +
+                                      cpp_field_type_[field_descriptor] +
+                                      " const " +
+                                      field_descriptor->name() + ";\n";
     }
+    cpp_nested_type_[descriptor] += "  };\n";
   }
 
-  void ProcessOut(const Descriptor* descriptor) {
-    for (int i = 0; i < descriptor->field_count(); ++i) {
-      const FieldDescriptor* field_descriptor = descriptor->field(i);
-      ProcessField(field_descriptor);
-    }
-  }
-
-  void ProcessReturn(const Descriptor* descriptor) {
+  void ProcessReturn(Descriptor const* descriptor) {
     CHECK_EQ(1, descriptor->field_count())
         << descriptor->full_name() << " must have exactly one field";
-    ProcessField(descriptor->field(0));
+    FieldDescriptor const* field_descriptor = descriptor->field(0);
+    ProcessField(field_descriptor);
+    cpp_nested_type_[descriptor] =
+        "  using Return = " + cpp_field_type_[field_descriptor] + ";\n";
   }
 
-  void ProcessMethodExtension(const Descriptor* descriptor) {
+  void ProcessMethodExtension(Descriptor const* descriptor) {
+    cpp_method_type_[descriptor] = "struct " + descriptor->name() + " {\n";
     for (int i = 0; i < descriptor->nested_type_count(); ++i) {
-      const Descriptor* nested_descriptor = descriptor->nested_type(i);
+      Descriptor const* nested_descriptor = descriptor->nested_type(i);
       const std::string& nested_name = nested_descriptor->name();
       if (nested_name == kIn) {
-        ProcessIn(nested_descriptor);
+        ProcessInOut(nested_descriptor);
       } else if (nested_name == kOut) {
-        ProcessOut(nested_descriptor);
+        ProcessInOut(nested_descriptor);
       } else if (nested_name == kReturn) {
         ProcessReturn(nested_descriptor);
       } else {
         LOG(FATAL) << "Unexpected nested message "
                    << nested_descriptor->full_name();
       }
+      cpp_method_type_[descriptor] += cpp_nested_type_[nested_descriptor];
     }
+    cpp_method_type_[descriptor] += "};\n\n";
   }
+
+ private:
+  std::map<Descriptor const*, std::string> cpp_method_type_;
+  std::map<Descriptor const*, std::string> cpp_nested_type_;
+  std::map<FieldDescriptor const*, std::string> cpp_field_type_;
 };
 
 TEST_F(GeneratorTest, JustDoIt) {
   // Get the file containing |Method|.
-  const Descriptor* method_descriptor = serialization::Method::descriptor();
-  const FileDescriptor* file_descriptor = method_descriptor->file();
+  Descriptor const* method_descriptor = serialization::Method::descriptor();
+  FileDescriptor const* file_descriptor = method_descriptor->file();
 
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
-    const Descriptor* message_descriptor = file_descriptor->message_type(i);
+    Descriptor const* message_descriptor = file_descriptor->message_type(i);
     switch (message_descriptor->extension_count()) {
       case 0: {
         // An auxiliary message that is not an extension.  Nothing to do.
@@ -132,9 +169,9 @@ TEST_F(GeneratorTest, JustDoIt) {
       }
       case 1: {
         // An extension.  Check that it extends |Method|.
-        const FieldDescriptor* extension = message_descriptor->extension(0);
+        FieldDescriptor const* extension = message_descriptor->extension(0);
         CHECK(extension->is_extension());
-        const Descriptor* containing_type = extension->containing_type();
+        Descriptor const* containing_type = extension->containing_type();
         CHECK_EQ(method_descriptor, containing_type)
             << message_descriptor->name() << " extends a message other than "
             << method_descriptor->name() << ": " << containing_type->name();
