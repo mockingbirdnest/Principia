@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "geometry/epoch.hpp"
 #include "geometry/named_quantities.hpp"

@@ -1,5 +1,8 @@
+#include <algorithm>
 #include <experimental/filesystem>
 #include <fstream>
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -79,22 +82,22 @@ void Generator::ProcessMethods() {
       case 0: {
         // An auxiliary message that is not an extension.  Nothing to do.
         break;
-    }
-    case 1: {
-      // An extension.  Check that it extends |Method|.
-      FieldDescriptor const* extension = message_descriptor->extension(0);
-      CHECK(extension->is_extension());
-      Descriptor const* containing_type = extension->containing_type();
-      CHECK_EQ(method_descriptor, containing_type)
-          << message_descriptor->name() << " extends a message other than "
-          << method_descriptor->name() << ": " << containing_type->name();
-      ProcessMethodExtension(message_descriptor);
-      break;
-    }
-    default: {
-      LOG(FATAL) << message_descriptor->name() << " has "
-          << message_descriptor->extension_count() << " extensions";
-    }
+      }
+      case 1: {
+        // An extension.  Check that it extends |Method|.
+        FieldDescriptor const* extension = message_descriptor->extension(0);
+        CHECK(extension->is_extension());
+        Descriptor const* containing_type = extension->containing_type();
+        CHECK_EQ(method_descriptor, containing_type)
+            << message_descriptor->name() << " extends a message other than "
+            << method_descriptor->name() << ": " << containing_type->name();
+        ProcessMethodExtension(message_descriptor);
+        break;
+      }
+      default: {
+        LOG(FATAL) << message_descriptor->name() << " has "
+                   << message_descriptor->extension_count() << " extensions";
+      }
     }
   }
 }
@@ -220,8 +223,9 @@ void Generator::ProcessField(FieldDescriptor const* descriptor) {
   }
 }
 
-void Generator::ProcessInOut(Descriptor const* descriptor,
-                  std::vector<FieldDescriptor const*>* field_descriptors) {
+void Generator::ProcessInOut(
+    Descriptor const* descriptor,
+    std::vector<FieldDescriptor const*>* field_descriptors) {
   cpp_nested_type_[descriptor] = "  struct " + descriptor->name() + " {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
@@ -245,7 +249,7 @@ void Generator::ProcessInOut(Descriptor const* descriptor,
 
 void Generator::ProcessReturn(Descriptor const* descriptor) {
   CHECK_EQ(1, descriptor->field_count())
-    << descriptor->full_name() << " must have exactly one field";
+      << descriptor->full_name() << " must have exactly one field";
   FieldDescriptor const* field_descriptor = descriptor->field(0);
   ProcessField(field_descriptor);
   cpp_nested_type_[descriptor] =
@@ -278,13 +282,13 @@ void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
   }
 
   // Now mark the fields that have the same name in In and Out as in-out.
-  if (has_in || has_out) {
+  if (has_in && has_out) {
     std::sort(field_descriptors.begin(),
               field_descriptors.end(),
               [](FieldDescriptor const* left,
                  FieldDescriptor const* right) {
-      return left->name() < right->name();
-    });
+                return left->name() < right->name();
+              });
     for (int i = 0; i < field_descriptors.size() - 1; ++i) {
       if (field_descriptors[i]->name() == field_descriptors[i + 1]->name()) {
         in_out_field_.insert(field_descriptors[i]);
