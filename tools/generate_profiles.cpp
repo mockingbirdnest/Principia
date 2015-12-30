@@ -1,7 +1,7 @@
 #include "tools/generate_profiles.hpp"
 
 #include <algorithm>
-#include <experimental/filesystem>
+#include <experimental/filesystem>  // NOLINT
 #include <fstream>
 #include <map>
 #include <set>
