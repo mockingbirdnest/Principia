@@ -30,17 +30,22 @@ class GeneratorTest : public testing::Test {
     }
   }
 
-   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor) {
-     cpp_field_type_[descriptor] = "int const*";
-   }
+  void ProcessRepeatedMessageField(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = descriptor->message_type()->name() +
+                                  " const*";
+  }
 
-   void ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
-    FieldOptions const& options = descriptor->options();
-    CHECK(options.HasExtension(serialization::pointer_to))
-        << descriptor->full_name() << " is missing a pointer_to option";
-    std::string const& pointer_to =
-        options.GetExtension(serialization::pointer_to);
-    cpp_field_type_[descriptor] = pointer_to + "*";
+  void ProcessOptionalInt32Field(FieldDescriptor const* descriptor) {
+    cpp_field_type_[descriptor] = "int const*";
+  }
+
+  void ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
+   FieldOptions const& options = descriptor->options();
+   CHECK(options.HasExtension(serialization::pointer_to))
+       << descriptor->full_name() << " is missing a pointer_to option";
+   std::string const& pointer_to =
+       options.GetExtension(serialization::pointer_to);
+   cpp_field_type_[descriptor] = pointer_to + "*";
   }
 
   void ProcessRequiredMessageField(FieldDescriptor const* descriptor) {
@@ -65,19 +70,28 @@ class GeneratorTest : public testing::Test {
 
   void ProcessOptionalField(FieldDescriptor const* descriptor) {
     switch (descriptor->type()) {
-    case FieldDescriptor::TYPE_INT32:
-      ProcessOptionalInt32Field(descriptor);
-      break;
-    case FieldDescriptor::TYPE_STRING:
-      ProcessSingleStringField(descriptor);
-      break;
-    default:
-      LOG(FATAL) << descriptor->full_name() << " has unexpected type "
-        << descriptor->type_name();
+      case FieldDescriptor::TYPE_INT32:
+        ProcessOptionalInt32Field(descriptor);
+        break;
+      case FieldDescriptor::TYPE_STRING:
+        ProcessSingleStringField(descriptor);
+        break;
+      default:
+        LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+                   << descriptor->type_name();
     }
   }
 
-  void ProcessRepeatedField(FieldDescriptor const* descriptor) {}
+  void ProcessRepeatedField(FieldDescriptor const* descriptor) {
+    switch (descriptor->type()) {
+      case FieldDescriptor::TYPE_MESSAGE:
+        ProcessRepeatedMessageField(descriptor);
+        break;
+      default:
+        LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+                   << descriptor->type_name();
+    }
+  }
 
   void ProcessRequiredField(FieldDescriptor const* descriptor) {
     switch (descriptor->type()) {
@@ -123,6 +137,10 @@ class GeneratorTest : public testing::Test {
         ProcessRequiredField(descriptor);
         break;
     }
+    FieldOptions const& options = descriptor->options();
+    if (options.HasExtension(serialization::size)) {
+      size_field_[descriptor] = options.GetExtension(serialization::size);
+    }
   }
 
   void ProcessInOut(Descriptor const* descriptor,
@@ -138,6 +156,12 @@ class GeneratorTest : public testing::Test {
                                       cpp_field_type_[field_descriptor] +
                                       " const " +
                                       field_descriptor->name() + ";\n";
+
+      // This this field has a size, generate it now.
+      if (size_field_.find(field_descriptor) != size_field_.end()) {
+        cpp_nested_type_[descriptor] += "    int const " +
+                                        size_field_[field_descriptor] + ";\n";
+      }
     }
     cpp_nested_type_[descriptor] += "  };\n";
   }
@@ -234,6 +258,7 @@ class GeneratorTest : public testing::Test {
   }
 
  private:
+  std::map<FieldDescriptor const*, std::string> size_field_;
   std::set<FieldDescriptor const*> in_out_field_;
   std::map<Descriptor const*, std::string> cpp_method_type_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;

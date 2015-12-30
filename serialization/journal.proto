@@ -46,7 +46,7 @@ message AddVesselToNextPhysicsBubble {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin"];
     required string vessel_guid = 2;
-    repeated KSPPart parts = 3;
+    repeated KSPPart parts = 3 [(size) = "count"];
   }
   required In in = 1;
 }
@@ -184,7 +184,7 @@ message DeserializePlugin {
     optional DeserializePlugin extension = 5050;
   }
   message In {
-    required string serialization = 1;
+    required string serialization = 1 [(size) = "serialization_size"];
     required fixed64 deserializer = 2 [(pointer_to) = "PushDeserializer"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
   }
@@ -807,4 +807,5 @@ message VesselTangent {
 
 extend google.protobuf.FieldOptions {
   optional string pointer_to = 50000;
+  optional string size = 50001;
 }
