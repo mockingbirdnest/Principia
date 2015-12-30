@@ -76,9 +76,9 @@ void Generator::ProcessMethods() {
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
     Descriptor const* message_descriptor = file_descriptor->message_type(i);
     switch (message_descriptor->extension_count()) {
-    case 0: {
-      // An auxiliary message that is not an extension.  Nothing to do.
-      break;
+      case 0: {
+        // An auxiliary message that is not an extension.  Nothing to do.
+        break;
     }
     case 1: {
       // An extension.  Check that it extends |Method|.
@@ -86,14 +86,14 @@ void Generator::ProcessMethods() {
       CHECK(extension->is_extension());
       Descriptor const* containing_type = extension->containing_type();
       CHECK_EQ(method_descriptor, containing_type)
-        << message_descriptor->name() << " extends a message other than "
-        << method_descriptor->name() << ": " << containing_type->name();
+          << message_descriptor->name() << " extends a message other than "
+          << method_descriptor->name() << ": " << containing_type->name();
       ProcessMethodExtension(message_descriptor);
       break;
     }
     default: {
       LOG(FATAL) << message_descriptor->name() << " has "
-        << message_descriptor->extension_count() << " extensions";
+          << message_descriptor->extension_count() << " extensions";
     }
     }
   }
@@ -109,7 +109,7 @@ std::vector<std::string> Generator::GetCppMethodTypes() const {
 
 void Generator::ProcessRepeatedMessageField(FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = descriptor->message_type()->name() +
-    " const*";
+                                " const*";
 }
 
 void Generator::ProcessOptionalInt32Field(FieldDescriptor const* descriptor) {
@@ -119,9 +119,9 @@ void Generator::ProcessOptionalInt32Field(FieldDescriptor const* descriptor) {
 void Generator::ProcessRequiredFixed64Field(FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
   CHECK(options.HasExtension(serialization::pointer_to))
-    << descriptor->full_name() << " is missing a pointer_to option";
+      << descriptor->full_name() << " is missing a pointer_to option";
   std::string const& pointer_to =
-    options.GetExtension(serialization::pointer_to);
+      options.GetExtension(serialization::pointer_to);
   cpp_field_type_[descriptor] = pointer_to + "*";
 }
 
@@ -147,52 +147,52 @@ void Generator::ProcessSingleStringField(FieldDescriptor const* descriptor) {
 
 void Generator::ProcessOptionalField(FieldDescriptor const* descriptor) {
   switch (descriptor->type()) {
-  case FieldDescriptor::TYPE_INT32:
-    ProcessOptionalInt32Field(descriptor);
-    break;
-  case FieldDescriptor::TYPE_STRING:
-    ProcessSingleStringField(descriptor);
-    break;
-  default:
-    LOG(FATAL) << descriptor->full_name() << " has unexpected type "
-      << descriptor->type_name();
+    case FieldDescriptor::TYPE_INT32:
+      ProcessOptionalInt32Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_STRING:
+      ProcessSingleStringField(descriptor);
+      break;
+    default:
+      LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+                 << descriptor->type_name();
   }
 }
 
 void Generator::ProcessRepeatedField(FieldDescriptor const* descriptor) {
   switch (descriptor->type()) {
-  case FieldDescriptor::TYPE_MESSAGE:
-    ProcessRepeatedMessageField(descriptor);
-    break;
-  default:
-    LOG(FATAL) << descriptor->full_name() << " has unexpected type "
-      << descriptor->type_name();
+    case FieldDescriptor::TYPE_MESSAGE:
+      ProcessRepeatedMessageField(descriptor);
+      break;
+    default:
+      LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+                 << descriptor->type_name();
   }
 }
 
 void Generator::ProcessRequiredField(FieldDescriptor const* descriptor) {
   switch (descriptor->type()) {
-  case FieldDescriptor::TYPE_BOOL:
-    ProcessRequiredBoolField(descriptor);
-    break;
-  case FieldDescriptor::TYPE_DOUBLE:
-    ProcessRequiredDoubleField(descriptor);
-    break;
-  case FieldDescriptor::TYPE_FIXED64:
-    ProcessRequiredFixed64Field(descriptor);
-    break;
-  case FieldDescriptor::TYPE_INT32:
-    ProcessRequiredInt32Field(descriptor);
-    break;
-  case FieldDescriptor::TYPE_MESSAGE:
-    ProcessRequiredMessageField(descriptor);
-    break;
-  case FieldDescriptor::TYPE_STRING:
-    ProcessSingleStringField(descriptor);
-    break;
-  default:
-    LOG(FATAL) << descriptor->full_name() << " has unexpected type "
-      << descriptor->type_name();
+    case FieldDescriptor::TYPE_BOOL:
+      ProcessRequiredBoolField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_DOUBLE:
+      ProcessRequiredDoubleField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_FIXED64:
+      ProcessRequiredFixed64Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_INT32:
+      ProcessRequiredInt32Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      ProcessRequiredMessageField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_STRING:
+      ProcessSingleStringField(descriptor);
+      break;
+    default:
+      LOG(FATAL) << descriptor->full_name() << " has unexpected type "
+                 << descriptor->type_name();
   }
 
   // For in-out fields the data is actually passed with an extra level of
@@ -204,15 +204,15 @@ void Generator::ProcessRequiredField(FieldDescriptor const* descriptor) {
 
 void Generator::ProcessField(FieldDescriptor const* descriptor) {
   switch (descriptor->label()) {
-  case FieldDescriptor::LABEL_OPTIONAL:
-    ProcessOptionalField(descriptor);
-    break;
-  case FieldDescriptor::LABEL_REPEATED:
-    ProcessRepeatedField(descriptor);
-    break;
-  case FieldDescriptor::LABEL_REQUIRED:
-    ProcessRequiredField(descriptor);
-    break;
+    case FieldDescriptor::LABEL_OPTIONAL:
+      ProcessOptionalField(descriptor);
+      break;
+    case FieldDescriptor::LABEL_REPEATED:
+      ProcessRepeatedField(descriptor);
+      break;
+    case FieldDescriptor::LABEL_REQUIRED:
+      ProcessRequiredField(descriptor);
+      break;
   }
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
@@ -230,14 +230,14 @@ void Generator::ProcessInOut(Descriptor const* descriptor,
     }
     ProcessField(field_descriptor);
     cpp_nested_type_[descriptor] += "    " +
-      cpp_field_type_[field_descriptor] +
-      " const " +
-      field_descriptor->name() + ";\n";
+                                    cpp_field_type_[field_descriptor] +
+                                    " const " +
+                                    field_descriptor->name() + ";\n";
 
     // This this field has a size, generate it now.
     if (size_field_.find(field_descriptor) != size_field_.end()) {
       cpp_nested_type_[descriptor] += "    int const " +
-        size_field_[field_descriptor] + ";\n";
+                                      size_field_[field_descriptor] + ";\n";
     }
   }
   cpp_nested_type_[descriptor] += "  };\n";
@@ -249,7 +249,7 @@ void Generator::ProcessReturn(Descriptor const* descriptor) {
   FieldDescriptor const* field_descriptor = descriptor->field(0);
   ProcessField(field_descriptor);
   cpp_nested_type_[descriptor] =
-    "  using Return = " + cpp_field_type_[field_descriptor] + ";\n";
+      "  using Return = " + cpp_field_type_[field_descriptor] + ";\n";
 }
 
 void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
@@ -273,7 +273,7 @@ void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
       has_return = true;
     } else {
       LOG(FATAL) << "Unexpected nested message "
-        << nested_descriptor->full_name();
+                 << nested_descriptor->full_name();
     }
   }
 
@@ -311,26 +311,26 @@ void Generator::ProcessMethodExtension(Descriptor const* descriptor) {
     cpp_method_type_[descriptor] += "\n";
   }
   cpp_method_type_[descriptor] +=
-    std::string("  using Message = serialization::") +
-    descriptor->name() + ";\n";
+      "  using Message = serialization::" +
+      descriptor->name() + ";\n";
   if (has_in) {
-    cpp_method_type_[descriptor] += "  static void Generator::Fill(In const& in, "
-      "not_null<Message*> const message);\n";
+    cpp_method_type_[descriptor] += "  static void Fill(In const& in, "
+                                    "not_null<Message*> const message);\n";
   }
   if (has_out) {
-    cpp_method_type_[descriptor] += "  static void Generator::Fill(Out const& out, "
-      "not_null<Message*> const message);\n";
+    cpp_method_type_[descriptor] += "  static void Fill(Out const& out, "
+                                    "not_null<Message*> const message);\n";
   }
   if (has_return) {
-    cpp_method_type_[descriptor] += "  static void Generator::Fill("
-      "Return const& result, "
-      "not_null<Message*> const message);\n";
+    cpp_method_type_[descriptor] += "  static void Fill("
+                                    "Return const& result, "
+                                    "not_null<Message*> const message);\n";
   }
-  cpp_method_type_[descriptor] += "  static void Generator::Run("
-    "Message const& message,\n"
-    "                  not_null<"
-    "Player::PointerMap*> const pointer_map);"
-    "\n";
+  cpp_method_type_[descriptor] += "  static void Run("
+                                  "Message const& message,\n"
+                                  "                  not_null<"
+                                  "Player::PointerMap*> const pointer_map);"
+                                  "\n";
   cpp_method_type_[descriptor] += "};\n\n";
 }
 
