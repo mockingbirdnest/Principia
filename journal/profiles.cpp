@@ -123,166 +123,169 @@ serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
 
 }  // namespace
 
-void InitGoogleLogging::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {}
-
-void SetBufferedLogging::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_max_severity(in.max_severity);
+void AddVesselToNextPhysicsBubble::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  for (KSPPart const* part = in.parts; part < in.parts + in.count; ++part) {
+    *m->add_parts() = SerializeKSPPart(*part);
+  }
 }
 
-void SetBufferedLogging::Run(Message const& message,
-                             not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__SetBufferedLogging(message.in().max_severity());
-}
-
-void GetBufferedLogging::Fill(Return const& result,
-                              not_null<Message*> const message) {
-  message->mutable_return_()->set_get_buffered_logging(result);
-}
-
-void GetBufferedLogging::Run(Message const& message,
-                             not_null<Player::PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().get_buffered_logging(),
-           ksp_plugin::principia__GetBufferedLogging());
-}
-
-void SetBufferDuration::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_seconds(in.seconds);
-}
-
-void SetBufferDuration::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__SetBufferDuration(message.in().seconds());
-}
-
-void GetBufferDuration::Fill(Return const& result,
-                             not_null<Message*> const message) {
-  message->mutable_return_()->set_get_buffer_duration(result);
-}
-
-void GetBufferDuration::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().get_buffer_duration(),
-           ksp_plugin::principia__GetBufferDuration());
-}
-
-void SetSuppressedLogging::Fill(In const& in,
-                                not_null<Message*> const message) {
-  message->mutable_in()->set_min_severity(in.min_severity);
-}
-
-void SetSuppressedLogging::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__SetSuppressedLogging(message.in().min_severity());
-}
-
-void GetSuppressedLogging::Fill(Return const& result,
-                                not_null<Message*> const message) {
-  message->mutable_return_()->set_get_suppressed_logging(result);
-}
-
-void GetSuppressedLogging::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().get_suppressed_logging(),
-           ksp_plugin::principia__GetSuppressedLogging());
-}
-
-void SetVerboseLogging::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_level(in.level);
-}
-
-void SetVerboseLogging::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__SetVerboseLogging(message.in().level());
-}
-
-void GetVerboseLogging::Fill(Return const& result,
-                             not_null<Message*> const message) {
-  message->mutable_return_()->set_get_verbose_logging(result);
-}
-
-void GetVerboseLogging::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().get_verbose_logging(),
-           ksp_plugin::principia__GetVerboseLogging());
-}
-
-void SetStderrLogging::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_min_severity(in.min_severity);
-}
-
-void SetStderrLogging::Run(Message const& message,
-                           not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__SetStderrLogging(message.in().min_severity());
-}
-
-void GetStderrLogging::Fill(Return const& result,
-                            not_null<Message*> const message) {
-  message->mutable_return_()->set_get_stderr_logging(result);
-}
-
-void GetStderrLogging::Run(Message const& message,
-                           not_null<Player::PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().get_stderr_logging(),
-           ksp_plugin::principia__GetStderrLogging());
-}
-
-void LogInfo::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_message(in.message);
-}
-
-void LogInfo::Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__LogInfo(message.in().message().c_str());
-}
-
-void LogWarning::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_message(in.message);
-}
-
-void LogWarning::Run(Message const& message,
-                     not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__LogWarning(message.in().message().c_str());
-}
-
-void LogError::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_message(in.message);
-}
-
-void LogError::Run(Message const& message,
-                   not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__LogError(message.in().message().c_str());
-}
-
-void LogFatal::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_message(in.message);
-}
-
-void LogFatal::Run(Message const& message,
-                   not_null<Player::PointerMap*> const pointer_map) {
-  ksp_plugin::principia__LogFatal(message.in().message().c_str());
-}
-
-void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
-  auto* mutable_in = message->mutable_in();
-  mutable_in->set_initial_time(in.initial_time);
-  mutable_in->set_planetarium_rotation_in_degrees(
-      in.planetarium_rotation_in_degrees);
-}
-
-void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_new_plugin(SerializePointer(result));
-}
-
-void NewPlugin::Run(Message const& message,
-                    not_null<Player::PointerMap*> const pointer_map) {
+void AddVesselToNextPhysicsBubble::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = ksp_plugin::principia__NewPlugin(
-                     in.initial_time(),
-                     in.planetarium_rotation_in_degrees());
-  Insert(pointer_map, message.return_().new_plugin(), plugin);
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  std::vector<KSPPart> deserialized_parts;
+  deserialized_parts.reserve(in.parts_size());
+  for (auto const& part : in.parts()) {
+    deserialized_parts.push_back(DeserializeKSPPart(part));
+  }
+  ksp_plugin::principia__AddVesselToNextPhysicsBubble(
+    plugin,
+    in.vessel_guid().c_str(),
+    &deserialized_parts[0],
+    deserialized_parts.size());
+}
+
+void AdvanceTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_t(in.t);
+  m->set_planetarium_rotation(in.planetarium_rotation);
+}
+
+void AdvanceTime::Run(Message const& message,
+                      not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__AdvanceTime(plugin, in.t(), in.planetarium_rotation());
+}
+
+void AtEnd::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+}
+
+void AtEnd::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_at_end(result);
+}
+
+void AtEnd::Run(Message const& message,
+                not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  CHECK_EQ(message.return_().at_end(),
+           ksp_plugin::principia__AtEnd(DeserializePointer<LineAndIterator*>(
+             *pointer_map, in.line_and_iterator())));
+}
+
+void BubbleDisplacementCorrection::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  *m->mutable_sun_position() = SerializeXYZ(in.sun_position);
+}
+
+void BubbleDisplacementCorrection::Fill(Return const& result,
+                                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_bubble_displacement_correction() =
+    SerializeXYZ(result);
+}
+
+void BubbleDisplacementCorrection::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeXYZ(message.return_().bubble_displacement_correction()) ==
+        ksp_plugin::principia__BubbleDisplacementCorrection(
+          plugin, DeserializeXYZ(in.sun_position())));
+}
+
+void BubbleVelocityCorrection::Fill(In const& in,
+                                    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_reference_body_index(in.reference_body_index);
+}
+
+void BubbleVelocityCorrection::Fill(Return const& result,
+                                    not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_bubble_velocity_correction() =
+    SerializeXYZ(result);
+}
+
+void BubbleVelocityCorrection::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeXYZ(message.return_().bubble_velocity_correction()) ==
+        ksp_plugin::principia__BubbleVelocityCorrection(
+          plugin, in.reference_body_index()));
+}
+
+void CelestialFromParent::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+}
+
+void CelestialFromParent::Fill(Return const& result,
+                               not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_celestial_from_parent() =
+    SerializeQP(result);
+}
+
+void CelestialFromParent::Run(Message const& message,
+                              not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeQP(message.return_().celestial_from_parent()) ==
+        ksp_plugin::principia__CelestialFromParent(plugin,
+                                                   in.celestial_index()));
+}
+
+void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+}
+
+void CurrentTime::Fill(Return const& result,
+                       not_null<Message*> const message) {
+  message->mutable_return_()->set_current_time(result);
+}
+
+void CurrentTime::Run(Message const& message,
+                      not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK_EQ(message.return_().current_time(),
+           ksp_plugin::principia__CurrentTime(plugin));
+}
+
+void DeleteLineAndIterator::Fill(In const& in,
+                                 not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(*in.line_and_iterator));
+}
+
+void DeleteLineAndIterator::Fill(Out const& out,
+                                 not_null<Message*> const message) {
+  message->mutable_out()->set_line_and_iterator(
+    SerializePointer(*out.line_and_iterator));
+}
+
+void DeleteLineAndIterator::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto* line_and_iterator = DeserializePointer<LineAndIterator*>(
+    *pointer_map, message.in().line_and_iterator());
+  ksp_plugin::principia__DeleteLineAndIterator(&line_and_iterator);
+  Delete(pointer_map, message.in().line_and_iterator());
+  // TODO(phl): should we do something with out() here?
 }
 
 void DeletePlugin::Fill(In const& in, not_null<Message*> const message) {
@@ -300,6 +303,59 @@ void DeletePlugin::Run(Message const& message,
   ksp_plugin::principia__DeletePlugin(&plugin);
   Delete(pointer_map, message.in().plugin());
   // TODO(phl): should we do something with out() here?
+}
+
+void DeletePluginSerialization::Fill(In const& in,
+                                     not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_serialization(SerializePointer(*in.serialization));
+}
+
+void DeletePluginSerialization::Fill(Out const& out,
+                                     not_null<Message*> const message) {
+  auto* m = message->mutable_out();
+  m->set_serialization(SerializePointer(*out.serialization));
+}
+
+void DeletePluginSerialization::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* serialization = DeserializePointer<char const*>(
+    *pointer_map, in.serialization());
+  ksp_plugin::principia__DeletePluginSerialization(&serialization);
+  Delete(pointer_map, in.serialization());
+}
+
+void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_serialization(std::string(in.serialization, in.serialization_size));
+  m->set_deserializer(SerializePointer(*in.deserializer));
+  m->set_plugin(SerializePointer(*in.plugin));
+}
+
+void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
+  auto* m = message->mutable_out();
+  m->set_deserializer(SerializePointer(*out.deserializer));
+  m->set_plugin(SerializePointer(*out.plugin));
+}
+
+void DeserializePlugin::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto* deserializer = DeserializePointer<PushDeserializer*>(
+    *pointer_map, in.deserializer());
+  ksp_plugin::principia__DeserializePlugin(in.serialization().c_str(),
+                                           in.serialization().size(),
+                                           &deserializer,
+                                           &plugin);
+  if (in.serialization().size() == 0) {
+    Delete(pointer_map, in.deserializer());
+  } else {
+    Insert(pointer_map, message.out().deserializer(), deserializer);
+  }
+  Insert(pointer_map, message.out().plugin(), plugin);
 }
 
 void DirectlyInsertCelestial::Fill(In const& in,
@@ -332,24 +388,188 @@ void DirectlyInsertCelestial::Fill(In const& in,
 }
 
 void DirectlyInsertCelestial::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   int const parent_index = in.parent_index();
   ksp_plugin::principia__DirectlyInsertCelestial(
-      plugin,
-      in.celestial_index(),
-      in.has_parent_index() ? &parent_index : nullptr,
-      in.gravitational_parameter().c_str(),
-      in.has_axis_right_ascension() ?
-          in.axis_right_ascension().c_str() : nullptr,
-      in.has_axis_declination() ? in.axis_declination().c_str() : nullptr,
-      in.has_j2() ? in.j2().c_str() : nullptr,
-      in.has_reference_radius() ? in.reference_radius().c_str() : nullptr,
-      in.x().c_str(), in.y().c_str(), in.z().c_str(),
-      in.vx().c_str(), in.vy().c_str(), in.vz().c_str());
+    plugin,
+    in.celestial_index(),
+    in.has_parent_index() ? &parent_index : nullptr,
+    in.gravitational_parameter().c_str(),
+    in.has_axis_right_ascension() ?
+    in.axis_right_ascension().c_str() : nullptr,
+    in.has_axis_declination() ? in.axis_declination().c_str() : nullptr,
+    in.has_j2() ? in.j2().c_str() : nullptr,
+    in.has_reference_radius() ? in.reference_radius().c_str() : nullptr,
+    in.x().c_str(), in.y().c_str(), in.z().c_str(),
+    in.vx().c_str(), in.vy().c_str(), in.vz().c_str());
 }
+
+void EndInitialization::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+}
+
+void EndInitialization::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map,
+                                             message.in().plugin());
+  ksp_plugin::principia__EndInitialization(plugin);
+}
+
+void FetchAndIncrement::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
+}
+
+void FetchAndIncrement::Fill(Return const& result,
+                             not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_fetch_and_increment() =
+    SerializeXYZSegment(result);
+}
+
+void FetchAndIncrement::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  CHECK(DeserializeXYZSegment(message.return_().fetch_and_increment()) ==
+        ksp_plugin::principia__FetchAndIncrement(
+          DeserializePointer<LineAndIterator*>(
+            *pointer_map, in.line_and_iterator())));
+}
+
+void FlightPlanSize::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanSize::Fill(Return const& result,
+                          not_null<Message*> const message) {
+  message->mutable_return_()->set_flight_plan_size(result);
+}
+
+void FlightPlanSize::Run(Message const& message,
+                         not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK_EQ(message.return_().flight_plan_size(),
+           ksp_plugin::principia__FlightPlanSize(plugin,
+                                                 in.vessel_guid().c_str()));
+}
+
+void ForgetAllHistoriesBefore::Fill(In const& in,
+                                    not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_t(in.t);
+}
+
+void ForgetAllHistoriesBefore::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__ForgetAllHistoriesBefore(plugin, in.t());
+}
+
+void GetBufferDuration::Fill(Return const& result,
+                             not_null<Message*> const message) {
+  message->mutable_return_()->set_get_buffer_duration(result);
+}
+
+void GetBufferDuration::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().get_buffer_duration(),
+           ksp_plugin::principia__GetBufferDuration());
+}
+
+void GetBufferedLogging::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  message->mutable_return_()->set_get_buffered_logging(result);
+}
+
+void GetBufferedLogging::Run(Message const& message,
+                             not_null<Player::PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().get_buffered_logging(),
+           ksp_plugin::principia__GetBufferedLogging());
+}
+
+void GetStderrLogging::Fill(Return const& result,
+                            not_null<Message*> const message) {
+  message->mutable_return_()->set_get_stderr_logging(result);
+}
+
+void GetStderrLogging::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().get_stderr_logging(),
+           ksp_plugin::principia__GetStderrLogging());
+}
+
+void GetSuppressedLogging::Fill(Return const& result,
+                                not_null<Message*> const message) {
+  message->mutable_return_()->set_get_suppressed_logging(result);
+}
+
+void GetSuppressedLogging::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().get_suppressed_logging(),
+           ksp_plugin::principia__GetSuppressedLogging());
+}
+
+void GetVerboseLogging::Fill(Return const& result,
+                             not_null<Message*> const message) {
+  message->mutable_return_()->set_get_verbose_logging(result);
+}
+
+void GetVerboseLogging::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().get_verbose_logging(),
+           ksp_plugin::principia__GetVerboseLogging());
+}
+
+void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void HasPrediction::Fill(Return const& result,
+                         not_null<Message*> const message) {
+  message->mutable_return_()->set_has_prediction(result);
+}
+
+void HasPrediction::Run(Message const& message,
+                        not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK_EQ(message.return_().has_prediction(),
+           ksp_plugin::principia__HasPrediction(plugin,
+                                                in.vessel_guid().c_str()));
+}
+
+void HasVessel::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void HasVessel::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_has_vessel(result);
+}
+
+void HasVessel::Run(Message const& message,
+                    not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK_EQ(message.return_().has_vessel(),
+           ksp_plugin::principia__HasVessel(plugin, in.vessel_guid().c_str()));
+}
+
+void InitGoogleLogging::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {}
 
 void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
@@ -369,52 +589,6 @@ void InsertCelestial::Run(Message const& message,
                                          in.gravitational_parameter(),
                                          in.parent_index(),
                                          DeserializeQP(in.from_parent()));
-}
-
-void InsertSun::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_celestial_index(in.celestial_index);
-  m->set_gravitational_parameter(in.gravitational_parameter);
-}
-
-void InsertSun::Run(Message const& message,
-                    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__InsertSun(plugin,
-                                   in.celestial_index(),
-                                   in.gravitational_parameter());
-}
-
-void UpdateCelestialHierarchy::Fill(In const& in,
-                                    not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_celestial_index(in.celestial_index);
-  m->set_parent_index(in.parent_index);
-}
-
-void UpdateCelestialHierarchy::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__UpdateCelestialHierarchy(plugin,
-                                                  in.celestial_index(),
-                                                  in.parent_index());
-}
-
-void EndInitialization::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-}
-
-void EndInitialization::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map,
-                                             message.in().plugin());
-  ksp_plugin::principia__EndInitialization(plugin);
 }
 
 void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {
@@ -440,127 +614,85 @@ void InsertOrKeepVessel::Run(Message const& message,
                                                      in.parent_index()));
 }
 
-void SetVesselStateOffset::Fill(In const& in,
-                                not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  *m->mutable_from_parent() = SerializeQP(in.from_parent);
-}
-
-void SetVesselStateOffset::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__SetVesselStateOffset(plugin,
-                                              in.vessel_guid().c_str(),
-                                              DeserializeQP(in.from_parent()));
-}
-
-void AdvanceTime::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_t(in.t);
-  m->set_planetarium_rotation(in.planetarium_rotation);
-}
-
-void AdvanceTime::Run(Message const& message,
-                      not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__AdvanceTime(plugin, in.t(), in.planetarium_rotation());
-}
-
-void ForgetAllHistoriesBefore::Fill(In const& in,
-                                    not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_t(in.t);
-}
-
-void ForgetAllHistoriesBefore::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__ForgetAllHistoriesBefore(plugin, in.t());
-}
-
-void VesselFromParent::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-}
-
-void VesselFromParent::Fill(Return const& result,
-                            not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_vessel_from_parent() =
-      SerializeQP(result);
-}
-
-void VesselFromParent::Run(Message const& message,
-                           not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeQP(message.return_().vessel_from_parent()) ==
-            ksp_plugin::principia__VesselFromParent(plugin,
-                                                    in.vessel_guid().c_str()));
-}
-
-void CelestialFromParent::Fill(In const& in, not_null<Message*> const message) {
+void InsertSun::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_celestial_index(in.celestial_index);
+  m->set_gravitational_parameter(in.gravitational_parameter);
 }
 
-void CelestialFromParent::Fill(Return const& result,
-                               not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_celestial_from_parent() =
-      SerializeQP(result);
-}
-
-void CelestialFromParent::Run(Message const& message,
-                              not_null<Player::PointerMap*> const pointer_map) {
+void InsertSun::Run(Message const& message,
+                    not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeQP(message.return_().celestial_from_parent()) ==
-            ksp_plugin::principia__CelestialFromParent(plugin,
-                                                       in.celestial_index()));
+  ksp_plugin::principia__InsertSun(plugin,
+                                   in.celestial_index(),
+                                   in.gravitational_parameter());
 }
 
-void NewBodyCentredNonRotatingNavigationFrame::Fill(
-    In const& in,
-    not_null<Message*> const message) {
+void LogError::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogError::Run(Message const& message,
+                   not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__LogError(message.in().message().c_str());
+}
+
+void LogFatal::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogFatal::Run(Message const& message,
+                   not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__LogFatal(message.in().message().c_str());
+}
+
+void LogInfo::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogInfo::Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__LogInfo(message.in().message().c_str());
+}
+
+void LogWarning::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_message(in.message);
+}
+
+void LogWarning::Run(Message const& message,
+                     not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__LogWarning(message.in().message().c_str());
+}
+
+void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  m->set_reference_body_index(in.reference_body_index);
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+  *m->mutable_ship_world_position() = SerializeXYZ(in.ship_world_position);
 }
 
-void NewBodyCentredNonRotatingNavigationFrame::Fill(
-    Return const& result,
-    not_null<Message*> const message) {
-  message->mutable_return_()->
-      set_new_body_centred_non_rotating_navigation_frame(
-          SerializePointer(result));
+void NavballOrientation::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_navball_orientation() =
+    SerializeWXYZ(result);
 }
 
-void NewBodyCentredNonRotatingNavigationFrame::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
+void NavballOrientation::Run(Message const& message,
+                             not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* navigation_frame =
-      ksp_plugin::principia__NewBodyCentredNonRotatingNavigationFrame(
-          plugin, in.reference_body_index());
-  Insert(pointer_map,
-         message.return_().new_body_centred_non_rotating_navigation_frame(),
-         navigation_frame);
+  CHECK(DeserializeWXYZ(message.return_().navball_orientation()) ==
+        ksp_plugin::principia__NavballOrientation(
+          plugin,
+          DeserializeXYZ(in.sun_world_position()),
+          DeserializeXYZ(in.ship_world_position())));
 }
 
 void NewBarycentricRotatingNavigationFrame::Fill(
-    In const& in,
-    not_null<Message*> const message) {
+  In const& in,
+  not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_primary_index(in.primary_index);
@@ -568,246 +700,72 @@ void NewBarycentricRotatingNavigationFrame::Fill(
 }
 
 void NewBarycentricRotatingNavigationFrame::Fill(
-    Return const& result,
-    not_null<Message*> const message) {
+  Return const& result,
+  not_null<Message*> const message) {
   message->mutable_return_()->set_new_barycentric_rotating_navigation_frame(
-      SerializePointer(result));
+    SerializePointer(result));
 }
 
 void NewBarycentricRotatingNavigationFrame::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* navigation_frame =
-      ksp_plugin::principia__NewBarycentricRotatingNavigationFrame(
-          plugin, in.primary_index(), in.secondary_index());
+    ksp_plugin::principia__NewBarycentricRotatingNavigationFrame(
+      plugin, in.primary_index(), in.secondary_index());
   Insert(pointer_map,
          message.return_().new_barycentric_rotating_navigation_frame(),
          navigation_frame);
 }
 
-void SetPlottingFrame::Fill(In const& in,
-                            not_null<Message*> const message) {
+void NewBodyCentredNonRotatingNavigationFrame::Fill(
+  In const& in,
+  not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  m->set_navigation_frame(SerializePointer(*in.navigation_frame));
+  m->set_reference_body_index(in.reference_body_index);
 }
 
-void SetPlottingFrame::Fill(Out const& out,
-                            not_null<Message*> const message) {
-  message->mutable_out()->set_navigation_frame(
-      SerializePointer(*out.navigation_frame));
-}
-
-void SetPlottingFrame::Run(Message const& message,
-                           not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
-                               *pointer_map, in.navigation_frame());
-  ksp_plugin::principia__SetPlottingFrame(plugin, &navigation_frame);
-  // While the |navigation_frame| is not deleted by this function, it is handed
-  // over to the plugin so we should not see it cross the interface again.
-  Delete(pointer_map, in.navigation_frame());
-  // TODO(phl): should we do something with out() here?
-}
-
-void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-}
-
-void UpdatePrediction::Run(Message const& message,
-                           not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__UpdatePrediction(plugin, in.vessel_guid().c_str());
-}
-
-void RenderedVesselTrajectory::Fill(In const& in,
-                                    not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
-}
-
-void RenderedVesselTrajectory::Fill(Return const& result,
-                                    not_null<Message*> const message) {
-  message->mutable_return_()->set_rendered_vessel_trajectory(
+void NewBodyCentredNonRotatingNavigationFrame::Fill(
+  Return const& result,
+  not_null<Message*> const message) {
+  message->mutable_return_()->
+    set_new_body_centred_non_rotating_navigation_frame(
       SerializePointer(result));
 }
 
-void RenderedVesselTrajectory::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
+void NewBodyCentredNonRotatingNavigationFrame::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* line_and_iterator =
-    ksp_plugin::principia__RenderedVesselTrajectory(
-        plugin,
-        in.vessel_guid().c_str(),
-        DeserializeXYZ(in.sun_world_position()));
+  auto* navigation_frame =
+    ksp_plugin::principia__NewBodyCentredNonRotatingNavigationFrame(
+      plugin, in.reference_body_index());
   Insert(pointer_map,
-         message.return_().rendered_vessel_trajectory(),
-         line_and_iterator);
+         message.return_().new_body_centred_non_rotating_navigation_frame(),
+         navigation_frame);
 }
 
-void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
+void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
+  auto* mutable_in = message->mutable_in();
+  mutable_in->set_initial_time(in.initial_time);
+  mutable_in->set_planetarium_rotation_in_degrees(
+    in.planetarium_rotation_in_degrees);
 }
 
-void HasPrediction::Fill(Return const& result,
-                         not_null<Message*> const message) {
-  message->mutable_return_()->set_has_prediction(result);
+void NewPlugin::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_new_plugin(SerializePointer(result));
 }
 
-void HasPrediction::Run(Message const& message,
-                        not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK_EQ(message.return_().has_prediction(),
-           ksp_plugin::principia__HasPrediction(plugin,
-                                                in.vessel_guid().c_str()));
-}
-
-void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
-}
-
-void RenderedPrediction::Fill(Return const& result,
-                              not_null<Message*> const message) {
-  message->mutable_return_()->set_rendered_prediction(
-      SerializePointer(result));
-}
-
-void RenderedPrediction::Run(Message const& message,
-                             not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* line_and_iterator = ksp_plugin::principia__RenderedPrediction(
-                                plugin,
-                                in.vessel_guid().c_str(),
-                                DeserializeXYZ(in.sun_world_position()));
-  Insert(pointer_map,
-         message.return_().rendered_prediction(),
-         line_and_iterator);
-}
-
-void FlightPlanSize::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-}
-
-void FlightPlanSize::Fill(Return const& result,
-                          not_null<Message*> const message) {
-  message->mutable_return_()->set_flight_plan_size(result);
-}
-
-void FlightPlanSize::Run(Message const& message,
-                         not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK_EQ(message.return_().flight_plan_size(),
-           ksp_plugin::principia__FlightPlanSize(plugin,
-                                                 in.vessel_guid().c_str()));
-}
-
-void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  m->set_plan_phase(in.plan_phase);
-  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
-}
-
-void RenderedFlightPlan::Fill(Return const& result,
-                              not_null<Message*> const message) {
-  message->mutable_return_()->set_rendered_flight_plan(
-      SerializePointer(result));
-}
-
-void RenderedFlightPlan::Run(Message const& message,
-                             not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto* line_and_iterator = ksp_plugin::principia__RenderedFlightPlan(
-                                plugin,
-                                in.vessel_guid().c_str(),
-                                in.plan_phase(),
-                                DeserializeXYZ(in.sun_world_position()));
-  Insert(pointer_map,
-         message.return_().rendered_flight_plan(),
-         line_and_iterator);
-}
-
-void SetPredictionLength::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_t(in.t);
-}
-
-void SetPredictionLength::Run(Message const& message,
-                              not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__SetPredictionLength(plugin, in.t());
-}
-
-void SetPredictionLengthTolerance::Fill(In const& in,
-                                        not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_l(in.l);
-}
-
-void SetPredictionLengthTolerance::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__SetPredictionLengthTolerance(plugin, in.l());
-}
-
-void SetPredictionSpeedTolerance::Fill(In const& in,
-                                       not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_v(in.v);
-}
-
-void SetPredictionSpeedTolerance::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  ksp_plugin::principia__SetPredictionSpeedTolerance(plugin, in.v());
-}
-
-void HasVessel::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-}
-
-void HasVessel::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_has_vessel(result);
-}
-
-void HasVessel::Run(Message const& message,
+void NewPlugin::Run(Message const& message,
                     not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK_EQ(message.return_().has_vessel(),
-           ksp_plugin::principia__HasVessel(plugin, in.vessel_guid().c_str()));
+  auto* plugin = ksp_plugin::principia__NewPlugin(
+    in.initial_time(),
+    in.planetarium_rotation_in_degrees());
+  Insert(pointer_map, message.return_().new_plugin(), plugin);
 }
 
 void NumberOfSegments::Fill(In const& in, not_null<Message*> const message) {
@@ -825,94 +783,8 @@ void NumberOfSegments::Run(Message const& message,
   auto const& in = message.in();
   CHECK_EQ(message.return_().number_of_segments(),
            ksp_plugin::principia__NumberOfSegments(
-               DeserializePointer<LineAndIterator const*>(
-                   *pointer_map, in.line_and_iterator())));
-}
-
-void FetchAndIncrement::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
-}
-
-void FetchAndIncrement::Fill(Return const& result,
-                             not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_fetch_and_increment() =
-      SerializeXYZSegment(result);
-}
-
-void FetchAndIncrement::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  CHECK(DeserializeXYZSegment(message.return_().fetch_and_increment()) ==
-            ksp_plugin::principia__FetchAndIncrement(
-                DeserializePointer<LineAndIterator*>(
-                    *pointer_map, in.line_and_iterator())));
-}
-
-void AtEnd::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_line_and_iterator(SerializePointer(in.line_and_iterator));
-}
-
-void AtEnd::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_at_end(result);
-}
-
-void AtEnd::Run(Message const& message,
-                not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  CHECK_EQ(message.return_().at_end(),
-           ksp_plugin::principia__AtEnd(DeserializePointer<LineAndIterator*>(
+             DeserializePointer<LineAndIterator const*>(
                *pointer_map, in.line_and_iterator())));
-}
-
-void DeleteLineAndIterator::Fill(In const& in,
-                                 not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_line_and_iterator(SerializePointer(*in.line_and_iterator));
-}
-
-void DeleteLineAndIterator::Fill(Out const& out,
-                                 not_null<Message*> const message) {
-  message->mutable_out()->set_line_and_iterator(
-      SerializePointer(*out.line_and_iterator));
-}
-
-void DeleteLineAndIterator::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto* line_and_iterator = DeserializePointer<LineAndIterator*>(
-                                *pointer_map, message.in().line_and_iterator());
-  ksp_plugin::principia__DeleteLineAndIterator(&line_and_iterator);
-  Delete(pointer_map, message.in().line_and_iterator());
-  // TODO(phl): should we do something with out() here?
-}
-
-void AddVesselToNextPhysicsBubble::Fill(In const& in,
-                                        not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  for (KSPPart const* part = in.parts; part < in.parts + in.count; ++part) {
-    *m->add_parts() = SerializeKSPPart(*part);
-  }
-}
-
-void AddVesselToNextPhysicsBubble::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  std::vector<KSPPart> deserialized_parts;
-  deserialized_parts.reserve(in.parts_size());
-  for (auto const& part : in.parts()) {
-    deserialized_parts.push_back(DeserializeKSPPart(part));
-  }
-  ksp_plugin::principia__AddVesselToNextPhysicsBubble(
-      plugin,
-      in.vessel_guid().c_str(),
-      &deserialized_parts[0],
-      deserialized_parts.size());
 }
 
 void PhysicsBubbleIsEmpty::Fill(In const& in,
@@ -927,166 +799,105 @@ void PhysicsBubbleIsEmpty::Fill(Return const& result,
 }
 
 void PhysicsBubbleIsEmpty::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   CHECK_EQ(message.return_().physics_bubble_is_empty(),
            ksp_plugin::principia__PhysicsBubbleIsEmpty(plugin));
 }
 
-void BubbleDisplacementCorrection::Fill(In const& in,
-                                        not_null<Message*> const message) {
+void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
-  *m->mutable_sun_position() = SerializeXYZ(in.sun_position);
-}
-
-void BubbleDisplacementCorrection::Fill(Return const& result,
-                                        not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_bubble_displacement_correction() =
-      SerializeXYZ(result);
-}
-
-void BubbleDisplacementCorrection::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeXYZ(message.return_().bubble_displacement_correction()) ==
-            ksp_plugin::principia__BubbleDisplacementCorrection(
-                plugin, DeserializeXYZ(in.sun_position())));
-}
-
-void BubbleVelocityCorrection::Fill(In const& in,
-                                    not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_reference_body_index(in.reference_body_index);
-}
-
-void BubbleVelocityCorrection::Fill(Return const& result,
-                                    not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_bubble_velocity_correction() =
-      SerializeXYZ(result);
-}
-
-void BubbleVelocityCorrection::Run(
-    Message const& message,
-    not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeXYZ(message.return_().bubble_velocity_correction()) ==
-            ksp_plugin::principia__BubbleVelocityCorrection(
-                plugin, in.reference_body_index()));
-}
-
-void NavballOrientation::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_plan_phase(in.plan_phase);
   *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
-  *m->mutable_ship_world_position() = SerializeXYZ(in.ship_world_position);
 }
 
-void NavballOrientation::Fill(Return const& result,
+void RenderedFlightPlan::Fill(Return const& result,
                               not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_navball_orientation() =
-      SerializeWXYZ(result);
+  message->mutable_return_()->set_rendered_flight_plan(
+    SerializePointer(result));
 }
 
-void NavballOrientation::Run(Message const& message,
+void RenderedFlightPlan::Run(Message const& message,
                              not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeWXYZ(message.return_().navball_orientation()) ==
-            ksp_plugin::principia__NavballOrientation(
-                plugin,
-                DeserializeXYZ(in.sun_world_position()),
-                DeserializeXYZ(in.ship_world_position())));
+  auto* line_and_iterator = ksp_plugin::principia__RenderedFlightPlan(
+    plugin,
+    in.vessel_guid().c_str(),
+    in.plan_phase(),
+    DeserializeXYZ(in.sun_world_position()));
+  Insert(pointer_map,
+         message.return_().rendered_flight_plan(),
+         line_and_iterator);
 }
 
-void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
+void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
-void VesselTangent::Fill(Return const& result,
-                         not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_vessel_tangent() =
-      SerializeXYZ(result);
+void RenderedPrediction::Fill(Return const& result,
+                              not_null<Message*> const message) {
+  message->mutable_return_()->set_rendered_prediction(
+    SerializePointer(result));
 }
 
-void VesselTangent::Run(Message const& message,
-                        not_null<Player::PointerMap*> const pointer_map) {
+void RenderedPrediction::Run(Message const& message,
+                             not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeXYZ(message.return_().vessel_tangent()) ==
-            ksp_plugin::principia__VesselTangent(
-                plugin,
-                in.vessel_guid().c_str()));
+  auto* line_and_iterator = ksp_plugin::principia__RenderedPrediction(
+    plugin,
+    in.vessel_guid().c_str(),
+    DeserializeXYZ(in.sun_world_position()));
+  Insert(pointer_map,
+         message.return_().rendered_prediction(),
+         line_and_iterator);
 }
 
-void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
+void RenderedVesselTrajectory::Fill(In const& in,
+                                    not_null<Message*> const message) {
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
 }
 
-void VesselNormal::Fill(Return const& result,
-                        not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_vessel_normal() =
-      SerializeXYZ(result);
+void RenderedVesselTrajectory::Fill(Return const& result,
+                                    not_null<Message*> const message) {
+  message->mutable_return_()->set_rendered_vessel_trajectory(
+    SerializePointer(result));
 }
 
-void VesselNormal::Run(Message const& message,
-                       not_null<Player::PointerMap*> const pointer_map) {
+void RenderedVesselTrajectory::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeXYZ(message.return_().vessel_normal()) ==
-            ksp_plugin::principia__VesselNormal(
-                plugin,
-                in.vessel_guid().c_str()));
+  auto* line_and_iterator =
+    ksp_plugin::principia__RenderedVesselTrajectory(
+      plugin,
+      in.vessel_guid().c_str(),
+      DeserializeXYZ(in.sun_world_position()));
+  Insert(pointer_map,
+         message.return_().rendered_vessel_trajectory(),
+         line_and_iterator);
 }
 
-void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
+void SayHello::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_say_hello(result);
 }
 
-void VesselBinormal::Fill(Return const& result,
-                          not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_vessel_binormal() =
-      SerializeXYZ(result);
-}
-
-void VesselBinormal::Run(Message const& message,
-                         not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK(DeserializeXYZ(message.return_().vessel_binormal()) ==
-            ksp_plugin::principia__VesselBinormal(
-                plugin,
-                in.vessel_guid().c_str()));
-}
-
-void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
-  auto* m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-}
-
-void CurrentTime::Fill(Return const& result,
-                       not_null<Message*> const message) {
-  message->mutable_return_()->set_current_time(result);
-}
-
-void CurrentTime::Run(Message const& message,
-                      not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  CHECK_EQ(message.return_().current_time(),
-           ksp_plugin::principia__CurrentTime(plugin));
+void SayHello::Run(Message const& message,
+                   not_null<Player::PointerMap*> const pointer_map) {
+  CHECK_EQ(message.return_().say_hello(),
+           ksp_plugin::principia__SayHello());
 }
 
 void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
@@ -1112,9 +923,9 @@ void SerializePlugin::Run(Message const& message,
   auto const& in = message.in();
   auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto* serializer = DeserializePointer<PullSerializer*>(
-                         *pointer_map, in.serializer());
+    *pointer_map, in.serializer());
   char const* serialize_plugin =
-      ksp_plugin::principia__SerializePlugin(plugin, &serializer);
+    ksp_plugin::principia__SerializePlugin(plugin, &serializer);
   if (serialize_plugin == nullptr) {
     Delete(pointer_map, in.serializer());
   } else {
@@ -1123,67 +934,256 @@ void SerializePlugin::Run(Message const& message,
   }
 }
 
-void DeletePluginSerialization::Fill(In const& in,
-                                     not_null<Message*> const message) {
+void SetBufferDuration::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_seconds(in.seconds);
+}
+
+void SetBufferDuration::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__SetBufferDuration(message.in().seconds());
+}
+
+void SetBufferedLogging::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_max_severity(in.max_severity);
+}
+
+void SetBufferedLogging::Run(Message const& message,
+                             not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__SetBufferedLogging(message.in().max_severity());
+}
+
+void SetPlottingFrame::Fill(In const& in,
+                            not_null<Message*> const message) {
   auto* m = message->mutable_in();
-  m->set_serialization(SerializePointer(*in.serialization));
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_navigation_frame(SerializePointer(*in.navigation_frame));
 }
 
-void DeletePluginSerialization::Fill(Out const& out,
-                                     not_null<Message*> const message) {
-  auto* m = message->mutable_out();
-  m->set_serialization(SerializePointer(*out.serialization));
+void SetPlottingFrame::Fill(Out const& out,
+                            not_null<Message*> const message) {
+  message->mutable_out()->set_navigation_frame(
+    SerializePointer(*out.navigation_frame));
 }
 
-void DeletePluginSerialization::Run(
+void SetPlottingFrame::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto* navigation_frame = DeserializePointer<NavigationFrame*>(
+    *pointer_map, in.navigation_frame());
+  ksp_plugin::principia__SetPlottingFrame(plugin, &navigation_frame);
+  // While the |navigation_frame| is not deleted by this function, it is handed
+  // over to the plugin so we should not see it cross the interface again.
+  Delete(pointer_map, in.navigation_frame());
+  // TODO(phl): should we do something with out() here?
+}
+
+void SetPredictionLength::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_t(in.t);
+}
+
+void SetPredictionLength::Run(Message const& message,
+                              not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__SetPredictionLength(plugin, in.t());
+}
+
+void SetPredictionLengthTolerance::Fill(In const& in,
+                                        not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_l(in.l);
+}
+
+void SetPredictionLengthTolerance::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__SetPredictionLengthTolerance(plugin, in.l());
+}
+
+void SetPredictionSpeedTolerance::Fill(In const& in,
+                                       not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_v(in.v);
+}
+
+void SetPredictionSpeedTolerance::Run(
+  Message const& message,
+  not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__SetPredictionSpeedTolerance(plugin, in.v());
+}
+
+void SetStderrLogging::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_min_severity(in.min_severity);
+}
+
+void SetStderrLogging::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__SetStderrLogging(message.in().min_severity());
+}
+
+void SetSuppressedLogging::Fill(In const& in,
+                                not_null<Message*> const message) {
+  message->mutable_in()->set_min_severity(in.min_severity);
+}
+
+void SetSuppressedLogging::Run(
+    Message const& message,
+    not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__SetSuppressedLogging(message.in().min_severity());
+}
+
+void SetVerboseLogging::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_level(in.level);
+}
+
+void SetVerboseLogging::Run(Message const& message,
+                            not_null<Player::PointerMap*> const pointer_map) {
+  ksp_plugin::principia__SetVerboseLogging(message.in().level());
+}
+
+void SetVesselStateOffset::Fill(In const& in,
+                                not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_from_parent() = SerializeQP(in.from_parent);
+}
+
+void SetVesselStateOffset::Run(
     Message const& message,
     not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* serialization = DeserializePointer<char const*>(
-                            *pointer_map, in.serialization());
-  ksp_plugin::principia__DeletePluginSerialization(&serialization);
-  Delete(pointer_map, in.serialization());
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__SetVesselStateOffset(plugin,
+                                              in.vessel_guid().c_str(),
+                                              DeserializeQP(in.from_parent()));
 }
 
-void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
+void UpdateCelestialHierarchy::Fill(In const& in,
+                                    not_null<Message*> const message) {
   auto* m = message->mutable_in();
-  m->set_serialization(std::string(in.serialization, in.serialization_size));
-  m->set_deserializer(SerializePointer(*in.deserializer));
-  m->set_plugin(SerializePointer(*in.plugin));
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+  m->set_parent_index(in.parent_index);
 }
 
-void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
-  auto* m = message->mutable_out();
-  m->set_deserializer(SerializePointer(*out.deserializer));
-  m->set_plugin(SerializePointer(*out.plugin));
-}
-
-void DeserializePlugin::Run(Message const& message,
-                            not_null<Player::PointerMap*> const pointer_map) {
+void UpdateCelestialHierarchy::Run(
+    Message const& message,
+    not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
-  auto* plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
-  auto* deserializer = DeserializePointer<PushDeserializer*>(
-                           *pointer_map, in.deserializer());
-  ksp_plugin::principia__DeserializePlugin(in.serialization().c_str(),
-                                           in.serialization().size(),
-                                           &deserializer,
-                                           &plugin);
-  if (in.serialization().size() == 0) {
-    Delete(pointer_map, in.deserializer());
-  } else {
-    Insert(pointer_map, message.out().deserializer(), deserializer);
-  }
-  Insert(pointer_map, message.out().plugin(), plugin);
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__UpdateCelestialHierarchy(plugin,
+                                                  in.celestial_index(),
+                                                  in.parent_index());
 }
 
-void SayHello::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_say_hello(result);
+void UpdatePrediction::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
 }
 
-void SayHello::Run(Message const& message,
-                   not_null<Player::PointerMap*> const pointer_map) {
-  CHECK_EQ(message.return_().say_hello(),
-           ksp_plugin::principia__SayHello());
+void UpdatePrediction::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  ksp_plugin::principia__UpdatePrediction(plugin, in.vessel_guid().c_str());
+}
+
+void VesselBinormal::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void VesselBinormal::Fill(Return const& result,
+                          not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_binormal() =
+    SerializeXYZ(result);
+}
+
+void VesselBinormal::Run(Message const& message,
+                         not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeXYZ(message.return_().vessel_binormal()) ==
+        ksp_plugin::principia__VesselBinormal(
+          plugin,
+          in.vessel_guid().c_str()));
+}
+
+void VesselFromParent::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void VesselFromParent::Fill(Return const& result,
+                            not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_from_parent() =
+      SerializeQP(result);
+}
+
+void VesselFromParent::Run(Message const& message,
+                           not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeQP(message.return_().vessel_from_parent()) ==
+            ksp_plugin::principia__VesselFromParent(plugin,
+                                                    in.vessel_guid().c_str()));
+}
+
+void VesselNormal::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void VesselNormal::Fill(Return const& result,
+                        not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_normal() =
+    SerializeXYZ(result);
+}
+
+void VesselNormal::Run(Message const& message,
+                       not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeXYZ(message.return_().vessel_normal()) ==
+        ksp_plugin::principia__VesselNormal(
+          plugin,
+          in.vessel_guid().c_str()));
+}
+
+void VesselTangent::Fill(In const& in, not_null<Message*> const message) {
+  auto* m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void VesselTangent::Fill(Return const& result,
+                         not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_vessel_tangent() =
+      SerializeXYZ(result);
+}
+
+void VesselTangent::Run(Message const& message,
+                        not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto* plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  CHECK(DeserializeXYZ(message.return_().vessel_tangent()) ==
+            ksp_plugin::principia__VesselTangent(
+                plugin,
+                in.vessel_guid().c_str()));
 }
 
 }  // namespace journal
