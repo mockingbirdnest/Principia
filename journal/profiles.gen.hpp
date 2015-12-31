@@ -183,7 +183,7 @@ struct DirectlyInsertCelestial {
 
 struct EndInitialization {
   struct In {
-    Plugin const* const plugin;
+    Plugin* const plugin;
   };
 
   using Message = serialization::EndInitialization;
@@ -355,7 +355,7 @@ struct InsertSun {
 
 struct LogError {
   struct In {
-    char const* const message;
+    char const* const text;
   };
 
   using Message = serialization::LogError;
@@ -366,7 +366,7 @@ struct LogError {
 
 struct LogFatal {
   struct In {
-    char const* const message;
+    char const* const text;
   };
 
   using Message = serialization::LogFatal;
@@ -377,7 +377,7 @@ struct LogFatal {
 
 struct LogInfo {
   struct In {
-    char const* const message;
+    char const* const text;
   };
 
   using Message = serialization::LogInfo;
@@ -388,7 +388,7 @@ struct LogInfo {
 
 struct LogWarning {
   struct In {
-    char const* const message;
+    char const* const text;
   };
 
   using Message = serialization::LogWarning;

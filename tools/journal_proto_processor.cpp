@@ -131,7 +131,9 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                "      for (auto const& message : messages) {\n" +
                "        deserialized_" + descriptor_name +
                ".push_back(Deserialize" + message_type_name + "(message));\n" +
-               "      }\n    }(" + expr + ")";
+               "      }\n"
+               "      return deserialized_" + descriptor_name +
+               ";\n    }(" + expr + ")";
       };
   field_serializer_wrapper_[descriptor] =
       [message_type_name](std::string const& expr) {
@@ -151,8 +153,15 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
         return "*" + expr;
       };
   optional_field_get_wrapper_[descriptor] =
-      [](std::string const& condition, std::string const& expr) {
-        return condition + " ? &" + expr + " : nullptr";
+      [this, descriptor](std::string const& condition,
+                         std::string const& expr) {
+        // Tricky.  We need a heap allocation to obtain a pointer to the value.
+        return condition + " ? std::make_unique<int const>(" + expr +
+               ") : nullptr";
+      };
+  field_arguments_wrapper_[descriptor] =
+      [](std::string const& name) -> std::vector<std::string> {
+        return {name + ".get()"};
       };
 }
 
@@ -454,7 +463,8 @@ void JournalProtoProcessor::ProcessInOut(
       // because we know that we insert only out parameters.
       cpp_run_epilog_[descriptor] +=
           field_inserter_wrapper_[field_descriptor](
-              "message." + field_name + "()", field_descriptor_name);
+              "message." + ToLower(name) + "()." + field_descriptor_name + "()",
+              field_descriptor_name);
     }
     cpp_nested_type_[descriptor] += "    " +
                                     cpp_field_type_[field_descriptor] +
