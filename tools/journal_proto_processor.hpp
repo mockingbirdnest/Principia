@@ -54,6 +54,17 @@ class JournalProtoProcessor {
   // generation of the .cpp file) the values are lambdas which transform one or
   // two C++ code snippets by wrapping them in a more complex structure.
 
+  // The fields that are in-out, i.e. for which fields of the same name exist in
+  // both the In and the Out message.  Note that both fields are present in this
+  // set.  Those fields are passed to the interface with an extra level of
+  // indirection.
+  std::set<FieldDescriptor const*> in_out_;
+
+  // For the fields that have a (size) option, the name of the size member
+  // variable in the In or Out struct.  Special processing is required when 
+  // filling those fields from the struct members.  No data for other fields.
+  std::map<FieldDescriptor const*, std::string> size_member_name_;
+
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& name,
                                      std::string const& expr)>>
@@ -86,8 +97,6 @@ class JournalProtoProcessor {
            std::function<std::vector<std::string>(std::string const& name)>>
            field_arguments_wrapper_;
 
-  std::map<FieldDescriptor const*, std::string> size_field_name_;
-  std::set<FieldDescriptor const*> in_out_field_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
 
   // The entire sequence of statements for the body of a Fill function.  The key

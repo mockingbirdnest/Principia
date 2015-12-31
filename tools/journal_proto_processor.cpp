@@ -105,7 +105,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   FieldOptions const& options = descriptor->options();
   CHECK(options.HasExtension(serialization::size))
       << descriptor->full_name() << " must have a size option";
-  size_field_name_[descriptor] = options.GetExtension(serialization::size);
+  size_member_name_[descriptor] = options.GetExtension(serialization::size);
   cpp_field_type_[descriptor] = message_type_name + " const*";
   field_copy_wrapper_[descriptor] =
       [this, descriptor, descriptor_name, message_type_name](
@@ -115,7 +115,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
         return "for (" + message_type_name + " const* " + descriptor_name +
                " = " + expr + "; " + descriptor_name + " < " + expr + " + " +
                expr.substr(0, expr.find('.')) + "." +
-               size_field_name_[descriptor] + "; ++" + descriptor_name +
+               size_member_name_[descriptor] + "; ++" + descriptor_name +
                ") {\n    *" + name + "add_" + descriptor_name + "() = " +
                field_serializer_wrapper_[descriptor]("*"+ descriptor_name) +
                ";\n  }";
@@ -261,12 +261,12 @@ void JournalProtoProcessor::ProcessSingleStringField(
   cpp_field_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
-    size_field_name_[descriptor] = options.GetExtension(serialization::size);
+    size_member_name_[descriptor] = options.GetExtension(serialization::size);
     indirect_field_wrapper_[descriptor] =
         [this, descriptor](std::string const& expr) {
           return "std::string(" + expr + ", " +
                  expr.substr(0, expr.find('.')) + "." +
-                 size_field_name_[descriptor] + ")";
+                 size_member_name_[descriptor] + ")";
         };
     field_arguments_wrapper_[descriptor] =
         [](std::string const& name) -> std::vector<std::string> {
@@ -347,7 +347,7 @@ void JournalProtoProcessor::ProcessRequiredField(
 
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
-  if (Contains(in_out_field_, descriptor)) {
+  if (Contains(in_out_, descriptor)) {
     cpp_field_type_[descriptor] += "*";
     indirect_field_wrapper_[descriptor] =
         [](std::string const& expr) {
@@ -472,9 +472,9 @@ void JournalProtoProcessor::ProcessInOut(
                                     field_descriptor_name + ";\n";
 
     // If this field has a size, generate it now.
-    if (Contains(size_field_name_, field_descriptor)) {
+    if (Contains(size_member_name_, field_descriptor)) {
       cpp_nested_type_[descriptor] +=
-          "    int const " + size_field_name_[field_descriptor] + ";\n";
+          "    int const " + size_member_name_[field_descriptor] + ";\n";
     }
   }
   cpp_nested_type_[descriptor] += "  };\n";
@@ -543,8 +543,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
     });
     for (int i = 0; i < field_descriptors.size() - 1; ++i) {
       if (field_descriptors[i]->name() == field_descriptors[i + 1]->name()) {
-        in_out_field_.insert(field_descriptors[i]);
-        in_out_field_.insert(field_descriptors[i + 1]);
+        in_out_.insert(field_descriptors[i]);
+        in_out_.insert(field_descriptors[i + 1]);
       }
     }
   }
