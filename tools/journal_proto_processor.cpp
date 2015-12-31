@@ -298,7 +298,7 @@ void JournalProtoProcessor::ProcessOptionalField(
     FieldDescriptor const* descriptor) {
   field_optional_assignment_fn_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
-        return "if (" + expr + " != nullptr) {\n  " + stmt + "  }\n";
+        return "  if (" + expr + " != nullptr) {\n  " + stmt + "  }\n";
       };
   field_optional_pointer_fn_[descriptor] =
       [](std::string const& condition, std::string const& expr) {
@@ -464,7 +464,7 @@ void JournalProtoProcessor::ProcessInOut(
     std::copy(field_arguments.begin(), field_arguments.end(),
               std::back_inserter(run_arguments_[descriptor]));
     run_body_prolog_[descriptor] +=
-        "  auto const " + run_local_variable + " = " +
+        "  auto " + run_local_variable + " = " +
         field_optional_pointer_fn_[field_descriptor](
             ToLower(name) + ".has_" + field_descriptor_name + "()",
             field_deserializer_fn_[field_descriptor](run_field_getter)) +
