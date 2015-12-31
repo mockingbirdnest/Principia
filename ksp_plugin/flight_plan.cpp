@@ -22,55 +22,23 @@ int FlightPlan::size() const {
   return manœuvres_.size();
 }
 
-Manœuvre<Barycentric, Navigation> const& FlightPlan::Get(int index) {
+NavigationManœuvre const& FlightPlan::Get(int index) {
   CHECK_LE(0, index);
   CHECK_LT(index, size());
   return manœuvres_[index];
 }
 
 bool FlightPlan::Append(Burn burn) {
-  Manœuvre<Barycentric, Navigation> manœuvre(
-      burn.thrust,
-      manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass(),
-      burn.specific_impulse,
-      Normalize(burn.Δv),
-      std::move(burn.frame));
-  manœuvre.set_initial_time(burn.initial_time);
-  manœuvre.set_Δv(burn.Δv.Norm());
+  auto manœuvre =
+      MakeManœuvre(
+          std::move(burn),
+          manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
   if (manœuvre.FitsBetween(
           manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time(),
           final_time_)) {
     return false;
   } else {
-    manœuvres_.emplace_back(std::move(manœuvre));
-    // Reset the last coast.
-    segments_.top()->ForgetBefore(segments_.top()->Fork().time());
-    // Prolong the last coast until the start of the new burn.
-    ephemeris_->FlowWithAdaptiveStep(
-        segments_.top().get(),
-        ephemeris_->kNoIntrinsicAcceleration,
-        length_integration_tolerance_,
-        speed_integration_tolerance_,
-        integrator_,
-        burn.initial_time);
-    // Create the burn segment.
-    segments_.emplace(segments_.top()->NewForkAtLast());
-    ephemeris_->FlowWithAdaptiveStep(
-        segments_.top().get(),
-        manœuvres_.back().acceleration(*segments_.top()),
-        length_integration_tolerance_,
-        speed_integration_tolerance_,
-        integrator_,
-        manœuvres_.back().final_time());
-    // Create the final coast segment.
-    segments_.emplace(segments_.top()->NewForkAtLast());
-    ephemeris_->FlowWithAdaptiveStep(
-        segments_.top().get(),
-        ephemeris_->kNoIntrinsicAcceleration,
-        length_integration_tolerance_,
-        speed_integration_tolerance_,
-        integrator_,
-        final_time_);
+    Append(std::move(manœuvre));
     return true;
   }
 }
@@ -80,28 +48,14 @@ void FlightPlan::RemoveLast() {
   manœuvres_.pop_back();
   segments_.pop();  // Last coast.
   segments_.pop();  // Last burn.
-  // Reset the last remaining coast.
-  segments_.top()->ForgetBefore(segments_.top()->Fork().time());
-  // Prolong the last remaining coast until |final_time_|.
-  ephemeris_->FlowWithAdaptiveStep(
-      segments_.top().get(),
-      ephemeris_->kNoIntrinsicAcceleration,
-      length_integration_tolerance_,
-      speed_integration_tolerance_,
-      integrator_,
-      final_time_);
+  ResetLastSegment();
+  CoastLastSegment(final_time_);
 }
 
 bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
-
-  Manœuvre<Barycentric, Navigation> manœuvre(burn.thrust,
-      manœuvres_.back().initial_mass(),
-      burn.specific_impulse,
-      Normalize(burn.Δv),
-      std::move(burn.frame));
-  manœuvre.set_initial_time(burn.initial_time);
-  manœuvre.set_Δv(burn.Δv.Norm());
+  auto manœuvre =
+      MakeManœuvre(std::move(burn), manœuvres_.back().initial_mass());
   if (manœuvre.FitsBetween(manœuvres_.size() == 1
                                ? initial_time_
                                : manœuvres_[manœuvres_.size() - 2].final_time(),
@@ -111,7 +65,7 @@ bool FlightPlan::ReplaceLast(Burn burn) {
     manœuvres_.pop_back();
     segments_.pop();  // Last coast.
     segments_.pop();  // Last burn.
-    CHECK(Append(std::move(burn)));
+    Append(std::move(manœuvre));
     return true;
   }
 }
@@ -122,16 +76,59 @@ bool FlightPlan::set_final_time(Instant const& final_time) {
     return false;
   } else {
     final_time_ = final_time;
-  segments_.top()->ForgetBefore(segments_.top()->Fork().time());
+    ResetLastSegment();
+    CoastLastSegment(final_time_);
+    return true;
+  }
+}
+
+NavigationManœuvre FlightPlan::MakeManœuvre(Burn burn, Mass const & initial_mass) {
+  NavigationManœuvre manœuvre(burn.thrust,
+      initial_mass,
+      burn.specific_impulse,
+      Normalize(burn.Δv),
+      std::move(burn.frame));
+  manœuvre.set_initial_time(burn.initial_time);
+  manœuvre.set_Δv(burn.Δv.Norm());
+  return std::move(manœuvre);
+}
+
+void FlightPlan::Append(NavigationManœuvre manœuvre) {
+  manœuvres_.emplace_back(std::move(manœuvre));
+  ResetLastSegment();
+  CoastLastSegment(manœuvre.initial_time());
+  AddSegment();
+  BurnLastSegment(manœuvre);
+  AddSegment();
+  CoastLastSegment(final_time_);
+}
+
+void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   ephemeris_->FlowWithAdaptiveStep(
       segments_.top().get(),
-      ephemeris_->kNoIntrinsicAcceleration,
+      manœuvre.acceleration(*segments_.top()),
       length_integration_tolerance_,
       speed_integration_tolerance_,
       integrator_,
-      final_time_);
-    return true;
-  }
+      manœuvre.final_time());
+}
+
+void FlightPlan::CoastLastSegment(Instant const& final_time) {
+  ephemeris_->FlowWithAdaptiveStep(
+      segments_.top().get(),
+      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+      length_integration_tolerance_,
+      speed_integration_tolerance_,
+      integrator_,
+      final_time);
+}
+
+void FlightPlan::AddSegment() {
+  segments_.emplace(segments_.top()->NewForkAtLast());
+}
+
+void FlightPlan::ResetLastSegment() {
+  segments_.top()->ForgetAfter(segments_.top()->Fork().time());
 }
 
 }  // namespace ksp_plugin

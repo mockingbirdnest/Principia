@@ -23,6 +23,8 @@ struct Burn {
   Velocity<Frenet<Navigation>> Δv;
 };
 
+using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
+
 class FlightPlan {
  public:
   FlightPlan(
@@ -35,7 +37,7 @@ class FlightPlan {
   ~FlightPlan() = default;
 
   int size() const;
-  Manœuvre<Barycentric, Navigation> const& Get(int index);
+  NavigationManœuvre const& Get(int index);
 
   void RemoveLast();
 
@@ -50,14 +52,27 @@ class FlightPlan {
   bool set_final_time(Instant const& final_time);
 
  private:
+  void Append(NavigationManœuvre manœuvre);
+
+  void BurnLastSegment(NavigationManœuvre const& manœuvre);
+  void CoastLastSegment(Instant const& final_time);
+
+  void AddSegment();
+  void ResetLastSegment();
+
+  // TODO(egg): consider making this a constructor of Manœuvre.
+  NavigationManœuvre MakeManœuvre(Burn burn, Mass const& initial_mass);
+
   Mass const initial_mass_;
   Instant const initial_time_;
   Instant final_time_;
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
   // Starts and ends with a coasting segment; coasting and burning alternate.
+  // each segment is a fork of the previous one, so the stack structure prevents
+  // dangling.
   std::stack<ForkHandle> segments_;
-  std::vector<Manœuvre<Barycentric, Navigation>> manœuvres_;
+  std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator_;
