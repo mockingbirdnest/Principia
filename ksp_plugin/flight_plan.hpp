@@ -58,7 +58,6 @@ class FlightPlan {
   // Starts and ends with a coasting segment; coasting and burning alternate.
   std::stack<ForkHandle> segments_;
   std::vector<Manœuvre<Barycentric, Navigation>> manœuvres_;
-  std::stack<Burn> burns_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator_;
