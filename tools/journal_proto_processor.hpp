@@ -108,9 +108,15 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr1,
                                      std::string const& expr2)>>
       field_inserter_fn_;
+
+  // For all fields, a lambda that takes an expression for reading a local
+  // variable (possibly with dereferencing) and returns a protocol buffer
+  // expression suitable for assigning to some field either using set_bar() or
+  // mutable_bar() (typically the result is a call to some Serialize function).
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
-           field_serializer_wrapper_;
+           field_serializer_fn_;
+
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
            indirect_field_wrapper_;

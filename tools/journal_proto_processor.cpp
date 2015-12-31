@@ -117,7 +117,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                expr.substr(0, expr.find('.')) + "." +
                size_member_name_[descriptor] + "; ++" + descriptor_name +
                ") {\n    *" + name + "add_" + descriptor_name + "() = " +
-               field_serializer_wrapper_[descriptor]("*"+ descriptor_name) +
+               field_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n  }";
       };
   field_deserializer_fn_[descriptor] =
@@ -135,7 +135,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                "      return deserialized_" + descriptor_name +
                ";\n    }(" + expr + ")";
       };
-  field_serializer_wrapper_[descriptor] =
+  field_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Serialize" + message_type_name + "(" + expr + ")";
       };
@@ -216,7 +216,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         return "DeserializePointer<" + pointer_to + "*>(*pointer_map, " + expr +
                ")";
       };
-  field_serializer_wrapper_[descriptor] =
+  field_serializer_fn_[descriptor] =
       [](std::string const& expr) {
         return "SerializePointer(" + expr + ")";
       };
@@ -229,13 +229,13 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   field_copy_wrapper_[descriptor] =
       [this, descriptor](std::string const& name, std::string const& expr) {
         return "*" + name + "mutable_" + descriptor->name() + "() = " +
-               field_serializer_wrapper_[descriptor](expr) + ";";
+               field_serializer_fn_[descriptor](expr) + ";";
       };
   field_deserializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Deserialize" + message_type_name + "(" + expr + ")";
       };
-  field_serializer_wrapper_[descriptor] =
+  field_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Serialize" + message_type_name + "(" + expr + ")";
       };
@@ -364,13 +364,13 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   field_copy_wrapper_[descriptor] =
       [this, descriptor](std::string const& name, std::string const& expr) {
         return name + "set_" + descriptor->name() + "(" +
-               field_serializer_wrapper_[descriptor](expr) + ");";
+               field_serializer_fn_[descriptor](expr) + ");";
       };
   field_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
         return expr;
       };
-  field_serializer_wrapper_[descriptor] =
+  field_serializer_fn_[descriptor] =
       [](std::string const& expr) {
         return expr;
       };
