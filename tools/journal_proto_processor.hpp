@@ -52,19 +52,32 @@ private:
            field_copy_wrapper_;
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
+           field_deserializer_wrapper_;
+  std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& expr)>>
            field_serializer_wrapper_;
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
            indirect_field_wrapper_;
   std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& condition,
+                                     std::string const& expr)>>
+           optional_field_get_wrapper_;
+  std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr,
                                      std::string const& stmt)>>
            optional_field_wrapper_;
+  std::map<FieldDescriptor const*,
+           std::function<std::vector<std::string>(std::string const& name)>>
+           field_arguments_wrapper_;
 
   std::map<FieldDescriptor const*, std::string> size_field_name_;
   std::set<FieldDescriptor const*> in_out_field_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
   std::map<Descriptor const*, std::string> cpp_fill_body_;
+  std::map<Descriptor const*, std::vector<std::string>> cpp_run_arguments_;
+  std::map<Descriptor const*, std::string> cpp_run_body_;
+  std::map<Descriptor const*, std::string> cpp_run_result_;
   std::map<Descriptor const*, std::string> cpp_method_impl_;
   std::map<Descriptor const*, std::string> cpp_method_type_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;
