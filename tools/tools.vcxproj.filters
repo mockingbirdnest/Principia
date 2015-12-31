@@ -18,12 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="journal_proto_processor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="generate_configuration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generate_profiles.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="journal_proto_processor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
