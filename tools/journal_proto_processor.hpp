@@ -55,7 +55,7 @@ private:
            field_serializer_wrapper_;
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
-           in_out_field_wrapper_;
+           indirect_field_wrapper_;
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr,
                                      std::string const& stmt)>>

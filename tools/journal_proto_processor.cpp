@@ -21,6 +21,12 @@ char const kIn[] = "In";
 char const kReturn[] = "Return";
 char const kOut[] = "Out";
 
+template<typename Container>
+bool Contains(Container const& container,
+              typename Container::key_type const key) {
+  return container.find(key) != container.end();
+}
+
 std::string ToLower(std::string const& s) {
   std::string lower(s.size(), ' ');
   for (int i = 0; i < s.size(); ++i) {
@@ -73,13 +79,39 @@ std::vector<std::string> JournalProtoProcessor::GetCppMethodTypes() const {
 
 void JournalProtoProcessor::ProcessRepeatedMessageField(
     FieldDescriptor const* descriptor) {
-  cpp_field_type_[descriptor] = descriptor->message_type()->name() +
-                                " const*";
+  std::string const& message_type_name = descriptor->message_type()->name();
+  FieldOptions const& options = descriptor->options();
+  CHECK(options.HasExtension(serialization::size))
+      << descriptor->full_name() << " must have a size option";
+  size_field_name_[descriptor] = options.GetExtension(serialization::size);
+  cpp_field_type_[descriptor] = message_type_name + " const*";
+  // The use of |substr| below is a bit of a cheat because we known the
+  // structure of |expr|.
+  field_copy_wrapper_[descriptor] =
+      [this, descriptor, message_type_name](std::string const& name,
+                                            std::string const& expr) {
+        std::string const& descriptor_name = descriptor->name();
+        return "for (" + message_type_name + " const* " + descriptor_name +
+               " = " + expr + "; " + descriptor_name + " < " + expr + " + " +
+               expr.substr(0, expr.find('.')) + "." +
+               size_field_name_[descriptor] + "; ++" + descriptor_name +
+               ") {\n    *" + name + "add_" + descriptor_name + "() = " +
+               field_serializer_wrapper_[descriptor]("*"+ descriptor_name) +
+               ";\n  }";
+      };
+  field_serializer_wrapper_[descriptor] =
+      [message_type_name](std::string const& expr) {
+        return "Serialize" + message_type_name + "(" + expr + ")";
+      };
 }
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = "int const*";
+  indirect_field_wrapper_[descriptor] =
+      [](std::string const& expr) {
+        return "*" + expr;
+      };
 }
 
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
@@ -101,9 +133,9 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   std::string const& message_type_name = descriptor->message_type()->name();
   cpp_field_type_[descriptor] = message_type_name;
   field_copy_wrapper_[descriptor] =
-      [descriptor](std::string const& name, std::string const& expr) {
+      [this, descriptor](std::string const& name, std::string const& expr) {
         return "*" + name + "mutable_" + descriptor->name() + "() = " +
-               expr + ";";
+               field_serializer_wrapper_[descriptor](expr) + ";";
       };
   field_serializer_wrapper_[descriptor] =
       [message_type_name](std::string const& expr) {
@@ -129,6 +161,16 @@ void JournalProtoProcessor::ProcessRequiredInt32Field(
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
   cpp_field_type_[descriptor] = "char const*";
+  FieldOptions const& options = descriptor->options();
+  if (options.HasExtension(serialization::size)) {
+    size_field_name_[descriptor] = options.GetExtension(serialization::size);
+    indirect_field_wrapper_[descriptor] =
+        [this, descriptor](std::string const& expr) {
+          return "std::string(" + expr + ", " +
+                 expr.substr(0, expr.find('.')) + "." +
+                 size_field_name_[descriptor] + ")";
+        };
+  }
 }
 
 void JournalProtoProcessor::ProcessOptionalField(
@@ -190,9 +232,9 @@ void JournalProtoProcessor::ProcessRequiredField(
 
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
-  if (in_out_field_.find(descriptor) != in_out_field_.end()) {
+  if (Contains(in_out_field_, descriptor)) {
     cpp_field_type_[descriptor] += "*";
-    in_out_field_wrapper_[descriptor] =
+    indirect_field_wrapper_[descriptor] =
         [](std::string const& expr) {
           return "*" + expr;
         };
@@ -200,19 +242,16 @@ void JournalProtoProcessor::ProcessRequiredField(
 }
 
 void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
-  FieldOptions const& options = descriptor->options();
-  if (options.HasExtension(serialization::size)) {
-    size_field_name_[descriptor] = options.GetExtension(serialization::size);
-  }
   field_copy_wrapper_[descriptor] =
-      [descriptor](std::string const& name, std::string const& expr) {
-        return name + "set_" + descriptor->name() + "(" + expr + ");";
+      [this, descriptor](std::string const& name, std::string const& expr) {
+        return name + "set_" + descriptor->name() + "(" +
+               field_serializer_wrapper_[descriptor](expr) + ");";
       };
   field_serializer_wrapper_[descriptor] =
       [](std::string const& expr) {
         return expr;
       };
-  in_out_field_wrapper_[descriptor] =
+  indirect_field_wrapper_[descriptor] =
       [](std::string const& expr) {
         return expr;
       };
@@ -237,8 +276,18 @@ void JournalProtoProcessor::ProcessInOut(
   Descriptor const* descriptor,
   std::vector<FieldDescriptor const*>* field_descriptors) {
   std::string const& name = descriptor->name();
-  cpp_fill_body_[descriptor] = "  auto* m = message->mutable_" +//TODO(phl):const
-    ToLower(name) + "();\n";
+
+  // Generate slightly more compact code in the frequent case where the message
+  // only has one field.
+  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()";
+  if (descriptor->field_count() > 1) {
+    cpp_fill_body_[descriptor] = "  auto* m = " +//TODO(phl):const
+                                 cpp_message_name + ";\n";
+    cpp_message_name = "m";
+  } else {
+    cpp_fill_body_[descriptor].clear();
+  }
+
   cpp_nested_type_[descriptor] = "  struct " + name + " {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
@@ -254,17 +303,16 @@ void JournalProtoProcessor::ProcessInOut(
         optional_field_wrapper_[field_descriptor](
             field_name,
             field_copy_wrapper_[field_descriptor](
-                "m->",
-                field_serializer_wrapper_[field_descriptor](
-                    in_out_field_wrapper_[field_descriptor](field_name)))) +
+                cpp_message_name + "->",
+                indirect_field_wrapper_[field_descriptor](field_name))) +
         "\n";
     cpp_nested_type_[descriptor] += "    " +
-      cpp_field_type_[field_descriptor] +
-      " const " +
-      field_descriptor_name + ";\n";
+                                    cpp_field_type_[field_descriptor] +
+                                    " const " +
+                                    field_descriptor_name + ";\n";
 
-    // This this field has a size, generate it now.
-    if (size_field_name_.find(field_descriptor) != size_field_name_.end()) {
+    // If this field has a size, generate it now.
+    if (Contains(size_field_name_, field_descriptor)) {
       cpp_nested_type_[descriptor] +=
           "    int const " + size_field_name_[field_descriptor] + ";\n";
     }
@@ -281,9 +329,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   ProcessField(field_descriptor);
   cpp_fill_body_[descriptor] =
       "  " +
-      field_copy_wrapper_[field_descriptor](
-          "message->mutable_return_()->",
-          field_serializer_wrapper_[field_descriptor]("result")) +
+      field_copy_wrapper_[field_descriptor]("message->mutable_return_()->",
+                                            "result") +
       "\n";
   cpp_nested_type_[descriptor] =
       "  using Return = " + cpp_field_type_[field_descriptor] + ";\n";
