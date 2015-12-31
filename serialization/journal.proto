@@ -194,7 +194,8 @@ message DeserializePlugin {
   }
   message Out {
     required fixed64 deserializer = 1 [(pointer_to) = "PushDeserializer"];
-    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
+                                 (is_inserted) = true];
   }
   required In in = 1;
   required Out out = 2;
@@ -468,7 +469,7 @@ message NewBarycentricRotatingNavigationFrame {
   }
   message Return {
     required fixed64 new_barycentric_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame"];
+        [(pointer_to) = "NavigationFrame", (is_inserted) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -484,7 +485,7 @@ message NewBodyCentredNonRotatingNavigationFrame {
   }
   message Return {
     required fixed64 new_body_centred_non_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame"];
+        [(pointer_to) = "NavigationFrame", (is_inserted) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -499,7 +500,8 @@ message NewPlugin {
     required double planetarium_rotation_in_degrees = 2;
   }
   message Return {
-    required fixed64 new_plugin = 1 [(pointer_to) = "Plugin"];
+    required fixed64 new_plugin = 1 [(pointer_to) = "Plugin",
+                                     (is_inserted) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -546,7 +548,7 @@ message RenderedFlightPlan {
   }
   message Return {
     required fixed64 rendered_flight_plan = 1
-        [(pointer_to) = "LineAndIterator"];
+        [(pointer_to) = "LineAndIterator", (is_inserted) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -563,7 +565,7 @@ message RenderedPrediction {
   }
   message Return {
     required fixed64 rendered_prediction = 1
-        [(pointer_to) = "LineAndIterator"];
+        [(pointer_to) = "LineAndIterator", (is_inserted) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -580,7 +582,7 @@ message RenderedVesselTrajectory {
   }
   message Return {
     required fixed64 rendered_vessel_trajectory = 1
-        [(pointer_to) = "LineAndIterator"];
+        [(pointer_to) = "LineAndIterator", (is_inserted) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -815,4 +817,5 @@ extend google.protobuf.FieldOptions {
   optional string pointer_to = 50000;
   optional string size = 50001;
   optional bool is_deleted = 50002;
+  optional bool is_inserted = 50003;
 }

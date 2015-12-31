@@ -57,6 +57,10 @@ private:
            std::function<std::string(std::string const& expr)>>
            field_deserializer_wrapper_;
   std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& expr1,
+                                     std::string const& expr2)>>
+           field_inserter_wrapper_;
+  std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
            field_serializer_wrapper_;
   std::map<FieldDescriptor const*,
@@ -81,7 +85,6 @@ private:
   std::map<Descriptor const*, std::vector<std::string>> cpp_run_arguments_;
   std::map<Descriptor const*, std::string> cpp_run_body_;
   std::map<Descriptor const*, std::string> cpp_run_epilog_;
-  std::map<Descriptor const*, std::string> cpp_run_result_;
   std::map<Descriptor const*, std::string> cpp_method_impl_;
   std::map<Descriptor const*, std::string> cpp_method_type_;
   std::map<Descriptor const*, std::string> cpp_nested_type_;
