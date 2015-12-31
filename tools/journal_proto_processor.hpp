@@ -65,11 +65,6 @@ class JournalProtoProcessor {
   // fields from the struct members.  No data for other fields.
   std::map<FieldDescriptor const*, std::string> size_member_name_;
 
-  std::map<FieldDescriptor const*,
-           std::function<std::string(std::string const& name,
-                                     std::string const& expr)>>
-      field_copy_wrapper_;
-
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
   // expressions to be passed to the interface.  Deals with passing address and
@@ -79,6 +74,15 @@ class JournalProtoProcessor {
            std::function<std::vector<std::string>(
                              std::string const& identifier)>>
       field_arguments_fn_;
+
+  // For all fields, a lambda that takes a serialized expression |expr| and a
+  // protocol buffer object |identifier| and returns a statement to assign
+  // |expr| to the proper field of |identifier|.  |identifier| must be a
+  // pointer.
+  std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& name,
+                                     std::string const& expr)>>
+      field_assignment_fn_;
 
   // For fields that have a (is_deleted) or (is_deleted_if) option, a lambda
   // producing a statement to call Delete() to remove the appropriate entry from

@@ -107,18 +107,19 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       << descriptor->full_name() << " must have a size option";
   size_member_name_[descriptor] = options.GetExtension(serialization::size);
   cpp_field_type_[descriptor] = message_type_name + " const*";
-  field_copy_wrapper_[descriptor] =
+  field_assignment_fn_[descriptor] =
       [this, descriptor, descriptor_name, message_type_name](
-          std::string const& name,std::string const& expr) {
+          std::string const& identifier,std::string const& expr) {
         // The use of |substr| below is a bit of a cheat because we known the
         // structure of |expr|.
-        return "for (" + message_type_name + " const* " + descriptor_name +
+        return "  for (" + message_type_name + " const* " + descriptor_name +
                " = " + expr + "; " + descriptor_name + " < " + expr + " + " +
                expr.substr(0, expr.find('.')) + "." +
                size_member_name_[descriptor] + "; ++" + descriptor_name +
-               ") {\n    *" + name + "add_" + descriptor_name + "() = " +
+               ") {\n    *" + identifier + "->add_" + descriptor_name +
+               "() = " + 
                field_serializer_fn_[descriptor]("*"+ descriptor_name) +
-               ";\n  }";
+               ";\n  }\n";
       };
   field_deserializer_fn_[descriptor] =
       [descriptor_name, message_type_name](std::string const& expr) {
@@ -226,10 +227,11 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
     FieldDescriptor const* descriptor) {
   std::string const& message_type_name = descriptor->message_type()->name();
   cpp_field_type_[descriptor] = message_type_name;
-  field_copy_wrapper_[descriptor] =
-      [this, descriptor](std::string const& name, std::string const& expr) {
-        return "*" + name + "mutable_" + descriptor->name() + "() = " +
-               field_serializer_fn_[descriptor](expr) + ";";
+  field_assignment_fn_[descriptor] =
+      [this, descriptor](std::string const& identifier,
+                         std::string const& expr) {
+        return "  *" + identifier + "->mutable_" + descriptor->name() +
+               "() = " + field_serializer_fn_[descriptor](expr) + ";\n";
       };
   field_deserializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
@@ -292,7 +294,7 @@ void JournalProtoProcessor::ProcessOptionalField(
       };
   optional_field_wrapper_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
-        return "if (" + expr + " != nullptr) {\n    " + stmt + "\n  }";
+        return "if (" + expr + " != nullptr) {\n  " + stmt + "  }\n";
       };
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_INT32:
@@ -361,10 +363,11 @@ void JournalProtoProcessor::ProcessRequiredField(
 }
 
 void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
-  field_copy_wrapper_[descriptor] =
-      [this, descriptor](std::string const& name, std::string const& expr) {
-        return name + "set_" + descriptor->name() + "(" +
-               field_serializer_fn_[descriptor](expr) + ");";
+  field_assignment_fn_[descriptor] =
+      [this, descriptor](std::string const& identifier,
+                         std::string const& expr) {
+        return "  " + identifier + "->set_" + descriptor->name() + "(" +
+               field_serializer_fn_[descriptor](expr) + ");\n";
       };
   field_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
@@ -436,13 +439,11 @@ void JournalProtoProcessor::ProcessInOut(
     std::string const field_name =
         ToLower(name) + "." + field_descriptor_name;
     cpp_fill_body_[descriptor] +=
-        "  " +
         optional_field_wrapper_[field_descriptor](
             field_name,
-            field_copy_wrapper_[field_descriptor](
-                cpp_message_name + "->",
-                indirect_field_wrapper_[field_descriptor](field_name))) +
-        "\n";
+            field_assignment_fn_[field_descriptor](
+                cpp_message_name,
+                indirect_field_wrapper_[field_descriptor](field_name)));
     std::vector<std::string> const cpp_run_arguments =
         field_arguments_fn_[field_descriptor](field_descriptor_name);
     std::copy(cpp_run_arguments.begin(), cpp_run_arguments.end(),
@@ -489,10 +490,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       << descriptor->full_name() << " must be required";
   ProcessField(field_descriptor);
   cpp_fill_body_[descriptor] =
-      "  " +
-      field_copy_wrapper_[field_descriptor]("message->mutable_return_()->",
-                                            "result") +
-      "\n";
+      field_assignment_fn_[field_descriptor]("message->mutable_return_()",
+                                             "result");
   std::string const field_name =
       "message.return_()." + field_descriptor->name() + "()";
   if (Contains(field_inserter_fn_, field_descriptor)) {

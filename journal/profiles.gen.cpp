@@ -197,20 +197,20 @@ void DirectlyInsertCelestial::Fill(In const& in, not_null<Message*> const messag
   auto* m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_celestial_index(in.celestial_index);
-  if (in.parent_index != nullptr) {
+if (in.parent_index != nullptr) {
     m->set_parent_index(*in.parent_index);
   }
   m->set_gravitational_parameter(in.gravitational_parameter);
-  if (in.axis_right_ascension != nullptr) {
+if (in.axis_right_ascension != nullptr) {
     m->set_axis_right_ascension(in.axis_right_ascension);
   }
-  if (in.axis_declination != nullptr) {
+if (in.axis_declination != nullptr) {
     m->set_axis_declination(in.axis_declination);
   }
-  if (in.j2 != nullptr) {
+if (in.j2 != nullptr) {
     m->set_j2(in.j2);
   }
-  if (in.reference_radius != nullptr) {
+if (in.reference_radius != nullptr) {
     m->set_reference_radius(in.reference_radius);
   }
   m->set_x(in.x);
