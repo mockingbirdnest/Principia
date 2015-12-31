@@ -120,7 +120,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                field_serializer_wrapper_[descriptor]("*"+ descriptor_name) +
                ";\n  }";
       };
-  field_deserializer_wrapper_[descriptor] =
+  field_deserializer_fn_[descriptor] =
       [descriptor_name, message_type_name](std::string const& expr) {
         // Yes, this lambda generates a lambda.
         return "[](::google::protobuf::RepeatedPtrField<serialization::" +
@@ -139,9 +139,9 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       [message_type_name](std::string const& expr) {
         return "Serialize" + message_type_name + "(" + expr + ")";
       };
-  field_arguments_wrapper_[descriptor] =
-      [](std::string const& name) -> std::vector<std::string> {
-        return {"&" + name + "[0]", name + ".size()"};
+  field_arguments_fn_[descriptor] =
+      [](std::string const& identifier) -> std::vector<std::string> {
+        return {"&" + identifier + "[0]", identifier + ".size()"};
       };
 }
 
@@ -159,9 +159,9 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
         return condition + " ? std::make_unique<int const>(" + expr +
                ") : nullptr";
       };
-  field_arguments_wrapper_[descriptor] =
-      [](std::string const& name) -> std::vector<std::string> {
-        return {name + ".get()"};
+  field_arguments_fn_[descriptor] =
+      [](std::string const& identifier) -> std::vector<std::string> {
+        return {identifier + ".get()"};
       };
 }
 
@@ -211,7 +211,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         };
   }
   cpp_field_type_[descriptor] = pointer_to + "*";
-  field_deserializer_wrapper_[descriptor] =
+  field_deserializer_fn_[descriptor] =
       [pointer_to](std::string const& expr) {
         return "DeserializePointer<" + pointer_to + "*>(*pointer_map, " + expr +
                ")";
@@ -231,7 +231,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
         return "*" + name + "mutable_" + descriptor->name() + "() = " +
                field_serializer_wrapper_[descriptor](expr) + ";";
       };
-  field_deserializer_wrapper_[descriptor] =
+  field_deserializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Deserialize" + message_type_name + "(" + expr + ")";
       };
@@ -268,16 +268,16 @@ void JournalProtoProcessor::ProcessSingleStringField(
                  expr.substr(0, expr.find('.')) + "." +
                  size_member_name_[descriptor] + ")";
         };
-    field_arguments_wrapper_[descriptor] =
-        [](std::string const& name) -> std::vector<std::string> {
-          return {name + "->c_str()", name + "->size()"};
+    field_arguments_fn_[descriptor] =
+        [](std::string const& identifier) -> std::vector<std::string> {
+          return {identifier + "->c_str()", identifier + "->size()"};
         };
-    field_deserializer_wrapper_[descriptor] =
+    field_deserializer_fn_[descriptor] =
         [](std::string const& expr) {
           return "&" + expr;
         };
   } else {
-    field_deserializer_wrapper_[descriptor] =
+    field_deserializer_fn_[descriptor] =
         [](std::string const& expr) {
           return expr + ".c_str()";
         };
@@ -353,9 +353,9 @@ void JournalProtoProcessor::ProcessRequiredField(
         [](std::string const& expr) {
           return "*" + expr;
         };
-    field_arguments_wrapper_[descriptor] = 
-        [](std::string const& name) -> std::vector<std::string> {
-          return {"&" + name};
+    field_arguments_fn_[descriptor] = 
+        [](std::string const& identifier) -> std::vector<std::string> {
+          return {"&" + identifier};
         };
   }
 }
@@ -366,7 +366,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         return name + "set_" + descriptor->name() + "(" +
                field_serializer_wrapper_[descriptor](expr) + ");";
       };
-  field_deserializer_wrapper_[descriptor] =
+  field_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
         return expr;
       };
@@ -386,9 +386,9 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       [](std::string const& expr, std::string const& stmt) {
         return stmt;
       };
-  field_arguments_wrapper_[descriptor] = 
-      [](std::string const& name) -> std::vector<std::string> {
-        return {name};
+  field_arguments_fn_[descriptor] = 
+      [](std::string const& identifier) -> std::vector<std::string> {
+        return {identifier};
       };
   switch (descriptor->label()) {
     case FieldDescriptor::LABEL_OPTIONAL:
@@ -432,6 +432,7 @@ void JournalProtoProcessor::ProcessInOut(
     }
     ProcessField(field_descriptor);
 
+    //TODO(phl):comment
     std::string const field_name =
         ToLower(name) + "." + field_descriptor_name;
     cpp_fill_body_[descriptor] +=
@@ -443,7 +444,7 @@ void JournalProtoProcessor::ProcessInOut(
                 indirect_field_wrapper_[field_descriptor](field_name))) +
         "\n";
     std::vector<std::string> const cpp_run_arguments =
-        field_arguments_wrapper_[field_descriptor](field_descriptor_name);
+        field_arguments_fn_[field_descriptor](field_descriptor_name);
     std::copy(cpp_run_arguments.begin(), cpp_run_arguments.end(),
               std::back_inserter(cpp_run_arguments_[descriptor]));
     cpp_run_prolog_[descriptor] +=
@@ -451,7 +452,7 @@ void JournalProtoProcessor::ProcessInOut(
         field_descriptor_name + " = " +
         optional_field_get_wrapper_[field_descriptor](
             ToLower(name) + ".has_" + field_descriptor_name + "()",
-            field_deserializer_wrapper_[field_descriptor](field_name + "()")) +
+            field_deserializer_fn_[field_descriptor](field_name + "()")) +
         ";\n";
     if (Contains(field_deleter_fn_, field_descriptor)) {
       cpp_run_epilog_[descriptor] +=
@@ -499,7 +500,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         field_inserter_fn_[field_descriptor](field_name, "result");
   } else {
     cpp_run_epilog_[descriptor] =
-        "  CHECK(" + field_deserializer_wrapper_[field_descriptor](field_name) +
+        "  CHECK(" + field_deserializer_fn_[field_descriptor](field_name) +
         " == result);\n";
   }
   cpp_nested_type_[descriptor] =

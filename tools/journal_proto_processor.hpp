@@ -68,30 +68,46 @@ class JournalProtoProcessor {
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& name,
                                      std::string const& expr)>>
-           field_copy_wrapper_;
+      field_copy_wrapper_;
+
+  // For all fields, a lambda that takes the name of a local variable containing
+  // data extracted (and deserialized) from the field and returns a list of
+  // expressions to be passed to the interface.  Deals with passing address and
+  // size for fields that have a size member, and with passing by reference for
+  // fields that are in-out or optional.
+  std::map<FieldDescriptor const*,
+           std::function<std::vector<std::string>(
+                             std::string const& identifier)>>
+      field_arguments_fn_;
 
   // For fields that have a (is_deleted) or (is_deleted_if) option, a lambda
   // producing a statement to call Delete() to remove the appropriate entry from
   // the pointer_map.  |expr| is an uint64 expression for the entry to be
-  // removed (typically something like |in.bar()|).  No data for other fields.
+  // removed (typically something like |message.in().bar()|).  No data for other
+  // fields.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
-           field_deleter_fn_;
+      field_deleter_fn_;
 
+  // For all fields, a lambda that takes an expression for reading a protobuf
+  // field (typically something like |message.in().bar()|) and returns an
+  // expression for the deserialized form of |expr| suitable for storing in a
+  // local variable (typically a call to some Deserialize function, but other
+  // transformations are possible).
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
-           field_deserializer_wrapper_;
+      field_deserializer_fn_;
 
   // For fields that have a (is_inserted) or (is_inserted_if) option, a lambda
   // producing a statement to call Insert() to enter the appropriate entry into
   // the pointer_map.  |expr1| is an uint64 expression for the serialized value
-  // of the pointer (typically something like |in.bar()|), |expr2| is a pointer
-  // expression for the current value of the pointer (typically the name of a
-  // local variable).  No data for other fields.
+  // of the pointer (typically something like |message.in().bar()|), |expr2| is
+  // a pointer expression for the current value of the pointer (typically the
+  // name of a local variable).  No data for other fields.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr1,
                                      std::string const& expr2)>>
-           field_inserter_fn_;
+      field_inserter_fn_;
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
            field_serializer_wrapper_;
@@ -106,9 +122,6 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr,
                                      std::string const& stmt)>>
            optional_field_wrapper_;
-  std::map<FieldDescriptor const*,
-           std::function<std::vector<std::string>(std::string const& name)>>
-           field_arguments_wrapper_;
 
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
 
