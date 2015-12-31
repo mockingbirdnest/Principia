@@ -153,6 +153,14 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       << descriptor->full_name() << " is missing a pointer_to option";
   std::string const& pointer_to =
       options.GetExtension(serialization::pointer_to);
+  if (options.HasExtension(serialization::is_deleted)) {
+    CHECK(options.GetExtension(serialization::is_deleted))
+        << descriptor->full_name() << " has incorrect is_deleted option";
+    field_deleter_wrapper_[descriptor] =
+        [](std::string const& expr) {
+          return "  Delete(pointer_map, " + expr + ");\n";
+        };
+  }
   cpp_field_type_[descriptor] = pointer_to + "*";
   field_deserializer_wrapper_[descriptor] =
       [pointer_to](std::string const& expr) {
@@ -211,11 +219,20 @@ void JournalProtoProcessor::ProcessSingleStringField(
                  expr.substr(0, expr.find('.')) + "." +
                  size_field_name_[descriptor] + ")";
         };
+    field_arguments_wrapper_[descriptor] =
+        [](std::string const& name) -> std::vector<std::string> {
+          return {name + "->c_str()", name + "->size()"};
+        };
+    field_deserializer_wrapper_[descriptor] =
+        [](std::string const& expr) {
+          return "&" + expr;
+        };
+  } else {
+    field_deserializer_wrapper_[descriptor] =
+        [](std::string const& expr) {
+          return expr + ".c_str()";
+        };
   }
-  field_deserializer_wrapper_[descriptor] =
-      [](std::string const& expr) {
-        return expr + ".c_str()";
-      };
 }
 
 void JournalProtoProcessor::ProcessOptionalField(
@@ -296,6 +313,10 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         return name + "set_" + descriptor->name() + "(" +
                field_serializer_wrapper_[descriptor](expr) + ");";
       };
+  field_deleter_wrapper_[descriptor] =
+      [](std::string const& expr) {
+        return "";
+      };
   field_deserializer_wrapper_[descriptor] =
       [](std::string const& expr) {
         return expr;
@@ -351,6 +372,7 @@ void JournalProtoProcessor::ProcessInOut(
   cpp_run_arguments_[descriptor].clear();
   cpp_run_body_[descriptor] = "  auto const& " + ToLower(name) + " = message." +
                               ToLower(name) + "();\n";
+  cpp_run_epilog_[descriptor].clear();
 
   cpp_nested_type_[descriptor] = "  struct " + name + " {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -382,6 +404,8 @@ void JournalProtoProcessor::ProcessInOut(
             ToLower(name) + ".has_" + field_descriptor_name + "()",
             field_deserializer_wrapper_[field_descriptor](field_name + "()")) +
         ";\n";
+    cpp_run_epilog_[descriptor] +=
+        field_deleter_wrapper_[field_descriptor](field_name + "()");
     cpp_nested_type_[descriptor] += "    " +
                                     cpp_field_type_[field_descriptor] +
                                     " const " +
@@ -461,6 +485,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   // The second pass that produces the actual output.
   std::string cpp_run_arguments;
   std::string cpp_run_body;
+  std::string cpp_run_epilog;
   std::string cpp_run_result;
   cpp_method_type_[descriptor] = "struct " + name + " {\n";
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
@@ -475,6 +500,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "}\n\n";
       cpp_run_arguments += Join(cpp_run_arguments_[nested_descriptor]);
       cpp_run_body += cpp_run_body_[nested_descriptor];
+      cpp_run_epilog += cpp_run_epilog_[nested_descriptor];
     } else if (nested_name == kOut) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cpp_method_impl_[descriptor] +=
@@ -482,7 +508,6 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cpp_fill_body_[nested_descriptor] +
           "}\n\n";
-      cpp_run_body += cpp_run_body_[nested_descriptor];
     } else if (nested_name == kReturn) {
       ProcessReturn(nested_descriptor);
       cpp_method_impl_[descriptor] +=
@@ -491,7 +516,6 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cpp_fill_body_[nested_descriptor] +
           "}\n\n";
-      cpp_run_body += cpp_run_body_[nested_descriptor];
       cpp_run_result += cpp_run_result_[nested_descriptor];
     }
     cpp_method_type_[descriptor] += cpp_nested_type_[nested_descriptor];
@@ -537,7 +561,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
     cpp_method_impl_[descriptor] +=
         "  CHECK(" + cpp_run_result + " == result);\n";
   }
-  cpp_method_impl_[descriptor] += "}\n\n";
+  cpp_method_impl_[descriptor] += cpp_run_epilog + "}\n\n";
   std::cout<<cpp_method_impl_[descriptor];
 }
 

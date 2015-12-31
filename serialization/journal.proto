@@ -142,7 +142,8 @@ message DeleteLineAndIterator {
     optional DeleteLineAndIterator extension = 5036;
   }
   message In {
-    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator"];
+    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator",
+                                            (is_deleted) = true];
   }
   message Out {
     required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator"];
@@ -156,7 +157,8 @@ message DeletePlugin {
     optional DeletePlugin extension = 5000;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_deleted) = true];
   }
   message Out {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
@@ -170,7 +172,8 @@ message DeletePluginSerialization {
     optional DeletePluginSerialization extension = 5049;
   }
   message In {
-    required fixed64 serialization = 1 [(pointer_to) = "char const"];
+    required fixed64 serialization = 1 [(pointer_to) = "char const",
+                                        (is_deleted) = true];
   }
   message Out {
     required fixed64 serialization = 1 [(pointer_to) = "char const"];
@@ -183,6 +186,7 @@ message DeserializePlugin {
   extend Method {
     optional DeserializePlugin extension = 5050;
   }
+  // Deletion!
   message In {
     required string serialization = 1 [(size) = "serialization_size"];
     required fixed64 deserializer = 2 [(pointer_to) = "PushDeserializer"];
@@ -596,6 +600,7 @@ message SerializePlugin {
   extend Method {
     optional SerializePlugin extension = 5054;
   }
+  // Deletion!
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
     required fixed64 serializer = 2 [(pointer_to) = "PullSerializer"];
@@ -638,7 +643,8 @@ message SetPlottingFrame {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin"];
-    required fixed64 navigation_frame = 2 [(pointer_to) = "NavigationFrame"];
+    required fixed64 navigation_frame = 2 [(pointer_to) = "NavigationFrame",
+                                           (is_deleted) = true];
   }
   message Out {
     required fixed64 navigation_frame = 1 [(pointer_to) = "NavigationFrame"];
@@ -808,4 +814,5 @@ message VesselTangent {
 extend google.protobuf.FieldOptions {
   optional string pointer_to = 50000;
   optional string size = 50001;
+  optional bool is_deleted = 50002;
 }
