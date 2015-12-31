@@ -81,8 +81,17 @@ void JournalProtoProcessor::ProcessMethods() {
   }
 }
 
+std::vector<std::string>
+JournalProtoProcessor::GetCppMethodImplementations() const {
+    std::vector<std::string> result;
+  for (auto const& pair : cpp_method_impl_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
 std::vector<std::string> JournalProtoProcessor::GetCppMethodTypes() const {
-  std::vector<std::string> result;
+    std::vector<std::string> result;
   for (auto const& pair : cpp_method_type_) {
     result.push_back(pair.second);
   }
@@ -115,13 +124,14 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       [descriptor_name, message_type_name](std::string const& expr) {
         // Yes, this lambda generates a lambda.
         return "[](::google::protobuf::RepeatedPtrField<serialization::" +
-               message_type_name + "> const& messages) {\n"
-               "    std::vector<" + message_type_name + "> deserialized_" +
+               message_type_name + "> const& messages) -> std::vector<" + 
+               message_type_name + "> {\n"
+               "      std::vector<" + message_type_name + "> deserialized_" +
                descriptor_name + ";\n" +
-               "    for (auto const& message : messages) {\n" +
-               "      deserialized_" + descriptor_name +
+               "      for (auto const& message : messages) {\n" +
+               "        deserialized_" + descriptor_name +
                ".push_back(Deserialize" + message_type_name + "(message));\n" +
-               "    }(" + expr + ")";
+               "      }\n    }(" + expr + ")";
       };
   field_serializer_wrapper_[descriptor] =
       [message_type_name](std::string const& expr) {
@@ -603,7 +613,6 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cpp_method_impl_[descriptor] +=
       "ksp_plugin::principia__" + name + "(" + cpp_run_arguments + ");\n";
   cpp_method_impl_[descriptor] += cpp_run_epilog + "}\n\n";
-  std::cout<<cpp_method_impl_[descriptor];
 }
 
 }  // namespace tools

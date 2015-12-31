@@ -18,6 +18,7 @@ class JournalProtoProcessor {
 public:
   void ProcessMethods();
 
+  std::vector<std::string> GetCppMethodImplementations() const;
   std::vector<std::string> GetCppMethodTypes() const;
 
 private:
