@@ -76,5 +76,8 @@
     <ClCompile Include="..\journal\profiles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="flight_plan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

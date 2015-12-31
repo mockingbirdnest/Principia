@@ -185,6 +185,7 @@
   <ItemGroup>
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
+    <ClCompile Include="flight_plan.cpp" />
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="physics_bubble.cpp" />

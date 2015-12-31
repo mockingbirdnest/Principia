@@ -43,6 +43,12 @@ Instant Manœuvre<InertialFrame, Frame>::final_time() const {
 }
 
 template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
+                                                 Instant const& end) {
+  return begin < initial_time() && final_time() < end;
+}
+
+template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_initial_time(
     Instant const& initial_time) {
   initial_time_ = initial_time;
@@ -67,8 +73,14 @@ void Manœuvre<InertialFrame, Frame>::set_duration(Time const& duration) {
 
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_Δv(Speed const& Δv) {
-  set_duration(initial_mass_ * specific_impulse_ *
-               (1 - std::exp(-Δv / specific_impulse_)) / thrust_);
+  if (Δv == Speed()) {
+    // This handles the case where either |specific_impulse_| or |thrust_|
+    // vanishes, where the usual formula would yield NaN.
+    set_duration(Time());
+  } else {
+    set_duration(initial_mass_ * specific_impulse_ *
+                     (1 - std::exp(-Δv / specific_impulse_)) / thrust_);
+  }
 }
 
 template<typename InertialFrame, typename Frame>

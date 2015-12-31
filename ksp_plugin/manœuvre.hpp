@@ -76,6 +76,9 @@ class Manœuvre {
   // Intensity and timing must have been set.
   Instant final_time() const;
 
+  // Intensity and timing must have been set.
+  bool FitsBetween(Instant const& begin, Instant const& end);
+
   // Intensity and timing must have been set.  The result is valid until
   // |*this| is destroyed.  |coasting_trajectory| must have a point at
   // |initial_time()|.
