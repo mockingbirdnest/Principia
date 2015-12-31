@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 
 #include "google/protobuf/descriptor.h"
@@ -35,7 +36,6 @@ private:
   void ProcessOptionalField(FieldDescriptor const* descriptor);
   void ProcessRepeatedField(FieldDescriptor const* descriptor);
   void ProcessRequiredField(FieldDescriptor const* descriptor);
-  void ProcessSingleField(FieldDescriptor const* descriptor);
 
   void ProcessField(FieldDescriptor const* descriptor);
 
@@ -46,11 +46,23 @@ private:
   void ProcessMethodExtension(Descriptor const* descriptor);
 
 private:
-  std::map<FieldDescriptor const*, std::string> serializer_name_;
+  std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& name,
+                                     std::string const& expr)>>
+           field_copy_wrapper_;
+  std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& expr)>>
+           field_serializer_wrapper_;
+  std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& expr)>>
+           in_out_field_wrapper_;
+  std::map<FieldDescriptor const*,
+           std::function<std::string(std::string const& expr,
+                                     std::string const& stmt)>>
+           optional_field_wrapper_;
+
   std::map<FieldDescriptor const*, std::string> size_field_name_;
   std::set<FieldDescriptor const*> in_out_field_;
-  std::map<FieldDescriptor const*, std::string> cpp_field_copy_;
-  std::map<FieldDescriptor const*, std::string> cpp_field_setter_;
   std::map<FieldDescriptor const*, std::string> cpp_field_type_;
   std::map<Descriptor const*, std::string> cpp_fill_body_;
   std::map<Descriptor const*, std::string> cpp_method_impl_;
