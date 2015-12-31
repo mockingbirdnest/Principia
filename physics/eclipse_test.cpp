@@ -17,18 +17,23 @@ using geometry::JulianDate;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::ArcCos;
+using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Nano;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
 
 namespace physics {
+
+namespace {
+Sign const U14 = Sign(1);
+Sign const U23 = Sign(-1);
+}  // namespace
 
 class EclipseTest : public testing::Test {
  protected:
@@ -46,7 +51,7 @@ class EclipseTest : public testing::Test {
         45 * Minute, 5 * Milli(Metre));
 
     ephemeris->Prolong(current_time +
-                       86400 * Second);  // Prolong 1 day past date of eclipse.
+                       1 * Day);  // Prolong 1 day past date of eclipse.
     auto const sun = solar_system_1950_.massive_body(*ephemeris, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris, "Moon");
@@ -96,7 +101,7 @@ class EclipseTest : public testing::Test {
         45 * Minute, 5 * Milli(Metre));
 
     ephemeris->Prolong(current_time +
-                       86400 * Second);  // Prolong 1 day past date of eclipse.
+                       1 * Day);  // Prolong 1 day past date of eclipse.
     auto const sun = solar_system_1950_.massive_body(*ephemeris, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris, "Moon");
@@ -139,7 +144,7 @@ class EclipseTest : public testing::Test {
   SolarSystem<ICRFJ2000Equator> solar_system_1950_;
 };
 
-TEST_F(EclipseTest, Dummy) {
+TEST_F(EclipseTest, Year1950) {
   // Dates are TDB Julian Day for 1950-04-02.
   auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
   auto U1 = JulianDate(2433374.29850909);  // 19:09:19
@@ -148,8 +153,6 @@ TEST_F(EclipseTest, Dummy) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  Sign const U14 = Sign(1);
-  Sign const U23 = Sign(-1);
   CheckLunarPenumbralEclipse(P1, U14);
   CheckLunarUmbralEclipse(U1, U14);
   CheckLunarUmbralEclipse(U2, U23);
@@ -171,10 +174,12 @@ TEST_F(EclipseTest, Dummy) {
   CheckLunarUmbralEclipse(U3, U23);
   CheckLunarUmbralEclipse(U4, U14);
   CheckLunarPenumbralEclipse(P4, U14);
+}
 
+TEST_F(EclipseTest, Year1951) {
   // Dates are TDB Julian Day for 1951-03-23.
-  P1 = JulianDate(2433728.86842806);  // 08:50:50
-  P4 = JulianDate(2433729.01725909);  // 12:24:19
+  auto P1 = JulianDate(2433728.86842806);  // 08:50:50
+  auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
   CheckLunarPenumbralEclipse(P1, U14);
   CheckLunarPenumbralEclipse(P4, U14);
@@ -185,12 +190,14 @@ TEST_F(EclipseTest, Dummy) {
 
   CheckLunarPenumbralEclipse(P1, U14);
   CheckLunarPenumbralEclipse(P4, U14);
+}
 
+TEST_F(EclipseTest, Year1952) {
   // Dates are TDB Julian Day for 1952-02-11 (or 10 for P1).
-  P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
-  U1 = JulianDate(2434053.50334705);  // U1 = 00:04:17
-  U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
-  P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
+  auto P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
+  auto U1 = JulianDate(2434053.50334705);  // U1 = 00:04:17
+  auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
+  auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
 
   CheckLunarPenumbralEclipse(P1, U14);
   CheckLunarUmbralEclipse(U1, U14);
