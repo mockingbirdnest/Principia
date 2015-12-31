@@ -32,6 +32,9 @@
     <ClInclude Include="player_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="profiles.gen.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="player.cpp">
@@ -48,6 +51,9 @@
     </ClCompile>
     <ClCompile Include="recorder_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profiles.gen.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
