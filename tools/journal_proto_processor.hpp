@@ -56,29 +56,42 @@ class JournalProtoProcessor {
 
   // The fields that are in-out, i.e. for which fields of the same name exist in
   // both the In and the Out message.  Note that both fields are present in this
-  // set.  Those fields are passed to the interface with an extra level of
-  // indirection.
+  // set.  Those fields are transmitted through the interface with an extra
+  // level of indirection.
   std::set<FieldDescriptor const*> in_out_;
 
-  // For the fields that have a (size) option, the name of the size member
-  // variable in the In or Out struct.  Special processing is required when 
-  // filling those fields from the struct members.  No data for other fields.
+  // For fields that have a (size) option, the name of the size member variable
+  // in the In or Out struct.  Special processing is required when filling those
+  // fields from the struct members.  No data for other fields.
   std::map<FieldDescriptor const*, std::string> size_member_name_;
 
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& name,
                                      std::string const& expr)>>
            field_copy_wrapper_;
+
+  // For fields that have a (is_deleted) or (is_deleted_if) option, a lambda
+  // producing a statement to call Delete() to remove the appropriate entry from
+  // the pointer_map.  |expr| is an uint64 expression for the entry to be
+  // removed (typically something like |in.bar()|).  No data for other fields.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
-           field_deleter_wrapper_;
+           field_deleter_fn_;
+
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
            field_deserializer_wrapper_;
+
+  // For fields that have a (is_inserted) or (is_inserted_if) option, a lambda
+  // producing a statement to call Insert() to enter the appropriate entry into
+  // the pointer_map.  |expr1| is an uint64 expression for the serialized value
+  // of the pointer (typically something like |in.bar()|), |expr2| is a pointer
+  // expression for the current value of the pointer (typically the name of a
+  // local variable).  No data for other fields.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr1,
                                      std::string const& expr2)>>
-           field_inserter_wrapper_;
+           field_inserter_fn_;
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
            field_serializer_wrapper_;

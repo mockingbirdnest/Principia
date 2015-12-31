@@ -175,7 +175,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(serialization::is_deleted)) {
     CHECK(options.GetExtension(serialization::is_deleted))
         << descriptor->full_name() << " has incorrect is_deleted option";
-    field_deleter_wrapper_[descriptor] =
+    field_deleter_fn_[descriptor] =
         [](std::string const& expr) {
           return "  Delete(pointer_map, " + expr + ");\n";
         };
@@ -184,7 +184,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     CHECK(!options.HasExtension(serialization::is_deleted))
         << descriptor->full_name()
         << " has incorrect is_deleted and is_deleted_if options";
-    field_deleter_wrapper_[descriptor] =
+    field_deleter_fn_[descriptor] =
         [options](std::string const& expr) {
           return "  if (" + options.GetExtension(serialization::is_deleted_if) +
                  ") {\n    Delete(pointer_map, " + expr + ");\n  }\n";
@@ -193,7 +193,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(serialization::is_inserted)) {
     CHECK(options.GetExtension(serialization::is_inserted))
         << descriptor->full_name() << " has incorrect is_inserted option";
-    field_inserter_wrapper_[descriptor] =
+    field_inserter_fn_[descriptor] =
         [](std::string const& expr1, std::string const& expr2) {
           return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
         };
@@ -202,7 +202,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     CHECK(!options.HasExtension(serialization::is_inserted))
         << descriptor->full_name()
         << " has incorrect is_inserted and is_inserted_if options";
-    field_inserter_wrapper_[descriptor] =
+    field_inserter_fn_[descriptor] =
         [options](std::string const& expr1, std::string const& expr2) {
           return "  if (" +
                  options.GetExtension(serialization::is_inserted_if) +
@@ -453,16 +453,16 @@ void JournalProtoProcessor::ProcessInOut(
             ToLower(name) + ".has_" + field_descriptor_name + "()",
             field_deserializer_wrapper_[field_descriptor](field_name + "()")) +
         ";\n";
-    if (Contains(field_deleter_wrapper_, field_descriptor)) {
+    if (Contains(field_deleter_fn_, field_descriptor)) {
       cpp_run_epilog_[descriptor] +=
-          field_deleter_wrapper_[field_descriptor](field_name + "()");
+          field_deleter_fn_[field_descriptor](field_name + "()");
     }
-    if (Contains(field_inserter_wrapper_, field_descriptor)) {
+    if (Contains(field_inserter_fn_, field_descriptor)) {
       // The reference to |message| below avoids having to generate names for
       // the |out| fields (we wouldn't use them anywhere else).  This works
       // because we know that we insert only out parameters.
       cpp_run_epilog_[descriptor] +=
-          field_inserter_wrapper_[field_descriptor](
+          field_inserter_fn_[field_descriptor](
               "message." + ToLower(name) + "()." + field_descriptor_name + "()",
               field_descriptor_name);
     }
@@ -494,9 +494,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       "\n";
   std::string const field_name =
       "message.return_()." + field_descriptor->name() + "()";
-  if (Contains(field_inserter_wrapper_, field_descriptor)) {
+  if (Contains(field_inserter_fn_, field_descriptor)) {
     cpp_run_epilog_[descriptor] =
-        field_inserter_wrapper_[field_descriptor](field_name, "result");
+        field_inserter_fn_[field_descriptor](field_name, "result");
   } else {
     cpp_run_epilog_[descriptor] =
         "  CHECK(" + field_deserializer_wrapper_[field_descriptor](field_name) +
