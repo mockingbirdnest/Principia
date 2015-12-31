@@ -427,8 +427,7 @@ void JournalProtoProcessor::ProcessInOut(
   // only has one field.
   std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()";
   if (descriptor->field_count() > 1) {
-    fill_body_[descriptor] = "  auto* m = " +//TODO(phl):const
-                                 cpp_message_name + ";\n";
+    fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
     cpp_message_name = "m";
   } else {
     fill_body_[descriptor].clear();
@@ -465,8 +464,7 @@ void JournalProtoProcessor::ProcessInOut(
     std::copy(field_arguments.begin(), field_arguments.end(),
               std::back_inserter(run_arguments_[descriptor]));
     run_body_prolog_[descriptor] +=
-        "  auto " +//TODO(phl):const, real type?
-        run_local_variable + " = " +
+        "  auto const " + run_local_variable + " = " +
         field_optional_pointer_fn_[field_descriptor](
             ToLower(name) + ".has_" + field_descriptor_name + "()",
             field_deserializer_fn_[field_descriptor](run_field_getter)) +
@@ -637,7 +635,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "not_null<Player::PointerMap*> const pointer_map) {\n" +
       cpp_run_prolog;
   if (has_return) {
-    functions_implementation_[descriptor] += "  auto const result = ";//TODO(phl):real type, better name?
+    functions_implementation_[descriptor] += "  auto const result = ";
   } else {
     functions_implementation_[descriptor] += "  ";
   }
