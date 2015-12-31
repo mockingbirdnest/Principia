@@ -161,12 +161,34 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
           return "  Delete(pointer_map, " + expr + ");\n";
         };
   }
+  if (options.HasExtension(serialization::is_deleted_if)) {
+    CHECK(!options.HasExtension(serialization::is_deleted))
+        << descriptor->full_name()
+        << " has incorrect is_deleted and is_deleted_if options";
+    field_deleter_wrapper_[descriptor] =
+        [options](std::string const& expr) {
+          return "  if (" + options.GetExtension(serialization::is_deleted_if) +
+                 ") {\n    Delete(pointer_map, " + expr + ");\n  }\n";
+        };
+  }
   if (options.HasExtension(serialization::is_inserted)) {
     CHECK(options.GetExtension(serialization::is_inserted))
         << descriptor->full_name() << " has incorrect is_inserted option";
     field_inserter_wrapper_[descriptor] =
         [](std::string const& expr1, std::string const& expr2) {
           return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
+        };
+  }
+  if (options.HasExtension(serialization::is_inserted_if)) {
+    CHECK(!options.HasExtension(serialization::is_inserted))
+        << descriptor->full_name()
+        << " has incorrect is_inserted and is_inserted_if options";
+    field_inserter_wrapper_[descriptor] =
+        [options](std::string const& expr1, std::string const& expr2) {
+          return "  if (" +
+                 options.GetExtension(serialization::is_inserted_if) +
+                 ") {\n    Insert(pointer_map, " + expr1 + ", " + expr2 +
+                 ");\n  }\n";
         };
   }
   cpp_field_type_[descriptor] = pointer_to + "*";
