@@ -1,5 +1,13 @@
 #pragma once
 
+#include "base/not_null.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/plugin.hpp"
+#include "physics/discrete_trajectory.hpp"
+
+namespace principia {
+namespace ksp_plugin {
+
 // Owns a fork.
 // TODO(egg): templatize, move to physics, make movable, make NewFork return
 // that.
@@ -48,3 +56,6 @@ class ForkHandle {
  private:
   DiscreteTrajectory<Barycentric>* trajectory_;
 };
+
+}  // namespace ksp_plugin
+}  // namespace principia

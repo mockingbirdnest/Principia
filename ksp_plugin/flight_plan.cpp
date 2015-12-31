@@ -19,7 +19,7 @@ FlightPlan::FlightPlan(
 }
 
 int FlightPlan::size() const {
-  return burns_.size();
+  return manœuvres_.size();
 }
 
 Manœuvre<Barycentric, Navigation> const& FlightPlan::Get(int index) {
@@ -28,14 +28,13 @@ Manœuvre<Barycentric, Navigation> const& FlightPlan::Get(int index) {
   return manœuvres_[index];
 }
 
-bool FlightPlan::Append(BurnDefinition burn) {
-  auto manœuvre = 
-    Manœuvre<Barycentric, Navigation>(
-        burn.thrust,
-        manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass(),
-        burn.specific_impulse,
-        Normalize(burn.Δv),
-        burn.frame.get());
+bool FlightPlan::Append(Burn burn) {
+  Manœuvre<Barycentric, Navigation> manœuvre(
+      burn.thrust,
+      manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass(),
+      burn.specific_impulse,
+      Normalize(burn.Δv),
+      std::move(burn.frame));
   manœuvre.set_initial_time(burn.initial_time);
   manœuvre.set_Δv(burn.Δv.Norm());
   if (manœuvre.FitsBetween(
@@ -46,8 +45,8 @@ bool FlightPlan::Append(BurnDefinition burn) {
     burns_.emplace(std::move(burn));
     {
       // Hide the moved-from |burn|.
-      BurnDefinition& burn = burns_.top();
-      manœuvres_.emplace_back(manœuvre);
+      Burn& burn = burns_.top();
+      manœuvres_.emplace_back(std::move(manœuvre));
       // Reset the last coast.
       segments_.top()->ForgetBefore(segments_.top()->Fork().time());
       // Prolong the last coast until the start of the new burn.
@@ -99,15 +98,14 @@ void FlightPlan::RemoveLast() {
       final_time_);
 }
 
-bool FlightPlan::ReplaceLast(BurnDefinition burn) {
+bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!burns_.empty());
 
-  auto manœuvre =
-    Manœuvre<Barycentric, Navigation>(burn.thrust,
-                                      manœuvres_.back().initial_mass(),
-                                      burn.specific_impulse,
-                                      Normalize(burn.Δv),
-                                      burn.frame.get());
+  Manœuvre<Barycentric, Navigation> manœuvre(burn.thrust,
+      manœuvres_.back().initial_mass(),
+      burn.specific_impulse,
+      Normalize(burn.Δv),
+      std::move(burn.frame));
   manœuvre.set_initial_time(burn.initial_time);
   manœuvre.set_Δv(burn.Δv.Norm());
   if (manœuvre.FitsBetween(manœuvres_.size() == 1

@@ -44,7 +44,15 @@ class ManœuvreTest : public ::testing::Test {
   using Rendering = Frame<serialization::Frame::TestTag,
                           serialization::Frame::TEST2, false>;
 
-  StrictMock<MockDynamicFrame<World, Rendering>> const mock_dynamic_frame_;
+  not_null<std::unique_ptr<StrictMock<MockDynamicFrame<World, Rendering>>>>
+  MakeMockDynamicFrame() {
+    auto owned_mock_dynamic_frame =
+        make_not_null_unique<StrictMock<MockDynamicFrame<World, Rendering>>>();
+    mock_dynamic_frame_ = owned_mock_dynamic_frame.get();
+    return std::move(owned_mock_dynamic_frame);
+  }
+
+  StrictMock<MockDynamicFrame<World, Rendering>> const* mock_dynamic_frame_;
   DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
@@ -67,12 +75,13 @@ class ManœuvreTest : public ::testing::Test {
 TEST_F(ManœuvreTest, TimedBurn) {
   Instant const t0 = Instant();
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+
   Manœuvre<World, Rendering> manœuvre(
       1 * Newton /*thrust*/,
       2 * Kilogram /*initial_mass*/,
       1 * Newton * Second / Kilogram /*specific_impulse*/,
       2 * e_y /*direction*/,
-      &mock_dynamic_frame_);
+      MakeMockDynamicFrame());
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -91,9 +100,9 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(t0 + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
 
   discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
-  EXPECT_CALL(mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(mock_dynamic_frame_,
+  EXPECT_CALL(*mock_dynamic_frame_,
               FrenetFrame(manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
@@ -123,7 +132,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
       2 * Kilogram /*initial_mass*/,
       1 * Newton * Second / Kilogram /*specific_impulse*/,
       e_y /*direction*/,
-      &mock_dynamic_frame_);
+      MakeMockDynamicFrame());
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -142,9 +151,9 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(t0, manœuvre.time_of_half_Δv());
 
   discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
-  EXPECT_CALL(mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(mock_dynamic_frame_,
+  EXPECT_CALL(*mock_dynamic_frame_,
               FrenetFrame(manœuvre.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
@@ -205,7 +214,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       total_vehicle_at_s_ivb_1st_90_percent_thrust,
       specific_impulse_1st,
       e_y,
-      &mock_dynamic_frame_);
+      MakeMockDynamicFrame());
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_burn.mass_flow()),
               Lt(1E-4));
@@ -222,9 +231,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   discrete_trajectory_.Append(first_burn.initial_time(), dof_);
-  EXPECT_CALL(mock_dynamic_frame_, ToThisFrameAtTime(first_burn.initial_time()))
+  EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(first_burn.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(mock_dynamic_frame_,
+  EXPECT_CALL(*mock_dynamic_frame_,
               FrenetFrame(first_burn.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
@@ -244,7 +253,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       total_vehicle_at_s_ivb_2nd_90_percent_thrust,
       specific_impulse_2nd,
       e_y,
-      &mock_dynamic_frame_);
+      MakeMockDynamicFrame());
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_burn.mass_flow()),
               Lt(2E-4));
@@ -261,10 +270,10 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   discrete_trajectory_.Append(second_burn.initial_time(), dof_);
-  EXPECT_CALL(mock_dynamic_frame_,
+  EXPECT_CALL(*mock_dynamic_frame_,
               ToThisFrameAtTime(second_burn.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(mock_dynamic_frame_,
+  EXPECT_CALL(*mock_dynamic_frame_,
               FrenetFrame(second_burn.initial_time(), rendering_dof_))
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));

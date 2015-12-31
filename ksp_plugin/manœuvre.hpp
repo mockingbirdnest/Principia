@@ -33,11 +33,13 @@ namespace ksp_plugin {
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
-  Manœuvre(Force const& thrust,
-           Mass const& initial_mass,
+  Manœuvre(Force const& thrust, Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
            Vector<double, Frenet<Frame>> const& direction,
-           not_null<DynamicFrame<InertialFrame, Frame> const*> frame);
+           not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>>
+               frame);
+  Manœuvre(Manœuvre&&) = default;
+  Manœuvre& operator=(Manœuvre&&) = default;
   ~Manœuvre() = default;
 
   Force const& thrust() const;
@@ -92,7 +94,7 @@ class Manœuvre {
   Vector<double, Frenet<Frame>> const direction_;
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
-  not_null<DynamicFrame<InertialFrame, Frame> const*> frame_;
+  not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
 };
 
 }  // namespace ksp_plugin

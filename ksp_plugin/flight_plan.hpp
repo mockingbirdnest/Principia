@@ -3,6 +3,7 @@
 #include <vector>
 #include <stack>
 
+#include "ksp_plugin/fork_handle.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/plugin.hpp"
@@ -14,7 +15,7 @@ using integrators::AdaptiveStepSizeIntegrator;
 
 namespace ksp_plugin {
 
-struct BurnDefinition {
+struct Burn {
   Force thrust;
   SpecificImpulse specific_impulse;
   not_null<std::unique_ptr<NavigationFrame const>> frame;
@@ -36,13 +37,13 @@ class FlightPlan {
   int size() const;
   Manœuvre<Barycentric, Navigation> const& Get(int index);
 
+  void RemoveLast();
+
   // The following two functions return false and have no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
   // burn, or end after |final_time_|.
-  bool Append(BurnDefinition burn);
-  bool ReplaceLast(BurnDefinition burn);
-
-  void RemoveLast();
+  bool Append(Burn burn);
+  bool ReplaceLast(Burn burn);
 
   // Returns false and has no effect if |final_time| is before the end of the
   // last manœuvre or before |initial_time_|.
@@ -57,7 +58,7 @@ class FlightPlan {
   // Starts and ends with a coasting segment; coasting and burning alternate.
   std::stack<ForkHandle> segments_;
   std::vector<Manœuvre<Barycentric, Navigation>> manœuvres_;
-  std::stack<BurnDefinition> burns_;
+  std::stack<Burn> burns_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator_;
