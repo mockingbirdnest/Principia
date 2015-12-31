@@ -419,7 +419,7 @@ void JournalProtoProcessor::ProcessInOut(
     cpp_fill_body_[descriptor].clear();
   }
   cpp_run_arguments_[descriptor].clear();
-  cpp_run_body_[descriptor] = "  auto const& " + ToLower(name) + " = message." +
+  cpp_run_prolog_[descriptor] = "  auto const& " + ToLower(name) + " = message." +
                               ToLower(name) + "();\n";
   cpp_run_epilog_[descriptor].clear();
 
@@ -446,7 +446,7 @@ void JournalProtoProcessor::ProcessInOut(
         field_arguments_wrapper_[field_descriptor](field_descriptor_name);
     std::copy(cpp_run_arguments.begin(), cpp_run_arguments.end(),
               std::back_inserter(cpp_run_arguments_[descriptor]));
-    cpp_run_body_[descriptor] +=
+    cpp_run_prolog_[descriptor] +=
         "  auto " +//TODO(phl):const, real type?
         field_descriptor_name + " = " +
         optional_field_get_wrapper_[field_descriptor](
@@ -551,7 +551,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
 
   // The second pass that produces the actual output.
   std::string cpp_run_arguments;
-  std::string cpp_run_body;
+  std::string cpp_run_prolog;
   std::string cpp_run_epilog;
   cpp_method_type_[descriptor] = "struct " + name + " {\n";
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
@@ -565,7 +565,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
           cpp_fill_body_[nested_descriptor] +
           "}\n\n";
       cpp_run_arguments += Join(cpp_run_arguments_[nested_descriptor]);
-      cpp_run_body += cpp_run_body_[nested_descriptor];
+      cpp_run_prolog += cpp_run_prolog_[nested_descriptor];
     } else if (nested_name == kOut) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cpp_method_impl_[descriptor] +=
@@ -614,7 +614,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cpp_method_impl_[descriptor] +=
       "void " + name + "::Run(Message const& message, "
       "not_null<Player::PointerMap*> const pointer_map) {\n" +
-      cpp_run_body;
+      cpp_run_prolog;
   if (has_return) {
     cpp_method_impl_[descriptor] += "  auto const result = ";//TODO(phl):real type, better name?
   } else {
