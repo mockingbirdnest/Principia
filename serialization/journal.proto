@@ -309,7 +309,10 @@ message GetNavigationFrameParameters {
     optional GetNavigationFrameParameters extension = 5060;
   }
   message In {
-    required fixed64 navigation_frame = 1;
+    // Ownership remains to the plugin, so we must remove the pointer from the
+    // pointer_map in case the plugin deletes it.
+    required fixed64 navigation_frame = 1
+        [(pointer_to) = "NavigationFrame const", (is_consumed) = true];
   }
   message Return {
     required NavigationFrameParameters get_navigation_frame_parameters = 1;
@@ -323,10 +326,13 @@ message GetPlottingFrame {
     optional GetPlottingFrame extension = 5061;
   }
   message In {
-    required fixed64 plugin = 1;
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
   }
   message Return {
-    required fixed64 get_plotting_frame = 1;
+    // This doesn't transfer ownership to the caller, but we must enter the
+    // pointer in the pointer_map in case it crosses the interface again.
+    required fixed64 get_plotting_frame = 1
+        [(pointer_to) = "NavigationFrame const", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -534,11 +540,12 @@ message NewNavigationFrame {
     optional NewNavigationFrame extension = 5062;
   }
   message In {
-    required fixed64 plugin = 1;
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
     required NavigationFrameParameters parameters = 2;
   }
   message Return {
-    required fixed64 new_navigation_frame = 1;
+    required fixed64 new_navigation_frame = 1
+        [(pointer_to) = "NavigationFrame", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;

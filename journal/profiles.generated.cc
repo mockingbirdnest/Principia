@@ -318,6 +318,37 @@ void GetBufferedLogging::Run(Message const& message, not_null<Player::PointerMap
   CHECK(message.return_().get_buffered_logging() == result);
 }
 
+void GetNavigationFrameParameters::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_navigation_frame(SerializePointer(in.navigation_frame));
+}
+
+void GetNavigationFrameParameters::Fill(Return const& result, not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_get_navigation_frame_parameters() = SerializeNavigationFrameParameters(result);
+}
+
+void GetNavigationFrameParameters::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto navigation_frame = DeserializePointer<NavigationFrame const*>(*pointer_map, in.navigation_frame());
+  auto const result = ksp_plugin::principia__GetNavigationFrameParameters(navigation_frame);
+  Delete(pointer_map, in.navigation_frame());
+  CHECK(DeserializeNavigationFrameParameters(message.return_().get_navigation_frame_parameters()) == result);
+}
+
+void GetPlottingFrame::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_plugin(SerializePointer(in.plugin));
+}
+
+void GetPlottingFrame::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_get_plotting_frame(SerializePointer(result));
+}
+
+void GetPlottingFrame::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto const result = ksp_plugin::principia__GetPlottingFrame(plugin);
+  Insert(pointer_map, message.return_().get_plotting_frame(), result);
+}
+
 void GetStderrLogging::Fill(Return const& result, not_null<Message*> const message) {
   message->mutable_return_()->set_get_stderr_logging(result);
 }
@@ -535,6 +566,24 @@ void NewBodyCentredNonRotatingNavigationFrame::Run(Message const& message, not_n
   auto reference_body_index = in.reference_body_index();
   auto const result = ksp_plugin::principia__NewBodyCentredNonRotatingNavigationFrame(plugin, reference_body_index);
   Insert(pointer_map, message.return_().new_body_centred_non_rotating_navigation_frame(), result);
+}
+
+void NewNavigationFrame::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  *m->mutable_parameters() = SerializeNavigationFrameParameters(in.parameters);
+}
+
+void NewNavigationFrame::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_new_navigation_frame(SerializePointer(result));
+}
+
+void NewNavigationFrame::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto parameters = DeserializeNavigationFrameParameters(in.parameters());
+  auto const result = ksp_plugin::principia__NewNavigationFrame(plugin, parameters);
+  Insert(pointer_map, message.return_().new_navigation_frame(), result);
 }
 
 void NewPlugin::Fill(In const& in, not_null<Message*> const message) {
