@@ -79,7 +79,7 @@ $(VERSION_HEADER): .git
 	./generate_version_header.sh
 
 %.pb.cc %.pb.h: %.proto
-	$(DEP_DIR)/protobuf/src/protoc $< --cpp_out=.
+	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
 
 %.o: %.cpp 
 	$(CXX) $(CXXFLAGS) $< -o $@ 
