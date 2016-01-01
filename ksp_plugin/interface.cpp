@@ -219,27 +219,27 @@ int principia__GetStderrLogging() {
   return m.Return(FLAGS_stderrthreshold);
 }
 
-void principia__LogInfo(char const* const message) {
-  journal::Method<journal::LogInfo> m({message});
-  LOG(INFO) << message;
+void principia__LogInfo(char const* const text) {
+  journal::Method<journal::LogInfo> m({text});
+  LOG(INFO) << text;
   return m.Return();
 }
 
-void principia__LogWarning(char const* const message) {
-  journal::Method<journal::LogWarning> m({message});
-  LOG(WARNING) << message;
+void principia__LogWarning(char const* const text) {
+  journal::Method<journal::LogWarning> m({text});
+  LOG(WARNING) << text;
   return m.Return();
 }
 
-void principia__LogError(char const* const message) {
-  journal::Method<journal::LogError> m({message});
-  LOG(ERROR) << message;
+void principia__LogError(char const* const text) {
+  journal::Method<journal::LogError> m({text});
+  LOG(ERROR) << text;
   return m.Return();
 }
 
-void principia__LogFatal(char const* const message) {
-  journal::Method<journal::LogFatal> m({message});
-  LOG(FATAL) << message;
+void principia__LogFatal(char const* const text) {
+  journal::Method<journal::LogFatal> m({text});
+  LOG(FATAL) << text;
   return m.Return();
 }
 

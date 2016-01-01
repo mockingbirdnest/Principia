@@ -142,7 +142,8 @@ message DeleteLineAndIterator {
     optional DeleteLineAndIterator extension = 5036;
   }
   message In {
-    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator"];
+    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator",
+                                            (is_consumed) = true];
   }
   message Out {
     required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator"];
@@ -156,7 +157,8 @@ message DeletePlugin {
     optional DeletePlugin extension = 5000;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_consumed) = true];
   }
   message Out {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
@@ -170,7 +172,8 @@ message DeletePluginSerialization {
     optional DeletePluginSerialization extension = 5049;
   }
   message In {
-    required fixed64 serialization = 1 [(pointer_to) = "char const"];
+    required fixed64 serialization = 1 [(pointer_to) = "char const",
+                                        (is_consumed) = true];
   }
   message Out {
     required fixed64 serialization = 1 [(pointer_to) = "char const"];
@@ -185,12 +188,17 @@ message DeserializePlugin {
   }
   message In {
     required string serialization = 1 [(size) = "serialization_size"];
-    required fixed64 deserializer = 2 [(pointer_to) = "PushDeserializer"];
+    required fixed64 deserializer = 2
+        [(pointer_to) = "PushDeserializer",
+         (is_consumed_if) = "serialization->empty()"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
   }
   message Out {
-    required fixed64 deserializer = 1 [(pointer_to) = "PushDeserializer"];
-    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required fixed64 deserializer = 1
+        [(pointer_to) = "PushDeserializer",
+         (is_produced_if) = "!serialization->empty()"];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Out out = 2;
@@ -224,7 +232,7 @@ message EndInitialization {
     optional EndInitialization extension = 5020;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin"];
   }
   required In in = 1;
 }
@@ -402,7 +410,7 @@ message LogError {
     optional LogError extension = 5010;
   }
   message In {
-    required string message = 1;
+    required string text = 1;
   }
   required In in = 1;
 }
@@ -412,7 +420,7 @@ message LogFatal {
     optional LogFatal extension = 5011;
   }
   message In {
-    required string message = 1;
+    required string text = 1;
   }
   required In in = 1;
 }
@@ -422,7 +430,7 @@ message LogInfo {
     optional LogInfo extension = 5012;
   }
   message In {
-    required string message = 1;
+    required string text = 1;
   }
   required In in = 1;
 }
@@ -432,7 +440,7 @@ message LogWarning {
     optional LogWarning extension = 5013;
   }
   message In {
-    required string message = 1;
+    required string text = 1;
   }
   required In in = 1;
 }
@@ -464,7 +472,7 @@ message NewBarycentricRotatingNavigationFrame {
   }
   message Return {
     required fixed64 new_barycentric_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame"];
+        [(pointer_to) = "NavigationFrame", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -480,7 +488,7 @@ message NewBodyCentredNonRotatingNavigationFrame {
   }
   message Return {
     required fixed64 new_body_centred_non_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame"];
+        [(pointer_to) = "NavigationFrame", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -495,7 +503,8 @@ message NewPlugin {
     required double planetarium_rotation_in_degrees = 2;
   }
   message Return {
-    required fixed64 new_plugin = 1 [(pointer_to) = "Plugin"];
+    required fixed64 new_plugin = 1 [(pointer_to) = "Plugin",
+                                     (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -542,7 +551,7 @@ message RenderedFlightPlan {
   }
   message Return {
     required fixed64 rendered_flight_plan = 1
-        [(pointer_to) = "LineAndIterator"];
+        [(pointer_to) = "LineAndIterator", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -559,7 +568,7 @@ message RenderedPrediction {
   }
   message Return {
     required fixed64 rendered_prediction = 1
-        [(pointer_to) = "LineAndIterator"];
+        [(pointer_to) = "LineAndIterator", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -576,7 +585,7 @@ message RenderedVesselTrajectory {
   }
   message Return {
     required fixed64 rendered_vessel_trajectory = 1
-        [(pointer_to) = "LineAndIterator"];
+        [(pointer_to) = "LineAndIterator", (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -598,14 +607,20 @@ message SerializePlugin {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
-    required fixed64 serializer = 2 [(pointer_to) = "PullSerializer"];
+    required fixed64 serializer = 2
+        [(pointer_to) = "PullSerializer",
+         (is_consumed_if) = "result == nullptr"];
   }
   message Out {
-    required fixed64 serializer = 1 [(pointer_to) = "PullSerializer"];
+    required fixed64 serializer = 1
+        [(pointer_to) = "PullSerializer",
+         (is_produced_if) = "result != nullptr"];
   }
   message Return {
     // TODO(phl): Why the tag 2?
-    required fixed64 serialize_plugin = 2 [(pointer_to) = "char const"];
+    required fixed64 serialize_plugin = 2
+        [(pointer_to) = "char const",
+         (is_produced_if) = "result != nullptr"];
   }
   required In in = 1;
   required Out out = 2;
@@ -638,7 +653,8 @@ message SetPlottingFrame {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin"];
-    required fixed64 navigation_frame = 2 [(pointer_to) = "NavigationFrame"];
+    required fixed64 navigation_frame = 2 [(pointer_to) = "NavigationFrame",
+                                           (is_consumed) = true];
   }
   message Out {
     required fixed64 navigation_frame = 1 [(pointer_to) = "NavigationFrame"];
@@ -806,6 +822,22 @@ message VesselTangent {
 }
 
 extend google.protobuf.FieldOptions {
+  // For a fixed64 field (which is used to represent a pointer), gives the C++
+  // designated type of the pointer.
   optional string pointer_to = 50000;
+
+  // For a repeated message or string field that comes with a separate size
+  // parameter, gives the name of the size parameter.
   optional string size = 50001;
+
+  // For a fixed64 field, indicates whether the corresponding pointer is
+  // consumed (deleted or has its ownership transferred) or produced (allocated)
+  // by the interface.
+  optional bool is_consumed = 50002;
+  optional bool is_produced = 50003;
+
+  // Same as above, but the consumption/production is conditional on some state
+  // of the parameters.
+  optional string is_consumed_if = 50004;
+  optional string is_produced_if = 50005;
 }
