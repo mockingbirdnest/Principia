@@ -11,6 +11,7 @@
 namespace principia {
 
 using geometry::Barycentre;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
