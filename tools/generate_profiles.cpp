@@ -27,19 +27,19 @@ void GenerateProfiles() {
   // Now write the output.
   std::experimental::filesystem::path const directory =
       SOLUTION_DIR / "journal";
-  std::ofstream profiles_hpp(directory / "profiles.gen.hpp");
-  CHECK(profiles_hpp.good());
-  profiles_hpp << kWarning;
+  std::ofstream profiles_generated_h(directory / "profiles.generated.h");
+  CHECK(profiles_generated_h.good());
+  profiles_generated_h << kWarning;
   for (auto const& cpp_method_type : processor.GetCppMethodTypes()) {
-    profiles_hpp << cpp_method_type;
+    profiles_generated_h << cpp_method_type;
   }
 
-  std::ofstream profiles_cpp(directory / "profiles.gen.cpp");
-  CHECK(profiles_cpp.good());
-  profiles_cpp << kWarning;
+  std::ofstream profiles_generated_cc(directory / "profiles.generated.cc");
+  CHECK(profiles_generated_cc.good());
+  profiles_generated_cc << kWarning;
   for (auto const& cpp_method_implementation :
           processor.GetCppMethodImplementations()) {
-    profiles_cpp << cpp_method_implementation;
+    profiles_generated_cc << cpp_method_implementation;
   }
 }
 

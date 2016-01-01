@@ -32,7 +32,7 @@
     <ClInclude Include="player_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="profiles.gen.hpp">
+    <ClInclude Include="profiles.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,7 +52,7 @@
     <ClCompile Include="recorder_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="profiles.gen.cpp">
+    <ClCompile Include="profiles.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

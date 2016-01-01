@@ -19,7 +19,7 @@ using ksp_plugin::XYZSegment;
 
 namespace journal {
 
-#include "journal/profiles.gen.hpp"
+#include "journal/profiles.generated.h"
 
 }  // namespace journal
 }  // namespace principia

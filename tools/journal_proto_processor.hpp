@@ -58,8 +58,8 @@ class JournalProtoProcessor {
   // two C++ code snippets by wrapping them in a more complex structure.
 
   // The fields that are in-out, i.e. for which fields of the same name exist in
-  // both the In and the Out message.  Note that both fields are present in this
-  // set.  Those fields are transmitted through the interface with an extra
+  // both the In and the Out messages.  Note that both fields are present in
+  // this set.  Those fields are transmitted through the interface with an extra
   // level of indirection.
   std::set<FieldDescriptor const*> in_out_;
 
@@ -88,9 +88,9 @@ class JournalProtoProcessor {
                                      std::string const& expr)>>
       field_assignment_fn_;
 
-  // For fields that have a (is_deleted) or (is_deleted_if) option, a lambda
+  // For fields that have an (is_consumed) or (is_consumed_if) option, a lambda
   // producing a statement to call Delete() to remove the appropriate entry from
-  // the pointer_map.  |expr| is an uint64 expression for the entry to be
+  // the pointer_map.  |expr| is a uint64 expression for the entry to be
   // removed (typically something like |message.in().bar()|).  No data for other
   // fields.
   std::map<FieldDescriptor const*,
@@ -113,7 +113,7 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr)>>
       field_indirect_member_get_fn_;
 
-  // For fields that have a (is_inserted) or (is_inserted_if) option, a lambda
+  // For fields that have an (is_produced) or (is_produced_if) option, a lambda
   // producing a statement to call Insert() to enter the appropriate entry into
   // the pointer_map.  |expr1| is an uint64 expression for the serialized value
   // of the pointer (typically something like |message.in().bar()|), |expr2| is

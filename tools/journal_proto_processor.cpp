@@ -104,7 +104,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
   FieldOptions const& options = descriptor->options();
   CHECK(options.HasExtension(serialization::size))
-      << descriptor->full_name() << " must have a size option";
+      << descriptor->full_name() << " is missing a (size) option";
   size_member_name_[descriptor] = options.GetExtension(serialization::size);
   field_type_[descriptor] = message_type_name + " const*";
 
@@ -174,45 +174,46 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
   CHECK(options.HasExtension(serialization::pointer_to))
-      << descriptor->full_name() << " is missing a pointer_to option";
+      << descriptor->full_name() << " is missing a (pointer_to) option";
   std::string const& pointer_to =
       options.GetExtension(serialization::pointer_to);
   field_type_[descriptor] = pointer_to + "*";
 
-  if (options.HasExtension(serialization::is_deleted)) {
-    CHECK(options.GetExtension(serialization::is_deleted))
-        << descriptor->full_name() << " has incorrect is_deleted option";
+  if (options.HasExtension(serialization::is_consumed)) {
+    CHECK(options.GetExtension(serialization::is_consumed))
+        << descriptor->full_name() << " has incorrect (is_consumed) option";
     field_deleter_fn_[descriptor] =
         [](std::string const& expr) {
           return "  Delete(pointer_map, " + expr + ");\n";
         };
   }
-  if (options.HasExtension(serialization::is_deleted_if)) {
-    CHECK(!options.HasExtension(serialization::is_deleted))
+  if (options.HasExtension(serialization::is_consumed_if)) {
+    CHECK(!options.HasExtension(serialization::is_consumed))
         << descriptor->full_name()
-        << " has incorrect is_deleted and is_deleted_if options";
+        << " has incorrect )is_consumed) and (is_consumed_if) options";
     field_deleter_fn_[descriptor] =
         [options](std::string const& expr) {
-          return "  if (" + options.GetExtension(serialization::is_deleted_if) +
+          return "  if (" +
+                 options.GetExtension(serialization::is_consumed_if) +
                  ") {\n    Delete(pointer_map, " + expr + ");\n  }\n";
         };
   }
-  if (options.HasExtension(serialization::is_inserted)) {
-    CHECK(options.GetExtension(serialization::is_inserted))
-        << descriptor->full_name() << " has incorrect is_inserted option";
+  if (options.HasExtension(serialization::is_produced)) {
+    CHECK(options.GetExtension(serialization::is_produced))
+        << descriptor->full_name() << " has incorrect (is_produced) option";
     field_inserter_fn_[descriptor] =
         [](std::string const& expr1, std::string const& expr2) {
           return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
         };
   }
-  if (options.HasExtension(serialization::is_inserted_if)) {
-    CHECK(!options.HasExtension(serialization::is_inserted))
+  if (options.HasExtension(serialization::is_produced_if)) {
+    CHECK(!options.HasExtension(serialization::is_produced))
         << descriptor->full_name()
-        << " has incorrect is_inserted and is_inserted_if options";
+        << " has incorrect (is_produced) and (is_produced_if) options";
     field_inserter_fn_[descriptor] =
         [options](std::string const& expr1, std::string const& expr2) {
           return "  if (" +
-                 options.GetExtension(serialization::is_inserted_if) +
+                 options.GetExtension(serialization::is_produced_if) +
                  ") {\n    Insert(pointer_map, " + expr1 + ", " + expr2 +
                  ");\n  }\n";
         };

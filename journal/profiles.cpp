@@ -123,7 +123,7 @@ serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
 
 }  // namespace
 
-#include "journal/profiles.gen.cpp"
+#include "journal/profiles.generated.cc"
 
 }  // namespace journal
 }  // namespace principia

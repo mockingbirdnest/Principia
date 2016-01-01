@@ -157,7 +157,7 @@
     <ClInclude Include="method_body.hpp" />
     <ClInclude Include="player.hpp" />
     <ClInclude Include="player_body.hpp" />
-    <ClInclude Include="profiles.gen.hpp">
+    <ClInclude Include="profiles.generated.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -169,7 +169,7 @@
     <ClCompile Include="player.cpp" />
     <ClCompile Include="player_test.cpp" />
     <ClCompile Include="profiles.cpp" />
-    <ClCompile Include="profiles.gen.cpp">
+    <ClCompile Include="profiles.generated.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
