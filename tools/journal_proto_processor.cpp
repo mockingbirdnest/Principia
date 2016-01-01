@@ -190,7 +190,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(serialization::is_consumed_if)) {
     CHECK(!options.HasExtension(serialization::is_consumed))
         << descriptor->full_name()
-        << " has incorrect )is_consumed) and (is_consumed_if) options";
+        << " has incorrect (is_consumed) and (is_consumed_if) options";
     field_deleter_fn_[descriptor] =
         [options](std::string const& expr) {
           return "  if (" +
