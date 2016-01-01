@@ -145,6 +145,7 @@ class EclipseTest : public testing::Test {
   SolarSystem<ICRFJ2000Equator> solar_system_1950_;
 };
 
+#if !defined(_DEBUG)
 TEST_F(EclipseTest, Year1950) {
   // Dates are TDB Julian Day for 1950-04-02.
   auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
@@ -235,6 +236,7 @@ TEST_F(EclipseTest, Year1952) {
   CheckLunarUmbralEclipse(U4, U14);
   CheckLunarPenumbralEclipse(P4, U14); */
 }
+#endif
 
 }  // namespace physics
 }  // namespace principia
