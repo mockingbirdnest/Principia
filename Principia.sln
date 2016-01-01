@@ -48,8 +48,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_adapter", "ksp_p
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin", "ksp_plugin\ksp_plugin.vcxproj", "{A3F94607-2666-408F-AF98-0E47D61C98BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{873680B3-2406-4A30-9EE7-569E9B9DA661} = {873680B3-2406-4A30-9EE7-569E9B9DA661}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin_test", "ksp_plugin_test\ksp_plugin_test.vcxproj", "{A942ADF0-62F4-435C-85B2-934D5B666DB8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A3F94607-2666-408F-AF98-0E47D61C98BB} = {A3F94607-2666-408F-AF98-0E47D61C98BB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj", "{7E7CC89A-FC65-409C-A975-9C3A6A50786B}"
 EndProject

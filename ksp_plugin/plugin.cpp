@@ -439,6 +439,10 @@ void Plugin::SetPlottingFrame(
   plotting_frame_ = std::move(plotting_frame);
 }
 
+not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
+  return plotting_frame_.get();
+}
+
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {

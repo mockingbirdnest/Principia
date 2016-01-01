@@ -48,6 +48,14 @@ T DeserializePointer(Player::PointerMap const& pointer_map,
   }
 }
 
+NavigationFrameParameters DeserializeNavigationFrameParameters(
+    serialization::NavigationFrameParameters const& parameters) {
+  return {parameters.extension(),
+          parameters.centre_index(),
+          parameters.primary_index(),
+          parameters.secondary_index()};
+}
+
 WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
   return {wxyz.w(), wxyz.x(), wxyz.y(), wxyz.z()};
 }
@@ -77,6 +85,16 @@ KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
+}
+
+serialization::NavigationFrameParameters SerializeNavigationFrameParameters(
+    NavigationFrameParameters const& parameters) {
+  serialization::NavigationFrameParameters m;
+  m.set_extension(parameters.extension);
+  m.set_centre_index(parameters.centre_index);
+  m.set_primary_index(parameters.primary_index);
+  m.set_secondary_index(parameters.secondary_index);
+  return m;
 }
 
 serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {

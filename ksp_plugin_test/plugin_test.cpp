@@ -574,9 +574,12 @@ TEST_F(PluginTest, Navball) {
                 0 * Radian);
   plugin.InsertSun(SolarSystemFactory::kSun, sun_gravitational_parameter_);
   plugin.EndInitialization();
-  plugin.SetPlottingFrame(
-      plugin.NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::kSun));
+  not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
+      plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::kSun);
+  not_null<const NavigationFrame*> const navigation_frame_copy =
+      navigation_frame.get();
+  plugin.SetPlottingFrame(std::move(navigation_frame));
+  EXPECT_EQ(navigation_frame_copy, plugin.GetPlottingFrame());
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
