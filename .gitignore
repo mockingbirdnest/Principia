@@ -104,6 +104,10 @@ packages/
 *.pb.h
 *.pb.cc
 
+# Generated C++
+*.generated.h
+*.generated.cc
+
 # Generated Mathematica
 *.generated.wl
 *.cdf
