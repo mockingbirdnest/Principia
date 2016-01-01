@@ -18,6 +18,7 @@
     <CustomBuild Include="numerics.proto" />
     <CustomBuild Include="integrators.proto" />
     <CustomBuild Include="astronomy.proto" />
+    <CustomBuild Include="journal.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -70,8 +71,5 @@
     <ClCompile Include="journal.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="journal.proto" />
   </ItemGroup>
 </Project>

@@ -12,8 +12,9 @@ namespace ksp_plugin_adapter {
              tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
                                          GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
-public partial class PrincipiaPluginAdapter : ScenarioModule {
-  public delegate void WindowRenderer();
+public partial class PrincipiaPluginAdapter
+    : ScenarioModule,
+      WindowRenderer.ManagerInterface {
 
   private const String kPrincipiaKey = "serialized_plugin";
   private const String kPrincipiaInitialState = "principia_initial_state";
@@ -47,9 +48,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
-  private WindowRenderer render_windows_;
-
-  private ReferenceFrameSelector rendering_frame_selector_;
+  private Controlled<ReferenceFrameSelector> plotting_frame_selector_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -136,6 +135,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool override_rsas_target_ = false;
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
+
+  public event Action render_windows;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -427,8 +428,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       }
       Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
-      rendering_frame_selector_ =
-          new ReferenceFrameSelector(ref render_windows_,
+      plotting_frame_selector_.all =
+          new ReferenceFrameSelector(this,
                                      plugin_,
                                      UpdateRenderingFrame);
 
@@ -483,11 +484,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           options    : UnityEngine.GUILayout.MinWidth(500));
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
-      if (render_windows_ != null) {
-        // TODO(egg): This thing keeps growing...  In any case ownership should
-        // be revised, the selector should not own its frame.
-        render_windows_();
-      }
+
+      render_windows();
     }
   }
 
@@ -516,7 +514,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
           navball_.navBall.renderer.material.mainTexture =
               compass_navball_texture_;
-        } else if (rendering_frame_selector_.frame_type ==
+        } else if (plotting_frame_selector_.all.frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
           navball_.navBall.renderer.material.mainTexture =
               inertial_navball_texture_;
@@ -825,7 +823,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
-    rendering_frame_selector_ = null;
+    plotting_frame_selector_.all = null;
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -961,7 +959,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         navball_changed_ = true;
         reset_rsas_target_ = true;
       }
-      rendering_frame_selector_.RenderButton();
+      plotting_frame_selector_.all.RenderButton();
     }
   }
 
@@ -1264,8 +1262,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();
     }
-    rendering_frame_selector_ =
-        new ReferenceFrameSelector(ref render_windows_,
+    plotting_frame_selector_.all =
+        new ReferenceFrameSelector(this,
                                    plugin_,
                                    UpdateRenderingFrame);
     VesselProcessor insert_vessel = vessel => {

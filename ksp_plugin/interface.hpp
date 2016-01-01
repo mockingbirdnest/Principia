@@ -134,18 +134,18 @@ void CDECL principia__SetStderrLogging(int const min_severity);
 extern "C" PRINCIPIA_DLL
 int CDECL principia__GetStderrLogging();
 
-// Exports |LOG(SEVERITY) << message| for fast logging from the C# adapter.
+// Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(INFO).  It will not report the
 // line and file of the caller.
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogInfo(char const* const message);
+void CDECL principia__LogInfo(char const* const text);
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogWarning(char const* const message);
+void CDECL principia__LogWarning(char const* const text);
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogError(char const* const message);
+void CDECL principia__LogError(char const* const text);
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogFatal(char const* const message);
+void CDECL principia__LogFatal(char const* const text);
 
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.

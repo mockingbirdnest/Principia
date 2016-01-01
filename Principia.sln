@@ -96,6 +96,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal", "journal\journal.
 		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "tools\tools.vcxproj", "{873680B3-2406-4A30-9EE7-569E9B9DA661}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -451,6 +453,26 @@ Global
 		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Win32.ActiveCfg = Release|Win32
 		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|Win32.Build.0 = Release|Win32
 		{972E4E09-3B2C-4A23-9338-74D97D589207}.Release|x64.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Debug|Win32.ActiveCfg = Debug|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Debug|Win32.Build.0 = Debug|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Debug|x64.ActiveCfg = Debug|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|Any CPU.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|Any CPU.Build.0 = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|Mixed Platforms.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|Mixed Platforms.Build.0 = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|Win32.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|Win32.Build.0 = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|x64.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release_LLVM|x64.Build.0 = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Any CPU.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Win32.ActiveCfg = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Win32.Build.0 = Release|Win32
+		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
