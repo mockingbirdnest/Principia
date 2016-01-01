@@ -114,7 +114,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       };
   field_assignment_fn_[descriptor] =
       [this, descriptor, message_type_name](
-          std::string const& identifier,std::string const& expr) {
+          std::string const& identifier, std::string const& expr) {
         std::string const& descriptor_name = descriptor->name();
         // The use of |substr| below is a bit of a cheat because we known the
         // structure of |expr|.
@@ -123,7 +123,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                expr.substr(0, expr.find('.')) + "." +
                size_member_name_[descriptor] + "; ++" + descriptor_name +
                ") {\n    *" + identifier + "->add_" + descriptor_name +
-               "() = " + 
+               "() = " +
                field_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n  }\n";
       };
@@ -132,7 +132,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
         std::string const& descriptor_name = descriptor->name();
         // Yes, this lambda generates a lambda.
         return "[](::google::protobuf::RepeatedPtrField<serialization::" +
-               message_type_name + "> const& messages) -> std::vector<" + 
+               message_type_name + "> const& messages) -> std::vector<" +
                message_type_name + "> {\n"
                "      std::vector<" + message_type_name + "> deserialized_" +
                descriptor_name + ";\n" +
@@ -360,7 +360,7 @@ void JournalProtoProcessor::ProcessRequiredField(
   if (Contains(in_out_, descriptor)) {
     field_type_[descriptor] += "*";
 
-    field_arguments_fn_[descriptor] = 
+    field_arguments_fn_[descriptor] =
         [](std::string const& identifier) -> std::vector<std::string> {
           return {"&" + identifier};
         };
@@ -374,7 +374,7 @@ void JournalProtoProcessor::ProcessRequiredField(
 void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   // Useful defaults for the lambdas, which ensure that they are set for all
   // fields.  They will be overwritten by actual processing as needed.
-  field_arguments_fn_[descriptor] = 
+  field_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
         return {identifier};
       };
@@ -432,8 +432,9 @@ void JournalProtoProcessor::ProcessInOut(
   } else {
     fill_body_[descriptor].clear();
   }
-  run_body_prolog_[descriptor] = "  auto const& " + ToLower(name) + " = message." +
-                              ToLower(name) + "();\n";
+  run_body_prolog_[descriptor] =
+      "  auto const& " + ToLower(name) + " = message." +
+      ToLower(name) + "();\n";
   run_arguments_[descriptor].clear();
   run_body_epilog_[descriptor].clear();
 

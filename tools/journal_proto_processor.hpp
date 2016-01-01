@@ -2,6 +2,9 @@
 
 #include <functional>
 #include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "google/protobuf/descriptor.h"
 
