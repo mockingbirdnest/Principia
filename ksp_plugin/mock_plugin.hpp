@@ -116,6 +116,9 @@ class MockPlugin : public Plugin {
   MOCK_METHOD1(SetPlottingFrameConstRef,
                void(NavigationFrame const& plotting_frame));
 
+  MOCK_CONST_METHOD0(GetPlottingFrame,
+                     not_null<NavigationFrame const*>());
+
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
   void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,

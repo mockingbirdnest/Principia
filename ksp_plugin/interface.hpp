@@ -74,6 +74,20 @@ struct KSPPart {
 static_assert(std::is_standard_layout<KSPPart>::value,
               "KSPPart is used for interfacing");
 
+extern "C"
+struct NavigationFrameParameters {
+  int extension;  // 6000 to 6999, see serialization::DynamicFrame.
+  int centre_index;
+  int primary_index;
+  int secondary_index;
+};
+
+static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
+              "NavigationFrameParameters is used for interfacing");
+
+bool operator==(NavigationFrameParameters const& left,
+                NavigationFrameParameters const& right);
+
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log".  This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
@@ -120,18 +134,18 @@ void CDECL principia__SetStderrLogging(int const min_severity);
 extern "C" PRINCIPIA_DLL
 int CDECL principia__GetStderrLogging();
 
-// Exports |LOG(SEVERITY) << message| for fast logging from the C# adapter.
+// Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(INFO).  It will not report the
 // line and file of the caller.
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogInfo(char const* const message);
+void CDECL principia__LogInfo(char const* const text);
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogWarning(char const* const message);
+void CDECL principia__LogWarning(char const* const text);
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogError(char const* const message);
+void CDECL principia__LogError(char const* const text);
 extern "C" PRINCIPIA_DLL
-void CDECL principia__LogFatal(char const* const message);
+void CDECL principia__LogFatal(char const* const text);
 
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
@@ -226,6 +240,7 @@ QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
+// TODO(phl): The parameter should be named |centre_index|.
 extern "C" PRINCIPIA_DLL
 NavigationFrame* CDECL principia__NewBodyCentredNonRotatingNavigationFrame(
     Plugin const* const plugin,
@@ -239,6 +254,17 @@ NavigationFrame* CDECL principia__NewBarycentricRotatingNavigationFrame(
     int const primary_index,
     int const secondary_index);
 
+// Calls |plugin| to create a |NavigationFrame| using the given |parameters|.
+extern "C" PRINCIPIA_DLL
+NavigationFrame* CDECL principia__NewNavigationFrame(
+    Plugin const* const plugin,
+    NavigationFrameParameters const parameters);
+
+// Returns the parameters for the given frame, which must not be null.
+extern "C" PRINCIPIA_DLL
+NavigationFrameParameters CDECL principia__GetNavigationFrameParameters(
+    NavigationFrame const* const navigation_frame);
+
 // |navigation_frame| must not be null.  No transfer of ownership of
 // |*navigation_frame|, takes ownership of |**navigation_frame|, nulls
 // |*navigation_frame|.
@@ -246,6 +272,12 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__SetPlottingFrame(
     Plugin* const plugin,
     NavigationFrame** const navigation_frame);
+
+// Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
+// ownership.  The returned pointer is never null.
+extern "C" PRINCIPIA_DLL
+NavigationFrame const* CDECL principia__GetPlottingFrame(
+    Plugin const* const plugin);
 
 extern "C" PRINCIPIA_DLL
 void principia__UpdatePrediction(Plugin const* const plugin,
