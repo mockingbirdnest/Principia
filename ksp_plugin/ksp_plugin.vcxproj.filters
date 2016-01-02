@@ -75,6 +75,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\serialization\journal.proto" />
+    <CustomBuild Include="..\serialization\journal.proto" />
   </ItemGroup>
 </Project>
