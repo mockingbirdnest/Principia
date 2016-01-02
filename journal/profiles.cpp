@@ -48,12 +48,25 @@ T DeserializePointer(Player::PointerMap const& pointer_map,
   }
 }
 
+KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
+  return {DeserializeXYZ(ksp_part.world_position()),
+          DeserializeXYZ(ksp_part.world_velocity()),
+          ksp_part.mass(),
+          DeserializeXYZ(
+              ksp_part.gravitational_acceleration_to_be_applied_by_ksp()),
+          ksp_part.id()};
+}
+
 NavigationFrameParameters DeserializeNavigationFrameParameters(
     serialization::NavigationFrameParameters const& parameters) {
   return {parameters.extension(),
           parameters.centre_index(),
           parameters.primary_index(),
           parameters.secondary_index()};
+}
+
+QP DeserializeQP(serialization::QP const& qp) {
+  return {DeserializeXYZ(qp.q()), DeserializeXYZ(qp.p())};
 }
 
 WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
@@ -69,22 +82,20 @@ XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment) {
           DeserializeXYZ(xyz_segment.end())};
 }
 
-QP DeserializeQP(serialization::QP const& qp) {
-  return {DeserializeXYZ(qp.q()), DeserializeXYZ(qp.p())};
-}
-
-KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
-  return {DeserializeXYZ(ksp_part.world_position()),
-          DeserializeXYZ(ksp_part.world_velocity()),
-          ksp_part.mass(),
-          DeserializeXYZ(
-              ksp_part.gravitational_acceleration_to_be_applied_by_ksp()),
-          ksp_part.id()};
-}
-
 template<typename T>
 std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
+}
+
+serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
+  serialization::KSPPart m;
+  *m.mutable_world_position() = SerializeXYZ(ksp_part.world_position);
+  *m.mutable_world_velocity() = SerializeXYZ(ksp_part.world_velocity);
+  m.set_mass(ksp_part.mass);
+  *m.mutable_gravitational_acceleration_to_be_applied_by_ksp() =
+      SerializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp);
+  m.set_id(ksp_part.id);
+  return m;
 }
 
 serialization::NavigationFrameParameters SerializeNavigationFrameParameters(
@@ -94,6 +105,13 @@ serialization::NavigationFrameParameters SerializeNavigationFrameParameters(
   m.set_centre_index(parameters.centre_index);
   m.set_primary_index(parameters.primary_index);
   m.set_secondary_index(parameters.secondary_index);
+  return m;
+}
+
+serialization::QP SerializeQP(QP const& qp) {
+  serialization::QP m;
+  *m.mutable_p() = SerializeXYZ(qp.p);
+  *m.mutable_q() = SerializeXYZ(qp.q);
   return m;
 }
 
@@ -118,24 +136,6 @@ serialization::XYZSegment SerializeXYZSegment(XYZSegment const& xyz_segment) {
   serialization::XYZSegment m;
   *m.mutable_begin() = SerializeXYZ(xyz_segment.begin);
   *m.mutable_end() = SerializeXYZ(xyz_segment.end);
-  return m;
-}
-
-serialization::QP SerializeQP(QP const& qp) {
-  serialization::QP m;
-  *m.mutable_p() = SerializeXYZ(qp.p);
-  *m.mutable_q() = SerializeXYZ(qp.q);
-  return m;
-}
-
-serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
-  serialization::KSPPart m;
-  *m.mutable_world_position() = SerializeXYZ(ksp_part.world_position);
-  *m.mutable_world_velocity() = SerializeXYZ(ksp_part.world_velocity);
-  m.set_mass(ksp_part.mass);
-  *m.mutable_gravitational_acceleration_to_be_applied_by_ksp() =
-      SerializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp);
-  m.set_id(ksp_part.id);
   return m;
 }
 

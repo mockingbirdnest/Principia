@@ -85,6 +85,7 @@ class JournalProtoProcessor {
   // |expr| to the proper field of |identifier|.  |identifier| must be a
   // pointer.  The lambda calls |field_serializer_fn_| to serialize expressions
   // as necessary; thus, |expr| must *not* be serialized.
+  //TODO(phl):FiX
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& identifier,
                                      std::string const& expr)>>
@@ -157,7 +158,9 @@ class JournalProtoProcessor {
   std::map<FieldDescriptor const*, std::string> field_type_;
 
   //TODO(phl):comment
+  std::map<Descriptor const*, std::string> deserialize_declaration_;
   std::map<Descriptor const*, std::string> deserialize_body_;
+  std::map<Descriptor const*, std::string> serialize_declaration_;
   std::map<Descriptor const*, std::string> serialize_body_;
 
   // The entire sequence of statements for the body of a Fill function.  The key

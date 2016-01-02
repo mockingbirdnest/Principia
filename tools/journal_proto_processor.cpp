@@ -28,22 +28,27 @@ bool Contains(Container const& container,
   return container.find(key) != container.end();
 }
 
-std::string Join(std::vector<std::string> const& v) {
+std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
   for (int i = 0; i < v.size(); ++i) {
     if (i == 0) {
       joined = v[i];
     } else {
-      joined += ", " + v[i];
+      joined += joiner + v[i];
     }
   }
   return joined;
 }
 
 std::string ToLower(std::string const& s) {
-  std::string lower(s.size(), ' ');
+  std::string lower;
   for (int i = 0; i < s.size(); ++i) {
-    lower[i] = std::tolower(s[i]);
+    if (i > 0 && i < s.size() - 1 &&
+        std::isupper(s[i]) && std::islower(s[i + 1])) {
+      lower += "_" + std::string(1, std::tolower(s[i]));
+    } else {
+      lower += std::tolower(s[i]);
+    }
   }
   return lower;
 }
@@ -90,6 +95,18 @@ void JournalProtoProcessor::ProcessMessages() {
       }
     }
   }
+  for (auto const& pair : deserialize_declaration_) {
+    std::cout<<pair.second;
+  }
+  for (auto const& pair : serialize_declaration_) {
+    std::cout<<pair.second;
+  }
+  for (auto const& pair : deserialize_body_) {
+    std::cout<<pair.second;
+  }
+  for (auto const& pair : serialize_body_) {
+    std::cout<<pair.second;
+  }
 }
 
 std::vector<std::string>
@@ -133,7 +150,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                " = " + expr + "; " + descriptor_name + " < " + expr + " + " +
                expr.substr(0, expr.find('.')) + "." +
                size_member_name_[descriptor] + "; ++" + descriptor_name +
-               ") {\n    *" + identifier + "->add_" + descriptor_name +
+               ") {\n    *" + identifier + "add_" + descriptor_name +
                "() = " +
                field_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n  }\n";
@@ -249,7 +266,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   field_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& identifier,
                          std::string const& expr) {
-        return "  *" + identifier + "->mutable_" + descriptor->name() +
+        return "  *" + identifier + "mutable_" + descriptor->name() +
                "() = " + field_serializer_fn_[descriptor](expr) + ";\n";
       };
   field_deserializer_fn_[descriptor] =
@@ -401,7 +418,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   field_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& identifier,
                          std::string const& expr) {
-        return "  " + identifier + "->set_" + descriptor->name() + "(" +
+        return "  " + identifier + "set_" + descriptor->name() + "(" +
                field_serializer_fn_[descriptor](expr) + ");\n";
       };
   field_indirect_member_get_fn_[descriptor] =
@@ -445,10 +462,10 @@ void JournalProtoProcessor::ProcessInOut(
 
   // Generate slightly more compact code in the frequent case where the message
   // only has one field.
-  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()";
+  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()->";
   if (descriptor->field_count() > 1) {
     fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
-    cpp_message_name = "m";
+    cpp_message_name = "m->";
   } else {
     fill_body_[descriptor].clear();
   }
@@ -545,12 +562,20 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     Descriptor const* descriptor) {
   std::string const& name = descriptor->name();
   std::string const& parameter_name = ToLower(name);
+
+  deserialize_declaration_[descriptor] =
+      name + " Deserialize" + name + "(serialization::" + name + " const& " +
+      parameter_name + ");\n";
   deserialize_body_[descriptor] =
       name + " Deserialize" + name + "(serialization::" + name + " const& " +
       parameter_name + ") {\n  return {";
+  serialize_declaration_[descriptor] =
+      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
+      parameter_name + ");\n";
   serialize_body_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
+
   std::vector<std::string> deserialized_expressions;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
@@ -564,16 +589,11 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     deserialized_expressions.push_back(
         field_deserializer_fn_[field_descriptor](deserialize_field_getter));
     serialize_body_[descriptor] +=
-        field_assignment_fn_[field_descriptor]("m", serialize_member_name);
+        field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
   }
-  deserialize_body_[descriptor] += Join(deserialized_expressions) + "};\n}\n\n";
+  deserialize_body_[descriptor] +=
+      Join(deserialized_expressions, /*joiner=*/",\n          ") + "};\n}\n\n";
   serialize_body_[descriptor] += "  return m;\n}\n\n";
-  for (auto const& pair : deserialize_body_) {
-    std::cout<<pair.second;
-  }
-  for (auto const& pair : serialize_body_) {
-    std::cout<<pair.second;
-  }
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(
@@ -634,7 +654,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           fill_body_[nested_descriptor] +
           "}\n\n";
-      cpp_run_arguments += Join(run_arguments_[nested_descriptor]);
+      cpp_run_arguments += Join(run_arguments_[nested_descriptor],
+                                /*joiner=*/", ");
       cpp_run_prolog += run_body_prolog_[nested_descriptor];
     } else if (nested_name == kOut) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
