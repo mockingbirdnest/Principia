@@ -468,15 +468,19 @@ void JournalProtoProcessor::ProcessInOut(
   std::vector<FieldDescriptor const*>* field_descriptors) {
   std::string const& name = descriptor->name();
 
-  // Generate slightly more compact code in the frequent case where the message
-  // only has one field.
-  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()";
-  if (descriptor->field_count() > 1) {
-    fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
-    cpp_message_name = "m->";
-  } else {
-    cpp_message_name += "->";
-    fill_body_[descriptor].clear();
+  std::string cpp_message_prefix;
+  {
+    std::string const cpp_message_name =
+        "message->mutable_" + ToLower(name) + "()";
+    // Generate slightly more compact code in the frequent case where the
+    // message only has one field.
+    if (descriptor->field_count() > 1) {
+      fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
+      cpp_message_prefix = "m->";
+    } else {
+      cpp_message_prefix = cpp_message_name + "->";
+      fill_body_[descriptor].clear();
+    }
   }
   run_body_prolog_[descriptor] =
       "  auto const& " + ToLower(name) + " = message." +
@@ -503,7 +507,7 @@ void JournalProtoProcessor::ProcessInOut(
         field_optional_assignment_fn_[field_descriptor](
             fill_member_name,
             field_assignment_fn_[field_descriptor](
-                cpp_message_name,
+                cpp_message_prefix,
                 field_indirect_member_get_fn_[field_descriptor](
                     fill_member_name)));
     std::vector<std::string> const field_arguments =
@@ -602,7 +606,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
   }
   deserialize_definition_[descriptor] +=
-      Join(deserialized_expressions, /*joiner=*/",\n          ") + "};\n}\n\n";
+      Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
+      "};\n}\n\n";
   serialize_definition_[descriptor] += "  return m;\n}\n\n";
 }
 
