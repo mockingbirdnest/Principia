@@ -98,19 +98,17 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
   serialization::RotatingBody const* rotating_body_extension = nullptr;
   serialization::PreBrouwerOblateBody const* pre_brouwer_oblate_body_extension =
       nullptr;
-  if (message.HasExtension(serialization::RotatingBody::rotating_body)) {
+  if (message.HasExtension(serialization::RotatingBody::extension)) {
     rotating_body_extension =
-        &message.GetExtension(serialization::RotatingBody::rotating_body);
+        &message.GetExtension(serialization::RotatingBody::extension);
     ReadFrameFromMessage(rotating_body_extension->frame(),
                          &enum_value_descriptor,
                          &is_inertial);
     CHECK(is_inertial);
   }
-  if (message.HasExtension(
-          serialization::PreBrouwerOblateBody::pre_brouwer_oblate_body)) {
+  if (message.HasExtension(serialization::PreBrouwerOblateBody::extension)) {
     pre_brouwer_oblate_body_extension =
-        &message.GetExtension(
-            serialization::PreBrouwerOblateBody::pre_brouwer_oblate_body);
+        &message.GetExtension(serialization::PreBrouwerOblateBody::extension);
     ReadFrameFromMessage(pre_brouwer_oblate_body_extension->frame(),
                          &enum_value_descriptor,
                          &is_inertial);

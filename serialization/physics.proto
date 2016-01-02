@@ -69,14 +69,14 @@ message MasslessBody {}
 
 message OblateBody {
   extend RotatingBody {
-    optional OblateBody oblate_body = 4000;
+    optional OblateBody extension = 4000;
   }
   required Quantity j2 = 1;
 }
 
 message PreBrouwerOblateBody {
   extend MassiveBody {
-    optional PreBrouwerOblateBody pre_brouwer_oblate_body = 2001;
+    optional PreBrouwerOblateBody extension = 2001;
   }
   required Frame frame = 3;
   required Quantity j2 = 1;
@@ -85,7 +85,7 @@ message PreBrouwerOblateBody {
 
 message RotatingBody {
   extend MassiveBody {
-    optional RotatingBody rotating_body = 2002;
+    optional RotatingBody extension = 2002;
   }
   required Frame frame = 1;
   required Quantity reference_angle = 2;
