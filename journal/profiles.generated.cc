@@ -2,6 +2,111 @@
 // If you change it, the changes will be lost the next time the generator is
 // run.  You should change the generator instead.
 
+namespace {
+
+KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part);
+NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::NavigationFrameParameters const& navigation_frame_parameters);
+QP DeserializeQP(serialization::QP const& qp);
+WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz);
+XYZ DeserializeXYZ(serialization::XYZ const& xyz);
+XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment);
+serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part);
+serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters);
+serialization::QP SerializeQP(QP const& qp);
+serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz);
+serialization::XYZ SerializeXYZ(XYZ const& xyz);
+serialization::XYZSegment SerializeXYZSegment(XYZSegment const& xyz_segment);
+
+KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
+  return {DeserializeXYZ(ksp_part.world_position()),
+          DeserializeXYZ(ksp_part.world_velocity()),
+          ksp_part.mass(),
+          DeserializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp()),
+          ksp_part.id()};
+}
+
+NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::NavigationFrameParameters const& navigation_frame_parameters) {
+  return {navigation_frame_parameters.extension(),
+          navigation_frame_parameters.centre_index(),
+          navigation_frame_parameters.primary_index(),
+          navigation_frame_parameters.secondary_index()};
+}
+
+QP DeserializeQP(serialization::QP const& qp) {
+  return {DeserializeXYZ(qp.q()),
+          DeserializeXYZ(qp.p())};
+}
+
+WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
+  return {wxyz.w(),
+          wxyz.x(),
+          wxyz.y(),
+          wxyz.z()};
+}
+
+XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
+  return {xyz.x(),
+          xyz.y(),
+          xyz.z()};
+}
+
+XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment) {
+  return {DeserializeXYZ(xyz_segment.begin()),
+          DeserializeXYZ(xyz_segment.end())};
+}
+
+serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
+  serialization::KSPPart m;
+  *m.mutable_world_position() = SerializeXYZ(ksp_part.world_position);
+  *m.mutable_world_velocity() = SerializeXYZ(ksp_part.world_velocity);
+  m.set_mass(ksp_part.mass);
+  *m.mutable_gravitational_acceleration_to_be_applied_by_ksp() = SerializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp);
+  m.set_id(ksp_part.id);
+  return m;
+}
+
+serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {
+  serialization::NavigationFrameParameters m;
+  m.set_extension(navigation_frame_parameters.extension);
+  m.set_centre_index(navigation_frame_parameters.centre_index);
+  m.set_primary_index(navigation_frame_parameters.primary_index);
+  m.set_secondary_index(navigation_frame_parameters.secondary_index);
+  return m;
+}
+
+serialization::QP SerializeQP(QP const& qp) {
+  serialization::QP m;
+  *m.mutable_q() = SerializeXYZ(qp.q);
+  *m.mutable_p() = SerializeXYZ(qp.p);
+  return m;
+}
+
+serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {
+  serialization::WXYZ m;
+  m.set_w(wxyz.w);
+  m.set_x(wxyz.x);
+  m.set_y(wxyz.y);
+  m.set_z(wxyz.z);
+  return m;
+}
+
+serialization::XYZ SerializeXYZ(XYZ const& xyz) {
+  serialization::XYZ m;
+  m.set_x(xyz.x);
+  m.set_y(xyz.y);
+  m.set_z(xyz.z);
+  return m;
+}
+
+serialization::XYZSegment SerializeXYZSegment(XYZSegment const& xyz_segment) {
+  serialization::XYZSegment m;
+  *m.mutable_begin() = SerializeXYZ(xyz_segment.begin);
+  *m.mutable_end() = SerializeXYZ(xyz_segment.end);
+  return m;
+}
+
+}  // namespace
+
 void AddVesselToNextPhysicsBubble::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));

@@ -36,6 +36,10 @@ void GenerateProfiles() {
   std::ofstream profiles_generated_cc(directory / "profiles.generated.cc");
   CHECK(profiles_generated_cc.good());
   profiles_generated_cc << kWarning;
+  for (auto const& cpp_interchange_implementation :
+          processor.GetCppInterchangeImplementations()) {
+    profiles_generated_cc << cpp_interchange_implementation;
+  }
   for (auto const& cpp_method_implementation :
           processor.GetCppMethodImplementations()) {
     profiles_generated_cc << cpp_method_implementation;

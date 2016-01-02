@@ -95,23 +95,32 @@ void JournalProtoProcessor::ProcessMessages() {
       }
     }
   }
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCppInterchangeImplementations() const {
+  std::vector<std::string> result;
+  result.push_back("namespace {\n\n");
   for (auto const& pair : deserialize_declaration_) {
-    std::cout<<pair.second;
+    result.push_back(pair.second);
   }
   for (auto const& pair : serialize_declaration_) {
-    std::cout<<pair.second;
+    result.push_back(pair.second);
   }
+  result.push_back("\n");
   for (auto const& pair : deserialize_body_) {
-    std::cout<<pair.second;
+    result.push_back(pair.second);
   }
   for (auto const& pair : serialize_body_) {
-    std::cout<<pair.second;
+    result.push_back(pair.second);
   }
+  result.push_back("}  // namespace\n\n");
+  return result;
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCppMethodImplementations() const {
-    std::vector<std::string> result;
+  std::vector<std::string> result;
   for (auto const& pair : functions_implementation_) {
     result.push_back(pair.second);
   }
@@ -119,7 +128,7 @@ JournalProtoProcessor::GetCppMethodImplementations() const {
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCppMethodTypes() const {
-    std::vector<std::string> result;
+  std::vector<std::string> result;
   for (auto const& pair : toplevel_type_declaration_) {
     result.push_back(pair.second);
   }
@@ -462,11 +471,12 @@ void JournalProtoProcessor::ProcessInOut(
 
   // Generate slightly more compact code in the frequent case where the message
   // only has one field.
-  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()->";
+  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()";
   if (descriptor->field_count() > 1) {
     fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
     cpp_message_name = "m->";
   } else {
+    cpp_message_name += "->";
     fill_body_[descriptor].clear();
   }
   run_body_prolog_[descriptor] =
@@ -542,7 +552,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       << descriptor->full_name() << " must be required";
   ProcessField(field_descriptor);
   fill_body_[descriptor] =
-      field_assignment_fn_[field_descriptor]("message->mutable_return_()",
+      field_assignment_fn_[field_descriptor]("message->mutable_return_()->",
                                              "result");
   std::string const field_name =
       "message.return_()." + field_descriptor->name() + "()";
