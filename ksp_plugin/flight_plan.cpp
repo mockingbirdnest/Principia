@@ -70,7 +70,7 @@ bool FlightPlan::ReplaceLast(Burn burn) {
   }
 }
 
-bool FlightPlan::set_final_time(Instant const& final_time) {
+bool FlightPlan::SetFinalTime(Instant const& final_time) {
   if (!manœuvres_.empty() && manœuvres_.back().final_time() > final_time ||
       initial_time_ > final_time) {
     return false;
@@ -82,15 +82,12 @@ bool FlightPlan::set_final_time(Instant const& final_time) {
   }
 }
 
-NavigationManœuvre FlightPlan::MakeManœuvre(Burn burn, Mass const & initial_mass) {
-  NavigationManœuvre manœuvre(burn.thrust,
-      initial_mass,
-      burn.specific_impulse,
-      Normalize(burn.Δv),
-      std::move(burn.frame));
-  manœuvre.set_initial_time(burn.initial_time);
-  manœuvre.set_Δv(burn.Δv.Norm());
-  return std::move(manœuvre);
+void FlightPlan::SetTolerances(
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance) {
+  length_integration_tolerance_ = length_integration_tolerance;
+  speed_integration_tolerance_ = speed_integration_tolerance;
+  RecomputeSegments();
 }
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
@@ -100,6 +97,23 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
   AddSegment();
   BurnLastSegment(manœuvre);
   AddSegment();
+  CoastLastSegment(final_time_);
+}
+
+void FlightPlan::RecomputeSegments() {
+  // It is important that the segments be destroyed in (reverse chronological)
+  // order, since the destructor of each segment references the previous
+  // segment.
+  while(segments_.size() > 1) {
+    segments_.pop();
+  }
+  ResetLastSegment();
+  for (auto const& manœuvre : manœuvres_) {
+    CoastLastSegment(manœuvre.initial_time());
+    AddSegment();
+    BurnLastSegment(manœuvre);
+    AddSegment();
+  }
   CoastLastSegment(final_time_);
 }
 
@@ -129,6 +143,18 @@ void FlightPlan::AddSegment() {
 
 void FlightPlan::ResetLastSegment() {
   segments_.top()->ForgetAfter(segments_.top()->Fork().time());
+}
+
+NavigationManœuvre FlightPlan::MakeManœuvre(Burn burn,
+                                            Mass const& initial_mass) {
+  NavigationManœuvre manœuvre(burn.thrust,
+      initial_mass,
+      burn.specific_impulse,
+      Normalize(burn.Δv),
+      std::move(burn.frame));
+  manœuvre.set_initial_time(burn.initial_time);
+  manœuvre.set_Δv(burn.Δv.Norm());
+  return std::move(manœuvre);
 }
 
 }  // namespace ksp_plugin

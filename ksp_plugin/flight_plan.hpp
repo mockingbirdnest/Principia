@@ -3,6 +3,7 @@
 #include <vector>
 #include <stack>
 
+#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/fork_handle.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
@@ -14,14 +15,6 @@ namespace principia {
 using integrators::AdaptiveStepSizeIntegrator;
 
 namespace ksp_plugin {
-
-struct Burn {
-  Force thrust;
-  SpecificImpulse specific_impulse;
-  not_null<std::unique_ptr<NavigationFrame const>> frame;
-  Instant initial_time;
-  Velocity<Frenet<Navigation>> Δv;
-};
 
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 
@@ -49,10 +42,16 @@ class FlightPlan {
 
   // Returns false and has no effect if |final_time| is before the end of the
   // last manœuvre or before |initial_time_|.
-  bool set_final_time(Instant const& final_time);
+  bool SetFinalTime(Instant const& final_time);
+
+  void SetTolerances(
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance);
 
  private:
   void Append(NavigationManœuvre manœuvre);
+
+  void RecomputeSegments();
 
   void BurnLastSegment(NavigationManœuvre const& manœuvre);
   void CoastLastSegment(Instant const& final_time);

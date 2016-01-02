@@ -59,6 +59,9 @@
     <ClInclude Include="fork_handle.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="burn.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -84,6 +87,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\serialization\journal.proto" />
+    <CustomBuild Include="..\serialization\journal.proto" />
   </ItemGroup>
 </Project>
