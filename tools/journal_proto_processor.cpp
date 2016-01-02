@@ -108,10 +108,10 @@ JournalProtoProcessor::GetCppInterchangeImplementations() const {
     result.push_back(pair.second);
   }
   result.push_back("\n");
-  for (auto const& pair : deserialize_body_) {
+  for (auto const& pair : deserialize_definition_) {
     result.push_back(pair.second);
   }
-  for (auto const& pair : serialize_body_) {
+  for (auto const& pair : serialize_definition_) {
     result.push_back(pair.second);
   }
   result.push_back("}  // namespace\n\n");
@@ -151,7 +151,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       };
   field_assignment_fn_[descriptor] =
       [this, descriptor, message_type_name](
-          std::string const& identifier, std::string const& expr) {
+          std::string const& prefix, std::string const& expr) {
         std::string const& descriptor_name = descriptor->name();
         // The use of |substr| below is a bit of a cheat because we known the
         // structure of |expr|.
@@ -159,7 +159,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                " = " + expr + "; " + descriptor_name + " < " + expr + " + " +
                expr.substr(0, expr.find('.')) + "." +
                size_member_name_[descriptor] + "; ++" + descriptor_name +
-               ") {\n    *" + identifier + "add_" + descriptor_name +
+               ") {\n    *" + prefix + "add_" + descriptor_name +
                "() = " +
                field_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n  }\n";
@@ -273,9 +273,9 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   field_type_[descriptor] = message_type_name;
 
   field_assignment_fn_[descriptor] =
-      [this, descriptor](std::string const& identifier,
+      [this, descriptor](std::string const& prefix,
                          std::string const& expr) {
-        return "  *" + identifier + "mutable_" + descriptor->name() +
+        return "  *" + prefix + "mutable_" + descriptor->name() +
                "() = " + field_serializer_fn_[descriptor](expr) + ";\n";
       };
   field_deserializer_fn_[descriptor] =
@@ -425,9 +425,8 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         return {identifier};
       };
   field_assignment_fn_[descriptor] =
-      [this, descriptor](std::string const& identifier,
-                         std::string const& expr) {
-        return "  " + identifier + "set_" + descriptor->name() + "(" +
+      [this, descriptor](std::string const& prefix, std::string const& expr) {
+        return "  " + prefix + "set_" + descriptor->name() + "(" +
                field_serializer_fn_[descriptor](expr) + ");\n";
       };
   field_indirect_member_get_fn_[descriptor] =
@@ -576,13 +575,14 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   deserialize_declaration_[descriptor] =
       name + " Deserialize" + name + "(serialization::" + name + " const& " +
       parameter_name + ");\n";
-  deserialize_body_[descriptor] =
-      name + " Deserialize" + name + "(serialization::" + name + " const& " +
-      parameter_name + ") {\n  return {";
   serialize_declaration_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ");\n";
-  serialize_body_[descriptor] =
+
+  deserialize_definition_[descriptor] =
+      name + " Deserialize" + name + "(serialization::" + name + " const& " +
+      parameter_name + ") {\n  return {";
+  serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
 
@@ -598,12 +598,12 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         parameter_name + "." + field_descriptor_name;
     deserialized_expressions.push_back(
         field_deserializer_fn_[field_descriptor](deserialize_field_getter));
-    serialize_body_[descriptor] +=
+    serialize_definition_[descriptor] +=
         field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
   }
-  deserialize_body_[descriptor] +=
+  deserialize_definition_[descriptor] +=
       Join(deserialized_expressions, /*joiner=*/",\n          ") + "};\n}\n\n";
-  serialize_body_[descriptor] += "  return m;\n}\n\n";
+  serialize_definition_[descriptor] += "  return m;\n}\n\n";
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(

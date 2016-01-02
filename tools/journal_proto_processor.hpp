@@ -82,13 +82,13 @@ class JournalProtoProcessor {
       field_arguments_fn_;
 
   // For all fields, a lambda that takes a serialized expression |expr| and a
-  // protocol buffer object |identifier| and returns a statement to assign
-  // |expr| to the proper field of |identifier|.  |identifier| must be a
-  // pointer.  The lambda calls |field_serializer_fn_| to serialize expressions
-  // as necessary; thus, |expr| must *not* be serialized.
-  //TODO(phl):FiX
+  // protocol buffer denoted by |prefix| and returns a statement to assign
+  // |expr| to the proper field of |prefix|.  |prefix| must be suitable as a
+  // prefix of a call, i.e., it must be a pointer followed by "->" or a
+  // reference followed by ".".  The lambda calls |field_serializer_fn_| to
+  // serialize expressions as necessary; thus, |expr| must *not* be serialized.
   std::map<FieldDescriptor const*,
-           std::function<std::string(std::string const& identifier,
+           std::function<std::string(std::string const& prefix,
                                      std::string const& expr)>>
       field_assignment_fn_;
 
@@ -158,11 +158,15 @@ class JournalProtoProcessor {
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_type_;
 
-  //TODO(phl):comment
+  // The declarations of the Serialize and Deserialize functions for interchange
+  // messages.  The key is a descriptor for an interchange message.
   std::map<Descriptor const*, std::string> deserialize_declaration_;
-  std::map<Descriptor const*, std::string> deserialize_body_;
   std::map<Descriptor const*, std::string> serialize_declaration_;
-  std::map<Descriptor const*, std::string> serialize_body_;
+
+  // The definitions of the Serialize and Deserialize functions for interchange
+  // messages.  The key is a descriptor for an interchange message.
+  std::map<Descriptor const*, std::string> deserialize_definition_;
+  std::map<Descriptor const*, std::string> serialize_definition_;
 
   // The entire sequence of statements for the body of a Fill function.  The key
   // is a descriptor for an In or Out message.
