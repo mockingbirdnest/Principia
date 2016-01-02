@@ -209,9 +209,9 @@ TEST_F(PermutationTest, SerializationSuccess) {
               message.to_frame().tag());
     EXPECT_EQ(message.from_frame().is_inertial(),
               message.to_frame().is_inertial());
-    EXPECT_TRUE(message.HasExtension(serialization::Permutation::permutation));
+    EXPECT_TRUE(message.HasExtension(serialization::Permutation::extension));
     serialization::Permutation const& extension =
-        message.GetExtension(serialization::Permutation::permutation);
+        message.GetExtension(serialization::Permutation::extension);
     EXPECT_EQ(cp, extension.coordinate_permutation());
     Perm const perm_b = Perm::ReadFromMessage(message);
     EXPECT_EQ(perm_a(vector_), perm_b(vector_));

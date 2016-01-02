@@ -76,13 +76,13 @@ message LinearMap {
 
 message Identity {
   extend LinearMap {
-    optional Identity identity = 1000;
+    optional Identity extension = 1000;
   }
 }
 
 message OrthogonalMap {
   extend LinearMap {
-    optional OrthogonalMap orthogonal_map = 1001;
+    optional OrthogonalMap extension = 1001;
   }
   required Sign determinant = 1;
   required Rotation rotation = 2;
@@ -90,7 +90,7 @@ message OrthogonalMap {
 
 message Permutation {
   extend LinearMap {
-    optional Permutation permutation = 1002;
+    optional Permutation extension = 1002;
   }
 
   // These enums are used in the definition of the field
@@ -120,7 +120,7 @@ message Permutation {
 
 message Rotation {
   extend LinearMap {
-    optional Rotation rotation = 1003;
+    optional Rotation extension = 1003;
   }
   required Quaternion quaternion = 1;
 }

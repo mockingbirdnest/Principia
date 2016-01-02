@@ -28,7 +28,7 @@ Mass constexpr Ton           = 20 * Hundredweight;
 Length constexpr Yard = 0.9144 * si::Metre;
 Length constexpr Foot = Yard / 3;
 Length constexpr Inch = Foot / 12;
-Length constexpr Thou = Foot / 1000;
+Length constexpr Thou = Inch / 1000;
 
 Length constexpr Chain   = 22 * Yard;
 Length constexpr Furlong = 10 * Chain;

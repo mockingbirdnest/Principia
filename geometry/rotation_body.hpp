@@ -139,16 +139,16 @@ template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
-  WriteToMessage(message->MutableExtension(serialization::Rotation::rotation));
+  WriteToMessage(message->MutableExtension(serialization::Rotation::extension));
 }
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
-  CHECK(message.HasExtension(serialization::Rotation::rotation));
+  CHECK(message.HasExtension(serialization::Rotation::extension));
   return ReadFromMessage(
-      message.GetExtension(serialization::Rotation::rotation));
+      message.GetExtension(serialization::Rotation::extension));
 }
 
 template<typename FromFrame, typename ToFrame>
