@@ -73,7 +73,7 @@ void RotatingBody<Frame>::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
   MassiveBody::WriteToMessage(message);
   not_null<serialization::RotatingBody*> const rotating_body =
-      message->MutableExtension(serialization::RotatingBody::rotating_body);
+      message->MutableExtension(serialization::RotatingBody::extension);
   Frame::WriteToMessage(rotating_body->mutable_frame());
   parameters_.reference_angle_.WriteToMessage(
       rotating_body->mutable_reference_angle());
@@ -94,9 +94,9 @@ RotatingBody<Frame>::ReadFromMessage(
                  AngularVelocity<Frame>::ReadFromMessage(
                      message.angular_velocity()));
 
-  if (message.HasExtension(serialization::OblateBody::oblate_body)) {
+  if (message.HasExtension(serialization::OblateBody::extension)) {
     serialization::OblateBody const& extension =
-        message.GetExtension(serialization::OblateBody::oblate_body);
+        message.GetExtension(serialization::OblateBody::extension);
 
     return OblateBody<Frame>::ReadFromMessage(extension,
                                               massive_body_parameters,

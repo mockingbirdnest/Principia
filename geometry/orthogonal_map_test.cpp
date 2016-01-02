@@ -148,9 +148,9 @@ TEST_F(OrthogonalMapTest, SerializationSuccess) {
   EXPECT_EQ(message.from_frame().is_inertial(),
             message.to_frame().is_inertial());
   EXPECT_TRUE(message.HasExtension(
-      serialization::OrthogonalMap::orthogonal_map));
+      serialization::OrthogonalMap::extension));
   serialization::OrthogonalMap const& extension =
-      message.GetExtension(serialization::OrthogonalMap::orthogonal_map);
+      message.GetExtension(serialization::OrthogonalMap::extension);
   EXPECT_TRUE(extension.determinant().negative());
   EXPECT_THAT(extension.rotation().quaternion().real_part(),
               AlmostEquals(0.5, 1));

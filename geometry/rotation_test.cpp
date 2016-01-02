@@ -235,9 +235,9 @@ TEST_F(RotationTest, SerializationSuccess) {
             message.to_frame().tag());
   EXPECT_EQ(message.from_frame().is_inertial(),
             message.to_frame().is_inertial());
-  EXPECT_TRUE(message.HasExtension(serialization::Rotation::rotation));
+  EXPECT_TRUE(message.HasExtension(serialization::Rotation::extension));
   serialization::Rotation const& extension =
-      message.GetExtension(serialization::Rotation::rotation);
+      message.GetExtension(serialization::Rotation::extension);
   EXPECT_THAT(extension.quaternion().real_part(), AlmostEquals(0.5, 1));
   EXPECT_EQ(0.5, extension.quaternion().imaginary_part().x().double_());
   EXPECT_EQ(0.5, extension.quaternion().imaginary_part().y().double_());
