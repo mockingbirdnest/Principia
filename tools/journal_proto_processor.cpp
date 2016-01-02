@@ -17,6 +17,7 @@ namespace tools {
 
 namespace {
 
+char const kMethod[] = "Method";
 char const kIn[] = "In";
 char const kReturn[] = "Return";
 char const kOut[] = "Out";
@@ -49,7 +50,7 @@ std::string ToLower(std::string const& s) {
 
 }  // namespace
 
-void JournalProtoProcessor::ProcessMethods() {
+void JournalProtoProcessor::ProcessMessages() {
   // Get the file containing |Method|.
   Descriptor const* method_descriptor = serialization::Method::descriptor();
   FileDescriptor const* file_descriptor = method_descriptor->file();
@@ -57,9 +58,19 @@ void JournalProtoProcessor::ProcessMethods() {
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
     Descriptor const* message_descriptor = file_descriptor->message_type(i);
+    std::string message_descriptor_name = message_descriptor->name();
+    if (message_descriptor->extension_range_count() > 0) {
+      // Only the |Method| message should have a range.  Don't generate any code
+      // for it.
+      CHECK_EQ(kMethod, message_descriptor_name)
+          << message_descriptor_name << " should not have extension ranges";
+      continue;
+    }
     switch (message_descriptor->extension_count()) {
       case 0: {
-        // An auxiliary message that is not an extension.  Nothing to do.
+        // A message corresponding to a struct interchanged through the
+        // interface.
+        ProcessInterchangeMessage(message_descriptor);
         break;
       }
       case 1: {
@@ -68,13 +79,13 @@ void JournalProtoProcessor::ProcessMethods() {
         CHECK(extension->is_extension());
         Descriptor const* containing_type = extension->containing_type();
         CHECK_EQ(method_descriptor, containing_type)
-            << message_descriptor->name() << " extends a message other than "
+            << message_descriptor_name << " extends a message other than "
             << method_descriptor->name() << ": " << containing_type->name();
         ProcessMethodExtension(message_descriptor);
         break;
       }
       default: {
-        LOG(FATAL) << message_descriptor->name() << " has "
+        LOG(FATAL) << message_descriptor_name << " has "
                    << message_descriptor->extension_count() << " extensions";
       }
     }
@@ -266,6 +277,11 @@ void JournalProtoProcessor::ProcessRequiredInt32Field(
   field_type_[descriptor] = "int";
 }
 
+void JournalProtoProcessor::ProcessRequiredUint32Field(
+    FieldDescriptor const* descriptor) {
+  field_type_[descriptor] = descriptor->cpp_type_name();
+}
+
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
   field_type_[descriptor] = "char const*";
@@ -350,6 +366,9 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_STRING:
       ProcessSingleStringField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_UINT32:
+      ProcessRequiredUint32Field(descriptor);
       break;
     default:
       LOG(FATAL) << descriptor->full_name() << " has unexpected type "
@@ -520,6 +539,41 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   }
   nested_type_declaration_[descriptor] =
       "  using Return = " + field_type_[field_descriptor] + ";\n";
+}
+
+void JournalProtoProcessor::ProcessInterchangeMessage(
+    Descriptor const* descriptor) {
+  std::string const& name = descriptor->name();
+  std::string const& parameter_name = ToLower(name);
+  deserialize_body_[descriptor] =
+      name + " Deserialize" + name + "(serialization::" + name + " const& " +
+      parameter_name + ") {\n  return {";
+  serialize_body_[descriptor] =
+      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
+      parameter_name + ") {\n  serialization::" + name + " m;\n";
+  std::vector<std::string> deserialized_expressions;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    FieldDescriptor const* field_descriptor = descriptor->field(i);
+    std::string const& field_descriptor_name = field_descriptor->name();
+    ProcessField(field_descriptor);
+
+    std::string const deserialize_field_getter =
+        parameter_name + "." + field_descriptor_name + "()";
+    std::string const serialize_member_name =
+        parameter_name + "." + field_descriptor_name;
+    deserialized_expressions.push_back(
+        field_deserializer_fn_[field_descriptor](deserialize_field_getter));
+    serialize_body_[descriptor] +=
+        field_assignment_fn_[field_descriptor]("m", serialize_member_name);
+  }
+  deserialize_body_[descriptor] += Join(deserialized_expressions) + "};\n}\n\n";
+  serialize_body_[descriptor] += "  return m;\n}\n\n";
+  for (auto const& pair : deserialize_body_) {
+    std::cout<<pair.second;
+  }
+  for (auto const& pair : serialize_body_) {
+    std::cout<<pair.second;
+  }
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(

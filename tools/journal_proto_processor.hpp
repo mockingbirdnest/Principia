@@ -19,7 +19,7 @@ namespace tools {
 
 class JournalProtoProcessor {
  public:
-  void ProcessMethods();
+  void ProcessMessages();
 
   std::vector<std::string> GetCppMethodImplementations() const;
   std::vector<std::string> GetCppMethodTypes() const;
@@ -34,6 +34,7 @@ class JournalProtoProcessor {
   void ProcessRequiredBoolField(FieldDescriptor const* descriptor);
   void ProcessRequiredDoubleField(FieldDescriptor const* descriptor);
   void ProcessRequiredInt32Field(FieldDescriptor const* descriptor);
+  void ProcessRequiredUint32Field(FieldDescriptor const* descriptor);
 
   void ProcessSingleStringField(FieldDescriptor const* descriptor);
 
@@ -47,6 +48,7 @@ class JournalProtoProcessor {
                     std::vector<FieldDescriptor const*>* field_descriptors);
   void ProcessReturn(Descriptor const* descriptor);
 
+  void ProcessInterchangeMessage(Descriptor const* descriptor);
   void ProcessMethodExtension(Descriptor const* descriptor);
 
   // As the recursive methods above traverse the protocol buffer type
@@ -153,6 +155,10 @@ class JournalProtoProcessor {
   // The C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_type_;
+
+  //TODO(phl):comment
+  std::map<Descriptor const*, std::string> deserialize_body_;
+  std::map<Descriptor const*, std::string> serialize_body_;
 
   // The entire sequence of statements for the body of a Fill function.  The key
   // is a descriptor for an In or Out message.
