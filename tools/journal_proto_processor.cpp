@@ -17,6 +17,7 @@ namespace tools {
 
 namespace {
 
+char const kMethod[] = "Method";
 char const kIn[] = "In";
 char const kReturn[] = "Return";
 char const kOut[] = "Out";
@@ -27,29 +28,34 @@ bool Contains(Container const& container,
   return container.find(key) != container.end();
 }
 
-std::string Join(std::vector<std::string> const& v) {
+std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
   for (int i = 0; i < v.size(); ++i) {
     if (i == 0) {
       joined = v[i];
     } else {
-      joined += ", " + v[i];
+      joined += joiner + v[i];
     }
   }
   return joined;
 }
 
 std::string ToLower(std::string const& s) {
-  std::string lower(s.size(), ' ');
+  std::string lower;
   for (int i = 0; i < s.size(); ++i) {
-    lower[i] = std::tolower(s[i]);
+    if (i > 0 && i < s.size() - 1 &&
+        std::isupper(s[i]) && std::islower(s[i + 1])) {
+      lower += "_" + std::string(1, std::tolower(s[i]));
+    } else {
+      lower += std::tolower(s[i]);
+    }
   }
   return lower;
 }
 
 }  // namespace
 
-void JournalProtoProcessor::ProcessMethods() {
+void JournalProtoProcessor::ProcessMessages() {
   // Get the file containing |Method|.
   Descriptor const* method_descriptor = serialization::Method::descriptor();
   FileDescriptor const* file_descriptor = method_descriptor->file();
@@ -57,9 +63,19 @@ void JournalProtoProcessor::ProcessMethods() {
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
     Descriptor const* message_descriptor = file_descriptor->message_type(i);
+    std::string message_descriptor_name = message_descriptor->name();
+    if (message_descriptor->extension_range_count() > 0) {
+      // Only the |Method| message should have a range.  Don't generate any code
+      // for it.
+      CHECK_EQ(kMethod, message_descriptor_name)
+          << message_descriptor_name << " should not have extension ranges";
+      continue;
+    }
     switch (message_descriptor->extension_count()) {
       case 0: {
-        // An auxiliary message that is not an extension.  Nothing to do.
+        // A message corresponding to a struct interchanged through the
+        // interface.
+        ProcessInterchangeMessage(message_descriptor);
         break;
       }
       case 1: {
@@ -68,13 +84,13 @@ void JournalProtoProcessor::ProcessMethods() {
         CHECK(extension->is_extension());
         Descriptor const* containing_type = extension->containing_type();
         CHECK_EQ(method_descriptor, containing_type)
-            << message_descriptor->name() << " extends a message other than "
+            << message_descriptor_name << " extends a message other than "
             << method_descriptor->name() << ": " << containing_type->name();
         ProcessMethodExtension(message_descriptor);
         break;
       }
       default: {
-        LOG(FATAL) << message_descriptor->name() << " has "
+        LOG(FATAL) << message_descriptor_name << " has "
                    << message_descriptor->extension_count() << " extensions";
       }
     }
@@ -82,8 +98,29 @@ void JournalProtoProcessor::ProcessMethods() {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCppInterchangeImplementations() const {
+  std::vector<std::string> result;
+  result.push_back("namespace {\n\n");
+  for (auto const& pair : deserialize_declaration_) {
+    result.push_back(pair.second);
+  }
+  for (auto const& pair : serialize_declaration_) {
+    result.push_back(pair.second);
+  }
+  result.push_back("\n");
+  for (auto const& pair : deserialize_definition_) {
+    result.push_back(pair.second);
+  }
+  for (auto const& pair : serialize_definition_) {
+    result.push_back(pair.second);
+  }
+  result.push_back("}  // namespace\n\n");
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCppMethodImplementations() const {
-    std::vector<std::string> result;
+  std::vector<std::string> result;
   for (auto const& pair : functions_implementation_) {
     result.push_back(pair.second);
   }
@@ -91,7 +128,7 @@ JournalProtoProcessor::GetCppMethodImplementations() const {
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCppMethodTypes() const {
-    std::vector<std::string> result;
+  std::vector<std::string> result;
   for (auto const& pair : toplevel_type_declaration_) {
     result.push_back(pair.second);
   }
@@ -114,7 +151,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       };
   field_assignment_fn_[descriptor] =
       [this, descriptor, message_type_name](
-          std::string const& identifier, std::string const& expr) {
+          std::string const& prefix, std::string const& expr) {
         std::string const& descriptor_name = descriptor->name();
         // The use of |substr| below is a bit of a cheat because we known the
         // structure of |expr|.
@@ -122,7 +159,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                " = " + expr + "; " + descriptor_name + " < " + expr + " + " +
                expr.substr(0, expr.find('.')) + "." +
                size_member_name_[descriptor] + "; ++" + descriptor_name +
-               ") {\n    *" + identifier + "->add_" + descriptor_name +
+               ") {\n    *" + prefix + "add_" + descriptor_name +
                "() = " +
                field_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n  }\n";
@@ -236,9 +273,9 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   field_type_[descriptor] = message_type_name;
 
   field_assignment_fn_[descriptor] =
-      [this, descriptor](std::string const& identifier,
+      [this, descriptor](std::string const& prefix,
                          std::string const& expr) {
-        return "  *" + identifier + "->mutable_" + descriptor->name() +
+        return "  *" + prefix + "mutable_" + descriptor->name() +
                "() = " + field_serializer_fn_[descriptor](expr) + ";\n";
       };
   field_deserializer_fn_[descriptor] =
@@ -264,6 +301,11 @@ void JournalProtoProcessor::ProcessRequiredDoubleField(
 void JournalProtoProcessor::ProcessRequiredInt32Field(
     FieldDescriptor const* descriptor) {
   field_type_[descriptor] = "int";
+}
+
+void JournalProtoProcessor::ProcessRequiredUint32Field(
+    FieldDescriptor const* descriptor) {
+  field_type_[descriptor] = descriptor->cpp_type_name();
 }
 
 void JournalProtoProcessor::ProcessSingleStringField(
@@ -351,6 +393,9 @@ void JournalProtoProcessor::ProcessRequiredField(
     case FieldDescriptor::TYPE_STRING:
       ProcessSingleStringField(descriptor);
       break;
+    case FieldDescriptor::TYPE_UINT32:
+      ProcessRequiredUint32Field(descriptor);
+      break;
     default:
       LOG(FATAL) << descriptor->full_name() << " has unexpected type "
                  << descriptor->type_name();
@@ -380,9 +425,8 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         return {identifier};
       };
   field_assignment_fn_[descriptor] =
-      [this, descriptor](std::string const& identifier,
-                         std::string const& expr) {
-        return "  " + identifier + "->set_" + descriptor->name() + "(" +
+      [this, descriptor](std::string const& prefix, std::string const& expr) {
+        return "  " + prefix + "set_" + descriptor->name() + "(" +
                field_serializer_fn_[descriptor](expr) + ");\n";
       };
   field_indirect_member_get_fn_[descriptor] =
@@ -424,14 +468,19 @@ void JournalProtoProcessor::ProcessInOut(
   std::vector<FieldDescriptor const*>* field_descriptors) {
   std::string const& name = descriptor->name();
 
-  // Generate slightly more compact code in the frequent case where the message
-  // only has one field.
-  std::string cpp_message_name = "message->mutable_" + ToLower(name) + "()";
-  if (descriptor->field_count() > 1) {
-    fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
-    cpp_message_name = "m";
-  } else {
-    fill_body_[descriptor].clear();
+  std::string cpp_message_prefix;
+  {
+    std::string const cpp_message_name =
+        "message->mutable_" + ToLower(name) + "()";
+    // Generate slightly more compact code in the frequent case where the
+    // message only has one field.
+    if (descriptor->field_count() > 1) {
+      fill_body_[descriptor] = "  auto* const m = " + cpp_message_name + ";\n";
+      cpp_message_prefix = "m->";
+    } else {
+      cpp_message_prefix = cpp_message_name + "->";
+      fill_body_[descriptor].clear();
+    }
   }
   run_body_prolog_[descriptor] =
       "  auto const& " + ToLower(name) + " = message." +
@@ -458,7 +507,7 @@ void JournalProtoProcessor::ProcessInOut(
         field_optional_assignment_fn_[field_descriptor](
             fill_member_name,
             field_assignment_fn_[field_descriptor](
-                cpp_message_name,
+                cpp_message_prefix,
                 field_indirect_member_get_fn_[field_descriptor](
                     fill_member_name)));
     std::vector<std::string> const field_arguments =
@@ -506,7 +555,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       << descriptor->full_name() << " must be required";
   ProcessField(field_descriptor);
   fill_body_[descriptor] =
-      field_assignment_fn_[field_descriptor]("message->mutable_return_()",
+      field_assignment_fn_[field_descriptor]("message->mutable_return_()->",
                                              "result");
   std::string const field_name =
       "message.return_()." + field_descriptor->name() + "()";
@@ -520,6 +569,46 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   }
   nested_type_declaration_[descriptor] =
       "  using Return = " + field_type_[field_descriptor] + ";\n";
+}
+
+void JournalProtoProcessor::ProcessInterchangeMessage(
+    Descriptor const* descriptor) {
+  std::string const& name = descriptor->name();
+  std::string const& parameter_name = ToLower(name);
+
+  deserialize_declaration_[descriptor] =
+      name + " Deserialize" + name + "(serialization::" + name + " const& " +
+      parameter_name + ");\n";
+  serialize_declaration_[descriptor] =
+      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
+      parameter_name + ");\n";
+
+  deserialize_definition_[descriptor] =
+      name + " Deserialize" + name + "(serialization::" + name + " const& " +
+      parameter_name + ") {\n  return {";
+  serialize_definition_[descriptor] =
+      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
+      parameter_name + ") {\n  serialization::" + name + " m;\n";
+
+  std::vector<std::string> deserialized_expressions;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    FieldDescriptor const* field_descriptor = descriptor->field(i);
+    std::string const& field_descriptor_name = field_descriptor->name();
+    ProcessField(field_descriptor);
+
+    std::string const deserialize_field_getter =
+        parameter_name + "." + field_descriptor_name + "()";
+    std::string const serialize_member_name =
+        parameter_name + "." + field_descriptor_name;
+    deserialized_expressions.push_back(
+        field_deserializer_fn_[field_descriptor](deserialize_field_getter));
+    serialize_definition_[descriptor] +=
+        field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+  }
+  deserialize_definition_[descriptor] +=
+      Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
+      "};\n}\n\n";
+  serialize_definition_[descriptor] += "  return m;\n}\n\n";
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(
@@ -580,7 +669,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           fill_body_[nested_descriptor] +
           "}\n\n";
-      cpp_run_arguments += Join(run_arguments_[nested_descriptor]);
+      cpp_run_arguments += Join(run_arguments_[nested_descriptor],
+                                /*joiner=*/", ");
       cpp_run_prolog += run_body_prolog_[nested_descriptor];
     } else if (nested_name == kOut) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);

@@ -19,8 +19,9 @@ namespace tools {
 
 class JournalProtoProcessor {
  public:
-  void ProcessMethods();
+  void ProcessMessages();
 
+  std::vector<std::string> GetCppInterchangeImplementations() const;
   std::vector<std::string> GetCppMethodImplementations() const;
   std::vector<std::string> GetCppMethodTypes() const;
 
@@ -34,6 +35,7 @@ class JournalProtoProcessor {
   void ProcessRequiredBoolField(FieldDescriptor const* descriptor);
   void ProcessRequiredDoubleField(FieldDescriptor const* descriptor);
   void ProcessRequiredInt32Field(FieldDescriptor const* descriptor);
+  void ProcessRequiredUint32Field(FieldDescriptor const* descriptor);
 
   void ProcessSingleStringField(FieldDescriptor const* descriptor);
 
@@ -47,6 +49,7 @@ class JournalProtoProcessor {
                     std::vector<FieldDescriptor const*>* field_descriptors);
   void ProcessReturn(Descriptor const* descriptor);
 
+  void ProcessInterchangeMessage(Descriptor const* descriptor);
   void ProcessMethodExtension(Descriptor const* descriptor);
 
   // As the recursive methods above traverse the protocol buffer type
@@ -79,12 +82,13 @@ class JournalProtoProcessor {
       field_arguments_fn_;
 
   // For all fields, a lambda that takes a serialized expression |expr| and a
-  // protocol buffer object |identifier| and returns a statement to assign
-  // |expr| to the proper field of |identifier|.  |identifier| must be a
-  // pointer.  The lambda calls |field_serializer_fn_| to serialize expressions
-  // as necessary; thus, |expr| must *not* be serialized.
+  // protocol buffer denoted by |prefix| and returns a statement to assign
+  // |expr| to the proper field of |prefix|.  |prefix| must be suitable as a
+  // prefix of a call, i.e., it must be a pointer followed by "->" or a
+  // reference followed by ".".  The lambda calls |field_serializer_fn_| to
+  // serialize expressions as necessary; thus, |expr| must *not* be serialized.
   std::map<FieldDescriptor const*,
-           std::function<std::string(std::string const& identifier,
+           std::function<std::string(std::string const& prefix,
                                      std::string const& expr)>>
       field_assignment_fn_;
 
@@ -153,6 +157,16 @@ class JournalProtoProcessor {
   // The C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_type_;
+
+  // The declarations of the Serialize and Deserialize functions for interchange
+  // messages.  The key is a descriptor for an interchange message.
+  std::map<Descriptor const*, std::string> deserialize_declaration_;
+  std::map<Descriptor const*, std::string> serialize_declaration_;
+
+  // The definitions of the Serialize and Deserialize functions for interchange
+  // messages.  The key is a descriptor for an interchange message.
+  std::map<Descriptor const*, std::string> deserialize_definition_;
+  std::map<Descriptor const*, std::string> serialize_definition_;
 
   // The entire sequence of statements for the body of a Fill function.  The key
   // is a descriptor for an In or Out message.
