@@ -9,6 +9,8 @@ PROTO_SOURCES := $(wildcard */*.proto)
 PROTO_CC_SOURCES := $(PROTO_SOURCES:.proto=.pb.cc)
 PROTO_HEADERS := $(PROTO_SOURCES:.proto=.pb.h)
 
+GENERATED_SOURCES := journal/profiles.generated.h journal/profiles.generated.cc
+
 OBJECTS := $(CPP_SOURCES:.cpp=.o)
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
 TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
@@ -56,7 +58,7 @@ CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
 
 
-.PHONY: all adapter lib tests tools check plugin run_tests clean
+.PHONY: all adapter generated_sources lib tests tools check plugin run_tests clean
 .PRECIOUS: %.o
 .DEFAULT_GOAL := plugin
 
@@ -88,10 +90,16 @@ $(LIB_DIR):
 $(VERSION_HEADER): .git
 	./generate_version_header.sh
 
+generated_sources: tools
+	tools/tools generate_profiles
+
+$(OBJECTS): %.o: %.cpp generated_sources
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 %.pb.cc %.pb.h: %.proto
 	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
 
-%.o: %.cpp 
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@ 
 
 %.o: %.cc $(PROTO_HEADERS)
@@ -136,4 +144,4 @@ clean_test-%:
 
 clean:  $(addprefix clean_test-,$(TEST_DIRS))
 	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_test_objects)
+	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_test_objects)
