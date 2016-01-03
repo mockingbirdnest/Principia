@@ -667,7 +667,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_cxx_assignment_fn_[field_descriptor]("m.", serialize_member_name);
 
     cs_interface_type_declaration_[descriptor] +=
-        "  public " + field_cxx_type_[field_descriptor] + " " +
+        "  public " + field_cs_type_[field_descriptor] + " " +
         field_descriptor_name + ";\n";
     cxx_interface_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
@@ -831,7 +831,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "  internal static extern " + cs_interface_return_type + " " + name + "(";
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] += "\n    " +
-                                                 cs_interface_parameters;
+                                                    cs_interface_parameters;
   }
   cs_interface_method_declaration_[descriptor] += ");\n\n";
 
@@ -840,7 +840,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cxx_interface_return_type + " CDECL principia__" + name + "(";
   if (!cxx_interface_parameters.empty()) {
     cxx_interface_method_declaration_[descriptor] += "\n    " +
-                                                 cxx_interface_parameters;
+                                                     cxx_interface_parameters;
   }
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
 }

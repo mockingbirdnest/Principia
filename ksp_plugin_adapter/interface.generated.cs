@@ -21,7 +21,7 @@ internal partial struct KSPPart {
   public XYZ world_velocity;
   public double mass;
   public XYZ gravitational_acceleration_to_be_applied_by_ksp;
-  public uint32_t id;
+  public uint id;
 }
 
 [StructLayout(LayoutKind.Sequential)]
