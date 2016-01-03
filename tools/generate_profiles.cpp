@@ -40,11 +40,11 @@ void GenerateProfiles() {
   CHECK(profiles_generated_cc.good());
   profiles_generated_cc << kWarning;
   for (auto const& cpp_interchange_implementation :
-          processor.GetCppInterchangeImplementations()) {
+           processor.GetCppInterchangeImplementations()) {
     profiles_generated_cc << cpp_interchange_implementation;
   }
   for (auto const& cpp_method_implementation :
-          processor.GetCppMethodImplementations()) {
+           processor.GetCppMethodImplementations()) {
     profiles_generated_cc << cpp_method_implementation;
   }
 
@@ -52,11 +52,11 @@ void GenerateProfiles() {
   CHECK(interface_generated_h.good());
   interface_generated_h << kWarning;
   for (auto const& cpp_interface_type_declaration :
-          processor.GetCppInterfaceTypeDeclarations()) {
+           processor.GetCppInterfaceTypeDeclarations()) {
     interface_generated_h << cpp_interface_type_declaration;
   }
   for (auto const& cpp_interface_method_declaration :
-          processor.GetCppInterfaceMethodDeclarations()) {
+           processor.GetCppInterfaceMethodDeclarations()) {
     interface_generated_h << cpp_interface_method_declaration;
   }
 }
