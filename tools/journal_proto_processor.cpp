@@ -504,6 +504,7 @@ void JournalProtoProcessor::ProcessInOut(
     }
   }
 
+  cs_interface_parameters_[descriptor].clear();
   cxx_interface_parameters_[descriptor].clear();
   cxx_run_body_prolog_[descriptor] =
       "  auto const& " + ToLower(name) + " = message." +
@@ -558,7 +559,7 @@ void JournalProtoProcessor::ProcessInOut(
               run_local_variable);
     }
     cs_interface_parameters_[descriptor].push_back(
-        field_cs_type_[field_descriptor] + " " + field_descriptor_name);
+        "  " + field_cs_type_[field_descriptor] + " " + field_descriptor_name);
     cxx_interface_parameters_[descriptor].push_back(
         field_cxx_type_[field_descriptor] + " const " +
         field_descriptor_name);
@@ -793,7 +794,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "  internal static extern " + cs_interface_return_type + " principia__" +
       name + "(";
   if (!cs_interface_parameters.empty()) {
-    cs_interface_method_declaration_[descriptor] += "\n      " +
+    cs_interface_method_declaration_[descriptor] += "\n    " +
                                                  cs_interface_parameters;
   }
   cs_interface_method_declaration_[descriptor] += ");\n\n";
