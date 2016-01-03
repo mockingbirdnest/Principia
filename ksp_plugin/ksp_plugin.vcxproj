@@ -169,6 +169,7 @@
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="frames.hpp" />
+    <ClInclude Include="interface.generated.h" />
     <ClInclude Include="interface_body.hpp" />
     <ClInclude Include="manœuvre.hpp" />
     <ClInclude Include="manœuvre_body.hpp" />

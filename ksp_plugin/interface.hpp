@@ -168,8 +168,8 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                                double const t);
 
-int CDECL principia__GetBufferDuration();
 extern "C" PRINCIPIA_DLL
+int CDECL principia__GetBufferDuration();
 
 extern "C" PRINCIPIA_DLL
 int CDECL principia__GetBufferedLogging();

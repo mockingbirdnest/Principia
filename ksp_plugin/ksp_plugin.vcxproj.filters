@@ -53,6 +53,9 @@
     <ClInclude Include="interface_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="interface.generated.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">

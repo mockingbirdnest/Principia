@@ -554,8 +554,8 @@ void JournalProtoProcessor::ProcessInOut(
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
-      interface_parameters_[descriptor].push_back("int const " +
-                                                  field_descriptor_name);
+      interface_parameters_[descriptor].push_back(
+          "int const " + size_member_name_[field_descriptor]);
       nested_type_declaration_[descriptor] +=
           "    int const " + size_member_name_[field_descriptor] + ";\n";
     }
