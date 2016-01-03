@@ -154,6 +154,11 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr)>>
       field_serializer_fn_;
 
+  //TODO(phl):comment
+  std::map<Descriptor const*, std::string> interface_declaration_;
+  std::map<Descriptor const*, std::vector<std::string>> interface_parameters_;
+  std::map<Descriptor const*, std::string> interface_return_type_;
+
   // The C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_type_;
