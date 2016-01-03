@@ -154,6 +154,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   CHECK(options.HasExtension(serialization::size))
       << descriptor->full_name() << " is missing a (size) option";
   size_member_name_[descriptor] = options.GetExtension(serialization::size);
+  field_cs_type_[descriptor] = message_type_name + "[]";
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -334,7 +335,7 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)] String";
+  field_cs_type_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)] String";//TODO(phl): not for return!
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
@@ -576,6 +577,8 @@ void JournalProtoProcessor::ProcessInOut(
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
+      cs_interface_parameters_[descriptor].push_back(
+          "  int " + size_member_name_[field_descriptor]);
       cxx_interface_parameters_[descriptor].push_back(
           "int const " + size_member_name_[field_descriptor]);
       cxx_nested_type_declaration_[descriptor] +=
