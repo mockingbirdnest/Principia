@@ -17,6 +17,20 @@ internal struct XYZ {
 }
 
 [StructLayout(LayoutKind.Sequential)]
+internal struct KSPPart {
+  public XYZ world_position;
+  public XYZ world_velocity;
+  public double mass;
+  public XYZ gravitational_acceleration_to_be_applied_by_ksp;
+  public uint id;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct QP {
+  public XYZ q, p;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal struct WXYZ {
   public double w, x, y, z;
   public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
@@ -31,20 +45,6 @@ internal struct WXYZ {
 internal struct LineSegment {
   public XYZ begin, end;
 };
-
-[StructLayout(LayoutKind.Sequential)]
-internal struct QP {
-  public XYZ q, p;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-internal struct KSPPart {
-  public XYZ world_position;
-  public XYZ world_velocity;
-  public double mass;
-  public XYZ gravitational_acceleration_to_be_applied_by_ksp;
-  public uint id;
-}
 
 internal static class Interface {
 #if __MonoCS__
