@@ -98,16 +98,27 @@ void JournalProtoProcessor::ProcessMessages() {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCppInterfaceMethodDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : interface_method_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCppInterfaceTypeDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : interface_type_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCppInterchangeImplementations() const {
   std::vector<std::string> result;
   result.push_back("namespace {\n\n");
-  for (auto const& pair : deserialize_declaration_) {
-    result.push_back(pair.second);
-  }
-  for (auto const& pair : serialize_declaration_) {
-    result.push_back(pair.second);
-  }
-  result.push_back("\n");
   for (auto const& pair : deserialize_definition_) {
     result.push_back(pair.second);
   }
@@ -305,7 +316,7 @@ void JournalProtoProcessor::ProcessRequiredInt32Field(
 
 void JournalProtoProcessor::ProcessRequiredUint32Field(
     FieldDescriptor const* descriptor) {
-  field_type_[descriptor] = descriptor->cpp_type_name();
+  field_type_[descriptor] = "uint32_t";
 }
 
 void JournalProtoProcessor::ProcessSingleStringField(
@@ -482,6 +493,8 @@ void JournalProtoProcessor::ProcessInOut(
       fill_body_[descriptor].clear();
     }
   }
+
+  interface_parameters_[descriptor].clear();
   run_body_prolog_[descriptor] =
       "  auto const& " + ToLower(name) + " = message." +
       ToLower(name) + "();\n";
@@ -533,13 +546,18 @@ void JournalProtoProcessor::ProcessInOut(
               "message." + ToLower(name) + "()." + field_descriptor_name + "()",
               run_local_variable);
     }
+    interface_parameters_[descriptor].push_back(field_type_[field_descriptor] +
+                                                " const " +
+                                                field_descriptor_name);
     nested_type_declaration_[descriptor] += "    " +
-                                    field_type_[field_descriptor] +
-                                    " const " +
-                                    field_descriptor_name + ";\n";
+                                            field_type_[field_descriptor] +
+                                            " const " +
+                                            field_descriptor_name + ";\n";
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
+      interface_parameters_[descriptor].push_back(
+          "int const " + size_member_name_[field_descriptor]);
       nested_type_declaration_[descriptor] +=
           "    int const " + size_member_name_[field_descriptor] + ";\n";
     }
@@ -567,6 +585,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         "  CHECK(" + field_deserializer_fn_[field_descriptor](field_name) +
         " == result);\n";
   }
+  interface_return_type_[descriptor] = field_type_[field_descriptor];
   nested_type_declaration_[descriptor] =
       "  using Return = " + field_type_[field_descriptor] + ";\n";
 }
@@ -576,19 +595,14 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& name = descriptor->name();
   std::string const& parameter_name = ToLower(name);
 
-  deserialize_declaration_[descriptor] =
-      name + " Deserialize" + name + "(serialization::" + name + " const& " +
-      parameter_name + ");\n";
-  serialize_declaration_[descriptor] =
-      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
-      parameter_name + ");\n";
-
   deserialize_definition_[descriptor] =
       name + " Deserialize" + name + "(serialization::" + name + " const& " +
       parameter_name + ") {\n  return {";
   serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
+  interface_type_declaration_[descriptor] =
+      "extern \"C\"\nstruct " + name + " {\n";
 
   std::vector<std::string> deserialized_expressions;
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -604,11 +618,17 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_deserializer_fn_[field_descriptor](deserialize_field_getter));
     serialize_definition_[descriptor] +=
         field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+    interface_type_declaration_[descriptor] +=
+        "  " + field_type_[field_descriptor] + " " + field_descriptor_name +
+        ";\n";
   }
   deserialize_definition_[descriptor] +=
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
   serialize_definition_[descriptor] += "  return m;\n}\n\n";
+  interface_type_declaration_[descriptor] +=
+      "};\n\nstatic_assert(std::is_standard_layout<" + name +
+      ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(
@@ -655,6 +675,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
 
   // The second pass that produces the actual output.
+  std::string cpp_interface_parameters;
+  std::string cpp_interface_return_type = "void";
   std::string cpp_run_arguments;
   std::string cpp_run_prolog;
   std::string cpp_run_epilog;
@@ -669,6 +691,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           fill_body_[nested_descriptor] +
           "}\n\n";
+      cpp_interface_parameters += Join(interface_parameters_[nested_descriptor],
+                                       /*joiner=*/",\n    ");
       cpp_run_arguments += Join(run_arguments_[nested_descriptor],
                                 /*joiner=*/", ");
       cpp_run_prolog += run_body_prolog_[nested_descriptor];
@@ -679,6 +703,9 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           fill_body_[nested_descriptor] +
           "}\n\n";
+      // At the moment we don't have parameters that are out but not in-out.
+      // The arguments and parameters are built in the |kIn| branch above.  This
+      // will need to change if we ever have pure out parameters.
     } else if (nested_name == kReturn) {
       ProcessReturn(nested_descriptor);
       functions_implementation_[descriptor] +=
@@ -687,6 +714,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           fill_body_[nested_descriptor] +
           "}\n\n";
+      cpp_interface_return_type = interface_return_type_[nested_descriptor];
     }
     cpp_run_epilog += run_body_epilog_[nested_descriptor];
     toplevel_type_declaration_[descriptor] +=
@@ -721,7 +749,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "\n";
   toplevel_type_declaration_[descriptor] += "};\n\n";
 
-  // Must come after the Fill methods for comparison with manual code.
+  // The Run method must come after the Fill methods for comparison with manual
+  // code.
   functions_implementation_[descriptor] +=
       "void " + name + "::Run(Message const& message, "
       "not_null<Player::PointerMap*> const pointer_map) {\n" +
@@ -734,6 +763,15 @@ void JournalProtoProcessor::ProcessMethodExtension(
   functions_implementation_[descriptor] +=
       "ksp_plugin::principia__" + name + "(" + cpp_run_arguments + ");\n";
   functions_implementation_[descriptor] += cpp_run_epilog + "}\n\n";
+
+  interface_method_declaration_[descriptor] =
+      "extern \"C\" PRINCIPIA_DLL\n" +
+      cpp_interface_return_type + " CDECL principia__" + name + "(";
+  if (!cpp_interface_parameters.empty()) {
+    interface_method_declaration_[descriptor] += "\n    " +
+                                                 cpp_interface_parameters;
+  }
+  interface_method_declaration_[descriptor] += ");\n\n";
 }
 
 }  // namespace tools
