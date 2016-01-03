@@ -4,7 +4,16 @@ import "google/protobuf/descriptor.proto";
 
 package principia.serialization;
 
+// Must come first because the other interchange messages use it and we need to
+// generate the structs in the correct order.
+message XYZ {
+  required double x = 1;
+  required double y = 2;
+  required double z = 3;
+}
+
 message KSPPart {
+  // TODO(egg): Y U NO USE QP?
   required XYZ world_position = 1;
   required XYZ world_velocity = 2;
   required double mass = 3;
@@ -13,10 +22,10 @@ message KSPPart {
 }
 
 message NavigationFrameParameters {
-  required int32 extension = 1;
-  optional int32 centre_index = 2;
-  optional int32 primary_index = 3;
-  optional int32 secondary_index = 4;
+  required int32 extension = 1;  // 6000 to 6999, see DynamicFrame.
+  required int32 centre_index = 2;
+  required int32 primary_index = 3;
+  required int32 secondary_index = 4;
 }
 
 message QP {
@@ -29,12 +38,6 @@ message WXYZ {
   required double x = 2;
   required double y = 3;
   required double z = 4;
-}
-
-message XYZ {
-  required double x = 1;
-  required double y = 2;
-  required double z = 3;
 }
 
 message XYZSegment {

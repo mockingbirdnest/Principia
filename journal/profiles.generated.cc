@@ -4,18 +4,24 @@
 
 namespace {
 
+XYZ DeserializeXYZ(serialization::XYZ const& xyz);
 KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part);
 NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::NavigationFrameParameters const& navigation_frame_parameters);
 QP DeserializeQP(serialization::QP const& qp);
 WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz);
-XYZ DeserializeXYZ(serialization::XYZ const& xyz);
 XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment);
+serialization::XYZ SerializeXYZ(XYZ const& xyz);
 serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part);
 serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters);
 serialization::QP SerializeQP(QP const& qp);
 serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz);
-serialization::XYZ SerializeXYZ(XYZ const& xyz);
 serialization::XYZSegment SerializeXYZSegment(XYZSegment const& xyz_segment);
+
+XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
+  return {xyz.x(),
+          xyz.y(),
+          xyz.z()};
+}
 
 KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
   return {DeserializeXYZ(ksp_part.world_position()),
@@ -44,15 +50,17 @@ WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz) {
           wxyz.z()};
 }
 
-XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
-  return {xyz.x(),
-          xyz.y(),
-          xyz.z()};
-}
-
 XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment) {
   return {DeserializeXYZ(xyz_segment.begin()),
           DeserializeXYZ(xyz_segment.end())};
+}
+
+serialization::XYZ SerializeXYZ(XYZ const& xyz) {
+  serialization::XYZ m;
+  m.set_x(xyz.x);
+  m.set_y(xyz.y);
+  m.set_z(xyz.z);
+  return m;
 }
 
 serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
@@ -87,14 +95,6 @@ serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz) {
   m.set_x(wxyz.x);
   m.set_y(wxyz.y);
   m.set_z(wxyz.z);
-  return m;
-}
-
-serialization::XYZ SerializeXYZ(XYZ const& xyz) {
-  serialization::XYZ m;
-  m.set_x(xyz.x);
-  m.set_y(xyz.y);
-  m.set_z(xyz.z);
   return m;
 }
 

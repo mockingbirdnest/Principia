@@ -323,7 +323,7 @@ void JournalProtoProcessor::ProcessRequiredInt32Field(
 
 void JournalProtoProcessor::ProcessRequiredUint32Field(
     FieldDescriptor const* descriptor) {
-  field_type_[descriptor] = descriptor->cpp_type_name();
+  field_type_[descriptor] = "uint32_t";
 }
 
 void JournalProtoProcessor::ProcessSingleStringField(
@@ -634,7 +634,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     serialize_definition_[descriptor] +=
         field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
     interface_struct_declaration_[descriptor] +=
-        "  " + field_type_[field_descriptor] + " " + parameter_name + ";\n";
+        "  " + field_type_[field_descriptor] + " " + field_descriptor_name +
+        ";\n";
   }
   deserialize_definition_[descriptor] +=
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
@@ -642,8 +643,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   serialize_definition_[descriptor] += "  return m;\n}\n\n";
   interface_struct_declaration_[descriptor] +=
       "};\n\nstatic_assert(std::is_standard_layout<" + name +
-      ">::value,\n              \"" + name +
-      "\" is used for interfacing\");\n\n";
+      ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(
