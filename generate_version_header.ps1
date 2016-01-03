@@ -4,9 +4,10 @@ $env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin"
     -match '(?m)^\s+"([^"]+)";$.*'
 $oldversion = $matches[1]
 $newversion =  (git describe --tags --always --dirty --abbrev=40 --long)
-if ($oldversion = $newversion) {
-  echo "No change to git describe, leaving base/version.hpp unmodified"
+if ($oldversion.Equals($newversion)) {
+  echo "No change to git describe, leaving base/version.hpp untouched"
 } else {
+  echo "Updating base/version.hpp, version is $newversion (was $oldversion)"
   $text = [string]::format(
       "#pragma once`n"                                `
           + "`n"                                      `
