@@ -283,7 +283,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 void JournalProtoProcessor::ProcessRequiredMessageField(
     FieldDescriptor const* descriptor) {
   std::string const& message_type_name = descriptor->message_type()->name();
-  field_cs_type[descriptor] = message_type_name;
+  field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
 
   field_cxx_assignment_fn_[descriptor] =
@@ -786,9 +786,22 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "ksp_plugin::principia__" + name + "(" + cxx_run_arguments + ");\n";
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
+  cs_interface_method_declaration_[descriptor] =
+      "  [DllImport(dllName           : kDllPath,\n"
+      "             EntryPoint        = \"principia__" + name + "\",\n"
+      "             CallingConvention = CallingConvention.Cdecl)]\n"
+      "  internal static extern " + cs_interface_return_type + " principia__" +
+      name + "(";
+  if (!cs_interface_parameters.empty()) {
+    cs_interface_method_declaration_[descriptor] += "\n      " +
+                                                 cs_interface_parameters;
+  }
+  cs_interface_method_declaration_[descriptor] += ");\n\n";
+  std::cout<<cs_interface_method_declaration_[descriptor];
+
   cxx_interface_method_declaration_[descriptor] =
       "extern \"C\" PRINCIPIA_DLL\n" +
-      cxx_interface_return_type + " CDECL principia__" + name + "(";
+  cxx_interface_return_type + " CDECL principia__" + name + "(";
   if (!cxx_interface_parameters.empty()) {
     cxx_interface_method_declaration_[descriptor] += "\n    " +
                                                  cxx_interface_parameters;

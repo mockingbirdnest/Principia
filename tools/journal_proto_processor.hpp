@@ -167,8 +167,9 @@ class JournalProtoProcessor {
   std::map<FieldDescriptor const*, std::string> field_cs_type_;
   std::map<FieldDescriptor const*, std::string> field_cxx_type_;
 
-  // The C++ declaration of an interface method corresponding to a method
+  // The C#/C++ declaration of an interface method corresponding to a method
   // message.  The key is a descriptor for a method message.
+  std::map<Descriptor const*, std::string> cs_interface_method_declaration_;
   std::map<Descriptor const*, std::string> cxx_interface_method_declaration_;
 
   // A list of C#/C++ parameters for an interface method.  The key is a
