@@ -371,6 +371,13 @@ internal static class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetPredictionLengthTolerance(this IntPtr plugin,
                                                            double t);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__SetPredictionSpeedTolerance",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetPredictionSpeedTolerance(this IntPtr plugin,
+                                                          double t);
+
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__SetStderrLogging",
              CallingConvention = CallingConvention.Cdecl)]
@@ -380,12 +387,6 @@ internal static class Interface {
              EntryPoint        = "principia__SetSuppressedLogging",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetSuppressedLogging(int min_severity);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__SetPredictionSpeedTolerance",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetPredictionSpeedTolerance(this IntPtr plugin,
-                                                          double t);
 
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__SetVerboseLogging",
