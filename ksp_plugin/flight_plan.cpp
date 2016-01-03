@@ -27,6 +27,7 @@ FlightPlan::FlightPlan(
     --it;
   }
   segments_.emplace(root->NewForkWithCopy(it.time()));
+  ResetLastSegment();  // TODO(phl): A NewForkWithoutCopy would be nicer.
   CoastLastSegment(final_time_);
 }
 

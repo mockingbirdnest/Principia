@@ -49,7 +49,7 @@ class FlightPlanTest : public testing::Test {
     flight_plan_ = std::make_unique<FlightPlan>(
         &root_,
         /*initial_time=*/t0_,
-        /*final_time=*/t0_ + 2 * Second,
+        /*final_time=*/t0_ + 1.5 * Second,
         /*initial_mass=*/1 * Kilogram,
         ephemeris_.get(),
         integrators::DormandElMikkawyPrince1986RKN434FM<
@@ -67,13 +67,12 @@ class FlightPlanTest : public testing::Test {
 
 TEST_F(FlightPlanTest, Append) {
   auto const first_burn = [this]() -> Burn {
-    return Burn{
-        /*thrust=*/1 * Newton,
-        /*specific_impulse=*/1 * Newton * Second / Kilogram,
-        make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-        /*initial_time=*/t0_ + 1 * Second,
-        Velocity<Frenet<Navigation>>(
-            {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+    return {/*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            /*initial_time=*/t0_ + 1 * Second,
+            Velocity<Frenet<Navigation>>(
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
   };
   // Burn ends after final time.
   EXPECT_FALSE(flight_plan_->Append(first_burn()));

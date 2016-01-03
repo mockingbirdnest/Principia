@@ -309,6 +309,7 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
   step_size.first_time_step = problem.t_final - initial_state.time.value;
+  CHECK_GT(step_size.first_time_step, 0 * Second) << "Flow back to the future";
   step_size.safety_factor = 0.9;
   step_size.tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
@@ -342,6 +343,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   for (auto const& trajectory : trajectories) {
     auto const trajectory_last = trajectory->last();
     auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
+    // TODO(phl): why do we keep rewriting this?  Should we check consistency?
     initial_state.time = trajectory_last.time();
     initial_state.positions.push_back(last_degrees_of_freedom.position());
     initial_state.velocities.push_back(last_degrees_of_freedom.velocity());
