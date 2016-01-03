@@ -159,10 +159,20 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr)>>
       field_serializer_fn_;
 
-  //TODO(phl):comment
+  // The C++ declaration of an interface method corresponding to a method
+  // message.  The key is a descriptor for a method message.
   std::map<Descriptor const*, std::string> interface_method_declaration_;
+
+  // A list of C++ parameters for an interface method.  The key is a descriptor
+  // for an In or Out message.  Produced but not used for Out messages.
   std::map<Descriptor const*, std::vector<std::string>> interface_parameters_;
+
+  // The C++ return type of an interface method.  The key is a descriptor for a
+  // Return message.
   std::map<Descriptor const*, std::string> interface_return_type_;
+
+  // The C++ definition of a type corresponding to an interchange message.  The
+  // key is a descriptor for an interchange message.
   std::map<Descriptor const*, std::string> interface_type_declaration_;
 
   // The C++ type for a field, suitable for use in a member or parameter
