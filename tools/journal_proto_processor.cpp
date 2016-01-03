@@ -226,7 +226,13 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       << descriptor->full_name() << " is missing a (pointer_to) option";
   std::string const& pointer_to =
       options.GetExtension(serialization::pointer_to);
-  field_cs_type_[descriptor] = "IntPtr";  //TODO(phl):this
+  if (options.HasExtension(serialization::is_subject)) {
+    CHECK(options.GetExtension(serialization::is_subject))
+        << descriptor->full_name() << " has incorrect (is_subject) option";
+    field_cs_type_[descriptor] = "this IntPtr";
+  } else {
+    field_cs_type_[descriptor] = "IntPtr";
+  }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
   if (options.HasExtension(serialization::is_consumed)) {

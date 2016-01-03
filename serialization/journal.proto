@@ -54,7 +54,7 @@ message AddVesselToNextPhysicsBubble {
     optional AddVesselToNextPhysicsBubble extension = 5045;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     repeated KSPPart parts = 3 [(size) = "count"];
   }
@@ -66,7 +66,7 @@ message AdvanceTime {
     optional AdvanceTime extension = 5019;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double t = 2;
     required double planetarium_rotation = 3;
   }
@@ -79,7 +79,7 @@ message AtEnd {
   }
   message In {
     required fixed64 line_and_iterator = 1
-        [(pointer_to) = "LineAndIterator const", (this) = true];
+        [(pointer_to) = "LineAndIterator const", (is_subject) = true];
   }
   message Return {
     required bool at_end = 1;
@@ -93,7 +93,8 @@ message BubbleDisplacementCorrection {
     optional BubbleDisplacementCorrection extension = 5046;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required XYZ sun_position = 2;
   }
   message Return {
@@ -108,7 +109,8 @@ message BubbleVelocityCorrection {
     optional BubbleVelocityCorrection extension = 5047;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required int32 reference_body_index = 2;
   }
   message Return {
@@ -123,7 +125,8 @@ message CelestialFromParent {
     optional CelestialFromParent extension = 5026;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required int32 celestial_index = 2;
   }
   message Return {
@@ -138,7 +141,8 @@ message CurrentTime {
     optional CurrentTime extension = 5048;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
   }
   message Return {
     required double current_time = 1;
@@ -219,7 +223,7 @@ message DirectlyInsertCelestial {
     optional DirectlyInsertCelestial extension = 5003;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 celestial_index = 2;
     optional int32 parent_index = 3;
     required string gravitational_parameter = 4;
@@ -242,7 +246,7 @@ message EndInitialization {
     optional EndInitialization extension = 5020;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   required In in = 1;
 }
@@ -253,7 +257,7 @@ message FetchAndIncrement {
   }
   message In {
     required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator",
-                                            (this) = true];
+                                            (is_subject) = true];
   }
   message Return {
     required XYZSegment fetch_and_increment = 1;
@@ -267,7 +271,8 @@ message FlightPlanSize {
     optional FlightPlanSize extension = 5038;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -282,7 +287,7 @@ message ForgetAllHistoriesBefore {
     optional ForgetAllHistoriesBefore extension = 5021;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double t = 2;
   }
   required In in = 1;
@@ -377,7 +382,8 @@ message HasPrediction {
     optional HasPrediction extension = 5028;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -392,7 +398,7 @@ message HasVessel {
     optional HasVessel extension = 5039;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -413,7 +419,7 @@ message InsertCelestial {
     optional InsertCelestial extension = 5004;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 celestial_index = 2;
     required double gravitational_parameter = 3;
     required int32 parent_index = 4;
@@ -427,7 +433,7 @@ message InsertOrKeepVessel {
     optional InsertOrKeepVessel extension = 5022;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required int32 parent_index = 3;
   }
@@ -443,7 +449,7 @@ message InsertSun {
     optional InsertSun extension = 5023;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 celestial_index = 2;
     required double gravitational_parameter = 3;
   }
@@ -495,7 +501,8 @@ message NavballOrientation {
     optional NavballOrientation extension = 5051;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required XYZ sun_world_position = 3;
     required XYZ ship_world_position = 4;
   }
@@ -511,7 +518,8 @@ message NewBarycentricRotatingNavigationFrame {
     optional NewBarycentricRotatingNavigationFrame extension = 5029;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required int32 primary_index = 2;
     required int32 secondary_index = 3;
   }
@@ -528,7 +536,8 @@ message NewBodyCentredNonRotatingNavigationFrame {
     optional NewBodyCentredNonRotatingNavigationFrame extension = 5030;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required int32 reference_body_index = 2;
   }
   message Return {
@@ -544,7 +553,8 @@ message NewNavigationFrame {
     optional NewNavigationFrame extension = 5062;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required NavigationFrameParameters parameters = 2;
   }
   message Return {
@@ -577,7 +587,7 @@ message NumberOfSegments {
   }
   message In {
     required fixed64 line_and_iterator = 1
-        [(pointer_to) = "LineAndIterator const", (this) = true];
+        [(pointer_to) = "LineAndIterator const", (is_subject) = true];
   }
   message Return {
     required int32 number_of_segments = 1;
@@ -591,7 +601,8 @@ message PhysicsBubbleIsEmpty {
     optional PhysicsBubbleIsEmpty extension = 5052;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
   }
   message Return {
     required bool physics_bubble_is_empty = 1;
@@ -605,7 +616,7 @@ message RenderedFlightPlan {
     optional RenderedFlightPlan extension = 5041;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required int32 plan_phase = 3;
     required XYZ sun_world_position = 5;
@@ -623,7 +634,7 @@ message RenderedPrediction {
     optional RenderedPrediction extension = 5031;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required XYZ sun_world_position = 4;
   }
@@ -640,7 +651,8 @@ message RenderedVesselTrajectory {
     optional RenderedVesselTrajectory extension = 5032;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
     required XYZ sun_world_position = 4;
   }
@@ -667,7 +679,8 @@ message SerializePlugin {
     optional SerializePlugin extension = 5054;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required fixed64 serializer = 2
         [(pointer_to) = "PullSerializer",
          (is_consumed_if) = "result == nullptr"];
@@ -713,7 +726,7 @@ message SetPlottingFrame {
     optional SetPlottingFrame extension = 5059;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed64 navigation_frame = 2 [(pointer_to) = "NavigationFrame",
                                            (is_consumed) = true];
   }
@@ -729,7 +742,7 @@ message SetPredictionLength {
     optional SetPredictionLength extension = 5042;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double t = 2;
   }
   required In in = 1;
@@ -740,7 +753,7 @@ message SetPredictionLengthTolerance {
     optional SetPredictionLengthTolerance extension = 5043;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double l = 2;
   }
   required In in = 1;
@@ -751,7 +764,7 @@ message SetPredictionSpeedTolerance {
     optional SetPredictionSpeedTolerance extension = 5044;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double v = 2;
   }
   required In in = 1;
@@ -792,7 +805,7 @@ message SetVesselStateOffset {
     optional SetVesselStateOffset extension = 5024;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required QP from_parent = 3;
   }
@@ -804,7 +817,8 @@ message UpdateCelestialHierarchy {
     optional UpdateCelestialHierarchy extension = 5025;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required int32 celestial_index = 2;
     required int32 parent_index = 3;
   }
@@ -816,7 +830,8 @@ message UpdatePrediction {
     optional UpdatePrediction extension = 5033;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   required In in = 1;
@@ -827,7 +842,8 @@ message VesselBinormal {
     optional VesselBinormal extension = 5055;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -842,7 +858,8 @@ message VesselFromParent {
     optional VesselFromParent extension = 5034;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -857,7 +874,8 @@ message VesselNormal {
     optional VesselNormal extension = 5056;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -872,7 +890,8 @@ message VesselTangent {
     optional VesselTangent extension = 5057;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const", (this) = true];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required string vessel_guid = 2;
   }
   message Return {
@@ -904,5 +923,5 @@ extend google.protobuf.FieldOptions {
 
   // For a fixed64 field (which is used to represent a pointer), indicates that
   // it should be the subject in C# methods.
-  optional bool this = 50006;
+  optional bool is_subject = 50006;
 }
