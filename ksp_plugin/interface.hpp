@@ -14,53 +14,6 @@ using base::PushDeserializer;
 
 namespace ksp_plugin {
 
-struct LineAndIterator {
-  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
-      : rendered_trajectory(rendered_trajectory) {}
-  RenderedTrajectory<World> const rendered_trajectory;
-  RenderedTrajectory<World>::const_iterator it;
-};
-
-extern "C"
-struct XYZ {
-  double x, y, z;
-};
-
-static_assert(std::is_standard_layout<XYZ>::value,
-              "XYZ is used for interfacing");
-
-bool operator==(XYZ const& left, XYZ const& right);
-
-extern "C"
-struct XYZSegment {
-  XYZ begin, end;
-};
-
-static_assert(std::is_standard_layout<XYZSegment>::value,
-              "XYZSegment is used for interfacing");
-
-bool operator==(XYZSegment const& left, XYZSegment const& right);
-
-extern "C"
-struct WXYZ {
-  double w, x, y, z;
-};
-
-static_assert(std::is_standard_layout<WXYZ>::value,
-              "WXYZ is used for interfacing");
-
-bool operator==(WXYZ const& left, WXYZ const& right);
-
-extern "C"
-struct QP {
-  XYZ q, p;
-};
-
-static_assert(std::is_standard_layout<QP>::value,
-              "QP is used for interfacing");
-
-bool operator==(QP const& left, QP const& right);
-
 extern "C"
 struct KSPPart {
   // TODO(egg): Y U NO USE QP?
@@ -87,6 +40,53 @@ static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
 
 bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);
+
+extern "C"
+struct QP {
+  XYZ q, p;
+};
+
+static_assert(std::is_standard_layout<QP>::value,
+              "QP is used for interfacing");
+
+bool operator==(QP const& left, QP const& right);
+
+extern "C"
+struct WXYZ {
+  double w, x, y, z;
+};
+
+static_assert(std::is_standard_layout<WXYZ>::value,
+              "WXYZ is used for interfacing");
+
+bool operator==(WXYZ const& left, WXYZ const& right);
+
+extern "C"
+struct XYZ {
+  double x, y, z;
+};
+
+static_assert(std::is_standard_layout<XYZ>::value,
+              "XYZ is used for interfacing");
+
+bool operator==(XYZ const& left, XYZ const& right);
+
+extern "C"
+struct XYZSegment {
+  XYZ begin, end;
+};
+
+static_assert(std::is_standard_layout<XYZSegment>::value,
+              "XYZSegment is used for interfacing");
+
+bool operator==(XYZSegment const& left, XYZSegment const& right);
+
+struct LineAndIterator {
+  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
+      : rendered_trajectory(rendered_trajectory) {}
+  RenderedTrajectory<World> const rendered_trajectory;
+  RenderedTrajectory<World>::const_iterator it;
+};
 
 extern "C" PRINCIPIA_DLL
 void CDECL principia__AddVesselToNextPhysicsBubble(
