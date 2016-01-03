@@ -51,9 +51,13 @@ void GenerateProfiles() {
   std::ofstream interface_generated_h(ksp_plugin / "interface.generated.h");
   CHECK(interface_generated_h.good());
   interface_generated_h << kWarning;
-  for (auto const& cpp_interface_declaration :
-          processor.GetCppInterfaceDeclarations()) {
-    interface_generated_h << cpp_interface_declaration;
+  for (auto const& cpp_interface_struct_declaration :
+          processor.GetCppInterfaceStructDeclarations()) {
+    interface_generated_h << cpp_interface_struct_declaration;
+  }
+  for (auto const& cpp_interface_method_declaration :
+          processor.GetCppInterfaceMethodDeclarations()) {
+    interface_generated_h << cpp_interface_method_declaration;
   }
 }
 

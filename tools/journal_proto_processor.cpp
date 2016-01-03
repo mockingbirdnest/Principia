@@ -98,6 +98,24 @@ void JournalProtoProcessor::ProcessMessages() {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCppInterfaceMethodDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : interface_method_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCppInterfaceStructDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : interface_struct_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCppInterchangeImplementations() const {
   std::vector<std::string> result;
   result.push_back("namespace {\n\n");
@@ -115,15 +133,6 @@ JournalProtoProcessor::GetCppInterchangeImplementations() const {
     result.push_back(pair.second);
   }
   result.push_back("}  // namespace\n\n");
-  return result;
-}
-
-std::vector<std::string>
-JournalProtoProcessor::GetCppInterfaceDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : interface_declaration_) {
-    result.push_back(pair.second);
-  }
   return result;
 }
 
@@ -607,6 +616,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
 
+  interface_struct_declaration_[descriptor] =
+      "extern \"C\"\nstruct " + name + " {\n";
+
   std::vector<std::string> deserialized_expressions;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
@@ -621,11 +633,17 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_deserializer_fn_[field_descriptor](deserialize_field_getter));
     serialize_definition_[descriptor] +=
         field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+    interface_struct_declaration_[descriptor] +=
+        "  " + field_type_[field_descriptor] + " " + parameter_name + ";\n";
   }
   deserialize_definition_[descriptor] +=
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
   serialize_definition_[descriptor] += "  return m;\n}\n\n";
+  interface_struct_declaration_[descriptor] +=
+      "};\n\nstatic_assert(std::is_standard_layout<" + name +
+      ">::value,\n              \"" + name +
+      "\" is used for interfacing\");\n\n";
 }
 
 void JournalProtoProcessor::ProcessMethodExtension(
@@ -761,13 +779,14 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "ksp_plugin::principia__" + name + "(" + cpp_run_arguments + ");\n";
   functions_implementation_[descriptor] += cpp_run_epilog + "}\n\n";
 
-  interface_declaration_[descriptor] =
+  interface_method_declaration_[descriptor] =
       "extern \"C\" PRINCIPIA_DLL\n" +
       cpp_interface_return_type + " CDECL principia__" + name + "(";
   if (!cpp_interface_parameters.empty()) {
-    interface_declaration_[descriptor] += "\n    " + cpp_interface_parameters;
+    interface_method_declaration_[descriptor] += "\n    " +
+                                                 cpp_interface_parameters;
   }
-  interface_declaration_[descriptor] += ");\n\n";
+  interface_method_declaration_[descriptor] += ");\n\n";
 }
 
 }  // namespace tools

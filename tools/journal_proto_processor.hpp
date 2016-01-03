@@ -21,8 +21,12 @@ class JournalProtoProcessor {
  public:
   void ProcessMessages();
 
+  // ksp_plugin/interface.hpp
+  std::vector<std::string> GetCppInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCppInterfaceStructDeclarations() const;
+
+  // journal/profiles.{hpp,cpp}
   std::vector<std::string> GetCppInterchangeImplementations() const;
-  std::vector<std::string> GetCppInterfaceDeclarations() const;
   std::vector<std::string> GetCppMethodImplementations() const;
   std::vector<std::string> GetCppMethodTypes() const;
 
@@ -156,9 +160,10 @@ class JournalProtoProcessor {
       field_serializer_fn_;
 
   //TODO(phl):comment
-  std::map<Descriptor const*, std::string> interface_declaration_;
+  std::map<Descriptor const*, std::string> interface_method_declaration_;
   std::map<Descriptor const*, std::vector<std::string>> interface_parameters_;
   std::map<Descriptor const*, std::string> interface_return_type_;
+  std::map<Descriptor const*, std::string> interface_struct_declaration_;
 
   // The C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
