@@ -21,6 +21,11 @@ class JournalProtoProcessor {
  public:
   void ProcessMessages();
 
+  // ksp_plugin/interface.hpp
+  std::vector<std::string> GetCppInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCppInterfaceTypeDeclarations() const;
+
+  // journal/profiles.{hpp,cpp}
   std::vector<std::string> GetCppInterchangeImplementations() const;
   std::vector<std::string> GetCppMethodImplementations() const;
   std::vector<std::string> GetCppMethodTypes() const;
@@ -154,14 +159,25 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr)>>
       field_serializer_fn_;
 
+  // The C++ declaration of an interface method corresponding to a method
+  // message.  The key is a descriptor for a method message.
+  std::map<Descriptor const*, std::string> interface_method_declaration_;
+
+  // A list of C++ parameters for an interface method.  The key is a descriptor
+  // for an In or Out message.  Produced but not used for Out messages.
+  std::map<Descriptor const*, std::vector<std::string>> interface_parameters_;
+
+  // The C++ return type of an interface method.  The key is a descriptor for a
+  // Return message.
+  std::map<Descriptor const*, std::string> interface_return_type_;
+
+  // The C++ definition of a type corresponding to an interchange message.  The
+  // key is a descriptor for an interchange message.
+  std::map<Descriptor const*, std::string> interface_type_declaration_;
+
   // The C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_type_;
-
-  // The declarations of the Serialize and Deserialize functions for interchange
-  // messages.  The key is a descriptor for an interchange message.
-  std::map<Descriptor const*, std::string> deserialize_declaration_;
-  std::map<Descriptor const*, std::string> serialize_declaration_;
 
   // The definitions of the Serialize and Deserialize functions for interchange
   // messages.  The key is a descriptor for an interchange message.
