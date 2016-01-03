@@ -78,6 +78,13 @@ TEST_F(FlightPlanTest, Append) {
   EXPECT_FALSE(flight_plan_->Append(first_burn()));
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_TRUE(flight_plan_->Append(
+      {/*thrust=*/2 * Newton,
+       /*specific_impulse=*/1 * Newton * Second / Kilogram,
+       make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+       /*initial_time=*/t0_ + 2 * Second,
+       Velocity<Frenet<Navigation>>(
+           {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})}));
 }
 
 }  // namespace ksp_plugin
