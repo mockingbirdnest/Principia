@@ -789,12 +789,12 @@ void RenderedVesselTrajectory::Run(Message const& message, not_null<Player::Poin
 }
 
 void SayHello::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_say_hello(result);
+  message->mutable_return_()->set_say_hello(SerializePointer(result));
 }
 
 void SayHello::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const result = ksp_plugin::principia__SayHello();
-  CHECK(message.return_().say_hello().c_str() == result);
+  Insert(pointer_map, message.return_().say_hello(), result);
 }
 
 void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {

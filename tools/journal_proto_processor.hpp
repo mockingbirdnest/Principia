@@ -21,6 +21,9 @@ class JournalProtoProcessor {
  public:
   void ProcessMessages();
 
+  // ksp_plugin_adapter/interface.cs
+  std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
+
   // ksp_plugin/interface.hpp
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
   std::vector<std::string> GetCxxInterfaceTypeDeclarations() const;

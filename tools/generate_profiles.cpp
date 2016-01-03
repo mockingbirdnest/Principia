@@ -28,6 +28,8 @@ void GenerateProfiles() {
       SOLUTION_DIR / "journal";
   std::experimental::filesystem::path const ksp_plugin =
       SOLUTION_DIR / "ksp_plugin";
+  std::experimental::filesystem::path const ksp_plugin_adapter =
+      SOLUTION_DIR / "ksp_plugin_adapter";
 
   std::ofstream profiles_generated_h(journal / "profiles.generated.h");
   CHECK(profiles_generated_h.good());
@@ -58,6 +60,15 @@ void GenerateProfiles() {
   for (auto const& cxx_interface_method_declaration :
            processor.GetCxxInterfaceMethodDeclarations()) {
     interface_generated_h << cxx_interface_method_declaration;
+  }
+
+  std::ofstream interface_generated_cs(ksp_plugin_adapter /
+                                      "interface.generated.cs");
+  CHECK(interface_generated_cs.good());
+  interface_generated_cs << kWarning;
+  for (auto const& cs_interface_method_declaration :
+           processor.GetCsInterfaceMethodDeclarations()) {
+    interface_generated_cs << cs_interface_method_declaration;
   }
 }
 

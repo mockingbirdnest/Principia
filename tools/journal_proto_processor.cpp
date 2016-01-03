@@ -98,6 +98,23 @@ void JournalProtoProcessor::ProcessMessages() {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
+  std::vector<std::string> result;
+  result.push_back("using System;\n");
+  result.push_back("using System.Runtime.InteropServices;\n\n");
+  result.push_back("namespace principia {\n");
+  result.push_back("namespace ksp_plugin_adapter {\n\n");
+  result.push_back("internal static partial class Interface {\n\n");
+  for (auto const& pair : cs_interface_method_declaration_) {
+    result.push_back(pair.second);
+  }
+  result.push_back("}\n\n");
+  result.push_back("}  // namespace ksp_plugin_adapter\n");
+  result.push_back("}  // namespace principia\n");
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
   std::vector<std::string> result;
   for (auto const& pair : cxx_interface_method_declaration_) {
@@ -806,7 +823,6 @@ void JournalProtoProcessor::ProcessMethodExtension(
                                                  cs_interface_parameters;
   }
   cs_interface_method_declaration_[descriptor] += ");\n\n";
-  std::cout<<cs_interface_method_declaration_[descriptor];
 
   cxx_interface_method_declaration_[descriptor] =
       "extern \"C\" PRINCIPIA_DLL\n" +

@@ -669,7 +669,8 @@ message SayHello {
     optional SayHello extension = 5053;
   }
   message Return {
-    required string say_hello = 1;
+    required fixed64 say_hello = 1 [(pointer_to) = "char const",
+                                    (is_produced) = true];
   }
   required Return return = 3;
 }
