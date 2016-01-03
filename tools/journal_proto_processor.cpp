@@ -791,8 +791,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "  [DllImport(dllName           : kDllPath,\n"
       "             EntryPoint        = \"principia__" + name + "\",\n"
       "             CallingConvention = CallingConvention.Cdecl)]\n"
-      "  internal static extern " + cs_interface_return_type + " principia__" +
-      name + "(";
+      "  internal static extern " + cs_interface_return_type + " " + name + "(";
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] += "\n    " +
                                                  cs_interface_parameters;
