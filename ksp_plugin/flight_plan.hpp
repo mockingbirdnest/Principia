@@ -23,10 +23,13 @@ class FlightPlan {
   FlightPlan(
       not_null<DiscreteTrajectory<Barycentric>*> root,
       Instant const& initial_time,
+      Instant const& final_time,
       Mass const& initial_mass,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       AdaptiveStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator);
+          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance);
   ~FlightPlan() = default;
 
   int size() const;
@@ -67,7 +70,8 @@ class FlightPlan {
   Instant final_time_;
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
-  // Starts and ends with a coasting segment; coasting and burning alternate.
+  // Never empty; Starts and ends with a coasting segment; coasting and burning
+  // alternate.
   // each segment is a fork of the previous one, so the stack structure prevents
   // dangling.
   std::stack<ForkHandle> segments_;

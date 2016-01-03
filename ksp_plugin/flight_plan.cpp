@@ -6,16 +6,28 @@ namespace ksp_plugin {
 FlightPlan::FlightPlan(
     not_null<DiscreteTrajectory<Barycentric>*> root,
     Instant const& initial_time,
+    Instant const& final_time,
     Mass const& initial_mass,
     not_null<Ephemeris<Barycentric>*> ephemeris,
     AdaptiveStepSizeIntegrator<
-        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator)
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance)
     : initial_time_(initial_time),
+      final_time_(final_time),
       initial_mass_(initial_mass),
       ephemeris_(ephemeris),
-      integrator_(integrator) {
-  segments_.emplace(
-      root->NewForkWithCopy(root->LowerBound(initial_time).time()));
+      integrator_(integrator),
+      length_integration_tolerance_(length_integration_tolerance),
+      speed_integration_tolerance_(speed_integration_tolerance) {
+  CHECK(final_time_ >= initial_time_);
+  //ephemeris_->Prolong(final_time_);
+  auto it = root->LowerBound(initial_time);
+  if (it.time() != initial_time_) {
+    --it;
+  }
+  segments_.emplace(root->NewForkWithCopy(it.time()));
+  CoastLastSegment(final_time_);
 }
 
 int FlightPlan::size() const {
@@ -36,10 +48,10 @@ bool FlightPlan::Append(Burn burn) {
   if (manœuvre.FitsBetween(
           manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time(),
           final_time_)) {
-    return false;
-  } else {
     Append(std::move(manœuvre));
     return true;
+  } else {
+    return false;
   }
 }
 
@@ -60,13 +72,13 @@ bool FlightPlan::ReplaceLast(Burn burn) {
                                ? initial_time_
                                : manœuvres_[manœuvres_.size() - 2].final_time(),
                            final_time_)) {
-    return false;
-  } else {
     manœuvres_.pop_back();
     segments_.pop();  // Last coast.
     segments_.pop();  // Last burn.
     Append(std::move(manœuvre));
     return true;
+  } else {
+    return false;
   }
 }
 
@@ -76,6 +88,7 @@ bool FlightPlan::SetFinalTime(Instant const& final_time) {
     return false;
   } else {
     final_time_ = final_time;
+    //ephemeris_->Prolong(final_time_);
     ResetLastSegment();
     CoastLastSegment(final_time_);
     return true;
@@ -92,12 +105,16 @@ void FlightPlan::SetTolerances(
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
-  ResetLastSegment();
-  CoastLastSegment(manœuvre.initial_time());
-  AddSegment();
-  BurnLastSegment(manœuvre);
-  AddSegment();
-  CoastLastSegment(final_time_);
+  {
+    // Hide the moved-from |manœuvre|.
+    NavigationManœuvre const& manœuvre = manœuvres_.back();
+    ResetLastSegment();
+    CoastLastSegment(manœuvre.initial_time());
+    AddSegment();
+    BurnLastSegment(manœuvre);
+    AddSegment();
+    CoastLastSegment(final_time_);
+  }
 }
 
 void FlightPlan::RecomputeSegments() {
