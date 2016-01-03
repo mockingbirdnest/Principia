@@ -107,9 +107,9 @@ JournalProtoProcessor::GetCppInterfaceMethodDeclarations() const {
 }
 
 std::vector<std::string>
-JournalProtoProcessor::GetCppInterfaceStructDeclarations() const {
+JournalProtoProcessor::GetCppInterfaceTypeDeclarations() const {
   std::vector<std::string> result;
-  for (auto const& pair : interface_struct_declaration_) {
+  for (auto const& pair : interface_type_declaration_) {
     result.push_back(pair.second);
   }
   return result;
@@ -119,13 +119,6 @@ std::vector<std::string>
 JournalProtoProcessor::GetCppInterchangeImplementations() const {
   std::vector<std::string> result;
   result.push_back("namespace {\n\n");
-  for (auto const& pair : deserialize_declaration_) {
-    result.push_back(pair.second);
-  }
-  for (auto const& pair : serialize_declaration_) {
-    result.push_back(pair.second);
-  }
-  result.push_back("\n");
   for (auto const& pair : deserialize_definition_) {
     result.push_back(pair.second);
   }
@@ -602,21 +595,13 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& name = descriptor->name();
   std::string const& parameter_name = ToLower(name);
 
-  deserialize_declaration_[descriptor] =
-      name + " Deserialize" + name + "(serialization::" + name + " const& " +
-      parameter_name + ");\n";
-  serialize_declaration_[descriptor] =
-      "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
-      parameter_name + ");\n";
-
   deserialize_definition_[descriptor] =
       name + " Deserialize" + name + "(serialization::" + name + " const& " +
       parameter_name + ") {\n  return {";
   serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
-
-  interface_struct_declaration_[descriptor] =
+  interface_type_declaration_[descriptor] =
       "extern \"C\"\nstruct " + name + " {\n";
 
   std::vector<std::string> deserialized_expressions;
@@ -633,7 +618,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_deserializer_fn_[field_descriptor](deserialize_field_getter));
     serialize_definition_[descriptor] +=
         field_assignment_fn_[field_descriptor]("m.", serialize_member_name);
-    interface_struct_declaration_[descriptor] +=
+    interface_type_declaration_[descriptor] +=
         "  " + field_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
   }
@@ -641,7 +626,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
   serialize_definition_[descriptor] += "  return m;\n}\n\n";
-  interface_struct_declaration_[descriptor] +=
+  interface_type_declaration_[descriptor] +=
       "};\n\nstatic_assert(std::is_standard_layout<" + name +
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }

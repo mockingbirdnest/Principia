@@ -23,7 +23,7 @@ class JournalProtoProcessor {
 
   // ksp_plugin/interface.hpp
   std::vector<std::string> GetCppInterfaceMethodDeclarations() const;
-  std::vector<std::string> GetCppInterfaceStructDeclarations() const;
+  std::vector<std::string> GetCppInterfaceTypeDeclarations() const;
 
   // journal/profiles.{hpp,cpp}
   std::vector<std::string> GetCppInterchangeImplementations() const;
@@ -163,16 +163,11 @@ class JournalProtoProcessor {
   std::map<Descriptor const*, std::string> interface_method_declaration_;
   std::map<Descriptor const*, std::vector<std::string>> interface_parameters_;
   std::map<Descriptor const*, std::string> interface_return_type_;
-  std::map<Descriptor const*, std::string> interface_struct_declaration_;
+  std::map<Descriptor const*, std::string> interface_type_declaration_;
 
   // The C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_type_;
-
-  // The declarations of the Serialize and Deserialize functions for interchange
-  // messages.  The key is a descriptor for an interchange message.
-  std::map<Descriptor const*, std::string> deserialize_declaration_;
-  std::map<Descriptor const*, std::string> serialize_declaration_;
 
   // The definitions of the Serialize and Deserialize functions for interchange
   // messages.  The key is a descriptor for an interchange message.

@@ -4,19 +4,6 @@
 
 namespace {
 
-XYZ DeserializeXYZ(serialization::XYZ const& xyz);
-KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part);
-NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::NavigationFrameParameters const& navigation_frame_parameters);
-QP DeserializeQP(serialization::QP const& qp);
-WXYZ DeserializeWXYZ(serialization::WXYZ const& wxyz);
-XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment);
-serialization::XYZ SerializeXYZ(XYZ const& xyz);
-serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part);
-serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters);
-serialization::QP SerializeQP(QP const& qp);
-serialization::WXYZ SerializeWXYZ(WXYZ const& wxyz);
-serialization::XYZSegment SerializeXYZSegment(XYZSegment const& xyz_segment);
-
 XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
   return {xyz.x(),
           xyz.y(),
