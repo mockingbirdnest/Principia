@@ -8,6 +8,50 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct XYZ {
+  public double x;
+  public double y;
+  public double z;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct KSPPart {
+  public XYZ world_position;
+  public XYZ world_velocity;
+  public double mass;
+  public XYZ gravitational_acceleration_to_be_applied_by_ksp;
+  public uint32_t id;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct NavigationFrameParameters {
+  public int extension;
+  public int centre_index;
+  public int primary_index;
+  public int secondary_index;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct QP {
+  public XYZ q;
+  public XYZ p;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct WXYZ {
+  public double w;
+  public double x;
+  public double y;
+  public double z;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct XYZSegment {
+  public XYZ begin;
+  public XYZ end;
+}
+
 internal static partial class Interface {
 
   [DllImport(dllName           : kDllPath,

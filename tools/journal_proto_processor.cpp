@@ -100,17 +100,18 @@ void JournalProtoProcessor::ProcessMessages() {
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
   std::vector<std::string> result;
-  result.push_back("using System;\n");
-  result.push_back("using System.Runtime.InteropServices;\n\n");
-  result.push_back("namespace principia {\n");
-  result.push_back("namespace ksp_plugin_adapter {\n\n");
-  result.push_back("internal static partial class Interface {\n\n");
   for (auto const& pair : cs_interface_method_declaration_) {
     result.push_back(pair.second);
   }
-  result.push_back("}\n\n");
-  result.push_back("}  // namespace ksp_plugin_adapter\n");
-  result.push_back("}  // namespace principia\n");
+  return result;
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCsInterfaceTypeDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : cs_interface_type_declaration_) {
+    result.push_back(pair.second);
+  }
   return result;
 }
 
@@ -643,6 +644,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   cxx_serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
+
+  cs_interface_type_declaration_[descriptor] =
+      "[StructLayout(LayoutKind.Sequential)]\ninternal partial struct " + name +
+      " {\n";
   cxx_interface_type_declaration_[descriptor] =
       "extern \"C\"\nstruct " + name + " {\n";
 
@@ -660,6 +665,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter));
     cxx_serialize_definition_[descriptor] +=
         field_cxx_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+
+    cs_interface_type_declaration_[descriptor] +=
+        "  public " + field_cxx_type_[field_descriptor] + " " +
+        field_descriptor_name + ";\n";
     cxx_interface_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
@@ -668,6 +677,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
   cxx_serialize_definition_[descriptor] += "  return m;\n}\n\n";
+
+  cs_interface_type_declaration_[descriptor] += "}\n\n";
   cxx_interface_type_declaration_[descriptor] +=
       "};\n\nstatic_assert(std::is_standard_layout<" + name +
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";

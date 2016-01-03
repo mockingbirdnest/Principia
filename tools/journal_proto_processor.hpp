@@ -23,6 +23,7 @@ class JournalProtoProcessor {
 
   // ksp_plugin_adapter/interface.cs
   std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCsInterfaceTypeDeclarations() const;
 
   // ksp_plugin/interface.hpp
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
@@ -188,8 +189,9 @@ class JournalProtoProcessor {
   std::map<Descriptor const*, std::string> cs_interface_return_type_;
   std::map<Descriptor const*, std::string> cxx_interface_return_type_;
 
-  // The C++ definition of a type corresponding to an interchange message.  The
-  // key is a descriptor for an interchange message.
+  // The C#/C++ definition of a type corresponding to an interchange message.
+  // The key is a descriptor for an interchange message.
+  std::map<Descriptor const*, std::string> cs_interface_type_declaration_;
   std::map<Descriptor const*, std::string> cxx_interface_type_declaration_;
 
   // The definitions of the Serialize and Deserialize functions for interchange

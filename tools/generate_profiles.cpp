@@ -66,10 +66,22 @@ void GenerateProfiles() {
                                       "interface.generated.cs");
   CHECK(interface_generated_cs.good());
   interface_generated_cs << kWarning;
+  interface_generated_cs << "using System;\n";
+  interface_generated_cs << "using System.Runtime.InteropServices;\n\n";
+  interface_generated_cs << "namespace principia {\n";
+  interface_generated_cs << "namespace ksp_plugin_adapter {\n\n";
+  for (auto const& cs_interface_type_declaration :
+           processor.GetCsInterfaceTypeDeclarations()) {
+    interface_generated_cs << cs_interface_type_declaration;
+  }
+  interface_generated_cs << "internal static partial class Interface {\n\n";
   for (auto const& cs_interface_method_declaration :
            processor.GetCsInterfaceMethodDeclarations()) {
     interface_generated_cs << cs_interface_method_declaration;
   }
+  interface_generated_cs << "}\n\n";
+  interface_generated_cs << "}  // namespace ksp_plugin_adapter\n";
+  interface_generated_cs << "}  // namespace principia\n";
 }
 
 }  // namespace tools
