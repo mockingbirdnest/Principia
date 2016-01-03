@@ -74,19 +74,20 @@ TEST_F(FlightPlanTest, Append) {
             Velocity<Frenet<Navigation>>(
                 {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
   };
+  auto const second_burn = [this, first_burn]() -> Burn {
+    auto burn = first_burn();
+    burn.initial_time += 1 * Second;
+    return burn;
+  };
   // Burn ends after final time.
   EXPECT_FALSE(flight_plan_->Append(first_burn()));
   EXPECT_EQ(0, flight_plan_->size());
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
   EXPECT_EQ(1, flight_plan_->size());
-  EXPECT_TRUE(flight_plan_->Append(
-      {/*thrust=*/2 * Newton,
-       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-       make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-       /*initial_time=*/t0_ + 2 * Second,
-       Velocity<Frenet<Navigation>>(
-           {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})}));
+  EXPECT_FALSE(flight_plan_->Append(first_burn()));
+  EXPECT_EQ(1, flight_plan_->size());
+  EXPECT_TRUE(flight_plan_->Append(second_burn()));
   EXPECT_EQ(2, flight_plan_->size());
 }
 
@@ -99,15 +100,14 @@ TEST_F(FlightPlanTest, Remove) {
             Velocity<Frenet<Navigation>>(
                 {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
   };
+  auto const second_burn = [this, first_burn]() -> Burn {
+    auto burn = first_burn();
+    burn.initial_time += 1 * Second;
+    return burn;
+  };
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
-  EXPECT_TRUE(flight_plan_->Append(
-      {/*thrust=*/2 * Newton,
-       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-       make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-       /*initial_time=*/t0_ + 2 * Second,
-       Velocity<Frenet<Navigation>>(
-           {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})}));
+  EXPECT_TRUE(flight_plan_->Append(second_burn()));
   EXPECT_EQ(2, flight_plan_->size());
   flight_plan_->RemoveLast();
   EXPECT_EQ(1, flight_plan_->size());
@@ -115,6 +115,36 @@ TEST_F(FlightPlanTest, Remove) {
   EXPECT_EQ(0, flight_plan_->size());
   // Check that appending still works.
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_EQ(1, flight_plan_->size());
+}
+
+TEST_F(FlightPlanTest, Replace) {
+  auto const first_burn = [this]() -> Burn {
+    return {/*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            /*initial_time=*/t0_ + 1 * Second,
+            Velocity<Frenet<Navigation>>(
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  };
+  auto const second_burn = [this, first_burn]() -> Burn {
+    auto burn = first_burn();
+    burn.Δv *= 10;
+    return burn;
+  };
+  flight_plan_->SetFinalTime(t0_ + 1.7 * Second);
+  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  Mass const old_final_mass =
+      flight_plan_->Get(flight_plan_->size() - 1).final_mass();
+  EXPECT_EQ(1, flight_plan_->size());
+  EXPECT_FALSE(flight_plan_->ReplaceLast(second_burn()));
+  EXPECT_EQ(old_final_mass,
+            flight_plan_->Get(flight_plan_->size() - 1).final_mass());
+  EXPECT_EQ(1, flight_plan_->size());
+  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  EXPECT_TRUE(flight_plan_->ReplaceLast(second_burn()));
+  EXPECT_GT(old_final_mass,
+            flight_plan_->Get(flight_plan_->size() - 1).final_mass());
   EXPECT_EQ(1, flight_plan_->size());
 }
 
