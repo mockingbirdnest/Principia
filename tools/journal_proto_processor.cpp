@@ -119,6 +119,15 @@ JournalProtoProcessor::GetCppInterchangeImplementations() const {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCppInterfaceDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : interface_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCppMethodImplementations() const {
   std::vector<std::string> result;
   for (auto const& pair : functions_implementation_) {
@@ -482,6 +491,8 @@ void JournalProtoProcessor::ProcessInOut(
       fill_body_[descriptor].clear();
     }
   }
+
+  interface_parameters_[descriptor].clear();
   run_body_prolog_[descriptor] =
       "  auto const& " + ToLower(name) + " = message." +
       ToLower(name) + "();\n";
@@ -751,8 +762,12 @@ void JournalProtoProcessor::ProcessMethodExtension(
   functions_implementation_[descriptor] += cpp_run_epilog + "}\n\n";
 
   interface_declaration_[descriptor] =
-      cpp_interface_return_type + " principia__" + name + "(\n" +
-      cpp_interface_parameters + ");\n\n";
+      "extern \"C\" PRINCIPIA_DLL\n" +
+      cpp_interface_return_type + " CDECL principia__" + name + "(";
+  if (!cpp_interface_parameters.empty()) {
+    interface_declaration_[descriptor] += "\n    " + cpp_interface_parameters;
+  }
+  interface_declaration_[descriptor] += ");\n\n";
 }
 
 }  // namespace tools

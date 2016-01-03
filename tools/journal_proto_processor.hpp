@@ -22,6 +22,7 @@ class JournalProtoProcessor {
   void ProcessMessages();
 
   std::vector<std::string> GetCppInterchangeImplementations() const;
+  std::vector<std::string> GetCppInterfaceDeclarations() const;
   std::vector<std::string> GetCppMethodImplementations() const;
   std::vector<std::string> GetCppMethodTypes() const;
 
