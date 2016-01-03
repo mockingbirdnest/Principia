@@ -1,6 +1,6 @@
 $solutiondir = resolve-path $args[0]
 $env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin"
-$newversion =  (git describe --tags --always --dirty --abbrev=40 --long)
+$newversion = (git describe --tags --always --dirty --abbrev=40 --long)
 $headerpath = (join-path $solutiondir "base/version.hpp")
 
 $generateversionheader = {
@@ -25,8 +25,10 @@ $generateversionheader = {
 }
 
 if (test-path -path $headerpath) {
-  [system.io.file]::readalltext($headerpath) -match '(?m)^\s+"([^"]+)";$.*'
-  $oldversion = $matches[1]
+  if ([system.io.file]::readalltext($headerpath) `
+          -match '(?m)^\s+"([^"]+)";$.*') {
+    $oldversion = $matches[1]
+  }
   if ($oldversion.equals($newversion)) {
     echo "No change to git describe, leaving base/version.hpp untouched"
   } else {
