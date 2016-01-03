@@ -1,13 +1,9 @@
 $solutiondir = resolve-path $args[0]
 $env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin"
-[IO.File]::ReadAllText((join-path $solutiondir "base/version.hpp"))  `
-    -match '(?m)^\s+"([^"]+)";$.*'
-$oldversion = $matches[1]
 $newversion =  (git describe --tags --always --dirty --abbrev=40 --long)
-if ($oldversion.Equals($newversion)) {
-  echo "No change to git describe, leaving base/version.hpp untouched"
-} else {
-  echo "Updating base/version.hpp, version is $newversion (was $oldversion)"
+$headerpath = (join-path $solutiondir "base/version.hpp")
+
+$generateversionheader = {
   $text = [string]::format(
       "#pragma once`n"                                `
           + "`n"                                      `
@@ -23,7 +19,21 @@ if ($oldversion.Equals($newversion)) {
       (get-date).ToUniversalTime(),
       $newversion)
   [system.io.file]::writealltext(
-      (join-path $solutiondir "base/version.hpp"),
+      $headerpath,
       $text,
       [system.text.encoding]::utf8)
+}
+
+if (test-path -path $headerpath) {
+  [system.io.file]::readalltext($headerpath) -match '(?m)^\s+"([^"]+)";$.*'
+  $oldversion = $matches[1]
+  if ($oldversion.equals($newversion)) {
+    echo "No change to git describe, leaving base/version.hpp untouched"
+  } else {
+    echo "Updating base/version.hpp, version is $newversion (was $oldversion)"
+    &$generateversionheader
+  }
+} else {
+  echo "Creating base/version.hpp, version is $newversion"
+  &$generateversionheader
 }
