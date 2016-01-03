@@ -55,22 +55,77 @@ internal static class Interface {
 
   // Plugin interface.
 
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__SayHello",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr SayHello();
+  [DllImport(dllName: kDllPath,
+              EntryPoint = "principia__AddVesselToNextPhysicsBubble",
+              CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void AddVesselToNextPhysicsBubble(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      KSPPart[] parts,
+      int count);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NewPlugin",
+             EntryPoint        = "principia__AdvanceTime",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr NewPlugin(
-      double initial_time,
-      double planetarium_rotation_in_degrees);
+  internal static extern void AdvanceTime(
+      this IntPtr plugin, 
+      double t,
+      double planetarium_rotation);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__AtEnd",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool AtEnd(this IntPtr line);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__BubbleDisplacementCorrection",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern XYZ BubbleDisplacementCorrection(this IntPtr plugin,
+                                                          XYZ sun_position);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__BubbleVelocityCorrection",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern XYZ BubbleVelocityCorrection(
+      this IntPtr plugin,
+      int reference_body_index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__CelestialFromParent",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern QP CelestialFromParent(
+      this IntPtr plugin,
+      int celestial_index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__CurrentTime",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern double CurrentTime(this IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DeleteLineAndIterator",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void DeleteLineAndIterator(ref IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DeletePlugin",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void DeletePlugin(ref IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DeletePluginSerialization",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void DeletePluginSerialization(
+      ref IntPtr serialization);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DeserializePlugin",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void DeserializePlugin(
+      [MarshalAs(UnmanagedType.LPStr)] String serialization,
+      int serialization_size,
+      ref IntPtr deserializer,
+      ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DirectlyInsertCelestial",
@@ -111,6 +166,66 @@ internal static class Interface {
       [MarshalAs(UnmanagedType.LPStr)] String vz);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__EndInitialization",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void EndInitialization(this IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FetchAndIncrement",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern LineSegment FetchAndIncrement(this IntPtr line);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__ForgetAllHistoriesBefore",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void ForgetAllHistoriesBefore(this IntPtr plugin,
+                                                       double t);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__GetBufferDuration",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetBufferDuration();
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__GetBufferedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetBufferedLogging();
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__GetStderrLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetStderrLogging();
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__GetSuppressedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetSuppressedLogging();
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__GetVerboseLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetVerboseLogging();
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__HasPrediction",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool HasPrediction(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName             : kDllPath,
+             EntryPoint =        "principia__HasVessel",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool HasVessel(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__InitGoogleLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void InitGoogleLogging();
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InsertCelestial",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InsertCelestial(
@@ -121,27 +236,6 @@ internal static class Interface {
       QP from_parent);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__InsertSun",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertSun(
-      this IntPtr plugin,
-      int celestial_index,
-      double gravitational_parameter);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__EndInitialization",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void EndInitialization(this IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__UpdateCelestialHierarchy",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void UpdateCelestialHierarchy(
-      this IntPtr plugin,
-      int celestial_index,
-      int parent_index);
-
-  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InsertOrKeepVessel",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool InsertOrKeepVessel(
@@ -150,62 +244,78 @@ internal static class Interface {
       int parent_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__SetVesselStateOffset",
+             EntryPoint        = "principia__InsertSun",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetVesselStateOffset(
+  internal static extern void InsertSun(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      QP from_parent);
+      int celestial_index,
+      double gravitational_parameter);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__LogError",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void Error(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__LogFatal",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void Fatal(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__LogInfo",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void Info(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__LogWarning",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void Warning(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__AdvanceTime",
+             EntryPoint        = "principia__NavballOrientation",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void AdvanceTime(
-      this IntPtr plugin, 
-      double t,
-      double planetarium_rotation);
+  internal static extern WXYZ NavballOrientation(
+      this IntPtr plugin,
+      XYZ sun_world_position,
+      XYZ ship_world_position);
+
+  [DllImport(
+       dllName           : kDllPath,
+       EntryPoint        = "principia__NewBarycentricRotatingNavigationFrame",
+       CallingConvention = CallingConvention.Cdecl)]
+  internal static extern IntPtr NewBarycentricRotatingNavigationFrame(
+      this IntPtr plugin,
+      int primary_index,
+      int secondary_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__ForgetAllHistoriesBefore",
+             EntryPoint        =
+                 "principia__NewBodyCentredNonRotatingNavigationFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ForgetAllHistoriesBefore(this IntPtr plugin,
-                                                       double t);
-
-  [DllImport(dllName: kDllPath,
-             EntryPoint        = "principia__VesselFromParent",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QP VesselFromParent(
+  internal static extern IntPtr NewBodyCentredNonRotatingNavigationFrame(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__CelestialFromParent",
+             EntryPoint        = "principia__NewPlugin",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QP CelestialFromParent(
-      this IntPtr plugin,
-      int celestial_index);
+  internal static extern IntPtr NewPlugin(
+      double initial_time,
+      double planetarium_rotation_in_degrees);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__RenderedVesselTrajectory",
+             EntryPoint        = "principia__NumberOfSegments",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr RenderedVesselTrajectory(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      XYZ sun_world_position);
+  internal static extern int NumberOfSegments(this IntPtr line);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__UpdatePrediction",
+             EntryPoint        = "principia__PhysicsBubbleIsEmpty",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void UpdatePrediction(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__HasPrediction",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern bool HasPrediction(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+  internal static extern bool PhysicsBubbleIsEmpty(this IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedPrediction",
@@ -216,24 +326,39 @@ internal static class Interface {
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NumberOfSegments",
+             EntryPoint        = "principia__RenderedVesselTrajectory",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int NumberOfSegments(this IntPtr line);
+  internal static extern IntPtr RenderedVesselTrajectory(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__FetchAndIncrement",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern LineSegment FetchAndIncrement(this IntPtr line);
+          EntryPoint        = "principia__SayHello",
+          CallingConvention = CallingConvention.Cdecl)]
+  internal static extern IntPtr SayHello();
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__AtEnd",
+             EntryPoint        = "principia__SerializePlugin",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern bool AtEnd(this IntPtr line);
+  internal static extern IntPtr SerializePlugin(this IntPtr plugin,
+                                               ref IntPtr serializer);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__SetBufferDuration",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetBufferDuration(int seconds);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__SetBufferedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetBufferedLogging(int max_severity);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteLineAndIterator",
+             EntryPoint        = "principia__SetPlottingFrame",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteLineAndIterator(ref IntPtr line);
+  internal static extern void SetPlottingFrame(this IntPtr plugin,
+                                               ref IntPtr navigation_frame);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__SetPredictionLength",
@@ -246,58 +371,61 @@ internal static class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetPredictionLengthTolerance(this IntPtr plugin,
                                                            double t);
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__SetStderrLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetStderrLogging(int min_severity);
+
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__SetSuppressedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetSuppressedLogging(int min_severity);
+
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__SetPredictionSpeedTolerance",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetPredictionSpeedTolerance(this IntPtr plugin,
                                                           double t);
 
-  [DllImport(dllName             : kDllPath,
-             EntryPoint =        "principia__HasVessel",
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__SetVerboseLogging",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern bool HasVessel(
+  internal static extern void SetVerboseLogging(int level);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__SetVesselStateOffset",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetVesselStateOffset(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      QP from_parent);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__UpdateCelestialHierarchy",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void UpdateCelestialHierarchy(
+      this IntPtr plugin,
+      int celestial_index,
+      int parent_index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__UpdatePrediction",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void UpdatePrediction(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__VesselBinormal",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern XYZ VesselBinormal(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName: kDllPath,
-             EntryPoint        = "principia__AddVesselToNextPhysicsBubble",
+             EntryPoint        = "principia__VesselFromParent",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void AddVesselToNextPhysicsBubble(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      KSPPart[] parts,
-      int count);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__PhysicsBubbleIsEmpty",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern bool PhysicsBubbleIsEmpty(this IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__BubbleDisplacementCorrection",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ BubbleDisplacementCorrection(this IntPtr plugin,
-                                                          XYZ sun_position);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__BubbleVelocityCorrection",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ BubbleVelocityCorrection(
-      this IntPtr plugin,
-      int reference_body_index);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NavballOrientation",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern WXYZ NavballOrientation(
-      this IntPtr plugin,
-      XYZ sun_world_position,
-      XYZ ship_world_position);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__VesselTangent",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ VesselTangent(
+  internal static extern QP VesselFromParent(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
@@ -309,60 +437,11 @@ internal static class Interface {
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__VesselBinormal",
+             EntryPoint        = "principia__VesselTangent",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ VesselBinormal(
+  internal static extern XYZ VesselTangent(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__CurrentTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double CurrentTime(this IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__SerializePlugin",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr SerializePlugin(this IntPtr plugin,
-                                               ref IntPtr serializer);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeletePluginSerialization",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeletePluginSerialization(
-      ref IntPtr serialization);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeserializePlugin",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeserializePlugin(
-      [MarshalAs(UnmanagedType.LPStr)] String serialization,
-      int serialization_size,
-      ref IntPtr deserializer,
-      ref IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        =
-                 "principia__NewBodyCentredNonRotatingNavigationFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr NewBodyCentredNonRotatingNavigationFrame(
-      this IntPtr plugin,
-      int reference_body_index);
-
-  [DllImport(
-       dllName           : kDllPath,
-       EntryPoint        = "principia__NewBarycentricRotatingNavigationFrame",
-       CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr NewBarycentricRotatingNavigationFrame(
-      this IntPtr plugin,
-      int primary_index,
-      int secondary_index);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__SetPlottingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetPlottingFrame(this IntPtr plugin,
-                                               ref IntPtr navigation_frame);
 }
 
 }  // namespace ksp_plugin_adapter
