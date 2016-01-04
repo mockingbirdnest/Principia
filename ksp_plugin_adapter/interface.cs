@@ -30,8 +30,13 @@ internal static partial class Interface {
   internal const string kDllPath = "GameData/Principia/principia.dll";
 #endif
 
-      // Manual overload needed to be able to pass |null| for a missing
-      // |parent_index|.
+  [DllImport(dllName           : Interface.kDllPath,
+             EntryPoint        = "principia__ActivateRecorder",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void ActivateRecorder(bool activate);
+
+  // Manual overload needed to be able to pass |null| for a missing
+  // |parent_index|.
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DirectlyInsertCelestial",
              CallingConvention = CallingConvention.Cdecl)]
@@ -50,7 +55,6 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.LPStr)] String vx,
       [MarshalAs(UnmanagedType.LPStr)] String vy,
       [MarshalAs(UnmanagedType.LPStr)] String vz);
-
 }
 
 }  // namespace ksp_plugin_adapter

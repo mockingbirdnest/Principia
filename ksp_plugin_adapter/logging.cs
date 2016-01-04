@@ -9,89 +9,69 @@ internal static class Log {
   internal static String[] kSeverityNames = {"INFO", "WARNING", "ERROR",
                                              "FATAL"};
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__InitGoogleLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitGoogleLogging();
+  internal static void InitGoogleLogging() {
+    Interface.InitGoogleLogging();
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__ActivateRecorder",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ActivateRecorder(bool activate);
+  internal static void ActivateRecorder(bool activate) {
+    Interface.ActivateRecorder(activate);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__SetBufferedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetBufferedLogging(int max_severity);
+  internal static void SetBufferedLogging(int max_severity) {
+    Interface.SetBufferedLogging(max_severity);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__GetBufferedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetBufferedLogging();
+  internal static int GetBufferedLogging() {
+    return Interface.GetBufferedLogging();
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__SetBufferDuration",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetBufferDuration(int seconds);
+  internal static void SetBufferDuration(int seconds) {
+    Interface.SetBufferDuration(seconds);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__GetBufferDuration",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetBufferDuration();
+  internal static int GetBufferDuration() {
+    return Interface.GetBufferDuration();
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__SetSuppressedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetSuppressedLogging(int min_severity);
+  internal static void SetSuppressedLogging(int min_severity) {
+    Interface.SetSuppressedLogging(min_severity);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__GetSuppressedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetSuppressedLogging();
+  internal static int GetSuppressedLogging() {
+    return Interface.GetSuppressedLogging();
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__SetVerboseLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetVerboseLogging(int level);
+  internal static void SetVerboseLogging(int level) {
+    Interface.SetVerboseLogging(level);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__GetVerboseLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetVerboseLogging();
+  internal static int GetVerboseLogging() {
+    return Interface.GetVerboseLogging();
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__SetStderrLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetStderrLogging(int min_severity);
+  internal static void SetStderrLogging(int min_severity) {
+    Interface.SetStderrLogging(min_severity);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__GetStderrLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetStderrLogging();
+  internal static int GetStderrLogging() {
+    return Interface.GetStderrLogging();
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__LogInfo",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void Info(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
+  internal static void Info(String message) {
+    Interface.LogInfo(message);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__LogWarning",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void Warning(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
+  internal static void Warning(String message) {
+    Interface.LogWarning(message);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__LogError",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void Error(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
+  internal static void Error(String message) {
+    Interface.LogError(message);
+  }
 
-  [DllImport(dllName           : Interface.kDllPath,
-             EntryPoint        = "principia__LogFatal",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void Fatal(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
+  internal static void Fatal(String message) {
+    Interface.LogFatal(message);
+  }
 }
 
 }  // namespace ksp_plugin_adapter
