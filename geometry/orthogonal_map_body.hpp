@@ -65,7 +65,7 @@ void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
-      message->MutableExtension(serialization::OrthogonalMap::orthogonal_map));
+      message->MutableExtension(serialization::OrthogonalMap::extension));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -73,9 +73,9 @@ OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
-  CHECK(message.HasExtension(serialization::OrthogonalMap::orthogonal_map));
+  CHECK(message.HasExtension(serialization::OrthogonalMap::extension));
   return ReadFromMessage(
-      message.GetExtension(serialization::OrthogonalMap::orthogonal_map));
+      message.GetExtension(serialization::OrthogonalMap::extension));
 }
 
 template<typename FromFrame, typename ToFrame>

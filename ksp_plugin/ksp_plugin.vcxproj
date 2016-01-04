@@ -169,6 +169,11 @@
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="frames.hpp" />
+    <ClInclude Include="interface.generated.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="interface_body.hpp" />
     <ClInclude Include="manœuvre.hpp" />
     <ClInclude Include="manœuvre_body.hpp" />
@@ -203,9 +208,9 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ profile files for %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C++ profile files for %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ profile files for %(FullPath)</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\journal\%(Filename).generated.h;..\journal\%(Filename).generated.cc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">..\journal\%(Filename).generated.h;..\journal\%(Filename).generated.cc;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\journal\%(Filename).generated.h;..\journal\%(Filename).generated.cc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\journal\profiles.generated.h;..\journal\profiles.generated.cc;interface.generated.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">..\journal\profiles.generated.h;..\journal\profiles.generated.cc;interface.generated.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\journal\profiles.generated.h;..\journal\profiles.generated.cc;interface.generated.h;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
