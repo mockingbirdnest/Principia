@@ -1,6 +1,7 @@
 #pragma once
 
 #include "journal/method.hpp"
+#include "journal/recorder.hpp"
 
 #include <list>
 
