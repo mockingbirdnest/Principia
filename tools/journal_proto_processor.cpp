@@ -98,6 +98,24 @@ void JournalProtoProcessor::ProcessMessages() {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : cs_interface_method_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCsInterfaceTypeDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : cs_interface_type_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
   std::vector<std::string> result;
   for (auto const& pair : cxx_interface_method_declaration_) {
@@ -154,6 +172,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   CHECK(options.HasExtension(serialization::size))
       << descriptor->full_name() << " is missing a (size) option";
   size_member_name_[descriptor] = options.GetExtension(serialization::size);
+  field_cs_type_[descriptor] = message_type_name + "[]";
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -199,6 +218,10 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
+  // TODO(phl): Need a better way to handle optional parameters in C#.  At the
+  // moment one needs an extra (manual) overload taking an |IntPtr| to be able
+  // to pass |null|.
+  field_cs_type_[descriptor] = "ref int";
   field_cxx_type_[descriptor] = "int const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -225,6 +248,13 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       << descriptor->full_name() << " is missing a (pointer_to) option";
   std::string const& pointer_to =
       options.GetExtension(serialization::pointer_to);
+  if (options.HasExtension(serialization::is_subject)) {
+    CHECK(options.GetExtension(serialization::is_subject))
+        << descriptor->full_name() << " has incorrect (is_subject) option";
+    field_cs_type_[descriptor] = "this IntPtr";
+  } else {
+    field_cs_type_[descriptor] = "IntPtr";
+  }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
   if (options.HasExtension(serialization::is_consumed)) {
@@ -281,6 +311,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 void JournalProtoProcessor::ProcessRequiredMessageField(
     FieldDescriptor const* descriptor) {
   std::string const& message_type_name = descriptor->message_type()->name();
+  field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
 
   field_cxx_assignment_fn_[descriptor] =
@@ -301,26 +332,31 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 
 void JournalProtoProcessor::ProcessRequiredBoolField(
     FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "bool";
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
 }
 
 void JournalProtoProcessor::ProcessRequiredDoubleField(
     FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "double";
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
 }
 
 void JournalProtoProcessor::ProcessRequiredInt32Field(
     FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "int";
   field_cxx_type_[descriptor] = "int";
 }
 
 void JournalProtoProcessor::ProcessRequiredUint32Field(
     FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "uint";
   field_cxx_type_[descriptor] = "uint32_t";
 }
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)] String";
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
@@ -415,6 +451,7 @@ void JournalProtoProcessor::ProcessRequiredField(
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
   if (Contains(in_out_, descriptor)) {
+    field_cs_type_[descriptor] = "ref " + field_cs_type_[descriptor];
     field_cxx_type_[descriptor] += "*";
 
     field_cxx_arguments_fn_[descriptor] =
@@ -495,6 +532,7 @@ void JournalProtoProcessor::ProcessInOut(
     }
   }
 
+  cs_interface_parameters_[descriptor].clear();
   cxx_interface_parameters_[descriptor].clear();
   cxx_run_body_prolog_[descriptor] =
       "  auto const& " + ToLower(name) + " = message." +
@@ -548,6 +586,8 @@ void JournalProtoProcessor::ProcessInOut(
               "message." + ToLower(name) + "()." + field_descriptor_name + "()",
               run_local_variable);
     }
+    cs_interface_parameters_[descriptor].push_back(
+        "  " + field_cs_type_[field_descriptor] + " " + field_descriptor_name);
     cxx_interface_parameters_[descriptor].push_back(
         field_cxx_type_[field_descriptor] + " const " +
         field_descriptor_name);
@@ -558,6 +598,8 @@ void JournalProtoProcessor::ProcessInOut(
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
+      cs_interface_parameters_[descriptor].push_back(
+          "  int " + size_member_name_[field_descriptor]);
       cxx_interface_parameters_[descriptor].push_back(
           "int const " + size_member_name_[field_descriptor]);
       cxx_nested_type_declaration_[descriptor] +=
@@ -588,6 +630,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         " == result);\n";
   }
+  cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
   cxx_interface_return_type_[descriptor] = field_cxx_type_[field_descriptor];
   cxx_nested_type_declaration_[descriptor] =
       "  using Return = " + field_cxx_type_[field_descriptor] + ";\n";
@@ -604,6 +647,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   cxx_serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
+
+  cs_interface_type_declaration_[descriptor] =
+      "[StructLayout(LayoutKind.Sequential)]\ninternal partial struct " + name +
+      " {\n";
   cxx_interface_type_declaration_[descriptor] =
       "extern \"C\"\nstruct " + name + " {\n";
 
@@ -621,6 +668,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter));
     cxx_serialize_definition_[descriptor] +=
         field_cxx_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+
+    cs_interface_type_declaration_[descriptor] +=
+        "  public " + field_cs_type_[field_descriptor] + " " +
+        field_descriptor_name + ";\n";
     cxx_interface_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
@@ -629,6 +680,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
   cxx_serialize_definition_[descriptor] += "  return m;\n}\n\n";
+
+  cs_interface_type_declaration_[descriptor] += "}\n\n";
   cxx_interface_type_declaration_[descriptor] +=
       "};\n\nstatic_assert(std::is_standard_layout<" + name +
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
@@ -678,6 +731,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
 
   // The second pass that produces the actual output.
+  std::string cs_interface_parameters;
+  std::string cs_interface_return_type = "void";
   std::string cxx_interface_parameters;
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_arguments;
@@ -694,6 +749,9 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cxx_fill_body_[nested_descriptor] +
           "}\n\n";
+      cs_interface_parameters +=
+          Join(cs_interface_parameters_[nested_descriptor],
+               /*joiner=*/",\n    ");
       cxx_interface_parameters +=
           Join(cxx_interface_parameters_[nested_descriptor],
                /*joiner=*/",\n    ");
@@ -718,6 +776,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cxx_fill_body_[nested_descriptor] +
           "}\n\n";
+      cs_interface_return_type = cs_interface_return_type_[nested_descriptor];
       cxx_interface_return_type = cxx_interface_return_type_[nested_descriptor];
     }
     cxx_run_epilog += cxx_run_body_epilog_[nested_descriptor];
@@ -768,12 +827,23 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "ksp_plugin::principia__" + name + "(" + cxx_run_arguments + ");\n";
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
+  cs_interface_method_declaration_[descriptor] =
+      "  [DllImport(dllName           : kDllPath,\n"
+      "             EntryPoint        = \"principia__" + name + "\",\n"
+      "             CallingConvention = CallingConvention.Cdecl)]\n"
+      "  internal static extern " + cs_interface_return_type + " " + name + "(";
+  if (!cs_interface_parameters.empty()) {
+    cs_interface_method_declaration_[descriptor] += "\n    " +
+                                                    cs_interface_parameters;
+  }
+  cs_interface_method_declaration_[descriptor] += ");\n\n";
+
   cxx_interface_method_declaration_[descriptor] =
       "extern \"C\" PRINCIPIA_DLL\n" +
-      cxx_interface_return_type + " CDECL principia__" + name + "(";
+  cxx_interface_return_type + " CDECL principia__" + name + "(";
   if (!cxx_interface_parameters.empty()) {
     cxx_interface_method_declaration_[descriptor] += "\n    " +
-                                                 cxx_interface_parameters;
+                                                     cxx_interface_parameters;
   }
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
 }

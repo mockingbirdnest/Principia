@@ -744,7 +744,7 @@ public partial class PrincipiaPluginAdapter
                                          VectorLine vector_line) {
     int new_min_draw_index = 0;
     try {
-      LineSegment segment;
+      XYZSegment segment;
       int index_in_line_points = vector_line.points3.Length -
           2 * trajectory_iterator.NumberOfSegments();
       // If the |VectorLine| is too big, make sure we're not keeping garbage.

@@ -28,6 +28,8 @@ void GenerateProfiles() {
       SOLUTION_DIR / "journal";
   std::experimental::filesystem::path const ksp_plugin =
       SOLUTION_DIR / "ksp_plugin";
+  std::experimental::filesystem::path const ksp_plugin_adapter =
+      SOLUTION_DIR / "ksp_plugin_adapter";
 
   std::ofstream profiles_generated_h(journal / "profiles.generated.h");
   CHECK(profiles_generated_h.good());
@@ -59,6 +61,27 @@ void GenerateProfiles() {
            processor.GetCxxInterfaceMethodDeclarations()) {
     interface_generated_h << cxx_interface_method_declaration;
   }
+
+  std::ofstream interface_generated_cs(ksp_plugin_adapter /
+                                      "interface.generated.cs");
+  CHECK(interface_generated_cs.good());
+  interface_generated_cs << kWarning;
+  interface_generated_cs << "using System;\n";
+  interface_generated_cs << "using System.Runtime.InteropServices;\n\n";
+  interface_generated_cs << "namespace principia {\n";
+  interface_generated_cs << "namespace ksp_plugin_adapter {\n\n";
+  for (auto const& cs_interface_type_declaration :
+           processor.GetCsInterfaceTypeDeclarations()) {
+    interface_generated_cs << cs_interface_type_declaration;
+  }
+  interface_generated_cs << "internal static partial class Interface {\n\n";
+  for (auto const& cs_interface_method_declaration :
+           processor.GetCsInterfaceMethodDeclarations()) {
+    interface_generated_cs << cs_interface_method_declaration;
+  }
+  interface_generated_cs << "}\n\n";
+  interface_generated_cs << "}  // namespace ksp_plugin_adapter\n";
+  interface_generated_cs << "}  // namespace principia\n";
 }
 
 }  // namespace tools

@@ -21,6 +21,10 @@ class JournalProtoProcessor {
  public:
   void ProcessMessages();
 
+  // ksp_plugin_adapter/interface.cs
+  std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCsInterfaceTypeDeclarations() const;
+
   // ksp_plugin/interface.hpp
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
   std::vector<std::string> GetCxxInterfaceTypeDeclarations() const;
@@ -162,25 +166,32 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr)>>
       field_cxx_serializer_fn_;
 
-  // The C++ type for a field, suitable for use in a member or parameter
+  // The C#/C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
+  std::map<FieldDescriptor const*, std::string> field_cs_type_;
   std::map<FieldDescriptor const*, std::string> field_cxx_type_;
 
-  // The C++ declaration of an interface method corresponding to a method
+  // The C#/C++ declaration of an interface method corresponding to a method
   // message.  The key is a descriptor for a method message.
+  std::map<Descriptor const*, std::string> cs_interface_method_declaration_;
   std::map<Descriptor const*, std::string> cxx_interface_method_declaration_;
 
-  // A list of C++ parameters for an interface method.  The key is a descriptor
-  // for an In or Out message.  Produced but not used for Out messages.
+  // A list of C#/C++ parameters for an interface method.  The key is a
+  // descriptor for an In or Out message.  Produced but not used for Out
+  // messages.
+  std::map<Descriptor const*, std::vector<std::string>>
+      cs_interface_parameters_;
   std::map<Descriptor const*, std::vector<std::string>>
       cxx_interface_parameters_;
 
-  // The C++ return type of an interface method.  The key is a descriptor for a
-  // Return message.
+  // The C#/C++ return type of an interface method.  The key is a descriptor for
+  // a Return message.
+  std::map<Descriptor const*, std::string> cs_interface_return_type_;
   std::map<Descriptor const*, std::string> cxx_interface_return_type_;
 
-  // The C++ definition of a type corresponding to an interchange message.  The
-  // key is a descriptor for an interchange message.
+  // The C#/C++ definition of a type corresponding to an interchange message.
+  // The key is a descriptor for an interchange message.
+  std::map<Descriptor const*, std::string> cs_interface_type_declaration_;
   std::map<Descriptor const*, std::string> cxx_interface_type_declaration_;
 
   // The definitions of the Serialize and Deserialize functions for interchange
