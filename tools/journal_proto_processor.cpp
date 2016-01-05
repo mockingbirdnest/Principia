@@ -218,7 +218,10 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "ref int";  //TODO(phl):or IntPtr.
+  // TODO(phl): Need a better way to handle optional parameters in C#.  At the
+  // moment one needs an extra (manual) overload taking an |IntPtr| to be able
+  // to pass |null|.
+  field_cs_type_[descriptor] = "ref int";
   field_cxx_type_[descriptor] = "int const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -353,7 +356,7 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)] String";//TODO(phl): not for return!
+  field_cs_type_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)] String";
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
