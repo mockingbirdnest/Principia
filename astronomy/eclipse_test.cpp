@@ -40,7 +40,7 @@ Sign const U23 = Sign(-1);
 
 class EclipseTest : public testing::Test {
  protected:
-  EclipseTest() {
+ /* EclipseTest() {
     solar_system_1950_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
@@ -53,6 +53,15 @@ class EclipseTest : public testing::Test {
                                                        // *will* cause problems
                                                        // if not changed should
                                                        // more dates be added.
+  }*/
+  static void SetUpTestCase() {
+    solar_system_1950_.Initialize(
+        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" /
+            "initial_state_jd_2433282_500000000.proto.txt");
+    ephemeris_ = solar_system_1950_.MakeEphemeris(
+        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        45 * Minute, 5 * Milli(Metre));
   }
 
   void CheckLunarUmbralEclipse(Instant const& current_time,
@@ -142,8 +151,8 @@ class EclipseTest : public testing::Test {
         << ", " << NAMED(current_time);
   }
 
-  SolarSystem<ICRFJ2000Equator> solar_system_1950_;
-  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
+  static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
+  static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
 };
 
 #if !defined(_DEBUG)
