@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/solar_system.hpp"
+#include "physics/ephemeris.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -17,6 +18,7 @@ using astronomy::ICRFJ2000Equator;
 using geometry::JulianDate;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
+using physics::Ephemeris;
 using quantities::ArcCos;
 using quantities::si::Day;
 using quantities::si::Kilo;
@@ -38,30 +40,28 @@ Sign const U23 = Sign(-1);
 
 class EclipseTest : public testing::Test {
  protected:
-  EclipseTest() {
+  static void SetUpTestCase() {
     solar_system_1950_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
             "initial_state_jd_2433282_500000000.proto.txt");
+    ephemeris_ = solar_system_1950_.MakeEphemeris(
+        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        45 * Minute, 5 * Milli(Metre));
   }
 
   void CheckLunarUmbralEclipse(Instant const& current_time,
                                Sign const moon_offset_sign) {
-    auto ephemeris = solar_system_1950_.MakeEphemeris(
-        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-        45 * Minute, 5 * Milli(Metre));
+    ephemeris_->Prolong(current_time);
+    auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
+    auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
+    auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
-    ephemeris->Prolong(current_time +
-                       1 * Day);  // Prolong 1 day past date of eclipse.
-    auto const sun = solar_system_1950_.massive_body(*ephemeris, "Sun");
-    auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
-    auto const moon = solar_system_1950_.massive_body(*ephemeris, "Moon");
-
-    auto const q_sun = ephemeris->trajectory(sun)
+    auto const q_sun = ephemeris_->trajectory(sun)
                            ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_moon = ephemeris->trajectory(moon)
+    auto const q_moon = ephemeris_->trajectory(moon)
                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_earth = ephemeris->trajectory(earth)
+    auto const q_earth = ephemeris_->trajectory(earth)
                              ->EvaluatePosition(current_time, /*hint=*/nullptr);
 
     // MassiveBody will need radius information.  Or non-hardcoded data from
@@ -97,21 +97,16 @@ class EclipseTest : public testing::Test {
 
   void CheckLunarPenumbralEclipse(Instant const& current_time,
                                   Sign const moon_offset_sign) {
-    auto ephemeris = solar_system_1950_.MakeEphemeris(
-        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-        45 * Minute, 5 * Milli(Metre));
+    ephemeris_->Prolong(current_time);
+    auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
+    auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
+    auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
-    ephemeris->Prolong(current_time +
-                       1 * Day);  // Prolong 1 day past date of eclipse.
-    auto const sun = solar_system_1950_.massive_body(*ephemeris, "Sun");
-    auto const earth = solar_system_1950_.massive_body(*ephemeris, "Earth");
-    auto const moon = solar_system_1950_.massive_body(*ephemeris, "Moon");
-
-    auto const q_sun = ephemeris->trajectory(sun)
+    auto const q_sun = ephemeris_->trajectory(sun)
                            ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_moon = ephemeris->trajectory(moon)
+    auto const q_moon = ephemeris_->trajectory(moon)
                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_earth = ephemeris->trajectory(earth)
+    auto const q_earth = ephemeris_->trajectory(earth)
                              ->EvaluatePosition(current_time, /*hint=*/nullptr);
 
     // MassiveBody will need radius information.  Or non-hardcoded data from
@@ -142,8 +137,12 @@ class EclipseTest : public testing::Test {
         << ", " << NAMED(current_time);
   }
 
-  SolarSystem<ICRFJ2000Equator> solar_system_1950_;
+  static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
+  static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
 };
+
+SolarSystem<ICRFJ2000Equator> EclipseTest::solar_system_1950_;
+std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
 
 #if !defined(_DEBUG)
 TEST_F(EclipseTest, Year1950) {
@@ -220,21 +219,6 @@ TEST_F(EclipseTest, Year1952) {
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
-
-  // Future is not now: check 2048-01-01 Lunar eclipse.
-  /*P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
-  U1 = JulianDate(2469076.71279148);  // 05:05:17
-  U2 = JulianDate(2469076.76776833);  // 06:24:27
-  U3 = JulianDate(2469076.80661092);  // 07:20:23
-  U4 = JulianDate(2469076.86158778);  // 08:39:33
-  P4 = JulianDate(2469076.91195815);  // 09:52:05
-
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarUmbralEclipse(U1, U14);
-  CheckLunarUmbralEclipse(U2, U23);
-  CheckLunarUmbralEclipse(U3, U23);
-  CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14); */
 }
 #endif
 
