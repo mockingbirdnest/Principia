@@ -155,6 +155,9 @@ class EclipseTest : public testing::Test {
   static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
 };
 
+SolarSystem<ICRFJ2000Equator> EclipseTest::solar_system_1950_;
+std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
+
 #if !defined(_DEBUG)
 TEST_F(EclipseTest, Year1950) {
   // Dates are TDB Julian Day for 1950-04-02.
