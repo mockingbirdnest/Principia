@@ -48,7 +48,7 @@ class EclipseTest : public testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
         45 * Minute, 5 * Milli(Metre));
-    ephemeris_->Prolong(JulianDate(2434378.5003725));  // Prolong to 1953-01-01
+    //ephemeris_->Prolong(JulianDate(2434378.5003725));  // Prolong to 1953-01-01
                                                        // 00:00:00 UTC. This
                                                        // *will* cause problems
                                                        // if not changed should
@@ -57,6 +57,7 @@ class EclipseTest : public testing::Test {
 
   void CheckLunarUmbralEclipse(Instant const& current_time,
                                Sign const moon_offset_sign) {
+    ephemeris_->Prolong(current_time);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
@@ -101,8 +102,7 @@ class EclipseTest : public testing::Test {
 
   void CheckLunarPenumbralEclipse(Instant const& current_time,
                                   Sign const moon_offset_sign) {
-    // ephemeris_->Prolong(current_time +
-    //                   1 * Day);  // Prolong 1 day past date of eclipse.
+    ephemeris_->Prolong(current_time);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
