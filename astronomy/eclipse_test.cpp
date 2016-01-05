@@ -40,20 +40,6 @@ Sign const U23 = Sign(-1);
 
 class EclipseTest : public testing::Test {
  protected:
- /* EclipseTest() {
-    solar_system_1950_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433282_500000000.proto.txt");
-    ephemeris_ = solar_system_1950_.MakeEphemeris(
-        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-        45 * Minute, 5 * Milli(Metre));
-    //ephemeris_->Prolong(JulianDate(2434378.5003725));  // Prolong to 1953-01-01
-                                                       // 00:00:00 UTC. This
-                                                       // *will* cause problems
-                                                       // if not changed should
-                                                       // more dates be added.
-  }*/
   static void SetUpTestCase() {
     solar_system_1950_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
@@ -233,21 +219,6 @@ TEST_F(EclipseTest, Year1952) {
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
-
-  // Future is not now: check 2048-01-01 Lunar eclipse.
-  /*P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
-  U1 = JulianDate(2469076.71279148);  // 05:05:17
-  U2 = JulianDate(2469076.76776833);  // 06:24:27
-  U3 = JulianDate(2469076.80661092);  // 07:20:23
-  U4 = JulianDate(2469076.86158778);  // 08:39:33
-  P4 = JulianDate(2469076.91195815);  // 09:52:05
-
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarUmbralEclipse(U1, U14);
-  CheckLunarUmbralEclipse(U2, U23);
-  CheckLunarUmbralEclipse(U3, U23);
-  CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14); */
 }
 #endif
 
