@@ -45,13 +45,18 @@ class EclipseTest : public testing::Test {
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
             "initial_state_jd_2433282_500000000.proto.txt");
+    ephemeris_ = solar_system_1950_.MakeEphemeris(
+        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        45 * Minute, 5 * Milli(Metre));
+    ephemeris_->Prolong(JulianDate(2434378.5003725));  // Prolong to 1953-01-01
+                                                       // 00:00:00 UTC. This
+                                                       // *will* cause problems
+                                                       // if not changed should
+                                                       // more dates be added.
   }
 
   void CheckLunarUmbralEclipse(Instant const& current_time,
                                Sign const moon_offset_sign) {
-
-    //ephemeris_->Prolong(current_time +
-    //                   1 * Day);  // Prolong 1 day past date of eclipse.
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
@@ -96,7 +101,6 @@ class EclipseTest : public testing::Test {
 
   void CheckLunarPenumbralEclipse(Instant const& current_time,
                                   Sign const moon_offset_sign) {
-
     // ephemeris_->Prolong(current_time +
     //                   1 * Day);  // Prolong 1 day past date of eclipse.
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
@@ -139,14 +143,13 @@ class EclipseTest : public testing::Test {
   }
 
   SolarSystem<ICRFJ2000Equator> solar_system_1950_;
-  Ephemeris<ICRFJ2000Equator> ephemeris_;
-  physics::Ephemeris ephemeris_ = solar_system_1950_.MakeEphemeris(McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(), 45 * Minute, 5 * Milli(Metre));
+  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
 };
 
 #if !defined(_DEBUG)
 TEST_F(EclipseTest, Year1950) {
   // Dates are TDB Julian Day for 1950-04-02.
-  /*auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
+  auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
   auto U1 = JulianDate(2433374.29850909);  // 19:09:19
   auto U2 = JulianDate(2433374.354979);    // 20:30:38
   auto U3 = JulianDate(2433374.37367113);  // 20:57:33
@@ -173,12 +176,12 @@ TEST_F(EclipseTest, Year1950) {
   CheckLunarUmbralEclipse(U2, U23);
   CheckLunarUmbralEclipse(U3, U23);
   CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);*/
+  CheckLunarPenumbralEclipse(P4, U14);
 }
 
 TEST_F(EclipseTest, Year1951) {
   // Dates are TDB Julian Day for 1951-03-23.
-  /*auto P1 = JulianDate(2433728.86842806);  // 08:50:50
+  auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
   CheckLunarPenumbralEclipse(P1, U14);
@@ -189,12 +192,12 @@ TEST_F(EclipseTest, Year1951) {
   P4 = JulianDate(2433905.1002799);   // 14:23:52
 
   CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarPenumbralEclipse(P4, U14);*/
+  CheckLunarPenumbralEclipse(P4, U14);
 }
 
 TEST_F(EclipseTest, Year1952) {
   // Dates are TDB Julian Day for 1952-02-11 (or 10 for P1).
-  /*auto P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
+  auto P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
   auto U1 = JulianDate(2434053.50334705);  // U1 = 00:04:17
   auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
   auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
@@ -213,7 +216,7 @@ TEST_F(EclipseTest, Year1952) {
   CheckLunarPenumbralEclipse(P1, U14);
   CheckLunarUmbralEclipse(U1, U14);
   CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);*/
+  CheckLunarPenumbralEclipse(P4, U14);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
