@@ -123,7 +123,7 @@ inline void noreturn() { std::exit(0); }
 #if PRINCIPIA_COMPILER_CLANG    ||  \
     PRINCIPIA_COMPILER_CLANG_CL ||  \
     PRINCIPIA_COMPILER_GCC
-#  define FORCE_INLINE [[gnu::always_inline]] inline  // NOLINT(whitespace/braces)
+#  define FORCE_INLINE [[gnu::always_inline]] inline  // NOLINT
 #elif PRINCIPIA_COMPILER_MSVC
 #  define FORCE_INLINE __forceinline
 #elif PRINCIPIA_COMPILER_ICC
