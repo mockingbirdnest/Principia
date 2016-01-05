@@ -4,6 +4,7 @@
 
 #include "geometry/r3_element.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -39,6 +40,12 @@ template<typename Scalar, typename Frame, int rank>
 Scalar AbsoluteError(
     geometry::Multivector<Scalar, Frame, rank> const& expected,
     geometry::Multivector<Scalar, Frame, rank> const& actual);
+
+// Uses the underlying multivector.
+template<typename Scalar, typename Frame>
+Scalar AbsoluteError(
+    geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& expected,
+    geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& actual);
 
 template<typename T, typename NormType>
 double RelativeError(T const& expected, T const& actual,

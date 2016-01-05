@@ -68,50 +68,56 @@ class MockPlugin : public Plugin {
                      RelativeDegreesOfFreedom<AliceSun>(
                          Index const celestial_index));
 
-  MOCK_CONST_METHOD3(
+  MOCK_CONST_METHOD2(
       RenderedVesselTrajectory,
-      RenderedTrajectory<World>(
-          GUID const& vessel_guid,
-          not_null<RenderingTransforms*> const transforms,
-          Position<World> const& sun_world_position));
+      RenderedTrajectory<World>(GUID const& vessel_guid,
+                                Position<World> const& sun_world_position));
 
-  MOCK_METHOD3(
+  MOCK_CONST_METHOD2(
       RenderedPrediction,
-      RenderedTrajectory<World>(
-          GUID const& vessel_guid,
-          not_null<RenderingTransforms*> const transforms,
-          Position<World> const& sun_world_position));
+      RenderedTrajectory<World>(GUID const& vessel_guid,
+                                Position<World> const& sun_world_position));
 
-  MOCK_METHOD1(set_prediction_length, void(Time const& t));
+  MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
-  MOCK_METHOD1(set_prediction_length_tolerance, void(Length const& t));
+  MOCK_METHOD1(SetPredictionLengthTolerance, void(Length const& t));
 
-  MOCK_METHOD1(set_prediction_speed_tolerance, void(Speed const& t));
+  MOCK_METHOD1(SetPredictionSpeedTolerance, void(Speed const& t));
 
-  MOCK_CONST_METHOD1(has_vessel, bool(GUID const& vessel_guid));
+  MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
 
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
   // call mock functions which fill a std::unique_ptr<> instead of returning it.
-  not_null<std::unique_ptr<RenderingTransforms>>
-  NewBodyCentredNonRotatingTransforms(
+  not_null<std::unique_ptr<NavigationFrame>>
+  NewBodyCentredNonRotatingNavigationFrame(
       Index const reference_body_index) const override;
 
-  not_null<std::unique_ptr<RenderingTransforms>>
-  NewBarycentricRotatingTransforms(
+  not_null<std::unique_ptr<NavigationFrame>>
+  NewBarycentricRotatingNavigationFrame(
       Index const primary_index,
       Index const secondary_index) const override;
 
   MOCK_CONST_METHOD2(
-      FillBodyCentredNonRotatingTransforms,
+      FillBodyCentredNonRotatingNavigationFrame,
       void(Index const reference_body_index,
-           std::unique_ptr<RenderingTransforms>* transforms));
+           std::unique_ptr<NavigationFrame>* navigation_frame));
 
   MOCK_CONST_METHOD3(
-      FillBarycentricRotatingTransforms,
+      FillBarycentricRotatingNavigationFrame,
       void(Index const primary_index,
            Index const secondary_index,
-           std::unique_ptr<RenderingTransforms>* transforms));
+           std::unique_ptr<NavigationFrame>* navigation_frame));
+
+  // NOTE(phl): Needed because gMock 1.7.0 wants to copy the unique_ptr<>.
+  void SetPlottingFrame(
+    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) override;
+
+  MOCK_METHOD1(SetPlottingFrameConstRef,
+               void(NavigationFrame const& plotting_frame));
+
+  MOCK_CONST_METHOD0(GetPlottingFrame,
+                     not_null<NavigationFrame const*>());
 
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
@@ -132,17 +138,20 @@ class MockPlugin : public Plugin {
                      Velocity<World>(
                          Index const reference_body_index));
 
-  MOCK_CONST_METHOD2(Navball,
+  MOCK_CONST_METHOD1(Navball,
                      FrameField<World>(
-                         not_null<RenderingTransforms*> const transforms,
                          Position<World> const& sun_world_position));
 
-  MOCK_CONST_METHOD2(VesselTangent,
-                     Vector<double, World>(
-                         GUID const& vessel_guid,
-                         not_null<RenderingTransforms*> const transforms));
+  MOCK_CONST_METHOD1(VesselTangent,
+                     Vector<double, World>(GUID const& vessel_guid));
 
-  MOCK_CONST_METHOD0(current_time, Instant());
+  MOCK_CONST_METHOD1(VesselNormal,
+                     Vector<double, World>(GUID const& vessel_guid));
+
+  MOCK_CONST_METHOD1(VesselBinormal,
+                     Vector<double, World>(GUID const& vessel_guid));
+
+  MOCK_CONST_METHOD0(CurrentTime, Instant());
 
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Plugin*> const message));

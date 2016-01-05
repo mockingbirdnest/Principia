@@ -13,7 +13,7 @@ using geometry::QuantityOrMultivectorSerializer;
 namespace numerics {
 
 template<typename T>
-inline DoublePrecision<T>::DoublePrecision(T const& value)
+constexpr DoublePrecision<T>::DoublePrecision(T const& value)
     : value(value),
       error() {}
 

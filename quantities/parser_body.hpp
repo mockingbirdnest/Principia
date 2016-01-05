@@ -102,7 +102,7 @@ inline Time ParseUnit(std::string const& s) {
 
 template<>
 inline Angle ParseUnit(std::string const& s) {
-  if (s == "deg" || s == "°") {
+  if (s == "deg" || s == u8"°") {
     return si::Degree;
   } else if (s == "rad") {
     return si::Radian;

@@ -5,11 +5,13 @@
 #include <vector>
 
 #include "geometry/sign.hpp"
+#include "quantities/quantities.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
 using geometry::Sign;
+using quantities::Abs;
 using testing_utilities::ULPDistance;
 
 namespace integrators {
@@ -91,7 +93,8 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   typename ODE::SystemState current_state = *problem.initial_state;
 
   // Time step.
-  Time h = step;
+  Time const& h = step;
+  Time const abs_h = integration_direction * h;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
@@ -120,8 +123,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   // exp(bᵢ h B).
   int first_stage = composition == kABA ? 1 : 0;
 
-  while (integration_direction * h <=
-         integration_direction * ((problem.t_final - t.value) - t.error)) {
+  while (abs_h <= Abs((problem.t_final - t.value) - t.error)) {
     std::fill(Δq.begin(), Δq.end(), Displacement{});
     std::fill(Δv.begin(), Δv.end(), Velocity{});
 

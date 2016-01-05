@@ -18,8 +18,8 @@ class FixedMatrix;
 template<typename Scalar, int size>
 class FixedVector {
  public:
-  FixedVector();  // Zero-initialized.
-  explicit FixedVector(std::array<Scalar, size> const& data);
+  constexpr FixedVector();  // Zero-initialized.
+  constexpr explicit FixedVector(std::array<Scalar, size> const& data);
   FixedVector(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
@@ -27,7 +27,7 @@ class FixedVector {
   FixedVector& operator=(std::initializer_list<Scalar> const& right);
 
   Scalar& operator[](int const index);
-  Scalar const& operator[](int const index) const;
+  constexpr Scalar const& operator[](int const index) const;
 
   operator std::vector<Scalar>() const;
 
@@ -44,7 +44,8 @@ template<typename Scalar, int rows, int columns>
 class FixedMatrix {
  public:
   // The |data| must be in row-major format.
-  explicit FixedMatrix(std::array<Scalar, rows * columns> const& data);
+  constexpr explicit FixedMatrix(
+      std::array<Scalar, rows * columns> const& data);
   FixedMatrix(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
@@ -71,7 +72,7 @@ class FixedStrictlyLowerTriangularMatrix {
   static int constexpr kDimension = rows * (rows - 1) / 2;
 
   // The |data| must be in row-major format.
-  explicit FixedStrictlyLowerTriangularMatrix(
+  constexpr explicit FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, kDimension> const& data);
   FixedStrictlyLowerTriangularMatrix(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
@@ -83,8 +84,8 @@ class FixedStrictlyLowerTriangularMatrix {
   // For  0 < j < i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
-  Scalar const* operator[](int const index) const;
   Scalar* operator[](int const index);
+  constexpr Scalar const* operator[](int const index) const;
 
  private:
   std::array<Scalar, kDimension> data_;

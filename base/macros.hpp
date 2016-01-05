@@ -92,13 +92,17 @@ char const* const kArchitecture = "x86-64";
 #endif
 
 // DLL-exported functions for interfacing with Platform Invocation Services.
-#if defined(DLLEXPORT)
-#  error "DLLEXPORT already defined"
+#if defined(PRINCIPIA_DLL)
+#  error "PRINCIPIA_DLL already defined"
 #else
 #  if OS_WIN
-#    define DLLEXPORT __declspec(dllexport)
+#    if PRINCIPIA_DLL_IMPORT
+#      define PRINCIPIA_DLL __declspec(dllimport)
+#    else
+#      define PRINCIPIA_DLL __declspec(dllexport)
+#    endif
 #  else
-#    define DLLEXPORT __attribute__((visibility("default")))
+#    define PRINCIPIA_DLL __attribute__((visibility("default")))
 #  endif
 #endif
 
@@ -119,7 +123,7 @@ inline void noreturn() { std::exit(0); }
 #if PRINCIPIA_COMPILER_CLANG    ||  \
     PRINCIPIA_COMPILER_CLANG_CL ||  \
     PRINCIPIA_COMPILER_GCC
-#  define FORCE_INLINE [[gnu::always_inline]]  // NOLINT(whitespace/braces)
+#  define FORCE_INLINE [[gnu::always_inline]] inline  // NOLINT(whitespace/braces)
 #elif PRINCIPIA_COMPILER_MSVC
 #  define FORCE_INLINE __forceinline
 #elif PRINCIPIA_COMPILER_ICC
@@ -145,21 +149,6 @@ inline void noreturn() { std::exit(0); }
 #  define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
 #else
 #  define GUARDED_BY(x)
-#endif
-
-// A workaround for a MSVC bug wherein a |typename| is required by the standard
-// and by clang but forbidden by MSVC.
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_VER < 1900)
-#  define TYPENAME
-#else
-#  define TYPENAME typename
-#endif
-
-// Same as above, with |template|.
-#if PRINCIPIA_COMPILER_MSVC
-#  define TEMPLATE
-#else
-#  define TEMPLATE template
 #endif
 
 #define VLOG_AND_RETURN(verboselevel, expression)                  \

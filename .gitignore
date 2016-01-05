@@ -104,9 +104,16 @@ packages/
 *.pb.h
 *.pb.cc
 
+# Generated C++
+*.generated.h
+*.generated.cc
+
 # Generated Mathematica
 *.generated.wl
 *.cdf
+
+# Journal Files
+*.journal.hex
 
 # git version header
 base/version.hpp

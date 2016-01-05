@@ -23,7 +23,7 @@ class R3x3Matrix {
   double Trace() const;
   R3x3Matrix Transpose() const;
 
-  double operator[](std::pair<int, int> const& indices) const;
+  double operator()(int const r, int const c) const;
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
   R3x3Matrix& operator-=(R3x3Matrix const& right);

@@ -53,16 +53,37 @@ GeometricAcceleration(
 
   Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
       to_this_frame.orthogonal_map()(
-          ephemeris_->ComputeGravitationalAcceleration(
+          ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
               from_this_frame.rigid_transformation()(
                   degrees_of_freedom.position()), t));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       to_this_frame.orthogonal_map()(
-          -ephemeris_->ComputeGravitationalAcceleration(centre_, t));
+          -ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+              centre_, t));
 
   Vector<Acceleration, ThisFrame> const& fictitious_acceleration =
       linear_acceleration;
   return gravitational_acceleration_at_point + fictitious_acceleration;
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
+  message->MutableExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::
+          body_centred_non_rotating_dynamic_frame)->set_centre(
+              ephemeris_->serialization_index_for_body(centre_));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<std::unique_ptr<
+    BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>>>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    serialization::BodyCentredNonRotatingDynamicFrame const& message) {
+  return std::make_unique<BodyCentredNonRotatingDynamicFrame>(
+             ephemeris,
+             ephemeris->body_for_serialization_index(message.centre()));
 }
 
 }  // namespace physics

@@ -76,6 +76,7 @@
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -167,6 +168,7 @@
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
     <ClInclude Include="mock_continuous_trajectory.hpp" />
+    <ClInclude Include="mock_dynamic_frame.hpp" />
     <ClInclude Include="rigid_motion.hpp" />
     <ClInclude Include="rigid_motion_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
@@ -186,8 +188,6 @@
     <ClInclude Include="rotating_body_body.hpp" />
     <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="solar_system_body.hpp" />
-    <ClInclude Include="transforms.hpp" />
-    <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
@@ -201,7 +201,6 @@
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
-    <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">

@@ -42,7 +42,7 @@ class Celestial {
   Position<Barycentric> current_position(Instant const& current_time) const;
   Velocity<Barycentric> current_velocity(Instant const& current_time) const;
 
-  MassiveBody const& body() const;
+  not_null<MassiveBody const*> body() const;
   bool has_parent() const;
   Celestial const* parent() const;  // Null for the Sun.
   void set_parent(not_null<Celestial const*> const parent);

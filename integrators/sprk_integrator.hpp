@@ -40,8 +40,7 @@ namespace integrators {
 
 class SPRKIntegrator : public SRKNIntegrator {
  public:
-  // NOTE(egg): this should be a using when we have VS 2015.
-  SPRKIntegrator(std::vector<double> const& a, std::vector<double> const& b);
+  using SRKNIntegrator::SRKNIntegrator;
 
   virtual ~SPRKIntegrator() = default;
 

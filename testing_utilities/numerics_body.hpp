@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <limits>
+#include "numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -53,6 +54,14 @@ Scalar AbsoluteError(
           expected,
           actual,
           &geometry::Multivector<Scalar, Frame, rank>::Norm);
+}
+
+template<typename Scalar, typename Frame>
+Scalar AbsoluteError(
+    geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& expected,
+    geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& actual) {
+  geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const origin;
+  return AbsoluteError(expected - origin, actual - origin);
 }
 
 template<typename T, typename NormType>

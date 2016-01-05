@@ -10,6 +10,7 @@
 
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -21,6 +22,7 @@
 namespace principia {
 
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
@@ -113,7 +115,8 @@ Ephemeris<Frame>::Ephemeris(
     auto& body = bodies[i];
     DegreesOfFreedom<Frame> const& degrees_of_freedom = initial_state[i];
 
-    unowned_bodies_.push_back(body.get());
+    unowned_bodies_.emplace_back(body.get());
+    unowned_bodies_indices_.emplace(body.get(), i);
 
     auto const inserted = bodies_to_trajectories_.emplace(
                               body.get(),
@@ -154,7 +157,8 @@ Ephemeris<Frame>::Ephemeris(
 }
 
 template<typename Frame>
-std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
+std::vector<not_null<MassiveBody const*>> const&
+Ephemeris<Frame>::bodies() const {
   return unowned_bodies_;
 }
 
@@ -369,7 +373,8 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+Vector<Acceleration, Frame> Ephemeris<Frame>::
+ComputeGravitationalAccelerationOnMasslessBody(
     Position<Frame> const& position,
     Instant const& t) const {
   // To avoid intrinsic accelerations.
@@ -388,16 +393,19 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+Vector<Acceleration, Frame> Ephemeris<Frame>::
+ComputeGravitationalAccelerationOnMasslessBody(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Instant const& t) const {
   auto const it = trajectory->Find(t);
-  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
-  return ComputeGravitationalAcceleration(degrees_of_freedom.position(), t);
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
+  return ComputeGravitationalAccelerationOnMasslessBody(
+             degrees_of_freedom.position(), t);
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+Vector<Acceleration, Frame> Ephemeris<Frame>::
+ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
   bool const body_is_oblate = body->is_oblate();
@@ -469,6 +477,18 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
 }
 
 template<typename Frame>
+int Ephemeris<Frame>::serialization_index_for_body(
+    not_null<MassiveBody const*> const body) const {
+  return FindOrDie(unowned_bodies_indices_, body);
+}
+
+template<typename Frame>
+not_null<MassiveBody const*> Ephemeris<Frame>::body_for_serialization_index(
+    int const serialization_index) const {
+  return unowned_bodies_[serialization_index];
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;
@@ -491,7 +511,7 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
+not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -509,13 +529,12 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
       bodies.size(),
       DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
   Instant const initial_time;
-  std::unique_ptr<Ephemeris<Frame>> ephemeris =
-      std::make_unique<Ephemeris<Frame>>(std::move(bodies),
-                                         initial_state,
-                                         initial_time,
-                                         planetary_integrator,
-                                         step,
-                                         fitting_tolerance);
+  auto ephemeris = make_not_null_unique<Ephemeris<Frame>>(std::move(bodies),
+                                                          initial_state,
+                                                          initial_time,
+                                                          planetary_integrator,
+                                                          step,
+                                                          fitting_tolerance);
   ephemeris->last_state_ =
       NewtonianMotionEquation::SystemState::ReadFromMessage(
           message.last_state());
@@ -559,8 +578,10 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),
             histories.back().get());
-    initial_state.push_back(histories.back()->first().degrees_of_freedom());
-    initial_time.insert(histories.back()->first().time());
+    typename DiscreteTrajectory<Frame>::Iterator const history_begin =
+        histories.back()->Begin();
+    initial_state.push_back(history_begin.degrees_of_freedom());
+    initial_time.insert(history_begin.time());
     final_time.insert(prolongation->last().time());
   }
   CHECK_EQ(1, initial_time.size());
@@ -581,24 +602,15 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   // trajectories.
   std::set<Instant> last_state_time;
   for (int i = 0; i < histories.size(); ++i) {
-    auto* const body = ephemeris->unowned_bodies_[i];
+    not_null<MassiveBody const*> const body = ephemeris->unowned_bodies_[i];
     auto const& history = histories[i];
-
-    // Apologies about the linear search here but we need the index |j| to fill
-    // |last_state_| and I don't feel like introducing another data structure
-    // just to speed up the compatibility case.
-    int j = 0;
-    for (; j < ephemeris->bodies_.size(); ++j) {
-      if (body == ephemeris->bodies_[j].get()) {
-        break;
-      }
-    }
+    int const j = ephemeris->serialization_index_for_body(body);
     auto continuous_trajectory = ephemeris->trajectories_[j];
 
-    auto it = history->first();
+    typename DiscreteTrajectory<Frame>::Iterator it = history->Begin();
     Instant last_time = it.time();
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
-    for (; !it.at_end(); ++it) {
+    for (; it != history->End(); ++it) {
       Time const duration_since_last_time = it.time() - last_time;
       if (duration_since_last_time == step) {
         // A time in the discrete trajectory that is aligned on the continuous
@@ -656,7 +668,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   if (t_max == state.time.value) {
     Instant const t_last_intermediate_state =
         intermediate_states_.empty()
-            ? Instant(-std::numeric_limits<double>::infinity() * Second)
+            ? Instant() - std::numeric_limits<double>::infinity() * Second
             : intermediate_states_.back().time.value;
     CHECK_LE(t_last_intermediate_state, t_max);
     if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {

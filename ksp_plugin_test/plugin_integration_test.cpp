@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "geometry/identity.hpp"
+#include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -12,9 +14,12 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using geometry::Identity;
+using geometry::Permutation;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::si::Day;
@@ -46,7 +51,7 @@ class PluginIntegrationTest : public testing::Test {
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::kAllBodiesAndOblateness)),
-        initial_time_(42 * Second),
+        initial_time_(Instant() + 42 * Second),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
@@ -153,7 +158,7 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
       Lt(0.01));
 }
 
-TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
+TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   GUID const satellite = "satellite";
@@ -162,8 +167,9 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
                                     satellite_initial_velocity_));
-  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
-      plugin_->NewBodyCentredNonRotatingTransforms(SolarSystemFactory::kEarth);
+  plugin_->SetPlottingFrame(
+      plugin_->NewBodyCentredNonRotatingNavigationFrame(
+          SolarSystemFactory::kEarth));
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -198,7 +204,6 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
     RenderedTrajectory<World> const rendered_trajectory =
         plugin_->RenderedVesselTrajectory(satellite,
-                                          geocentric.get(),
                                           sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
@@ -222,7 +227,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   }
 }
 
-TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
+TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   GUID const satellite = "satellite";
@@ -242,9 +247,10 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
               from_the_earth_to_the_moon.velocity());
   plugin_->SetVesselStateOffset(satellite,
                                 {from_the_earth_to_l5, initial_velocity});
-  not_null<std::unique_ptr<RenderingTransforms>> const earth_moon_barycentric =
-      plugin_->NewBarycentricRotatingTransforms(SolarSystemFactory::kEarth,
-                                                SolarSystemFactory::kMoon);
+  plugin_->SetPlottingFrame(
+      plugin_->NewBarycentricRotatingNavigationFrame(
+          SolarSystemFactory::kEarth,
+          SolarSystemFactory::kMoon));
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -281,7 +287,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
   RenderedTrajectory<World> const rendered_trajectory =
       plugin_->RenderedVesselTrajectory(satellite,
-                                        earth_moon_barycentric.get(),
                                         sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
@@ -588,19 +593,21 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
-  auto transforms = plugin.NewBodyCentredNonRotatingTransforms(celestial);
+  plugin.SetPlottingFrame(
+      plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
   plugin.SetVesselStateOffset(
       satellite,
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
-  plugin.set_prediction_length(2 * π * Second);
-  plugin.set_prediction_length_tolerance(1 * Milli(Metre));
-  plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
-  plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
+  plugin.SetPredictionLength(2 * π * Second);
+  plugin.SetPredictionLengthTolerance(1 * Milli(Metre));
+  plugin.SetPredictionSpeedTolerance(1 * Milli(Metre) / Second);
+  plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
   RenderedTrajectory<World> rendered_prediction =
-      plugin.RenderedPrediction(satellite, transforms.get(), World::origin);
+      plugin.RenderedPrediction(satellite,
+                                World::origin);
   EXPECT_EQ(14, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
     auto const& segment = rendered_prediction[i];
@@ -619,8 +626,9 @@ TEST_F(PluginIntegrationTest, Prediction) {
     }
   }
   EXPECT_THAT(
-      AbsoluteError(rendered_prediction.back().end - World::origin,
-                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
+      AbsoluteError(rendered_prediction.back().end,
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
+                        World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
 }
 

@@ -168,8 +168,6 @@ class Pair {
   friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);
 };
 
-// NOTE(phl): Would like to put the enable_if_affine<> on the return type, but
-// this confuses MSVC.
 template<typename T1, typename T2>
 typename vector_of<Pair<T1, T2>>::type operator-(
     typename enable_if_affine<Pair<T1, T2>>::type const& left,

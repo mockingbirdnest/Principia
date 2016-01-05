@@ -51,7 +51,7 @@ class BodyTest : public testing::Test {
     EXPECT_TRUE(message.has_massive_body());
     EXPECT_FALSE(message.has_massless_body());
     EXPECT_TRUE(message.massive_body().HasExtension(
-                    serialization::RotatingBody::rotating_body));
+                    serialization::RotatingBody::extension));
 
     not_null<std::unique_ptr<MassiveBody const>> const massive_body =
         MassiveBody::ReadFromMessage(message);
@@ -100,13 +100,11 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
   // No members to test in this class, we just check that it doesn't crash.
   massless_body_ = *MasslessBody::ReadFromMessage(message);
 
-  // Dispatching from |Body|.
-  not_null<std::unique_ptr<Body const>> const body =
-      Body::ReadFromMessage(message);
-  // NOTE(egg): The &* is a quick way to explicitly forget |not_null|ness. We
-  // cannot strip the |not_null| from the previous line because MSVC does not
-  // support move conversion at the moment.
-  cast_massless_body = dynamic_cast<MasslessBody const*>(&*body);
+  // Dispatching from |Body|.  Need two steps to add const and remove
+  // |not_null|.
+  std::unique_ptr<Body const> const body =
+      not_null<std::unique_ptr<Body const>>(Body::ReadFromMessage(message));
+  cast_massless_body = dynamic_cast<MasslessBody const*>(body.get());
   EXPECT_THAT(cast_massless_body, NotNull());
 }
 
@@ -145,11 +143,11 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
   EXPECT_TRUE(message.has_massive_body());
   EXPECT_FALSE(message.has_massless_body());
   EXPECT_TRUE(message.massive_body().HasExtension(
-                  serialization::RotatingBody::rotating_body));
+                  serialization::RotatingBody::extension));
   EXPECT_EQ(17, message.massive_body().gravitational_parameter().magnitude());
   serialization::RotatingBody const rotating_body_extension =
       message.massive_body().GetExtension(
-          serialization::RotatingBody::rotating_body);
+          serialization::RotatingBody::extension);
   EXPECT_EQ(3, rotating_body_extension.reference_angle().magnitude());
   EXPECT_EQ(4,
             rotating_body_extension.reference_instant().scalar().magnitude());
@@ -194,13 +192,13 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_TRUE(message.has_massive_body());
   EXPECT_FALSE(message.has_massless_body());
   EXPECT_TRUE(message.massive_body().GetExtension(
-                  serialization::RotatingBody::rotating_body).
-                      HasExtension(serialization::OblateBody::oblate_body));
+                  serialization::RotatingBody::extension).
+                      HasExtension(serialization::OblateBody::extension));
   EXPECT_EQ(17, message.massive_body().gravitational_parameter().magnitude());
   serialization::OblateBody const oblate_body_extension =
       message.massive_body().GetExtension(
-                  serialization::RotatingBody::rotating_body).
-                      GetExtension(serialization::OblateBody::oblate_body);
+                  serialization::RotatingBody::extension).
+                      GetExtension(serialization::OblateBody::extension);
   EXPECT_EQ(163, oblate_body_extension.j2().magnitude());
 
   // Dispatching from |MassiveBody|.
@@ -237,10 +235,10 @@ TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
      post_brouwer_body.massive_body();
   serialization::RotatingBody const& post_brouwer_rotating_body =
      post_brouwer_massive_body.GetExtension(
-        serialization::RotatingBody::rotating_body);
+        serialization::RotatingBody::extension);
   serialization::OblateBody const& post_brouwer_oblate_body =
      post_brouwer_rotating_body.GetExtension(
-        serialization::OblateBody::oblate_body);
+        serialization::OblateBody::extension);
 
   // Construct explicitly an equivalent pre-Brouwer message.
   serialization::Body pre_brouwer_body;
@@ -250,7 +248,7 @@ TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
       post_brouwer_massive_body.gravitational_parameter());
   serialization::PreBrouwerOblateBody* pre_brouwer_oblate_body =
       pre_brouwer_massive_body->MutableExtension(
-          serialization::PreBrouwerOblateBody::pre_brouwer_oblate_body);
+          serialization::PreBrouwerOblateBody::extension);
   pre_brouwer_oblate_body->mutable_frame()->CopyFrom(
       post_brouwer_rotating_body.frame());
   pre_brouwer_oblate_body->mutable_j2()->CopyFrom(
@@ -289,7 +287,7 @@ TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::PluginTag,
                    serialization::Frame::PRE_BOREL_BARYCENTRIC>();
   TestRotatingBody<serialization::Frame::PluginTag,
-                   serialization::Frame::RENDERING>();
+                   serialization::Frame::NAVIGATION>();
   TestRotatingBody<serialization::Frame::PluginTag,
                   serialization::Frame::WORLD>();
   TestRotatingBody<serialization::Frame::PluginTag,

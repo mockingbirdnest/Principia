@@ -15,11 +15,12 @@
 namespace principia {
 namespace testing_utilities {
 
-using quantities::Sqrt;
 using geometry::Bivector;
+using geometry::Point;
 using geometry::R3Element;
 using geometry::Trivector;
 using geometry::Vector;
+using quantities::Sqrt;
 using quantities::si::Metre;
 using testing::AllOf;
 using testing::Eq;
@@ -130,6 +131,12 @@ TEST_F(NumericsTest, TrivectorAbsoluteError) {
       AbsoluteError(Trivector<double, World>(1),
                     Trivector<double, World>(0)),
       Eq(1));
+}
+
+TEST_F(NumericsTest, PointAbsoluteError) {
+  Point<Vector<double, World>> p1;
+  Point<Vector<double, World>> p2;
+  EXPECT_THAT(AbsoluteError(p1, p2 + Vector<double, World>(j_)), Eq(1));
 }
 
 TEST_F(NumericsTest, DoubleRelativeError) {

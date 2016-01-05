@@ -6,7 +6,7 @@
 #include <functional>
 #include <list>
 #include <string>
-#include <thread>  // NOLINT(build/c++11)
+#include <thread>
 #include <vector>
 
 #include "base/array.hpp"

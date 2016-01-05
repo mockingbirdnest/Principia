@@ -61,16 +61,16 @@ template<typename FromFrame, typename ToFrame>
 void Identity<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
-  WriteToMessage(message->MutableExtension(serialization::Identity::identity));
+  WriteToMessage(message->MutableExtension(serialization::Identity::extension));
 }
 
 template<typename FromFrame, typename ToFrame>
 Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
-  CHECK(message.HasExtension(serialization::Identity::identity));
+  CHECK(message.HasExtension(serialization::Identity::extension));
   return ReadFromMessage(
-      message.GetExtension(serialization::Identity::identity));
+      message.GetExtension(serialization::Identity::extension));
 }
 
 template<typename FromFrame, typename ToFrame>

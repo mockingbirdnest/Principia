@@ -18,6 +18,9 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
+#include "journal/method.hpp"
+#include "journal/profiles.hpp"
+#include "journal/recorder.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
@@ -94,7 +97,15 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
 
 }  // namespace
 
+// Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
+// "<KSP directory>/stderr.log".  This provides an easily accessible file
+// containing a sufficiently verbose log of the latest session, instead of
+// requiring users to dig in the archive of all past logs at all severities.
+// This archive is written to
+// "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
+// where date and time are in ISO 8601 basic format.
 void principia__InitGoogleLogging() {
+  journal::Method<journal::InitGoogleLogging> m;
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -136,77 +147,146 @@ void principia__InitGoogleLogging() {
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
 #endif
   }
+  return m.Return();
 }
 
+// If |activate| is true and there is no active journal, create one and
+// activate it.  If |activate| is false and there is an active journal,
+// deactivate it.  Does nothing if there is already a journal in the desired
+// state.
+void principia__ActivateRecorder(bool const activate) {
+  // NOTE: Do not journal!  You'd end up with half a message in the journal and
+  // that would cause trouble.
+  if (activate && !journal::Recorder::IsActivated()) {
+    // Build a name somewhat similar to that of the log files.
+    auto const now = std::chrono::system_clock::now();
+    std::time_t const time = std::chrono::system_clock::to_time_t(now);
+    std::tm* const localtime = std::localtime(&time);
+    std::stringstream name;
+    name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
+    journal::Recorder* const recorder =
+        new journal::Recorder(std::experimental::filesystem::path("glog") /
+                              "Principia" / name.str());
+    journal::Recorder::Activate(recorder);
+  } else if (!activate && journal::Recorder::IsActivated()) {
+    journal::Recorder::Deactivate();
+  }
+}
+
+// Log messages at a level |<= max_severity| are buffered.
+// Log messages at a higher level are flushed immediately.
 void principia__SetBufferedLogging(int const max_severity) {
+  journal::Method<journal::SetBufferedLogging> m({max_severity});
   FLAGS_logbuflevel = max_severity;
+  return m.Return();
 }
 
 int principia__GetBufferedLogging() {
-  return FLAGS_logbuflevel;
+  journal::Method<journal::GetBufferedLogging> m;
+  return m.Return(FLAGS_logbuflevel);
 }
 
+// Sets the maximum number of seconds which logs may be buffered for.
 void principia__SetBufferDuration(int const seconds) {
+  journal::Method<journal::SetBufferDuration> m({seconds});
   FLAGS_logbufsecs = seconds;
+  return m.Return();
 }
 
 int principia__GetBufferDuration() {
-  return FLAGS_logbufsecs;
+  journal::Method<journal::GetBufferDuration> m;
+  return m.Return(FLAGS_logbufsecs);
 }
 
+// Log suppression level: messages logged at a lower level than this are
+// suppressed.
 void principia__SetSuppressedLogging(int const min_severity) {
+  journal::Method<journal::SetSuppressedLogging> m({min_severity});
   FLAGS_minloglevel = min_severity;
+  return m.Return();
 }
 
 int principia__GetSuppressedLogging() {
-  return FLAGS_minloglevel;
+  journal::Method<journal::GetSuppressedLogging> m;
+  return m.Return(FLAGS_minloglevel);
 }
 
+// Show all VLOG(m) messages for |m <= level|.
 void principia__SetVerboseLogging(int const level) {
+  journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
+  return m.Return();
 }
 
 int principia__GetVerboseLogging() {
-  return FLAGS_v;
+  journal::Method<journal::GetVerboseLogging> m;
+  return m.Return(FLAGS_v);
 }
 
+// Make it so that all log messages of at least |min_severity| are logged to
+// stderr (in addition to logging to the usual log file(s)).
 void principia__SetStderrLogging(int const min_severity) {
+  journal::Method<journal::SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
   // seems to be a mutex.
   google::SetStderrLogging(min_severity);
+  return m.Return();
 }
 
 int principia__GetStderrLogging() {
-  return FLAGS_stderrthreshold;
+  journal::Method<journal::GetStderrLogging> m;
+  return m.Return(FLAGS_stderrthreshold);
 }
 
-void principia__LogInfo(char const* message) {
-  LOG(INFO) << message;
+// Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
+// This will always evaluate its argument even if the corresponding log severity
+// is disabled, so it is less efficient than LOG(INFO).  It will not report the
+// line and file of the caller.
+void principia__LogInfo(char const* const text) {
+  journal::Method<journal::LogInfo> m({text});
+  LOG(INFO) << text;
+  return m.Return();
 }
 
-void principia__LogWarning(char const* message) {
-  LOG(WARNING) << message;
+void principia__LogWarning(char const* const text) {
+  journal::Method<journal::LogWarning> m({text});
+  LOG(WARNING) << text;
+  return m.Return();
 }
 
-void principia__LogError(char const* message) {
-  LOG(ERROR) << message;
+void principia__LogError(char const* const text) {
+  journal::Method<journal::LogError> m({text});
+  LOG(ERROR) << text;
+  return m.Return();
 }
 
-void principia__LogFatal(char const* message) {
-  LOG(FATAL) << message;
+void principia__LogFatal(char const* const text) {
+  journal::Method<journal::LogFatal> m({text});
+  LOG(FATAL) << text;
+  return m.Return();
 }
 
+// Returns a pointer to a plugin constructed with the arguments given.
+// The caller takes ownership of the result.
 Plugin* principia__NewPlugin(double const initial_time,
                              double const planetarium_rotation_in_degrees) {
+  journal::Method<journal::NewPlugin> m({initial_time,
+                                         planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
+  Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
-      Instant(initial_time * Second),
+      t0 + initial_time * Second,
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
-  return result.release();
+  return m.Return(result.release());
 }
 
+// Deletes and nulls |*plugin|.
+// |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
+// ownership of |**plugin|.
 void principia__DeletePlugin(Plugin const** const plugin) {
+  CHECK_NOTNULL(plugin);
+  journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
@@ -214,23 +294,34 @@ void principia__DeletePlugin(Plugin const** const plugin) {
     TakeOwnership(plugin);
   }
   LOG(INFO) << "Plugin destroyed";
+  return m.Return();
 }
 
 void principia__DirectlyInsertCelestial(
     Plugin* const plugin,
     int const celestial_index,
-    int const* parent_index,
-    char const* gravitational_parameter,
-    char const* axis_right_ascension,
-    char const* axis_declination,
-    char const* j2,
-    char const* reference_radius,
-    char const* x,
-    char const* y,
-    char const* z,
-    char const* vx,
-    char const* vy,
-    char const* vz) {
+    int const* const parent_index,
+    char const* const gravitational_parameter,
+    char const* const axis_right_ascension,
+    char const* const axis_declination,
+    char const* const j2,
+    char const* const reference_radius,
+    char const* const x,
+    char const* const y,
+    char const* const z,
+    char const* const vx,
+    char const* const vy,
+    char const* const vz) {
+  journal::Method<journal::DirectlyInsertCelestial> m({plugin,
+                                                       celestial_index,
+                                                       parent_index,
+                                                       gravitational_parameter,
+                                                       axis_right_ascension,
+                                                       axis_declination,
+                                                       j2,
+                                                       reference_radius,
+                                                       x, y, z,
+                                                       vx, vy, vz});
   serialization::GravityModel::Body gravity_model;
   serialization::InitialState::Body initial_state;
   gravity_model.set_gravitational_parameter(gravitational_parameter);
@@ -258,16 +349,21 @@ void principia__DirectlyInsertCelestial(
           parent_index,
           SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
           SolarSystem<Barycentric>::MakeMassiveBody(gravity_model));
+  return m.Return();
 }
 
-// NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
-// but it is more readable. This will be resolved once we have constexpr.
-
+// Calls |plugin->InsertCelestial| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
 void principia__InsertCelestial(Plugin* const plugin,
                                 int const celestial_index,
                                 double const gravitational_parameter,
                                 int const parent_index,
                                 QP const from_parent) {
+  journal::Method<journal::InsertCelestial> m({plugin,
+                                               celestial_index,
+                                               gravitational_parameter,
+                                               parent_index,
+                                               from_parent});
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
@@ -275,207 +371,369 @@ void principia__InsertCelestial(Plugin* const plugin,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
           Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+  return m.Return();
 }
 
 void principia__InsertSun(Plugin* const plugin,
                           int const celestial_index,
                           double const gravitational_parameter) {
+  journal::Method<journal::InsertSun> m({plugin,
+                                         celestial_index,
+                                         gravitational_parameter});
   CHECK_NOTNULL(plugin)->InsertSun(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>());
+  return m.Return();
 }
 
+// Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                          int const celestial_index,
                                          int const parent_index) {
+  journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
+                                                        celestial_index,
+                                                        parent_index});
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
+  return m.Return();
 }
 
+// Calls |plugin->EndInitialization|.
+// |plugin| must not be null.  No transfer of ownership.
 void principia__EndInitialization(Plugin* const plugin) {
+  journal::Method<journal::EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin)->EndInitialization();
+  return m.Return();
 }
 
+// Calls |plugin->InsertOrKeepVessel| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
-                                   char const* vessel_guid,
+                                   char const* const vessel_guid,
                                    int const parent_index) {
-  return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
+  journal::Method<journal::InsertOrKeepVessel> m({plugin,
+                                                  vessel_guid,
+                                                  parent_index});
+  return m.Return(
+      CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index));
 }
 
+// Calls |plugin->SetVesselStateOffset| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
 void principia__SetVesselStateOffset(Plugin* const plugin,
-                                     char const* vessel_guid,
+                                     char const* const vessel_guid,
                                      QP const from_parent) {
+  journal::Method<journal::SetVesselStateOffset> m({plugin,
+                                                    vessel_guid,
+                                                    from_parent});
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
           Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+  return m.Return();
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
-  CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
+  journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
+  Instant const t0;
+  CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
                                      planetarium_rotation * Degree);
+  return m.Return();
 }
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
-  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(Instant(t * Second));
+  journal::Method<journal::ForgetAllHistoriesBefore> m({plugin, t});
+  Instant const t0;
+  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
+  return m.Return();
 }
 
+// Calls |plugin->VesselFromParent| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
 QP principia__VesselFromParent(Plugin const* const plugin,
-                               char const* vessel_guid) {
+                               char const* const vessel_guid) {
+  journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
-  return {ToXYZ(result.displacement().coordinates() / Metre),
-          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
+// Calls |plugin->CelestialFromParent| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
 QP principia__CelestialFromParent(Plugin const* const plugin,
-                                   int const celestial_index) {
+                                  int const celestial_index) {
+  journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
   RelativeDegreesOfFreedom<AliceSun> const result =
       CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
-  return {ToXYZ(result.displacement().coordinates() / Metre),
-          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
-RenderingTransforms* principia__NewBodyCentredNonRotatingTransforms(
+// Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
+// |plugin| must not be null.  The caller gets ownership of the returned object.
+// TODO(phl): The parameter should be named |centre_index|.
+NavigationFrame* principia__NewBodyCentredNonRotatingNavigationFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
-  return CHECK_NOTNULL(plugin)->
-      NewBodyCentredNonRotatingTransforms(reference_body_index).release();
+  journal::Method<journal::NewBodyCentredNonRotatingNavigationFrame> m(
+      {plugin, reference_body_index});
+  return m.Return(CHECK_NOTNULL(plugin)->
+      NewBodyCentredNonRotatingNavigationFrame(reference_body_index).release());
 }
 
-RenderingTransforms* principia__NewBarycentricRotatingTransforms(
+// Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
+// |plugin| must not be null.  The caller gets ownership of the returned object.
+NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
-  return CHECK_NOTNULL(plugin)->
-      NewBarycentricRotatingTransforms(
-          primary_index, secondary_index).release();
+  journal::Method<journal::NewBarycentricRotatingNavigationFrame> m(
+      {plugin, primary_index, secondary_index});
+  return m.Return(CHECK_NOTNULL(plugin)->
+      NewBarycentricRotatingNavigationFrame(primary_index,
+                                           secondary_index).release());
 }
 
-void principia__DeleteTransforms(RenderingTransforms** const transforms) {
-  TakeOwnership(transforms);
+// Calls |plugin| to create a |NavigationFrame| using the given |parameters|.
+NavigationFrame* principia__NewNavigationFrame(
+    Plugin const* const plugin,
+    NavigationFrameParameters const parameters) {
+  journal::Method<journal::NewNavigationFrame> m({plugin, parameters});
+  switch (parameters.extension) {
+    case serialization::BarycentricRotatingDynamicFrame::
+             kBarycentricRotatingDynamicFrameFieldNumber:
+      return m.Return(CHECK_NOTNULL(plugin)->
+          NewBarycentricRotatingNavigationFrame(parameters.primary_index,
+                                                parameters.secondary_index).
+              release());
+    case serialization::BodyCentredNonRotatingDynamicFrame::
+             kBodyCentredNonRotatingDynamicFrameFieldNumber:
+      return m.Return(CHECK_NOTNULL(plugin)->
+          NewBodyCentredNonRotatingNavigationFrame(parameters.centre_index).
+              release());
+    default:
+      LOG(FATAL) << "Unexpected extension " << parameters.extension;
+      base::noreturn();
+  }
+}
+
+// Returns the parameters for the given frame, which must not be null.
+NavigationFrameParameters principia__GetNavigationFrameParameters(
+    NavigationFrame const* const navigation_frame) {
+  journal::Method<journal::GetNavigationFrameParameters> m({navigation_frame});
+
+  NavigationFrameParameters parameters;
+  serialization::DynamicFrame message;
+  CHECK_NOTNULL(navigation_frame)->WriteToMessage(&message);
+  if (message.HasExtension(
+          serialization::BarycentricRotatingDynamicFrame::
+              barycentric_rotating_dynamic_frame)) {
+    auto const& extension = message.GetExtension(
+        serialization::BarycentricRotatingDynamicFrame::
+            barycentric_rotating_dynamic_frame);
+    parameters.extension = serialization::BarycentricRotatingDynamicFrame::
+                               kBarycentricRotatingDynamicFrameFieldNumber;
+    parameters.primary_index = extension.primary();
+    parameters.secondary_index = extension.secondary();
+  }
+  if (message.HasExtension(
+          serialization::BodyCentredNonRotatingDynamicFrame::
+              body_centred_non_rotating_dynamic_frame)) {
+    auto const& extension = message.GetExtension(
+        serialization::BodyCentredNonRotatingDynamicFrame::
+            body_centred_non_rotating_dynamic_frame);
+    parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
+                               kBodyCentredNonRotatingDynamicFrameFieldNumber;
+    parameters.centre_index = extension.centre();
+  }
+  return m.Return(parameters);
+}
+
+// |navigation_frame| must not be null.  No transfer of ownership of
+// |*navigation_frame|, takes ownership of |**navigation_frame|, nulls
+// |*navigation_frame|.
+void principia__SetPlottingFrame(Plugin* const plugin,
+                                 NavigationFrame** const navigation_frame) {
+  journal::Method<journal::SetPlottingFrame> m({plugin, navigation_frame},
+                                               {navigation_frame});
+  CHECK_NOTNULL(plugin)->SetPlottingFrame(TakeOwnership(navigation_frame));
+  return m.Return();
+}
+
+// Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
+// ownership.  The returned pointer is never null.
+NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
+  journal::Method<journal::GetPlottingFrame> m({plugin});
+  return m.Return(CHECK_NOTNULL(plugin)->GetPlottingFrame());
 }
 
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid) {
+  journal::Method<journal::UpdatePrediction> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
+  return m.Return();
 }
 
+// Returns the result of |plugin->RenderedVesselTrajectory| called with the
+// arguments given, together with an iterator to its beginning.
+// |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
+// gets ownership of the result.  |frame| must not be null.  No transfer of
+// ownership of |frame|.
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
-    char const* vessel_guid,
-    RenderingTransforms* const transforms,
+    char const* const vessel_guid,
     XYZ const sun_world_position) {
+  journal::Method<journal::RenderedVesselTrajectory> m({plugin,
+                                                        vessel_guid,
+                                                        sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          transforms,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 bool principia__HasPrediction(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid);
+  journal::Method<journal::HasPrediction> m({plugin, vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid));
 }
 
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
-    char const* vessel_guid,
-    RenderingTransforms* const transforms,
+    char const* const vessel_guid,
     XYZ const sun_world_position) {
+  journal::Method<journal::RenderedPrediction> m({plugin,
+                                                  vessel_guid,
+                                                  sun_world_position});
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
-          transforms,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
 int principia__FlightPlanSize(Plugin const* const plugin,
                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid);
+  journal::Method<journal::FlightPlanSize> m({plugin, vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid));
 }
 
 LineAndIterator* principia__RenderedFlightPlan(
     Plugin* const plugin,
-    char const* vessel_guid,
+    char const* const vessel_guid,
     int const plan_phase,
-    RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
+  journal::Method<journal::RenderedFlightPlan> m({plugin,
+                                                  vessel_guid,
+                                                  plan_phase,
+                                                  sun_world_position});
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
           plan_phase,
-          transforms,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   not_null<std::unique_ptr<LineAndIterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
-  return result.release();
+  return m.Return(result.release());
 }
 
-void principia__set_prediction_length(Plugin* const plugin,
-                                      double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_length(t * Second);
+void principia__SetPredictionLength(Plugin* const plugin,
+                                    double const t) {
+  journal::Method<journal::SetPredictionLength> m({plugin, t});
+  CHECK_NOTNULL(plugin)->SetPredictionLength(t * Second);
+  return m.Return();
 }
 
-void principia__set_prediction_length_tolerance(Plugin* const plugin,
-                                                double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_length_tolerance(t * Metre);
+void principia__SetPredictionLengthTolerance(Plugin* const plugin,
+                                             double const l) {
+  journal::Method<journal::SetPredictionLengthTolerance> m({plugin, l});
+  CHECK_NOTNULL(plugin)->SetPredictionLengthTolerance(l * Metre);
+  return m.Return();
 }
 
-void principia__set_prediction_speed_tolerance(Plugin* const plugin,
-                                               double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_speed_tolerance(t * Metre / Second);
+void principia__SetPredictionSpeedTolerance(Plugin* const plugin,
+                                            double const v) {
+  journal::Method<journal::SetPredictionSpeedTolerance> m({plugin, v});
+  CHECK_NOTNULL(plugin)->SetPredictionSpeedTolerance(v * Metre / Second);
+  return m.Return();
 }
 
-bool principia__has_vessel(Plugin* const plugin,
-                           char const* vessel_guid) {
-  return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
+bool principia__HasVessel(Plugin* const plugin,
+                          char const* const vessel_guid) {
+  journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
+  return m.Return(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid));
 }
 
-int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
-  return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
+// Returns |line_and_iterator->rendered_trajectory.size()|.
+// |line_and_iterator| must not be null.  No transfer of ownership.
+int principia__NumberOfSegments(
+    LineAndIterator const* const line_and_iterator) {
+  journal::Method<journal::NumberOfSegments> m({line_and_iterator});
+  return m.Return(CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size());
 }
 
+// Returns the |XYZSegment| corresponding to the |LineSegment|
+// |*line_and_iterator->it|, then increments |line_and_iterator->it|.
+// |line_and_iterator| must not be null.  |line_and_iterator->it| must not be
+// the end of |line_and_iterator->rendered_trajectory|.  No transfer of
+// ownership.
 XYZSegment principia__FetchAndIncrement(
     LineAndIterator* const line_and_iterator) {
+  journal::Method<journal::FetchAndIncrement> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
   ++line_and_iterator->it;
-  return {ToXYZ((result.begin - World::origin).coordinates() / Metre),
-          ToXYZ((result.end - World::origin).coordinates() / Metre)};
+  return m.Return({ToXYZ((result.begin - World::origin).coordinates() / Metre),
+                   ToXYZ((result.end - World::origin).coordinates() / Metre)});
 }
 
-bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
+// Returns |true| if and only if |line_and_iterator->it| is the end of
+// |line_and_iterator->rendered_trajectory|.
+// |line_and_iterator| must not be null.  No transfer of ownership.
+bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
+  journal::Method<journal::AtEnd> m({line_and_iterator});
   CHECK_NOTNULL(line_and_iterator);
-  return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
+  return m.Return(line_and_iterator->it ==
+                  line_and_iterator->rendered_trajectory.end());
 }
 
+// Deletes and nulls |*line_and_iterator|.
+// |line_and_iterator| must not be null.  No transfer of ownership of
+// |*line_and_iterator|, takes ownership of |**line_and_iterator|.
 void principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator) {
+  journal::Method<journal::DeleteLineAndIterator> m({line_and_iterator},
+                                                    {line_and_iterator});
   TakeOwnership(line_and_iterator);
+  return m.Return();
 }
 
 void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
-                                             char const* vessel_guid,
+                                             char const* const vessel_guid,
                                              KSPPart const* const parts,
                                              int count) {
+  journal::Method<journal::AddVesselToNextPhysicsBubble> m({plugin,
+                                                            vessel_guid,
+                                                            parts,
+                                                            count});
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
   std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
@@ -498,57 +756,85 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
   }
   CHECK_NOTNULL(plugin)->AddVesselToNextPhysicsBubble(vessel_guid,
                                                       std::move(vessel_parts));
+  return m.Return();
 }
 
 bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
-  return CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty();
+  journal::Method<journal::PhysicsBubbleIsEmpty> m({plugin});
+  return m.Return(CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty());
 }
 
 XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
                                             XYZ const sun_position) {
+  journal::Method<journal::BubbleDisplacementCorrection> m({plugin,
+                                                            sun_position});
   Displacement<World> const result =
       CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
           World::origin + Displacement<World>(
                               ToR3Element(sun_position) * Metre));
-  return ToXYZ(result.coordinates() / Metre);
+  return m.Return(ToXYZ(result.coordinates() / Metre));
 }
 
 XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                         int const reference_body_index) {
+  journal::Method<journal::BubbleVelocityCorrection> m({plugin,
+                                                        reference_body_index});
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
-  return ToXYZ(result.coordinates() / (Metre / Second));
+  return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
 }
 
 WXYZ principia__NavballOrientation(
     Plugin const* const plugin,
-    RenderingTransforms* const transforms,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
+  journal::Method<journal::NavballOrientation> m({plugin,
+                                                  sun_world_position,
+                                                  ship_world_position});
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
-      transforms,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
-  return ToWXYZ(
+  return m.Return(ToWXYZ(
       frame_field(
           World::origin +
               Displacement<World>(
-                  ToR3Element(ship_world_position) * Metre)).quaternion());
+                  ToR3Element(ship_world_position) * Metre)).quaternion()));
 }
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
-                             char const* vessel_guid,
-                             RenderingTransforms* const transforms) {
-  return ToXYZ(CHECK_NOTNULL(plugin)->
-                   VesselTangent(vessel_guid, transforms).coordinates());
+                             char const* const vessel_guid) {
+  journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
 }
 
-double principia__current_time(Plugin const* const plugin) {
-  return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
+XYZ principia__VesselNormal(Plugin const* const plugin,
+                            char const* const vessel_guid) {
+  journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
 }
 
+XYZ principia__VesselBinormal(Plugin const* const plugin,
+                              char const* const vessel_guid) {
+  journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
+}
+
+double principia__CurrentTime(Plugin const* const plugin) {
+  journal::Method<journal::CurrentTime> m({plugin});
+  return m.Return((CHECK_NOTNULL(plugin)->CurrentTime() - Instant()) / Second);
+}
+
+// |plugin| must not be null.  The caller takes ownership of the result, except
+// when it is null (at the end of the stream).  No transfer of ownership of
+// |*plugin|.  |*serializer| must be null on the first call and must be passed
+// unchanged to the successive calls; its ownership is not transferred.
 char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
+  journal::Method<journal::SerializePlugin> m({plugin, serializer},
+                                              {serializer});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
@@ -569,7 +855,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // nullptr.
   if (bytes.size == 0) {
     TakeOwnership(serializer);
-    return nullptr;
+    return m.Return(nullptr);
   }
 
   // Convert to hexadecimal and return to the client.
@@ -577,18 +863,35 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   UniqueBytes hexadecimal(hexadecimal_size);
   HexadecimalEncode(bytes, hexadecimal.get());
   hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
-  return reinterpret_cast<char const*>(hexadecimal.data.release());
+  return m.Return(reinterpret_cast<char const*>(hexadecimal.data.release()));
 }
 
+// Deletes and nulls |*serialization|.
+// |serialization| must not be null.  No transfer of ownership of
+// |*serialization|, takes ownership of |**serialization|.
 void principia__DeletePluginSerialization(char const** const serialization) {
+  journal::Method<journal::DeletePluginSerialization> m({serialization},
+                                                        {serialization});
   LOG(INFO) << __FUNCTION__;
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
+  return m.Return();
 }
 
+// The caller takes ownership of |**plugin| when it is not null.  No transfer of
+// ownership of |*serialization| or |**deserializer|.  |*deserializer| and
+// |*plugin| must be null on the first call and must be passed unchanged to the
+// successive calls.  The caller must perform an extra call with
+// |serialization_size| set to 0 to indicate the end of the input stream.  When
+// this last call returns, |*plugin| is not null and may be used by the caller.
 void principia__DeserializePlugin(char const* const serialization,
                                   int const serialization_size,
                                   PushDeserializer** const deserializer,
                                   Plugin const** const plugin) {
+  journal::Method<journal::DeserializePlugin> m({serialization,
+                                                 serialization_size,
+                                                 deserializer,
+                                                 plugin},
+                                                {deserializer, plugin});
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
@@ -623,12 +926,15 @@ void principia__DeserializePlugin(char const* const serialization,
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
   if (byte_size == 0) {
-    delete *deserializer;
+    TakeOwnership(deserializer);
   }
+  return m.Return();
 }
 
+// Says hello, convenient for checking that calls to the DLL work.
 char const* principia__SayHello() {
-  return "Hello from native C++!";
+  journal::Method<journal::SayHello> m;
+  return m.Return("Hello from native C++!");
 }
 
 }  // namespace ksp_plugin

@@ -104,7 +104,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_synchronized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->NewForkWithCopy(time);
+  prolongation_ = history_->NewForkAtLast();
   owned_prolongation_.reset();
 }
 
@@ -129,12 +129,11 @@ inline void Vessel::UpdateFlightPlan(
     return;
   }
   DeleteFlightPlan();
-  flight_plan_.emplace_back(
-      mutable_history()->NewForkWithCopy(history().last().time()));
-  // If prolongation has no additional points this will do nothing (although it
-  // might warn).
-  flight_plan_.back()->Append(prolongation().last().time(),
-                              prolongation().last().degrees_of_freedom());
+  flight_plan_.emplace_back(mutable_history()->NewForkAtLast());
+  if (history().last().time() != prolongation().last().time()) {
+    flight_plan_.back()->Append(prolongation().last().time(),
+                                prolongation().last().degrees_of_freedom());
+  }
   for (auto const& manœuvre : manœuvres_) {
     not_null<DiscreteTrajectory<Barycentric>*> const coast_trajectory =
         flight_plan_.back();
@@ -150,13 +149,12 @@ inline void Vessel::UpdateFlightPlan(
     not_null<DiscreteTrajectory<Barycentric>*> const burn_trajectory =
         flight_plan_.back();
     ephemeris->FlowWithAdaptiveStep(burn_trajectory,
-                                    manœuvre->acceleration(),
+                                    manœuvre->acceleration(*coast_trajectory),
                                     prolongation_length_tolerance,
                                     prolongation_speed_tolerance,
                                     integrator,
                                     manœuvre->final_time());
-    flight_plan_.emplace_back(
-        burn_trajectory->NewForkWithCopy(burn_trajectory->last().time()));
+    flight_plan_.emplace_back(burn_trajectory->NewForkAtLast());
   }
   ephemeris->FlowWithAdaptiveStep(
       flight_plan_.back(),
@@ -186,11 +184,11 @@ inline void Vessel::UpdatePrediction(
     return;
   }
   DeletePrediction();
-  prediction_ = mutable_history()->NewForkWithCopy(history().last().time());
-  // If prolongation has no additional points this will do nothing (although it
-  // might warn).
-  prediction_->Append(prolongation().last().time(),
-                      prolongation().last().degrees_of_freedom());
+  prediction_ = mutable_history()->NewForkAtLast();
+  if (history().last().time() != prolongation().last().time()) {
+    prediction_->Append(prolongation().last().time(),
+                        prolongation().last().degrees_of_freedom());
+  }
   ephemeris->FlowWithAdaptiveStep(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
@@ -220,10 +218,10 @@ inline void Vessel::WriteToMessage(
   }
 }
 
-inline std::unique_ptr<Vessel> Vessel::ReadFromMessage(
+inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     serialization::Vessel const& message,
     not_null<Celestial const*> const parent) {
-  auto vessel = std::make_unique<Vessel>(parent);
+  auto vessel = make_not_null_unique<Vessel>(parent);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   if (message.has_history_and_prolongation()) {

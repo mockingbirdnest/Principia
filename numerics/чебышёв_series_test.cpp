@@ -5,6 +5,8 @@
 #include <cmath>
 #include <vector>
 
+#include "astronomy/frames.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -15,7 +17,9 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Ecliptic;
 using geometry::Instant;
+using geometry::Vector;
 using quantities::Length;
 using quantities::Speed;
 using quantities::si::Metre;
@@ -32,8 +36,8 @@ namespace numerics {
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
   ЧебышёвSeriesTest()
-      : t_min_(-1 * Second),
-        t_max_(3 * Second) {}
+      : t_min_(t0_ - 1 * Second),
+        t_max_(t0_ + 3 * Second) {}
 
   void NewhallApproximationErrors(
       std::function<Length(Instant const)> length_function,
@@ -99,6 +103,7 @@ class ЧебышёвSeriesTest : public ::testing::Test {
     EXPECT_THAT(v_10_end, matcher2);
   }
 
+  Instant const t0_;
   Instant t_min_;
   Instant t_max_;
 };
@@ -129,57 +134,80 @@ TEST_F(ЧебышёвSeriesDeathTest, EvaluationErrors) {
 
 TEST_F(ЧебышёвSeriesTest, T0) {
   ЧебышёвSeries<double> t0({1}, t_min_, t_max_);
-  EXPECT_EQ(1, t0.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(1, t0.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(1, t0.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(1, t0.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesTest, T1) {
   ЧебышёвSeries<double> t1({0, 1}, t_min_, t_max_);
-  EXPECT_EQ(0, t1.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(1, t1.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(0, t1.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(1, t1.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesTest, T2) {
   ЧебышёвSeries<double> t2({0, 0, 1}, t_min_, t_max_);
-  EXPECT_EQ(1, t2.Evaluate(Instant(-1 * Second)));
-  EXPECT_EQ(-1, t2.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(1, t2.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(1, t2.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(-1, t2.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(1, t2.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesTest, T3) {
   ЧебышёвSeries<double> t3({0, 0, 0, 1}, t_min_, t_max_);
-  EXPECT_EQ(-1, t3.Evaluate(Instant(-1 * Second)));
-  EXPECT_EQ(0, t3.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(-1, t3.Evaluate(Instant(2 * Second)));
-  EXPECT_EQ(1, t3.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(-1, t3.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(0, t3.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(-1, t3.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(1, t3.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesTest, X5) {
   ЧебышёвSeries<double> x5({0.0, 10.0 / 16.0, 0, 5.0 / 16.0, 0, 1.0 / 16.0},
                            t_min_, t_max_);
-  EXPECT_EQ(-1, x5.Evaluate(Instant(-1 * Second)));
-  EXPECT_EQ(0, x5.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(1.0 / 1024.0, x5.Evaluate(Instant(1.5 * Second)));
-  EXPECT_EQ(1.0 / 32.0, x5.Evaluate(Instant(2 * Second)));
-  EXPECT_EQ(1, x5.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(-1, x5.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(0, x5.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(1.0 / 1024.0, x5.Evaluate(t0_ + 1.5 * Second));
+  EXPECT_EQ(1.0 / 32.0, x5.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(1, x5.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesTest, X6) {
   ЧебышёвSeries<double> x6(
       {10.0 / 32.0, 0, 15.0 / 32.0, 0, 6.0 / 32.0, 0, 1.0 / 32.0},
       t_min_, t_max_);
-  EXPECT_EQ(1, x6.Evaluate(Instant(-1 * Second)));
-  EXPECT_EQ(0, x6.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(1.0 / 4096.0, x6.Evaluate(Instant(1.5 * Second)));
-  EXPECT_EQ(1.0 / 64.0, x6.Evaluate(Instant(2 * Second)));
-  EXPECT_EQ(1, x6.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(1, x6.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(0, x6.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(1.0 / 4096.0, x6.Evaluate(t0_ + 1.5 * Second));
+  EXPECT_EQ(1.0 / 64.0, x6.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(1, x6.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesTest, T2Dimension) {
   ЧебышёвSeries<Length> t2({0 * Metre, 0 * Metre, 1 * Metre}, t_min_, t_max_);
-  EXPECT_EQ(1 * Metre, t2.Evaluate(Instant(-1 * Second)));
-  EXPECT_EQ(-1 * Metre, t2.Evaluate(Instant(1 * Second)));
-  EXPECT_EQ(1 * Metre, t2.Evaluate(Instant(3 * Second)));
+  EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(-1 * Metre, t2.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + 3 * Second));
+}
+
+TEST_F(ЧебышёвSeriesTest, X6Vector) {
+  using V = Vector<Length, ICRFJ2000Ecliptic>;
+  // {T3, X5, X6}
+  V const c0 = V({0.0 * Metre, 0.0 * Metre, 10.0 / 32.0 * Metre});
+  V const c1 = V({0.0 * Metre, 10.0 / 16.0 * Metre, 0.0 * Metre});
+  V const c2 = V({0.0 * Metre, 0.0 * Metre, 15.0 / 32.0 * Metre});
+  V const c3 = V({1.0 * Metre, 5.0 / 16.0 * Metre, 0.0 * Metre});
+  V const c4 = V({0.0 * Metre, 0.0 * Metre, 6.0 / 32.0 * Metre});
+  V const c5 = V({0.0 * Metre, 1.0 / 16.0 * Metre, 0 * Metre});
+  V const c6 = V({0.0 * Metre, 0.0 * Metre, 1.0 / 32.0 * Metre});
+  ЧебышёвSeries<Vector<Length, ICRFJ2000Ecliptic>> x6(
+      {c0, c1, c2, c3, c4, c5, c6},
+      t_min_, t_max_);
+  EXPECT_EQ(V({-1 * Metre, -1 * Metre, 1 * Metre}),
+            x6.Evaluate(t0_ + -1 * Second));
+  EXPECT_EQ(V({0 * Metre, 0 * Metre, 0 * Metre}),
+            x6.Evaluate(t0_ + 1 * Second));
+  EXPECT_EQ(V({-1 * Metre, 1.0 / 32.0 * Metre, 1 / 64.0 * Metre}),
+            x6.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(V({1 * Metre, 1 * Metre, 1 * Metre}),
+            x6.Evaluate(t0_ + 3 * Second));
 }
 
 TEST_F(ЧебышёвSeriesDeathTest, SerializationError) {

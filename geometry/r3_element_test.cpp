@@ -58,6 +58,7 @@ class R3ElementTest : public testing::Test {
 
 using R3ElementDeathTest = R3ElementTest;
 
+#ifdef _DEBUG
 TEST_F(R3ElementDeathTest, IndexingOperator) {
   // Sorry about the preprocessing, the regex are not powerful enough to work in
   // both cases.
@@ -77,6 +78,7 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
     Speed const& speed = null_velocity_[3];
   }, kConstMethod);
 }
+#endif
 
 TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_EQ((e * 42) * v_, e * (42 * v_));
@@ -104,12 +106,14 @@ TEST_F(R3ElementTest, MixedProduct) {
   EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 1));
 }
 
+#ifdef _DEBUG
 TEST_F(R3ElementDeathTest, OrthogonalizeError) {
   R3Element<Speed> v1 = {1 * Knot, -2 * Knot, 5 * Knot};
   EXPECT_DEATH({
     null_velocity_.Orthogonalize<Speed>(&v1);
-  }, "0.*!= this_norm");
+  }, "Scalar.*!= norm");
 }
+#endif
 
 TEST_F(R3ElementTest, OrthogonalizeSuccess) {
   R3Element<Length> const v1 = {1 * Metre, -2 * Metre, 5 * Metre};

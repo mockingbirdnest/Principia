@@ -15,12 +15,38 @@ using base::make_not_null_unique;
 using geometry::Instant;
 
 namespace physics {
+namespace internal {
 
 template<typename Frame>
 Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
     TimelineConstIterator const it) {
   return it->first;
 }
+
+template<typename Frame>
+Instant const& DiscreteTrajectoryIterator<Frame>::time() const {
+  return this->current()->first;
+}
+
+template<typename Frame>
+DegreesOfFreedom<Frame> const&
+DiscreteTrajectoryIterator<Frame>::degrees_of_freedom() const {
+  return this->current()->second;
+}
+
+template<typename Frame>
+not_null<DiscreteTrajectoryIterator<Frame>*>
+DiscreteTrajectoryIterator<Frame>::that() {
+  return this;
+}
+
+template<typename Frame>
+not_null<DiscreteTrajectoryIterator<Frame> const*>
+DiscreteTrajectoryIterator<Frame>::that() const {
+  return this;
+}
+
+}  // namespace internal
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
@@ -37,95 +63,21 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::NativeIterator
-DiscreteTrajectory<Frame>::first() const {
-  return NativeIterator(this->Begin());
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::NativeIterator
-DiscreteTrajectory<Frame>::on_or_after(
-    Instant const& time) const {
-  return NativeIterator(this->LowerBound(time));
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::NativeIterator
+typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
-  auto it = this->End();
-  return NativeIterator(--it);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
-DiscreteTrajectory<Frame>::first_with_transform(
-    Transform<ToFrame> const& transform) const {
-  return TransformingIterator<ToFrame>(this->Begin(), transform);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
-DiscreteTrajectory<Frame>::on_or_after_with_transform(
-    Instant const& time,
-    Transform<ToFrame> const& transform) const {
-  return TransformingIterator<ToFrame>(this->LowerBound(time), transform);
-}
-
-template<typename Frame>
-template<typename ToFrame>
-typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
-DiscreteTrajectory<Frame>::last_with_transform(
-    Transform<ToFrame> const& transform) const {
-  auto it = this->End();
-  return TransformingIterator<ToFrame>(--it, transform);
-}
-
-template<typename Frame>
-std::map<Instant, Position<Frame>>
-DiscreteTrajectory<Frame>::Positions() const {
-  std::map<Instant, Position<Frame>> result;
-  for (auto it = this->Begin(); it != this->End(); ++it) {
-    auto timeline_it = it.current();
-    Instant const& time = timeline_it->first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = timeline_it->second;
-    result.emplace_hint(result.end(), time, degrees_of_freedom.position());
-  }
-  return result;
-}
-
-template<typename Frame>
-std::map<Instant, Velocity<Frame>>
-DiscreteTrajectory<Frame>::Velocities() const {
-  std::map<Instant, Velocity<Frame>> result;
-  for (auto it = this->Begin(); it != this->End(); ++it) {
-    auto const timeline_it = it.current();
-    Instant const& time = timeline_it->first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = timeline_it->second;
-    result.emplace_hint(result.end(), time, degrees_of_freedom.velocity());
-  }
-  return result;
-}
-
-template<typename Frame>
-std::list<Instant> DiscreteTrajectory<Frame>::Times() const {
-  std::list<Instant> result;
-  for (auto it = this->Begin(); it != this->End(); ++it) {
-    auto const timeline_it = it.current();
-    Instant const& time = timeline_it->first;
-    result.push_back(time);
-  }
-  return result;
+  return --this->End();
 }
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
-  auto const fork = this->NewFork(time);
-
-  // May be at |end()|.
+  // May be at |timeline_end()| if |time| is the fork time of this object.
   auto timeline_it = timeline_.find(time);
+  CHECK(timeline_it != timeline_end() ||
+        (!this->is_root() && time == this->Fork().time()))
+      << "NewFork at nonexistent time " << time;
+
+  auto const fork = this->NewFork(timeline_it);
 
   // Copy the tail of the trajectory in the child object.
   if (timeline_it != timeline_.end()) {
@@ -135,28 +87,35 @@ DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
 }
 
 template<typename Frame>
+not_null<DiscreteTrajectory<Frame>*>
+DiscreteTrajectory<Frame>::NewForkAtLast() {
+  auto end = timeline_.end();
+  if (timeline_.empty()) {
+    return this->NewFork(end);
+  } else {
+    return this->NewFork(--end);
+  }
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  auto const fork_time = this->ForkTime();
-  if (fork_time && time <= fork_time) {
-    // TODO(egg): This is a logic error and it should CHECK.  Unfortunately, the
-    // plugin integration test fails this check.
-    LOG(ERROR) << "Append at " << time
-               << " which is before fork time " << *fork_time;
-    return;
-  }
+  CHECK(this->is_root() || time > this->Fork().time())
+       << "Append at " << time << " which is before fork time "
+       << this->Fork().time();
 
   if (!timeline_.empty() && timeline_.cbegin()->first == time) {
     LOG(WARNING) << "Append at existing time " << time
-                 << ", time range = [" << Times().front() << ", "
-                 << Times().back() << "]";
+                 << ", time range = [" << this->Begin().time() << ", "
+                 << last().time() << "]";
     return;
   }
   auto it = timeline_.emplace_hint(timeline_.end(),
                                    time,
                                    degrees_of_freedom);
-  CHECK(timeline_.end() == ++it) << "Append out of order";
+  // Decrementing |end()| is much faster than incrementing |it|.  Don't ask.
+  CHECK(--timeline_.end() == it) << "Append out of order";
 }
 
 template<typename Frame>
@@ -192,61 +151,13 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-std::unique_ptr<DiscreteTrajectory<Frame>>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message) {
-  auto trajectory = std::make_unique<DiscreteTrajectory>();
+  auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   trajectory->FillSubTreeFromMessage(message);
   return trajectory;
 }
-
-template<typename Frame>
-bool DiscreteTrajectory<Frame>::NativeIterator::at_end() const {
-  return *this == this->trajectory()->End();
-}
-
-template<typename Frame>
-Instant const& DiscreteTrajectory<Frame>::NativeIterator::time() const {
-  return this->current()->first;
-}
-
-template<typename Frame>
-DegreesOfFreedom<Frame> const&
-DiscreteTrajectory<Frame>::NativeIterator::degrees_of_freedom() const {
-  return this->current()->second;
-}
-
-template<typename Frame>
-DiscreteTrajectory<Frame>::NativeIterator::NativeIterator(Iterator it)
-    : Iterator(std::move(it)) {}
-
-template<typename Frame>
-template<typename ToFrame>
-bool DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::at_end() const {
-  return *this == this->trajectory()->End();
-}
-
-template<typename Frame>
-template<typename ToFrame>
-Instant const&
-DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::time() const {
-  return this->current()->first;
-}
-template<typename Frame>
-template<typename ToFrame>
-DegreesOfFreedom<ToFrame>
-DiscreteTrajectory<Frame>::
-TransformingIterator<ToFrame>::degrees_of_freedom() const {
-  auto it = this->current();
-  return transform_(it->first, it->second, this->trajectory());
-}
-
-template<typename Frame>
-template<typename ToFrame>
-DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
-    Iterator it, Transform<ToFrame> transform)
-    : Iterator(std::move(it)),
-      transform_(std::move(transform)) {}
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {
@@ -291,7 +202,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
-  Forkable<DiscreteTrajectory>::WriteSubTreeToMessage(message);
+  Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message);
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
@@ -312,7 +223,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
            DegreesOfFreedom<Frame>::ReadFromMessage(
                timeline_it->degrees_of_freedom()));
   }
-  Forkable<DiscreteTrajectory>::FillSubTreeFromMessage(message);
+  Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message);
 }
 
 }  // namespace physics

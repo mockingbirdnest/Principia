@@ -3,7 +3,9 @@
 #include <memory>
 #include <utility>
 #include <string>
+#include <vector>
 
+#include "base/macros.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -137,6 +139,55 @@ TEST_F(NotNullTest, CheckArguments) {
   Sub(check_not_null(accumulator.get()), check_not_null(twenty_one.get()));
   EXPECT_THAT(*accumulator, Eq(21));
 #endif
+}
+
+TEST_F(NotNullTest, RValue) {
+  std::unique_ptr<int> owner_int = std::make_unique<int>(1);
+  not_null<int*> not_null_int = new int(2);
+  EXPECT_NE(owner_int.get(), not_null_int);
+
+  not_null<std::unique_ptr<int>> not_null_owner_int =
+      make_not_null_unique<int>(4);
+  std::vector<int*> v1;
+  // |v1.push_back| would be ambiguous here if |not_null<pointer>| had an
+  // |operator pointer const&() const&| instead of an
+  // |operator pointer const&&() const&|.
+  v1.push_back(not_null_owner_int.get());
+  // |emplace_back| is fine no matter what.
+  v1.emplace_back(not_null_owner_int.get());
+  EXPECT_EQ(4, *v1[0]);
+  EXPECT_EQ(4, *not_null_owner_int);
+
+  std::vector<int*> v2;
+  // NOTE(egg): The following fails using clang, I'm not sure where the bug is.
+  // More generally, if functions |foo(int*&&)| and |foo(int* const&)| exist,
+  // |foo(non_rvalue_not_null)| fails to compile with clang ("no viable
+  // conversion"), but without the |foo(int*&&)| overload it compiles.
+  // This is easily circumvented using a temporary (whereas the ambiguity that
+  // would result from having an |operator pointer const&() const&| would
+  // entirely prevent conversion of |not_null<unique_ptr<T>>| to
+  // |unique_ptr<T>|), so we ignore it.
+#if PRINCIPIA_COMPILER_MSVC
+  v2.push_back(not_null_int);
+#else
+  int* const temporary = not_null_int;
+  v2.push_back(temporary);
+#endif
+  EXPECT_EQ(2, *v2[0]);
+  EXPECT_EQ(2, *not_null_int);
+
+  // |std::unique_ptr<int>::operator=| would be ambiguous here between the move
+  // and copy assignments if |not_null<pointer>| had an
+  // |operator pointer const&() const&| instead of an
+  // |operator pointer const&&() const&|.
+  // Note that one of the overloads (the implicit copy assignment operator) is
+  // deleted, but this does not matter for overload resolution; however MSVC
+  // compiles this even when it is ambiguous, while clang correctly fails.
+  owner_int = make_not_null_unique<int>(1729);
+
+  std::unique_ptr<int const> owner_const_int =
+      not_null<std::unique_ptr<int const>>(make_not_null_unique<int>(5));
+  EXPECT_EQ(5, *owner_const_int);
 }
 
 }  // namespace base

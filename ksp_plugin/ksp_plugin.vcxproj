@@ -76,6 +76,7 @@
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -117,6 +118,10 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationName)"</Command>
+      <Message>Copies the principia DLL to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -134,6 +139,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(OutDir)\..\..\$(TargetName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationName)"</Command>
+      <Message>Copies the principia DLL to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
     <ClCompile>
@@ -151,11 +160,21 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(OutDir)\..\..\$(TargetName).lib</ImportLibrary>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationName)"</Command>
+      <Message>Copies the principia DLL to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="frames.hpp" />
+    <ClInclude Include="interface.generated.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="interface_body.hpp" />
     <ClInclude Include="manœuvre.hpp" />
     <ClInclude Include="manœuvre_body.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
@@ -168,6 +187,8 @@
     <ClInclude Include="vessel_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\journal\profiles.cpp" />
+    <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="physics_bubble.cpp" />
@@ -177,6 +198,20 @@
     <ProjectReference Include="..\serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\serialization\journal.proto">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ profile files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C++ profile files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ profile files for %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\journal\profiles.generated.h;..\journal\profiles.generated.cc;interface.generated.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">..\journal\profiles.generated.h;..\journal\profiles.generated.cc;interface.generated.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\journal\profiles.generated.h;..\journal\profiles.generated.cc;interface.generated.h;%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

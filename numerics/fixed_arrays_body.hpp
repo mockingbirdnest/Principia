@@ -11,13 +11,18 @@ namespace principia {
 namespace numerics {
 
 template<typename Scalar, int size>
-FixedVector<Scalar, size>::FixedVector() {
-  Scalar zero{};
-  data_.fill(zero);
+constexpr FixedVector<Scalar, size>::FixedVector() {
+  // TODO(phl): This used to be:
+  //   Scalar zero{};
+  //   data_.fill(zero);
+  // which is more readable since it makes the zero-initialization explicit.
+  // Unfortunately, this is not constexpr in C++11.
+  data_.fill({});
 }
 
 template<typename Scalar, int size>
-FixedVector<Scalar, size>::FixedVector(std::array<Scalar, size> const& data)
+constexpr FixedVector<Scalar, size>::FixedVector(
+    std::array<Scalar, size> const& data)
     : data_(data) {}
 
 template<typename Scalar, int size>
@@ -46,7 +51,8 @@ Scalar& FixedVector<Scalar, size>::operator[](int const index) {
 }
 
 template<typename Scalar, int size>
-Scalar const& FixedVector<Scalar, size>::operator[](int const index) const {
+constexpr Scalar const& FixedVector<Scalar, size>::operator[](
+    int const index) const {
   return data_[index];
 }
 
@@ -58,7 +64,7 @@ FixedVector<Scalar, size>::operator std::vector<Scalar>() const {
 }
 
 template<typename Scalar, int rows, int columns>
-FixedMatrix<Scalar, rows, columns>::FixedMatrix(
+constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix(
     std::array<Scalar, rows * columns> const& data)
     : data_(data) {}
 
@@ -100,7 +106,7 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 }
 
 template<typename Scalar, int rows>
-FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
         std::array<Scalar, kDimension> const& data)
     : data_(data) {}
@@ -135,7 +141,8 @@ Scalar* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 }
 
 template<typename Scalar, int rows>
-Scalar const* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
+constexpr Scalar const*
+FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
     int const index) const {
   return &data_[index * (index - 1) / 2];
 }

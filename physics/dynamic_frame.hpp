@@ -2,8 +2,10 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -15,8 +17,8 @@ namespace physics {
 // TODO(egg): this should actually depend on its template parameter somehow.
 template<typename Frame>
 using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
-                                    serialization::Frame::FRENET,
-                                    false /*frame_is_inertial*/>;
+                               serialization::Frame::FRENET,
+                               false /*frame_is_inertial*/>;
 
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
@@ -43,6 +45,15 @@ class DynamicFrame {
   virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
+
+  virtual void WriteToMessage(
+      not_null<serialization::DynamicFrame*> const message) const = 0;
+
+  // Dispatches to one of the subclasses depending on the contents of the
+  // message.  Returns |nullptr| if no dynamic frame extension is found.
+  static std::unique_ptr<DynamicFrame>
+      ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+                      serialization::DynamicFrame const& message);
 };
 
 }  // namespace physics

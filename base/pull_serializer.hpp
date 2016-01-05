@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <condition_variable>  // NOLINT(build/c++11)
+#include <condition_variable>
 #include <memory>
-#include <mutex>  // NOLINT(build/c++11)
+#include <mutex>
 #include <queue>
-#include <thread>  // NOLINT(build/c++11)
+#include <thread>
 
 #include "base/array.hpp"
 #include "base/macros.hpp"

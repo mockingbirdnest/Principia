@@ -75,6 +75,7 @@ message Plugin {
   required Quantity planetarium_rotation = 4;
   required Point current_time = 5;
   required int32 sun_index = 6;
+  optional DynamicFrame plotting_frame = 11;  // required
 }
 
 message Vessel {

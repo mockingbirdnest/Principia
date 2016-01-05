@@ -75,7 +75,8 @@ class ContinuousTrajectoryTest : public testing::Test {
     delete error_estimates_;
     error_estimates_ = new std::deque<Displacement<World>>(error_estimates);
 
-    Instant const t(1 * Second);
+    Instant const t0;
+    Instant const t = t0 + 1 * Second;
     std::vector<Displacement<World>> const q;
     std::vector<Velocity<World>> const v;
     trajectory_->ComputeBestNewhallApproximation(
@@ -315,15 +316,14 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += kStep / kNumberOfSubsteps) {
-    Displacement<World> const actual_displacement =
-        trajectory_->EvaluatePosition(time, &hint) - World::origin;
-    Displacement<World> const expected_displacement =
-        position_function(time) - World::origin;
+    Position<World> const actual_position =
+        trajectory_->EvaluatePosition(time, &hint);
+    Position<World> const expected_position = position_function(time);
     Velocity<World> const actual_velocity =
         trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.491 * Milli(Metre),
-              AbsoluteError(expected_displacement, actual_displacement));
+              AbsoluteError(expected_position, actual_position));
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
@@ -338,15 +338,14 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += kStep / kNumberOfSubsteps) {
-    Displacement<World> const actual_displacement =
-        trajectory_->EvaluatePosition(time, &hint) - World::origin;
-    Displacement<World> const expected_displacement =
-        position_function(time) - World::origin;
+    Position<World> const actual_position =
+        trajectory_->EvaluatePosition(time, &hint);
+    Position<World> const expected_position = position_function(time);
     Velocity<World> const actual_velocity =
         trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.492 * Milli(Metre),
-              AbsoluteError(expected_displacement, actual_displacement));
+              AbsoluteError(expected_position, actual_position));
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
@@ -361,15 +360,14 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += kStep / kNumberOfSubsteps) {
-    Displacement<World> const actual_displacement =
-      trajectory_->EvaluatePosition(time, &hint) - World::origin;
-    Displacement<World> const expected_displacement =
-      position_function(time) - World::origin;
+    Position<World> const actual_position =
+      trajectory_->EvaluatePosition(time, &hint);
+    Position<World> const expected_position = position_function(time);
     Velocity<World> const actual_velocity =
       trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.492 * Milli(Metre),
-              AbsoluteError(expected_displacement, actual_displacement));
+              AbsoluteError(expected_position, actual_position));
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }

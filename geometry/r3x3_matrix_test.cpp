@@ -33,28 +33,26 @@ TEST_F(R3x3MatrixTest, Transpose) {
               Eq(R3x3Matrix({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
 }
 
+#ifdef _DEBUG
 TEST_F(R3x3MatrixDeathTest, IndexingError) {
-  std::pair<int, int> const p1 = {-1, 2};
-  std::pair<int, int> const p2 = {2, -1};
-  std::pair<int, int> const p3 = {1, 3};
-  std::pair<int, int> const p4 = {3, 1};
   EXPECT_DEATH({
-    m1_[p1];
+    m1_(-1, 2);
   }, "indices = \\{-1, 2\\}");
   EXPECT_DEATH({
-    m1_[p2];
+    m1_(2, -1);
   }, "index = -1");
   EXPECT_DEATH({
-    m1_[p3];
+    m1_(1, 3);
   }, "index = 3");
   EXPECT_DEATH({
-    m1_[p4];
+    m1_(3, 1);
   }, "indices = \\{3, 1\\}");
 }
+#endif
 
 TEST_F(R3x3MatrixTest, IndexingSuccess) {
-  double const a = m1_[{1, 2}];
-  double const b = m1_[{0, 0}];
+  double const a = m1_(1, 2);
+  double const b = m1_(0, 0);
   EXPECT_THAT(a, Eq(-4));
   EXPECT_THAT(b, Eq(-9));
 }

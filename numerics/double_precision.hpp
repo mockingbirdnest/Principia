@@ -14,8 +14,8 @@ namespace numerics {
 // explicit to make it easy to construct an object with no error.
 template<typename T>
 struct DoublePrecision {
-  DoublePrecision() = default;
-  DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
+  constexpr DoublePrecision() = default;
+  constexpr DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
 
   void Increment(Difference<T> const& increment);
 

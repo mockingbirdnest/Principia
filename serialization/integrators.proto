@@ -6,7 +6,7 @@ package principia.serialization;
 
 message AdaptiveStepSizeIntegrator {
   extend Integrator {
-    optional AdaptiveStepSizeIntegrator adaptive_step_size_integrator = 3000;
+    optional AdaptiveStepSizeIntegrator extension = 3000;
   }
   enum Kind {
     DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM = 1;
@@ -16,7 +16,7 @@ message AdaptiveStepSizeIntegrator {
 
 message FixedStepSizeIntegrator {
   extend Integrator {
-    optional FixedStepSizeIntegrator fixed_step_size_integrator = 3001;
+    optional FixedStepSizeIntegrator extension = 3001;
   }
   enum Kind {
     DUMMY = 0;  // For testing.

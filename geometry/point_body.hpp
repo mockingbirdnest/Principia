@@ -50,10 +50,7 @@ class PointSerializer<Multivector<Scalar, Frame, rank>> {
 };
 
 template<typename Vector>
-Point<Vector>::Point() {}
-
-template<typename Vector>
-Point<Vector>::Point(Vector const& coordinates) : coordinates_(coordinates) {}
+Point<Vector>::Point() : coordinates_() {}
 
 template<typename Vector>
 Vector Point<Vector>::operator-(Point const& from) const {
@@ -62,12 +59,16 @@ Vector Point<Vector>::operator-(Point const& from) const {
 
 template<typename Vector>
 Point<Vector> Point<Vector>::operator+(Vector const& translation) const {
-  return Point<Vector>(coordinates_ + translation);
+  Point result;
+  result.coordinates_ = coordinates_ + translation;
+  return result;
 }
 
 template<typename Vector>
 Point<Vector> Point<Vector>::operator-(Vector const& translation) const {
-  return Point<Vector>(coordinates_ - translation);
+  Point result;
+  result.coordinates_ = coordinates_ - translation;
+  return result;
 }
 
 template<typename Vector>
@@ -101,13 +102,15 @@ void Point<Vector>::WriteToMessage(
 template<typename Vector>
 Point<Vector> Point<Vector>::ReadFromMessage(
     serialization::Point const& message) {
-  return Point(PointSerializer<Vector>::ReadFromMessage(message));
+  Point result;
+  result.coordinates_ = PointSerializer<Vector>::ReadFromMessage(message);
+  return result;
 }
 
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point) {
-  return Point<Vector>(translation + point.coordinates_);
+  return point + translation;
 }
 
 template<typename Vector>
@@ -162,7 +165,8 @@ void BarycentreCalculator<Point<Vector>, Weight>::Add(
 template<typename Vector, typename Weight>
 Point<Vector> BarycentreCalculator<Point<Vector>, Weight>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
-  return Point<Vector>(weighted_sum_ / weight_);
+  Point<Vector> const origin;
+  return origin + weighted_sum_ / weight_;
 }
 
 }  // namespace geometry

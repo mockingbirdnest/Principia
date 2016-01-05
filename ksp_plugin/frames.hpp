@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <functional>
 
@@ -42,10 +42,10 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
 
-// The frame used for rendering.  Its definition depends on the actual factory
-// function used to create it, see class Transforms.
-using Rendering = Frame<serialization::Frame::PluginTag,
-                        serialization::Frame::RENDERING, false>;
+// The frame used for trajectory plotting and manœuvre planning.  Its definition
+// depends on the choice of a subclass of DynamicFrame.
+using Navigation = Frame<serialization::Frame::PluginTag,
+                         serialization::Frame::NAVIGATION, false>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences

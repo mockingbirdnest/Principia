@@ -56,6 +56,9 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
+  void WriteToMessage(
+      not_null<serialization::DynamicFrame*> message) const override;
+
  private:
   DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
   Instant const epoch_;
@@ -108,6 +111,10 @@ InertialFrame<OtherFrame, ThisFrame>::GeometricAcceleration(
   return orthogonal_map_(
       gravity_(t, FromThisFrameAtTime(t)(degrees_of_freedom).position()));
 }
+
+template<typename OtherFrame, typename ThisFrame>
+void InertialFrame<OtherFrame, ThisFrame>::WriteToMessage(
+    not_null<serialization::DynamicFrame*> message) const {}
 
 }  // namespace
 

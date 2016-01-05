@@ -28,6 +28,8 @@ namespace physics {
 template<typename Frame>
 class DiscreteTrajectory;
 
+namespace internal {
+
 template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
   using TimelineConstIterator =
@@ -36,23 +38,32 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 };
 
 template<typename Frame>
-class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
-  using Iterator = typename Forkable<DiscreteTrajectory<Frame>>::Iterator;
+class DiscreteTrajectoryIterator
+    : public ForkableIterator<DiscreteTrajectory<Frame>,
+                              DiscreteTrajectoryIterator<Frame>> {
+ public:
+  Instant const& time() const;
+  DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+ protected:
+  not_null<DiscreteTrajectoryIterator*> that() override;
+  not_null<DiscreteTrajectoryIterator const*> that() const override;
+};
+
+}  // namespace internal
+
+template<typename Frame>
+class DiscreteTrajectory
+    : public Forkable<DiscreteTrajectory<Frame>,
+                      internal::DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
   using TimelineConstIterator =
-      typename Forkable<DiscreteTrajectory<Frame>>::TimelineConstIterator;
+      typename Forkable<
+          DiscreteTrajectory<Frame>,
+          internal::DiscreteTrajectoryIterator<Frame>>::TimelineConstIterator;
 
  public:
-  class NativeIterator;
-  template<typename ToFrame>
-  class TransformingIterator;
-
-  // A function that transforms the coordinates to a different frame.
-  template<typename ToFrame>
-  using Transform = std::function<DegreesOfFreedom<ToFrame>(
-                        Instant const&,
-                        DegreesOfFreedom<Frame> const&,
-                        not_null<DiscreteTrajectory<Frame> const*> const)>;
+  using Iterator = internal::DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
   ~DiscreteTrajectory() override;
@@ -67,48 +78,11 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
       std::function<void(not_null<DiscreteTrajectory<Frame>const*> const)>
           on_destroy);
 
-  // TODO(phl): Many/most of the iterator functions are obsolete.  Remove them
-  // and use the ones from Forkable.
-
-  // Returns an iterator at the first point of the trajectory.  Complexity is
-  // O(|depth|).  The result may be at end if the trajectory is empty.
-  NativeIterator first() const;
-
-  // Returns at the first point of the trajectory which is on or after |time|.
-  // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
-  // |time| is after the end of the trajectory.
-  NativeIterator on_or_after(Instant const& time) const;
-
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
-  NativeIterator last() const;
-
-  // Same as |first| above, but returns an iterator that performs a coordinate
-  // tranformation to ToFrame.
-  template<typename ToFrame>
-  TransformingIterator<ToFrame> first_with_transform(
-      Transform<ToFrame> const& transform) const;
-
-  // Returns at the first point of the trajectory which is on or after |time|.
-  // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
-  // |time| is after the end of the trajectory.
-  template<typename ToFrame>
-  TransformingIterator<ToFrame> on_or_after_with_transform(
-      Instant const& time,
-      Transform<ToFrame> const& transform) const;
-
-  // Same as |last| above, but returns an iterator that performs a coordinate
-  // tranformation to ToFrame.
-  template<typename ToFrame>
-  TransformingIterator<ToFrame> last_with_transform(
-      Transform<ToFrame> const& transform) const;
-
-  // These functions return the series of positions/velocities/times for the
-  // trajectory.  All three containers are guaranteed to have the same size.
-  // These functions are O(|depth| + |length|).
-  std::map<Instant, Position<Frame>> Positions() const;
-  std::map<Instant, Velocity<Frame>> Velocities() const;
-  std::list<Instant> Times() const;
+  // TODO(phl): This is really RBegin, but Forkable doesn't have reverse
+  // iterators.
+  Iterator last() const;
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less
@@ -119,6 +93,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // trajectory deletes all child trajectories.  |time| must be one of the times
   // of this trajectory, and must be at or after the fork time, if any.
   not_null<DiscreteTrajectory<Frame>*> NewForkWithCopy(Instant const& time);
+
+  // Same as above, except that the fork is created at the last point of the
+  // trajectory.
+  not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -137,38 +115,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // This trajectory must be a root.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  // NOTE(egg): This should return a |not_null|, but we can't do that until
-  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
-  // that requires a VS 2015 feature (rvalue references for |*this|).
-  static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
+  static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::Trajectory const& message);
-
-  // An iterator which returns the coordinates in the native frame of the
-  // trajectory, i.e., |Frame|.
-  class NativeIterator : public Iterator {
-   public:
-    bool at_end() const;
-    Instant const& time() const;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
-   private:
-    explicit NativeIterator(Iterator it);
-    friend class DiscreteTrajectory;
-  };
-
-  // An iterator which returns the coordinates in another frame, |ToFrame|.
-  template<typename ToFrame>
-  class TransformingIterator : public Iterator {
-   public:
-    bool at_end() const;
-    Instant const& time() const;
-    DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
-
-   private:
-    TransformingIterator(Iterator it, Transform<ToFrame> transform);
-    Transform<ToFrame> transform_;
-    friend class DiscreteTrajectory;
-  };
 
  protected:
   // The API inherited from Forkable.
@@ -194,7 +142,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
       on_destroy_;
 
-  template<typename Tr4jectory>
+  template<typename, typename>
+  friend class internal::ForkableIterator;
+  template<typename, typename>
   friend class Forkable;
 
   // For using the private constructor in maps.

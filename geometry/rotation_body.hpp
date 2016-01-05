@@ -17,7 +17,7 @@ namespace {
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.
-inline Quaternion ToQuaternion(R3x3Matrix const& matrix) {
+FORCE_INLINE Quaternion ToQuaternion(R3x3Matrix const& matrix) {
   double const t = matrix.Trace();
   double real_part;
   R3Element<double> imaginary_part;
@@ -25,32 +25,32 @@ inline Quaternion ToQuaternion(R3x3Matrix const& matrix) {
     double const r = sqrt(1.0 + t);
     double const s = 0.5 / r;
     real_part = 0.5 * r;
-    imaginary_part.x = (matrix[{2, 1}] - matrix[{1, 2}]) * s;
-    imaginary_part.y = (matrix[{0, 2}] - matrix[{2, 0}]) * s;
-    imaginary_part.z = (matrix[{1, 0}] - matrix[{0, 1}]) * s;
-  } else if (matrix[{0, 0}] > std::max(matrix[{1, 1}], matrix[{2, 2}])) {
+    imaginary_part.x = (matrix(2, 1) - matrix(1, 2)) * s;
+    imaginary_part.y = (matrix(0, 2) - matrix(2, 0)) * s;
+    imaginary_part.z = (matrix(1, 0) - matrix(0, 1)) * s;
+  } else if (matrix(0, 0) > std::max(matrix(1, 1), matrix(2, 2))) {
     double const r =
-        sqrt(1.0 + matrix[{0, 0}] - matrix[{1, 1}] - matrix[{2, 2}]);
+        sqrt(1.0 + matrix(0, 0) - matrix(1, 1) - matrix(2, 2));
     double const s = 0.5 / r;
-    real_part = (matrix[{2, 1}] - matrix[{1, 2}]) * s;
+    real_part = (matrix(2, 1) - matrix(1, 2)) * s;
     imaginary_part.x = 0.5 * r;
-    imaginary_part.y = (matrix[{0, 1}] + matrix[{1, 0}]) * s;
-    imaginary_part.z = (matrix[{2, 0}] + matrix[{0, 2}]) * s;
-  } else if (matrix[{1, 1}] > matrix[{2, 2}]) {
+    imaginary_part.y = (matrix(0, 1) + matrix(1, 0)) * s;
+    imaginary_part.z = (matrix(2, 0) + matrix(0, 2)) * s;
+  } else if (matrix(1, 1) > matrix(2, 2)) {
     double const r =
-        sqrt(1.0 - matrix[{0, 0}] + matrix[{1, 1}] - matrix[{2, 2}]);
+        sqrt(1.0 - matrix(0, 0) + matrix(1, 1) - matrix(2, 2));
     double const s = 0.5 / r;
-    real_part = (matrix[{0, 2}] - matrix[{2, 0}]) * s;
-    imaginary_part.x = (matrix[{0, 1}] + matrix[{1, 0}]) * s;
+    real_part = (matrix(0, 2) - matrix(2, 0)) * s;
+    imaginary_part.x = (matrix(0, 1) + matrix(1, 0)) * s;
     imaginary_part.y = 0.5 * r;
-    imaginary_part.z = (matrix[{1, 2}] + matrix[{2, 1}]) * s;
+    imaginary_part.z = (matrix(1, 2) + matrix(2, 1)) * s;
   } else {
     double const r =
-        sqrt(1.0 - matrix[{0, 0}] - matrix[{1, 1}] + matrix[{2, 2}]);
+        sqrt(1.0 - matrix(0, 0) - matrix(1, 1) + matrix(2, 2));
     double const s = 0.5 / r;
-    real_part = (matrix[{1, 0}] - matrix[{0, 1}]) * s;
-    imaginary_part.x = (matrix[{0, 2}] + matrix[{2, 0}]) * s;
-    imaginary_part.y = (matrix[{1, 2}] + matrix[{2, 1}]) * s;
+    real_part = (matrix(1, 0) - matrix(0, 1)) * s;
+    imaginary_part.x = (matrix(0, 2) + matrix(2, 0)) * s;
+    imaginary_part.y = (matrix(1, 2) + matrix(2, 1)) * s;
     imaginary_part.z = 0.5 * r;
   }
   return Quaternion(real_part, imaginary_part);
@@ -139,16 +139,16 @@ template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
-  WriteToMessage(message->MutableExtension(serialization::Rotation::rotation));
+  WriteToMessage(message->MutableExtension(serialization::Rotation::extension));
 }
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
-  CHECK(message.HasExtension(serialization::Rotation::rotation));
+  CHECK(message.HasExtension(serialization::Rotation::extension));
   return ReadFromMessage(
-      message.GetExtension(serialization::Rotation::rotation));
+      message.GetExtension(serialization::Rotation::extension));
 }
 
 template<typename FromFrame, typename ToFrame>

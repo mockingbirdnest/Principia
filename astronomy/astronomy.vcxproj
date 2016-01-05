@@ -42,6 +42,9 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
@@ -54,9 +57,13 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -106,12 +113,12 @@
     <ClInclude Include="frames.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generate_configuration.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="eclipse_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

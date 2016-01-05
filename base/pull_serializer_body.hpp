@@ -88,7 +88,7 @@ inline PullSerializer::~PullSerializer() {
 inline void PullSerializer::Start(
     not_null<std::unique_ptr<google::protobuf::Message const>> message) {
   CHECK(thread_ == nullptr);
-  message_.reset(message.release());  // Should std::move but VS is not ready.
+  message_ = std::move(message);
   thread_ = std::make_unique<std::thread>([this](){
     CHECK(message_->SerializeToZeroCopyStream(&stream_));
     // Put a sentinel at the end of the serialized stream so that the client

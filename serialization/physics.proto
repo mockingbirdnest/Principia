@@ -7,11 +7,28 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+message BarycentricRotatingDynamicFrame {
+  extend DynamicFrame {
+    optional BarycentricRotatingDynamicFrame
+        barycentric_rotating_dynamic_frame = 6001;
+  }
+  required int32 primary = 1;
+  required int32 secondary = 2;
+}
+
 message Body {
   oneof body {
     MassiveBody massive_body = 1;
     MasslessBody massless_body = 2;
   }
+}
+
+message BodyCentredNonRotatingDynamicFrame {
+  extend DynamicFrame {
+    optional BodyCentredNonRotatingDynamicFrame
+        body_centred_non_rotating_dynamic_frame = 6000;
+  }
+  required int32 centre = 1;
 }
 
 message ContinuousTrajectory {
@@ -28,6 +45,10 @@ message ContinuousTrajectory {
   repeated ChebyshevSeries series = 7;
   optional Point first_time = 8;
   repeated InstantaneousDegreesOfFreedom last_point = 9;
+}
+
+message DynamicFrame {
+  extensions 6000 to 6999;  // Last used: 6000.
 }
 
 message Ephemeris {
@@ -48,14 +69,14 @@ message MasslessBody {}
 
 message OblateBody {
   extend RotatingBody {
-    optional OblateBody oblate_body = 4000;
+    optional OblateBody extension = 4000;
   }
   required Quantity j2 = 1;
 }
 
 message PreBrouwerOblateBody {
   extend MassiveBody {
-    optional PreBrouwerOblateBody pre_brouwer_oblate_body = 2001;
+    optional PreBrouwerOblateBody extension = 2001;
   }
   required Frame frame = 3;
   required Quantity j2 = 1;
@@ -64,7 +85,7 @@ message PreBrouwerOblateBody {
 
 message RotatingBody {
   extend MassiveBody {
-    optional RotatingBody rotating_body = 2002;
+    optional RotatingBody extension = 2002;
   }
   required Frame frame = 1;
   required Quantity reference_angle = 2;

@@ -83,8 +83,8 @@ void OblateBody<Frame>::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
   RotatingBody<Frame>::WriteToMessage(message);
   not_null<serialization::OblateBody*> const oblate_body =
-      message->MutableExtension(serialization::RotatingBody::rotating_body)->
-               MutableExtension(serialization::OblateBody::oblate_body);
+      message->MutableExtension(serialization::RotatingBody::extension)->
+               MutableExtension(serialization::OblateBody::extension);
   parameters_.j2_->WriteToMessage(oblate_body->mutable_j2());
 }
 

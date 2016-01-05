@@ -11,6 +11,7 @@
 namespace principia {
 
 using geometry::Barycentre;
+using geometry::Bivector;
 using geometry::Displacement;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
@@ -96,11 +97,11 @@ GeometricAcceleration(
       to_this_frame.orthogonal_map()(Ω_inertial);
 
   Vector<Acceleration, InertialFrame> const primary_acceleration =
-      ephemeris_->ComputeGravitationalAcceleration(
-          primary_degrees_of_freedom.position(), t);
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+          primary_, t);
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
-      ephemeris_->ComputeGravitationalAcceleration(
-          secondary_degrees_of_freedom.position(), t);
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+          secondary_, t);
 
   // TODO(egg): TeX and reference.
   RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
@@ -118,7 +119,7 @@ GeometricAcceleration(
       degrees_of_freedom.position() - ThisFrame::origin;
   Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
       to_this_frame.orthogonal_map()(
-          ephemeris_->ComputeGravitationalAcceleration(
+          ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
               from_this_frame.rigid_transformation()(
                   degrees_of_freedom.position()), t));
   Vector<Acceleration, ThisFrame> const linear_acceleration =
@@ -142,6 +143,30 @@ GeometricAcceleration(
       centrifugal_acceleration_at_point +
       euler_acceleration_at_point;
   return gravitational_acceleration_at_point + fictitious_acceleration;
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
+  auto* const extension =
+      message->MutableExtension(
+          serialization::BarycentricRotatingDynamicFrame::
+              barycentric_rotating_dynamic_frame);
+  extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  extension->set_secondary(
+      ephemeris_->serialization_index_for_body(secondary_));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<std::unique_ptr<
+    BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>>>
+BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    serialization::BarycentricRotatingDynamicFrame const & message) {
+  return std::make_unique<BarycentricRotatingDynamicFrame>(
+      ephemeris,
+      ephemeris->body_for_serialization_index(message.primary()),
+      ephemeris->body_for_serialization_index(message.secondary()));
 }
 
 template<typename InertialFrame, typename ThisFrame>

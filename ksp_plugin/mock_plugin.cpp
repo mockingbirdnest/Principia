@@ -7,9 +7,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-MockPlugin::MockPlugin()
-    : Plugin(Instant(),
-      Angle()) {}
+MockPlugin::MockPlugin() : Plugin(Instant(), Angle()) {}
 
 void MockPlugin::DirectlyInsertCelestial(
     Index const celestial_index,
@@ -22,23 +20,30 @@ void MockPlugin::DirectlyInsertCelestial(
                                   body);
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
-MockPlugin::NewBodyCentredNonRotatingTransforms(
+not_null<std::unique_ptr<NavigationFrame>>
+MockPlugin::NewBodyCentredNonRotatingNavigationFrame(
     Index const reference_body_index) const {
-  std::unique_ptr<RenderingTransforms> transforms;
-  FillBodyCentredNonRotatingTransforms(reference_body_index, &transforms);
-  return std::move(transforms);
+  std::unique_ptr<NavigationFrame> navigation_frame;
+  FillBodyCentredNonRotatingNavigationFrame(reference_body_index,
+                                            &navigation_frame);
+  return std::move(navigation_frame);
 }
 
-not_null<std::unique_ptr<RenderingTransforms>>
-MockPlugin::NewBarycentricRotatingTransforms(
+not_null<std::unique_ptr<NavigationFrame>>
+MockPlugin::NewBarycentricRotatingNavigationFrame(
     Index const primary_index,
     Index const secondary_index) const {
-  std::unique_ptr<RenderingTransforms> transforms;
-  FillBarycentricRotatingTransforms(primary_index,
-                                    secondary_index,
-                                    &transforms);
-  return std::move(transforms);
+  std::unique_ptr<NavigationFrame> navigation_frame;
+  FillBarycentricRotatingNavigationFrame(primary_index,
+                                         secondary_index,
+                                         &navigation_frame);
+  return std::move(navigation_frame);
+}
+
+void MockPlugin::SetPlottingFrame(
+    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
+  SetPlottingFrameConstRef(*plotting_frame);
+  plotting_frame.release();
 }
 
 void MockPlugin::AddVesselToNextPhysicsBubble(

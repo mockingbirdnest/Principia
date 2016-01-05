@@ -36,7 +36,9 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using ::testing::IsNull;
 using ::testing::Lt;
+using ::testing::Not;
 
 namespace physics {
 
@@ -133,9 +135,8 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
 
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
     EXPECT_THAT(AbsoluteError(
-                    to_big_frame_at_t(small_in_inertial_frame_at_t).position() -
-                        Big::origin,
-                    small_in_big_frame_at_t.position() - Big::origin),
+                    to_big_frame_at_t(small_in_inertial_frame_at_t).position(),
+                    small_in_big_frame_at_t.position()),
                 Lt(0.3 * Milli(Metre)));
     EXPECT_THAT(AbsoluteError(
                     to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
@@ -188,6 +189,35 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
                     expected_acceleration),
                 Lt(1E-10 * SIUnit<Acceleration>()));
   }
+}
+
+TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
+  serialization::DynamicFrame message;
+  small_frame_->WriteToMessage(&message);
+
+  EXPECT_TRUE(message.HasExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::
+          body_centred_non_rotating_dynamic_frame));
+  auto const extension =
+      message.GetExtension(serialization::BodyCentredNonRotatingDynamicFrame::
+                               body_centred_non_rotating_dynamic_frame);
+  EXPECT_TRUE(extension.has_centre());
+  EXPECT_EQ(1, extension.centre());
+
+  auto const read_small_frame =
+      DynamicFrame<ICRFJ2000Equator, Small>::ReadFromMessage(
+          ephemeris_.get(), message);
+  EXPECT_THAT(read_small_frame, Not(IsNull()));
+
+  Instant const t = t0_ + period_;
+  DegreesOfFreedom<Small> const point_dof =
+      {Displacement<Small>({10 * Metre, 20 * Metre, 30 * Metre}) +
+           Small::origin,
+       Velocity<Small>({3 * Metre / Second,
+                        2 * Metre / Second,
+                        1 * Metre / Second})};
+  EXPECT_EQ(small_frame_->GeometricAcceleration(t, point_dof),
+            read_small_frame->GeometricAcceleration(t, point_dof));
 }
 
 }  // namespace physics

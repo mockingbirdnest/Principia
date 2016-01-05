@@ -270,11 +270,11 @@ void PhysicsBubble::WriteToMessage(
   LOG(INFO) << NAMED(message->ByteSize());
 }
 
-std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
+not_null<std::unique_ptr<PhysicsBubble>> PhysicsBubble::ReadFromMessage(
     std::function<not_null<Vessel*>(std::string)> const vessel,
     serialization::PhysicsBubble const& message) {
   // NOTE(phl): No need to deserialize the |body_|, it has no state.
-  std::unique_ptr<PhysicsBubble> bubble = std::make_unique<PhysicsBubble>();
+  auto bubble = make_not_null_unique<PhysicsBubble>();
   if (message.has_current()) {
     serialization::PhysicsBubble::FullState const& full_state =
         message.current();
@@ -325,8 +325,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
 
 PhysicsBubble::PreliminaryState::PreliminaryState() {}
 
-PhysicsBubble::FullState::FullState(
-    PreliminaryState&& preliminary_state)  // NOLINT(build/c++11)
+PhysicsBubble::FullState::FullState(PreliminaryState preliminary_state)
     : PreliminaryState() {
   parts = std::move(preliminary_state.parts);
   vessels = std::move(preliminary_state.vessels);

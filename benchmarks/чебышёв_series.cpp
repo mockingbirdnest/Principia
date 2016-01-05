@@ -43,11 +43,11 @@ namespace principia {
 
 using astronomy::ICRFJ2000Ecliptic;
 using geometry::Displacement;
-using numerics::ЧебышёвSeries;
+using quantities::Length;
 using quantities::si::Metre;
 using quantities::si::Second;
 
-namespace benchmarks {
+namespace numerics {
 
 namespace {
 int const kEvaluationsPerIteration = 1000;
@@ -60,7 +60,8 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   for (int i = 0; i <= degree; ++i) {
     coefficients.push_back(static_cast<double>(random()));
   }
-  Instant const t_min(static_cast<double>(random()) * Second);
+  Instant const t0;
+  Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
   ЧебышёвSeries<double> const series(coefficients, t_min, t_max);
 
@@ -80,8 +81,108 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   state.SetLabel(std::to_string(result).substr(0, 0));
 }
 
-void BM_EvaluateDisplacement(
+void BM_EvaluateQuantity(
     benchmark::State& state) {  // NOLINT(runtime/references)
+  int const degree = state.range_x();
+  std::mt19937_64 random(42);
+  std::vector<Length> coefficients;
+  for (int i = 0; i <= degree; ++i) {
+    coefficients.push_back(static_cast<double>(random()) * Metre);
+  }
+  Instant const t0;
+  Instant const t_min = t0 + static_cast<double>(random()) * Second;
+  Instant const t_max = t_min + static_cast<double>(random()) * Second;
+  ЧебышёвSeries<Length> const series(coefficients, t_min, t_max);
+
+  Instant t = t_min;
+  Time const Δt = (t_max - t_min) * 1E-9;
+  Length result = 0.0 * Metre;
+
+  while (state.KeepRunning()) {
+    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+      result += series.Evaluate(t);
+      t += Δt;
+    }
+  }
+
+  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // and therefore prevents the loop from being optimized away.
+  std::stringstream ss;
+  ss << result;
+  state.SetLabel(ss.str().substr(0, 0));
+}
+
+void BM_EvaluateR3ElementDouble(
+  benchmark::State& state) {  // NOLINT(runtime/references)
+  int const degree = state.range_x();
+  std::mt19937_64 random(42);
+  std::vector<R3Element<double>> coefficients;
+  for (int i = 0; i <= degree; ++i) {
+    coefficients.push_back({static_cast<double>(random()),
+                           static_cast<double>(random()),
+                           static_cast<double>(random())});
+  }
+  Instant const t0;
+  Instant const t_min = t0 + static_cast<double>(random()) * Second;
+  Instant const t_max = t_min + static_cast<double>(random()) * Second;
+  ЧебышёвSeries<R3Element<double>> const series(coefficients, t_min, t_max);
+
+  Instant t = t_min;
+  Time const Δt = (t_max - t_min) * 1E-9;
+  R3Element<double> result{0.0, 0.0, 0.0};
+
+  while (state.KeepRunning()) {
+    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+      result += series.Evaluate(t);
+      t += Δt;
+    }
+  }
+
+  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // and therefore prevents the loop from being optimized away.
+  std::stringstream ss;
+  ss << result;
+  state.SetLabel(ss.str().substr(0, 0));
+}
+
+void BM_EvaluateVectorDouble(
+  benchmark::State& state) {  // NOLINT(runtime/references)
+  int const degree = state.range_x();
+  std::mt19937_64 random(42);
+  std::vector<Multivector<double, ICRFJ2000Ecliptic, 1>> coefficients;
+  for (int i = 0; i <= degree; ++i) {
+    coefficients.push_back(
+        Multivector<double, ICRFJ2000Ecliptic, 1>(
+            {static_cast<double>(random()),
+             static_cast<double>(random()),
+             static_cast<double>(random())}));
+  }
+  Instant const t0;
+  Instant const t_min = t0 + static_cast<double>(random()) * Second;
+  Instant const t_max = t_min + static_cast<double>(random()) * Second;
+  ЧебышёвSeries<Multivector<double, ICRFJ2000Ecliptic, 1>> const series(
+      coefficients, t_min, t_max);
+
+  Instant t = t_min;
+  Time const Δt = (t_max - t_min) * 1E-9;
+  Multivector<double, ICRFJ2000Ecliptic, 1> result{};
+
+  while (state.KeepRunning()) {
+    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+      result += series.Evaluate(t);
+      t += Δt;
+    }
+  }
+
+  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // and therefore prevents the loop from being optimized away.
+  std::stringstream ss;
+  ss << result;
+  state.SetLabel(ss.str().substr(0, 0));
+}
+
+void BM_EvaluateDisplacement(
+  benchmark::State& state) {  // NOLINT(runtime/references)
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
@@ -92,10 +193,11 @@ void BM_EvaluateDisplacement(
              static_cast<double>(random()) * Metre,
              static_cast<double>(random()) * Metre}));
   }
-  Instant const t_min(static_cast<double>(random()) * Second);
+  Instant const t0;
+  Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
   ЧебышёвSeries<Displacement<ICRFJ2000Ecliptic>> const series(
-      coefficients, t_min, t_max);
+    coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1E-9;
@@ -121,7 +223,8 @@ void BM_NewhallApproximation(
   std::mt19937_64 random(42);
   std::vector<double> p;
   std::vector<Variation<double>> v;
-  Instant const t_min(static_cast<double>(random()) * Second);
+  Instant const t0;
+  Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
   while (state.KeepRunning()) {
@@ -140,10 +243,16 @@ void BM_NewhallApproximation(
 
 BENCHMARK(BM_EvaluateDouble)->
     Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+BENCHMARK(BM_EvaluateQuantity)->
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+BENCHMARK(BM_EvaluateR3ElementDouble)->
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+BENCHMARK(BM_EvaluateVectorDouble)->
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_EvaluateDisplacement)->
     Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_NewhallApproximation)->
     Arg(4)->Arg(8)->Arg(16);
 
-}  // namespace benchmarks
+}  // namespace numerics
 }  // namespace principia

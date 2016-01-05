@@ -144,7 +144,7 @@ class PluginTest : public testing::Test {
       : looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
         solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::kMajorBodiesOnly)),
-        initial_time_(42 * Second),
+        initial_time_(Instant() + 42 * Second),
         sun_gravitational_parameter_(
             solar_system_->gravitational_parameter(
                 SolarSystemFactory::name(SolarSystemFactory::kSun))),
@@ -290,6 +290,8 @@ TEST_F(PluginTest, Serialization) {
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
   plugin->AdvanceTime(HistoryTime(sync_time, 6), Angle());
   plugin->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+  plugin->SetPlottingFrame(plugin->NewBodyCentredNonRotatingNavigationFrame(
+      SolarSystemFactory::kSun + 1));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -322,6 +324,14 @@ TEST_F(PluginTest, Serialization) {
             vessel_0_history.timeline(0).instant().scalar().magnitude());
 #endif
   EXPECT_FALSE(message.bubble().has_current());
+  EXPECT_TRUE(message.has_plotting_frame());
+  EXPECT_TRUE(message.plotting_frame().HasExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::
+          body_centred_non_rotating_dynamic_frame));
+  EXPECT_EQ(SolarSystemFactory::kSun + 1,
+            message.plotting_frame().GetExtension(
+                serialization::BodyCentredNonRotatingDynamicFrame::
+                    body_centred_non_rotating_dynamic_frame).centre());
 }
 
 TEST_F(PluginTest, Initialization) {
@@ -564,12 +574,16 @@ TEST_F(PluginTest, Navball) {
                 0 * Radian);
   plugin.InsertSun(SolarSystemFactory::kSun, sun_gravitational_parameter_);
   plugin.EndInitialization();
-  not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
-          plugin.NewBodyCentredNonRotatingTransforms(SolarSystemFactory::kSun);
+  not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
+      plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::kSun);
+  not_null<const NavigationFrame*> const navigation_frame_copy =
+      navigation_frame.get();
+  plugin.SetPlottingFrame(std::move(navigation_frame));
+  EXPECT_EQ(navigation_frame_copy, plugin.GetPlottingFrame());
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
-  auto navball = plugin.Navball(heliocentric.get(), World::origin);
+  auto navball = plugin.Navball(World::origin);
   EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(x)),
               Lt(2 * std::numeric_limits<double>::epsilon()));
   EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
@@ -596,11 +610,16 @@ TEST_F(PluginTest, Frenet) {
                                   satellite_initial_velocity_));
   Vector<double, World> t = alice_sun_to_world(
                                 Normalize(satellite_initial_velocity_));
-  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
-      plugin.NewBodyCentredNonRotatingTransforms(
+  Vector<double, World> n = alice_sun_to_world(
+                                Normalize(-satellite_initial_displacement_));
+  // World is left-handed, but the Frenet trihedron is right-handed.
+  Vector<double, World> b(-geometry::Cross(t.coordinates(), n.coordinates()));
+  not_null<std::unique_ptr<NavigationFrame>> const geocentric =
+      plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::kEarth);
-  EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
-              AlmostEquals(t, 2));
+  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 2));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3));
+  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 4));
 }
 
 }  // namespace ksp_plugin

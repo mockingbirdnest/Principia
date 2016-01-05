@@ -62,9 +62,9 @@
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_benchmark.props" />
-    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
+    <Import Project="..\google_benchmark.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -82,9 +82,10 @@
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_benchmark.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\google_benchmark.props" />
+    <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -101,9 +102,9 @@
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_benchmark.props" />
-    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
+    <Import Project="..\google_benchmark.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -167,12 +168,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dynamic_frame.cpp" />
+    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="sprk_integrator.cpp" />
-    <ClCompile Include="transforms.cpp" />
+    <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="чебышёв_series.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -128,7 +128,7 @@ TEST_F(AffineMapTest, Serialization) {
   EXPECT_TRUE(message.from_origin().has_multivector());
   EXPECT_TRUE(message.to_origin().has_multivector());
   EXPECT_TRUE(message.linear_map().HasExtension(
-      serialization::Rotation::rotation));
+      serialization::Rotation::extension));
   RigidTransformation const map2 =
       RigidTransformation::ReadFromMessage(message);
   EXPECT_EQ(map1(back_right_bottom_) - origin_,

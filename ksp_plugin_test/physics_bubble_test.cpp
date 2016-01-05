@@ -1,5 +1,6 @@
 ﻿#include "ksp_plugin/physics_bubble.hpp"
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -48,39 +49,39 @@ class PhysicsBubbleTest : public testing::Test {
           Rotation<Barycentric, WorldSun>(
               90 * Degree,
               Bivector<double, Barycentric>({0, 0, 1})).Forget()),
-      celestial_dof_(Position<Barycentric>(Displacement<Barycentric>(
-                         {-4 * SIUnit<Length>(),
-                          -5 * SIUnit<Length>(),
-                          -6 * SIUnit<Length>()})),
+      celestial_dof_(Barycentric::origin + Displacement<Barycentric>(
+                                               {-4 * SIUnit<Length>(),
+                                                -5 * SIUnit<Length>(),
+                                                -6 * SIUnit<Length>()}),
                      Velocity<Barycentric>({-4 * SIUnit<Speed>(),
                                             -5 * SIUnit<Speed>(),
                                             -6 * SIUnit<Speed>()})),
-      dof1_(Position<Barycentric>(Displacement<Barycentric>(
-                {104 * SIUnit<Length>(),
-                 105 * SIUnit<Length>(),
-                 106 * SIUnit<Length>()})),
+      dof1_(Barycentric::origin + Displacement<Barycentric>(
+                                      {104 * SIUnit<Length>(),
+                                       105 * SIUnit<Length>(),
+                                       106 * SIUnit<Length>()}),
             Velocity<Barycentric>({104 * SIUnit<Speed>(),
                                    105 * SIUnit<Speed>(),
                                    106 * SIUnit<Speed>()})),
-      dof2_(Position<Barycentric>(Displacement<Barycentric>(
-                {204 * SIUnit<Length>(),
-                 205 * SIUnit<Length>(),
-                 206 * SIUnit<Length>()})),
+      dof2_(Barycentric::origin + Displacement<Barycentric>(
+                                      {204 * SIUnit<Length>(),
+                                       205 * SIUnit<Length>(),
+                                       206 * SIUnit<Length>()}),
             Velocity<Barycentric>({204 * SIUnit<Speed>(),
                                    205 * SIUnit<Speed>(),
                                    206 * SIUnit<Speed>()})),
       body_(100 * SIUnit<Mass>()),
       celestial_(&body_),
       celestial_trajectory_(1 * Second, 1 * Metre),
-      celestial_world_position_(Position<World>(Displacement<World>(
-                                    {99 * SIUnit<Length>(),
-                                     98 * SIUnit<Length>(),
-                                     97 * SIUnit<Length>()}))),
+      celestial_world_position_(World::origin + Displacement<World>(
+                                                    {99 * SIUnit<Length>(),
+                                                     98 * SIUnit<Length>(),
+                                                     97 * SIUnit<Length>()})),
       vessel1_(&celestial_),
       vessel2_(&celestial_),
-      t1_(1 * SIUnit<Time>()),
-      t2_(1.5 * SIUnit<Time>()),
-      t3_(2 * SIUnit<Time>()) {
+      t1_(Instant() + 1 * SIUnit<Time>()),
+      t2_(Instant() + 1.5 * SIUnit<Time>()),
+      t3_(Instant() + 2 * SIUnit<Time>()) {
     celestial_.set_trajectory(&celestial_trajectory_);
     for (int i = 0; i < 9; ++i) {
       celestial_trajectory_.Append(t1_ + i * Second,
@@ -102,10 +103,10 @@ class PhysicsBubbleTest : public testing::Test {
   void CreateParts() {
     p1a_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
-                   Position<World>(Displacement<World>(
-                       {14 * SIUnit<Length>(),
-                        15 * SIUnit<Length>(),
-                        16 * SIUnit<Length>()})),
+                   World::origin + Displacement<World>(
+                                       {14 * SIUnit<Length>(),
+                                        15 * SIUnit<Length>(),
+                                        16 * SIUnit<Length>()}),
                    Velocity<World>({114 * SIUnit<Speed>(),
                                     115 * SIUnit<Speed>(),
                                     116 * SIUnit<Speed>()})),
@@ -116,10 +117,10 @@ class PhysicsBubbleTest : public testing::Test {
                     116 * SIUnit<Acceleration>()}));
     p1b_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
-                   Position<World>(Displacement<World>(
+                   World::origin + Displacement<World>(
                        {14 * SIUnit<Length>(),
                         15 * SIUnit<Length>(),
-                        16 * SIUnit<Length>()})),
+                        16 * SIUnit<Length>()}),
                    Velocity<World>({124 * SIUnit<Speed>(),
                                     125 * SIUnit<Speed>(),
                                     126 * SIUnit<Speed>()})),
@@ -130,10 +131,10 @@ class PhysicsBubbleTest : public testing::Test {
                     126 * SIUnit<Acceleration>()}));
     p2a_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
-                   Position<World>(Displacement<World>(
+                   World::origin + Displacement<World>(
                        {24 * SIUnit<Length>(),
                         25 * SIUnit<Length>(),
-                        26 * SIUnit<Length>()})),
+                        26 * SIUnit<Length>()}),
                    Velocity<World>({214 * SIUnit<Speed>(),
                                     215 * SIUnit<Speed>(),
                                     216 * SIUnit<Speed>()})),
@@ -144,10 +145,10 @@ class PhysicsBubbleTest : public testing::Test {
                     216 * SIUnit<Acceleration>()}));
     p2b_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
-                   Position<World>(Displacement<World>(
+                   World::origin + Displacement<World>(
                        {24 * SIUnit<Length>(),
                         25 * SIUnit<Length>(),
-                        26 * SIUnit<Length>()})),
+                        26 * SIUnit<Length>()}),
                    Velocity<World>({224 * SIUnit<Speed>(),
                                     225 * SIUnit<Speed>(),
                                     226 * SIUnit<Speed>()})),
@@ -158,10 +159,10 @@ class PhysicsBubbleTest : public testing::Test {
                     226 * SIUnit<Acceleration>()}));
     p2c_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
-                   Position<World>(Displacement<World>(
+                   World::origin + Displacement<World>(
                        {24 * SIUnit<Length>(),
                         25 * SIUnit<Length>(),
-                        26 * SIUnit<Length>()})),
+                        26 * SIUnit<Length>()}),
                    Velocity<World>({234 * SIUnit<Speed>(),
                                     235 * SIUnit<Speed>(),
                                     236 * SIUnit<Speed>()})),
@@ -282,6 +283,15 @@ class PhysicsBubbleTest : public testing::Test {
                      16568.0 / 89.0 * SIUnit<Speed>()}) - cdm_velocity, 32));
   }
 
+  std::list<Instant> Times(
+      DiscreteTrajectory<Barycentric> const& trajectory) const {
+    std::list<Instant> result;
+    for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
+      result.push_back(it.time());
+    }
+    return result;
+  }
+
   PhysicsBubble bubble_;
   PhysicsBubble::BarycentricToWorldSun rotation_;
   DegreesOfFreedom<Barycentric> celestial_dof_;
@@ -321,7 +331,7 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
   EXPECT_DEATH({
     bubble_.DisplacementCorrection(rotation_,
                                    celestial_,
-                                   Position<World>());
+                                   World::origin);
   }, "Empty bubble");
   EXPECT_DEATH({
     bubble_.VelocityCorrection(rotation_, celestial_);
@@ -355,10 +365,10 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_FALSE(bubble_.centre_of_mass_intrinsic_acceleration());
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t1_));
   DiscreteTrajectory<Barycentric>* mutable_trajectory =
       bubble_.mutable_centre_of_mass_trajectory();
-  EXPECT_THAT(mutable_trajectory->Times(), ElementsAre(t1_));
+  EXPECT_THAT(Times(*mutable_trajectory), ElementsAre(t1_));
 
   // Check the positions and velocities.
   CheckOneVesselDegreesOfFreedom(bubble_);
@@ -391,7 +401,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   // The trajectory now has an intrinsic acceleration.
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t1_));
   EXPECT_TRUE(bubble_.centre_of_mass_intrinsic_acceleration());
   EXPECT_THAT(bubble_.centre_of_mass_intrinsic_acceleration()(t2_),
               AlmostEquals(Vector<Acceleration, Barycentric>(
@@ -435,7 +445,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   // change of parts.
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t2_));
   EXPECT_EQ(dof1_.position(),
             trajectory.last().degrees_of_freedom().position());
   EXPECT_EQ(dof1_.velocity() +
@@ -496,7 +506,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
   // |OneVesselPartRemoved|.
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t2_));
   EXPECT_EQ(dof1_.position(),
             trajectory.last().degrees_of_freedom().position());
   EXPECT_EQ(dof1_.velocity() +
@@ -549,7 +559,7 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   // The bubble was restarted.
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t2_));
   EXPECT_FALSE(bubble_.centre_of_mass_intrinsic_acceleration());
 
   // All the other assertions remain as in |OneVesselOneStep| since we restarted
@@ -580,7 +590,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   // The trajectory of the centre of mass has only one point.
   DiscreteTrajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t1_));
   EXPECT_FALSE(bubble_.centre_of_mass_intrinsic_acceleration());
 
   // Check the positions and velocities.
@@ -605,7 +615,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_, &vessel2_));
 
   // Not much has changed, except that the trajectory now has an acceleration.
-  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_THAT(Times(trajectory), ElementsAre(t1_));
   Vector<Acceleration, World> const acceleration_correction =
       bubble_.VelocityCorrection(rotation_, celestial_) / (t3_ - t2_);
   EXPECT_TRUE(bubble_.centre_of_mass_intrinsic_acceleration());
