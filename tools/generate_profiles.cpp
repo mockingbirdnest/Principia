@@ -50,6 +50,14 @@ void GenerateProfiles() {
     profiles_generated_cc << cxx_method_implementation;
   }
 
+  std::ofstream player_generated_cc(journal / "player.generated.cc");
+  CHECK(player_generated_cc.good());
+  player_generated_cc << kWarning;
+  for (auto const& cxx_play_statement :
+           processor.GetCxxPlayStatements()) {
+    player_generated_cc << cxx_play_statement;
+  }
+
   std::ofstream interface_generated_h(ksp_plugin / "interface.generated.h");
   CHECK(interface_generated_h.good());
   interface_generated_h << kWarning;
