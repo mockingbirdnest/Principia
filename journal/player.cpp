@@ -27,10 +27,7 @@ bool Player::Play() {
     return false;
   }
 
-  bool ran = false;
 #include "journal/player.generated.cc"
-  CHECK(ran) << method->DebugString();
-
   return true;
 }
 

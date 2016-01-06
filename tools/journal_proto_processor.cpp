@@ -166,9 +166,11 @@ std::vector<std::string> JournalProtoProcessor::GetCxxMethodTypes() const {
 
 std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
   std::vector<std::string> result;
+  result.push_back("{\n  bool ran = false;\n");
   for (auto const& pair : cxx_play_statement_) {
     result.push_back(pair.second);
   }
+  result.push_back("  CHECK(ran) << method->DebugString();\n}\n");
   return result;
 }
 

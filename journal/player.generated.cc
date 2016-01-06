@@ -2,6 +2,8 @@
 // If you change it, the changes will be lost the next time the generator is
 // run.  You should change the generator instead.
 
+{
+  bool ran = false;
   ran |= RunIfAppropriate<AddVesselToNextPhysicsBubble>(*method);
   ran |= RunIfAppropriate<AdvanceTime>(*method);
   ran |= RunIfAppropriate<AtEnd>(*method);
@@ -63,3 +65,5 @@
   ran |= RunIfAppropriate<VesselFromParent>(*method);
   ran |= RunIfAppropriate<VesselNormal>(*method);
   ran |= RunIfAppropriate<VesselTangent>(*method);
+  CHECK(ran) << method->DebugString();
+}
