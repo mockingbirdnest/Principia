@@ -164,6 +164,14 @@ std::vector<std::string> JournalProtoProcessor::GetCxxMethodTypes() const {
   return result;
 }
 
+std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
+  std::vector<std::string> result;
+  for (auto const& pair : cxx_play_statement_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
 void JournalProtoProcessor::ProcessRepeatedMessageField(
     FieldDescriptor const* descriptor) {
   std::string const& message_type_name = descriptor->message_type()->name();
@@ -846,6 +854,9 @@ void JournalProtoProcessor::ProcessMethodExtension(
                                                      cxx_interface_parameters;
   }
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
+
+  cxx_play_statement_[descriptor] =
+      "  ran |= RunIfAppropriate<" + name + ">(*method);\n";
 }
 
 }  // namespace tools

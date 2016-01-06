@@ -34,6 +34,9 @@ class JournalProtoProcessor {
   std::vector<std::string> GetCxxMethodImplementations() const;
   std::vector<std::string> GetCxxMethodTypes() const;
 
+  // journal/player.cpp
+  std::vector<std::string> GetCxxPlayStatements() const;
+
  private:
   void ProcessRepeatedMessageField(FieldDescriptor const* descriptor);
 
@@ -198,6 +201,9 @@ class JournalProtoProcessor {
   // messages.  The key is a descriptor for an interchange message.
   std::map<Descriptor const*, std::string> cxx_deserialize_definition_;
   std::map<Descriptor const*, std::string> cxx_serialize_definition_;
+
+  // The statements to be included in the body of the Play function.
+  std::map<Descriptor const*, std::string> cxx_play_statement_;
 
   // The entire sequence of statements for the body of a Fill function.  The key
   // is a descriptor for an In or Out message.
