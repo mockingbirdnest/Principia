@@ -1,11 +1,11 @@
 #pragma once
 
 #include "journal/method.hpp"
-#include "journal/recorder.hpp"
 
 #include <list>
 
 #include "glog/logging.h"
+#include "journal/recorder.hpp"
 
 namespace principia {
 namespace journal {
