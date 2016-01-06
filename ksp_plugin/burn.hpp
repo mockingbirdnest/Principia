@@ -9,13 +9,17 @@
 
 namespace principia {
 
+using geometry::Instant;
+using physics::Frenet;
 using quantities::Force;
 using quantities::SpecificImpulse;
-using physics::Frenet;
-using geometry::Instant;
 
 namespace ksp_plugin {
 
+using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
+
+// Parameters for constructing a |NavigationManœuvre|, excluding the initial
+// mass.  This owns a |NavigationFrame| and is therefore not copyable.
 struct Burn {
   Force thrust;
   SpecificImpulse specific_impulse;
@@ -23,6 +27,8 @@ struct Burn {
   Instant initial_time;
   Velocity<Frenet<Navigation>> Δv;
 };
+
+NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass);
 
 }  // namespace ksp_plugin
 }  // namespace principia

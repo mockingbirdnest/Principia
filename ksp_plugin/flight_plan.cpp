@@ -21,7 +21,6 @@ FlightPlan::FlightPlan(
       length_integration_tolerance_(length_integration_tolerance),
       speed_integration_tolerance_(speed_integration_tolerance) {
   CHECK(final_time_ >= initial_time_);
-  //ephemeris_->Prolong(final_time_);
   auto it = root->LowerBound(initial_time);
   if (it.time() != initial_time_) {
     --it;
@@ -43,12 +42,10 @@ NavigationManœuvre const& FlightPlan::Get(int index) {
 
 bool FlightPlan::Append(Burn burn) {
   auto manœuvre =
-      MakeManœuvre(
+      MakeNavigationManœuvre(
           std::move(burn),
           manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
-  if (manœuvre.FitsBetween(
-          manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time(),
-          final_time_)) {
+  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_)) {
     Append(std::move(manœuvre));
     return true;
   } else {
@@ -68,11 +65,12 @@ void FlightPlan::RemoveLast() {
 bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
   auto manœuvre =
-      MakeManœuvre(std::move(burn), manœuvres_.back().initial_mass());
-  if (manœuvre.FitsBetween(manœuvres_.size() == 1
-                               ? initial_time_
-                               : manœuvres_[manœuvres_.size() - 2].final_time(),
-                           final_time_)) {
+      MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
+  // The initial time of the coasting phase preceding the replaced manœuvre.
+  Instant const start_of_previous_coast =
+      manœuvres_.size() == 1 ? initial_time_
+                             : manœuvres_[manœuvres_.size() - 2].final_time();
+  if (manœuvre.FitsBetween(start_of_previous_coast, final_time_)) {
     manœuvres_.pop_back();
     segments_.pop();  // Last coast.
     segments_.pop();  // Last burn.
@@ -84,12 +82,10 @@ bool FlightPlan::ReplaceLast(Burn burn) {
 }
 
 bool FlightPlan::SetFinalTime(Instant const& final_time) {
-  if (!manœuvres_.empty() && manœuvres_.back().final_time() > final_time ||
-      initial_time_ > final_time) {
+  if (start_of_last_coast() > final_time) {
     return false;
   } else {
     final_time_ = final_time;
-    //ephemeris_->Prolong(final_time_);
     ResetLastSegment();
     CoastLastSegment(final_time_);
     return true;
@@ -163,16 +159,8 @@ void FlightPlan::ResetLastSegment() {
   segments_.top()->ForgetAfter(segments_.top()->Fork().time());
 }
 
-NavigationManœuvre FlightPlan::MakeManœuvre(Burn burn,
-                                            Mass const& initial_mass) {
-  NavigationManœuvre manœuvre(burn.thrust,
-      initial_mass,
-      burn.specific_impulse,
-      Normalize(burn.Δv),
-      std::move(burn.frame));
-  manœuvre.set_initial_time(burn.initial_time);
-  manœuvre.set_Δv(burn.Δv.Norm());
-  return std::move(manœuvre);
+Instant const FlightPlan::start_of_last_coast() const {
+  return manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time();
 }
 
 }  // namespace ksp_plugin

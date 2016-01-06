@@ -33,7 +33,8 @@ namespace ksp_plugin {
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
-  Manœuvre(Force const& thrust, Mass const& initial_mass,
+  Manœuvre(Force const& thrust,
+           Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
            Vector<double, Frenet<Frame>> const& direction,
            not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>>
@@ -79,7 +80,8 @@ class Manœuvre {
   Instant final_time() const;
 
   // Intensity and timing must have been set.
-  bool FitsBetween(Instant const& begin, Instant const& end);
+  // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
+  bool FitsBetween(Instant const& begin, Instant const& end) const;
 
   // Intensity and timing must have been set.  The result is valid until
   // |*this| is destroyed.  |coasting_trajectory| must have a point at

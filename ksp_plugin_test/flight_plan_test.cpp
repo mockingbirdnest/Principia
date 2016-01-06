@@ -1,14 +1,13 @@
 ﻿#include "ksp_plugin/flight_plan.hpp"
 
-
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace principia {
 
+using physics::BodyCentredNonRotatingDynamicFrame;
 using quantities::si::Kilogram;
 using quantities::si::Newton;
-using physics::BodyCentredNonRotatingDynamicFrame;
 
 namespace ksp_plugin {
 
@@ -23,11 +22,10 @@ class FlightPlanTest : public testing::Test {
         make_not_null_unique<MassiveBody>(1 * Pow<3>(Metre) / Pow<2>(Second)));
     std::vector<DegreesOfFreedom<Barycentric>> initial_state{
         {Barycentric::origin, Velocity<Barycentric>()}};
-    Instant const t0;
     ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
         std::move(bodies),
         initial_state,
-        /*initial_time=*/t0 - 2 * π * Second,
+        /*initial_time=*/t0_ - 2 * π * Second,
         integrators::McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
         /*step=*/1 * Second,
         /*fitting_tolerance=*/1 * Milli(Metre));

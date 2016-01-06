@@ -13,45 +13,22 @@ namespace ksp_plugin {
 // that.
 class ForkHandle {
  public:
-  ForkHandle(not_null<DiscreteTrajectory<Barycentric>*> trajectory)
-      : trajectory_(trajectory) {
-    CHECK(!trajectory_->is_root());
-  }
+  ForkHandle(not_null<DiscreteTrajectory<Barycentric>*> trajectory);
 
   ForkHandle(ForkHandle const&) = delete;
   ForkHandle(ForkHandle&&) = delete;
   ForkHandle& operator=(ForkHandle const&) = delete;
   ForkHandle& operator=(ForkHandle&&) = delete;
 
-  ~ForkHandle() {
-    if (trajectory_ != nullptr) {
-      trajectory_->parent()->DeleteFork(&trajectory_);
-    }
-  }
+  ~ForkHandle();
 
-  DiscreteTrajectory<Barycentric>* operator->() {
-    return trajectory_;
-  }
+  DiscreteTrajectory<Barycentric>* operator->();
+  DiscreteTrajectory<Barycentric> const* operator->();
+  DiscreteTrajectory<Barycentric>& operator*();
+  DiscreteTrajectory<Barycentric> const& operator*();
 
-  DiscreteTrajectory<Barycentric> const* operator->() const {
-    return trajectory_;
-  }
-
-  DiscreteTrajectory<Barycentric>& operator*() {
-    return *trajectory_;
-  }
-
-  DiscreteTrajectory<Barycentric> const& operator*() const {
-    return *trajectory_;
-  }
-
-  not_null<DiscreteTrajectory<Barycentric>*> get() {
-    return trajectory_;
-  }
-
-  not_null<DiscreteTrajectory<Barycentric> const*> get() const {
-    return trajectory_;
-  }
+  not_null<DiscreteTrajectory<Barycentric>*> get();
+  not_null<DiscreteTrajectory<Barycentric> const*> get();
 
  private:
   DiscreteTrajectory<Barycentric>* trajectory_;
@@ -59,3 +36,5 @@ class ForkHandle {
 
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#include "ksp_plugin/fork_handle_body.hpp"

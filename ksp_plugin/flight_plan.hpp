@@ -16,8 +16,8 @@ using integrators::AdaptiveStepSizeIntegrator;
 
 namespace ksp_plugin {
 
-using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
-
+// A stack of |Burn|s that manages a chain of trajectories obtained by executing
+// the corresponding |NavigationManœuvre|s.
 class FlightPlan {
  public:
   FlightPlan(
@@ -62,8 +62,7 @@ class FlightPlan {
   void AddSegment();
   void ResetLastSegment();
 
-  // TODO(egg): consider making this a constructor of Manœuvre.
-  NavigationManœuvre MakeManœuvre(Burn burn, Mass const& initial_mass);
+  Instant const start_of_last_coast() const;
 
   Mass const initial_mass_;
   Instant const initial_time_;
@@ -71,9 +70,8 @@ class FlightPlan {
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
-  // alternate.
-  // each segment is a fork of the previous one, so the stack structure prevents
-  // dangling.
+  // alternate.  Each segment is a fork of the previous one, so the stack
+  // structure prevents dangling.
   std::stack<ForkHandle> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;

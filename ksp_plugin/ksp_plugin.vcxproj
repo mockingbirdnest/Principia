@@ -171,6 +171,7 @@
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="flight_plan.hpp" />
     <ClInclude Include="fork_handle.hpp" />
+    <ClInclude Include="fork_handle_body.hpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="interface.generated.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -192,6 +193,7 @@
   <ItemGroup>
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
+    <ClCompile Include="burn.cpp" />
     <ClCompile Include="flight_plan.cpp" />
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
