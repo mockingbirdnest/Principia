@@ -1,5 +1,7 @@
 ﻿#include "ksp_plugin/flight_plan.hpp"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
