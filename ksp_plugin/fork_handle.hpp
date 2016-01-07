@@ -23,12 +23,12 @@ class ForkHandle {
   ~ForkHandle();
 
   DiscreteTrajectory<Barycentric>* operator->();
-  DiscreteTrajectory<Barycentric> const* operator->();
+  DiscreteTrajectory<Barycentric> const* operator->() const;
   DiscreteTrajectory<Barycentric>& operator*();
-  DiscreteTrajectory<Barycentric> const& operator*();
+  DiscreteTrajectory<Barycentric> const& operator*() const;
 
   not_null<DiscreteTrajectory<Barycentric>*> get();
-  not_null<DiscreteTrajectory<Barycentric> const*> get();
+  not_null<DiscreteTrajectory<Barycentric> const*> get() const;
 
  private:
   DiscreteTrajectory<Barycentric>* trajectory_;

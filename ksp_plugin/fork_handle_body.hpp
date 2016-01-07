@@ -13,11 +13,6 @@ ForkHandle::ForkHandle(not_null<DiscreteTrajectory<Barycentric>*> trajectory)
   CHECK(!trajectory_->is_root());
 }
 
-ForkHandle::ForkHandle(ForkHandle const&) = delete;
-ForkHandle::ForkHandle(ForkHandle&&) = delete;
-ForkHandle::ForkHandle& operator=(ForkHandle const&) = delete;
-ForkHandle::ForkHandle& operator=(ForkHandle&&) = delete;
-
 ForkHandle::~ForkHandle() {
   if (trajectory_ != nullptr) {
     trajectory_->parent()->DeleteFork(&trajectory_);
