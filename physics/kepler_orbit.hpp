@@ -27,7 +27,7 @@ class KeplerOrbit {
   KeplerOrbit(TwoBodySystem const& system,
               Instant const& epoch,
               KeplerianElements<Frame> const& elements_at_epoch);
-  Evaluate(Instant const& t) const;
+  StateVectors(Instant const& t) const;
  private:
   GravitationalParameter const sysetm_gravitational_parameter_;
   KeplerianElements const elements_at_epoch_;

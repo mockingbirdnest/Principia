@@ -1,8 +1,14 @@
-#pragma once
+﻿#pragma once
 
-#include "kepler_orbit.hpp"
+#include "physics/kepler_orbit.hpp"
+
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
+
+using quantities::Sqrt;
+using quantities::Time;
+
 namespace physics {
 
 template<typename Frame>
@@ -12,7 +18,7 @@ KeplerOrbit<Frame>::KeplerOrbit(
     KeplerianElements<Frame> const& elements_at_epoch)
     : system_gravitational_parameter_(
           system.primary->gravitational_parameter() +
-          system.secondary->is_massless
+          system.secondary->is_massless()
               ? GravitationalParameter{}
               : CHECK_NOTNULL(
                     dynamic_cast<MassiveBody const*>(&*system.secondary))->
@@ -21,8 +27,24 @@ KeplerOrbit<Frame>::KeplerOrbit(
       elements_at_epoch_(element_at_epoch) {}
 
 template<typename Frame>
-KeplerOrbit<Frame>::Evaluate(Instant const& t) const {}
+KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
+  double const eccentricity = elements_at_epoch_.eccentricity;
+  Time const period = 2 * π * Sqrt(Pow<3>(elements_at_epoch_.semimajor_axis) /
+                                   system_gravitational_parameter_);
+  auto const kepler_equation =
+      [eccentricity, mean_anomaly = elements_at_epoch_.mean_anomaly](
+      Angle const& eccentric_anomaly) -> Angle {
+    return mean_anomaly -
+               (eccentric_anomaly - eccentricity * Sin(eccentric_anomaly));
+  };
+  Angle const eccentric_anomaly = FindRoot(kepler_equation);
+  Angle const true_anomaly =
+      ArcTan(Sqrt(1 - eccentricity) * Cos(eccentric_anomaly / 2),
+             Sqrt(1 + eccentricity) * Sin(eccentric_anomaly / 2));
+}
 
+template<typename Argument, typename Function>
+Argument FindRoot(Function f);
 
 }  // namespace physics
 }  // namespace principia
