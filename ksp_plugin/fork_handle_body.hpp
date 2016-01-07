@@ -8,38 +8,40 @@
 namespace principia {
 namespace ksp_plugin {
 
-ForkHandle::ForkHandle(not_null<DiscreteTrajectory<Barycentric>*> trajectory)
+inline ForkHandle::ForkHandle(
+    not_null<DiscreteTrajectory<Barycentric>*> trajectory)
     : trajectory_(trajectory) {
   CHECK(!trajectory_->is_root());
 }
 
-ForkHandle::~ForkHandle() {
+inline ForkHandle::~ForkHandle() {
   if (trajectory_ != nullptr) {
     trajectory_->parent()->DeleteFork(&trajectory_);
   }
 }
 
-DiscreteTrajectory<Barycentric>* ForkHandle::operator->() {
+inline DiscreteTrajectory<Barycentric>* ForkHandle::operator->() {
   return trajectory_;
 }
 
-DiscreteTrajectory<Barycentric> const* ForkHandle::operator->() const {
+inline DiscreteTrajectory<Barycentric> const* ForkHandle::operator->() const {
   return trajectory_;
 }
 
-DiscreteTrajectory<Barycentric>& ForkHandle::operator*() {
+inline DiscreteTrajectory<Barycentric>& ForkHandle::operator*() {
   return *trajectory_;
 }
 
-DiscreteTrajectory<Barycentric> const& ForkHandle::operator*() const {
+inline DiscreteTrajectory<Barycentric> const& ForkHandle::operator*() const {
   return *trajectory_;
 }
 
-not_null<DiscreteTrajectory<Barycentric>*> ForkHandle::get() {
+inline not_null<DiscreteTrajectory<Barycentric>*> ForkHandle::get() {
   return trajectory_;
 }
 
-not_null<DiscreteTrajectory<Barycentric> const*> ForkHandle::get() const {
+inline not_null<DiscreteTrajectory<Barycentric> const*>
+ForkHandle::get() const {
   return trajectory_;
 }
 
