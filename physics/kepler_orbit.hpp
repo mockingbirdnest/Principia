@@ -29,7 +29,7 @@ class KeplerOrbit {
               KeplerianElements<Frame> const& elements_at_epoch);
   StateVectors(Instant const& t) const;
  private:
-  GravitationalParameter const sysetm_gravitational_parameter_;
+  GravitationalParameter const system_gravitational_parameter_;
   KeplerianElements const elements_at_epoch_;
   Instant const epoch_;
 };
