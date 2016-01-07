@@ -231,7 +231,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   discrete_trajectory_.Append(first_burn.initial_time(), dof_);
-  EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(first_burn.initial_time()))
+  EXPECT_CALL(*mock_dynamic_frame_,
+              ToThisFrameAtTime(first_burn.initial_time()))
       .WillOnce(Return(rigid_motion_));
   EXPECT_CALL(*mock_dynamic_frame_,
               FrenetFrame(first_burn.initial_time(), rendering_dof_))

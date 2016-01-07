@@ -118,7 +118,7 @@ void FlightPlan::RecomputeSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
   // order, since the destructor of each segment references the previous
   // segment.
-  while(segments_.size() > 1) {
+  while (segments_.size() > 1) {
     segments_.pop();
   }
   ResetLastSegment();

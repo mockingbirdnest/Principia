@@ -13,7 +13,7 @@ namespace ksp_plugin {
 // that.
 class ForkHandle {
  public:
-  ForkHandle(not_null<DiscreteTrajectory<Barycentric>*> trajectory);
+  explicit ForkHandle(not_null<DiscreteTrajectory<Barycentric>*> trajectory);
 
   ForkHandle(ForkHandle const&) = delete;
   ForkHandle(ForkHandle&&) = delete;
