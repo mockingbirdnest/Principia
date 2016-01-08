@@ -37,7 +37,10 @@ class Manœuvre {
            Mass const& initial_mass,
            SpecificImpulse const& specific_impulse,
            Vector<double, Frenet<Frame>> const& direction,
-           not_null<DynamicFrame<InertialFrame, Frame> const*> frame);
+           not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>>
+               frame);
+  Manœuvre(Manœuvre&&) = default;
+  Manœuvre& operator=(Manœuvre&&) = default;
   ~Manœuvre() = default;
 
   Force const& thrust() const;
@@ -76,6 +79,10 @@ class Manœuvre {
   // Intensity and timing must have been set.
   Instant final_time() const;
 
+  // Intensity and timing must have been set.
+  // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
+  bool FitsBetween(Instant const& begin, Instant const& end) const;
+
   // Intensity and timing must have been set.  The result is valid until
   // |*this| is destroyed.  |coasting_trajectory| must have a point at
   // |initial_time()|.
@@ -89,7 +96,7 @@ class Manœuvre {
   Vector<double, Frenet<Frame>> const direction_;
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
-  not_null<DynamicFrame<InertialFrame, Frame> const*> frame_;
+  not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
 };
 
 }  // namespace ksp_plugin

@@ -19,12 +19,12 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
     Mass const& initial_mass,
     SpecificImpulse const& specific_impulse,
     Vector<double, Frenet<Frame>> const& direction,
-    not_null<DynamicFrame<InertialFrame, Frame> const*> frame)
+    not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame)
     : thrust_(thrust),
       initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
       direction_(Normalize(direction)),
-      frame_(frame) {}
+      frame_(std::move(frame)) {}
 
 template<typename InertialFrame, typename Frame>
 Instant Manœuvre<InertialFrame, Frame>::initial_time() const {
@@ -40,6 +40,12 @@ Instant Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
 template<typename InertialFrame, typename Frame>
 Instant Manœuvre<InertialFrame, Frame>::final_time() const {
   return initial_time() + duration();
+}
+
+template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
+                                                 Instant const& end) const {
+  return begin < initial_time() && final_time() < end;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -67,8 +73,14 @@ void Manœuvre<InertialFrame, Frame>::set_duration(Time const& duration) {
 
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_Δv(Speed const& Δv) {
-  set_duration(initial_mass_ * specific_impulse_ *
-               (1 - std::exp(-Δv / specific_impulse_)) / thrust_);
+  if (Δv == Speed()) {
+    // This handles the case where |thrust_| vanishes, where the usual formula
+    // would yield NaN.
+    set_duration(Time());
+  } else {
+    set_duration(initial_mass_ * specific_impulse_ *
+                     (1 - std::exp(-Δv / specific_impulse_)) / thrust_);
+  }
 }
 
 template<typename InertialFrame, typename Frame>
