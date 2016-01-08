@@ -123,8 +123,8 @@ class Forkable {
   not_null<Tr4jectory const*> root() const;
   not_null<Tr4jectory*> root();
 
-  Tr4jectory const* parent() const;
-  Tr4jectory* parent();
+  not_null<Tr4jectory const*> parent() const;
+  not_null<Tr4jectory*> parent();
 
   It3rator Begin() const;
   It3rator End() const;

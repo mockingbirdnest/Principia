@@ -15,9 +15,9 @@ inline ForkHandle::ForkHandle(
 }
 
 inline ForkHandle::~ForkHandle() {
-  if (trajectory_ != nullptr) {
-    trajectory_->parent()->DeleteFork(&trajectory_);
-  }
+  // NOTE(egg): once this is made movable, only do this if |trajectory_| is not
+  // null.
+  trajectory_->parent()->DeleteFork(&trajectory_);
 }
 
 inline DiscreteTrajectory<Barycentric>* ForkHandle::operator->() {

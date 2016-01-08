@@ -82,7 +82,8 @@ class FlightPlan {
   // Forgets the last segment after its fork.
   void ResetLastSegment();
 
-  Instant const start_of_last_coast() const;
+  Instant start_of_last_coast() const;
+  Instant start_of_penultimate_coast() const;
 
   Mass const initial_mass_;
   Instant const initial_time_;

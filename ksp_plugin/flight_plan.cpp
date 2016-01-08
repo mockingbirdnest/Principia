@@ -66,11 +66,7 @@ bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
   auto manœuvre =
       MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
-  // The initial time of the coasting phase preceding the replaced manœuvre.
-  Instant const start_of_previous_coast =
-      manœuvres_.size() == 1 ? initial_time_
-                             : manœuvres_[manœuvres_.size() - 2].final_time();
-  if (manœuvre.FitsBetween(start_of_previous_coast, final_time_)) {
+  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_)) {
     manœuvres_.pop_back();
     segments_.pop();  // Last coast.
     segments_.pop();  // Last burn.
@@ -159,8 +155,14 @@ void FlightPlan::ResetLastSegment() {
   segments_.top()->ForgetAfter(segments_.top()->Fork().time());
 }
 
-Instant const FlightPlan::start_of_last_coast() const {
+Instant FlightPlan::start_of_last_coast() const {
   return manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time();
+}
+
+Instant FlightPlan::start_of_penultimate_coast() const {
+  return manœuvres_.size() == 1
+             ? initial_time_
+             : manœuvres_[manœuvres_.size() - 2].final_time();
 }
 
 }  // namespace ksp_plugin

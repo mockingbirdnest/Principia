@@ -153,12 +153,12 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::root() {
 }
 
 template<typename Tr4jectory, typename It3rator>
-Tr4jectory const* Forkable<Tr4jectory, It3rator>::parent() const {
+not_null<Tr4jectory const*> Forkable<Tr4jectory, It3rator>::parent() const {
   return parent_;
 }
 
 template<typename Tr4jectory, typename It3rator>
-Tr4jectory* Forkable<Tr4jectory, It3rator>::parent() {
+not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::parent() {
   return parent_;
 }
 

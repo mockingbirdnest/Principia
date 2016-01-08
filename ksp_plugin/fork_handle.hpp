@@ -31,7 +31,9 @@ class ForkHandle {
   not_null<DiscreteTrajectory<Barycentric> const*> get() const;
 
  private:
-  DiscreteTrajectory<Barycentric>* trajectory_;
+  // NOTE(egg): once this is made movable, this should become a nullable pointer
+  // so that it can be tested for nullness in the destructor.
+  not_null<DiscreteTrajectory<Barycentric>*> trajectory_;
 };
 
 }  // namespace ksp_plugin
