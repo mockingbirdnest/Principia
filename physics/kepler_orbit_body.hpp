@@ -71,8 +71,11 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   return {r, v};
 }
 
+// TODO(egg): move to numerics
 template<typename Argument, typename Function>
-Argument FindRoot(Function f);
+Argument FindRoot(Function f, Argument first_guess) {
+
+}
 
 }  // namespace physics
 }  // namespace principia
