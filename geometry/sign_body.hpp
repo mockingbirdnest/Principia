@@ -24,6 +24,10 @@ inline bool Sign::operator==(Sign const& other) const {
   return negative_ == other.negative_;
 }
 
+inline bool Sign::operator!=(Sign const& other) const {
+  return negative_ != other.negative_;
+}
+
 inline void Sign::WriteToMessage(
     not_null<serialization::Sign*> const message) const {
   message->set_negative(negative_);
