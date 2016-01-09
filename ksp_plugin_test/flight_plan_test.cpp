@@ -4,11 +4,16 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/massive_body.hpp"
 
 namespace principia {
 
 using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::DegreesOfFreedom;
+using physics::MassiveBody;
 using quantities::si::Kilogram;
+using quantities::si::Milli;
 using quantities::si::Newton;
 
 namespace ksp_plugin {

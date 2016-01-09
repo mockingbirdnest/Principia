@@ -3,6 +3,17 @@
 // run.  You should change the generator instead.
 
 extern "C"
+struct NavigationFrameParameters {
+  int extension;
+  int centre_index;
+  int primary_index;
+  int secondary_index;
+};
+
+static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
+              "NavigationFrameParameters is used for interfacing");
+
+extern "C"
 struct XYZ {
   double x;
   double y;
@@ -11,6 +22,34 @@ struct XYZ {
 
 static_assert(std::is_standard_layout<XYZ>::value,
               "XYZ is used for interfacing");
+
+extern "C"
+struct Burn {
+  double thrust;
+  double specific_impulse;
+  NavigationFrameParameters frame;
+  double initial_time;
+  XYZ delta_v;
+};
+
+static_assert(std::is_standard_layout<Burn>::value,
+              "Burn is used for interfacing");
+
+extern "C"
+struct NavigationManoeuvre {
+  Burn burn;
+  double initial_mass;
+  double final_mass;
+  double mass_flow;
+  double duration;
+  double final_time;
+  double time_of_half_delta_v;
+  double time_to_half_delta_v;
+  XYZ direction;
+};
+
+static_assert(std::is_standard_layout<NavigationManoeuvre>::value,
+              "NavigationManoeuvre is used for interfacing");
 
 extern "C"
 struct KSPPart {
@@ -23,17 +62,6 @@ struct KSPPart {
 
 static_assert(std::is_standard_layout<KSPPart>::value,
               "KSPPart is used for interfacing");
-
-extern "C"
-struct NavigationFrameParameters {
-  int extension;
-  int centre_index;
-  int primary_index;
-  int secondary_index;
-};
-
-static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
-              "NavigationFrameParameters is used for interfacing");
 
 extern "C"
 struct QP {
@@ -143,6 +171,42 @@ void CDECL principia__EndInitialization(
 extern "C" PRINCIPIA_DLL
 XYZSegment CDECL principia__FetchAndIncrement(
     LineAndIterator* const line_and_iterator);
+
+extern "C" PRINCIPIA_DLL
+bool CDECL principia__FlightPlanAppend(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    Burn const burn);
+
+extern "C" PRINCIPIA_DLL
+NavigationManoeuvre CDECL principia__FlightPlanGet(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanRemoveLast(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+bool CDECL principia__FlightPlanReplaceLast(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    Burn const burn);
+
+extern "C" PRINCIPIA_DLL
+bool CDECL principia__FlightPlanSetFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const final_time);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanSetTolerances(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const length_integration_tolerance,
+    double const speed_integration_tolerance);
 
 extern "C" PRINCIPIA_DLL
 int CDECL principia__FlightPlanSize(

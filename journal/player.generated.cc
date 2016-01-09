@@ -18,6 +18,12 @@
   ran |= RunIfAppropriate<DirectlyInsertCelestial>(*method);
   ran |= RunIfAppropriate<EndInitialization>(*method);
   ran |= RunIfAppropriate<FetchAndIncrement>(*method);
+  ran |= RunIfAppropriate<FlightPlanAppend>(*method);
+  ran |= RunIfAppropriate<FlightPlanGet>(*method);
+  ran |= RunIfAppropriate<FlightPlanRemoveLast>(*method);
+  ran |= RunIfAppropriate<FlightPlanReplaceLast>(*method);
+  ran |= RunIfAppropriate<FlightPlanSetFinalTime>(*method);
+  ran |= RunIfAppropriate<FlightPlanSetTolerances>(*method);
   ran |= RunIfAppropriate<FlightPlanSize>(*method);
   ran |= RunIfAppropriate<ForgetAllHistoriesBefore>(*method);
   ran |= RunIfAppropriate<GetBufferDuration>(*method);

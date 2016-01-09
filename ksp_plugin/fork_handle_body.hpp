@@ -1,9 +1,6 @@
 #pragma once
 
-#include "base/not_null.hpp"
-#include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/plugin.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "ksp_plugin/fork_handle.hpp"
 
 namespace principia {
 namespace ksp_plugin {

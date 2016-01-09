@@ -4,12 +4,39 @@ import "google/protobuf/descriptor.proto";
 
 package principia.serialization;
 
-// Must come first because the other interchange messages use it and we need to
-// generate the structs in the correct order.
+// These two messages must come first because the other interchange messages use
+// them and we need to generate the structs in the correct order.
+message NavigationFrameParameters {
+  required int32 extension = 1;  // 6000 to 6999, see DynamicFrame.
+  required int32 centre_index = 2;
+  required int32 primary_index = 3;
+  required int32 secondary_index = 4;
+}
+
 message XYZ {
   required double x = 1;
   required double y = 2;
   required double z = 3;
+}
+
+message Burn {
+  required double thrust = 1;
+  required double specific_impulse = 2;
+  required NavigationFrameParameters frame = 3;
+  required double initial_time = 4;
+  required XYZ delta_v = 5;
+}
+
+message NavigationManoeuvre {
+  required Burn burn = 1;
+  required double initial_mass = 2;
+  required double final_mass = 3;
+  required double mass_flow = 4;
+  required double duration = 5;
+  required double final_time = 6;
+  required double time_of_half_delta_v = 7;
+  required double time_to_half_delta_v = 8;
+  required XYZ direction = 9;
 }
 
 message KSPPart {
@@ -19,13 +46,6 @@ message KSPPart {
   required double mass = 3;
   required XYZ gravitational_acceleration_to_be_applied_by_ksp = 4;
   required uint32 id = 5;
-}
-
-message NavigationFrameParameters {
-  required int32 extension = 1;  // 6000 to 6999, see DynamicFrame.
-  required int32 centre_index = 2;
-  required int32 primary_index = 3;
-  required int32 secondary_index = 4;
 }
 
 message QP {
@@ -46,7 +66,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5062.
+  extensions 5000 to 5999;  // Last used: 5068.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -266,9 +286,26 @@ message FetchAndIncrement {
   required Return return = 3;
 }
 
+message FlightPlanAppend {
+  extend Method {
+    optional FlightPlanAppend extension = 5063;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message FlightPlanGet {
   extend Method {
-    optional FlightPlanGet extension = ;
+    optional FlightPlanGet extension = 5064;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -277,7 +314,7 @@ message FlightPlanGet {
     required int32 index = 3;
   }
   message Return {
-    required NavigationManœuvre flight_plan_get = 1;
+    required NavigationManoeuvre result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -285,12 +322,60 @@ message FlightPlanGet {
 
 message FlightPlanRemoveLast {
   extend Method {
-    optional FlightPlanRemoveLast extension = ;
+    optional FlightPlanRemoveLast extension = 5065;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+  }
+  required In in = 1;
+}
+
+message FlightPlanReplaceLast{
+  extend Method {
+    optional FlightPlanReplaceLast extension = 5066;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanSetFinalTime {
+  extend Method {
+    optional FlightPlanSetFinalTime extension = 5067;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double final_time = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanSetTolerances {
+  extend Method {
+    optional FlightPlanSetTolerances extension = 5068;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double length_integration_tolerance = 3;
+    required double speed_integration_tolerance = 4;
   }
   required In in = 1;
 }

@@ -21,7 +21,7 @@ class RecorderTest : public testing::Test {
   RecorderTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(ksp_plugin::principia__NewPlugin(1, 2)),
+        plugin_(interface::principia__NewPlugin(1, 2)),
         recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }

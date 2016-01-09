@@ -3,16 +3,27 @@
 #include <vector>
 #include <stack>
 
+#include "base/not_null.hpp"
+#include "geometry/named_quantities.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/fork_handle.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
-#include "ksp_plugin/plugin.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 
+using base::not_null;
+using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
+using physics::Ephemeris;
+using quantities::Length;
+using quantities::Mass;
+using quantities::Speed;
 
 namespace ksp_plugin {
 
