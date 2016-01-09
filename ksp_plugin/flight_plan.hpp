@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <vector>
-#include <stack>
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
@@ -47,7 +46,7 @@ class FlightPlan {
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
-  ~FlightPlan() = default;
+  ~FlightPlan();
 
   int number_of_manœuvres() const;
   // |index| must be in [0, number_of_manœuvres()[.
@@ -112,9 +111,9 @@ class FlightPlan {
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
-  // alternate.  Each segment is a fork of the previous one, so the stack
-  // structure prevents dangling.
-  std::stack<ForkHandle> segments_;
+  // alternate.  This simulates a stack.  Each segment is a fork of the previous
+  // one.
+  std::vector<ForkHandle> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<
