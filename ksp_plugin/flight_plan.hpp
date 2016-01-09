@@ -49,9 +49,9 @@ class FlightPlan {
       Speed const& speed_integration_tolerance);
   ~FlightPlan() = default;
 
-  int size() const;
-  // |index| must be in [0, size()[.
-  NavigationManœuvre const& Get(int index);
+  int number_of_manœuvres() const;
+  // |index| must be in [0, number_of_manœuvres()[.
+  NavigationManœuvre const& GetManœuvre(int const index) const;
 
   // |size()| must be greater than 0.
   void RemoveLast();
@@ -72,6 +72,16 @@ class FlightPlan {
   void SetTolerances(
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
+
+  // Returns the number of trajectory segments in this object.
+  int number_of_segments() const;
+
+  // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
+  // the given trajectory segment.
+  void GetSegment(
+      int const index,
+      not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
+      not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
 
  private:
   // Appends |manœuvre| to |manœuvres_|, recomputes the last coast segment until

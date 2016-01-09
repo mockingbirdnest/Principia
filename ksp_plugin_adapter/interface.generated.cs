@@ -193,12 +193,34 @@ internal static partial class Interface {
       Burn burn);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__FlightPlanGet",
+             EntryPoint        = "principia__FlightPlanGetManoeuvre",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern NavigationManoeuvre FlightPlanGet(
+  internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       int index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanGetSegment",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern IntPtr FlightPlanGetSegment(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanNumberOfManoeuvres",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int FlightPlanNumberOfManoeuvres(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanNumberOfSegments",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int FlightPlanNumberOfSegments(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanRemoveLast",
@@ -231,13 +253,6 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       double length_integration_tolerance,
       double speed_integration_tolerance);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__FlightPlanSize",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanSize(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__ForgetAllHistoriesBefore",

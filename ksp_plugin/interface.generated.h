@@ -179,10 +179,26 @@ bool CDECL principia__FlightPlanAppend(
     Burn const burn);
 
 extern "C" PRINCIPIA_DLL
-NavigationManoeuvre CDECL principia__FlightPlanGet(
+NavigationManoeuvre CDECL principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const index);
+
+extern "C" PRINCIPIA_DLL
+LineAndIterator* CDECL principia__FlightPlanGetSegment(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index);
+
+extern "C" PRINCIPIA_DLL
+int CDECL principia__FlightPlanNumberOfManoeuvres(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+int CDECL principia__FlightPlanNumberOfSegments(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
 void CDECL principia__FlightPlanRemoveLast(
@@ -207,11 +223,6 @@ void CDECL principia__FlightPlanSetTolerances(
     char const* const vessel_guid,
     double const length_integration_tolerance,
     double const speed_integration_tolerance);
-
-extern "C" PRINCIPIA_DLL
-int CDECL principia__FlightPlanSize(
-    Plugin const* const plugin,
-    char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
 void CDECL principia__ForgetAllHistoriesBefore(

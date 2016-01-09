@@ -66,7 +66,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5068.
+  extensions 5000 to 5999;  // Last used: 5070.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -303,9 +303,9 @@ message FlightPlanAppend {
   required Return return = 3;
 }
 
-message FlightPlanGet {
+message FlightPlanGetManoeuvre {
   extend Method {
-    optional FlightPlanGet extension = 5064;
+    optional FlightPlanGetManoeuvre extension = 5064;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -315,6 +315,56 @@ message FlightPlanGet {
   }
   message Return {
     required NavigationManoeuvre result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanGetSegment {
+  extend Method {
+    optional FlightPlanGetSegment extension = 5069;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanNumberOfManoeuvres {
+  extend Method {
+    optional FlightPlanNumberOfManoeuvres extension = 5038;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 flight_plan_size = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanNumberOfSegments {
+  extend Method {
+    optional FlightPlanNumberOfSegments extension = 5070;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -378,22 +428,6 @@ message FlightPlanSetTolerances {
     required double speed_integration_tolerance = 4;
   }
   required In in = 1;
-}
-
-message FlightPlanSize {
-  extend Method {
-    optional FlightPlanSize extension = 5038;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required int32 flight_plan_size = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
 }
 
 message ForgetAllHistoriesBefore {

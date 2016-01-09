@@ -30,13 +30,13 @@ FlightPlan::FlightPlan(
   CoastLastSegment(final_time_);
 }
 
-int FlightPlan::size() const {
+int FlightPlan::number_of_manœuvres() const {
   return manœuvres_.size();
 }
 
-NavigationManœuvre const& FlightPlan::Get(int index) {
+NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   CHECK_LE(0, index);
-  CHECK_LT(index, size());
+  CHECK_LT(index, number_of_manœuvres());
   return manœuvres_[index];
 }
 

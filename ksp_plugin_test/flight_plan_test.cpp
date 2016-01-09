@@ -86,14 +86,14 @@ TEST_F(FlightPlanTest, Append) {
   };
   // Burn ends after final time.
   EXPECT_FALSE(flight_plan_->Append(first_burn()));
-  EXPECT_EQ(0, flight_plan_->size());
+  EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
-  EXPECT_EQ(1, flight_plan_->size());
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_FALSE(flight_plan_->Append(first_burn()));
-  EXPECT_EQ(1, flight_plan_->size());
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_TRUE(flight_plan_->Append(second_burn()));
-  EXPECT_EQ(2, flight_plan_->size());
+  EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
 }
 
 TEST_F(FlightPlanTest, Remove) {
@@ -113,14 +113,14 @@ TEST_F(FlightPlanTest, Remove) {
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
   EXPECT_TRUE(flight_plan_->Append(second_burn()));
-  EXPECT_EQ(2, flight_plan_->size());
+  EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
   flight_plan_->RemoveLast();
-  EXPECT_EQ(1, flight_plan_->size());
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   flight_plan_->RemoveLast();
-  EXPECT_EQ(0, flight_plan_->size());
+  EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   // Check that appending still works.
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
-  EXPECT_EQ(1, flight_plan_->size());
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
 TEST_F(FlightPlanTest, Replace) {
@@ -140,17 +140,20 @@ TEST_F(FlightPlanTest, Replace) {
   flight_plan_->SetFinalTime(t0_ + 1.7 * Second);
   EXPECT_TRUE(flight_plan_->Append(first_burn()));
   Mass const old_final_mass =
-      flight_plan_->Get(flight_plan_->size() - 1).final_mass();
-  EXPECT_EQ(1, flight_plan_->size());
+      flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
+          final_mass();
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_FALSE(flight_plan_->ReplaceLast(second_burn()));
   EXPECT_EQ(old_final_mass,
-            flight_plan_->Get(flight_plan_->size() - 1).final_mass());
-  EXPECT_EQ(1, flight_plan_->size());
+            flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
+                final_mass());
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->ReplaceLast(second_burn()));
   EXPECT_GT(old_final_mass,
-            flight_plan_->Get(flight_plan_->size() - 1).final_mass());
-  EXPECT_EQ(1, flight_plan_->size());
+            flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
+                final_mass());
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
 }  // namespace ksp_plugin

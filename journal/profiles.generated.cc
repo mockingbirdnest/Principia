@@ -425,24 +425,80 @@ void FlightPlanAppend::Run(Message const& message, not_null<Player::PointerMap*>
   CHECK(message.return_().result() == result);
 }
 
-void FlightPlanGet::Fill(In const& in, not_null<Message*> const message) {
+void FlightPlanGetManoeuvre::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
   m->set_index(in.index);
 }
 
-void FlightPlanGet::Fill(Return const& result, not_null<Message*> const message) {
+void FlightPlanGetManoeuvre::Fill(Return const& result, not_null<Message*> const message) {
   *message->mutable_return_()->mutable_result() = SerializeNavigationManoeuvre(result);
 }
 
-void FlightPlanGet::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+void FlightPlanGetManoeuvre::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   auto index = in.index();
-  auto const result = interface::principia__FlightPlanGet(plugin, vessel_guid, index);
+  auto const result = interface::principia__FlightPlanGetManoeuvre(plugin, vessel_guid, index);
   CHECK(DeserializeNavigationManoeuvre(message.return_().result()) == result);
+}
+
+void FlightPlanGetSegment::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_index(in.index);
+}
+
+void FlightPlanGetSegment::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(SerializePointer(result));
+}
+
+void FlightPlanGetSegment::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto index = in.index();
+  auto const result = interface::principia__FlightPlanGetSegment(plugin, vessel_guid, index);
+  Insert(pointer_map, message.return_().result(), result);
+}
+
+void FlightPlanNumberOfManoeuvres::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanNumberOfManoeuvres::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_flight_plan_size(result);
+}
+
+void FlightPlanNumberOfManoeuvres::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto const result = interface::principia__FlightPlanNumberOfManoeuvres(plugin, vessel_guid);
+  CHECK(message.return_().flight_plan_size() == result);
+}
+
+void FlightPlanNumberOfSegments::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanNumberOfSegments::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanNumberOfSegments::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto const result = interface::principia__FlightPlanNumberOfSegments(plugin, vessel_guid);
+  CHECK(message.return_().result() == result);
 }
 
 void FlightPlanRemoveLast::Fill(In const& in, not_null<Message*> const message) {
@@ -513,24 +569,6 @@ void FlightPlanSetTolerances::Run(Message const& message, not_null<Player::Point
   auto length_integration_tolerance = in.length_integration_tolerance();
   auto speed_integration_tolerance = in.speed_integration_tolerance();
   interface::principia__FlightPlanSetTolerances(plugin, vessel_guid, length_integration_tolerance, speed_integration_tolerance);
-}
-
-void FlightPlanSize::Fill(In const& in, not_null<Message*> const message) {
-  auto* const m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-}
-
-void FlightPlanSize::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_flight_plan_size(result);
-}
-
-void FlightPlanSize::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
-  auto vessel_guid = in.vessel_guid().c_str();
-  auto const result = interface::principia__FlightPlanSize(plugin, vessel_guid);
-  CHECK(message.return_().flight_plan_size() == result);
 }
 
 void ForgetAllHistoriesBefore::Fill(In const& in, not_null<Message*> const message) {

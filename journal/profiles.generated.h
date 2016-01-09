@@ -224,7 +224,7 @@ struct FlightPlanAppend {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct FlightPlanGet {
+struct FlightPlanGetManoeuvre {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
@@ -232,7 +232,50 @@ struct FlightPlanGet {
   };
   using Return = NavigationManoeuvre;
 
-  using Message = serialization::FlightPlanGet;
+  using Message = serialization::FlightPlanGetManoeuvre;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanGetSegment {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    int const index;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::FlightPlanGetSegment;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanNumberOfManoeuvres {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = int;
+
+  using Message = serialization::FlightPlanNumberOfManoeuvres;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanNumberOfSegments {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = int;
+
+  using Message = serialization::FlightPlanNumberOfSegments;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
@@ -291,20 +334,6 @@ struct FlightPlanSetTolerances {
 
   using Message = serialization::FlightPlanSetTolerances;
   static void Fill(In const& in, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
-struct FlightPlanSize {
-  struct In {
-    Plugin const* const plugin;
-    char const* const vessel_guid;
-  };
-  using Return = int;
-
-  using Message = serialization::FlightPlanSize;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
 };
