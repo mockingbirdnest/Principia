@@ -53,8 +53,20 @@
     <ClInclude Include="interface_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="flight_plan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fork_handle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="burn.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="interface.generated.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fork_handle_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +86,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\journal\profiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flight_plan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="burn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

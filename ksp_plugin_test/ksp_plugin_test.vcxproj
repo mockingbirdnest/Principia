@@ -17,11 +17,14 @@
   <ItemGroup>
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
+    <ClCompile Include="..\ksp_plugin\burn.cpp" />
+    <ClCompile Include="..\ksp_plugin\flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
     <ClCompile Include="..\ksp_plugin\mock_plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\physics_bubble.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="celestial_test.cpp" />
+    <ClCompile Include="flight_plan_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="part_test.cpp" />
