@@ -102,7 +102,7 @@ message AtEnd {
         [(pointer_to) = "LineAndIterator const", (is_subject) = true];
   }
   message Return {
-    required bool at_end = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -118,7 +118,7 @@ message BubbleDisplacementCorrection {
     required XYZ sun_position = 2;
   }
   message Return {
-    required XYZ bubble_displacement_correction = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -134,7 +134,7 @@ message BubbleVelocityCorrection {
     required int32 reference_body_index = 2;
   }
   message Return {
-    required XYZ bubble_velocity_correction = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -150,7 +150,7 @@ message CelestialFromParent {
     required int32 celestial_index = 2;
   }
   message Return {
-    required QP celestial_from_parent = 1;
+    required QP result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -165,7 +165,7 @@ message CurrentTime {
                                  (is_subject) = true];
   }
   message Return {
-    required double current_time = 1;
+    required double result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -280,7 +280,7 @@ message FetchAndIncrement {
                                             (is_subject) = true];
   }
   message Return {
-    required XYZSegment fetch_and_increment = 1;
+    required XYZSegment result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -348,7 +348,7 @@ message FlightPlanNumberOfManoeuvres {
     required string vessel_guid = 2;
   }
   message Return {
-    required int32 flight_plan_size = 1;
+    required int32 result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -446,7 +446,7 @@ message GetBufferDuration {
     optional GetBufferDuration extension = 5005;
   }
   message Return {
-    required int32 get_buffer_duration = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -456,7 +456,7 @@ message GetBufferedLogging {
     optional GetBufferedLogging extension = 5006;
   }
   message Return {
-    required int32 get_buffered_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -472,7 +472,7 @@ message GetNavigationFrameParameters {
         [(pointer_to) = "NavigationFrame const", (is_consumed) = true];
   }
   message Return {
-    required NavigationFrameParameters get_navigation_frame_parameters = 1;
+    required NavigationFrameParameters result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -488,8 +488,8 @@ message GetPlottingFrame {
   message Return {
     // This doesn't transfer ownership to the caller, but we must enter the
     // pointer in the pointer_map in case it crosses the interface again.
-    required fixed64 get_plotting_frame = 1
-        [(pointer_to) = "NavigationFrame const", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame const",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -500,7 +500,7 @@ message GetStderrLogging {
     optional GetStderrLogging extension = 5007;
   }
   message Return {
-    required int32 get_stderr_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -510,7 +510,7 @@ message GetSuppressedLogging {
     optional GetSuppressedLogging extension = 5008;
   }
   message Return {
-    required int32 get_suppressed_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -520,7 +520,7 @@ message GetVerboseLogging {
     optional GetVerboseLogging extension = 5009;
   }
   message Return {
-    required int32 get_verbose_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -535,7 +535,7 @@ message HasPrediction {
     required string vessel_guid = 2;
   }
   message Return {
-    required bool has_prediction = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -550,7 +550,7 @@ message HasVessel {
     required string vessel_guid = 2;
   }
   message Return {
-    required bool has_vessel = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -586,7 +586,7 @@ message InsertOrKeepVessel {
     required int32 parent_index = 3;
   }
   message Return {
-    required bool insert_or_keep_vessel = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -655,7 +655,7 @@ message NavballOrientation {
     required XYZ ship_world_position = 4;
   }
   message Return {
-    required WXYZ navball_orientation = 1;
+    required WXYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -672,8 +672,8 @@ message NewBarycentricRotatingNavigationFrame {
     required int32 secondary_index = 3;
   }
   message Return {
-    required fixed64 new_barycentric_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
+                                  (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -689,8 +689,8 @@ message NewBodyCentredNonRotatingNavigationFrame {
     required int32 reference_body_index = 2;
   }
   message Return {
-    required fixed64 new_body_centred_non_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -706,8 +706,8 @@ message NewNavigationFrame {
     required NavigationFrameParameters parameters = 2;
   }
   message Return {
-    required fixed64 new_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -722,8 +722,8 @@ message NewPlugin {
     required double planetarium_rotation_in_degrees = 2;
   }
   message Return {
-    required fixed64 new_plugin = 1 [(pointer_to) = "Plugin",
-                                     (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -738,7 +738,7 @@ message NumberOfSegments {
         [(pointer_to) = "LineAndIterator const", (is_subject) = true];
   }
   message Return {
-    required int32 number_of_segments = 1;
+    required int32 result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -753,7 +753,7 @@ message PhysicsBubbleIsEmpty {
                                  (is_subject) = true];
   }
   message Return {
-    required bool physics_bubble_is_empty = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -770,8 +770,8 @@ message RenderedFlightPlan {
     required XYZ sun_world_position = 5;
   }
   message Return {
-    required fixed64 rendered_flight_plan = 1
-        [(pointer_to) = "LineAndIterator", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -787,8 +787,8 @@ message RenderedPrediction {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 rendered_prediction = 1
-        [(pointer_to) = "LineAndIterator", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -805,8 +805,8 @@ message RenderedVesselTrajectory {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 rendered_vessel_trajectory = 1
-        [(pointer_to) = "LineAndIterator", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -817,8 +817,8 @@ message SayHello {
     optional SayHello extension = 5053;
   }
   message Return {
-    required fixed64 say_hello = 1 [(pointer_to) = "char const",
-                                    (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "char const",
+                                 (is_produced) = true];
   }
   required Return return = 3;
 }
@@ -835,15 +835,13 @@ message SerializePlugin {
          (is_consumed_if) = "result == nullptr"];
   }
   message Out {
-    required fixed64 serializer = 1
-        [(pointer_to) = "PullSerializer",
-         (is_produced_if) = "result != nullptr"];
+    required fixed64 serializer = 1 [(pointer_to) = "PullSerializer",
+                                     (is_produced_if) = "result != nullptr"];
   }
   message Return {
     // TODO(phl): Why the tag 2?
-    required fixed64 serialize_plugin = 2
-        [(pointer_to) = "char const",
-         (is_produced_if) = "result != nullptr"];
+    required fixed64 result = 2 [(pointer_to) = "char const",
+                                 (is_produced_if) = "result != nullptr"];
   }
   required In in = 1;
   required Out out = 2;
@@ -996,7 +994,7 @@ message VesselBinormal {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ vessel_binormal = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -1012,7 +1010,7 @@ message VesselFromParent {
     required string vessel_guid = 2;
   }
   message Return {
-    required QP vessel_from_parent = 1;
+    required QP result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -1028,7 +1026,7 @@ message VesselNormal {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ vessel_normal = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -1044,7 +1042,7 @@ message VesselTangent {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ vessel_tangent = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
