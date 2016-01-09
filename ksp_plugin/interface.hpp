@@ -31,11 +31,8 @@ struct LineAndIterator {
 extern "C" PRINCIPIA_DLL
 void CDECL principia__ActivateRecorder(bool const activate);
 
-bool operator==(Burn const& left, Burn const& right);
 bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);
-bool operator==(NavigationManoeuvre const& left,
-                NavigationManoeuvre const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);

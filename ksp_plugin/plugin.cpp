@@ -355,7 +355,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
 int Plugin::FlightPlanSize(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan()->size();
+  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan().size();
 }
 
 bool Plugin::HasPrediction(GUID const& vessel_guid) const {
