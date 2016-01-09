@@ -25,8 +25,8 @@ internal partial struct XYZ {
 
 [StructLayout(LayoutKind.Sequential)]
 internal partial struct Burn {
-  public double thrust;
-  public double specific_impulse;
+  public double thrust_in_kilonewtons;
+  public double specific_impulse_in_seconds_g0;
   public NavigationFrameParameters frame;
   public double initial_time;
   public XYZ delta_v;
@@ -35,8 +35,8 @@ internal partial struct Burn {
 [StructLayout(LayoutKind.Sequential)]
 internal partial struct NavigationManoeuvre {
   public Burn burn;
-  public double initial_mass;
-  public double final_mass;
+  public double initial_mass_in_tonnes;
+  public double final_mass_in_tonnes;
   public double mass_flow;
   public double duration;
   public double final_time;
@@ -49,7 +49,7 @@ internal partial struct NavigationManoeuvre {
 internal partial struct KSPPart {
   public XYZ world_position;
   public XYZ world_velocity;
-  public double mass;
+  public double mass_in_tonnes;
   public XYZ gravitational_acceleration_to_be_applied_by_ksp;
   public uint id;
 }
@@ -415,15 +415,6 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool PhysicsBubbleIsEmpty(
       this IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__RenderedFlightPlan",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr RenderedFlightPlan(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      int plan_phase,
-      XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedPrediction",

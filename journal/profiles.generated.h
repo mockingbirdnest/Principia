@@ -640,22 +640,6 @@ struct PhysicsBubbleIsEmpty {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct RenderedFlightPlan {
-  struct In {
-    Plugin* const plugin;
-    char const* const vessel_guid;
-    int const plan_phase;
-    XYZ const sun_world_position;
-  };
-  using Return = LineAndIterator*;
-
-  using Message = serialization::RenderedFlightPlan;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Return const& result, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
 struct RenderedPrediction {
   struct In {
     Plugin* const plugin;

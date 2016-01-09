@@ -20,8 +20,8 @@ message XYZ {
 }
 
 message Burn {
-  required double thrust = 1;
-  required double specific_impulse = 2;
+  required double thrust_in_kilonewtons = 1;
+  required double specific_impulse_in_seconds_g0 = 2;
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
   required XYZ delta_v = 5;
@@ -29,8 +29,8 @@ message Burn {
 
 message NavigationManoeuvre {
   required Burn burn = 1;
-  required double initial_mass = 2;
-  required double final_mass = 3;
+  required double initial_mass_in_tonnes = 2;
+  required double final_mass_in_tonnes = 3;
   required double mass_flow = 4;
   required double duration = 5;
   required double final_time = 6;
@@ -43,7 +43,7 @@ message KSPPart {
   // TODO(egg): Y U NO USE QP?
   required XYZ world_position = 1;
   required XYZ world_velocity = 2;
-  required double mass = 3;
+  required double mass_in_tonnes = 3;
   required XYZ gravitational_acceleration_to_be_applied_by_ksp = 4;
   required uint32 id = 5;
 }
@@ -754,24 +754,6 @@ message PhysicsBubbleIsEmpty {
   }
   message Return {
     required bool result = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
-}
-
-message RenderedFlightPlan {
-  extend Method {
-    optional RenderedFlightPlan extension = 5041;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required string vessel_guid = 2;
-    required int32 plan_phase = 3;
-    required XYZ sun_world_position = 5;
-  }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
-                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;

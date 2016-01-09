@@ -8,6 +8,7 @@
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,8 +16,12 @@ namespace principia {
 using base::not_null;
 using geometry::Instant;
 using ksp_plugin::FlightPlan;
+using ksp_plugin::Navigation;
 using ksp_plugin::Vessel;
+using quantities::constants::StandardGravity;
+using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Second;
 
 namespace interface {
@@ -31,8 +36,15 @@ FlightPlan& GetFlightPlan(Plugin const* const plugin,
   return *vessel.flight_plan();
 }
 
-ksp_plugin::Burn FromInterfaceBurn(Burn const& burn) {
-  ksp_plugin::Burn result;
+ksp_plugin::Burn ToPluginBurn(Plugin const* const plugin,
+                              Burn const& burn) {
+  return {burn.thrust_in_kilonewtons * Kilo(Newton),
+          burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
+          base::check_not_null(std::unique_ptr<NavigationFrame>(
+              principia__NewNavigationFrame(plugin, burn.frame))),
+          Instant() + burn.initial_time * Second,
+          Velocity<Frenet<Navigation>>(
+              ToR3Element(burn.delta_v) * (Metre / Second))};
 }
 
 }  // namespace
@@ -43,7 +55,7 @@ bool principia__FlightPlanAppend(
     Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      Append(FromInterfaceBurn(burn)));
+                      Append(ToPluginBurn(plugin, burn)));
 }
 
 NavigationManoeuvre principia__FlightPlanGetManoeuvre(
@@ -87,7 +99,7 @@ bool principia__FlightPlanReplaceLast(
                                                      vessel_guid,
                                                      burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      ReplaceLast(FromInterfaceBurn(burn)));
+                      ReplaceLast(ToPluginBurn(plugin, burn)));
 }
 
 bool principia__FlightPlanSetFinalTime(

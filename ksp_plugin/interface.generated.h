@@ -25,8 +25,8 @@ static_assert(std::is_standard_layout<XYZ>::value,
 
 extern "C"
 struct Burn {
-  double thrust;
-  double specific_impulse;
+  double thrust_in_kilonewtons;
+  double specific_impulse_in_seconds_g0;
   NavigationFrameParameters frame;
   double initial_time;
   XYZ delta_v;
@@ -38,8 +38,8 @@ static_assert(std::is_standard_layout<Burn>::value,
 extern "C"
 struct NavigationManoeuvre {
   Burn burn;
-  double initial_mass;
-  double final_mass;
+  double initial_mass_in_tonnes;
+  double final_mass_in_tonnes;
   double mass_flow;
   double duration;
   double final_time;
@@ -55,7 +55,7 @@ extern "C"
 struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
-  double mass;
+  double mass_in_tonnes;
   XYZ gravitational_acceleration_to_be_applied_by_ksp;
   uint32_t id;
 };
@@ -335,13 +335,6 @@ int CDECL principia__NumberOfSegments(
 extern "C" PRINCIPIA_DLL
 bool CDECL principia__PhysicsBubbleIsEmpty(
     Plugin const* const plugin);
-
-extern "C" PRINCIPIA_DLL
-LineAndIterator* CDECL principia__RenderedFlightPlan(
-    Plugin* const plugin,
-    char const* const vessel_guid,
-    int const plan_phase,
-    XYZ const sun_world_position);
 
 extern "C" PRINCIPIA_DLL
 LineAndIterator* CDECL principia__RenderedPrediction(

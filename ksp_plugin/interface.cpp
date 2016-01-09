@@ -37,7 +37,6 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
-using geometry::Quaternion;
 using geometry::RadiusLatitudeLongitude;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
@@ -82,21 +81,6 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
   std::unique_ptr<T[]> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
-}
-
-R3Element<double> ToR3Element(XYZ const& xyz) {
-  return {xyz.x, xyz.y, xyz.z};
-}
-
-XYZ ToXYZ(R3Element<double> const& r3_element) {
-  return {r3_element.x, r3_element.y, r3_element.z};
-}
-
-WXYZ ToWXYZ(Quaternion const& quaternion) {
-  return {quaternion.real_part(),
-          quaternion.imaginary_part().x,
-          quaternion.imaginary_part().y,
-          quaternion.imaginary_part().z};
 }
 
 }  // namespace
@@ -631,27 +615,6 @@ LineAndIterator* principia__RenderedPrediction(
   return m.Return(result.release());
 }
 
-LineAndIterator* principia__RenderedFlightPlan(
-    Plugin* const plugin,
-    char const* const vessel_guid,
-    int const plan_phase,
-    XYZ const sun_world_position) {
-  journal::Method<journal::RenderedFlightPlan> m({plugin,
-                                                  vessel_guid,
-                                                  plan_phase,
-                                                  sun_world_position});
-  RenderedTrajectory<World> rendered_trajectory =
-      CHECK_NOTNULL(plugin)->RenderedFlightPlan(
-          vessel_guid,
-          plan_phase,
-          World::origin + Displacement<World>(
-                              ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return m.Return(result.release());
-}
-
 void principia__SetPredictionLength(Plugin* const plugin,
                                     double const t) {
   journal::Method<journal::SetPredictionLength> m({plugin, t});
@@ -746,7 +709,7 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                             ToR3Element(part->world_position) * Metre),
                     Velocity<World>(
                         ToR3Element(part->world_velocity) * (Metre / Second))),
-                part->mass * Tonne,
+                part->mass_in_tonnes * Tonne,
                 Vector<Acceleration, World>(
                     ToR3Element(
                         part->gravitational_acceleration_to_be_applied_by_ksp) *

@@ -199,8 +199,6 @@ class Plugin {
 
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
-  //void UpdateFlightPlan(GUID const& vessel_guid,
-  //                      Instant const& last_time) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in the frame defined by the current
@@ -226,11 +224,6 @@ class Plugin {
   virtual RenderedTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
-
-  virtual RenderedTrajectory<World> RenderedFlightPlan(
-      GUID const& vessel_guid,
-      int const plan_phase,
-      Position<World> const& sun_world_position);
 
   virtual void SetPredictionLength(Time const& t);
 

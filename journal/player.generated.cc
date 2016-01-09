@@ -52,7 +52,6 @@
   ran |= RunIfAppropriate<NewPlugin>(*method);
   ran |= RunIfAppropriate<NumberOfSegments>(*method);
   ran |= RunIfAppropriate<PhysicsBubbleIsEmpty>(*method);
-  ran |= RunIfAppropriate<RenderedFlightPlan>(*method);
   ran |= RunIfAppropriate<RenderedPrediction>(*method);
   ran |= RunIfAppropriate<RenderedVesselTrajectory>(*method);
   ran |= RunIfAppropriate<SayHello>(*method);
