@@ -175,7 +175,7 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
 }
 
 void FlightPlan::AddSegment() {
-  segments_.emplace(segments_.back()->NewForkAtLast());
+  segments_.emplace_back(segments_.back()->NewForkAtLast());
 }
 
 void FlightPlan::ResetLastSegment() {

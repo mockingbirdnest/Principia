@@ -212,7 +212,6 @@ class Plugin {
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
-  int FlightPlanSize(GUID const& vessel_guid) const;
   bool HasPrediction(GUID const& vessel_guid) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
@@ -239,6 +238,7 @@ class Plugin {
   virtual void SetPredictionSpeedTolerance(Speed const& v);
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
+  virtual Vessel const& GetVessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(

@@ -631,13 +631,6 @@ LineAndIterator* principia__RenderedPrediction(
   return m.Return(result.release());
 }
 
-int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,
-                                            char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
-                                                            vessel_guid});
-  return m.Return(CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid));
-}
-
 LineAndIterator* principia__RenderedFlightPlan(
     Plugin* const plugin,
     char const* const vessel_guid,

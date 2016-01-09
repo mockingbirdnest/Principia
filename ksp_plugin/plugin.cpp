@@ -353,12 +353,6 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
                           sun_world_position);
 }
 
-int Plugin::FlightPlanSize(GUID const& vessel_guid) const {
-  CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan()->
-             number_of_manœuvres();
-}
-
 bool Plugin::HasPrediction(GUID const& vessel_guid) const {
   return find_vessel_by_guid_or_die(vessel_guid)->has_prediction();
 }
@@ -406,6 +400,11 @@ void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
+}
+
+Vessel const & Plugin::GetVessel(GUID const & vessel_guid) const {
+  CHECK(!initializing_);
+  return *find_vessel_by_guid_or_die(vessel_guid);
 }
 
 not_null<std::unique_ptr<NavigationFrame>>
