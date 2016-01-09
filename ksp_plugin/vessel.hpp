@@ -4,8 +4,7 @@
 #include <vector>
 
 #include "ksp_plugin/celestial.hpp"
-#include "ksp_plugin/manœuvre.hpp"
-#include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"

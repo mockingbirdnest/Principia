@@ -9,10 +9,40 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 [StructLayout(LayoutKind.Sequential)]
+internal partial struct NavigationFrameParameters {
+  public int extension;
+  public int centre_index;
+  public int primary_index;
+  public int secondary_index;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal partial struct XYZ {
   public double x;
   public double y;
   public double z;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct Burn {
+  public double thrust;
+  public double specific_impulse;
+  public NavigationFrameParameters frame;
+  public double initial_time;
+  public XYZ delta_v;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal partial struct NavigationManoeuvre {
+  public Burn burn;
+  public double initial_mass;
+  public double final_mass;
+  public double mass_flow;
+  public double duration;
+  public double final_time;
+  public double time_of_half_delta_v;
+  public double time_to_half_delta_v;
+  public XYZ direction;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -22,14 +52,6 @@ internal partial struct KSPPart {
   public double mass;
   public XYZ gravitational_acceleration_to_be_applied_by_ksp;
   public uint id;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct NavigationFrameParameters {
-  public int extension;
-  public int centre_index;
-  public int primary_index;
-  public int secondary_index;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -161,6 +183,54 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZSegment FetchAndIncrement(
       this IntPtr line_and_iterator);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanAppend",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool FlightPlanAppend(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      Burn burn);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanGet",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern NavigationManoeuvre FlightPlanGet(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanRemoveLast",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void FlightPlanRemoveLast(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanReplaceLast",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool FlightPlanReplaceLast(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      Burn burn);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanSetFinalTime",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool FlightPlanSetFinalTime(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      double final_time);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanSetTolerances",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void FlightPlanSetTolerances(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      double length_integration_tolerance,
+      double speed_integration_tolerance);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanSize",

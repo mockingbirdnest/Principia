@@ -18,6 +18,7 @@
 #include "ksp_plugin/vessel.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
@@ -41,6 +42,7 @@ using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
+using physics::RelativeDegreesOfFreedom;
 using quantities::Angle;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -72,8 +74,6 @@ struct LineSegment {
 // We render trajectories as polygons.
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
-
-using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 
 class Plugin {
  public:
@@ -199,8 +199,8 @@ class Plugin {
 
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
-  void UpdateFlightPlan(GUID const& vessel_guid,
-                        Instant const& last_time) const;
+  //void UpdateFlightPlan(GUID const& vessel_guid,
+  //                      Instant const& last_time) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in the frame defined by the current

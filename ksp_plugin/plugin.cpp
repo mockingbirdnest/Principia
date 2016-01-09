@@ -320,19 +320,19 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
       prediction_speed_tolerance_);
 }
 
-void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
-                              Instant const& last_time) const {
-  CHECK(!initializing_);
-  find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
-      ephemeris_.get(),
-      prediction_integrator_,
-      last_time,
-      prediction_length_tolerance_,
-      prediction_speed_tolerance_,
-      prolongation_length_tolerance_,
-      prolongation_speed_tolerance_);
-}
-
+//void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
+//                              Instant const& last_time) const {
+//  CHECK(!initializing_);
+//  find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
+//      ephemeris_.get(),
+//      prediction_integrator_,
+//      last_time,
+//      prediction_length_tolerance_,
+//      prediction_speed_tolerance_,
+//      prolongation_length_tolerance_,
+//      prolongation_speed_tolerance_);
+//}
+//
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
@@ -355,7 +355,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
 int Plugin::FlightPlanSize(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan().size();
+  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan()->size();
 }
 
 bool Plugin::HasPrediction(GUID const& vessel_guid) const {
@@ -378,16 +378,16 @@ RenderedTrajectory<World> Plugin::RenderedFlightPlan(
     GUID const& vessel_guid,
     int const plan_phase,
     Position<World> const& sun_world_position) {
-  CHECK(!initializing_);
-  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_LT(plan_phase, vessel.flight_plan().size());
-  DiscreteTrajectory<Barycentric> const& prediction =
-      *vessel.flight_plan()[plan_phase];
-  CHECK(!prediction.is_root());
-  RenderedTrajectory<World> result =
-      RenderTrajectory(prediction.Fork(),
-                       prediction.End(),
-                       sun_world_position);
+  //CHECK(!initializing_);
+  //Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  //CHECK_LT(plan_phase, vessel.flight_plan()->size());
+  //DiscreteTrajectory<Barycentric> const& prediction =
+  //    *vessel.flight_plan()[plan_phase];
+  //CHECK(!prediction.is_root());
+  RenderedTrajectory<World> result;// =
+  //    RenderTrajectory(prediction.Fork(),
+  //                     prediction.End(),
+  //                     sun_world_position);
   return result;
 }
 
