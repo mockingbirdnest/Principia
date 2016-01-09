@@ -32,7 +32,7 @@ Argument Bisect(Function f,
       return middle;
     }
     Value const f_middle = f(middle);
-    if (f_middle == 0) {
+    if (f_middle == zero) {
       return middle;
     } else if (Sign(f_middle) == Sign(f_upper)) {
       upper = middle;
