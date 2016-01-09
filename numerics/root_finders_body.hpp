@@ -25,7 +25,8 @@ Argument Bisect(Function f,
   Argument lower = lower_bound;
   Argument upper = upper_bound;
   for (;;) {
-    Argument const middle = Barycentre({lower, upper}, {1, 1});
+    Argument const middle =
+        Barycentre<Argument, double>({lower, upper}, {1, 1});
     // The size of the interval has reached one ULP.
     if (middle == lower || middle == upper) {
       return middle;

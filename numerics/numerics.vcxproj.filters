@@ -49,5 +49,8 @@
     <ClCompile Include="fixed_arrays_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="root_finders_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

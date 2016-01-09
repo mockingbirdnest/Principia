@@ -21,6 +21,8 @@ class Sign {
   bool Negative() const;
   bool Positive() const;
 
+  bool operator==(Sign const& other) const;
+
   void WriteToMessage(not_null<serialization::Sign*> const message) const;
   static Sign ReadFromMessage(serialization::Sign const& message);
 
