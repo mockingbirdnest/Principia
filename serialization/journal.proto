@@ -266,6 +266,35 @@ message FetchAndIncrement {
   required Return return = 3;
 }
 
+message FlightPlanGet {
+  extend Method {
+    optional FlightPlanGet extension = ;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required NavigationManœuvre flight_plan_get = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanRemoveLast {
+  extend Method {
+    optional FlightPlanRemoveLast extension = ;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  required In in = 1;
+}
+
 message FlightPlanSize {
   extend Method {
     optional FlightPlanSize extension = 5038;
