@@ -2,10 +2,13 @@
 
 #include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/plugin.hpp"
 #include "physics/discrete_trajectory.hpp"
 
 namespace principia {
+
+using base::not_null;
+using physics::DiscreteTrajectory;
+
 namespace ksp_plugin {
 
 // Owns a fork.

@@ -5,14 +5,19 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
 
 using base::PullSerializer;
 using base::PushDeserializer;
+using ksp_plugin::NavigationFrame;
+using ksp_plugin::Plugin;
+using ksp_plugin::RenderedTrajectory;
+using ksp_plugin::World;
 
-namespace ksp_plugin {
+namespace interface {
 
 struct LineAndIterator {
   explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
@@ -33,7 +38,7 @@ bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 bool operator==(XYZSegment const& left, XYZSegment const& right);
 
-}  // namespace ksp_plugin
+}  // namespace interface
 }  // namespace principia
 
 #include "ksp_plugin/interface_body.hpp"

@@ -39,6 +39,10 @@ using base::UniqueBytes;
 using geometry::Displacement;
 using geometry::Quaternion;
 using geometry::RadiusLatitudeLongitude;
+using ksp_plugin::AliceSun;
+using ksp_plugin::Barycentric;
+using ksp_plugin::LineSegment;
+using ksp_plugin::Part;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RotatingBody;
@@ -54,7 +58,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
 
-namespace ksp_plugin {
+namespace interface {
 
 namespace {
 
@@ -937,5 +941,5 @@ char const* principia__SayHello() {
   return m.Return("Hello from native C++!");
 }
 
-}  // namespace ksp_plugin
+}  // namespace interface
 }  // namespace principia
