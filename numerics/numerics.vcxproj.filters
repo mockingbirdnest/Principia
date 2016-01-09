@@ -32,6 +32,12 @@
     <ClInclude Include="fixed_arrays_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="root_finders.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="root_finders_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">

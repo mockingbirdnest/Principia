@@ -138,6 +138,8 @@
     <ClInclude Include="fixed_arrays_body.hpp" />
     <ClInclude Include="double_precision.hpp" />
     <ClInclude Include="double_precision_body.hpp" />
+    <ClInclude Include="root_finders.hpp" />
+    <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
