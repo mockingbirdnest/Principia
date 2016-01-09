@@ -43,4 +43,4 @@ Argument Bisect(Function f,
 }
 
 }  // namespace numerics
-}  // namespace prinicpia
+}  // namespace principia
