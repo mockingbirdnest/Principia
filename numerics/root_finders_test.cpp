@@ -1,4 +1,4 @@
-#include "numerics/root_finders.hpp"
+﻿#include "numerics/root_finders.hpp"
 
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -24,7 +24,7 @@ namespace numerics {
 
 class RootFindersTest : public ::testing::Test {};
 
-// Solving ?t * ?t == n.
+// Solving Δt * Δt == n.
 TEST_F(RootFindersTest, SquareRoots) {
   Instant const t_0;
   Instant const t_max = t_0 + 10 * Second;
