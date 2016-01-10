@@ -320,17 +320,17 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
       prediction_speed_tolerance_);
 }
 
-void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
-                              Instant const& last_time) const {
+void Plugin::CreateFlightPlan(GUID const& vessel_guid,
+                              Instant const& final_time,
+                              Mass const& initial_mass) const {
   CHECK(!initializing_);
-  find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
+  find_vessel_by_guid_or_die(vessel_guid)->CreateFlightPlan(
+      final_time,
+      initial_mass,
       ephemeris_.get(),
       prediction_integrator_,
-      last_time,
       prediction_length_tolerance_,
-      prediction_speed_tolerance_,
-      prolongation_length_tolerance_,
-      prolongation_speed_tolerance_);
+      prediction_speed_tolerance_);
 }
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
@@ -348,14 +348,9 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     return RenderedTrajectory<World>();
   }
 
-  return RenderTrajectory(vessel->history().Begin(),
-                          vessel->history().End(),
-                          sun_world_position);
-}
-
-int Plugin::FlightPlanSize(GUID const& vessel_guid) const {
-  CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan().size();
+  return RenderedTrajectoryFromIterators(vessel->history().Begin(),
+                                         vessel->history().End(),
+                                         sun_world_position);
 }
 
 bool Plugin::HasPrediction(GUID const& vessel_guid) const {
@@ -368,26 +363,52 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   RenderedTrajectory<World> result =
-      RenderTrajectory(vessel.prediction().Fork(),
-                       vessel.prediction().End(),
-                       sun_world_position);
+      RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
+                                      vessel.prediction().End(),
+                                      sun_world_position);
   return result;
 }
 
-RenderedTrajectory<World> Plugin::RenderedFlightPlan(
-    GUID const& vessel_guid,
-    int const plan_phase,
-    Position<World> const& sun_world_position) {
-  CHECK(!initializing_);
-  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_LT(plan_phase, vessel.flight_plan().size());
-  DiscreteTrajectory<Barycentric> const& prediction =
-      *vessel.flight_plan()[plan_phase];
-  CHECK(!prediction.is_root());
-  RenderedTrajectory<World> result =
-      RenderTrajectory(prediction.Fork(),
-                       prediction.End(),
-                       sun_world_position);
+RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Position<World> const& sun_world_position) const {
+  RenderedTrajectory<World> result;
+  auto const to_world =
+      AffineMap<Barycentric, World, Length, OrthogonalMap>(
+          sun_->current_position(current_time_),
+          sun_world_position,
+          OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
+
+  // Compute the trajectory in the navigation frame.
+  DiscreteTrajectory<Navigation> intermediate_trajectory;
+  for (auto it = begin; it != end; ++it) {
+    intermediate_trajectory.Append(
+        it.time(),
+        plotting_frame_->ToThisFrameAtTime(it.time())(
+            it.degrees_of_freedom()));
+  }
+
+  // Render the trajectory at current time in |World|.
+  DiscreteTrajectory<Navigation>::Iterator initial_it =
+      intermediate_trajectory.Begin();
+  DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
+      intermediate_trajectory.End();
+  auto from_navigation_frame_to_world_at_current_time =
+      to_world *
+          plotting_frame_->
+              FromThisFrameAtTime(current_time_).rigid_transformation();
+  if (initial_it != intermediate_end) {
+    for (auto final_it = initial_it;
+         ++final_it, final_it != intermediate_end;
+         initial_it = final_it) {
+      result.emplace_back(from_navigation_frame_to_world_at_current_time(
+                              initial_it.degrees_of_freedom().position()),
+                          from_navigation_frame_to_world_at_current_time(
+                              final_it.degrees_of_freedom().position()));
+    }
+  }
+  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
   return result;
 }
 
@@ -405,6 +426,11 @@ void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
+}
+
+not_null<Vessel*> Plugin::GetVessel(GUID const & vessel_guid) const {
+  CHECK(!initializing_);
+  return find_vessel_by_guid_or_die(vessel_guid).get();
 }
 
 not_null<std::unique_ptr<NavigationFrame>>
@@ -948,49 +974,6 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           centre_of_mass + from_centre_of_mass);
     }
   }
-}
-
-RenderedTrajectory<World> Plugin::RenderTrajectory(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
-  RenderedTrajectory<World> result;
-  auto const to_world =
-      AffineMap<Barycentric, World, Length, OrthogonalMap>(
-          sun_->current_position(current_time_),
-          sun_world_position,
-          OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
-
-  // Compute the trajectory in the navigation frame.
-  DiscreteTrajectory<Navigation> intermediate_trajectory;
-  for (auto it = begin; it != end; ++it) {
-    intermediate_trajectory.Append(
-        it.time(),
-        plotting_frame_->ToThisFrameAtTime(it.time())(
-            it.degrees_of_freedom()));
-  }
-
-  // Render the trajectory at current time in |World|.
-  DiscreteTrajectory<Navigation>::Iterator initial_it =
-      intermediate_trajectory.Begin();
-  DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
-      intermediate_trajectory.End();
-  auto from_navigation_frame_to_world_at_current_time =
-      to_world *
-          plotting_frame_->
-              FromThisFrameAtTime(current_time_).rigid_transformation();
-  if (initial_it != intermediate_end) {
-    for (auto final_it = initial_it;
-         ++final_it, final_it != intermediate_end;
-         initial_it = final_it) {
-      result.emplace_back(from_navigation_frame_to_world_at_current_time(
-                              initial_it.degrees_of_freedom().position()),
-                          from_navigation_frame_to_world_at_current_time(
-                              final_it.degrees_of_freedom().position()));
-    }
-  }
-  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
-  return result;
 }
 
 Vector<double, World> Plugin::FromVesselFrenetFrame(

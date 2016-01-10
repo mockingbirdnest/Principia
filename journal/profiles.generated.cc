@@ -4,25 +4,45 @@
 
 namespace {
 
+NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::NavigationFrameParameters const& navigation_frame_parameters) {
+  return {navigation_frame_parameters.extension(),
+          navigation_frame_parameters.centre_index(),
+          navigation_frame_parameters.primary_index(),
+          navigation_frame_parameters.secondary_index()};
+}
+
 XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
   return {xyz.x(),
           xyz.y(),
           xyz.z()};
 }
 
+Burn DeserializeBurn(serialization::Burn const& burn) {
+  return {burn.thrust_in_kilonewtons(),
+          burn.specific_impulse_in_seconds_g0(),
+          DeserializeNavigationFrameParameters(burn.frame()),
+          burn.initial_time(),
+          DeserializeXYZ(burn.delta_v())};
+}
+
+NavigationManoeuvre DeserializeNavigationManoeuvre(serialization::NavigationManoeuvre const& navigation_manoeuvre) {
+  return {DeserializeBurn(navigation_manoeuvre.burn()),
+          navigation_manoeuvre.initial_mass_in_tonnes(),
+          navigation_manoeuvre.final_mass_in_tonnes(),
+          navigation_manoeuvre.mass_flow(),
+          navigation_manoeuvre.duration(),
+          navigation_manoeuvre.final_time(),
+          navigation_manoeuvre.time_of_half_delta_v(),
+          navigation_manoeuvre.time_to_half_delta_v(),
+          DeserializeXYZ(navigation_manoeuvre.direction())};
+}
+
 KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
   return {DeserializeXYZ(ksp_part.world_position()),
           DeserializeXYZ(ksp_part.world_velocity()),
-          ksp_part.mass(),
+          ksp_part.mass_in_tonnes(),
           DeserializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp()),
           ksp_part.id()};
-}
-
-NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::NavigationFrameParameters const& navigation_frame_parameters) {
-  return {navigation_frame_parameters.extension(),
-          navigation_frame_parameters.centre_index(),
-          navigation_frame_parameters.primary_index(),
-          navigation_frame_parameters.secondary_index()};
 }
 
 QP DeserializeQP(serialization::QP const& qp) {
@@ -42,6 +62,15 @@ XYZSegment DeserializeXYZSegment(serialization::XYZSegment const& xyz_segment) {
           DeserializeXYZ(xyz_segment.end())};
 }
 
+serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {
+  serialization::NavigationFrameParameters m;
+  m.set_extension(navigation_frame_parameters.extension);
+  m.set_centre_index(navigation_frame_parameters.centre_index);
+  m.set_primary_index(navigation_frame_parameters.primary_index);
+  m.set_secondary_index(navigation_frame_parameters.secondary_index);
+  return m;
+}
+
 serialization::XYZ SerializeXYZ(XYZ const& xyz) {
   serialization::XYZ m;
   m.set_x(xyz.x);
@@ -50,22 +79,37 @@ serialization::XYZ SerializeXYZ(XYZ const& xyz) {
   return m;
 }
 
+serialization::Burn SerializeBurn(Burn const& burn) {
+  serialization::Burn m;
+  m.set_thrust_in_kilonewtons(burn.thrust_in_kilonewtons);
+  m.set_specific_impulse_in_seconds_g0(burn.specific_impulse_in_seconds_g0);
+  *m.mutable_frame() = SerializeNavigationFrameParameters(burn.frame);
+  m.set_initial_time(burn.initial_time);
+  *m.mutable_delta_v() = SerializeXYZ(burn.delta_v);
+  return m;
+}
+
+serialization::NavigationManoeuvre SerializeNavigationManoeuvre(NavigationManoeuvre const& navigation_manoeuvre) {
+  serialization::NavigationManoeuvre m;
+  *m.mutable_burn() = SerializeBurn(navigation_manoeuvre.burn);
+  m.set_initial_mass_in_tonnes(navigation_manoeuvre.initial_mass_in_tonnes);
+  m.set_final_mass_in_tonnes(navigation_manoeuvre.final_mass_in_tonnes);
+  m.set_mass_flow(navigation_manoeuvre.mass_flow);
+  m.set_duration(navigation_manoeuvre.duration);
+  m.set_final_time(navigation_manoeuvre.final_time);
+  m.set_time_of_half_delta_v(navigation_manoeuvre.time_of_half_delta_v);
+  m.set_time_to_half_delta_v(navigation_manoeuvre.time_to_half_delta_v);
+  *m.mutable_direction() = SerializeXYZ(navigation_manoeuvre.direction);
+  return m;
+}
+
 serialization::KSPPart SerializeKSPPart(KSPPart const& ksp_part) {
   serialization::KSPPart m;
   *m.mutable_world_position() = SerializeXYZ(ksp_part.world_position);
   *m.mutable_world_velocity() = SerializeXYZ(ksp_part.world_velocity);
-  m.set_mass(ksp_part.mass);
+  m.set_mass_in_tonnes(ksp_part.mass_in_tonnes);
   *m.mutable_gravitational_acceleration_to_be_applied_by_ksp() = SerializeXYZ(ksp_part.gravitational_acceleration_to_be_applied_by_ksp);
   m.set_id(ksp_part.id);
-  return m;
-}
-
-serialization::NavigationFrameParameters SerializeNavigationFrameParameters(NavigationFrameParameters const& navigation_frame_parameters) {
-  serialization::NavigationFrameParameters m;
-  m.set_extension(navigation_frame_parameters.extension);
-  m.set_centre_index(navigation_frame_parameters.centre_index);
-  m.set_primary_index(navigation_frame_parameters.primary_index);
-  m.set_secondary_index(navigation_frame_parameters.secondary_index);
   return m;
 }
 
@@ -361,22 +405,202 @@ void FetchAndIncrement::Run(Message const& message, not_null<Player::PointerMap*
   CHECK(DeserializeXYZSegment(message.return_().result()) == result);
 }
 
-void FlightPlanSize::Fill(In const& in, not_null<Message*> const message) {
+void FlightPlanAppend::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_burn() = SerializeBurn(in.burn);
+}
+
+void FlightPlanAppend::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanAppend::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto burn = DeserializeBurn(in.burn());
+  auto const result = interface::principia__FlightPlanAppend(plugin, vessel_guid, burn);
+  CHECK(message.return_().result() == result);
+}
+
+void FlightPlanCreate::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_final_time(in.final_time);
+  m->set_mass_in_tonnes(in.mass_in_tonnes);
+}
+
+void FlightPlanCreate::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto final_time = in.final_time();
+  auto mass_in_tonnes = in.mass_in_tonnes();
+  interface::principia__FlightPlanCreate(plugin, vessel_guid, final_time, mass_in_tonnes);
+}
+
+void FlightPlanDelete::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
 }
 
-void FlightPlanSize::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_result(result);
-}
-
-void FlightPlanSize::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+void FlightPlanDelete::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
-  auto const result = interface::principia__FlightPlanSize(plugin, vessel_guid);
+  interface::principia__FlightPlanDelete(plugin, vessel_guid);
+}
+
+void FlightPlanGetManoeuvre::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_index(in.index);
+}
+
+void FlightPlanGetManoeuvre::Fill(Return const& result, not_null<Message*> const message) {
+  *message->mutable_return_()->mutable_result() = SerializeNavigationManoeuvre(result);
+}
+
+void FlightPlanGetManoeuvre::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto index = in.index();
+  auto const result = interface::principia__FlightPlanGetManoeuvre(plugin, vessel_guid, index);
+  CHECK(DeserializeNavigationManoeuvre(message.return_().result()) == result);
+}
+
+void FlightPlanNumberOfManoeuvres::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanNumberOfManoeuvres::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanNumberOfManoeuvres::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto const result = interface::principia__FlightPlanNumberOfManoeuvres(plugin, vessel_guid);
   CHECK(message.return_().result() == result);
+}
+
+void FlightPlanNumberOfSegments::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanNumberOfSegments::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanNumberOfSegments::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto const result = interface::principia__FlightPlanNumberOfSegments(plugin, vessel_guid);
+  CHECK(message.return_().result() == result);
+}
+
+void FlightPlanRemoveLast::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanRemoveLast::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  interface::principia__FlightPlanRemoveLast(plugin, vessel_guid);
+}
+
+void FlightPlanRenderedSegment::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
+  m->set_index(in.index);
+}
+
+void FlightPlanRenderedSegment::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(SerializePointer(result));
+}
+
+void FlightPlanRenderedSegment::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto sun_world_position = DeserializeXYZ(in.sun_world_position());
+  auto index = in.index();
+  auto const result = interface::principia__FlightPlanRenderedSegment(plugin, vessel_guid, sun_world_position, index);
+  Insert(pointer_map, message.return_().result(), result);
+}
+
+void FlightPlanReplaceLast::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_burn() = SerializeBurn(in.burn);
+}
+
+void FlightPlanReplaceLast::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanReplaceLast::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto burn = DeserializeBurn(in.burn());
+  auto const result = interface::principia__FlightPlanReplaceLast(plugin, vessel_guid, burn);
+  CHECK(message.return_().result() == result);
+}
+
+void FlightPlanSetFinalTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_final_time(in.final_time);
+}
+
+void FlightPlanSetFinalTime::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanSetFinalTime::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto final_time = in.final_time();
+  auto const result = interface::principia__FlightPlanSetFinalTime(plugin, vessel_guid, final_time);
+  CHECK(message.return_().result() == result);
+}
+
+void FlightPlanSetTolerances::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_length_integration_tolerance(in.length_integration_tolerance);
+  m->set_speed_integration_tolerance(in.speed_integration_tolerance);
+}
+
+void FlightPlanSetTolerances::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto length_integration_tolerance = in.length_integration_tolerance();
+  auto speed_integration_tolerance = in.speed_integration_tolerance();
+  interface::principia__FlightPlanSetTolerances(plugin, vessel_guid, length_integration_tolerance, speed_integration_tolerance);
 }
 
 void ForgetAllHistoriesBefore::Fill(In const& in, not_null<Message*> const message) {
@@ -724,28 +948,6 @@ void PhysicsBubbleIsEmpty::Run(Message const& message, not_null<Player::PointerM
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
   auto const result = interface::principia__PhysicsBubbleIsEmpty(plugin);
   CHECK(message.return_().result() == result);
-}
-
-void RenderedFlightPlan::Fill(In const& in, not_null<Message*> const message) {
-  auto* const m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  m->set_plan_phase(in.plan_phase);
-  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
-}
-
-void RenderedFlightPlan::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_result(SerializePointer(result));
-}
-
-void RenderedFlightPlan::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto vessel_guid = in.vessel_guid().c_str();
-  auto plan_phase = in.plan_phase();
-  auto sun_world_position = DeserializeXYZ(in.sun_world_position());
-  auto const result = interface::principia__RenderedFlightPlan(plugin, vessel_guid, plan_phase, sun_world_position);
-  Insert(pointer_map, message.return_().result(), result);
 }
 
 void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {

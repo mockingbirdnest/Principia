@@ -53,6 +53,7 @@ class Manœuvre {
   // individual thrust divided by the exhaust velocity).
   SpecificImpulse const& specific_impulse() const;
   Vector<double, Frenet<Frame>> const& direction() const;
+  not_null<DynamicFrame<InertialFrame, Frame> const*> frame() const;
 
   // Equivalent characterizations of intensity.  Only one of the mutators may be
   // called, and only once.

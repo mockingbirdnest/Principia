@@ -20,6 +20,7 @@
     <ClCompile Include="..\ksp_plugin\burn.cpp" />
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\mock_plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\physics_bubble.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
