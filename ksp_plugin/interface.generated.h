@@ -185,12 +185,6 @@ NavigationManoeuvre CDECL principia__FlightPlanGetManoeuvre(
     int const index);
 
 extern "C" PRINCIPIA_DLL
-LineAndIterator* CDECL principia__FlightPlanGetSegment(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const index);
-
-extern "C" PRINCIPIA_DLL
 int CDECL principia__FlightPlanNumberOfManoeuvres(
     Plugin const* const plugin,
     char const* const vessel_guid);
@@ -204,6 +198,12 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__FlightPlanRemoveLast(
     Plugin const* const plugin,
     char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+LineAndIterator* CDECL principia__FlightPlanRenderedSegment(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index);
 
 extern "C" PRINCIPIA_DLL
 bool CDECL principia__FlightPlanReplaceLast(

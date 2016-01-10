@@ -239,21 +239,6 @@ struct FlightPlanGetManoeuvre {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct FlightPlanGetSegment {
-  struct In {
-    Plugin const* const plugin;
-    char const* const vessel_guid;
-    int const index;
-  };
-  using Return = LineAndIterator*;
-
-  using Message = serialization::FlightPlanGetSegment;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Return const& result, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
 struct FlightPlanNumberOfManoeuvres {
   struct In {
     Plugin const* const plugin;
@@ -290,6 +275,21 @@ struct FlightPlanRemoveLast {
 
   using Message = serialization::FlightPlanRemoveLast;
   static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanRenderedSegment {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    int const index;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::FlightPlanRenderedSegment;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
 };

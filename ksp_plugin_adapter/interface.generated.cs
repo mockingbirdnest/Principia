@@ -201,14 +201,6 @@ internal static partial class Interface {
       int index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__FlightPlanGetSegment",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr FlightPlanGetSegment(
-      this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      int index);
-
-  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanNumberOfManoeuvres",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern int FlightPlanNumberOfManoeuvres(
@@ -228,6 +220,14 @@ internal static partial class Interface {
   internal static extern void FlightPlanRemoveLast(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanRenderedSegment",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern IntPtr FlightPlanRenderedSegment(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int index);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanReplaceLast",

@@ -16,6 +16,7 @@ namespace principia {
 
 using base::not_null;
 using geometry::Instant;
+using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
@@ -95,11 +96,6 @@ NavigationManoeuvre principia__FlightPlanGetManoeuvre(
              GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
 }
 
-LineAndIterator* principia__FlightPlanGetSegment(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const index) {}
-
 int principia__FlightPlanNumberOfManoeuvres(
     Plugin const* const plugin,
     char const* const vessel_guid) {
@@ -121,6 +117,19 @@ void principia__FlightPlanRemoveLast(
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
   GetFlightPlan(plugin, vessel_guid).RemoveLast();
   return m.Return();
+}
+
+LineAndIterator* principia__FlightPlanRenderedSegment(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index) {
+  journal::Method<journal::FlightPlanRenderedSegment> m({plugin,
+                                                         vessel_guid,
+                                                         index});
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
+  //Andthen?
 }
 
 bool principia__FlightPlanReplaceLast(

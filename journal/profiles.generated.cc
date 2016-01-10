@@ -445,26 +445,6 @@ void FlightPlanGetManoeuvre::Run(Message const& message, not_null<Player::Pointe
   CHECK(DeserializeNavigationManoeuvre(message.return_().result()) == result);
 }
 
-void FlightPlanGetSegment::Fill(In const& in, not_null<Message*> const message) {
-  auto* const m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_vessel_guid(in.vessel_guid);
-  m->set_index(in.index);
-}
-
-void FlightPlanGetSegment::Fill(Return const& result, not_null<Message*> const message) {
-  message->mutable_return_()->set_result(SerializePointer(result));
-}
-
-void FlightPlanGetSegment::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
-  auto vessel_guid = in.vessel_guid().c_str();
-  auto index = in.index();
-  auto const result = interface::principia__FlightPlanGetSegment(plugin, vessel_guid, index);
-  Insert(pointer_map, message.return_().result(), result);
-}
-
 void FlightPlanNumberOfManoeuvres::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
@@ -512,6 +492,26 @@ void FlightPlanRemoveLast::Run(Message const& message, not_null<Player::PointerM
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   interface::principia__FlightPlanRemoveLast(plugin, vessel_guid);
+}
+
+void FlightPlanRenderedSegment::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_index(in.index);
+}
+
+void FlightPlanRenderedSegment::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(SerializePointer(result));
+}
+
+void FlightPlanRenderedSegment::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto index = in.index();
+  auto const result = interface::principia__FlightPlanRenderedSegment(plugin, vessel_guid, index);
+  Insert(pointer_map, message.return_().result(), result);
 }
 
 void FlightPlanReplaceLast::Fill(In const& in, not_null<Message*> const message) {

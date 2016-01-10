@@ -20,10 +20,10 @@
   ran |= RunIfAppropriate<FetchAndIncrement>(*method);
   ran |= RunIfAppropriate<FlightPlanAppend>(*method);
   ran |= RunIfAppropriate<FlightPlanGetManoeuvre>(*method);
-  ran |= RunIfAppropriate<FlightPlanGetSegment>(*method);
   ran |= RunIfAppropriate<FlightPlanNumberOfManoeuvres>(*method);
   ran |= RunIfAppropriate<FlightPlanNumberOfSegments>(*method);
   ran |= RunIfAppropriate<FlightPlanRemoveLast>(*method);
+  ran |= RunIfAppropriate<FlightPlanRenderedSegment>(*method);
   ran |= RunIfAppropriate<FlightPlanReplaceLast>(*method);
   ran |= RunIfAppropriate<FlightPlanSetFinalTime>(*method);
   ran |= RunIfAppropriate<FlightPlanSetTolerances>(*method);
