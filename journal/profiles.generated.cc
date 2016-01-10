@@ -425,6 +425,36 @@ void FlightPlanAppend::Run(Message const& message, not_null<Player::PointerMap*>
   CHECK(message.return_().result() == result);
 }
 
+void FlightPlanCreate::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+  m->set_final_time(in.final_time);
+  m->set_mass_in_tonnes(in.mass_in_tonnes);
+}
+
+void FlightPlanCreate::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto final_time = in.final_time();
+  auto mass_in_tonnes = in.mass_in_tonnes();
+  interface::principia__FlightPlanCreate(plugin, vessel_guid, final_time, mass_in_tonnes);
+}
+
+void FlightPlanDelete::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanDelete::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  interface::principia__FlightPlanDelete(plugin, vessel_guid);
+}
+
 void FlightPlanGetManoeuvre::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));

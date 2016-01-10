@@ -320,17 +320,17 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
       prediction_speed_tolerance_);
 }
 
-void Plugin::UpdateFlightPlan(GUID const& vessel_guid,
-                              Instant const& last_time) const {
+void Plugin::CreateFlightPlan(GUID const& vessel_guid,
+                              Instant const& final_time,
+                              Mass const& initial_mass) const {
   CHECK(!initializing_);
-  find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
+  find_vessel_by_guid_or_die(vessel_guid)->CreateFlightPlan(
+      final_time,
+      initial_mass,
       ephemeris_.get(),
       prediction_integrator_,
-      last_time,
       prediction_length_tolerance_,
-      prediction_speed_tolerance_,
-      prolongation_length_tolerance_,
-      prolongation_speed_tolerance_);
+      prediction_speed_tolerance_);
 }
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
@@ -428,9 +428,9 @@ bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
 }
 
-Vessel const & Plugin::GetVessel(GUID const & vessel_guid) const {
+not_null<Vessel*> Plugin::GetVessel(GUID const & vessel_guid) const {
   CHECK(!initializing_);
-  return *find_vessel_by_guid_or_die(vessel_guid);
+  return find_vessel_by_guid_or_die(vessel_guid).get();
 }
 
 not_null<std::unique_ptr<NavigationFrame>>

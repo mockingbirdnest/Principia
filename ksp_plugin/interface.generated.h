@@ -179,6 +179,18 @@ bool CDECL principia__FlightPlanAppend(
     Burn const burn);
 
 extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanCreate(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const final_time,
+    double const mass_in_tonnes);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanDelete(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
 NavigationManoeuvre CDECL principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,

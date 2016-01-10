@@ -33,11 +33,18 @@ namespace interface {
 
 namespace {
 
+not_null<Vessel*> GetVessel(Plugin const* const plugin,
+                            char const* const vessel_guid) {
+  // TODO(phl): Should this check if the vessel is synchronized/initialized?
+  CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
+  return plugin->GetVessel(vessel_guid);
+}
+
 FlightPlan& GetFlightPlan(Plugin const* const plugin,
                           char const* const vessel_guid) {
   // TODO(phl): Should this check if the vessel is synchronized/initialized?
   CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
-  Vessel const& vessel = plugin->GetVessel(vessel_guid);
+  Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   return *vessel.flight_plan();
 }
@@ -78,13 +85,33 @@ NavigationManoeuvre ToNavigationManoeuvre(NavigationManœuvre const& manœuvre) 
 
 }  // namespace
 
-bool principia__FlightPlanAppend(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    Burn const burn) {
+bool principia__FlightPlanAppend(Plugin const* const plugin,
+                                 char const* const vessel_guid,
+                                 Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
                       Append(ToBurn(plugin, burn)));
+}
+
+void principia__FlightPlanCreate(Plugin const* const plugin,
+                                 char const* const vessel_guid,
+                                 double const final_time,
+                                 double const mass_in_tonnes) {
+  journal::Method<journal::FlightPlanCreate> m({plugin,
+                                                vessel_guid,
+                                                final_time,
+                                                mass_in_tonnes});
+  CHECK_NOTNULL(plugin)->CreateFlightPlan(vessel_guid,
+                                          Instant() + final_time * Second,
+                                          mass_in_tonnes * Tonne);
+  return m.Return();
+}
+
+void principia__FlightPlanDelete(Plugin const* const plugin,
+                                 char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
+  GetVessel(plugin, vessel_guid)->DeleteFlightPlan();
+  return m.Return();
 }
 
 NavigationManoeuvre principia__FlightPlanGetManoeuvre(
@@ -98,24 +125,21 @@ NavigationManoeuvre principia__FlightPlanGetManoeuvre(
              GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
 }
 
-int principia__FlightPlanNumberOfManoeuvres(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
+int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,
+                                            char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
                                                             vessel_guid});
   return m.Return(GetFlightPlan(plugin, vessel_guid).number_of_manœuvres());
 }
 
-int principia__FlightPlanNumberOfSegments(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
+int principia__FlightPlanNumberOfSegments(Plugin const* const plugin,
+                                          char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfSegments> m({plugin, vessel_guid});
   return m.Return(GetFlightPlan(plugin, vessel_guid).number_of_segments());
 }
 
-void principia__FlightPlanRemoveLast(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
+void principia__FlightPlanRemoveLast(Plugin const* const plugin,
+                                     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
   GetFlightPlan(plugin, vessel_guid).RemoveLast();
   return m.Return();
@@ -144,10 +168,9 @@ LineAndIterator* principia__FlightPlanRenderedSegment(
   return m.Return(result.release());
 }
 
-bool principia__FlightPlanReplaceLast(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    Burn const burn) {
+bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
+                                      char const* const vessel_guid,
+                                      Burn const burn) {
   journal::Method<journal::FlightPlanReplaceLast> m({plugin,
                                                      vessel_guid,
                                                      burn});
@@ -155,10 +178,9 @@ bool principia__FlightPlanReplaceLast(
                       ReplaceLast(ToBurn(plugin, burn)));
 }
 
-bool principia__FlightPlanSetFinalTime(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    double const final_time) {
+bool principia__FlightPlanSetFinalTime(Plugin const* const plugin,
+                                       char const* const vessel_guid,
+                                       double const final_time) {
   journal::Method<journal::FlightPlanSetFinalTime> m({plugin,
                                                       vessel_guid,
                                                       final_time});

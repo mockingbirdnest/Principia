@@ -199,8 +199,10 @@ class Plugin {
 
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
-  void UpdateFlightPlan(GUID const& vessel_guid,
-                        Instant const& last_time) const;
+
+  void CreateFlightPlan(GUID const& vessel_guid,
+                        Instant const& final_time,
+                        Mass const& initial_mass) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in the frame defined by the current
@@ -243,7 +245,7 @@ class Plugin {
   virtual void SetPredictionSpeedTolerance(Speed const& v);
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
-  virtual Vessel const& GetVessel(GUID const& vessel_guid) const;
+  virtual not_null<Vessel*> Plugin::GetVessel(GUID const & vessel_guid) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(

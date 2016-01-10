@@ -193,6 +193,22 @@ internal static partial class Interface {
       Burn burn);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanCreate",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void FlightPlanCreate(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      double final_time,
+      double mass_in_tonnes);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanDelete",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void FlightPlanDelete(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanGetManoeuvre",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(

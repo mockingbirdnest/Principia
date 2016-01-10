@@ -224,6 +224,32 @@ struct FlightPlanAppend {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
+struct FlightPlanCreate {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    double const final_time;
+    double const mass_in_tonnes;
+  };
+
+  using Message = serialization::FlightPlanCreate;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanDelete {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+
+  using Message = serialization::FlightPlanDelete;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
 struct FlightPlanGetManoeuvre {
   struct In {
     Plugin const* const plugin;
