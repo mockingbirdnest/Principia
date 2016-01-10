@@ -86,9 +86,11 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   } else if (eccentricity == 1) {
     // Parabolic case.
     LOG(FATAL) << "not yet implemented";
+    base::noreturn();
   } else {
     // Hyperbolic case.
     LOG(FATAL) << "not yet implemented";
+    base::noreturn();
   }
 }
 

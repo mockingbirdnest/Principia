@@ -43,9 +43,9 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "initial_state_jd_2433282_500000000.proto.txt");
-  auto const earth = solar_system.MakeMassiveBody(
+  auto const earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
                          solar_system.gravity_model_message("Earth"));
-  auto const moon = solar_system.MakeMassiveBody(
+  auto const moon = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
                         solar_system.gravity_model_message("Moon"));
   // The numbers in the gravity models and those from the query above both come
   // from DE431, so the sums are the same up to round-off.
