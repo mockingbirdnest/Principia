@@ -52,7 +52,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   EXPECT_THAT(
       earth->gravitational_parameter() + moon->gravitational_parameter(),
       AlmostEquals(
-          4.0350323550225975E+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second), 1)));
+          4.0350323550225975E+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second)), 1));
   Instant const date = JulianDate(2457397.500000000);
   KeplerianElements<ICRFJ2000Equator> elements;
   elements.eccentricity                = 4.772161502830355E-02;
@@ -61,10 +61,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   elements.longitude_of_ascending_node = 1.752118723367974E+00 * Degree;
   elements.argument_of_periapsis       = 3.551364385683149E+02 * Degree;
   elements.mean_anomaly                = 2.963020996150547E+02 * Degree;
-  KeplerOrbit<ICRFJ2000Equator> const moon_orbit(earth.get(),
-                                                 moon.get(),
-                                                 date,
-                                                 elements);
+  KeplerOrbit<ICRFJ2000Equator> const moon_orbit(*earth, *moon, date, elements);
   Displacement<ICRFJ2000Equator> const expected_displacement(
       { 1.177367562036580E+05 * Kilo(Metre),
        -3.419908628150604E+05 * Kilo(Metre),
