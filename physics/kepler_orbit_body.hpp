@@ -18,16 +18,16 @@ namespace physics {
 
 template<typename Frame>
 KeplerOrbit<Frame>::KeplerOrbit(
-    TwoBodySystem const& system,
+    MassiveBody const& primary,
+    Body const& secondary,
     Instant const& epoch,
     KeplerianElements<Frame> const& elements_at_epoch)
     : system_gravitational_parameter_(
-          system.primary->gravitational_parameter() +
-          (system.secondary->is_massless()
+          primary.gravitational_parameter() +
+          (secondary.is_massless()
                ? GravitationalParameter{}
-               : CHECK_NOTNULL(
-                     dynamic_cast<MassiveBody const*>(&*system.secondary))->
-                         gravitational_parameter())),
+               : dynamic_cast<MassiveBody const&>(secondary).
+                     gravitational_parameter())),
       epoch_(epoch),
       elements_at_epoch_(elements_at_epoch) {}
 
@@ -76,12 +76,11 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
                                                            Sin(true_anomaly),
                                                            0}));
     Velocity<Frame> const v =
-      Sqrt(μ * a) / distance *
-          from_orbit_plane(
-                Vector<double, Frame>(
-                    {-Sin(eccentric_anomaly),
-                     Sqrt(1 - Pow<2>(eccentricity)) * Cos(eccentric_anomaly),
-                     0}));
+        Sqrt(μ * a) / distance *
+        from_orbit_plane(Vector<double, Frame>(
+            {-Sin(eccentric_anomaly),
+             Sqrt(1 - Pow<2>(eccentricity)) * Cos(eccentric_anomaly),
+             0}));
     return {r, v};
   } else if (eccentricity == 1) {
     // Parabolic case.

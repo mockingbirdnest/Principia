@@ -16,18 +16,16 @@ struct KeplerianElements {
   Angle mean_anomaly;
 };
 
-struct TwoBodySystem {
-  not_null<MassiveBody const*> const primary;
-  not_null<Body const*> const secondary;
-};
-
 template<typename Frame>
 class KeplerOrbit {
  public:
-  KeplerOrbit(TwoBodySystem const& system,
+  KeplerOrbit(MassiveBody const& primary,
+              Body const& secondary,
               Instant const& epoch,
               KeplerianElements<Frame> const& elements_at_epoch);
+
   RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
+
  private:
   GravitationalParameter const system_gravitational_parameter_;
   KeplerianElements<Frame> const elements_at_epoch_;
