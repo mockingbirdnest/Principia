@@ -58,8 +58,8 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
                      mean_anomaly - eccentricity * Radian,
                      mean_anomaly + eccentricity * Radian);
     Angle const true_anomaly =
-        ArcTan(Sqrt(1 + eccentricity) * Cos(eccentric_anomaly / 2),
-               Sqrt(1 - eccentricity) * Sin(eccentric_anomaly / 2));
+       2 * ArcTan(Sqrt(1 + eccentricity) * Sin(eccentric_anomaly / 2),
+                  Sqrt(1 - eccentricity) * Cos(eccentric_anomaly / 2));
     Bivector<double, Frame> const x({1, 0, 0});
     Bivector<double, Frame> const y({0, 1, 0});
     Bivector<double, Frame> const z({0, 0, 1});
