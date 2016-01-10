@@ -1,3 +1,4 @@
+﻿
 #include "ksp_plugin/interface.hpp"
 
 #include "base/not_null.hpp"
@@ -17,12 +18,15 @@ using base::not_null;
 using geometry::Instant;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
+using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
+using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
+using quantities::si::Tonne;
 
 namespace interface {
 
@@ -36,8 +40,16 @@ FlightPlan& GetFlightPlan(Plugin const* const plugin,
   return *vessel.flight_plan();
 }
 
-ksp_plugin::Burn ToPluginBurn(Plugin const* const plugin,
-                              Burn const& burn) {
+Burn GetBurn(NavigationManœuvre const& manœuvre) {
+  return {manœuvre.thrust() / Kilo(Newton),
+          manœuvre.specific_impulse() / (Second * StandardGravity),
+          principia__GetNavigationFrameParameters(manœuvre.frame()),
+          (manœuvre.initial_time() - Instant()) / Second,
+          ToXYZ((manœuvre.Δv() / (Metre / Second)) *
+                    manœuvre.direction().coordinates())};
+}
+
+ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {
   return {burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           base::check_not_null(std::unique_ptr<NavigationFrame>(
@@ -45,6 +57,20 @@ ksp_plugin::Burn ToPluginBurn(Plugin const* const plugin,
           Instant() + burn.initial_time * Second,
           Velocity<Frenet<Navigation>>(
               ToR3Element(burn.delta_v) * (Metre / Second))};
+}
+
+NavigationManoeuvre ToNavigationManoeuvre(NavigationManœuvre const& manœuvre) {
+  NavigationManoeuvre result;
+  result.burn = GetBurn(manœuvre);
+  result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
+  result.final_mass_in_tonnes = manœuvre.final_mass() / Tonne;
+  result.mass_flow = manœuvre.mass_flow() / (Kilogram / Second);
+  result.duration = manœuvre.duration() / Second;
+  result.final_time = (manœuvre.final_time() - Instant()) / Second;
+  result.time_of_half_delta_v =
+      (manœuvre.time_of_half_Δv() - Instant()) / Second;
+  result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
+  result.direction = ToXYZ(manœuvre.direction().coordinates());
 }
 
 }  // namespace
@@ -55,13 +81,19 @@ bool principia__FlightPlanAppend(
     Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      Append(ToPluginBurn(plugin, burn)));
+                      Append(ToBurn(plugin, burn)));
 }
 
 NavigationManoeuvre principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    int const index) {}
+    int const index) {
+  journal::Method<journal::FlightPlanGetManoeuvre> m({plugin,
+                                                      vessel_guid,
+                                                      index});
+  return m.Return(ToNavigationManoeuvre(
+             GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
+}
 
 LineAndIterator* principia__FlightPlanGetSegment(
     Plugin const* const plugin,
@@ -73,7 +105,7 @@ int principia__FlightPlanNumberOfManoeuvres(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
                                                             vessel_guid});
-  return m.Return(GetFlightPlan(plugin, vessel_guid).number_of_man�uvres());
+  return m.Return(GetFlightPlan(plugin, vessel_guid).number_of_manœuvres());
 }
 
 int principia__FlightPlanNumberOfSegments(
@@ -99,7 +131,7 @@ bool principia__FlightPlanReplaceLast(
                                                      vessel_guid,
                                                      burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      ReplaceLast(ToPluginBurn(plugin, burn)));
+                      ReplaceLast(ToBurn(plugin, burn)));
 }
 
 bool principia__FlightPlanSetFinalTime(
