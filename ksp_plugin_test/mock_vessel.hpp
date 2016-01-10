@@ -15,7 +15,7 @@ class MockVessel : public Vessel {
   MOCK_CONST_METHOD0(is_initialized, bool());
 
   MOCK_CONST_METHOD0(parent, not_null<Celestial const*>());
-  MOCK_METHOD0(set_parent, void(not_null<Celestial const*> const parent));
+  MOCK_METHOD1(set_parent, void(not_null<Celestial const*> const parent));
 
   MOCK_CONST_METHOD0(history, DiscreteTrajectory<Barycentric> const&());
   MOCK_METHOD0(mutable_history, not_null<DiscreteTrajectory<Barycentric>*>());
