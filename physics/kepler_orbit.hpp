@@ -27,10 +27,10 @@ class KeplerOrbit {
   KeplerOrbit(TwoBodySystem const& system,
               Instant const& epoch,
               KeplerianElements<Frame> const& elements_at_epoch);
-  StateVectors(Instant const& t) const;
+  RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
  private:
   GravitationalParameter const system_gravitational_parameter_;
-  KeplerianElements const elements_at_epoch_;
+  KeplerianElements<Frame> const elements_at_epoch_;
   Instant const epoch_;
 };
 

@@ -23,15 +23,16 @@ KeplerOrbit<Frame>::KeplerOrbit(
     KeplerianElements<Frame> const& elements_at_epoch)
     : system_gravitational_parameter_(
           system.primary->gravitational_parameter() +
-          system.secondary->is_massless()
-              ? GravitationalParameter{}
-              : CHECK_NOTNULL(
-                    dynamic_cast<MassiveBody const*>(&*system.secondary))->
-                        gravitational_parameter()),
+          (system.secondary->is_massless()
+               ? GravitationalParameter{}
+               : CHECK_NOTNULL(
+                     dynamic_cast<MassiveBody const*>(&*system.secondary))->
+                         gravitational_parameter())),
       epoch_(epoch),
-      elements_at_epoch_(element_at_epoch) {}
+      elements_at_epoch_(elements_at_epoch) {}
 
 template<typename Frame>
+RelativeDegreesOfFreedom<Frame>
 KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   GravitationalParameter const μ = system_gravitational_parameter_;
   double const eccentricity = elements_at_epoch_.eccentricity;
@@ -40,7 +41,8 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   Angle const Ω = elements_at_epoch_.longitude_of_ascending_node;
   Angle const ω = elements_at_epoch_.argument_of_periapsis;
   AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
-  Angle const mean_anomaly = a + mean_motion * (t - epoch_);
+  Angle const mean_anomaly = elements_at_epoch_.mean_anomaly +
+                             mean_motion * (t - epoch_);
   if (eccentricity < 1) {
     // Elliptic case.
     auto const kepler_equation =
@@ -88,8 +90,6 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
     // Hyperbolic case.
     LOG(FATAL) << "not yet implemented";
   }
-}
-
 }
 
 }  // namespace physics
