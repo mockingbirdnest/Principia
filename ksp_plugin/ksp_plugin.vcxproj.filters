@@ -17,9 +17,6 @@
     <ClInclude Include="interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mock_plugin.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vessel.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -68,9 +65,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mock_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="physics_bubble.cpp">
