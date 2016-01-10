@@ -12,7 +12,7 @@
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
 #include "journal/recorder.hpp"
-#include "ksp_plugin/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
 
 namespace principia {
 

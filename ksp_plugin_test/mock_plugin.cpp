@@ -1,4 +1,4 @@
-#include "ksp_plugin/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
 
 #include <vector>
 
