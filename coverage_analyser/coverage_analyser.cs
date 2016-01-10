@@ -42,13 +42,14 @@ class CoverageAnalyser {
         Console.WriteLine("Covering principia::" + tested_unit);
         regex = new Regex("^principia::" + tested_unit);
       }
-      Regex test_file_regex = new Regex("_test.cpp$");
+      Regex ignored_files_regex =
+          new Regex("(_test.cpp|generated.cc|generated.h)$");
       var covered = new Dictionary<CodeLine, UInt32>();
       using (CoverageInfo info = CoverageInfo.CreateFromFile(file.FullName)) {
         CoverageDS dataset = info.BuildDataSet();
         foreach (CoverageDSPriv.LinesRow lines in dataset.Lines) {
           if (regex.Match(lines.MethodRow.MethodName).Success &&
-              !test_file_regex.Match(
+              !ignored_files_regex.Match(
                    dataset.GetSourceFileName(lines)).Success) {
             var code_line = new CodeLine {
                 file = dataset.GetSourceFileName(lines),
