@@ -152,6 +152,22 @@ class DiscreteTrajectory
   friend struct std::pair;
 };
 
+// An owning object convenient for deleting forks: if the owned trajectory is a
+// fork, it is deleted when the |UniqueDiscreteTrajectory| is deleted.  Beware,
+// any subsequent forks are deleted too by the semantics of |Forkable|.
+template<typename Frame>
+class UniqueDiscreteTrajectory
+    : public std::unique_ptr<
+                 DiscreteTrajectory<Frame>,
+                 std::function<void(DiscreteTrajectory<Frame>*)>> {
+  static void UniqueDiscreteTrajectoryDeleter(
+      DiscreteTrajectory<Frame>* trajectory);
+
+ public:
+  template<typename... T>
+  UniqueDiscreteTrajectory(T&&... t);
+};
+
 }  // namespace physics
 }  // namespace principia
 
