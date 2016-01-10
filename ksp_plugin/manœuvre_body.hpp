@@ -27,37 +27,31 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
       frame_(std::move(frame)) {}
 
 template<typename InertialFrame, typename Frame>
-Instant Manœuvre<InertialFrame, Frame>::initial_time() const {
-  CHECK(initial_time_);
-  return *initial_time_;
+Force const& Manœuvre<InertialFrame, Frame>::thrust() const {
+  return thrust_;
 }
 
 template<typename InertialFrame, typename Frame>
-Instant Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
-  return initial_time() + time_to_half_Δv();
+Mass const& Manœuvre<InertialFrame, Frame>::initial_mass() const {
+  return initial_mass_;
 }
 
 template<typename InertialFrame, typename Frame>
-Instant Manœuvre<InertialFrame, Frame>::final_time() const {
-  return initial_time() + duration();
+SpecificImpulse const&
+Manœuvre<InertialFrame, Frame>::specific_impulse() const {
+  return specific_impulse_;
 }
 
 template<typename InertialFrame, typename Frame>
-bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
-                                                 Instant const& end) const {
-  return begin < initial_time() && final_time() < end;
+Vector<double, Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::direction() const {
+  return direction_;
 }
 
 template<typename InertialFrame, typename Frame>
-void Manœuvre<InertialFrame, Frame>::set_initial_time(
-    Instant const& initial_time) {
-  initial_time_ = initial_time;
-}
-
-template<typename InertialFrame, typename Frame>
-void Manœuvre<InertialFrame, Frame>::set_time_of_half_Δv(
-    Instant const& time_of_half_Δv) {
-  set_initial_time(time_of_half_Δv - time_to_half_Δv());
+not_null<DynamicFrame<InertialFrame, Frame>const*>
+Manœuvre<InertialFrame, Frame>::frame() const {
+  return frame_.get();
 }
 
 template<typename InertialFrame, typename Frame>
@@ -69,6 +63,12 @@ Time Manœuvre<InertialFrame, Frame>::duration() const {
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_duration(Time const& duration) {
   duration_ = duration;
+}
+
+template<typename InertialFrame, typename Frame>
+Speed Manœuvre<InertialFrame, Frame>::Δv() const {
+  // Циолко́вский's equation.
+  return specific_impulse_ * std::log(initial_mass_ / final_mass());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -84,31 +84,26 @@ void Manœuvre<InertialFrame, Frame>::set_Δv(Speed const& Δv) {
 }
 
 template<typename InertialFrame, typename Frame>
-Speed Manœuvre<InertialFrame, Frame>::Δv() const {
-  // Циолко́вский's equation.
-  return specific_impulse_ * std::log(initial_mass_ / final_mass());
+Instant Manœuvre<InertialFrame, Frame>::initial_time() const {
+  CHECK(initial_time_);
+  return *initial_time_;
 }
 
 template<typename InertialFrame, typename Frame>
-Vector<double, Frenet<Frame>> const&
-Manœuvre<InertialFrame, Frame>::direction() const {
-  return direction_;
+void Manœuvre<InertialFrame, Frame>::set_initial_time(
+    Instant const& initial_time) {
+  initial_time_ = initial_time;
 }
 
 template<typename InertialFrame, typename Frame>
-SpecificImpulse const&
-Manœuvre<InertialFrame, Frame>::specific_impulse() const {
-  return specific_impulse_;
+Instant Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
+  return initial_time() + time_to_half_Δv();
 }
 
 template<typename InertialFrame, typename Frame>
-Force const& Manœuvre<InertialFrame, Frame>::thrust() const {
-  return thrust_;
-}
-
-template<typename InertialFrame, typename Frame>
-Mass const& Manœuvre<InertialFrame, Frame>::initial_mass() const {
-  return initial_mass_;
+void Manœuvre<InertialFrame, Frame>::set_time_of_half_Δv(
+    Instant const& time_of_half_Δv) {
+  set_initial_time(time_of_half_Δv - time_to_half_Δv());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -125,6 +120,17 @@ template<typename InertialFrame, typename Frame>
 Time Manœuvre<InertialFrame, Frame>::time_to_half_Δv() const {
   return specific_impulse_ * initial_mass_*
          (1 - std::sqrt(final_mass() / initial_mass_)) / thrust_;
+}
+
+template<typename InertialFrame, typename Frame>
+Instant Manœuvre<InertialFrame, Frame>::final_time() const {
+  return initial_time() + duration();
+}
+
+template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
+                                                 Instant const& end) const {
+  return begin < initial_time() && final_time() < end;
 }
 
 template<typename InertialFrame, typename Frame>

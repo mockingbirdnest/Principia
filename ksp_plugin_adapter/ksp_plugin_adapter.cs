@@ -260,7 +260,8 @@ public partial class PrincipiaPluginAdapter
          select new KSPPart {
              world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
              world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
-             mass = (double)part.mass + (double)part.GetResourceMass(),
+             mass_in_tonnes =
+                 (double)part.mass + (double)part.GetResourceMass(),
              gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
              id = part.flightID}).ToArray();
     if (parts.Count() > 0) {

@@ -9,9 +9,11 @@
 namespace principia {
 
 using base::not_null;
+using interface::Burn;
 using interface::KSPPart;
 using interface::LineAndIterator;
 using interface::NavigationFrameParameters;
+using interface::NavigationManoeuvre;
 using interface::QP;
 using interface::WXYZ;
 using interface::XYZ;

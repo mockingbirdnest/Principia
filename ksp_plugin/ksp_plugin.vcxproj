@@ -114,6 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -132,6 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -153,6 +155,7 @@
       <SDLCheck>true</SDLCheck>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -194,6 +197,7 @@
     <ClCompile Include="burn.cpp" />
     <ClCompile Include="flight_plan.cpp" />
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="physics_bubble.cpp" />
     <ClCompile Include="plugin.cpp" />

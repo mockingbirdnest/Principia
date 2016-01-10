@@ -209,16 +209,158 @@ struct FetchAndIncrement {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct FlightPlanSize {
+struct FlightPlanAppend {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    Burn const burn;
+  };
+  using Return = bool;
+
+  using Message = serialization::FlightPlanAppend;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanCreate {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    double const final_time;
+    double const mass_in_tonnes;
+  };
+
+  using Message = serialization::FlightPlanCreate;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanDelete {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+
+  using Message = serialization::FlightPlanDelete;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanGetManoeuvre {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    int const index;
+  };
+  using Return = NavigationManoeuvre;
+
+  using Message = serialization::FlightPlanGetManoeuvre;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanNumberOfManoeuvres {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
   };
   using Return = int;
 
-  using Message = serialization::FlightPlanSize;
+  using Message = serialization::FlightPlanNumberOfManoeuvres;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanNumberOfSegments {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = int;
+
+  using Message = serialization::FlightPlanNumberOfSegments;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanRemoveLast {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+
+  using Message = serialization::FlightPlanRemoveLast;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanRenderedSegment {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    XYZ const sun_world_position;
+    int const index;
+  };
+  using Return = LineAndIterator*;
+
+  using Message = serialization::FlightPlanRenderedSegment;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanReplaceLast {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    Burn const burn;
+  };
+  using Return = bool;
+
+  using Message = serialization::FlightPlanReplaceLast;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanSetFinalTime {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    double const final_time;
+  };
+  using Return = bool;
+
+  using Message = serialization::FlightPlanSetFinalTime;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanSetTolerances {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    double const length_integration_tolerance;
+    double const speed_integration_tolerance;
+  };
+
+  using Message = serialization::FlightPlanSetTolerances;
+  static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
 };
@@ -519,22 +661,6 @@ struct PhysicsBubbleIsEmpty {
   using Return = bool;
 
   using Message = serialization::PhysicsBubbleIsEmpty;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Return const& result, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
-struct RenderedFlightPlan {
-  struct In {
-    Plugin* const plugin;
-    char const* const vessel_guid;
-    int const plan_phase;
-    XYZ const sun_world_position;
-  };
-  using Return = LineAndIterator*;
-
-  using Message = serialization::RenderedFlightPlan;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
   static void Run(Message const& message,

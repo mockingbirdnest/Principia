@@ -18,7 +18,17 @@
   ran |= RunIfAppropriate<DirectlyInsertCelestial>(*method);
   ran |= RunIfAppropriate<EndInitialization>(*method);
   ran |= RunIfAppropriate<FetchAndIncrement>(*method);
-  ran |= RunIfAppropriate<FlightPlanSize>(*method);
+  ran |= RunIfAppropriate<FlightPlanAppend>(*method);
+  ran |= RunIfAppropriate<FlightPlanCreate>(*method);
+  ran |= RunIfAppropriate<FlightPlanDelete>(*method);
+  ran |= RunIfAppropriate<FlightPlanGetManoeuvre>(*method);
+  ran |= RunIfAppropriate<FlightPlanNumberOfManoeuvres>(*method);
+  ran |= RunIfAppropriate<FlightPlanNumberOfSegments>(*method);
+  ran |= RunIfAppropriate<FlightPlanRemoveLast>(*method);
+  ran |= RunIfAppropriate<FlightPlanRenderedSegment>(*method);
+  ran |= RunIfAppropriate<FlightPlanReplaceLast>(*method);
+  ran |= RunIfAppropriate<FlightPlanSetFinalTime>(*method);
+  ran |= RunIfAppropriate<FlightPlanSetTolerances>(*method);
   ran |= RunIfAppropriate<ForgetAllHistoriesBefore>(*method);
   ran |= RunIfAppropriate<GetBufferDuration>(*method);
   ran |= RunIfAppropriate<GetBufferedLogging>(*method);
@@ -44,7 +54,6 @@
   ran |= RunIfAppropriate<NewPlugin>(*method);
   ran |= RunIfAppropriate<NumberOfSegments>(*method);
   ran |= RunIfAppropriate<PhysicsBubbleIsEmpty>(*method);
-  ran |= RunIfAppropriate<RenderedFlightPlan>(*method);
   ran |= RunIfAppropriate<RenderedPrediction>(*method);
   ran |= RunIfAppropriate<RenderedVesselTrajectory>(*method);
   ran |= RunIfAppropriate<SayHello>(*method);
