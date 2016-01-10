@@ -225,6 +225,16 @@ class Plugin {
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
+  // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
+  // returns a |RenderedTrajectory| corresponding to the trajectory defined by
+  // |begin| and |end|, as seen in the current |plotting_frame_|.
+  // TODO(phl): Use this directly in the interface and remove the other
+  // |Rendered...|.
+  virtual RenderedTrajectory<World> RenderedTrajectoryFromIterators(
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Position<World> const& sun_world_position) const;
+
   virtual void SetPredictionLength(Time const& t);
 
   virtual void SetPredictionLengthTolerance(Length const& l);
@@ -373,14 +383,6 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
-
-  // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
-  // returns a |RenderedTrajectory| corresponding to the trajectory defined by
-  // |begin| and |end|, as seen in the current |plotting_frame_|.
-  RenderedTrajectory<World> RenderTrajectory(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
 
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,

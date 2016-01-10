@@ -114,7 +114,7 @@ class FlightPlan {
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Each segment is a fork of the previous
   // one.
-  std::vector<UniqueDiscreteTrajector> segments_;
+  std::vector<UniqueDiscreteTrajectory<Barycentric>> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<

@@ -35,6 +35,7 @@ namespace {
 
 FlightPlan& GetFlightPlan(Plugin const* const plugin,
                           char const* const vessel_guid) {
+  // TODO(phl): Should this check if the vessel is synchronized/initialized?
   CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
   Vessel const& vessel = plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
@@ -72,6 +73,7 @@ NavigationManoeuvre ToNavigationManoeuvre(NavigationManœuvre const& manœuvre) 
       (manœuvre.time_of_half_Δv() - Instant()) / Second;
   result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
   result.direction = ToXYZ(manœuvre.direction().coordinates());
+  return result;
 }
 
 }  // namespace
@@ -122,14 +124,24 @@ void principia__FlightPlanRemoveLast(
 LineAndIterator* principia__FlightPlanRenderedSegment(
     Plugin const* const plugin,
     char const* const vessel_guid,
+    XYZ const sun_world_position,
     int const index) {
   journal::Method<journal::FlightPlanRenderedSegment> m({plugin,
                                                          vessel_guid,
+                                                         sun_world_position,
                                                          index});
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
-  //Andthen?
+  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+      RenderedTrajectoryFromIterators(
+          begin, end,
+          World::origin + Displacement<World>(
+                              ToR3Element(sun_world_position) * Metre));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return m.Return(result.release());
 }
 
 bool principia__FlightPlanReplaceLast(

@@ -283,6 +283,7 @@ struct FlightPlanRenderedSegment {
   struct In {
     Plugin const* const plugin;
     char const* const vessel_guid;
+    XYZ const sun_world_position;
     int const index;
   };
   using Return = LineAndIterator*;

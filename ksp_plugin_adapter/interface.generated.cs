@@ -227,6 +227,7 @@ internal static partial class Interface {
   internal static extern IntPtr FlightPlanRenderedSegment(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ sun_world_position,
       int index);
 
   [DllImport(dllName           : kDllPath,

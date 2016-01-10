@@ -498,6 +498,7 @@ void FlightPlanRenderedSegment::Fill(In const& in, not_null<Message*> const mess
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_vessel_guid(in.vessel_guid);
+  *m->mutable_sun_world_position() = SerializeXYZ(in.sun_world_position);
   m->set_index(in.index);
 }
 
@@ -509,8 +510,9 @@ void FlightPlanRenderedSegment::Run(Message const& message, not_null<Player::Poi
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
+  auto sun_world_position = DeserializeXYZ(in.sun_world_position());
   auto index = in.index();
-  auto const result = interface::principia__FlightPlanRenderedSegment(plugin, vessel_guid, index);
+  auto const result = interface::principia__FlightPlanRenderedSegment(plugin, vessel_guid, sun_world_position, index);
   Insert(pointer_map, message.return_().result(), result);
 }
 

@@ -203,6 +203,7 @@ extern "C" PRINCIPIA_DLL
 LineAndIterator* CDECL principia__FlightPlanRenderedSegment(
     Plugin const* const plugin,
     char const* const vessel_guid,
+    XYZ const sun_world_position,
     int const index);
 
 extern "C" PRINCIPIA_DLL
