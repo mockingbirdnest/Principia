@@ -6,7 +6,6 @@
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/burn.hpp"
-#include "ksp_plugin/fork_handle.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -19,6 +18,8 @@ namespace principia {
 using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
+using physics::DiscreteTrajectory;
+using physics::UniqueDiscreteTrajectory;
 using physics::Ephemeris;
 using quantities::Length;
 using quantities::Mass;
@@ -113,7 +114,7 @@ class FlightPlan {
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Each segment is a fork of the previous
   // one.
-  std::vector<ForkHandle> segments_;
+  std::vector<UniqueDiscreteTrajector> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<
