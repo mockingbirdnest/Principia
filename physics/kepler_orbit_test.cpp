@@ -5,7 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/solar_system.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -14,7 +14,7 @@ using geometry::JulianDate;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
-using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -25,7 +25,7 @@ class KeplerOrbitTest : public ::testing::Test {};
 
 // Target body name : Moon(301) { source: DE431mx }
 // Center body name : Earth(399) { source: DE431mx }
-// Output units : AU - D, deg, Julian day number(Tp)
+// Output units    : KM-S, deg, Julian day number (Tp)
 // Reference frame : ICRF / J2000.0
 // Coordinate systm : Earth Mean Equator and Equinox of Reference Epoch
 // System GM : 4.0350323550225975E+05 km^3/s^2
@@ -47,8 +47,12 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
                          solar_system.gravity_model_message("Earth"));
   auto const moon = solar_system.MakeMassiveBody(
                         solar_system.gravity_model_message("Moon"));
-  EXPECT_EQ(earth->gravitational_parameter() + moon->gravitational_parameter(),
-            4.0350323550225975E+05 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
+  // The numbers in the gravity models and those from the query above both come
+  // from DE431, so the sums are the same up to round-off.
+  EXPECT_THAT(
+      earth->gravitational_parameter() + moon->gravitational_parameter(),
+      AlmostEquals(
+          4.0350323550225975E+05 * Pow<3>(Kilo(Metre)) / Pow<2>(Second), 1));
   TwoBodySystem const earth_moon_system{earth.get(), moon.get()};
   Instant const date = JulianDate(2457397.500000000);
   KeplerianElements<ICRFJ2000Equator> elements;
@@ -61,8 +65,18 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   KeplerOrbit<ICRFJ2000Equator> const moon_orbit(earth_moon_system,
                                                  date,
                                                  elements);
-  LOG(ERROR) << moon_orbit.StateVectors(date).displacement();
-  LOG(ERROR) << moon_orbit.StateVectors(date).velocity();
+  Displacement<ICRFJ2000Equator> const expected_displacement(
+      { 1.177367562036580E+05 * Kilo(Metre),
+       -3.419908628150604E+05 * Kilo(Metre),
+       -1.150659799281941E+05 * Kilo(Metre)});
+  Velocity<ICRFJ2000Equator> const expected_velocity(
+      {9.745048087261129E-01 * Kilo(Metre) / Second,
+       3.500672337210811E-01 * Kilo(Metre) / Second,
+       1.066306010215636E-01 * Kilo(Metre) / Second});
+  EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
+              AlmostEquals(expected_displacement, 13));
+  EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
+              AlmostEquals(expected_velocity, 12));
 }
 
 }  // namespace physics
