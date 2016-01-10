@@ -156,5 +156,45 @@ TEST_F(FlightPlanTest, Replace) {
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
+TEST_F(FlightPlanTest, Segments) {
+  auto const first_burn = [this]() -> Burn {
+    return {/*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            /*initial_time=*/t0_ + 1 * Second,
+            Velocity<Frenet<Navigation>>(
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  };
+  auto const second_burn = [this, first_burn]() -> Burn {
+    auto burn = first_burn();
+    burn.initial_time += 1 * Second;
+    return burn;
+  };
+
+  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_EQ(3, flight_plan_->number_of_segments());
+  EXPECT_TRUE(flight_plan_->Append(second_burn()));
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+
+  std::vector<Instant> times;
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+
+  int last_times_size = times.size();
+  Instant last_t = t0_ - 2 * π * Second;
+  for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
+    flight_plan_->GetSegment(i, &begin, &end);
+    for (auto it = begin; it != end; ++it) {
+      Instant const& t = it.time();
+      EXPECT_LE(last_t, t);
+      EXPECT_LE(t, t0_ + 42 * Second);
+      times.push_back(t);
+    }
+    EXPECT_LT(last_times_size, times.size());
+    last_times_size = times.size();
+  }
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

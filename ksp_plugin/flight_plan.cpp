@@ -113,14 +113,13 @@ void FlightPlan::GetSegment(
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  auto const fork = 
   *begin = segments_[index]->Fork();
   if (index == number_of_segments() - 1) {
     *end = segments_[index]->End();
   } else {
     // |Find| returns |End| if the time is not found, which is what we need.
     *end = segments_[index]->Find(segments_[index + 1]->Fork().time());
-  } 
+  }
 }
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {

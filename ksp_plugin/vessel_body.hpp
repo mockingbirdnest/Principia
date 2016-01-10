@@ -120,7 +120,7 @@ inline void Vessel::CreateFlightPlan(
   }
   flight_plan_ = std::make_unique<FlightPlan>(
                      mutable_history()->NewForkAtLast(),
-                     /*initial_time=*/history().last().time(),  //TODO(phl): Or prolongation?
+                     /*initial_time=*/history().last().time(),
                      /*final_time=*/final_time,
                      initial_mass,
                      ephemeris,
