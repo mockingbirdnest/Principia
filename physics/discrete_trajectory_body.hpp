@@ -226,5 +226,20 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message);
 }
 
+template<typename Frame>
+void UniqueDiscreteTrajectory<Frame>::UniqueDiscreteTrajectoryDeleter(
+    DiscreteTrajectory<Frame>* trajectory) {
+  if (trajectory == nullptr && !trajectory->is_root()) {
+    trajectory->parent()->DeleteFork(&trajectory);
+  }
+}
+
+template<typename Frame>
+template<typename... T>
+UniqueDiscreteTrajectory<Frame>::UniqueDiscreteTrajectory(T&&... t)
+    : std::unique_ptr<DiscreteTrajectory<Frame>,
+                      std::function<void(DiscreteTrajectory<Frame>*)>>(
+          t..., &UniqueDiscreteTrajectoryDeleter) {}
+
 }  // namespace physics
 }  // namespace principia
