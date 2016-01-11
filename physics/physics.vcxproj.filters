@@ -119,6 +119,12 @@
     <ClInclude Include="mock_dynamic_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="kepler_orbit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kepler_orbit_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -152,6 +158,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="body_centered_non_rotating_dynamic_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kepler_orbit_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
