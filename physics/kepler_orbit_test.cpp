@@ -70,9 +70,9 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       {9.745048087261129E-01 * (Kilo(Metre) / Second),
        3.500672337210811E-01 * (Kilo(Metre) / Second),
        1.066306010215636E-01 * (Kilo(Metre) / Second)});
-  EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
+  EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 13));
-  EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
+  EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
 }
 

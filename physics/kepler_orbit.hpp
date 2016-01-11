@@ -24,10 +24,19 @@ class KeplerOrbit {
               Instant const& epoch,
               KeplerianElements<Frame> const& elements_at_epoch);
 
-  RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
+  RelativeDegreesOfFreedom<Frame> PrimocentricStateVectors(
+      Instant const& t) const;
+  RelativeDegreesOfFreedom<Frame> BarycentricStateVectors(
+      Instant const& t) const;
 
  private:
-  GravitationalParameter const system_gravitational_parameter_;
+  // The state vectors of a massless body orbiting a body with the given
+  // |gravitation_parameter| in an orbit with the given |elements|.
+  static RelativeDegreesOfFreedom<Frame> TestParticleStateVectors(
+      KeplerianElements<Frame> const& elements,
+      GravitationalParameter const& gravitational_parameter);
+  GravitationalParameter const primary_gravitational_parameter_;
+  GravitationalParameter const secondary_gravitational_parameter_;
   KeplerianElements<Frame> const elements_at_epoch_;
   Instant const epoch_;
 };

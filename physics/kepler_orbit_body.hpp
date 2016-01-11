@@ -22,27 +22,73 @@ KeplerOrbit<Frame>::KeplerOrbit(
     Body const& secondary,
     Instant const& epoch,
     KeplerianElements<Frame> const& elements_at_epoch)
-    : system_gravitational_parameter_(
-          primary.gravitational_parameter() +
-          (secondary.is_massless()
-               ? GravitationalParameter{}
-               : dynamic_cast<MassiveBody const&>(secondary).
-                     gravitational_parameter())),
-      epoch_(epoch),
-      elements_at_epoch_(elements_at_epoch) {}
+    : primary_gravitational_parameter_(
+          primary.gravitational_parameter()),
+      secondary_gravitational_parameter_(
+          secondary.is_massless()
+              ? GravitationalParameter{}
+              : dynamic_cast<MassiveBody const&>(secondary).
+                    gravitational_parameter()),
+      elements_at_epoch_(elements_at_epoch),
+      epoch_(epoch) {}
+
+// TODO(egg): the calculations reducing the primocentric and barycentric state
+// vectors to the case of a test particle should be documented in a separate
+// file.
 
 template<typename Frame>
 RelativeDegreesOfFreedom<Frame>
-KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
-  GravitationalParameter const μ = system_gravitational_parameter_;
-  double const eccentricity = elements_at_epoch_.eccentricity;
-  Length const a = elements_at_epoch_.semimajor_axis;
-  Angle const i = elements_at_epoch_.inclination;
-  Angle const Ω = elements_at_epoch_.longitude_of_ascending_node;
-  Angle const ω = elements_at_epoch_.argument_of_periapsis;
+KeplerOrbit<Frame>::PrimocentricStateVectors(Instant const& t) const {
+  KeplerianElements<Frame> primocentric_elements = elements_at_epoch_;
+
+  // Update the mean anomaly for |t|.
+  Length const a = primocentric_elements.semimajor_axis;
+  GravitationalParameter const μ = primary_gravitational_parameter_ +
+                                   secondary_gravitational_parameter_;
   AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
-  Angle const mean_anomaly = elements_at_epoch_.mean_anomaly +
-                             mean_motion * (t - epoch_);
+  primocentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
+                                       mean_motion * (t - epoch_);
+
+  return TestParticleStateVectors(primocentric_elements, μ);
+}
+
+template<typename Frame>
+RelativeDegreesOfFreedom<Frame>
+KeplerOrbit<Frame>::BarycentricStateVectors(Instant const& t) const {
+  KeplerianElements<Frame> barycentric_elements = elements_at_epoch_;
+
+  // Change the semimajor axis to get elements describing the orbit of the
+  // secondary around the barycentre, rather than around the primary.
+  Length const a_primocentric = barycentric_elements.semimajor_axis;
+  GravitationalParameter const μ1 = primary_gravitational_parameter_;
+  GravitationalParameter const μ2 = secondary_gravitational_parameter_;
+  barycentric_elements.semimajor_axis = a_primocentric * μ1 / (μ1 + μ2);
+  Length const a = barycentric_elements.semimajor_axis;
+
+  // μ is such that the mean motion (and thus the period) is the same as for the
+  // primocentric orbit, μ/a^3 = (μ1 + μ2)/(a_primocentric)^3.
+  GravitationalParameter const μ = Pow<3>(μ1) / Pow<2>(μ1 + μ2);
+
+  // Update the mean anomaly for |t|.
+  AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
+  barycentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
+                                      mean_motion * (t - epoch_);
+
+  return TestParticleStateVectors(barycentric_elements, μ);
+}
+
+template<typename Frame>
+RelativeDegreesOfFreedom<Frame>
+KeplerOrbit<Frame>::TestParticleStateVectors(
+    KeplerianElements<Frame> const& elements,
+    GravitationalParameter const& gravitational_parameter) {
+  GravitationalParameter const μ = gravitational_parameter;
+  double const eccentricity = elements.eccentricity;
+  Length const a = elements.semimajor_axis;
+  Angle const i = elements.inclination;
+  Angle const Ω = elements.longitude_of_ascending_node;
+  Angle const ω = elements.argument_of_periapsis;
+  Angle const mean_anomaly = elements.mean_anomaly;
   if (eccentricity < 1) {
     // Elliptic case.
     auto const kepler_equation =
