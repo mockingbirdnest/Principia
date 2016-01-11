@@ -908,12 +908,16 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(navigation_frame));
+  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
+      .WillOnce(Return(true));
   EXPECT_CALL(*plugin_, GetVessel(kVesselGUID))
       .WillOnce(Return(&vessel));
   EXPECT_CALL(vessel, has_flight_plan())
       .WillOnce(Return(true));
   EXPECT_CALL(vessel, flight_plan())
       .WillOnce(Return(&flight_plan));
+  EXPECT_CALL(flight_plan, AppendConstRef(_))//TODO(phl):Improve.
+      .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), kVesselGUID, burn));
 }
 

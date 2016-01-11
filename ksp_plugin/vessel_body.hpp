@@ -2,6 +2,7 @@
 
 #include "ksp_plugin/vessel.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/make_not_null.hpp"
 
 #include <vector>
 
@@ -10,16 +11,6 @@ namespace principia {
 using quantities::si::Kilogram;
 
 namespace ksp_plugin {
-
-namespace {
-
-not_null<Celestial const*> DummyCelestial() {
-  static MassiveBody dummy_massive_body(MassiveBody::Parameters(1 * Kilogram));
-  static Celestial dummy_celestial(&dummy_massive_body);
-  return &dummy_celestial;
-}
-
-}  // namespace
 
 inline Vessel::Vessel(not_null<Celestial const*> const parent)
     : body_(),
@@ -218,7 +209,8 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   return vessel;
 }
 
-inline Vessel::Vessel() : parent_(DummyCelestial()) {}
+inline Vessel::Vessel()
+    : parent_(testing_utilities::make_not_null<Celestial const*>()) {}
 
 }  // namespace ksp_plugin
 }  // namespace principia
