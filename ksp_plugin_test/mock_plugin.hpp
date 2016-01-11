@@ -85,6 +85,7 @@ class MockPlugin : public Plugin {
   MOCK_METHOD1(SetPredictionSpeedTolerance, void(Speed const& t));
 
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
+  MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));
 
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which

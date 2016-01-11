@@ -81,6 +81,9 @@
     <ClInclude Include="mock_plugin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mock_flight_plan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_vessel.hpp">

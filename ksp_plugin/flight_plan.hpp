@@ -47,41 +47,45 @@ class FlightPlan {
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
-  ~FlightPlan();
+  virtual ~FlightPlan();
 
-  int number_of_manœuvres() const;
+  virtual int number_of_manœuvres() const;
   // |index| must be in [0, number_of_manœuvres()[.
-  NavigationManœuvre const& GetManœuvre(int const index) const;
+  virtual NavigationManœuvre const& GetManœuvre(int const index) const;
 
   // |size()| must be greater than 0.
-  void RemoveLast();
+  virtual void RemoveLast();
 
   // The following two functions return false and have no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
   // burn, or end after |final_time_|.
-  bool Append(Burn burn);
+  virtual bool Append(Burn burn);
   // |size()| must be greater than 0.
-  bool ReplaceLast(Burn burn);
+  virtual bool ReplaceLast(Burn burn);
 
   // Returns false and has no effect if |final_time| is before the end of the
   // last manœuvre or before |initial_time_|.
-  bool SetFinalTime(Instant const& final_time);
+  virtual bool SetFinalTime(Instant const& final_time);
 
   // Sets the tolerances used to compute the trajectories.  The trajectories are
   // recomputed.
-  void SetTolerances(
+  virtual void SetTolerances(
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
 
   // Returns the number of trajectory segments in this object.
-  int number_of_segments() const;
+  virtual int number_of_segments() const;
 
   // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
   // the given trajectory segment.
-  void GetSegment(
+  virtual void GetSegment(
       int const index,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
+
+ protected:
+  // For mocking.
+  FlightPlan();
 
  private:
   // Appends |manœuvre| to |manœuvres_|, recomputes the last coast segment until

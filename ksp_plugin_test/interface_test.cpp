@@ -9,10 +9,12 @@
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "journal/recorder.hpp"
+#include "ksp_plugin_test/mock_flight_plan.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
-#include "journal/recorder.hpp"
-#include "ksp_plugin_test/mock_plugin.hpp"
 
 namespace principia {
 
@@ -25,7 +27,9 @@ using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::LineSegment;
+using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockPlugin;
+using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::Part;
 using physics::MockDynamicFrame;
@@ -888,6 +892,29 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
     std::cerr << kExitMessage;
     exit(kExitCode);
   }, ExitedWithCode(kExitCode), kExitMessage);
+}
+
+TEST_F(InterfaceTest, FlightPlan) {
+  Burn burn = {/*thrust_in_kilonewtons=*/1, 
+               /*specific_impulse_in_seconds_g0=*/2,
+               /*frame=*/{/*extension=*/6000, /*centre=*/kCelestialIndex}, 
+               /*initial_time=*/3, 
+               /*delta_v=*/{4, 5, 6}};
+  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+      navigation_frame =
+          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+  StrictMock<MockVessel> vessel;
+  StrictMock<MockFlightPlan> flight_plan;
+  EXPECT_CALL(*plugin_,
+              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr<1>(navigation_frame));
+  EXPECT_CALL(*plugin_, GetVessel(kVesselGUID))
+      .WillOnce(Return(&vessel));
+  EXPECT_CALL(vessel, has_flight_plan())
+      .WillOnce(Return(true));
+  EXPECT_CALL(vessel, flight_plan())
+      .WillOnce(Return(&flight_plan));
+  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), kVesselGUID, burn));
 }
 
 }  // namespace interface
