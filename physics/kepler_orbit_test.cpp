@@ -76,5 +76,63 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(expected_velocity, 12));
 }
 
+TEST_F(KeplerOrbitTest, JoolSystem) {
+  using KSP =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+  MasslessBody test_particle;
+  // Gravitational parameters from the KSP wiki.
+  MassiveBody const jool(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second));
+  MassiveBody const laythe(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second));
+  MassiveBody const vall(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second));
+  MassiveBody const tylo(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second));
+  MassiveBody const bop(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second));
+  MassiveBody const pol(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second));
+
+  // Elements from the KSP wiki.
+  KeplerianElements<KSP> jool_elements;
+  jool_elements.eccentricity = 0.05;
+  jool_elements.semimajor_axis = 68'773'560'320 * Metre;
+  jool_elements.inclination = 1.304 * Degree;
+  jool_elements.longitude_of_ascending_node = 52 * Degree;
+  jool_elements.argument_of_periapsis =  0 * Degree;
+  jool_elements.mean_anomaly = 0.1 * Radian;
+  KeplerianElements<KSP> laythe_elements;
+  laythe_elements.eccentricity = 0;
+  laythe_elements.semimajor_axis = 27'184'000 * Metre;
+  laythe_elements.inclination = 0 * Degree;
+  laythe_elements.longitude_of_ascending_node = 0 * Degree;
+  laythe_elements.argument_of_periapsis = 0 * Degree;
+  laythe_elements.mean_anomaly = 3.14 * Radian;
+  KeplerianElements<KSP> vall_elements;
+  vall_elements.eccentricity = 0;
+  vall_elements.semimajor_axis = 43'152'000 * Metre;
+  vall_elements.inclination = 0 * Degree;
+  vall_elements.longitude_of_ascending_node = 0 * Degree;
+  vall_elements.argument_of_periapsis = 0 * Degree;
+  vall_elements.mean_anomaly = 0.9 * Radian;
+  KeplerianElements<KSP> tylo_elements;
+  tylo_elements.eccentricity = 0;
+  tylo_elements.semimajor_axis = 68'500'000 * Metre;
+  tylo_elements.inclination = 0.025 * Degree;
+  tylo_elements.longitude_of_ascending_node = 0 * Degree;
+  tylo_elements.argument_of_periapsis = 0 * Degree;
+  tylo_elements.mean_anomaly = 3.14 * Radian;
+  KeplerianElements<KSP> bop_elements;
+  bop_elements.eccentricity = 0.24;
+  bop_elements.semimajor_axis = 128'500'000 * Metre;
+  bop_elements.inclination = 15 * Degree;
+  bop_elements.longitude_of_ascending_node = 10 * Degree;
+  bop_elements.argument_of_periapsis = 25 * Degree;
+  bop_elements.mean_anomaly = 0.9 * Radian;
+  KeplerianElements<KSP> pol_elements;
+  pol_elements.eccentricity = 0.17;
+  pol_elements.semimajor_axis = 179'890'000 * Metre;
+  pol_elements.inclination = 4.25 * Degree;
+  pol_elements.longitude_of_ascending_node = 2 * Degree;
+  pol_elements.argument_of_periapsis = 15 * Degree;
+  pol_elements.mean_anomaly = 0.9 * Radian;
+
+}
+
 }  // namespace physics
 }  // namespace principia
