@@ -4,6 +4,7 @@
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
@@ -85,17 +86,17 @@ TEST_F(KeplerOrbitTest, JoolSystem) {
   // Gravitational parameters from the KSP wiki.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   auto const add_body = [&bodies](
-      GravitationalParameter const& μ) -> MassiveBody const& {
+      GravitationalParameter const& μ) -> not_null<MassiveBody const*> {
     bodies.emplace_back(make_not_null_unique<MassiveBody>(μ));
-    return *bodies.back();
+    return bodies.back().get();
   };
-  auto const& sun = add_body(1.1723328E+18 * Pow<3>(Metre) / Pow<2>(Second));
-  auto const& jool = add_body(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second));
-  auto const& laythe = add_body(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second));
-  auto const& vall = add_body(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second));
-  auto const& tylo = add_body(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second));
-  auto const& bop = add_body(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second));
-  auto const& pol = add_body(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const sun = add_body(1.1723328E+18 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const jool = add_body(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const laythe = add_body(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const vall = add_body(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const tylo = add_body(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const bop = add_body(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const pol = add_body(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second));
 
   // Elements from the KSP wiki.
   KeplerianElements<KSP> jool_elements;
@@ -143,17 +144,17 @@ TEST_F(KeplerOrbitTest, JoolSystem) {
 
   Instant const game_epoch;
   auto const stock_jool_orbit =
-      KeplerOrbit<KSP>(sun, test_particle, game_epoch, jool_elements);
+      KeplerOrbit<KSP>(*sun, test_particle, game_epoch, jool_elements);
   auto const stock_laythe_orbit =
-      KeplerOrbit<KSP>(jool, test_particle, game_epoch, laythe_elements);
+      KeplerOrbit<KSP>(*jool, test_particle, game_epoch, laythe_elements);
   auto const stock_vall_orbit =
-      KeplerOrbit<KSP>(jool, test_particle, game_epoch, vall_elements);
+      KeplerOrbit<KSP>(*jool, test_particle, game_epoch, vall_elements);
   auto const stock_tylo_orbit =
-      KeplerOrbit<KSP>(jool, test_particle, game_epoch, tylo_elements);
+      KeplerOrbit<KSP>(*jool, test_particle, game_epoch, tylo_elements);
   auto const stock_bop_orbit =
-      KeplerOrbit<KSP>(jool, test_particle, game_epoch, bop_elements);
+      KeplerOrbit<KSP>(*jool, test_particle, game_epoch, bop_elements);
   auto const stock_pol_orbit = 
-      KeplerOrbit<KSP>(jool, test_particle, game_epoch, pol_elements);
+      KeplerOrbit<KSP>(*jool, test_particle, game_epoch, pol_elements);
 
   DegreesOfFreedom<KSP> const origin = {KSP::origin, Velocity<KSP>()};
   auto const stock_jool_initial_state =
@@ -176,7 +177,32 @@ TEST_F(KeplerOrbitTest, JoolSystem) {
       McLachlanAtela1992Order5Optimal<Position<KSP>>(),
       45 * Minute,
       5 * Milli(Metre));
-  stock_ephemeris.Prolong(game_epoch + 500 * Day);
+  stock_ephemeris.Prolong(game_epoch + 90 * Day);
+  std::vector<Instant> times;
+  std::vector<std::vector<Displacement<KSP>>> displacements;
+  for (Instant t = game_epoch; t < game_epoch + 90 * Day; t += 45 * Minute) {
+    auto const jool_position =
+        stock_ephemeris.trajectory(jool)->EvaluatePosition(t, nullptr);
+    auto const displacement_from_jool = [&jool_position, &stock_ephemeris, t](
+        not_null<MassiveBody const*> body) {
+      return stock_ephemeris.trajectory(body)->EvaluatePosition(t, nullptr) -
+             jool_position;
+    };
+    times.emplace_back(t);
+    displacements.push_back(
+        {displacement_from_jool(laythe),
+         displacement_from_jool(vall),
+         displacement_from_jool(tylo),
+         displacement_from_jool(bop),
+         displacement_from_jool(pol)});
+  }
+  std::ofstream file;
+  file.open("stock_jool.wl");
+  file << mathematica::Assign("q", displacements);
+  file << mathematica::Assign("t", times);
+  file.close();
+  // fails.
+  stock_ephemeris.Prolong(game_epoch + 100 * Day);
 }
 
 }  // namespace physics
