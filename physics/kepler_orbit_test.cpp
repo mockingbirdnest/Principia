@@ -181,20 +181,21 @@ TEST_F(KeplerOrbitTest, JoolSystem) {
   std::vector<Instant> times;
   std::vector<std::vector<Displacement<KSP>>> displacements;
   for (Instant t = game_epoch; t < game_epoch + 90 * Day; t += 45 * Minute) {
-    auto const jool_position =
-        stock_ephemeris.trajectory(jool)->EvaluatePosition(t, nullptr);
-    auto const displacement_from_jool = [&jool_position, &stock_ephemeris, t](
+    auto const position = [&stock_ephemeris, t](
         not_null<MassiveBody const*> body) {
-      return stock_ephemeris.trajectory(body)->EvaluatePosition(t, nullptr) -
-             jool_position;
+      return stock_ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
     };
+    auto const barycentre =
+        Barycentre<Position<KSP>, Mass>(
+            {position(jool), position(laythe), position(vall), position(tylo),
+             position(bop), position(pol)},
+            {jool->mass(), laythe->mass(), vall->mass(), tylo->mass(),
+             bop->mass(), pol->mass()});
     times.emplace_back(t);
     displacements.push_back(
-        {displacement_from_jool(laythe),
-         displacement_from_jool(vall),
-         displacement_from_jool(tylo),
-         displacement_from_jool(bop),
-         displacement_from_jool(pol)});
+        {position(jool) - barycentre, position(laythe) - barycentre,
+         position(vall) - barycentre, position(tylo) - barycentre,
+         position(bop) - barycentre, position(pol) - barycentre});
   }
   std::ofstream file;
   file.open("stock_jool.wl");
