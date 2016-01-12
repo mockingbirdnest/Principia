@@ -11,9 +11,11 @@ namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using geometry::JulianDate;
+using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Milli;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Gt;
@@ -81,12 +83,19 @@ TEST_F(KeplerOrbitTest, JoolSystem) {
       Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
   MasslessBody test_particle;
   // Gravitational parameters from the KSP wiki.
-  MassiveBody const jool(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second));
-  MassiveBody const laythe(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second));
-  MassiveBody const vall(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second));
-  MassiveBody const tylo(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second));
-  MassiveBody const bop(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second));
-  MassiveBody const pol(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second));
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  auto const add_body = [&bodies](
+      GravitationalParameter const& μ) -> MassiveBody const& {
+    bodies.emplace_back(make_not_null_unique<MassiveBody>(μ));
+    return *bodies.back();
+  };
+  auto const& sun = add_body(1.1723328E+18 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const& jool = add_body(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const& laythe = add_body(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const& vall = add_body(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const& tylo = add_body(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const& bop = add_body(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second));
+  auto const& pol = add_body(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second));
 
   // Elements from the KSP wiki.
   KeplerianElements<KSP> jool_elements;
@@ -132,6 +141,42 @@ TEST_F(KeplerOrbitTest, JoolSystem) {
   pol_elements.argument_of_periapsis = 15 * Degree;
   pol_elements.mean_anomaly = 0.9 * Radian;
 
+  Instant const game_epoch;
+  auto const stock_jool_orbit =
+      KeplerOrbit<KSP>(sun, test_particle, game_epoch, jool_elements);
+  auto const stock_laythe_orbit =
+      KeplerOrbit<KSP>(jool, test_particle, game_epoch, laythe_elements);
+  auto const stock_vall_orbit =
+      KeplerOrbit<KSP>(jool, test_particle, game_epoch, vall_elements);
+  auto const stock_tylo_orbit =
+      KeplerOrbit<KSP>(jool, test_particle, game_epoch, tylo_elements);
+  auto const stock_bop_orbit =
+      KeplerOrbit<KSP>(jool, test_particle, game_epoch, bop_elements);
+  auto const stock_pol_orbit = 
+      KeplerOrbit<KSP>(jool, test_particle, game_epoch, pol_elements);
+
+  DegreesOfFreedom<KSP> const origin = {KSP::origin, Velocity<KSP>()};
+  auto const stock_jool_initial_state =
+      origin + stock_jool_orbit.PrimocentricStateVectors(game_epoch);
+  Ephemeris<KSP> stock_ephemeris(
+      std::move(bodies),
+      {origin,
+       stock_jool_initial_state,
+       stock_jool_initial_state +
+           stock_laythe_orbit.PrimocentricStateVectors(game_epoch),
+       stock_jool_initial_state +
+           stock_vall_orbit.PrimocentricStateVectors(game_epoch),
+       stock_jool_initial_state +
+           stock_tylo_orbit.PrimocentricStateVectors(game_epoch),
+       stock_jool_initial_state +
+           stock_bop_orbit.PrimocentricStateVectors(game_epoch),
+       stock_jool_initial_state +
+           stock_pol_orbit.PrimocentricStateVectors(game_epoch)},
+      game_epoch,
+      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+      45 * Minute,
+      5 * Milli(Metre));
+  stock_ephemeris.Prolong(game_epoch + 500 * Day);
 }
 
 }  // namespace physics
