@@ -57,8 +57,8 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
           4.0350323550225975E+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second)), 1));
   Instant const date = JulianDate(2457397.500000000);
   KeplerianElements<ICRFJ2000Equator> elements;
-  elements.eccentricity                = 4.772161502830355E-02;
-  elements.semimajor_axis              = 3.870051955415476E+05 * Kilo(Metre);
+  elements.conic.eccentricity          = 4.772161502830355E-02;
+  elements.conic.semimajor_axis        = 3.870051955415476E+05 * Kilo(Metre);
   elements.inclination                 = 1.842335956339145E+01 * Degree;
   elements.longitude_of_ascending_node = 1.752118723367974E+00 * Degree;
   elements.argument_of_periapsis       = 3.551364385683149E+02 * Degree;

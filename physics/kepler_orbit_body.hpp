@@ -11,6 +11,7 @@ namespace principia {
 using geometry::Bivector;
 using numerics::Bisect;
 using quantities::Pow;
+using quantities::Cbrt;
 using quantities::Sqrt;
 using quantities::Time;
 
@@ -31,8 +32,8 @@ KeplerOrbit<Frame>::KeplerOrbit(
                     gravitational_parameter()),
       elements_at_epoch_(elements_at_epoch),
       epoch_(epoch) {
-  CHECK(elements_at_epoch_.conic.semimajor_axis ^
-        elements_at_epoch_.conic.mean_motion);
+  CHECK(static_cast<bool>(elements_at_epoch_.conic.semimajor_axis) ^
+        static_cast<bool>(elements_at_epoch_.conic.mean_motion));
 }
 
 // TODO(egg): the calculations reducing the primocentric and barycentric state
@@ -50,9 +51,9 @@ KeplerOrbit<Frame>::PrimocentricStateVectors(Instant const& t) const {
   if (primocentric_elements.conic.mean_motion) {
     primocentric_elements.mean_anomaly =
         elements_at_epoch_.mean_anomaly +
-        elements_at_epoch_.conic.mean_motion * (t - epoch_);
+        *elements_at_epoch_.conic.mean_motion * (t - epoch_);
   } else {
-    Length const a = primocentric_elements.semimajor_axis;
+    Length const a = *primocentric_elements.conic.semimajor_axis;
     AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
     primocentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
                                          mean_motion * (t - epoch_);
@@ -77,13 +78,13 @@ KeplerOrbit<Frame>::BarycentricStateVectors(Instant const& t) const {
     // No semimajor axis to change.
     primocentric_elements.mean_anomaly =
         elements_at_epoch_.mean_anomaly +
-        elements_at_epoch_.conic.mean_motion * (t - epoch_);
+        *elements_at_epoch_.conic.mean_motion * (t - epoch_);
   } else {
     // Change the semimajor axis to get elements describing the orbit of the
     // secondary around the barycentre, rather than around the primary.
-    Length const a_primocentric = barycentric_elements.semimajor_axis;
-    barycentric_elements.semimajor_axis = a_primocentric * μ1 / (μ1 + μ2);
-    Length const a = barycentric_elements.semimajor_axis;
+    Length const a_primocentric = barycentric_elements.conic.semimajor_axis;
+    barycentric_elements.conic.semimajor_axis = a_primocentric * μ1 / (μ1 + μ2);
+    Length const a = barycentric_elements.conic.semimajor_axis;
     AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
     barycentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
                                         mean_motion * (t - epoch_);
@@ -98,8 +99,9 @@ KeplerOrbit<Frame>::TestParticleStateVectors(
     KeplerianElements<Frame> const& elements,
     GravitationalParameter const& gravitational_parameter) {
   GravitationalParameter const μ = gravitational_parameter;
-  double const eccentricity = elements.eccentricity;
-  Length const a = elements.conic.semimajor_axis.value_or(elements.conic.mean_motion)
+  double const eccentricity = elements.conic.eccentricity;
+  Length const a = elements.conic.semimajor_axis.value_or(
+      Cbrt(μ / Pow<2>(*elements.conic.mean_motion / Radian)));
   Angle const i = elements.inclination;
   Angle const Ω = elements.longitude_of_ascending_node;
   Angle const ω = elements.argument_of_periapsis;
