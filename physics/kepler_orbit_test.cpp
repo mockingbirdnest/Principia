@@ -76,6 +76,8 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(expected_displacement, 13));
   EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
+  EXPECT_THAT(moon_orbit.mean_motion(),
+              AlmostEquals(1.511718576836574E-04 * (Degree / Second), 2));
 
   elements.conic.semimajor_axis = std::experimental::nullopt;
   elements.conic.mean_motion = 1.511718576836574E-04 * (Degree / Second);
