@@ -1,22 +1,21 @@
 ﻿#pragma once
 
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/plugin.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
 using geometry::Instant;
+using geometry::Velocity;
 using physics::Frenet;
 using quantities::Force;
 using quantities::SpecificImpulse;
 
 namespace ksp_plugin {
-
-using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 
 // Parameters for constructing a |NavigationManœuvre|, excluding the initial
 // mass.  This owns a |NavigationFrame| and is therefore not copyable.

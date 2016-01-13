@@ -60,14 +60,13 @@ Vessel::mutable_prolongation() {
   return prolongation_;
 }
 
-inline std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const&
-Vessel::flight_plan() const {
+inline not_null<FlightPlan*> Vessel::flight_plan() const {
   CHECK(is_initialized());
-  return flight_plan_;
+  return flight_plan_.get();
 }
 
 inline bool Vessel::has_flight_plan() const {
-  return !flight_plan_.empty();
+  return flight_plan_ != nullptr;
 }
 
 inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
@@ -77,14 +76,6 @@ inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
 
 inline bool Vessel::has_prediction() const {
   return prediction_ != nullptr;
-}
-
-inline Vessel::Manœuvres const& Vessel::manœuvres() const {
-  return manœuvres_;
-}
-
-inline not_null<Vessel::Manœuvres*> Vessel::mutable_manœuvres() {
-  return &manœuvres_;
 }
 
 inline void Vessel::CreateProlongation(
@@ -116,61 +107,30 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   prolongation_ = history_->NewForkWithCopy(time);
 }
 
-inline void Vessel::UpdateFlightPlan(
+inline void Vessel::CreateFlightPlan(
+    Instant const& final_time,
+    Mass const& initial_mass,
     not_null<Ephemeris<Barycentric>*> ephemeris,
     AdaptiveStepSizeIntegrator<
         Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
-    Instant const& last_time,
-    Length const& prediction_length_tolerance,
-    Speed const& prediction_speed_tolerance,
-    Length const& prolongation_length_tolerance,
-    Speed const& prolongation_speed_tolerance) {
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance) {
   if (!is_synchronized()) {
     return;
   }
-  DeleteFlightPlan();
-  flight_plan_.emplace_back(mutable_history()->NewForkAtLast());
-  if (history().last().time() != prolongation().last().time()) {
-    flight_plan_.back()->Append(prolongation().last().time(),
-                                prolongation().last().degrees_of_freedom());
-  }
-  for (auto const& manœuvre : manœuvres_) {
-    not_null<DiscreteTrajectory<Barycentric>*> const coast_trajectory =
-        flight_plan_.back();
-    ephemeris->FlowWithAdaptiveStep(
-        coast_trajectory,
-        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-        prediction_length_tolerance,
-        prediction_speed_tolerance,
-        integrator,
-        manœuvre->initial_time());
-    flight_plan_.emplace_back(
-        coast_trajectory->NewForkWithCopy(coast_trajectory->last().time()));
-    not_null<DiscreteTrajectory<Barycentric>*> const burn_trajectory =
-        flight_plan_.back();
-    ephemeris->FlowWithAdaptiveStep(burn_trajectory,
-                                    manœuvre->acceleration(*coast_trajectory),
-                                    prolongation_length_tolerance,
-                                    prolongation_speed_tolerance,
-                                    integrator,
-                                    manœuvre->final_time());
-    flight_plan_.emplace_back(burn_trajectory->NewForkAtLast());
-  }
-  ephemeris->FlowWithAdaptiveStep(
-      flight_plan_.back(),
-      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-      prediction_length_tolerance,
-      prediction_speed_tolerance,
-      integrator,
-      last_time);
+  flight_plan_ = std::make_unique<FlightPlan>(
+                     mutable_history()->NewForkAtLast(),
+                     /*initial_time=*/history().last().time(),
+                     /*final_time=*/final_time,
+                     initial_mass,
+                     ephemeris,
+                     integrator,
+                     length_integration_tolerance,
+                     speed_integration_tolerance);
 }
 
 inline void Vessel::DeleteFlightPlan() {
-  if (has_flight_plan()) {
-    DiscreteTrajectory<Barycentric>* flight_plan_root = flight_plan_.front();
-    flight_plan_.clear();
-    history_->DeleteFork(&flight_plan_root);
-  }
+  flight_plan_.reset();
 }
 
 inline void Vessel::UpdatePrediction(

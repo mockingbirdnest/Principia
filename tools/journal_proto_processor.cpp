@@ -834,7 +834,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
     cxx_functions_implementation_[descriptor] += "  ";
   }
   cxx_functions_implementation_[descriptor] +=
-      "ksp_plugin::principia__" + name + "(" + cxx_run_arguments + ");\n";
+      "interface::principia__" + name + "(" + cxx_run_arguments + ");\n";
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
   cs_interface_method_declaration_[descriptor] =

@@ -3,6 +3,17 @@
 // run.  You should change the generator instead.
 
 extern "C"
+struct NavigationFrameParameters {
+  int extension;
+  int centre_index;
+  int primary_index;
+  int secondary_index;
+};
+
+static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
+              "NavigationFrameParameters is used for interfacing");
+
+extern "C"
 struct XYZ {
   double x;
   double y;
@@ -13,27 +24,44 @@ static_assert(std::is_standard_layout<XYZ>::value,
               "XYZ is used for interfacing");
 
 extern "C"
+struct Burn {
+  double thrust_in_kilonewtons;
+  double specific_impulse_in_seconds_g0;
+  NavigationFrameParameters frame;
+  double initial_time;
+  XYZ delta_v;
+};
+
+static_assert(std::is_standard_layout<Burn>::value,
+              "Burn is used for interfacing");
+
+extern "C"
+struct NavigationManoeuvre {
+  Burn burn;
+  double initial_mass_in_tonnes;
+  double final_mass_in_tonnes;
+  double mass_flow;
+  double duration;
+  double final_time;
+  double time_of_half_delta_v;
+  double time_to_half_delta_v;
+  XYZ direction;
+};
+
+static_assert(std::is_standard_layout<NavigationManoeuvre>::value,
+              "NavigationManoeuvre is used for interfacing");
+
+extern "C"
 struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
-  double mass;
+  double mass_in_tonnes;
   XYZ gravitational_acceleration_to_be_applied_by_ksp;
   uint32_t id;
 };
 
 static_assert(std::is_standard_layout<KSPPart>::value,
               "KSPPart is used for interfacing");
-
-extern "C"
-struct NavigationFrameParameters {
-  int extension;
-  int centre_index;
-  int primary_index;
-  int secondary_index;
-};
-
-static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
-              "NavigationFrameParameters is used for interfacing");
 
 extern "C"
 struct QP {
@@ -145,9 +173,69 @@ XYZSegment CDECL principia__FetchAndIncrement(
     LineAndIterator* const line_and_iterator);
 
 extern "C" PRINCIPIA_DLL
-int CDECL principia__FlightPlanSize(
+bool CDECL principia__FlightPlanAppend(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    Burn const burn);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanCreate(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const final_time,
+    double const mass_in_tonnes);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanDelete(
     Plugin const* const plugin,
     char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+NavigationManoeuvre CDECL principia__FlightPlanGetManoeuvre(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index);
+
+extern "C" PRINCIPIA_DLL
+int CDECL principia__FlightPlanNumberOfManoeuvres(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+int CDECL principia__FlightPlanNumberOfSegments(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanRemoveLast(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+LineAndIterator* CDECL principia__FlightPlanRenderedSegment(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    int const index);
+
+extern "C" PRINCIPIA_DLL
+bool CDECL principia__FlightPlanReplaceLast(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    Burn const burn);
+
+extern "C" PRINCIPIA_DLL
+bool CDECL principia__FlightPlanSetFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const final_time);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__FlightPlanSetTolerances(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const length_integration_tolerance,
+    double const speed_integration_tolerance);
 
 extern "C" PRINCIPIA_DLL
 void CDECL principia__ForgetAllHistoriesBefore(
@@ -260,13 +348,6 @@ int CDECL principia__NumberOfSegments(
 extern "C" PRINCIPIA_DLL
 bool CDECL principia__PhysicsBubbleIsEmpty(
     Plugin const* const plugin);
-
-extern "C" PRINCIPIA_DLL
-LineAndIterator* CDECL principia__RenderedFlightPlan(
-    Plugin* const plugin,
-    char const* const vessel_guid,
-    int const plan_phase,
-    XYZ const sun_world_position);
 
 extern "C" PRINCIPIA_DLL
 LineAndIterator* CDECL principia__RenderedPrediction(

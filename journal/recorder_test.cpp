@@ -21,7 +21,7 @@ class RecorderTest : public testing::Test {
   RecorderTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(ksp_plugin::principia__NewPlugin(1, 2)),
+        plugin_(interface::principia__NewPlugin(1, 2)),
         recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }
@@ -104,7 +104,7 @@ TEST_F(RecorderTest, Recording) {
     EXPECT_EQ(1, extension.in().initial_time());
     EXPECT_EQ(2, extension.in().planetarium_rotation_in_degrees());
     EXPECT_TRUE(extension.has_return_());
-    EXPECT_NE(0, extension.return_().new_plugin());
+    EXPECT_NE(0, extension.return_().result());
   }
 }
 

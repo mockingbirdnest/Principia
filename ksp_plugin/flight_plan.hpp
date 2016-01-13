@@ -1,18 +1,29 @@
 ﻿#pragma once
 
 #include <vector>
-#include <stack>
 
+#include "base/not_null.hpp"
+#include "geometry/named_quantities.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/burn.hpp"
-#include "ksp_plugin/fork_handle.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
-#include "ksp_plugin/plugin.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 
+using base::not_null;
+using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
+using physics::DiscreteTrajectory;
+using physics::UniqueDiscreteTrajectory;
+using physics::Ephemeris;
+using quantities::Length;
+using quantities::Mass;
+using quantities::Speed;
 
 namespace ksp_plugin {
 
@@ -36,11 +47,11 @@ class FlightPlan {
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
-  ~FlightPlan() = default;
+  ~FlightPlan();
 
-  int size() const;
-  // |index| must be in [0, size()[.
-  NavigationManœuvre const& Get(int index);
+  int number_of_manœuvres() const;
+  // |index| must be in [0, number_of_manœuvres()[.
+  NavigationManœuvre const& GetManœuvre(int const index) const;
 
   // |size()| must be greater than 0.
   void RemoveLast();
@@ -61,6 +72,16 @@ class FlightPlan {
   void SetTolerances(
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
+
+  // Returns the number of trajectory segments in this object.
+  int number_of_segments() const;
+
+  // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
+  // the given trajectory segment.
+  void GetSegment(
+      int const index,
+      not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
+      not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
 
  private:
   // Appends |manœuvre| to |manœuvres_|, recomputes the last coast segment until
@@ -91,9 +112,9 @@ class FlightPlan {
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
-  // alternate.  Each segment is a fork of the previous one, so the stack
-  // structure prevents dangling.
-  std::stack<ForkHandle> segments_;
+  // alternate.  This simulates a stack.  Each segment is a fork of the previous
+  // one.
+  std::vector<UniqueDiscreteTrajectory<Barycentric>> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<

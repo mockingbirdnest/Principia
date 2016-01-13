@@ -114,6 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -132,6 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -153,6 +155,7 @@
       <SDLCheck>true</SDLCheck>
       <AssemblerOutput>All</AssemblerOutput>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -170,8 +173,6 @@
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="flight_plan.hpp" />
-    <ClInclude Include="fork_handle.hpp" />
-    <ClInclude Include="fork_handle_body.hpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="interface.generated.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -181,7 +182,6 @@
     <ClInclude Include="interface_body.hpp" />
     <ClInclude Include="manœuvre.hpp" />
     <ClInclude Include="manœuvre_body.hpp" />
-    <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="part.hpp" />
     <ClInclude Include="part_body.hpp" />
     <ClInclude Include="physics_bubble.hpp" />
@@ -196,7 +196,7 @@
     <ClCompile Include="burn.cpp" />
     <ClCompile Include="flight_plan.cpp" />
     <ClCompile Include="interface.cpp" />
-    <ClCompile Include="mock_plugin.cpp" />
+    <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="physics_bubble.cpp" />
     <ClCompile Include="plugin.cpp" />
   </ItemGroup>

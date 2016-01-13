@@ -4,12 +4,15 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "ksp_plugin/manœuvre.hpp"
+#include "physics/dynamic_frame.hpp"
 
 namespace principia {
 
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Position;
+using physics::DynamicFrame;
 
 namespace ksp_plugin {
 
@@ -61,6 +64,10 @@ using AliceSun = Frame<serialization::Frame::PluginTag,
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
 using WorldSun = Frame<serialization::Frame::PluginTag,
                        serialization::Frame::WORLD_SUN, false>;
+
+// Convenient instances of types from |physics| for the above frames.
+using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
+using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 
 }  // namespace ksp_plugin
 }  // namespace principia

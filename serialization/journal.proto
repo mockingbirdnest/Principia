@@ -4,28 +4,48 @@ import "google/protobuf/descriptor.proto";
 
 package principia.serialization;
 
-// Must come first because the other interchange messages use it and we need to
-// generate the structs in the correct order.
+// These two messages must come first because the other interchange messages use
+// them and we need to generate the structs in the correct order.
+message NavigationFrameParameters {
+  required int32 extension = 1;  // 6000 to 6999, see DynamicFrame.
+  required int32 centre_index = 2;
+  required int32 primary_index = 3;
+  required int32 secondary_index = 4;
+}
+
 message XYZ {
   required double x = 1;
   required double y = 2;
   required double z = 3;
 }
 
+message Burn {
+  required double thrust_in_kilonewtons = 1;
+  required double specific_impulse_in_seconds_g0 = 2;
+  required NavigationFrameParameters frame = 3;
+  required double initial_time = 4;
+  required XYZ delta_v = 5;
+}
+
+message NavigationManoeuvre {
+  required Burn burn = 1;
+  required double initial_mass_in_tonnes = 2;
+  required double final_mass_in_tonnes = 3;
+  required double mass_flow = 4;
+  required double duration = 5;
+  required double final_time = 6;
+  required double time_of_half_delta_v = 7;
+  required double time_to_half_delta_v = 8;
+  required XYZ direction = 9;
+}
+
 message KSPPart {
   // TODO(egg): Y U NO USE QP?
   required XYZ world_position = 1;
   required XYZ world_velocity = 2;
-  required double mass = 3;
+  required double mass_in_tonnes = 3;
   required XYZ gravitational_acceleration_to_be_applied_by_ksp = 4;
   required uint32 id = 5;
-}
-
-message NavigationFrameParameters {
-  required int32 extension = 1;  // 6000 to 6999, see DynamicFrame.
-  required int32 centre_index = 2;
-  required int32 primary_index = 3;
-  required int32 secondary_index = 4;
 }
 
 message QP {
@@ -46,7 +66,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5062.
+  extensions 5000 to 5999;  // Last used: 5072.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -82,7 +102,7 @@ message AtEnd {
         [(pointer_to) = "LineAndIterator const", (is_subject) = true];
   }
   message Return {
-    required bool at_end = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -98,7 +118,7 @@ message BubbleDisplacementCorrection {
     required XYZ sun_position = 2;
   }
   message Return {
-    required XYZ bubble_displacement_correction = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -114,7 +134,7 @@ message BubbleVelocityCorrection {
     required int32 reference_body_index = 2;
   }
   message Return {
-    required XYZ bubble_velocity_correction = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -130,7 +150,7 @@ message CelestialFromParent {
     required int32 celestial_index = 2;
   }
   message Return {
-    required QP celestial_from_parent = 1;
+    required QP result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -145,7 +165,7 @@ message CurrentTime {
                                  (is_subject) = true];
   }
   message Return {
-    required double current_time = 1;
+    required double result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -260,15 +280,75 @@ message FetchAndIncrement {
                                             (is_subject) = true];
   }
   message Return {
-    required XYZSegment fetch_and_increment = 1;
+    required XYZSegment result = 1;
   }
   required In in = 1;
   required Return return = 3;
 }
 
-message FlightPlanSize {
+message FlightPlanAppend {
   extend Method {
-    optional FlightPlanSize extension = 5038;
+    optional FlightPlanAppend extension = 5063;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanCreate {
+  extend Method {
+    optional FlightPlanCreate extension = 5071;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double final_time = 3;
+    required double mass_in_tonnes = 4;
+  }
+  required In in = 1;
+}
+
+message FlightPlanDelete {
+  extend Method {
+    optional FlightPlanDelete extension = 5072;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  required In in = 1;
+}
+
+message FlightPlanGetManoeuvre {
+  extend Method {
+    optional FlightPlanGetManoeuvre extension = 5064;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required NavigationManoeuvre result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanNumberOfManoeuvres {
+  extend Method {
+    optional FlightPlanNumberOfManoeuvres extension = 5038;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -276,10 +356,105 @@ message FlightPlanSize {
     required string vessel_guid = 2;
   }
   message Return {
-    required int32 flight_plan_size = 1;
+    required int32 result = 1;
   }
   required In in = 1;
   required Return return = 3;
+}
+
+message FlightPlanNumberOfSegments {
+  extend Method {
+    optional FlightPlanNumberOfSegments extension = 5070;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanRemoveLast {
+  extend Method {
+    optional FlightPlanRemoveLast extension = 5065;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  required In in = 1;
+}
+
+message FlightPlanRenderedSegment {
+  extend Method {
+    optional FlightPlanRenderedSegment extension = 5069;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanReplaceLast{
+  extend Method {
+    optional FlightPlanReplaceLast extension = 5066;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanSetFinalTime {
+  extend Method {
+    optional FlightPlanSetFinalTime extension = 5067;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double final_time = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanSetTolerances {
+  extend Method {
+    optional FlightPlanSetTolerances extension = 5068;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double length_integration_tolerance = 3;
+    required double speed_integration_tolerance = 4;
+  }
+  required In in = 1;
 }
 
 message ForgetAllHistoriesBefore {
@@ -298,7 +473,7 @@ message GetBufferDuration {
     optional GetBufferDuration extension = 5005;
   }
   message Return {
-    required int32 get_buffer_duration = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -308,7 +483,7 @@ message GetBufferedLogging {
     optional GetBufferedLogging extension = 5006;
   }
   message Return {
-    required int32 get_buffered_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -324,7 +499,7 @@ message GetNavigationFrameParameters {
         [(pointer_to) = "NavigationFrame const", (is_consumed) = true];
   }
   message Return {
-    required NavigationFrameParameters get_navigation_frame_parameters = 1;
+    required NavigationFrameParameters result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -340,8 +515,8 @@ message GetPlottingFrame {
   message Return {
     // This doesn't transfer ownership to the caller, but we must enter the
     // pointer in the pointer_map in case it crosses the interface again.
-    required fixed64 get_plotting_frame = 1
-        [(pointer_to) = "NavigationFrame const", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame const",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -352,7 +527,7 @@ message GetStderrLogging {
     optional GetStderrLogging extension = 5007;
   }
   message Return {
-    required int32 get_stderr_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -362,7 +537,7 @@ message GetSuppressedLogging {
     optional GetSuppressedLogging extension = 5008;
   }
   message Return {
-    required int32 get_suppressed_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -372,7 +547,7 @@ message GetVerboseLogging {
     optional GetVerboseLogging extension = 5009;
   }
   message Return {
-    required int32 get_verbose_logging = 1;
+    required int32 result = 1;
   }
   required Return return = 3;
 }
@@ -387,7 +562,7 @@ message HasPrediction {
     required string vessel_guid = 2;
   }
   message Return {
-    required bool has_prediction = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -402,7 +577,7 @@ message HasVessel {
     required string vessel_guid = 2;
   }
   message Return {
-    required bool has_vessel = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -438,7 +613,7 @@ message InsertOrKeepVessel {
     required int32 parent_index = 3;
   }
   message Return {
-    required bool insert_or_keep_vessel = 1;
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -507,7 +682,7 @@ message NavballOrientation {
     required XYZ ship_world_position = 4;
   }
   message Return {
-    required WXYZ navball_orientation = 1;
+    required WXYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -524,8 +699,8 @@ message NewBarycentricRotatingNavigationFrame {
     required int32 secondary_index = 3;
   }
   message Return {
-    required fixed64 new_barycentric_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
+                                  (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -541,8 +716,8 @@ message NewBodyCentredNonRotatingNavigationFrame {
     required int32 reference_body_index = 2;
   }
   message Return {
-    required fixed64 new_body_centred_non_rotating_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -558,8 +733,8 @@ message NewNavigationFrame {
     required NavigationFrameParameters parameters = 2;
   }
   message Return {
-    required fixed64 new_navigation_frame = 1
-        [(pointer_to) = "NavigationFrame", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -574,8 +749,8 @@ message NewPlugin {
     required double planetarium_rotation_in_degrees = 2;
   }
   message Return {
-    required fixed64 new_plugin = 1 [(pointer_to) = "Plugin",
-                                     (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -590,7 +765,7 @@ message NumberOfSegments {
         [(pointer_to) = "LineAndIterator const", (is_subject) = true];
   }
   message Return {
-    required int32 number_of_segments = 1;
+    required int32 result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -605,25 +780,7 @@ message PhysicsBubbleIsEmpty {
                                  (is_subject) = true];
   }
   message Return {
-    required bool physics_bubble_is_empty = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
-}
-
-message RenderedFlightPlan {
-  extend Method {
-    optional RenderedFlightPlan extension = 5041;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required string vessel_guid = 2;
-    required int32 plan_phase = 3;
-    required XYZ sun_world_position = 5;
-  }
-  message Return {
-    required fixed64 rendered_flight_plan = 1
-        [(pointer_to) = "LineAndIterator", (is_produced) = true];
+    required bool result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -639,8 +796,8 @@ message RenderedPrediction {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 rendered_prediction = 1
-        [(pointer_to) = "LineAndIterator", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -657,8 +814,8 @@ message RenderedVesselTrajectory {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 rendered_vessel_trajectory = 1
-        [(pointer_to) = "LineAndIterator", (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+                                 (is_produced) = true];
   }
   required In in = 1;
   required Return return = 3;
@@ -669,8 +826,8 @@ message SayHello {
     optional SayHello extension = 5053;
   }
   message Return {
-    required fixed64 say_hello = 1 [(pointer_to) = "char const",
-                                    (is_produced) = true];
+    required fixed64 result = 1 [(pointer_to) = "char const",
+                                 (is_produced) = true];
   }
   required Return return = 3;
 }
@@ -687,15 +844,13 @@ message SerializePlugin {
          (is_consumed_if) = "result == nullptr"];
   }
   message Out {
-    required fixed64 serializer = 1
-        [(pointer_to) = "PullSerializer",
-         (is_produced_if) = "result != nullptr"];
+    required fixed64 serializer = 1 [(pointer_to) = "PullSerializer",
+                                     (is_produced_if) = "result != nullptr"];
   }
   message Return {
     // TODO(phl): Why the tag 2?
-    required fixed64 serialize_plugin = 2
-        [(pointer_to) = "char const",
-         (is_produced_if) = "result != nullptr"];
+    required fixed64 result = 2 [(pointer_to) = "char const",
+                                 (is_produced_if) = "result != nullptr"];
   }
   required In in = 1;
   required Out out = 2;
@@ -848,7 +1003,7 @@ message VesselBinormal {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ vessel_binormal = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -864,7 +1019,7 @@ message VesselFromParent {
     required string vessel_guid = 2;
   }
   message Return {
-    required QP vessel_from_parent = 1;
+    required QP result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -880,7 +1035,7 @@ message VesselNormal {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ vessel_normal = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
@@ -896,7 +1051,7 @@ message VesselTangent {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ vessel_tangent = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;

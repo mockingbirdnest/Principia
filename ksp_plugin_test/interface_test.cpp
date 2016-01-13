@@ -12,7 +12,7 @@
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
 #include "journal/recorder.hpp"
-#include "ksp_plugin/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
 
 namespace principia {
 
@@ -21,6 +21,13 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
+using ksp_plugin::AliceSun;
+using ksp_plugin::Barycentric;
+using ksp_plugin::Index;
+using ksp_plugin::LineSegment;
+using ksp_plugin::MockPlugin;
+using ksp_plugin::Navigation;
+using ksp_plugin::Part;
 using physics::MockDynamicFrame;
 using quantities::Pow;
 using quantities::si::AstronomicalUnit;
@@ -45,7 +52,7 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
-namespace ksp_plugin {
+namespace interface {
 
 char const kSerializedBoringPlugin[] =
     "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
@@ -883,5 +890,5 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
   }, ExitedWithCode(kExitCode), kExitMessage);
 }
 
-}  // namespace ksp_plugin
+}  // namespace interface
 }  // namespace principia
