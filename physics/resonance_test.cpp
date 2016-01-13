@@ -165,17 +165,17 @@ TEST_F(ResonanceTest, BarycentricJoolSystem) {
       KeplerOrbit<KSP>(jool_4, *pol_, game_epoch_, pol_elements_);
 
   auto const jool_barycentre_initial_state =
-      origin_ + jool_orbit.BarycentricStateVectors(game_epoch_);
+      origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
   auto const laythe_from_barycentre =
-      laythe_orbit.BarycentricStateVectors(game_epoch_);
+      laythe_orbit.PrimocentricStateVectors(game_epoch_);
   auto const vall_from_barycentre =
-      vall_orbit.BarycentricStateVectors(game_epoch_);
+      vall_orbit.PrimocentricStateVectors(game_epoch_);
   auto const tylo_from_barycentre =
-      tylo_orbit.BarycentricStateVectors(game_epoch_);
+      tylo_orbit.PrimocentricStateVectors(game_epoch_);
   auto const bop_from_barycentre =
-      bop_orbit.BarycentricStateVectors(game_epoch_);
+      bop_orbit.PrimocentricStateVectors(game_epoch_);
   auto const pol_from_barycentre =
-      pol_orbit.BarycentricStateVectors(game_epoch_);
+      pol_orbit.PrimocentricStateVectors(game_epoch_);
   auto const jool_initial_state = jool_barycentre_initial_state -
                                   (laythe_from_barycentre * laythe_->mass() +
                                    vall_from_barycentre * vall_->mass() +
