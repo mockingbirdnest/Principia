@@ -163,5 +163,8 @@
     <ClCompile Include="kepler_orbit_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="resonance_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
