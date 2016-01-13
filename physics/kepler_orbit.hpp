@@ -42,10 +42,11 @@ class KeplerOrbit {
   static RelativeDegreesOfFreedom<Frame> TestParticleStateVectors(
       KeplerianElements<Frame> const& elements,
       GravitationalParameter const& gravitational_parameter);
-  GravitationalParameter const primary_gravitational_parameter_;
-  GravitationalParameter const secondary_gravitational_parameter_;
-  KeplerianElements<Frame> const elements_at_epoch_;
-  Instant const epoch_;
+
+  GravitationalParameter primary_gravitational_parameter_;
+  GravitationalParameter secondary_gravitational_parameter_;
+  KeplerianElements<Frame> elements_at_epoch_;
+  Instant epoch_;
 };
 
 }  // namespace physics
