@@ -18,6 +18,7 @@
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -26,15 +27,18 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
+using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::LineSegment;
+using ksp_plugin::MakeNavigationManœuvre;
 using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
+using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
 using physics::Frenet;
 using physics::MockDynamicFrame;
@@ -48,6 +52,7 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
+using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -59,6 +64,7 @@ using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -919,17 +925,27 @@ TEST_F(InterfaceTest, FlightPlan) {
           new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   StrictMock<MockVessel> vessel;
   StrictMock<MockFlightPlan> flight_plan;
+
+  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*plugin_, GetVessel(kVesselGUID))
+      .WillRepeatedly(Return(&vessel));
+  EXPECT_CALL(vessel, has_flight_plan())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(vessel, flight_plan())
+      .WillRepeatedly(Return(&flight_plan));
+
+  EXPECT_CALL(*plugin_, CreateFlightPlan(kVesselGUID,
+                                         Instant() + 30 * Second,
+                                         100 * Tonne));
+  principia__FlightPlanCreate(plugin_.get(),
+                              kVesselGUID,
+                              /*final_time=*/30,
+                              /*mass_in_tonnes=*/100);
+
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(navigation_frame));
-  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
-      .WillOnce(Return(true));
-  EXPECT_CALL(*plugin_, GetVessel(kVesselGUID))
-      .WillOnce(Return(&vessel));
-  EXPECT_CALL(vessel, has_flight_plan())
-      .WillOnce(Return(true));
-  EXPECT_CALL(vessel, flight_plan())
-      .WillOnce(Return(&flight_plan));
   EXPECT_CALL(flight_plan,
               AppendConstRef(
                   BurnMatches(1 * Kilo(Newton),
@@ -941,6 +957,42 @@ TEST_F(InterfaceTest, FlightPlan) {
                                    6 * (Metre / Second)}))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), kVesselGUID, burn));
+
+  EXPECT_CALL(flight_plan, number_of_manœuvres())
+      .WillOnce(Return(4));
+  EXPECT_EQ(4, principia__FlightPlanNumberOfManoeuvres(plugin_.get(),
+                                                       kVesselGUID));
+
+  MockDynamicFrame<Barycentric, Navigation> const* const
+      navigation_manœuvre_frame =
+          new MockDynamicFrame<Barycentric, Navigation>;
+  NavigationManœuvre navigation_manœuvre(
+                         10 * Kilo(Newton),
+                         20 * Tonne,
+                         30 * Second * StandardGravity,
+                         Vector<double, Frenet<Navigation>>({40, 50, 60}),
+                         std::unique_ptr<
+                             DynamicFrame<Barycentric, Navigation> const>(
+                                 navigation_manœuvre_frame));
+  navigation_manœuvre.set_initial_time(Instant());
+  navigation_manœuvre.set_duration(7 * Second);
+  EXPECT_CALL(flight_plan, GetManœuvre(3))
+      .WillOnce(ReturnRef(navigation_manœuvre));
+  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
+  auto const navigation_manoeuvre =
+      principia__FlightPlanGetManoeuvre(plugin_.get(),
+                                        kVesselGUID,
+                                        3);
+  EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
+  EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
+  EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
+              AlmostEquals(30, 1));
+  EXPECT_EQ(40 / sqrt(7700), navigation_manoeuvre.direction.x);
+  EXPECT_EQ(50 / sqrt(7700), navigation_manoeuvre.direction.y);
+  EXPECT_EQ(60 / sqrt(7700), navigation_manoeuvre.direction.z);
+
+  EXPECT_CALL(vessel, DeleteFlightPlan());
+  principia__FlightPlanDelete(plugin_.get(), kVesselGUID);
 }
 
 }  // namespace interface

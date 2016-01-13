@@ -200,9 +200,9 @@ class Plugin {
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
 
-  void CreateFlightPlan(GUID const& vessel_guid,
-                        Instant const& final_time,
-                        Mass const& initial_mass) const;
+  virtual void CreateFlightPlan(GUID const& vessel_guid,
+                                Instant const& final_time,
+                                Mass const& initial_mass) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in the frame defined by the current

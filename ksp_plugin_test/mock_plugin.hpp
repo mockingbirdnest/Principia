@@ -68,6 +68,11 @@ class MockPlugin : public Plugin {
                      RelativeDegreesOfFreedom<AliceSun>(
                          Index const celestial_index));
 
+  MOCK_CONST_METHOD3(CreateFlightPlan,
+                     void (GUID const& vessel_guid,
+                           Instant const& final_time,
+                           Mass const& initial_mass));
+
   MOCK_CONST_METHOD2(
       RenderedVesselTrajectory,
       RenderedTrajectory<World>(GUID const& vessel_guid,
