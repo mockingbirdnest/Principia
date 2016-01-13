@@ -7,13 +7,16 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "geometry/epoch.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "journal/recorder.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -23,6 +26,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
+using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
@@ -32,13 +36,16 @@ using ksp_plugin::MockPlugin;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::Part;
+using physics::Frenet;
 using physics::MockDynamicFrame;
 using quantities::Pow;
+using quantities::constants::StandardGravity;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
 using ::testing::AllOf;
@@ -114,6 +121,13 @@ ACTION_TEMPLATE(FillUniquePtr,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(ptr)) {
   std::tr1::get<k>(args)->reset(ptr);
+}
+
+MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
+  return arg.thrust == thrust &&
+         arg.specific_impulse == specific_impulse &&
+         arg.initial_time == initial_time &&
+         arg.Δv == Δv;
 }
 
 class InterfaceTest : public testing::Test {
@@ -916,7 +930,15 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(Return(true));
   EXPECT_CALL(vessel, flight_plan())
       .WillOnce(Return(&flight_plan));
-  EXPECT_CALL(flight_plan, AppendConstRef(_))//TODO(phl):Improve.
+  EXPECT_CALL(flight_plan,
+              AppendConstRef(
+                  BurnMatches(1 * Kilo(Newton),
+                              2 * Second * StandardGravity,
+                              Instant() + 3 * Second,
+                              Velocity<Frenet<Navigation>>(
+                                  {4 * (Metre / Second),
+                                   5 * (Metre / Second),
+                                   6 * (Metre / Second)}))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), kVesselGUID, burn));
 }
