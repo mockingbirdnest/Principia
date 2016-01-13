@@ -85,47 +85,42 @@ class ResonanceTest : public ::testing::Test {
 };
 
 
-TEST_F(ResonanceTest, JoolSystem) {
-  auto const stock_jool_orbit =
+TEST_F(ResonanceTest, StockJoolSystem) {
+  auto const jool_orbit =
       KeplerOrbit<KSP>(*sun_, test_particle_, game_epoch_, jool_elements_);
-  auto const stock_laythe_orbit =
+  auto const laythe_orbit =
       KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, laythe_elements_);
-  auto const stock_vall_orbit =
+  auto const vall_orbit =
       KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, vall_elements_);
-  auto const stock_tylo_orbit =
+  auto const tylo_orbit =
       KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, tylo_elements_);
-  auto const stock_bop_orbit =
+  auto const bop_orbit =
       KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, bop_elements_);
-  auto const stock_pol_orbit = 
+  auto const pol_orbit = 
       KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, pol_elements_);
 
-  auto const stock_jool_initial_state =
-      origin_ + stock_jool_orbit.PrimocentricStateVectors(game_epoch_);
-  Ephemeris<KSP> stock_ephemeris(
+  auto const jool_initial_state =
+      origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
+  Ephemeris<KSP> ephemeris(
       std::move(bodies_),
       {origin_,
-       stock_jool_initial_state,
-       stock_jool_initial_state +
-           stock_laythe_orbit.PrimocentricStateVectors(game_epoch_),
-       stock_jool_initial_state +
-           stock_vall_orbit.PrimocentricStateVectors(game_epoch_),
-       stock_jool_initial_state +
-           stock_tylo_orbit.PrimocentricStateVectors(game_epoch_),
-       stock_jool_initial_state +
-           stock_bop_orbit.PrimocentricStateVectors(game_epoch_),
-       stock_jool_initial_state +
-           stock_pol_orbit.PrimocentricStateVectors(game_epoch_)},
+       jool_initial_state,
+       jool_initial_state + laythe_orbit.PrimocentricStateVectors(game_epoch_),
+       jool_initial_state + vall_orbit.PrimocentricStateVectors(game_epoch_),
+       jool_initial_state + tylo_orbit.PrimocentricStateVectors(game_epoch_),
+       jool_initial_state + bop_orbit.PrimocentricStateVectors(game_epoch_),
+       jool_initial_state + pol_orbit.PrimocentricStateVectors(game_epoch_)},
       game_epoch_,
       McLachlanAtela1992Order5Optimal<Position<KSP>>(),
       45 * Minute,
       5 * Milli(Metre));
-  stock_ephemeris.Prolong(game_epoch_ + 90 * Day);
+  ephemeris.Prolong(game_epoch_ + 90 * Day);
   std::vector<Instant> times;
   std::vector<std::vector<Displacement<KSP>>> displacements;
   for (Instant t = game_epoch_; t < game_epoch_ + 90 * Day; t += 45 * Minute) {
-    auto const position = [&stock_ephemeris, t](
+    auto const position = [&ephemeris, t](
         not_null<MassiveBody const*> body) {
-      return stock_ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
+      return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
     };
     auto const barycentre = Barycentre<Position<KSP>, Mass>(
         {position(jool_), position(laythe_), position(vall_), position(tylo_),
@@ -144,7 +139,89 @@ TEST_F(ResonanceTest, JoolSystem) {
   file << mathematica::Assign("t", times);
   file.close();
   // fails.
-  stock_ephemeris.Prolong(game_epoch_ + 100 * Day);
+  ephemeris.Prolong(game_epoch_ + 100 * Day);
+}
+
+TEST_F(ResonanceTest, BarycentricJoolSystem) {
+  auto const jool_orbit =
+      KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_, jool_elements_);
+  auto const laythe_orbit =
+      KeplerOrbit<KSP>(*jool_, *laythe_, game_epoch_, laythe_elements_);
+  MassiveBody jool_1(jool_->gravitational_parameter() +
+                     laythe_->gravitational_parameter());
+  auto const vall_orbit =
+      KeplerOrbit<KSP>(jool_1, *vall_, game_epoch_, vall_elements_);
+  MassiveBody jool_2(jool_1.gravitational_parameter() +
+                     vall_->gravitational_parameter());
+  auto const tylo_orbit =
+      KeplerOrbit<KSP>(jool_2, *tylo_, game_epoch_, tylo_elements_);
+  MassiveBody jool_3(jool_2.gravitational_parameter() +
+                     tylo_->gravitational_parameter());
+  auto const bop_orbit =
+      KeplerOrbit<KSP>(jool_3, *bop_, game_epoch_, bop_elements_);
+  MassiveBody jool_4(jool_3.gravitational_parameter() +
+                     bop_->gravitational_parameter());
+  auto const pol_orbit = 
+      KeplerOrbit<KSP>(jool_4, *pol_, game_epoch_, pol_elements_);
+
+  auto const jool_barycentre_initial_state =
+      origin_ + jool_orbit.BarycentricStateVectors(game_epoch_);
+  auto const laythe_from_barycentre =
+      laythe_orbit.BarycentricStateVectors(game_epoch_);
+  auto const vall_from_barycentre =
+      vall_orbit.BarycentricStateVectors(game_epoch_);
+  auto const tylo_from_barycentre =
+      tylo_orbit.BarycentricStateVectors(game_epoch_);
+  auto const bop_from_barycentre =
+      bop_orbit.BarycentricStateVectors(game_epoch_);
+  auto const pol_from_barycentre =
+      pol_orbit.BarycentricStateVectors(game_epoch_);
+  auto const jool_initial_state = jool_barycentre_initial_state -
+                                  (laythe_from_barycentre * laythe_->mass() +
+                                   vall_from_barycentre * vall_->mass() +
+                                   tylo_from_barycentre * tylo_->mass() +
+                                   bop_from_barycentre * bop_->mass() +
+                                   pol_from_barycentre * pol_->mass()) /
+                                      jool_->mass();
+  Ephemeris<KSP> ephemeris(
+      std::move(bodies_),
+      {origin_,  // TODO: not actually here
+       jool_initial_state,
+       jool_barycentre_initial_state + laythe_from_barycentre,
+       jool_barycentre_initial_state + vall_from_barycentre,
+       jool_barycentre_initial_state + tylo_from_barycentre,
+       jool_barycentre_initial_state + bop_from_barycentre,
+       jool_barycentre_initial_state + pol_from_barycentre},
+      game_epoch_,
+      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+      45 * Minute,
+      5 * Milli(Metre));
+  ephemeris.Prolong(game_epoch_ + 90 * Day);
+  std::vector<Instant> times;
+  std::vector<std::vector<Displacement<KSP>>> displacements;
+  for (Instant t = game_epoch_; t < game_epoch_ + 90 * Day; t += 45 * Minute) {
+    auto const position = [&ephemeris, t](
+        not_null<MassiveBody const*> body) {
+      return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
+    };
+    auto const barycentre = Barycentre<Position<KSP>, Mass>(
+        {position(jool_), position(laythe_), position(vall_), position(tylo_),
+         position(bop_), position(pol_)},
+        {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
+         bop_->mass(), pol_->mass()});
+    times.emplace_back(t);
+    displacements.push_back(
+        {position(jool_) - barycentre, position(laythe_) - barycentre,
+         position(vall_) - barycentre, position(tylo_) - barycentre,
+         position(bop_) - barycentre, position(pol_) - barycentre});
+  }
+  std::ofstream file;
+  file.open("corrected_jool.wl");
+  file << mathematica::Assign("q", displacements);
+  file << mathematica::Assign("t", times);
+  file.close();
+  // fails.
+  ephemeris.Prolong(game_epoch_ + 100 * Day);
 }
 
 }  // namespace physics
