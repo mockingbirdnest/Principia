@@ -45,19 +45,12 @@ RelativeDegreesOfFreedom<Frame>
 KeplerOrbit<Frame>::PrimocentricStateVectors(Instant const& t) const {
   KeplerianElements<Frame> primocentric_elements = elements_at_epoch_;
 
-  // Update the mean anomaly for |t|.
   GravitationalParameter const μ = primary_gravitational_parameter_ +
                                    secondary_gravitational_parameter_;
-  if (primocentric_elements.conic.mean_motion) {
-    primocentric_elements.mean_anomaly =
-        elements_at_epoch_.mean_anomaly +
-        *elements_at_epoch_.conic.mean_motion * (t - epoch_);
-  } else {
-    Length const a = *primocentric_elements.conic.semimajor_axis;
-    AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
-    primocentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
-                                         mean_motion * (t - epoch_);
-  }
+
+  // Update the mean anomaly for |t|.
+  primocentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
+                                         mean_motion() * (t - epoch_);
 
   return TestParticleStateVectors(primocentric_elements, μ);
 }
@@ -74,23 +67,32 @@ KeplerOrbit<Frame>::BarycentricStateVectors(Instant const& t) const {
   GravitationalParameter const μ2 = secondary_gravitational_parameter_;
   GravitationalParameter const μ = Pow<3>(μ1) / Pow<2>(μ1 + μ2);
 
-  if (barycentric_elements.conic.mean_motion) {
-    // No semimajor axis to change.
-    primocentric_elements.mean_anomaly =
-        elements_at_epoch_.mean_anomaly +
-        *elements_at_epoch_.conic.mean_motion * (t - epoch_);
-  } else {
+  if (barycentric_elements.conic.semimajor_axis) {
     // Change the semimajor axis to get elements describing the orbit of the
     // secondary around the barycentre, rather than around the primary.
     Length const a_primocentric = barycentric_elements.conic.semimajor_axis;
     barycentric_elements.conic.semimajor_axis = a_primocentric * μ1 / (μ1 + μ2);
     Length const a = barycentric_elements.conic.semimajor_axis;
-    AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
-    barycentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
-                                        mean_motion * (t - epoch_);
   }
 
+  barycentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
+                                      mean_motion() * (t - epoch_);
+
   return TestParticleStateVectors(barycentric_elements, μ);
+}
+
+template<typename Frame>
+AngularFrequency KeplerOrbit<Frame>::mean_motion() const {
+  GravitationalParameter const μ = primary_gravitational_parameter_ +
+                                   secondary_gravitational_parameter_;
+  if (elements_at_epoch_.conic.mean_motion) {
+    return *elements_at_epoch_.conic.mean_motion;
+  } else {
+    GravitationalParameter const μ = primary_gravitational_parameter_ +
+                                     secondary_gravitational_parameter_;
+    Length const a = *elements_at_epoch_.conic.semimajor_axis;
+    return Sqrt(μ / Pow<3>(a)) * Radian;
+  }
 }
 
 template<typename Frame>

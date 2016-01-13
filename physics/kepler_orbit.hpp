@@ -36,6 +36,8 @@ class KeplerOrbit {
   RelativeDegreesOfFreedom<Frame> BarycentricStateVectors(
       Instant const& t) const;
 
+  AngularFrequency mean_motion() const;
+
  private:
   // The state vectors of a massless body orbiting a body with the given
   // |gravitation_parameter| in an orbit with the given |elements|.
