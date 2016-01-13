@@ -146,23 +146,23 @@ TEST_F(ResonanceTest, BarycentricJoolSystem) {
   auto const jool_orbit =
       KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_, jool_elements_);
   auto const laythe_orbit =
-      KeplerOrbit<KSP>(*jool_, *laythe_, game_epoch_, laythe_elements_);
+      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, laythe_elements_);
   MassiveBody jool_1(jool_->gravitational_parameter() +
                      laythe_->gravitational_parameter());
   auto const vall_orbit =
-      KeplerOrbit<KSP>(jool_1, *vall_, game_epoch_, vall_elements_);
+      KeplerOrbit<KSP>(jool_1, test_particle_, game_epoch_, vall_elements_);
   MassiveBody jool_2(jool_1.gravitational_parameter() +
                      vall_->gravitational_parameter());
   auto const tylo_orbit =
-      KeplerOrbit<KSP>(jool_2, *tylo_, game_epoch_, tylo_elements_);
+      KeplerOrbit<KSP>(jool_2, test_particle_, game_epoch_, tylo_elements_);
   MassiveBody jool_3(jool_2.gravitational_parameter() +
                      tylo_->gravitational_parameter());
   auto const bop_orbit =
-      KeplerOrbit<KSP>(jool_3, *bop_, game_epoch_, bop_elements_);
+      KeplerOrbit<KSP>(jool_3, test_particle_, game_epoch_, bop_elements_);
   MassiveBody jool_4(jool_3.gravitational_parameter() +
                      bop_->gravitational_parameter());
   auto const pol_orbit = 
-      KeplerOrbit<KSP>(jool_4, *pol_, game_epoch_, pol_elements_);
+      KeplerOrbit<KSP>(jool_4, test_particle_, game_epoch_, pol_elements_);
 
   auto const jool_barycentre_initial_state =
       origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);

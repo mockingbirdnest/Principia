@@ -1,15 +1,22 @@
 #pragma once
 
+#include "experimental/optional"
+
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
 
+struct Conic {
+  double eccentricity;
+  std::experimental::optional<Length> semimajor_axis;
+  std::experimental::optional<AngularFrequency> mean_motion;
+};
+
 template<typename Frame>
 struct KeplerianElements {
-  double eccentricity;
-  Length semimajor_axis;
+  Conic conic;
   Angle inclination;
   Angle longitude_of_ascending_node;
   Angle argument_of_periapsis;
