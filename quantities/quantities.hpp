@@ -44,7 +44,7 @@ namespace internal {
 
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
-template<typename Q, typename = void> struct SquareRootGenerator;
+template<int n, typename Q, typename = void> struct NthRootGenerator;
 template<typename T, int exponent, typename = void>
 struct ExponentiationGenerator;
 
@@ -77,8 +77,12 @@ using Exponentiation =
 // |SquareRoot<T>| is only defined if |T| is an instance of |Quantity| with only
 // even dimensions.  In that case, it is the unique instance |S| of |Quantity|
 // such that |Product<S, S>| is |T|.
+template<int n, typename Q>
+using NthRoot = typename internal::NthRootGenerator<n, Q>::Type;
 template<typename Q>
-using SquareRoot = typename internal::SquareRootGenerator<Q>::Type;
+using SquareRoot = NthRoot<2, Q>;
+template<typename Q>
+using CubeRoot = NthRoot<3, Q>;
 
 // Returns the base or derived SI Unit of |Q|.
 // For instance, |SIUnit<Action>() == Joule * Second|.
@@ -197,6 +201,9 @@ class Quantity {
 
   template<typename ArgumentDimensions>
   friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
+      Quantity<ArgumentDimensions> const& x);
+  template<typename ArgumentDimensions>
+  friend CubeRoot<Quantity<ArgumentDimensions>> Cbrt(
       Quantity<ArgumentDimensions> const& x);
   friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
 

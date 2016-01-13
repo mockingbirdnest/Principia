@@ -10,30 +10,31 @@ namespace quantities {
 
 namespace internal {
 
-template<typename Q>
-struct SquareRootGenerator<
+template<int n, typename Q>
+struct NthRootGenerator<
+    n,
     Q,
-    std::enable_if_t<!(Q::Dimensions::Length & 1 ||
-                       Q::Dimensions::Mass & 1 ||
-                       Q::Dimensions::Time & 1 ||
-                       Q::Dimensions::Current & 1 ||
-                       Q::Dimensions::Temperature & 1 ||
-                       Q::Dimensions::Amount & 1 ||
-                       Q::Dimensions::LuminousIntensity & 1 ||
-                       Q::Dimensions::Winding & 1 ||
-                       Q::Dimensions::Angle & 1 ||
-                       Q::Dimensions::SolidAngle & 1)>> {
+    std::enable_if_t<Q::Dimensions::Length % n == 0 &&
+                     Q::Dimensions::Mass % n == 0 &&
+                     Q::Dimensions::Time % n == 0 &&
+                     Q::Dimensions::Current % n == 0 &&
+                     Q::Dimensions::Temperature % n == 0 &&
+                     Q::Dimensions::Amount % n == 0 &&
+                     Q::Dimensions::LuminousIntensity % n == 0 &&
+                     Q::Dimensions::Winding % n == 0 &&
+                     Q::Dimensions::Angle % n == 0 &&
+                     Q::Dimensions::SolidAngle % n == 0>> {
   enum {
-    Length            = Q::Dimensions::Length / 2,
-    Mass              = Q::Dimensions::Mass / 2,
-    Time              = Q::Dimensions::Time / 2,
-    Current           = Q::Dimensions::Current / 2,
-    Temperature       = Q::Dimensions::Temperature / 2,
-    Amount            = Q::Dimensions::Amount / 2,
-    LuminousIntensity = Q::Dimensions::LuminousIntensity / 2,
-    Winding           = Q::Dimensions::Winding / 2,
-    Angle             = Q::Dimensions::Angle / 2,
-    SolidAngle        = Q::Dimensions::SolidAngle / 2
+    Length            = Q::Dimensions::Length / n,
+    Mass              = Q::Dimensions::Mass / n,
+    Time              = Q::Dimensions::Time / n,
+    Current           = Q::Dimensions::Current / n,
+    Temperature       = Q::Dimensions::Temperature / n,
+    Amount            = Q::Dimensions::Amount / n,
+    LuminousIntensity = Q::Dimensions::LuminousIntensity / n,
+    Winding           = Q::Dimensions::Winding / n,
+    Angle             = Q::Dimensions::Angle / n,
+    SolidAngle        = Q::Dimensions::SolidAngle / n
   };
   using Type = Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
                                    Amount, LuminousIntensity, Winding, Angle,
@@ -49,6 +50,15 @@ inline double Sqrt(double const x) {
 template<typename D>
 inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
   return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
+}
+
+inline double Cbrt(double const x) {
+  return std::cbrt(x);
+}
+
+template<typename D>
+inline CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x) {
+  return CubeRoot<Quantity<D>>(std::cbrt(x.magnitude_));
 }
 
 inline double Sin(Angle const& α) {
