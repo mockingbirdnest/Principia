@@ -242,9 +242,9 @@ class ResonanceTest : public ::testing::Test {
 
   // TODO(egg): this is probably UB, but Point doesn't have constexprs.
   Instant const game_epoch_;
-  Instant const reference_ = game_epoch_ + 30 * Day;
+  Instant const reference_ = game_epoch_ + 90 * Day;
   Instant const long_time_ = game_epoch_ + 100 * JulianYear;
-  Instant const comparison_ = long_time_ + 30 * Day;
+  Instant const comparison_ = long_time_ + 90 * Day;
 
  private:
   not_null<MassiveBody const*> AddBody(GravitationalParameter const& μ) {
@@ -277,9 +277,17 @@ TEST_F(ResonanceTest, FixedVallAnomaly) {
 }
 
 TEST_F(ResonanceTest, Barycentric) {
-  FixVallMeanAnomaly();
   ComputeStockOrbits();
   UseStockMeanMotions();
+
+  LOG(ERROR)<<*elements_[laythe_].conic.mean_motion;
+  LOG(ERROR)<<*elements_[vall_].conic.mean_motion;
+  // Instead of putting the moons in a 1:2:4 resonance, put them in a
+  // 1:4/φ:16/φ^2 dissonance.
+  elements_[vall_].conic.mean_motion =
+      *elements_[laythe_].conic.mean_motion / 2.47214;
+  *elements_[tylo_].conic.mean_motion =
+      *elements_[vall_].conic.mean_motion / 2.47214;
 
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
@@ -298,7 +306,7 @@ TEST_F(ResonanceTest, Barycentric) {
     jool_centric_initial_state.emplace(
         moon,
         inner_system_barycentre.Get() +
-            KeplerOrbit<KSP>(MassiveBody(inner_system_parameter * (moon == vall_ ? 1.01 : 1)),
+            KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
                              *moon,
                              game_epoch_,
                              elements_.at(moon))
