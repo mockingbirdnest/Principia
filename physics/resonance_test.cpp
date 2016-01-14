@@ -100,6 +100,15 @@ class ResonanceTest : public ::testing::Test {
     }
   }
 
+  // Keep stock's mean motion when changing the gravitational parameter (instead
+  // of keeping the semimajor axis).
+  void UseStockMeanMotions() {
+    for (auto const body : jool_system_) {
+      elements_[body].conic.semimajor_axis = std::experimental::nullopt;
+      elements_[body].conic.mean_motion = stock_orbits_.at(body).mean_motion();
+    }
+  }
+
   DegreesOfFreedom<KSP> StockInitialState(not_null<MassiveBody const*> body) {
     if (body == sun_) {
       return origin_;
@@ -191,7 +200,7 @@ class ResonanceTest : public ::testing::Test {
 };
 
 
-TEST_F(ResonanceTest, StockJoolSystem) {
+TEST_F(ResonanceTest, StockJool) {
   ComputeStockOrbits();
   auto ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris.Prolong(reference_);
@@ -200,7 +209,7 @@ TEST_F(ResonanceTest, StockJoolSystem) {
   ephemeris.Prolong(long_time_);
 }
 
-TEST_F(ResonanceTest, FixedVallAnomalyJoolSystem) {
+TEST_F(ResonanceTest, FixedVallAnomaly) {
   FixVallMeanAnomaly();
   ComputeStockOrbits();
   auto ephemeris = MakeEphemeris(StockInitialStates());
@@ -211,56 +220,40 @@ TEST_F(ResonanceTest, FixedVallAnomalyJoolSystem) {
   LogEphemeris(ephemeris, /*reference=*/false, "fixed_vall_anomaly_jool");
 }
 
-TEST_F(ResonanceTest, BarycentricJoolSystem) {
+TEST_F(ResonanceTest, Primocentric) {
   FixVallMeanAnomaly();
   ComputeStockOrbits();
+  UseStockMeanMotions();
 
-  std::map<not_null<MassiveBody const*>, RelativeDegreesOfFreedom<KSP>>
-      jooliocentric_initial_states;
+  std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
-  KeplerOrbit<KSP> jool_orbit(*sun_, *jool_, game_epoch_, elements_[jool_]);
+  for (auto const body : jool_system_) {
+    orbits.emplace(
+        body,
+        KeplerOrbit<KSP>(*FindOrDie(parents_, body),
+                         *body,
+                         game_epoch_,
+                         FindOrDie(elements_, body)));
 
-  GravitationalParameter inner_system_parameter;
-  inner_system_parameter = jool_->gravitational_parameter();
-  BarycentreCalculator<RelativeDegreesOfFreedom<KSP>, GravitationalParameter>
-      inner_system_jooliocentric_barycentre;
-  inner_system_jooliocentric_barycentre.Add(
-      origin_ - origin_,  // why is this not default-constructible?
-      jool_->gravitational_parameter());
-
-  for (auto const body : joolian_moons_) {
-    auto elements = elements_[body];
-    elements.conic.semimajor_axis = std::experimental::nullopt;
-    elements.conic.mean_motion = FindOrDie(stock_orbits_, body).mean_motion();
-    LOG(ERROR) << *elements.conic.mean_motion;
-    jooliocentric_initial_states.emplace(
-        body, inner_system_jooliocentric_barycentre.Get() +
-                  KeplerOrbit<KSP>(MassiveBody(inner_system_parameter), *body,
-                                   game_epoch_, elements)
-                      .PrimocentricStateVectors(game_epoch_));
-    inner_system_parameter += body->gravitational_parameter();
-    inner_system_jooliocentric_barycentre.Add(
-        jooliocentric_initial_states.at(body), body->gravitational_parameter());
   }
 
-  auto const jool_system_jooliocentric_barycentre =
-      inner_system_jooliocentric_barycentre.Get();
+  std::function<DegreesOfFreedom<KSP>(not_null<MassiveBody const*> body)> const
+      initial_state = [this, orbits, &initial_state](
+          not_null<MassiveBody const*> body) -> DegreesOfFreedom<KSP> {
+    if (body == sun_) {
+      return origin_;
+    } else {
+      return initial_state(parents_.at(body)) +
+             orbits.at(body).PrimocentricStateVectors(game_epoch_);
+    }
+  };
 
-  auto const jool_barycentre_initial_state =
-      origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
-  auto const jool_initial_state =
-      jool_barycentre_initial_state - jool_system_jooliocentric_barycentre;
+  std::vector<DegreesOfFreedom<KSP>> initial_states;
+  for (auto const body : bodies_) {
+    initial_states.emplace_back(initial_state(body));
+  }
 
-  auto ephemeris =
-      MakeEphemeris(
-          {origin_,
-           jool_initial_state,
-           jool_initial_state + jooliocentric_initial_states.at(laythe_),
-           jool_initial_state + jooliocentric_initial_states.at(vall_),
-           jool_initial_state + jooliocentric_initial_states.at(tylo_),
-           jool_initial_state + jooliocentric_initial_states.at(bop_),
-           jool_initial_state + jooliocentric_initial_states.at(pol_)});
-
+  auto ephemeris = MakeEphemeris(initial_states);
   ephemeris.Prolong(reference_);
   LogEphemeris(ephemeris, /*reference=*/true, "barycentric_jool");
   ephemeris.Prolong(long_time_);
