@@ -220,7 +220,7 @@ TEST_F(ResonanceTest, FixedVallAnomaly) {
   LogEphemeris(ephemeris, /*reference=*/false, "fixed_vall_anomaly_jool");
 }
 
-TEST_F(ResonanceTest, Primocentric) {
+TEST_F(ResonanceTest, Barycentric) {
   FixVallMeanAnomaly();
   ComputeStockOrbits();
   UseStockMeanMotions();
@@ -237,20 +237,30 @@ TEST_F(ResonanceTest, Primocentric) {
 
   }
 
-  std::function<DegreesOfFreedom<KSP>(not_null<MassiveBody const*> body)> const
-      initial_state = [this, orbits, &initial_state](
-          not_null<MassiveBody const*> body) -> DegreesOfFreedom<KSP> {
-    if (body == sun_) {
-      return origin_;
-    } else {
-      return initial_state(parents_.at(body)) +
-             orbits.at(body).PrimocentricStateVectors(game_epoch_);
-    }
+  std::map<not_null<MassiveBody const*>, DegreesOfFreedom<KSP>>
+      moon_initial_states;
+  auto const jool_barycentre =
+      origin_ + orbits.at(jool_).PrimocentricStateVectors(game_epoch_);
+  BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
+      barycentre_of_moons;
+  GravitationalParameter parameter_of_moons;
+  for (auto const moon : joolian_moons_) {
+    moon_initial_states.emplace(
+        moon,
+        jool_barycentre + orbits.at(moon).BarycentricStateVectors(game_epoch_));
+    parameter_of_moons += moon->gravitational_parameter();
+    barycentre_of_moons.Add(moon_initial_states.at(moon),
+                            moon->gravitational_parameter());
   };
+  DegreesOfFreedom<KSP> const jool_initial_state =
+      jool_barycentre +
+      parameter_of_moons / jool_->gravitational_parameter() *
+          (jool_barycentre - barycentre_of_moons.Get());
 
-  std::vector<DegreesOfFreedom<KSP>> initial_states;
-  for (auto const body : bodies_) {
-    initial_states.emplace_back(initial_state(body));
+  std::vector<DegreesOfFreedom<KSP>> initial_states = {origin_,
+                                                       jool_initial_state};
+  for (auto const moon : joolian_moons_) {
+    initial_states.emplace_back(moon_initial_states.at(moon));
   }
 
   auto ephemeris = MakeEphemeris(initial_states);
