@@ -230,12 +230,13 @@ TEST_F(ResonanceTest, Barycentric) {
   orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
                                          FindOrDie(elements_, jool_)));
 
-  GravitationalParameter inner_system = jool_->gravitational_parameter();
+  GravitationalParameter jool_system_parameter;
+  for (auto const body : jool_system_) jool_system_parameter += body->gravitational_parameter();
   for (auto const moon : joolian_moons_) {
     orbits.emplace(
-        moon, KeplerOrbit<KSP>(MassiveBody(inner_system), *moon, game_epoch_,
-                               FindOrDie(elements_, moon)));
-    inner_system += moon->gravitational_parameter();
+        moon, KeplerOrbit<KSP>(MassiveBody(jool_system_parameter -
+                                           moon->gravitational_parameter()),
+                               *moon, game_epoch_, FindOrDie(elements_, moon)));
   }
 
   std::map<not_null<MassiveBody const*>, DegreesOfFreedom<KSP>>
