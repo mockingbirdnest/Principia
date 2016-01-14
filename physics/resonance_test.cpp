@@ -6,11 +6,13 @@
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -32,6 +34,7 @@ class ResonanceTest : public ::testing::Test {
         tylo_(AddBody(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second))),
         bop_(AddBody(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second))),
         pol_(AddBody(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second))),
+        bodies_({sun_, jool_, laythe_, vall_, tylo_, bop_, pol_}),
         jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
         joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {
     // Elements from the KSP wiki.
@@ -75,6 +78,18 @@ class ResonanceTest : public ::testing::Test {
     for (auto const moon : joolian_moons_) {
       parents_.emplace(moon, jool_);
     }
+  }
+
+  void FixVallMeanAnomaly() {
+    // NOTE(egg): In the stock game, this is 0.9 rad.  This is very close to an
+    // unstable resonance, and as such no interpretation of the orbital elements
+    // will make the system stable for any reasonable length of time.  We make
+    // this a stable resonance instead.
+    elements_[vall_].mean_anomaly = 0 * Radian;
+  }
+
+  // KSP assumes secondaries are massless.
+  void ComputeStockOrbits() {
     for (auto const body : jool_system_) {
       stock_orbits_.emplace(
           body,
@@ -85,17 +100,88 @@ class ResonanceTest : public ::testing::Test {
     }
   }
 
+  DegreesOfFreedom<KSP> StockInitialState(not_null<MassiveBody const*> body) {
+    if (body == sun_) {
+      return origin_;
+    } else {
+      return StockInitialState(parents_.at(body)) +
+             stock_orbits_.at(body).PrimocentricStateVectors(game_epoch_);
+    }
+  }
+
+  std::vector<DegreesOfFreedom<KSP>> StockInitialStates() {
+    std::vector<DegreesOfFreedom<KSP>> initial_states;
+    for (auto const body : bodies_) {
+      initial_states.emplace_back(StockInitialState(body));
+    }
+    return initial_states;
+  }
+
+  void LogEphemeris(Ephemeris<KSP> const& ephemeris,
+                    bool reference,
+                    std::string name) {
+    Instant const begin = reference ? game_epoch_ : long_time_;
+    Instant const end = reference ? reference_ : comparison_;
+    std::string const purpose = reference ? "reference" : "comparison";
+    std::vector<Instant> times;
+    std::vector<std::vector<Displacement<KSP>>> displacements;
+    std::vector<std::vector<Vector<double, KSP>>> unitless_displacements;
+    for (Instant t = game_epoch_; t < reference_; t += 45 * Minute) {
+      auto const position = [&ephemeris, t](
+          not_null<MassiveBody const*> body) {
+        return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
+      };
+      auto const barycentre = Barycentre<Position<KSP>, Mass>(
+          {position(jool_), position(laythe_), position(vall_), position(tylo_),
+           position(bop_), position(pol_)},
+          {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
+           bop_->mass(), pol_->mass()});
+      times.emplace_back(t);
+      displacements.push_back(
+          {position(jool_) - barycentre, position(laythe_) - barycentre,
+           position(vall_) - barycentre, position(tylo_) - barycentre,
+           position(bop_) - barycentre, position(pol_) - barycentre});
+      unitless_displacements.emplace_back();
+      unitless_displacements.back().resize(displacements.back().size());
+      std::transform(displacements.back().begin(), displacements.back().end(),
+                     unitless_displacements.back().begin(),
+                     [](Displacement<KSP> d) { return d / Metre; });
+    }
+    std::ofstream file;
+    file.open(name + "_" + purpose + ".wl");
+    file << mathematica::Assign("q", displacements);
+    file << mathematica::Assign("qSI", unitless_displacements);
+    file << mathematica::Assign("t", times);
+    file.close();
+  }
+
+  Ephemeris<KSP> MakeEphemeris(std::vector<DegreesOfFreedom<KSP>> states) {
+    return Ephemeris<KSP>(
+      std::move(owned_bodies_),
+      states,
+      game_epoch_,
+      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+      45 * Minute,
+      5 * Milli(Metre));
+  }
+
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> owned_bodies_;
   not_null<MassiveBody const *> const sun_, jool_, laythe_, vall_, tylo_, bop_,
       pol_;
+  std::vector<not_null<MassiveBody const*>> bodies_;
   std::vector<not_null<MassiveBody const*>> jool_system_;
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
   std::map<not_null<MassiveBody const*>, KeplerianElements<KSP>> elements_;
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> stock_orbits_;
   std::map<not_null<MassiveBody const*>, not_null<MassiveBody const*>> parents_;
   MasslessBody test_particle_;
-  Instant const game_epoch_;
   DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
+
+  // TODO(egg): this is probably UB, but Point doesn't have constexprs.
+  Instant const game_epoch_;
+  Instant const reference_ = game_epoch_ + 30 * Day;
+  Instant const long_time_ = game_epoch_ + 100 * JulianYear;
+  Instant const comparison_ = long_time_ + 30 * Day;
 
  private:
   not_null<MassiveBody const*> AddBody(GravitationalParameter const& μ) {
@@ -106,55 +192,29 @@ class ResonanceTest : public ::testing::Test {
 
 
 TEST_F(ResonanceTest, StockJoolSystem) {
-  auto const jool_initial_state =
-      origin_ + FindOrDie(stock_orbits_, jool_).PrimocentricStateVectors(game_epoch_);
-  Ephemeris<KSP> ephemeris(
-      std::move(owned_bodies_),
-      {origin_,
-       jool_initial_state,
-       jool_initial_state +
-           FindOrDie(stock_orbits_, laythe_).PrimocentricStateVectors(game_epoch_),
-       jool_initial_state +
-           FindOrDie(stock_orbits_, vall_).PrimocentricStateVectors(game_epoch_),
-       jool_initial_state +
-           FindOrDie(stock_orbits_, tylo_).PrimocentricStateVectors(game_epoch_),
-       jool_initial_state +
-           FindOrDie(stock_orbits_, bop_).PrimocentricStateVectors(game_epoch_),
-       jool_initial_state +
-           FindOrDie(stock_orbits_, pol_).PrimocentricStateVectors(game_epoch_)},
-      game_epoch_,
-      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-      45 * Minute,
-      5 * Milli(Metre));
-  ephemeris.Prolong(game_epoch_ + 90 * Day);
-  std::vector<Instant> times;
-  std::vector<std::vector<Displacement<KSP>>> displacements;
-  for (Instant t = game_epoch_; t < game_epoch_ + 90 * Day; t += 45 * Minute) {
-    auto const position = [&ephemeris, t](
-        not_null<MassiveBody const*> body) {
-      return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
-    };
-    auto const barycentre = Barycentre<Position<KSP>, Mass>(
-        {position(jool_), position(laythe_), position(vall_), position(tylo_),
-         position(bop_), position(pol_)},
-        {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
-         bop_->mass(), pol_->mass()});
-    times.emplace_back(t);
-    displacements.push_back(
-        {position(jool_) - barycentre, position(laythe_) - barycentre,
-         position(vall_) - barycentre, position(tylo_) - barycentre,
-         position(bop_) - barycentre, position(pol_) - barycentre});
-  }
-  std::ofstream file;
-  file.open("stock_jool.wl");
-  file << mathematica::Assign("q", displacements);
-  file << mathematica::Assign("t", times);
-  file.close();
-  // fails.
-  ephemeris.Prolong(game_epoch_ + 100 * Day);
+  ComputeStockOrbits();
+  auto ephemeris = MakeEphemeris(StockInitialStates());
+  ephemeris.Prolong(reference_);
+  LogEphemeris(ephemeris, /*reference=*/true, "stock_jool");
+  // where is thy sting
+  ephemeris.Prolong(long_time_);
 }
 
-TEST_F(ResonanceTest, BarycentricJoolSystem) {;
+TEST_F(ResonanceTest, FixedVallAnomalyJoolSystem) {
+  FixVallMeanAnomaly();
+  ComputeStockOrbits();
+  auto ephemeris = MakeEphemeris(StockInitialStates());
+  ephemeris.Prolong(reference_);
+  LogEphemeris(ephemeris, /*reference=*/true, "fixed_vall_anomaly_jool");
+  ephemeris.Prolong(long_time_);
+  ephemeris.Prolong(comparison_);
+  LogEphemeris(ephemeris, /*reference=*/false, "fixed_vall_anomaly_jool");
+}
+
+TEST_F(ResonanceTest, BarycentricJoolSystem) {
+  FixVallMeanAnomaly();
+  ComputeStockOrbits();
+
   std::map<not_null<MassiveBody const*>, RelativeDegreesOfFreedom<KSP>>
       jooliocentric_initial_states;
 
@@ -189,53 +249,23 @@ TEST_F(ResonanceTest, BarycentricJoolSystem) {;
   auto const jool_barycentre_initial_state =
       origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
   auto const jool_initial_state =
-      jool_barycentre_initial_state - jool_system_jooliocentric_barycentre;;
-  Ephemeris<KSP> ephemeris(
-      std::move(owned_bodies_),
-      {origin_,
-       jool_initial_state,
-       jool_initial_state + jooliocentric_initial_states.at(laythe_),
-       jool_initial_state + jooliocentric_initial_states.at(vall_),
-       jool_initial_state + jooliocentric_initial_states.at(tylo_),
-       jool_initial_state + jooliocentric_initial_states.at(bop_),
-       jool_initial_state + jooliocentric_initial_states.at(pol_)},
-      game_epoch_,
-      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-      45 * Minute,
-      5 * Milli(Metre));
-  ephemeris.Prolong(game_epoch_ + 90 * Day);
-  std::vector<Instant> times;
-  std::vector<std::vector<Displacement<KSP>>> displacements;
-  std::vector<std::vector<Vector<double, KSP>>> unitless_displacements;
-  for (Instant t = game_epoch_; t < game_epoch_ + 90 * Day; t += 45 * Minute) {
-    auto const position = [&ephemeris, t](
-        not_null<MassiveBody const*> body) {
-      return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
-    };
-    auto const barycentre = Barycentre<Position<KSP>, Mass>(
-        {position(jool_), position(laythe_), position(vall_), position(tylo_),
-         position(bop_), position(pol_)},
-        {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
-         bop_->mass(), pol_->mass()});
-    times.emplace_back(t);
-    displacements.push_back(
-        {position(jool_) - barycentre, position(laythe_) - barycentre,
-         position(vall_) - barycentre, position(tylo_) - barycentre,
-         position(bop_) - barycentre, position(pol_) - barycentre});
-    unitless_displacements.emplace_back();
-    unitless_displacements.back().resize(displacements.back().size());
-    std::transform(displacements.back().begin(), displacements.back().end(),
-                   unitless_displacements.back().begin(),
-                   [](Displacement<KSP> d) { return d / Metre; });
-  }
-  std::ofstream file;
-  file.open("corrected_jool.wl");
-  file << mathematica::Assign("q", displacements);
-  file << mathematica::Assign("qSI", unitless_displacements);
-  file << mathematica::Assign("t", times);
-  file.close();
-  // fails.
-  ephemeris.Prolong(game_epoch_ + 100 * Day);
+      jool_barycentre_initial_state - jool_system_jooliocentric_barycentre;
+
+  auto ephemeris =
+      MakeEphemeris(
+          {origin_,
+           jool_initial_state,
+           jool_initial_state + jooliocentric_initial_states.at(laythe_),
+           jool_initial_state + jooliocentric_initial_states.at(vall_),
+           jool_initial_state + jooliocentric_initial_states.at(tylo_),
+           jool_initial_state + jooliocentric_initial_states.at(bop_),
+           jool_initial_state + jooliocentric_initial_states.at(pol_)});
+
+  ephemeris.Prolong(reference_);
+  LogEphemeris(ephemeris, /*reference=*/true, "barycentric_jool");
+  ephemeris.Prolong(long_time_);
+  ephemeris.Prolong(comparison_);
+  LogEphemeris(ephemeris, /*reference=*/false, "barycentric_jool");
 }
 
 }  // namespace physics
