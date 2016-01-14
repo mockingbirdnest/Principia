@@ -154,58 +154,51 @@ TEST_F(ResonanceTest, StockJoolSystem) {
   ephemeris.Prolong(game_epoch_ + 100 * Day);
 }
 
-TEST_F(ResonanceTest, BarycentricJoolSystem) {
-  std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
-  std::map<not_null<MassiveBody const*>, MassiveBody>
-      equivalent_parents;
-  equivalent_parents.emplace(jool_,
-                             MassiveBody(sun_->gravitational_parameter()));
-  GravitationalParameter jool_system_parameter;
-  jool_system_parameter = jool_->gravitational_parameter();
-  for (auto const moon : joolian_moons_) {
-    equivalent_parents.emplace(
-        moon,
-        MassiveBody(jool_system_parameter));
-        jool_system_parameter += moon->gravitational_parameter();
-  }
+TEST_F(ResonanceTest, BarycentricJoolSystem) {;
+  std::map<not_null<MassiveBody const*>, RelativeDegreesOfFreedom<KSP>>
+      jooliocentric_initial_states;
 
-  for (auto const body : jool_system_) {
+  KeplerOrbit<KSP> jool_orbit(*sun_, *jool_, game_epoch_, elements_[jool_]);
+
+  GravitationalParameter inner_system_parameter;
+  inner_system_parameter = jool_->gravitational_parameter();
+  BarycentreCalculator<RelativeDegreesOfFreedom<KSP>, GravitationalParameter>
+      inner_system_jooliocentric_barycentre;
+  inner_system_jooliocentric_barycentre.Add(
+      origin_ - origin_,  // why is this not default-constructible?
+      jool_->gravitational_parameter());
+
+  for (auto const body : joolian_moons_) {
     auto elements = elements_[body];
     elements.conic.semimajor_axis = std::experimental::nullopt;
     elements.conic.mean_motion = FindOrDie(stock_orbits_, body).mean_motion();
     LOG(ERROR) << *elements.conic.mean_motion;
-    orbits.emplace(body, KeplerOrbit<KSP>(FindOrDie(equivalent_parents, body),
-                                          *body, game_epoch_, elements));
+    jooliocentric_initial_states.emplace(
+        body, inner_system_jooliocentric_barycentre.Get() +
+                  KeplerOrbit<KSP>(MassiveBody(inner_system_parameter), *body,
+                                   game_epoch_, elements)
+                      .PrimocentricStateVectors(game_epoch_));
+    inner_system_parameter += body->gravitational_parameter();
+    inner_system_jooliocentric_barycentre.Add(
+        jooliocentric_initial_states.at(body), body->gravitational_parameter());
   }
 
+  auto const jool_system_jooliocentric_barycentre =
+      inner_system_jooliocentric_barycentre.Get();
+
   auto const jool_barycentre_initial_state =
-      origin_ + FindOrDie(orbits, jool_).PrimocentricStateVectors(game_epoch_);
-  auto const laythe_from_barycentre =
-      FindOrDie(orbits, laythe_).PrimocentricStateVectors(game_epoch_);
-  auto const vall_from_barycentre =
-      FindOrDie(orbits, vall_).PrimocentricStateVectors(game_epoch_);
-  auto const tylo_from_barycentre =
-      FindOrDie(orbits, tylo_).PrimocentricStateVectors(game_epoch_);
-  auto const bop_from_barycentre =
-      FindOrDie(orbits, bop_).PrimocentricStateVectors(game_epoch_);
-  auto const pol_from_barycentre =
-      FindOrDie(orbits, pol_).PrimocentricStateVectors(game_epoch_);
-  auto const jool_initial_state = jool_barycentre_initial_state -
-                                  (laythe_from_barycentre * laythe_->mass() +
-                                   vall_from_barycentre * vall_->mass() +
-                                   tylo_from_barycentre * tylo_->mass() +
-                                   bop_from_barycentre * bop_->mass() +
-                                   pol_from_barycentre * pol_->mass()) /
-                                      jool_->mass();
+      origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
+  auto const jool_initial_state =
+      jool_barycentre_initial_state - jool_system_jooliocentric_barycentre;;
   Ephemeris<KSP> ephemeris(
       std::move(owned_bodies_),
-      {origin_,  // TODO: not actually here
+      {origin_,
        jool_initial_state,
-       jool_barycentre_initial_state + laythe_from_barycentre,
-       jool_barycentre_initial_state + vall_from_barycentre,
-       jool_barycentre_initial_state + tylo_from_barycentre,
-       jool_barycentre_initial_state + bop_from_barycentre,
-       jool_barycentre_initial_state + pol_from_barycentre},
+       jool_initial_state + jooliocentric_initial_states.at(laythe_),
+       jool_initial_state + jooliocentric_initial_states.at(vall_),
+       jool_initial_state + jooliocentric_initial_states.at(tylo_),
+       jool_initial_state + jooliocentric_initial_states.at(bop_),
+       jool_initial_state + jooliocentric_initial_states.at(pol_)},
       game_epoch_,
       McLachlanAtela1992Order5Optimal<Position<KSP>>(),
       45 * Minute,
