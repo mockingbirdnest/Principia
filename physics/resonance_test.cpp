@@ -198,15 +198,17 @@ class ResonanceTest : public ::testing::Test {
         t0 += Δt;
       }
       Instant t1 = t0;
-      while (Sign(moon_y(t1)) != s0) {
-        t1 += Δt;
+      int const orbits = moon == laythe_ ? 8 : moon == vall_ ? 4 : 2;
+      for (int i = 0; i < orbits; ++i) {
+        while (Sign(moon_y(t1)) != s0) {
+          t1 += Δt;
+        }
+        while (Sign(moon_y(t1)) == s0) {
+          t1 += Δt;
+        }
       }
-      while (Sign(moon_y(t1)) == s0) {
-        t1 += Δt;
-      }
-      // Δt is now an upper bound on the half-period.
       Time const actual_period =
-          Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0);
+          (Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
       Time const expected_period = (2 * π * Radian) /
                                    stock_orbits_.at(moon).mean_motion();
       LOG(ERROR) << "actual period   : " << actual_period;
