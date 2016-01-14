@@ -210,7 +210,7 @@ class ResonanceTest : public ::testing::Test {
       Time const actual_period =
           (Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
       Time const expected_period = (2 * π * Radian) /
-                                   stock_orbits_.at(moon).mean_motion();
+                                   *elements_[moon].conic.mean_motion;
       LOG(ERROR) << "actual period   : " << actual_period;
       LOG(ERROR) << "expected period : " << expected_period;
       LOG(ERROR) << "error           :"
@@ -267,6 +267,7 @@ TEST_F(ResonanceTest, StockJool) {
 TEST_F(ResonanceTest, FixedVallAnomaly) {
   FixVallMeanAnomaly();
   ComputeStockOrbits();
+  UseStockMeanMotions();
   auto ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris.Prolong(reference_);
   LogPeriods(ephemeris);
@@ -288,6 +289,7 @@ TEST_F(ResonanceTest, Barycentric) {
       *elements_[laythe_].conic.mean_motion / 2.47214;
   *elements_[tylo_].conic.mean_motion =
       *elements_[vall_].conic.mean_motion / 2.47214;
+  *elements_[bop_].conic.mean_motion = *elements_[pol_].conic.mean_motion / 1.5;
 
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
