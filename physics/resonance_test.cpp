@@ -8,6 +8,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
@@ -17,6 +18,7 @@ using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using testing_utilities::RelativeError;
 
 namespace physics {
 
@@ -164,6 +166,54 @@ class ResonanceTest : public ::testing::Test {
     file.close();
   }
 
+  void LogPeriods(Ephemeris<KSP> const& ephemeris) {
+    auto const position = [this, &ephemeris](
+        not_null<MassiveBody const*> body, Instant const& t) {
+      return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
+    };
+    auto const barycentre = [this, &position](Instant const& t) {
+      return Barycentre<Position<KSP>, Mass>(
+          {position(jool_, t), position(laythe_, t), position(vall_, t),
+           position(tylo_, t), position(bop_, t), position(pol_, t)},
+          {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
+           bop_->mass(), pol_->mass()});
+    };
+    auto const barycentric_position = [this, &barycentre, &position,
+                                       &ephemeris](
+        not_null<MassiveBody const*> body, Instant const& t) {
+      return position(body, t) - barycentre(t);
+    };
+    LOG(ERROR) << barycentric_position(laythe_, game_epoch_);
+    LOG(ERROR) << barycentric_position(vall_, game_epoch_);
+    LOG(ERROR) << barycentric_position(tylo_, game_epoch_);
+    for (auto const moon : {laythe_, vall_, tylo_}) {
+      auto const moon_y = [&barycentric_position, moon,
+                           this](Instant const& t) {
+        return barycentric_position(moon, t).coordinates().y;
+      };
+      Sign const s0(moon_y(game_epoch_));
+      Instant t0 = game_epoch_;
+      Time const Δt = 45 * Minute;
+      while (Sign(moon_y(t0)) == s0) {
+        t0 += Δt;
+      }
+      Instant t1 = t0;
+      while (Sign(moon_y(t1)) != s0) {
+        t1 += Δt;
+      }
+      while (Sign(moon_y(t1)) == s0) {
+        t1 += Δt;
+      }
+      // Δt is now an upper bound on the half-period.
+      Time const actual_period =
+          Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0);
+      Time const expected_period = (2 * π * Radian) / stock_orbits_.at(moon).mean_motion();
+      LOG(ERROR) << "actual period: " << actual_period;
+      LOG(ERROR) << "expected period: " << expected_period;
+      LOG(ERROR) << "error " << RelativeError(expected_period, actual_period);
+    }
+  }
+
   Ephemeris<KSP> MakeEphemeris(std::vector<DegreesOfFreedom<KSP>> states) {
     return Ephemeris<KSP>(
       std::move(owned_bodies_),
@@ -248,7 +298,7 @@ TEST_F(ResonanceTest, Barycentric) {
   for (auto const moon : joolian_moons_) {
     moon_initial_states.emplace(
         moon,
-        jool_barycentre + orbits.at(moon).BarycentricStateVectors(game_epoch_));
+        jool_barycentre + orbits.at(moon).PrimocentricStateVectors(game_epoch_));
     parameter_of_moons += moon->gravitational_parameter();
     barycentre_of_moons.Add(moon_initial_states.at(moon),
                             moon->gravitational_parameter());
@@ -266,6 +316,7 @@ TEST_F(ResonanceTest, Barycentric) {
 
   auto ephemeris = MakeEphemeris(initial_states);
   ephemeris.Prolong(reference_);
+  LogPeriods(ephemeris);
   LogEphemeris(ephemeris, /*reference=*/true, "barycentric_jool");
   ephemeris.Prolong(long_time_);
   ephemeris.Prolong(comparison_);
