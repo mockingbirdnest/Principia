@@ -282,38 +282,36 @@ TEST_F(ResonanceTest, Barycentric) {
   orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
                                          FindOrDie(elements_, jool_)));
 
-  GravitationalParameter jool_system_parameter;
-  for (auto const body : jool_system_) jool_system_parameter += body->gravitational_parameter();
+  GravitationalParameter inner_system_parameter =
+      jool_->gravitational_parameter();
+  BarycentreCalculator<RelativeDegreesOfFreedom<KSP>, GravitationalParameter>
+      inner_system_barycentre;
+  std::map<not_null<MassiveBody const*>, RelativeDegreesOfFreedom<KSP>>
+      jool_centric_initial_state;
+  inner_system_barycentre.Add(origin_ - origin_ /*why no default constructor?*/,
+                              jool_->gravitational_parameter());
   for (auto const moon : joolian_moons_) {
-    orbits.emplace(
-        moon, KeplerOrbit<KSP>(*jool_,
-                               *moon, game_epoch_, FindOrDie(elements_, moon)));
+    jool_centric_initial_state.emplace(
+        moon,
+        inner_system_barycentre.Get() +
+            KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
+                             *moon,
+                             game_epoch_,
+                             elements_.at(moon))
+                .PrimocentricStateVectors(game_epoch_));
+    inner_system_parameter += moon->gravitational_parameter();
+    inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
+                                moon->gravitational_parameter());
   }
 
-  std::map<not_null<MassiveBody const*>, DegreesOfFreedom<KSP>>
-      moon_initial_states;
-  auto const jool_barycentre =
-      origin_ + orbits.at(jool_).PrimocentricStateVectors(game_epoch_);
-  BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
-      barycentre_of_moons;
-  GravitationalParameter parameter_of_moons;
-  for (auto const moon : joolian_moons_) {
-    moon_initial_states.emplace(
-        moon,
-        jool_barycentre + orbits.at(moon).PrimocentricStateVectors(game_epoch_));
-    parameter_of_moons += moon->gravitational_parameter();
-    barycentre_of_moons.Add(moon_initial_states.at(moon),
-                            moon->gravitational_parameter());
-  };
   DegreesOfFreedom<KSP> const jool_initial_state =
-      jool_barycentre +
-      parameter_of_moons / jool_->gravitational_parameter() *
-          (jool_barycentre - barycentre_of_moons.Get());
+      origin_ + orbits.at(jool_).PrimocentricStateVectors(game_epoch_);
 
   std::vector<DegreesOfFreedom<KSP>> initial_states = {origin_,
                                                        jool_initial_state};
   for (auto const moon : joolian_moons_) {
-    initial_states.emplace_back(moon_initial_states.at(moon));
+    initial_states.emplace_back(jool_initial_state +
+                                jool_centric_initial_state.at(moon));
   }
 
   auto ephemeris = MakeEphemeris(initial_states);
