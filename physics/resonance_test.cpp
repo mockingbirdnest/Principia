@@ -1,4 +1,7 @@
-﻿#include "physics/kepler_orbit.hpp"
+﻿#include <map>
+#include <vector>
+
+#include "physics/kepler_orbit.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -28,88 +31,97 @@ class ResonanceTest : public ::testing::Test {
         vall_(AddBody(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second))),
         tylo_(AddBody(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second))),
         bop_(AddBody(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second))),
-        pol_(AddBody(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second))) {
+        pol_(AddBody(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second))),
+        jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
+        joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {
     // Elements from the KSP wiki.
-    jool_elements_.conic.eccentricity = 0.05;
-    jool_elements_.conic.semimajor_axis = 68'773'560'320 * Metre;
-    jool_elements_.inclination = 1.304 * Degree;
-    jool_elements_.longitude_of_ascending_node = 52 * Degree;
-    jool_elements_.argument_of_periapsis =  0 * Degree;
-    jool_elements_.mean_anomaly = 0.1 * Radian;
-    laythe_elements_.conic.eccentricity = 0;
-    laythe_elements_.conic.semimajor_axis = 27'184'000 * Metre;
-    laythe_elements_.inclination = 0 * Degree;
-    laythe_elements_.longitude_of_ascending_node = 0 * Degree;
-    laythe_elements_.argument_of_periapsis = 0 * Degree;
-    laythe_elements_.mean_anomaly = 3.14 * Radian;
-    vall_elements_.conic.eccentricity = 0;
-    vall_elements_.conic.semimajor_axis = 43'152'000 * Metre;
-    vall_elements_.inclination = 0 * Degree;
-    vall_elements_.longitude_of_ascending_node = 0 * Degree;
-    vall_elements_.argument_of_periapsis = 0 * Degree;
-    vall_elements_.mean_anomaly = 0.9 * Radian;
-    tylo_elements_.conic.eccentricity = 0;
-    tylo_elements_.conic.semimajor_axis = 68'500'000 * Metre;
-    tylo_elements_.inclination = 0.025 * Degree;
-    tylo_elements_.longitude_of_ascending_node = 0 * Degree;
-    tylo_elements_.argument_of_periapsis = 0 * Degree;
-    tylo_elements_.mean_anomaly = 3.14 * Radian;
-    bop_elements_.conic.eccentricity = 0.24;
-    bop_elements_.conic.semimajor_axis = 128'500'000 * Metre;
-    bop_elements_.inclination = 15 * Degree;
-    bop_elements_.longitude_of_ascending_node = 10 * Degree;
-    bop_elements_.argument_of_periapsis = 25 * Degree;
-    bop_elements_.mean_anomaly = 0.9 * Radian;
-    pol_elements_.conic.eccentricity = 0.17;
-    pol_elements_.conic.semimajor_axis = 179'890'000 * Metre;
-    pol_elements_.inclination = 4.25 * Degree;
-    pol_elements_.longitude_of_ascending_node = 2 * Degree;
-    pol_elements_.argument_of_periapsis = 15 * Degree;
-    pol_elements_.mean_anomaly = 0.9 * Radian;
+    elements_[jool_].conic.eccentricity = 0.05;
+    elements_[jool_].conic.semimajor_axis = 68'773'560'320 * Metre;
+    elements_[jool_].inclination = 1.304 * Degree;
+    elements_[jool_].longitude_of_ascending_node = 52 * Degree;
+    elements_[jool_].argument_of_periapsis =  0 * Degree;
+    elements_[jool_].mean_anomaly = 0.1 * Radian;
+    elements_[laythe_].conic.eccentricity = 0;
+    elements_[laythe_].conic.semimajor_axis = 27'184'000 * Metre;
+    elements_[laythe_].inclination = 0 * Degree;
+    elements_[laythe_].longitude_of_ascending_node = 0 * Degree;
+    elements_[laythe_].argument_of_periapsis = 0 * Degree;
+    elements_[laythe_].mean_anomaly = 3.14 * Radian;
+    elements_[vall_].conic.eccentricity = 0;
+    elements_[vall_].conic.semimajor_axis = 43'152'000 * Metre;
+    elements_[vall_].inclination = 0 * Degree;
+    elements_[vall_].longitude_of_ascending_node = 0 * Degree;
+    elements_[vall_].argument_of_periapsis = 0 * Degree;
+    elements_[vall_].mean_anomaly = 0.9 * Radian;
+    elements_[tylo_].conic.eccentricity = 0;
+    elements_[tylo_].conic.semimajor_axis = 68'500'000 * Metre;
+    elements_[tylo_].inclination = 0.025 * Degree;
+    elements_[tylo_].longitude_of_ascending_node = 0 * Degree;
+    elements_[tylo_].argument_of_periapsis = 0 * Degree;
+    elements_[tylo_].mean_anomaly = 3.14 * Radian;
+    elements_[bop_].conic.eccentricity = 0.24;
+    elements_[bop_].conic.semimajor_axis = 128'500'000 * Metre;
+    elements_[bop_].inclination = 15 * Degree;
+    elements_[bop_].longitude_of_ascending_node = 10 * Degree;
+    elements_[bop_].argument_of_periapsis = 25 * Degree;
+    elements_[bop_].mean_anomaly = 0.9 * Radian;
+    elements_[pol_].conic.eccentricity = 0.17;
+    elements_[pol_].conic.semimajor_axis = 179'890'000 * Metre;
+    elements_[pol_].inclination = 4.25 * Degree;
+    elements_[pol_].longitude_of_ascending_node = 2 * Degree;
+    elements_[pol_].argument_of_periapsis = 15 * Degree;
+    elements_[pol_].mean_anomaly = 0.9 * Radian;
+    parents_.emplace(jool_, sun_);
+    for (auto const moon : joolian_moons_) {
+      parents_.emplace(moon, jool_);
+    }
+    for (auto const body : jool_system_) {
+      stock_orbits_.emplace(
+          body,
+          KeplerOrbit<KSP>(*FindOrDie(parents_, body),
+                           test_particle_,
+                           game_epoch_,
+                           FindOrDie(elements_, body)));
+    }
   }
 
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> owned_bodies_;
   not_null<MassiveBody const *> const sun_, jool_, laythe_, vall_, tylo_, bop_,
       pol_;
+  std::vector<not_null<MassiveBody const*>> jool_system_;
+  std::vector<not_null<MassiveBody const*>> joolian_moons_;
+  std::map<not_null<MassiveBody const*>, KeplerianElements<KSP>> elements_;
+  std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> stock_orbits_;
+  std::map<not_null<MassiveBody const*>, not_null<MassiveBody const*>> parents_;
   MasslessBody test_particle_;
   Instant const game_epoch_;
   DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
-  KeplerianElements<KSP> jool_elements_, laythe_elements_, vall_elements_,
-      tylo_elements_, bop_elements_, pol_elements_;
 
  private:
   not_null<MassiveBody const*> AddBody(GravitationalParameter const& μ) {
-    bodies_.emplace_back(make_not_null_unique<MassiveBody>(μ));
-    return bodies_.back().get();
+    owned_bodies_.emplace_back(make_not_null_unique<MassiveBody>(μ));
+    return owned_bodies_.back().get();
   }
 };
 
 
 TEST_F(ResonanceTest, StockJoolSystem) {
-  auto const jool_orbit =
-      KeplerOrbit<KSP>(*sun_, test_particle_, game_epoch_, jool_elements_);
-  auto const laythe_orbit =
-      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, laythe_elements_);
-  auto const vall_orbit =
-      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, vall_elements_);
-  auto const tylo_orbit =
-      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, tylo_elements_);
-  auto const bop_orbit =
-      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, bop_elements_);
-  auto const pol_orbit = 
-      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, pol_elements_);
-
   auto const jool_initial_state =
-      origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
+      origin_ + FindOrDie(stock_orbits_, jool_).PrimocentricStateVectors(game_epoch_);
   Ephemeris<KSP> ephemeris(
-      std::move(bodies_),
+      std::move(owned_bodies_),
       {origin_,
        jool_initial_state,
-       jool_initial_state + laythe_orbit.PrimocentricStateVectors(game_epoch_),
-       jool_initial_state + vall_orbit.PrimocentricStateVectors(game_epoch_),
-       jool_initial_state + tylo_orbit.PrimocentricStateVectors(game_epoch_),
-       jool_initial_state + bop_orbit.PrimocentricStateVectors(game_epoch_),
-       jool_initial_state + pol_orbit.PrimocentricStateVectors(game_epoch_)},
+       jool_initial_state +
+           FindOrDie(stock_orbits_, laythe_).PrimocentricStateVectors(game_epoch_),
+       jool_initial_state +
+           FindOrDie(stock_orbits_, vall_).PrimocentricStateVectors(game_epoch_),
+       jool_initial_state +
+           FindOrDie(stock_orbits_, tylo_).PrimocentricStateVectors(game_epoch_),
+       jool_initial_state +
+           FindOrDie(stock_orbits_, bop_).PrimocentricStateVectors(game_epoch_),
+       jool_initial_state +
+           FindOrDie(stock_orbits_, pol_).PrimocentricStateVectors(game_epoch_)},
       game_epoch_,
       McLachlanAtela1992Order5Optimal<Position<KSP>>(),
       45 * Minute,
@@ -143,39 +155,27 @@ TEST_F(ResonanceTest, StockJoolSystem) {
 }
 
 TEST_F(ResonanceTest, BarycentricJoolSystem) {
-  auto const jool_orbit =
-      KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_, jool_elements_);
-  auto const laythe_orbit =
-      KeplerOrbit<KSP>(*jool_, test_particle_, game_epoch_, laythe_elements_);
-  MassiveBody jool_1(jool_->gravitational_parameter() +
-                     laythe_->gravitational_parameter());
-  auto const vall_orbit =
-      KeplerOrbit<KSP>(jool_1, test_particle_, game_epoch_, vall_elements_);
-  MassiveBody jool_2(jool_1.gravitational_parameter() +
-                     vall_->gravitational_parameter());
-  auto const tylo_orbit =
-      KeplerOrbit<KSP>(jool_2, test_particle_, game_epoch_, tylo_elements_);
-  MassiveBody jool_3(jool_2.gravitational_parameter() +
-                     tylo_->gravitational_parameter());
-  auto const bop_orbit =
-      KeplerOrbit<KSP>(jool_3, test_particle_, game_epoch_, bop_elements_);
-  MassiveBody jool_4(jool_3.gravitational_parameter() +
-                     bop_->gravitational_parameter());
-  auto const pol_orbit = 
-      KeplerOrbit<KSP>(jool_4, test_particle_, game_epoch_, pol_elements_);
+  std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
+  for (auto const body : jool_system_) {
+    auto elements = elements_[body];
+    elements.conic.semimajor_axis = std::experimental::nullopt;
+    elements.conic.mean_motion = FindOrDie(stock_orbits_, body).mean_motion();
+    orbits.emplace(body, KeplerOrbit<KSP>(*FindOrDie(parents_, body), *body,
+                                          game_epoch_, elements));
+  }
 
   auto const jool_barycentre_initial_state =
-      origin_ + jool_orbit.PrimocentricStateVectors(game_epoch_);
+      origin_ + FindOrDie(orbits, jool_).PrimocentricStateVectors(game_epoch_);
   auto const laythe_from_barycentre =
-      laythe_orbit.PrimocentricStateVectors(game_epoch_);
+      FindOrDie(orbits, laythe_).PrimocentricStateVectors(game_epoch_);
   auto const vall_from_barycentre =
-      vall_orbit.PrimocentricStateVectors(game_epoch_);
+      FindOrDie(orbits, vall_).PrimocentricStateVectors(game_epoch_);
   auto const tylo_from_barycentre =
-      tylo_orbit.PrimocentricStateVectors(game_epoch_);
+      FindOrDie(orbits, tylo_).PrimocentricStateVectors(game_epoch_);
   auto const bop_from_barycentre =
-      bop_orbit.PrimocentricStateVectors(game_epoch_);
+      FindOrDie(orbits, bop_).PrimocentricStateVectors(game_epoch_);
   auto const pol_from_barycentre =
-      pol_orbit.PrimocentricStateVectors(game_epoch_);
+      FindOrDie(orbits, pol_).PrimocentricStateVectors(game_epoch_);
   auto const jool_initial_state = jool_barycentre_initial_state -
                                   (laythe_from_barycentre * laythe_->mass() +
                                    vall_from_barycentre * vall_->mass() +
@@ -184,7 +184,7 @@ TEST_F(ResonanceTest, BarycentricJoolSystem) {
                                    pol_from_barycentre * pol_->mass()) /
                                       jool_->mass();
   Ephemeris<KSP> ephemeris(
-      std::move(bodies_),
+      std::move(owned_bodies_),
       {origin_,  // TODO: not actually here
        jool_initial_state,
        jool_barycentre_initial_state + laythe_from_barycentre,
