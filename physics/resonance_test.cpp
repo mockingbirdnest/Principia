@@ -254,6 +254,7 @@ TEST_F(ResonanceTest, StockJool) {
   ComputeStockOrbits();
   auto ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris.Prolong(reference_);
+  LogPeriods(ephemeris);
   LogEphemeris(ephemeris, /*reference=*/true, "stock_jool");
   // where is thy sting
   ephemeris.Prolong(long_time_);
@@ -264,6 +265,7 @@ TEST_F(ResonanceTest, FixedVallAnomaly) {
   ComputeStockOrbits();
   auto ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris.Prolong(reference_);
+  LogPeriods(ephemeris);
   LogEphemeris(ephemeris, /*reference=*/true, "fixed_vall_anomaly_jool");
   ephemeris.Prolong(long_time_);
   ephemeris.Prolong(comparison_);
