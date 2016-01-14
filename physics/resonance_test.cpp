@@ -207,10 +207,12 @@ class ResonanceTest : public ::testing::Test {
       // Δt is now an upper bound on the half-period.
       Time const actual_period =
           Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0);
-      Time const expected_period = (2 * π * Radian) / stock_orbits_.at(moon).mean_motion();
-      LOG(ERROR) << "actual period: " << actual_period;
-      LOG(ERROR) << "expected period: " << expected_period;
-      LOG(ERROR) << "error " << RelativeError(expected_period, actual_period);
+      Time const expected_period = (2 * π * Radian) /
+                                   stock_orbits_.at(moon).mean_motion();
+      LOG(ERROR) << "actual period   : " << actual_period;
+      LOG(ERROR) << "expected period : " << expected_period;
+      LOG(ERROR) << "error           :"
+                 << RelativeError(expected_period, actual_period);
     }
   }
 
@@ -294,7 +296,7 @@ TEST_F(ResonanceTest, Barycentric) {
     jool_centric_initial_state.emplace(
         moon,
         inner_system_barycentre.Get() +
-            KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
+            KeplerOrbit<KSP>(MassiveBody(inner_system_parameter * (moon == vall_ ? 1.01 : 1)),
                              *moon,
                              game_epoch_,
                              elements_.at(moon))
