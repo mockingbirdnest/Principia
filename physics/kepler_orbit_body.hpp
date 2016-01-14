@@ -70,9 +70,8 @@ KeplerOrbit<Frame>::BarycentricStateVectors(Instant const& t) const {
   if (barycentric_elements.conic.semimajor_axis) {
     // Change the semimajor axis to get elements describing the orbit of the
     // secondary around the barycentre, rather than around the primary.
-    Length const a_primocentric = barycentric_elements.conic.semimajor_axis;
+    Length const a_primocentric = *barycentric_elements.conic.semimajor_axis;
     barycentric_elements.conic.semimajor_axis = a_primocentric * μ1 / (μ1 + μ2);
-    Length const a = barycentric_elements.conic.semimajor_axis;
   }
 
   barycentric_elements.mean_anomaly = elements_at_epoch_.mean_anomaly +

@@ -156,12 +156,26 @@ TEST_F(ResonanceTest, StockJoolSystem) {
 
 TEST_F(ResonanceTest, BarycentricJoolSystem) {
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
+  std::map<not_null<MassiveBody const*>, MassiveBody>
+      equivalent_parents;
+  equivalent_parents.emplace(jool_,
+                             MassiveBody(sun_->gravitational_parameter()));
+  GravitationalParameter jool_system_parameter;
+  jool_system_parameter = jool_->gravitational_parameter();
+  for (auto const moon : joolian_moons_) {
+    equivalent_parents.emplace(
+        moon,
+        MassiveBody(jool_system_parameter));
+        jool_system_parameter += moon->gravitational_parameter();
+  }
+
   for (auto const body : jool_system_) {
     auto elements = elements_[body];
     elements.conic.semimajor_axis = std::experimental::nullopt;
     elements.conic.mean_motion = FindOrDie(stock_orbits_, body).mean_motion();
-    orbits.emplace(body, KeplerOrbit<KSP>(*FindOrDie(parents_, body), *body,
-                                          game_epoch_, elements));
+    LOG(ERROR) << *elements.conic.mean_motion;
+    orbits.emplace(body, KeplerOrbit<KSP>(FindOrDie(equivalent_parents, body),
+                                          *body, game_epoch_, elements));
   }
 
   auto const jool_barycentre_initial_state =
@@ -199,6 +213,7 @@ TEST_F(ResonanceTest, BarycentricJoolSystem) {
   ephemeris.Prolong(game_epoch_ + 90 * Day);
   std::vector<Instant> times;
   std::vector<std::vector<Displacement<KSP>>> displacements;
+  std::vector<std::vector<Vector<double, KSP>>> unitless_displacements;
   for (Instant t = game_epoch_; t < game_epoch_ + 90 * Day; t += 45 * Minute) {
     auto const position = [&ephemeris, t](
         not_null<MassiveBody const*> body) {
@@ -214,10 +229,16 @@ TEST_F(ResonanceTest, BarycentricJoolSystem) {
         {position(jool_) - barycentre, position(laythe_) - barycentre,
          position(vall_) - barycentre, position(tylo_) - barycentre,
          position(bop_) - barycentre, position(pol_) - barycentre});
+    unitless_displacements.emplace_back();
+    unitless_displacements.back().resize(displacements.back().size());
+    std::transform(displacements.back().begin(), displacements.back().end(),
+                   unitless_displacements.back().begin(),
+                   [](Displacement<KSP> d) { return d / Metre; });
   }
   std::ofstream file;
   file.open("corrected_jool.wl");
   file << mathematica::Assign("q", displacements);
+  file << mathematica::Assign("qSI", unitless_displacements);
   file << mathematica::Assign("t", times);
   file.close();
   // fails.
