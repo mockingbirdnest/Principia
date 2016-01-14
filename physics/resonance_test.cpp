@@ -234,8 +234,7 @@ TEST_F(ResonanceTest, Barycentric) {
   for (auto const body : jool_system_) jool_system_parameter += body->gravitational_parameter();
   for (auto const moon : joolian_moons_) {
     orbits.emplace(
-        moon, KeplerOrbit<KSP>(MassiveBody(jool_system_parameter -
-                                           moon->gravitational_parameter()),
+        moon, KeplerOrbit<KSP>(*jool_,
                                *moon, game_epoch_, FindOrDie(elements_, moon)));
   }
 
@@ -249,7 +248,7 @@ TEST_F(ResonanceTest, Barycentric) {
   for (auto const moon : joolian_moons_) {
     moon_initial_states.emplace(
         moon,
-        jool_barycentre + orbits.at(moon).PrimocentricStateVectors(game_epoch_));
+        jool_barycentre + orbits.at(moon).BarycentricStateVectors(game_epoch_));
     parameter_of_moons += moon->gravitational_parameter();
     barycentre_of_moons.Add(moon_initial_states.at(moon),
                             moon->gravitational_parameter());
