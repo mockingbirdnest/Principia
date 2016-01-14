@@ -135,7 +135,7 @@ class ResonanceTest : public ::testing::Test {
     std::vector<Instant> times;
     std::vector<std::vector<Displacement<KSP>>> displacements;
     std::vector<std::vector<Vector<double, KSP>>> unitless_displacements;
-    for (Instant t = game_epoch_; t < reference_; t += 45 * Minute) {
+    for (Instant t = begin; t < end; t += 45 * Minute) {
       auto const position = [&ephemeris, t](
           not_null<MassiveBody const*> body) {
         return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
@@ -248,7 +248,7 @@ TEST_F(ResonanceTest, Barycentric) {
   for (auto const moon : joolian_moons_) {
     moon_initial_states.emplace(
         moon,
-        jool_barycentre + orbits.at(moon).BarycentricStateVectors(game_epoch_));
+        jool_barycentre + orbits.at(moon).PrimocentricStateVectors(game_epoch_));
     parameter_of_moons += moon->gravitational_parameter();
     barycentre_of_moons.Add(moon_initial_states.at(moon),
                             moon->gravitational_parameter());
