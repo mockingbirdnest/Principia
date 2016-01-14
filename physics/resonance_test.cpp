@@ -227,14 +227,15 @@ TEST_F(ResonanceTest, Barycentric) {
 
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
-  for (auto const body : jool_system_) {
-    orbits.emplace(
-        body,
-        KeplerOrbit<KSP>(*FindOrDie(parents_, body),
-                         *body,
-                         game_epoch_,
-                         FindOrDie(elements_, body)));
+  orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
+                                         FindOrDie(elements_, jool_)));
 
+  GravitationalParameter inner_system = jool_->gravitational_parameter();
+  for (auto const moon : joolian_moons_) {
+    orbits.emplace(
+        moon, KeplerOrbit<KSP>(MassiveBody(inner_system), *moon, game_epoch_,
+                               FindOrDie(elements_, moon)));
+    inner_system += moon->gravitational_parameter();
   }
 
   std::map<not_null<MassiveBody const*>, DegreesOfFreedom<KSP>>
