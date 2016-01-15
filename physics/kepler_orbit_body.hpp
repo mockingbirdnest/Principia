@@ -42,7 +42,7 @@ KeplerOrbit<Frame>::KeplerOrbit(
 
 template<typename Frame>
 RelativeDegreesOfFreedom<Frame>
-KeplerOrbit<Frame>::PrimocentricStateVectors(Instant const& t) const {
+KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   KeplerianElements<Frame> primocentric_elements = elements_at_epoch_;
 
   GravitationalParameter const μ = primary_gravitational_parameter_ +

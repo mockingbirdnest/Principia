@@ -72,9 +72,9 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       {9.745048087261129E-01 * (Kilo(Metre) / Second),
        3.500672337210811E-01 * (Kilo(Metre) / Second),
        1.066306010215636E-01 * (Kilo(Metre) / Second)});
-  EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).displacement(),
+  EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 13));
-  EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).velocity(),
+  EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
   EXPECT_THAT(moon_orbit.mean_motion(),
               AlmostEquals(1.511718576836574E-04 * (Degree / Second), 2));
@@ -82,9 +82,9 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   elements.conic.semimajor_axis = std::experimental::nullopt;
   elements.conic.mean_motion = 1.511718576836574E-04 * (Degree / Second);
   moon_orbit = KeplerOrbit<ICRFJ2000Equator>(*earth, *moon, date, elements);
-  EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).displacement(),
+  EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 15));
-  EXPECT_THAT(moon_orbit.PrimocentricStateVectors(date).velocity(),
+  EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
 }
 

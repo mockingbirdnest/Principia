@@ -116,7 +116,7 @@ class ResonanceTest : public ::testing::Test {
       return origin_;
     } else {
       return StockInitialState(parents_.at(body)) +
-             stock_orbits_.at(body).PrimocentricStateVectors(game_epoch_);
+             stock_orbits_.at(body).StateVectors(game_epoch_);
     }
   }
 
@@ -300,14 +300,14 @@ TEST_F(ResonanceTest, Corrected) {
                              *moon,
                              game_epoch_,
                              elements_.at(moon))
-                .PrimocentricStateVectors(game_epoch_));
+                .StateVectors(game_epoch_));
     inner_system_parameter += moon->gravitational_parameter();
     inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
                                 moon->gravitational_parameter());
   }
 
   DegreesOfFreedom<KSP> const jool_initial_state =
-      origin_ + orbits.at(jool_).PrimocentricStateVectors(game_epoch_);
+      origin_ + orbits.at(jool_).StateVectors(game_epoch_);
 
   std::vector<DegreesOfFreedom<KSP>> initial_states = {origin_,
                                                        jool_initial_state};
