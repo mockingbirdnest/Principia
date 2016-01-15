@@ -283,6 +283,7 @@ TEST_F(ResonanceTest, Corrected) {
   orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
                                          FindOrDie(elements_, jool_)));
 
+  // Interpreting the elements as Jacobi coordinates in the Jool system.
   GravitationalParameter inner_system_parameter =
       jool_->gravitational_parameter();
   BarycentreCalculator<RelativeDegreesOfFreedom<KSP>, GravitationalParameter>
