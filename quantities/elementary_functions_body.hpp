@@ -14,16 +14,16 @@ template<int n, typename Q>
 struct NthRootGenerator<
     n,
     Q,
-    std::enable_if_t<Q::Dimensions::Length % n == 0 &&
-                     Q::Dimensions::Mass % n == 0 &&
-                     Q::Dimensions::Time % n == 0 &&
-                     Q::Dimensions::Current % n == 0 &&
-                     Q::Dimensions::Temperature % n == 0 &&
-                     Q::Dimensions::Amount % n == 0 &&
-                     Q::Dimensions::LuminousIntensity % n == 0 &&
-                     Q::Dimensions::Winding % n == 0 &&
-                     Q::Dimensions::Angle % n == 0 &&
-                     Q::Dimensions::SolidAngle % n == 0>> {
+    std::enable_if_t<(Q::Dimensions::Length % n) == 0 &&
+                     (Q::Dimensions::Mass % n) == 0 &&
+                     (Q::Dimensions::Time % n) == 0 &&
+                     (Q::Dimensions::Current % n) == 0 &&
+                     (Q::Dimensions::Temperature % n) == 0 &&
+                     (Q::Dimensions::Amount % n) == 0 &&
+                     (Q::Dimensions::LuminousIntensity % n) == 0 &&
+                     (Q::Dimensions::Winding % n) == 0 &&
+                     (Q::Dimensions::Angle % n) == 0 &&
+                     (Q::Dimensions::SolidAngle % n) == 0>> {
   enum {
     Length            = Q::Dimensions::Length / n,
     Mass              = Q::Dimensions::Mass / n,
