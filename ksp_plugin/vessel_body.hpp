@@ -4,7 +4,13 @@
 
 #include <vector>
 
+#include "quantities/si.hpp"
+#include "testing_utilities/make_not_null.hpp"
+
 namespace principia {
+
+using quantities::si::Kilogram;
+
 namespace ksp_plugin {
 
 inline Vessel::Vessel(not_null<Celestial const*> const parent)
@@ -203,6 +209,9 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   }
   return vessel;
 }
+
+inline Vessel::Vessel()
+    : parent_(testing_utilities::make_not_null<Celestial const*>()) {}
 
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -28,7 +28,6 @@ class Vessel {
       std::vector<
           not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
 
-  Vessel() = delete;
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
   Vessel& operator=(Vessel const&) = delete;
@@ -40,40 +39,40 @@ class Vessel {
   explicit Vessel(not_null<Celestial const*> const parent);
 
   // Returns the body for this vessel.
-  not_null<MasslessBody const*> body() const;
+  virtual not_null<MasslessBody const*> body() const;
 
   // True if, and only if, |history_| is not null.
-  bool is_synchronized() const;
+  virtual bool is_synchronized() const;
   // True if, and only if, |prolongation_| is not null, i.e., if either
   // |CreateProlongation| or |CreateHistoryAndForkProlongation| was called at
   // some point.
-  bool is_initialized() const;
+  virtual bool is_initialized() const;
 
-  not_null<Celestial const*> parent() const;
-  void set_parent(not_null<Celestial const*> const parent);
+  virtual not_null<Celestial const*> parent() const;
+  virtual void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_synchronized()|.
-  DiscreteTrajectory<Barycentric> const& history() const;
-  not_null<DiscreteTrajectory<Barycentric>*> mutable_history();
+  virtual DiscreteTrajectory<Barycentric> const& history() const;
+  virtual not_null<DiscreteTrajectory<Barycentric>*> mutable_history();
 
   // Both accessors require |is_initialized()|.
-  DiscreteTrajectory<Barycentric> const& prolongation() const;
-  not_null<DiscreteTrajectory<Barycentric>*> mutable_prolongation();
+  virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
+  virtual not_null<DiscreteTrajectory<Barycentric>*> mutable_prolongation();
 
   // Requires |is_initialized()|.
-  not_null<FlightPlan*> flight_plan() const;
-  bool has_flight_plan() const;
+  virtual not_null<FlightPlan*> flight_plan() const;
+  virtual bool has_flight_plan() const;
 
   // Requires |has_prediction()|.
-  DiscreteTrajectory<Barycentric> const& prediction() const;
-  bool has_prediction() const;
+  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
+  virtual bool has_prediction() const;
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy
   // |is_initialized()| nor |is_synchronized()|, |owned_prolongation_| must be
   // null.  The vessel |is_initialized()|, but does not satisfy
   // |is_synchronized()|, after the call.
-  void CreateProlongation(
+  virtual void CreateProlongation(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
@@ -83,14 +82,14 @@ class Vessel {
   // |is_synchronized()|.  |*owned_prolongation_| is destroyed *after*
   // |history_| has been constructed.
   // The vessel |is_synchronized()| and |is_initialized()| after the call.
-  void CreateHistoryAndForkProlongation(
+  virtual void CreateHistoryAndForkProlongation(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Deletes the |prolongation_| and forks a new one at |time|.
   // The vessel must satisfy |is_synchronized()| and |is_initialized()|,
   // |owned_prolongation_| must be null.
-  void ResetProlongation(Instant const& time);
+  virtual void ResetProlongation(Instant const& time);
 
   // Creates a |flight_plan_| at the end of history using the given parameters.
   // Deletes any pre-existing predictions.
@@ -98,7 +97,7 @@ class Vessel {
   // synchronization.
   // TODO(egg): struct containing (integrator, length tol, speed tol) so we
   // don't need that many parameters...
-  void CreateFlightPlan(
+  virtual void CreateFlightPlan(
       Instant const& final_time,
       Mass const& initial_mass,
       not_null<Ephemeris<Barycentric>*> ephemeris,
@@ -108,9 +107,9 @@ class Vessel {
       Speed const& speed_integration_tolerance);
 
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
-  void DeleteFlightPlan();
+  virtual void DeleteFlightPlan();
 
-  void UpdatePrediction(
+  virtual void UpdatePrediction(
       not_null<Ephemeris<Barycentric>*> ephemeris,
       AdaptiveStepSizeIntegrator<
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
@@ -119,13 +118,18 @@ class Vessel {
       Speed const& prediction_speed_tolerance);
 
   // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
-  void DeletePrediction();
+  virtual void DeletePrediction();
 
   // The vessel must satisfy |is_initialized()|.
-  void WriteToMessage(not_null<serialization::Vessel*> const message) const;
+  virtual void WriteToMessage(
+      not_null<serialization::Vessel*> const message) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Celestial const*> const parent);
+
+ protected:
+  // For mocking.
+  Vessel();
 
  private:
   MasslessBody const body_;

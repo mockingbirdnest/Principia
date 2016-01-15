@@ -25,6 +25,7 @@
 *.sdf
 *.opensdf
 *.unsuccessfulbuild
+*.vc.opendb
 ipch/
 [Oo]bj/
 [Bb]in

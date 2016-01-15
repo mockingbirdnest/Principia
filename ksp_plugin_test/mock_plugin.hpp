@@ -68,6 +68,11 @@ class MockPlugin : public Plugin {
                      RelativeDegreesOfFreedom<AliceSun>(
                          Index const celestial_index));
 
+  MOCK_CONST_METHOD3(CreateFlightPlan,
+                     void(GUID const& vessel_guid,
+                          Instant const& final_time,
+                          Mass const& initial_mass));
+
   MOCK_CONST_METHOD2(
       RenderedVesselTrajectory,
       RenderedTrajectory<World>(GUID const& vessel_guid,
@@ -78,6 +83,13 @@ class MockPlugin : public Plugin {
       RenderedTrajectory<World>(GUID const& vessel_guid,
                                 Position<World> const& sun_world_position));
 
+  MOCK_CONST_METHOD3(
+      RenderedTrajectoryFromIterators,
+      RenderedTrajectory<World>(
+          DiscreteTrajectory<Barycentric>::Iterator const& begin,
+          DiscreteTrajectory<Barycentric>::Iterator const& end,
+          Position<World> const& sun_world_position));
+
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
   MOCK_METHOD1(SetPredictionLengthTolerance, void(Length const& t));
@@ -85,6 +97,7 @@ class MockPlugin : public Plugin {
   MOCK_METHOD1(SetPredictionSpeedTolerance, void(Speed const& t));
 
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
+  MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));
 
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which

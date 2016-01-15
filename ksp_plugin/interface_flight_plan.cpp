@@ -42,9 +42,7 @@ not_null<Vessel*> GetVessel(Plugin const* const plugin,
 
 FlightPlan& GetFlightPlan(Plugin const* const plugin,
                           char const* const vessel_guid) {
-  // TODO(phl): Should this check if the vessel is synchronized/initialized?
-  CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
-  Vessel const& vessel = *plugin->GetVessel(vessel_guid);
+  Vessel const& vessel = *GetVessel(plugin, vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   return *vessel.flight_plan();
 }

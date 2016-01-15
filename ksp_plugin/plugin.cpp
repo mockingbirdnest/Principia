@@ -428,7 +428,7 @@ bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
 }
 
-not_null<Vessel*> Plugin::GetVessel(GUID const & vessel_guid) const {
+not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   return find_vessel_by_guid_or_die(vessel_guid).get();
 }

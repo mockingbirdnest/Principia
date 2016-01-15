@@ -71,6 +71,9 @@
     <ClCompile Include="mock_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mock_flight_plan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="pre_bourbaki.proto.hex">
@@ -79,6 +82,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_flight_plan.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mock_vessel.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

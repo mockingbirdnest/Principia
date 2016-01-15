@@ -7,12 +7,18 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "geometry/epoch.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/mock_dynamic_frame.hpp"
-#include "quantities/si.hpp"
 #include "journal/recorder.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_vessel.hpp"
+#include "physics/mock_dynamic_frame.hpp"
+#include "quantities/constants.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -21,22 +27,33 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
+using geometry::Vector;
+using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::LineSegment;
+using ksp_plugin::MakeNavigationManœuvre;
+using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockPlugin;
+using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
+using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
+using ksp_plugin::RenderedTrajectory;
+using physics::Frenet;
 using physics::MockDynamicFrame;
 using quantities::Pow;
+using quantities::constants::StandardGravity;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
+using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -48,6 +65,7 @@ using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -110,6 +128,13 @@ ACTION_TEMPLATE(FillUniquePtr,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(ptr)) {
   std::tr1::get<k>(args)->reset(ptr);
+}
+
+MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
+  return arg.thrust == thrust &&
+         arg.specific_impulse == specific_impulse &&
+         arg.initial_time == initial_time &&
+         arg.Δv == Δv;
 }
 
 class InterfaceTest : public testing::Test {
@@ -888,6 +913,148 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
     std::cerr << kExitMessage;
     exit(kExitCode);
   }, ExitedWithCode(kExitCode), kExitMessage);
+}
+
+TEST_F(InterfaceTest, FlightPlan) {
+  Burn burn = {/*thrust_in_kilonewtons=*/1,
+               /*specific_impulse_in_seconds_g0=*/2,
+               /*frame=*/{/*extension=*/6000, /*centre=*/kCelestialIndex},
+               /*initial_time=*/3,
+               /*delta_v=*/{4, 5, 6}};
+  StrictMock<MockVessel> vessel;
+  StrictMock<MockFlightPlan> flight_plan;
+
+  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*plugin_, GetVessel(kVesselGUID))
+      .WillRepeatedly(Return(&vessel));
+  EXPECT_CALL(vessel, has_flight_plan())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(vessel, flight_plan())
+      .WillRepeatedly(Return(&flight_plan));
+
+  EXPECT_CALL(*plugin_, CreateFlightPlan(kVesselGUID,
+                                         Instant() + 30 * Second,
+                                         100 * Tonne));
+  principia__FlightPlanCreate(plugin_.get(),
+                              kVesselGUID,
+                              /*final_time=*/30,
+                              /*mass_in_tonnes=*/100);
+
+  EXPECT_CALL(flight_plan, SetFinalTime(Instant() + 60 * Second))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(principia__FlightPlanSetFinalTime(plugin_.get(),
+                                                kVesselGUID,
+                                                60));
+
+  EXPECT_CALL(flight_plan, SetTolerances(111 * Metre, 222 * (Metre / Second)));
+  principia__FlightPlanSetTolerances(plugin_.get(), kVesselGUID, 111, 222);
+
+  EXPECT_CALL(*plugin_,
+              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr<1>(
+                    new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
+  EXPECT_CALL(flight_plan,
+              AppendConstRef(
+                  BurnMatches(1 * Kilo(Newton),
+                              2 * Second * StandardGravity,
+                              Instant() + 3 * Second,
+                              Velocity<Frenet<Navigation>>(
+                                  {4 * (Metre / Second),
+                                   5 * (Metre / Second),
+                                   6 * (Metre / Second)}))))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), kVesselGUID, burn));
+
+  EXPECT_CALL(flight_plan, number_of_manœuvres())
+      .WillOnce(Return(4));
+  EXPECT_EQ(4, principia__FlightPlanNumberOfManoeuvres(plugin_.get(),
+                                                       kVesselGUID));
+
+  MockDynamicFrame<Barycentric, Navigation> const* const
+      navigation_manœuvre_frame =
+          new MockDynamicFrame<Barycentric, Navigation>;
+  NavigationManœuvre navigation_manœuvre(
+                         10 * Kilo(Newton),
+                         20 * Tonne,
+                         30 * Second * StandardGravity,
+                         Vector<double, Frenet<Navigation>>({40, 50, 60}),
+                         std::unique_ptr<
+                             DynamicFrame<Barycentric, Navigation> const>(
+                                 navigation_manœuvre_frame));
+  navigation_manœuvre.set_initial_time(Instant());
+  navigation_manœuvre.set_duration(7 * Second);
+  EXPECT_CALL(flight_plan, GetManœuvre(3))
+      .WillOnce(ReturnRef(navigation_manœuvre));
+  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
+  auto const navigation_manoeuvre =
+      principia__FlightPlanGetManoeuvre(plugin_.get(),
+                                        kVesselGUID,
+                                        3);
+  EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
+  EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
+  EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
+              AlmostEquals(30, 1));
+  EXPECT_EQ(40 / sqrt(7700), navigation_manoeuvre.direction.x);
+  EXPECT_EQ(50 / sqrt(7700), navigation_manoeuvre.direction.y);
+  EXPECT_EQ(60 / sqrt(7700), navigation_manoeuvre.direction.z);
+
+  EXPECT_CALL(flight_plan, number_of_segments())
+      .WillOnce(Return(12));
+  EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
+                                                      kVesselGUID));
+
+  RenderedTrajectory<World> const rendered_trajectory =
+      {LineSegment<World>(World::origin,
+                          World::origin +
+                            Displacement<World>({0 * Metre,
+                                                 1 * Metre,
+                                                 2 * Metre})),
+       LineSegment<World>(World::origin +
+                          Displacement<World>({0 * Metre,
+                                               1 * Metre,
+                                               2 * Metre}),
+                          World::origin +
+                          Displacement<World>({0 * Metre,
+                                               2 * Metre,
+                                               4 * Metre}))};
+  EXPECT_CALL(flight_plan, GetSegment(3, _, _));
+  EXPECT_CALL(*plugin_, RenderedTrajectoryFromIterators(_, _, _))
+      .WillOnce(Return(rendered_trajectory));
+  auto* const line_and_iterator =
+      principia__FlightPlanRenderedSegment(plugin_.get(),
+                                           kVesselGUID,
+                                           {0, 1, 2},
+                                           3);
+  EXPECT_EQ(XYZSegment({{0, 0, 0}, {0, 1, 2}}),
+            principia__FetchAndIncrement(line_and_iterator));
+  EXPECT_EQ(XYZSegment({{0, 1, 2}, {0, 2, 4}}),
+            principia__FetchAndIncrement(line_and_iterator));
+
+  burn.thrust_in_kilonewtons = 10;
+  EXPECT_CALL(*plugin_,
+              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr<1>(
+                    new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
+  EXPECT_CALL(flight_plan,
+              ReplaceLastConstRef(
+                  BurnMatches(10 * Kilo(Newton),
+                              2 * Second * StandardGravity,
+                              Instant() + 3 * Second,
+                              Velocity<Frenet<Navigation>>(
+                                  {4 * (Metre / Second),
+                                   5 * (Metre / Second),
+                                   6 * (Metre / Second)}))))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
+                                               kVesselGUID,
+                                               burn));
+
+  EXPECT_CALL(flight_plan, RemoveLast());
+  principia__FlightPlanRemoveLast(plugin_.get(), kVesselGUID);
+
+  EXPECT_CALL(vessel, DeleteFlightPlan());
+  principia__FlightPlanDelete(plugin_.get(), kVesselGUID);
 }
 
 }  // namespace interface

@@ -1,5 +1,7 @@
 ﻿#include "ksp_plugin/flight_plan.hpp"
 
+#include "testing_utilities/make_not_null.hpp"
+
 namespace principia {
 namespace ksp_plugin {
 
@@ -121,6 +123,13 @@ void FlightPlan::GetSegment(
     *end = segments_[index]->Find(segments_[index + 1]->Fork().time());
   }
 }
+
+FlightPlan::FlightPlan()
+    : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      integrator_(
+          *testing_utilities::make_not_null<
+              AdaptiveStepSizeIntegrator<
+                  Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
