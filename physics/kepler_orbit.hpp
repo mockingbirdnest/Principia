@@ -25,6 +25,8 @@ struct KeplerianElements {
 
 template<typename Frame>
 class KeplerOrbit {
+  static_assert(Frame::is_inertial, "Frame must be inertial");
+
  public:
   KeplerOrbit(MassiveBody const& primary,
               Body const& secondary,
