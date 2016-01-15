@@ -1,6 +1,7 @@
 ﻿#include <map>
 #include <vector>
 
+#include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -26,6 +27,8 @@ class ResonanceTest : public ::testing::Test {
  protected:
   using KSP =
       Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+  using Dynamic =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
 
   // Gravitational parameters from the KSP wiki.
   ResonanceTest()
@@ -133,11 +136,17 @@ class ResonanceTest : public ::testing::Test {
                     std::string name) {
     Instant const begin = reference ? game_epoch_ : long_time_;
     Instant const end = reference ? reference_ : comparison_;
+    Time const step = reference ? 45 * Minute : 4 * 45 * Hour;
     std::string const purpose = reference ? "reference" : "comparison";
     std::vector<Instant> times;
     std::vector<std::vector<Displacement<KSP>>> displacements;
+    // TODO(egg): this should have the barycentre of the Jool system as a
+    // secondary, but we have no support for that at the moment.
+    auto const rotating_frame =
+        BarycentricRotatingDynamicFrame<KSP, Dynamic>(&ephemeris, sun_, jool_);
+    std::vector<std::vector<Vector<double, Dynamic>>> rotating_frame_trajectory;
     std::vector<std::vector<Vector<double, KSP>>> unitless_displacements;
-    for (Instant t = begin; t < end; t += 45 * Minute) {
+    for (Instant t = begin; t < end; t += step) {
       auto const position = [&ephemeris, t](
           not_null<MassiveBody const*> body) {
         return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
@@ -152,16 +161,32 @@ class ResonanceTest : public ::testing::Test {
           {position(jool_) - barycentre, position(laythe_) - barycentre,
            position(vall_) - barycentre, position(tylo_) - barycentre,
            position(bop_) - barycentre, position(pol_) - barycentre});
+
       unitless_displacements.emplace_back();
       unitless_displacements.back().resize(displacements.back().size());
       std::transform(displacements.back().begin(), displacements.back().end(),
                      unitless_displacements.back().begin(),
                      [](Displacement<KSP> d) { return d / Metre; });
+      rotating_frame_trajectory.emplace_back();
+      for (auto const body : jool_system_) {
+        rotating_frame_trajectory.back().emplace_back(
+            (rotating_frame.ToThisFrameAtTime(t)
+                 .rigid_transformation()(position(body)) -
+             Dynamic::origin) /
+            Metre);
+      }
+      // Sun last for consistent colours.
+      rotating_frame_trajectory.back().emplace_back(
+          (rotating_frame.ToThisFrameAtTime(t)
+               .rigid_transformation()(position(sun_)) -
+           Dynamic::origin) /
+          Metre);
     }
     std::ofstream file;
     file.open(name + "_" + purpose + ".wl");
     file << mathematica::Assign("q", displacements);
     file << mathematica::Assign("qSI", unitless_displacements);
+    file << mathematica::Assign("qR", rotating_frame_trajectory);
     file << mathematica::Assign("t", times);
     file.close();
   }
@@ -243,8 +268,8 @@ class ResonanceTest : public ::testing::Test {
   // TODO(egg): this is probably UB, but Point doesn't have constexprs.
   Instant const game_epoch_;
   Instant const reference_ = game_epoch_ + 90 * Day;
-  Instant const long_time_ = game_epoch_ + 100 * JulianYear;
-  Instant const comparison_ = long_time_ + 90 * Day;
+  Instant const long_time_ = game_epoch_ + 0 * JulianYear;
+  Instant const comparison_ = long_time_ + 100 * JulianYear;
 
  private:
   not_null<MassiveBody const*> AddBody(GravitationalParameter const& μ) {
@@ -289,7 +314,7 @@ TEST_F(ResonanceTest, Barycentric) {
       *elements_[laythe_].conic.mean_motion / 2.47214;
   *elements_[tylo_].conic.mean_motion =
       *elements_[vall_].conic.mean_motion / 2.47214;
-  *elements_[bop_].conic.mean_motion = *elements_[pol_].conic.mean_motion / 1.5;
+  //*elements_[bop_].conic.mean_motion = *elements_[pol_].conic.mean_motion / 1.5;
 
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
