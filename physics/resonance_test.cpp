@@ -22,6 +22,8 @@ using testing_utilities::RelativeError;
 
 namespace physics {
 
+#if !defined(_DEBUG)
+
 class ResonanceTest : public ::testing::Test {
  protected:
   using KSP =
@@ -90,6 +92,7 @@ class ResonanceTest : public ::testing::Test {
     elements_[vall_].mean_anomaly = 0 * Radian;
   }
 
+  // Fills |stock_orbits_|.
   // KSP assumes secondaries are massless.
   void ComputeStockOrbits() {
     for (auto const body : jool_system_) {
@@ -159,7 +162,7 @@ class ResonanceTest : public ::testing::Test {
                      [](Displacement<KSP> d) { return d / Metre; });
     }
     std::ofstream file;
-    file.open(name + "_" + purpose + ".wl");
+    file.open(name + "_" + purpose + ".generated.wl");
     file << mathematica::Assign(name + purpose + "q", displacements);
     file << mathematica::Assign(name + purpose + "qSI", unitless_displacements);
     file << mathematica::Assign(name + purpose + "t", times);
@@ -254,15 +257,19 @@ class ResonanceTest : public ::testing::Test {
   }
 };
 
+using ResonanceDeathTest = ResonanceTest;
 
-TEST_F(ResonanceTest, Stock) {
+TEST_F(ResonanceDeathTest, Stock) {
   ComputeStockOrbits();
+  UseStockMeanMotions();
   auto ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris.Prolong(reference_);
   LogPeriods(ephemeris);
   LogEphemeris(ephemeris, /*reference=*/true, "stock");
-  // where is thy sting
-  ephemeris.Prolong(long_time_);
+  // Where is thy sting?
+  EXPECT_DEATH(
+      { ephemeris.Prolong(long_time_); },
+      R"regex(Apocalypse occurred at \+8\.22960000000000000e\+06 s)regex");
 }
 
 TEST_F(ResonanceTest, Corrected) {
@@ -325,6 +332,8 @@ TEST_F(ResonanceTest, Corrected) {
   ephemeris.Prolong(comparison_);
   LogEphemeris(ephemeris, /*reference=*/false, "corrected");
 }
+
+#endif
 
 }  // namespace physics
 }  // namespace principia
