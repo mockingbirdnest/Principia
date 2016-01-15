@@ -53,6 +53,7 @@ using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
 using uk::Foot;
 using uk::Furlong;
+using uk::Gallon;
 using uk::Mile;
 using uk::Rood;
 using ::testing::Lt;
@@ -214,9 +215,11 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
               AlmostEquals(-10 * Degree, 0, 1));
 }
 
-TEST_F(QuantitiesTest, ExpLogAndSqrt) {
+TEST_F(QuantitiesTest, ExpLogAndRoots) {
   EXPECT_THAT(std::exp(std::log(2) / 2), AlmostEquals(Sqrt(2), 1));
+  EXPECT_THAT(std::exp(std::log(2) / 3), AlmostEquals(Cbrt(2), 1));
   EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
+  EXPECT_EQ(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, Cbrt(Gallon));
 }
 
 TEST_F(QuantitiesDeathTest, SerializationError) {

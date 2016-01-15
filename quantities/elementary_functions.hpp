@@ -11,6 +11,10 @@ double Sqrt(double const x);
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 
+double Cbrt(double const x);
+template<typename D>
+CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x);
+
 double Sin(Angle const& α);
 double Cos(Angle const& α);
 double Tan(Angle const& α);
