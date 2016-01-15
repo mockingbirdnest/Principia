@@ -246,6 +246,79 @@ class ResonanceTest : public ::testing::Test {
       5 * Milli(Metre));
   }
 
+  // Interpreting the elements as Jacobi coordinates in the Jool system.
+  std::vector<DegreesOfFreedom<KSP>> JacobiInitialStates() {
+    // Jool-centric coordinates: a nonrotating inertial frame in which Jool is
+    // centred and immobile, for building the Jool system in Jacobi coordinates.
+    // We only use this frame at |game_epoch_|.
+    using JoolCentric = Frame<serialization::Frame::TestTag,
+                              serialization::Frame::TEST1, false>;
+    // These coordinate systems have the same axes.
+    auto const id = OrthogonalMap<KSP, JoolCentric>::Identity();
+
+        std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
+
+    orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
+                                           elements_[jool_]));
+
+
+
+    // The barycentre of the bodies of the Jool system considered so far.
+    BarycentreCalculator<DegreesOfFreedom<JoolCentric>, GravitationalParameter>
+        inner_system_barycentre;
+    // TODO(egg): BarycentreCalculator should just have a method that returns
+    // the weight of the whole thing, so we're not accumulating it twice.
+    GravitationalParameter inner_system_parameter =
+        jool_->gravitational_parameter();
+    std::map<not_null<MassiveBody const*>, DegreesOfFreedom<JoolCentric>>
+        jool_centric_initial_state;
+
+    // Jool.
+    DegreesOfFreedom<JoolCentric> const jool_dof = {JoolCentric::origin,
+                                                    Velocity<JoolCentric>()};
+    inner_system_barycentre.Add(jool_dof, jool_->gravitational_parameter());
+    // The elements of each moon are interpreted as the osculating elements of
+    // an orbit around a point mass at the barycentre of Jool and the
+    // previously-added moons, so that the state vectors are Jacobi coordinates
+    // for the system.
+    for (auto const moon : joolian_moons_) {
+      jool_centric_initial_state.emplace(
+          moon,
+          inner_system_barycentre.Get() +
+              id(KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
+                                  *moon,
+                                  game_epoch_,
+                                  elements_[moon]).StateVectors(game_epoch_)));
+      inner_system_parameter += moon->gravitational_parameter();
+      inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
+                                  moon->gravitational_parameter());
+    }
+
+    // |inner_system_barycentre| is now the barycentre of the whole Jool system.
+    // We want that to be placed where dictated by Jool's orbit.
+    DegreesOfFreedom<KSP> const jool_barycentre_initial_state =
+        origin_ + orbits.at(jool_).StateVectors(game_epoch_);
+    // TODO(egg): this is very messy, a constructor from a pair of
+    // |DegreesOfFreedom|s like the constructor for |RigidTransformation| from a
+    // pair of |Position|s would be nice...
+    RigidMotion<JoolCentric, KSP> const to_heliocentric(
+        RigidTransformation<JoolCentric, KSP>(
+            inner_system_barycentre.Get().position(),
+            jool_barycentre_initial_state.position(), id.Inverse()),
+        AngularVelocity<JoolCentric>(),
+        /*velocity_of_to_frame_origin=*/inner_system_barycentre.Get()
+                .velocity() - id(jool_barycentre_initial_state.velocity()));
+
+    // The Sun and Jool.
+    std::vector<DegreesOfFreedom<KSP>> initial_states = {
+        origin_, to_heliocentric(jool_dof)};
+    for (auto const moon : joolian_moons_) {
+      initial_states.emplace_back(
+          to_heliocentric(jool_centric_initial_state.at(moon)));
+    }
+    return initial_states;
+  }
+
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> owned_bodies_;
   not_null<MassiveBody const *> const sun_, jool_, laythe_, vall_, tylo_, bop_,
       pol_;
@@ -289,19 +362,9 @@ TEST_F(ResonanceDeathTest, Stock) {
 }
 
 TEST_F(ResonanceTest, Corrected) {
-  // Jool-centric coordinates: a nonrotating inertial frame in which Jool is
-  // centred and immobile, for building the Jool system in Jacobi coordinates.
-  // We only use this frame at |game_epoch_|.
-  using JoolCentric =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, false>;
-  // These coordinate systems have the same axes.
-  auto const id = OrthogonalMap<KSP, JoolCentric>::Identity();
-
   ComputeStockOrbits();
   UseStockMeanMotions();
 
-  LOG(INFO)<<*elements_[laythe_].conic.mean_motion;
-  LOG(INFO)<<*elements_[vall_].conic.mean_motion;
   // Instead of putting the moons in a 1:2:4 resonance, put them in a
   // 1:4/φ:16/φ^2 dissonance.
   elements_[vall_].conic.mean_motion =
@@ -313,69 +376,7 @@ TEST_F(ResonanceTest, Corrected) {
   // resonance with Pol works well.
   *elements_[bop_].conic.mean_motion = *elements_[pol_].conic.mean_motion / 1.5;
 
-  std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
-
-  orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
-                                         elements_[jool_]));
-
-  // Interpreting the elements as Jacobi coordinates in the Jool system.
-
-  // The barycentre of the bodies of the Jool system considered so far.
-  BarycentreCalculator<DegreesOfFreedom<JoolCentric>, GravitationalParameter>
-      inner_system_barycentre;
-  // TODO(egg): BarycentreCalculator should just have a method that returns the
-  // weight of the whole thing, so we're not accumulating it twice.
-  GravitationalParameter inner_system_parameter =
-      jool_->gravitational_parameter();
-  std::map<not_null<MassiveBody const*>, DegreesOfFreedom<JoolCentric>>
-      jool_centric_initial_state;
-
-  // Jool.
-  DegreesOfFreedom<JoolCentric> const jool_dof = {JoolCentric::origin,
-                                                  Velocity<JoolCentric>()};
-  inner_system_barycentre.Add(jool_dof, jool_->gravitational_parameter());
-  // The elements of each moon are interpreted as the osculating elements of
-  // an orbit around a point mass at the barycentre of Jool and the
-  // previously-added moons, so that the state vectors are Jacobi coordinates
-  // for the system.
-  for (auto const moon : joolian_moons_) {
-    jool_centric_initial_state.emplace(
-        moon,
-        inner_system_barycentre.Get() +
-            id(KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
-                                *moon,
-                                game_epoch_,
-                                elements_[moon]).StateVectors(game_epoch_)));
-    inner_system_parameter += moon->gravitational_parameter();
-    inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
-                                moon->gravitational_parameter());
-  }
-
-  // |inner_system_barycentre| is now the barycentre of the whole Jool system.
-  // We want that to be placed where dictated by Jool's orbit.
-  DegreesOfFreedom<KSP> const jool_barycentre_initial_state =
-      origin_ + orbits.at(jool_).StateVectors(game_epoch_);
-  // TODO(egg): this is messy, a constructor from a pair of |DegreesOfFreedom|s
-  // like the constructor for |RigidTransformation| from a pair of |Position|s
-  // would be nice...
-  RigidMotion<JoolCentric, KSP> const to_heliocentric(
-      RigidTransformation<JoolCentric, KSP>(
-          inner_system_barycentre.Get().position(),
-          jool_barycentre_initial_state.position(),
-          id.Inverse()),
-      AngularVelocity<JoolCentric>(),
-      /*velocity_of_to_frame_origin=*/inner_system_barycentre.Get().velocity() -
-          id(jool_barycentre_initial_state.velocity()));
-
-  // The Sun and Jool.
-  std::vector<DegreesOfFreedom<KSP>> initial_states = {
-      origin_, to_heliocentric(jool_dof)};
-  for (auto const moon : joolian_moons_) {
-    initial_states.emplace_back(
-        to_heliocentric(jool_centric_initial_state.at(moon)));
-  }
-
-  auto ephemeris = MakeEphemeris(initial_states);
+  auto ephemeris = MakeEphemeris(JacobiInitialStates());
   ephemeris.Prolong(reference_);
   LogPeriods(ephemeris);
   LogEphemeris(ephemeris, /*reference=*/true, "corrected");
