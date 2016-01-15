@@ -83,6 +83,7 @@ class ResonanceTest : public ::testing::Test {
     for (auto const moon : joolian_moons_) {
       parents_.emplace(moon, jool_);
     }
+    google::LogToStderr();
   }
 
   void FixVallMeanAnomaly() {
@@ -173,6 +174,7 @@ class ResonanceTest : public ::testing::Test {
     file.close();
   }
 
+  // Compute and log the measured periods of the moons.
   void LogPeriods(Ephemeris<KSP> const& ephemeris) {
     auto const position = [this, &ephemeris](
         not_null<MassiveBody const*> body, Instant const& t) {
@@ -190,38 +192,47 @@ class ResonanceTest : public ::testing::Test {
         not_null<MassiveBody const*> body, Instant const& t) {
       return position(body, t) - barycentre(t);
     };
-    LOG(ERROR) << barycentric_position(laythe_, game_epoch_);
-    LOG(ERROR) << barycentric_position(vall_, game_epoch_);
-    LOG(ERROR) << barycentric_position(tylo_, game_epoch_);
+
+    LOG(INFO) << barycentric_position(laythe_, game_epoch_);
+    LOG(INFO) << barycentric_position(vall_, game_epoch_);
+    LOG(INFO) << barycentric_position(tylo_, game_epoch_);
     for (auto const moon : {laythe_, vall_, tylo_}) {
       auto const moon_y = [&barycentric_position, moon,
                            this](Instant const& t) {
         return barycentric_position(moon, t).coordinates().y;
       };
+
+      LOG(INFO) << (moon == laythe_ ? "Laythe" : moon == vall_ ? "Vall"
+                                                               : "Tylo");
+
       Sign const s0(moon_y(game_epoch_));
       Instant t0 = game_epoch_;
       Time const Δt = 45 * Minute;
       while (Sign(moon_y(t0)) == s0) {
         t0 += Δt;
       }
+      // The moon crosses the xz plane between t0 and t0 - Δt.
       Instant t1 = t0;
       int const orbits = moon == laythe_ ? 8 : moon == vall_ ? 4 : 2;
       for (int i = 0; i < orbits; ++i) {
         while (Sign(moon_y(t1)) != s0) {
           t1 += Δt;
         }
+        // The crossing of the xz plane halfway through the orbit occurs between
+        // t1 and t1 - Δt.
         while (Sign(moon_y(t1)) == s0) {
           t1 += Δt;
         }
+        // The |i|th orbit ends between t1 and t1 - Δt.
       }
       Time const actual_period =
           (Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
       Time const expected_period = (2 * π * Radian) /
                                    *elements_[moon].conic.mean_motion;
-      LOG(ERROR) << "actual period   : " << actual_period;
-      LOG(ERROR) << "expected period : " << expected_period;
-      LOG(ERROR) << "error           :"
-                 << RelativeError(expected_period, actual_period);
+      LOG(INFO) << "actual period   : " << actual_period;
+      LOG(INFO) << "expected period : " << expected_period;
+      LOG(INFO) << "error           :"
+                << RelativeError(expected_period, actual_period);
     }
   }
 
@@ -289,8 +300,8 @@ TEST_F(ResonanceTest, Corrected) {
   ComputeStockOrbits();
   UseStockMeanMotions();
 
-  LOG(ERROR)<<*elements_[laythe_].conic.mean_motion;
-  LOG(ERROR)<<*elements_[vall_].conic.mean_motion;
+  LOG(INFO)<<*elements_[laythe_].conic.mean_motion;
+  LOG(INFO)<<*elements_[vall_].conic.mean_motion;
   // Instead of putting the moons in a 1:2:4 resonance, put them in a
   // 1:4/φ:16/φ^2 dissonance.
   elements_[vall_].conic.mean_motion =
