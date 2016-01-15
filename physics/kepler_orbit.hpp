@@ -44,7 +44,7 @@ class KeplerOrbit {
 
  private:
   // The state vectors of a massless body orbiting a body with the given
-  // |gravitation_parameter| in an orbit with the given |elements|.
+  // |gravitational_parameter| in an orbit with the given |elements|.
   static RelativeDegreesOfFreedom<Frame> TestParticleStateVectors(
       KeplerianElements<Frame> const& elements,
       GravitationalParameter const& gravitational_parameter);
