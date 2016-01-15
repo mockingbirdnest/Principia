@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "physics/kepler_orbit.hpp"
+#include "rigid_motion.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -137,34 +138,36 @@ class ResonanceTest : public ::testing::Test {
     Instant const begin = reference ? game_epoch_ : long_time_;
     Instant const end = reference ? reference_ : comparison_;
     std::string const purpose = reference ? "reference" : "comparison";
-    std::vector<Instant> times;
-    std::vector<std::vector<Displacement<KSP>>> displacements;
-    std::vector<std::vector<Vector<double, KSP>>> unitless_displacements;
+    // Mathematica tends to be slow when dealing with quantities, so we give
+    // everything in SI units.
+    std::vector<double> times;
+    std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
     for (Instant t = begin; t < end; t += 45 * Minute) {
       auto const position = [&ephemeris, t](
           not_null<MassiveBody const*> body) {
         return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
       };
-      auto const barycentre = Barycentre<Position<KSP>, Mass>(
-          {position(jool_), position(laythe_), position(vall_), position(tylo_),
-           position(bop_), position(pol_)},
-          {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
-           bop_->mass(), pol_->mass()});
-      times.emplace_back(t);
-      displacements.push_back(
-          {position(jool_) - barycentre, position(laythe_) - barycentre,
-           position(vall_) - barycentre, position(tylo_) - barycentre,
-           position(bop_) - barycentre, position(pol_) - barycentre});
-      unitless_displacements.emplace_back();
-      unitless_displacements.back().resize(displacements.back().size());
-      std::transform(displacements.back().begin(), displacements.back().end(),
-                     unitless_displacements.back().begin(),
-                     [](Displacement<KSP> d) { return d / Metre; });
+
+      times.emplace_back((t - game_epoch_) / Second);
+
+      BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
+          jool_system_barycentre;
+      for (auto const body : jool_system_) {
+        jool_system_barycentre.Add(body, body->gravitational_parameter());
+      }
+      barycentric_positions.emplace_back();
+      for (auto const body : jool_system_) {
+        // TODO(egg): when our dynamic frames support that, it would make sense
+        // to use a nonrotating dynamic frame centred at the barycentre of the
+        // Jool system, instead of computing the barycentre and difference
+        // ourselves.
+        barycentric_positions.back().emplace_back(position(body) -
+                                                  jool_system_barycentre.Get());
+      }
     }
     std::ofstream file;
     file.open(name + "_" + purpose + ".generated.wl");
-    file << mathematica::Assign(name + purpose + "q", displacements);
-    file << mathematica::Assign(name + purpose + "qSI", unitless_displacements);
+    file << mathematica::Assign(name + purpose + "q", barycentric_positions);
     file << mathematica::Assign(name + purpose + "t", times);
     file.close();
   }
@@ -273,6 +276,11 @@ TEST_F(ResonanceDeathTest, Stock) {
 }
 
 TEST_F(ResonanceTest, Corrected) {
+  // Jool-centric coordinates: a nonrotating inertial frame centred at Jool at
+  // |game_epoch_|, for building the Jool system in Jacobi coordinates.
+  using JoolCentric =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
+
   ComputeStockOrbits();
   UseStockMeanMotions();
 
@@ -295,36 +303,50 @@ TEST_F(ResonanceTest, Corrected) {
                                          elements_[jool_]));
 
   // Interpreting the elements as Jacobi coordinates in the Jool system.
+
+  // The barycentre of the bodies of the Jool system considered so far.
+  BarycentreCalculator<DegreesOfFreedom<JoolCentric>, GravitationalParameter>
+      inner_system_barycentre;
+  // TODO(egg): BarycentreCalculator should just have a method that returns the
+  // weight of the whole thing, so we're not accumulating it twice.
   GravitationalParameter inner_system_parameter =
       jool_->gravitational_parameter();
-  BarycentreCalculator<RelativeDegreesOfFreedom<KSP>, GravitationalParameter>
-      inner_system_barycentre;
   std::map<not_null<MassiveBody const*>, RelativeDegreesOfFreedom<KSP>>
       jool_centric_initial_state;
-  inner_system_barycentre.Add(origin_ - origin_ /*why no default constructor?*/,
+
+  // Jool.
+  inner_system_barycentre.Add(JoolCentric::origin,
                               jool_->gravitational_parameter());
+  // The elements of each moon are interpreted as the osculating elements of
+  // an orbit around a point mass at the barycentre of Jool and the
+  // previously-added moons, so that the state vectors are Jacobi coordinates
+  // for the system.
   for (auto const moon : joolian_moons_) {
-    jool_centric_initial_state.emplace(
-        moon,
+    jool_centric_initial_state[moon] = 
         inner_system_barycentre.Get() +
-            KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
-                             *moon,
-                             game_epoch_,
-                             elements_[moon])
-                .StateVectors(game_epoch_));
+            KeplerOrbit<JoolCentric>(MassiveBody(inner_system_parameter),
+                                     *moon,
+                                     game_epoch_,
+                                     elements_[moon]).StateVectors(game_epoch_);
     inner_system_parameter += moon->gravitational_parameter();
     inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
                                 moon->gravitational_parameter());
   }
 
-  DegreesOfFreedom<KSP> const jool_initial_state =
-      origin_ + orbits.at(jool_).StateVectors(game_epoch_);
+  // |inner_system_barycentre| is now the barycentre of the whole Jool system.
+  // We want that to be placed where dictated by Jool's orbit.
+  RigidTransformation<JoolCentric, KSP> const to_heliocentric(
+      inner_system_barycentre.Get(),
+      origin_ + orbits.at(jool_).StateVectors(game_epoch_),
+      OrthogonalMap<JoolCentric, KSP>::Identity());
 
-  std::vector<DegreesOfFreedom<KSP>> initial_states = {origin_,
-                                                       jool_initial_state};
-  for (auto const moon : joolian_moons_) {
-    initial_states.emplace_back(jool_initial_state +
-                                jool_centric_initial_state.at(moon));
+  // The Sun and Jool.
+  std::vector<DegreesOfFreedom<KSP>> initial_states = {
+      origin_,
+      to_heliocentric(JoolCentric::origin)};
+  for (auto const body : jool_system_) {
+    initial_states.emplace_back(
+        to_heliocentric(jool_centric_initial_state(body)));
   }
 
   auto ephemeris = MakeEphemeris(initial_states);
