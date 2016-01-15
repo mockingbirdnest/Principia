@@ -31,7 +31,10 @@ class KeplerOrbit {
               Instant const& epoch,
               KeplerianElements<Frame> const& elements_at_epoch);
 
+  // The |DegreesOfFreedom| of the secondary minus those of the primary.
   RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
+  // The |DegreesOfFreedom| of the secondary minus those of the barycentre of
+  // the primary and secondary.
   RelativeDegreesOfFreedom<Frame> BarycentricStateVectors(
       Instant const& t) const;
 

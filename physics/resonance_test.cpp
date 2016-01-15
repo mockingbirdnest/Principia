@@ -95,10 +95,10 @@ class ResonanceTest : public ::testing::Test {
     for (auto const body : jool_system_) {
       stock_orbits_.emplace(
           body,
-          KeplerOrbit<KSP>(*FindOrDie(parents_, body),
+          KeplerOrbit<KSP>(*parents_[body],
                            test_particle_,
                            game_epoch_,
-                           FindOrDie(elements_, body)));
+                           elements_[body]));
     }
   }
 
@@ -115,7 +115,7 @@ class ResonanceTest : public ::testing::Test {
     if (body == sun_) {
       return origin_;
     } else {
-      return StockInitialState(parents_.at(body)) +
+      return StockInitialState(parents_[body]) +
              stock_orbits_.at(body).StateVectors(game_epoch_);
     }
   }
@@ -236,7 +236,8 @@ class ResonanceTest : public ::testing::Test {
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
   std::map<not_null<MassiveBody const*>, KeplerianElements<KSP>> elements_;
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> stock_orbits_;
-  std::map<not_null<MassiveBody const*>, not_null<MassiveBody const*>> parents_;
+  // Nullable second type because we want to use operator[].
+  std::map<not_null<MassiveBody const*>, MassiveBody const*> parents_;
   MasslessBody test_particle_;
   DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
 
@@ -281,7 +282,7 @@ TEST_F(ResonanceTest, Corrected) {
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
   orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
-                                         FindOrDie(elements_, jool_)));
+                                         elements_[jool_]));
 
   // Interpreting the elements as Jacobi coordinates in the Jool system.
   GravitationalParameter inner_system_parameter =
@@ -299,7 +300,7 @@ TEST_F(ResonanceTest, Corrected) {
             KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
                              *moon,
                              game_epoch_,
-                             elements_.at(moon))
+                             elements_[moon])
                 .StateVectors(game_epoch_));
     inner_system_parameter += moon->gravitational_parameter();
     inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
