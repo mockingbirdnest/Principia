@@ -284,6 +284,9 @@ TEST_F(ResonanceTest, Corrected) {
       *elements_[laythe_].conic.mean_motion / 2.47214;
   *elements_[tylo_].conic.mean_motion =
       *elements_[vall_].conic.mean_motion / 2.47214;
+
+  // Put Bop somewhere further away so it's not kicked out.  A 2:3 mean-motion
+  // resonance with Pol works well.
   *elements_[bop_].conic.mean_motion = *elements_[pol_].conic.mean_motion / 1.5;
 
   std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
