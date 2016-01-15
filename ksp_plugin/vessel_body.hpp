@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include "ksp_plugin/vessel.hpp"
-#include "quantities/si.hpp"
-#include "testing_utilities/make_not_null.hpp"
 
 #include <vector>
+
+#include "quantities/si.hpp"
+#include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
 

@@ -1,3 +1,4 @@
+Ôªø
 #pragma once
 
 #include "gmock/gmock.h"
@@ -10,22 +11,16 @@ class MockFlightPlan : public FlightPlan {
  public:
   MockFlightPlan() : FlightPlan() {}
 
-  MOCK_CONST_METHOD0(number_of_manúuvres, int());
-  MOCK_CONST_METHOD1(GetManúuvre, NavigationManúuvre const& (int const index));
+  MOCK_CONST_METHOD0(number_of_man≈ìuvres, int());
+  MOCK_CONST_METHOD1(GetMan≈ìuvre, NavigationMan≈ìuvre const& (int const index));
 
   MOCK_METHOD0(RemoveLast, void());
 
   MOCK_CONST_METHOD1(AppendConstRef, bool(Burn const& burn));
   MOCK_CONST_METHOD1(ReplaceLastConstRef, bool(Burn const& burn));
 
-  //TODO(phl):In the .cpp
-  bool Append(Burn burn) {
-    return AppendConstRef(burn);
-  }
-
-  bool ReplaceLast(Burn burn) {
-    return ReplaceLastConstRef(burn);
-  }
+  bool Append(Burn burn);
+  bool ReplaceLast(Burn burn);
 
   MOCK_METHOD1(SetFinalTime, bool(Instant const& final_time));
 

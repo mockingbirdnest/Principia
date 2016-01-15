@@ -916,10 +916,10 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
 }
 
 TEST_F(InterfaceTest, FlightPlan) {
-  Burn burn = {/*thrust_in_kilonewtons=*/1, 
+  Burn burn = {/*thrust_in_kilonewtons=*/1,
                /*specific_impulse_in_seconds_g0=*/2,
-               /*frame=*/{/*extension=*/6000, /*centre=*/kCelestialIndex}, 
-               /*initial_time=*/3, 
+               /*frame=*/{/*extension=*/6000, /*centre=*/kCelestialIndex},
+               /*initial_time=*/3,
                /*delta_v=*/{4, 5, 6}};
   StrictMock<MockVessel> vessel;
   StrictMock<MockFlightPlan> flight_plan;

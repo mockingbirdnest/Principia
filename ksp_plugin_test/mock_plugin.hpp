@@ -69,9 +69,9 @@ class MockPlugin : public Plugin {
                          Index const celestial_index));
 
   MOCK_CONST_METHOD3(CreateFlightPlan,
-                     void (GUID const& vessel_guid,
-                           Instant const& final_time,
-                           Mass const& initial_mass));
+                     void(GUID const& vessel_guid,
+                          Instant const& final_time,
+                          Mass const& initial_mass));
 
   MOCK_CONST_METHOD2(
       RenderedVesselTrajectory,

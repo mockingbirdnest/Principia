@@ -5,7 +5,6 @@
 namespace principia {
 namespace testing_utilities {
 
-// Returns a bogus not-null value of the right type.  Dereferencing it is UB.
 template<typename T>
 not_null<T> make_not_null() {
   return reinterpret_cast<T>(0xDEADBEEF);
