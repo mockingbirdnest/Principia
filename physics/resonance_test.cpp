@@ -160,9 +160,9 @@ class ResonanceTest : public ::testing::Test {
     }
     std::ofstream file;
     file.open(name + "_" + purpose + ".wl");
-    file << mathematica::Assign("q", displacements);
-    file << mathematica::Assign("qSI", unitless_displacements);
-    file << mathematica::Assign("t", times);
+    file << mathematica::Assign(name + purpose + "q", displacements);
+    file << mathematica::Assign(name + purpose + "qSI", unitless_displacements);
+    file << mathematica::Assign(name + purpose + "t", times);
     file.close();
   }
 
@@ -254,30 +254,17 @@ class ResonanceTest : public ::testing::Test {
 };
 
 
-TEST_F(ResonanceTest, StockJool) {
+TEST_F(ResonanceTest, Stock) {
   ComputeStockOrbits();
   auto ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris.Prolong(reference_);
   LogPeriods(ephemeris);
-  LogEphemeris(ephemeris, /*reference=*/true, "stock_jool");
+  LogEphemeris(ephemeris, /*reference=*/true, "stock");
   // where is thy sting
   ephemeris.Prolong(long_time_);
 }
 
-TEST_F(ResonanceTest, FixedVallAnomaly) {
-  FixVallMeanAnomaly();
-  ComputeStockOrbits();
-  UseStockMeanMotions();
-  auto ephemeris = MakeEphemeris(StockInitialStates());
-  ephemeris.Prolong(reference_);
-  LogPeriods(ephemeris);
-  LogEphemeris(ephemeris, /*reference=*/true, "fixed_vall_anomaly_jool");
-  ephemeris.Prolong(long_time_);
-  ephemeris.Prolong(comparison_);
-  LogEphemeris(ephemeris, /*reference=*/false, "fixed_vall_anomaly_jool");
-}
-
-TEST_F(ResonanceTest, Barycentric) {
+TEST_F(ResonanceTest, Corrected) {
   ComputeStockOrbits();
   UseStockMeanMotions();
 
@@ -331,10 +318,10 @@ TEST_F(ResonanceTest, Barycentric) {
   auto ephemeris = MakeEphemeris(initial_states);
   ephemeris.Prolong(reference_);
   LogPeriods(ephemeris);
-  LogEphemeris(ephemeris, /*reference=*/true, "barycentric_jool");
+  LogEphemeris(ephemeris, /*reference=*/true, "corrected");
   ephemeris.Prolong(long_time_);
   ephemeris.Prolong(comparison_);
-  LogEphemeris(ephemeris, /*reference=*/false, "barycentric_jool");
+  LogEphemeris(ephemeris, /*reference=*/false, "corrected");
 }
 
 }  // namespace physics
