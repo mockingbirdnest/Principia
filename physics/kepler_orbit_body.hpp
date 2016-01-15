@@ -101,8 +101,13 @@ KeplerOrbit<Frame>::TestParticleStateVectors(
     GravitationalParameter const& gravitational_parameter) {
   GravitationalParameter const μ = gravitational_parameter;
   double const eccentricity = elements.conic.eccentricity;
-  Length const a = elements.conic.semimajor_axis.value_or(
-      Cbrt(μ / Pow<2>(*elements.conic.mean_motion / Radian)));
+  // Cannot use value_or here, because since the silly language doesn't have
+  // pass-by-name it invokes UB on the default option, and that's UB of the
+  // asserting kind in debug mode.
+  // TODO(egg): consider a VALUE_OR_ELSE macro.
+  Length const a = elements.conic.semimajor_axis
+                       ? *elements.conic.semimajor_axis
+                       : Cbrt(μ / Pow<2>(*elements.conic.mean_motion / Radian));
   Angle const i = elements.inclination;
   Angle const Ω = elements.longitude_of_ascending_node;
   Angle const ω = elements.argument_of_periapsis;
