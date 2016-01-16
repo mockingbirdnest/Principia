@@ -25,12 +25,12 @@ class KeplerOrbit {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  // Exactly one of the |optional|s must be filled in  the given
+  // Exactly one of the |optional|s must be filled in the given
   // |KeplerianElements|.
   KeplerOrbit(MassiveBody const& primary,
               Body const& secondary,
-              Instant const& epoch,
-              KeplerianElements<Frame> const& elements_at_epoch);
+              KeplerianElements<Frame> const& elements_at_epoch,
+              Instant const& epoch);
 
   // The |DegreesOfFreedom| of the secondary minus those of the primary.
   RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
@@ -39,9 +39,9 @@ class KeplerOrbit {
   KeplerianElements<Frame> const& elements_at_epoch() const;
 
  private:
-  GravitationalParameter gravitational_parameter_;
+  GravitationalParameter const gravitational_parameter_;
   KeplerianElements<Frame> elements_at_epoch_;
-  Instant epoch_;
+  Instant const epoch_;
 };
 
 }  // namespace physics

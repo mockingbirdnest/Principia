@@ -76,7 +76,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   elements.longitude_of_ascending_node = 1.752118723367974E+00 * Degree;
   elements.argument_of_periapsis       = 3.551364385683149E+02 * Degree;
   elements.mean_anomaly                = 2.963020996150547E+02 * Degree;
-  KeplerOrbit<ICRFJ2000Equator> moon_orbit(*earth, *moon, date, elements);
+  KeplerOrbit<ICRFJ2000Equator> moon_orbit(*earth, *moon, elements, date);
   Displacement<ICRFJ2000Equator> const expected_displacement(
       { 1.177367562036580E+05 * Kilo(Metre),
        -3.419908628150604E+05 * Kilo(Metre),
@@ -94,10 +94,10 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
 
   elements.semimajor_axis = std::experimental::nullopt;
   elements.mean_motion = 1.511718576836574E-04 * (Degree / Second);
-  moon_orbit = KeplerOrbit<ICRFJ2000Equator>(*earth, *moon, date, elements);
-  EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
+  KeplerOrbit<ICRFJ2000Equator> moon_orbit_n(*earth, *moon, elements, date);
+  EXPECT_THAT(moon_orbit_n.StateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 15));
-  EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
+  EXPECT_THAT(moon_orbit_n.StateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
 }
 

@@ -102,8 +102,8 @@ class ResonanceTest : public ::testing::Test {
           body,
           KeplerOrbit<KSP>(*parents_[body],
                            test_particle_,
-                           game_epoch_,
-                           elements_[body]));
+                           elements_[body],
+                           game_epoch_));
     }
   }
 
@@ -259,8 +259,10 @@ class ResonanceTest : public ::testing::Test {
 
         std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
-    orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_, *jool_, game_epoch_,
-                                           elements_[jool_]));
+    orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_,
+                                           *jool_,
+                                           elements_[jool_],
+                                           game_epoch_));
 
 
 
@@ -288,8 +290,8 @@ class ResonanceTest : public ::testing::Test {
           inner_system_barycentre.Get() +
               id(KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
                                   *moon,
-                                  game_epoch_,
-                                  elements_[moon]).StateVectors(game_epoch_)));
+                                  elements_[moon],
+                                  game_epoch_).StateVectors(game_epoch_)));
       inner_system_parameter += moon->gravitational_parameter();
       inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
                                   moon->gravitational_parameter());

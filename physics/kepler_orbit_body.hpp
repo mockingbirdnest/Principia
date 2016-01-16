@@ -21,8 +21,8 @@ template<typename Frame>
 KeplerOrbit<Frame>::KeplerOrbit(
     MassiveBody const& primary,
     Body const& secondary,
-    Instant const& epoch,
-    KeplerianElements<Frame> const& elements_at_epoch)
+    KeplerianElements<Frame> const& elements_at_epoch,
+    Instant const& epoch)
     : gravitational_parameter_(
           primary.gravitational_parameter() +
           (secondary.is_massless()
@@ -38,8 +38,8 @@ KeplerOrbit<Frame>::KeplerOrbit(
     Length const& a = *elements_at_epoch_.semimajor_axis;
     elements_at_epoch_.mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
   } else {
-    auto const n = *elements_at_epoch_.mean_motion / Radian;
-    elements_at_epoch_.semimajor_axis = Cbrt(μ / Pow<2>(n));
+    AngularFrequency const& n = *elements_at_epoch_.mean_motion;
+    elements_at_epoch_.semimajor_axis = Cbrt(μ / Pow<2>(n / Radian));
   }
 }
 
