@@ -10,8 +10,8 @@ namespace principia {
 
 using geometry::Bivector;
 using numerics::Bisect;
-using quantities::Pow;
 using quantities::Cbrt;
+using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Time;
 

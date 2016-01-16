@@ -1,13 +1,15 @@
-﻿#include <map>
+﻿
+#include <map>
+#include <string>
 #include <vector>
 
-#include "physics/kepler_orbit.hpp"
-#include "rigid_motion.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "rigid_motion.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -23,12 +25,11 @@ using testing_utilities::RelativeError;
 
 namespace physics {
 
-#if !defined(_DEBUG)
-
 class ResonanceTest : public ::testing::Test {
  protected:
-  using KSP =
-      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+  using KSP = Frame<serialization::Frame::TestTag,
+                    serialization::Frame::TEST,
+                    /*frame_is_inertial=*/true>;
 
   // Gravitational parameters from the KSP wiki.
   ResonanceTest()
@@ -83,6 +84,8 @@ class ResonanceTest : public ::testing::Test {
     for (auto const moon : joolian_moons_) {
       parents_.emplace(moon, jool_);
     }
+    // This test is mostly a tool for investigating orbit stability, so we want
+    // log.
     google::LogToStderr();
   }
 
@@ -90,7 +93,7 @@ class ResonanceTest : public ::testing::Test {
     // NOTE(egg): In the stock game, this is 0.9 rad.  This is very close to an
     // unstable resonance, and as such no interpretation of the orbital elements
     // will make the system stable for any reasonable length of time.  We make
-    // this a stable resonance instead.
+    // this a potentially stable resonance instead.
     elements_[vall_].mean_anomaly = 0 * Radian;
   }
 
@@ -135,19 +138,20 @@ class ResonanceTest : public ::testing::Test {
   }
 
   void LogEphemeris(Ephemeris<KSP> const& ephemeris,
-                    bool reference,
-                    std::string name) {
+                    bool const reference,
+                    std::string const& name) {
     Instant const begin = reference ? game_epoch_ : long_time_;
     Instant const end = reference ? reference_ : comparison_;
     std::string const purpose = reference ? "reference" : "comparison";
     // Mathematica tends to be slow when dealing with quantities, so we give
     // everything in SI units.
     std::vector<double> times;
+    // Indexed chronologically, then by body.
     std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
     for (Instant t = begin; t < end; t += 45 * Minute) {
-      auto const position = [&ephemeris, t](
-          not_null<MassiveBody const*> body) {
-        return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
+      auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {
+        return ephemeris.trajectory(body)->
+            EvaluatePosition(t, /*hint=*/nullptr);
       };
 
       times.emplace_back((t - game_epoch_) / Second);
@@ -182,24 +186,22 @@ class ResonanceTest : public ::testing::Test {
       return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
     };
     auto const barycentre = [this, &position](Instant const& t) {
-      return Barycentre<Position<KSP>, Mass>(
-          {position(jool_, t), position(laythe_, t), position(vall_, t),
-           position(tylo_, t), position(bop_, t), position(pol_, t)},
-          {jool_->mass(), laythe_->mass(), vall_->mass(), tylo_->mass(),
-           bop_->mass(), pol_->mass()});
+      BarycentreCalculator<Position<KSP>, Mass> result;
+      for (auto const body : jool_system_) {
+        result.Add(position(body, t), body->mass());
+      }
+      return result.Get();
     };
-    auto const barycentric_position = [this, &barycentre, &position,
-                                       &ephemeris](
-        not_null<MassiveBody const*> body, Instant const& t) {
+    auto const barycentric_position =
+        [this, &barycentre, &ephemeris, &position](
+        not_null<MassiveBody const*> body,
+        Instant const& t) {
       return position(body, t) - barycentre(t);
     };
 
-    LOG(INFO) << barycentric_position(laythe_, game_epoch_);
-    LOG(INFO) << barycentric_position(vall_, game_epoch_);
-    LOG(INFO) << barycentric_position(tylo_, game_epoch_);
     for (auto const moon : {laythe_, vall_, tylo_}) {
-      auto const moon_y = [&barycentric_position, moon,
-                           this](Instant const& t) {
+      auto const moon_y =
+          [this, &barycentric_position, moon](Instant const& t) {
         return barycentric_position(moon, t).coordinates().y;
       };
 
@@ -227,7 +229,7 @@ class ResonanceTest : public ::testing::Test {
         // The |i|th orbit ends between t1 and t1 - Δt.
       }
       Time const actual_period =
-          (Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
+          (Bisect(moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
       Time const expected_period = (2 * π * Radian) /
                                    *elements_[moon].mean_motion;
       LOG(INFO) << "actual period   : " << actual_period;
@@ -239,12 +241,12 @@ class ResonanceTest : public ::testing::Test {
 
   Ephemeris<KSP> MakeEphemeris(std::vector<DegreesOfFreedom<KSP>> states) {
     return Ephemeris<KSP>(
-      std::move(owned_bodies_),
-      states,
-      game_epoch_,
-      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-      45 * Minute,
-      5 * Milli(Metre));
+               std::move(owned_bodies_),
+               states,
+               game_epoch_,
+               McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+               45 * Minute,
+               5 * Milli(Metre));
   }
 
   // Interpreting the elements as Jacobi coordinates in the Jool system.
@@ -253,7 +255,8 @@ class ResonanceTest : public ::testing::Test {
     // centred and immobile, for building the Jool system in Jacobi coordinates.
     // We only use this frame at |game_epoch_|.
     using JoolCentric = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST1, false>;
+                              serialization::Frame::TEST1,
+                              /*is_inertial=*/false>;
     // These coordinate systems have the same axes.
     auto const id = OrthogonalMap<KSP, JoolCentric>::Identity();
 
@@ -263,8 +266,6 @@ class ResonanceTest : public ::testing::Test {
                                            *jool_,
                                            elements_[jool_],
                                            game_epoch_));
-
-
 
     // The barycentre of the bodies of the Jool system considered so far.
     BarycentreCalculator<DegreesOfFreedom<JoolCentric>, GravitationalParameter>
@@ -307,10 +308,12 @@ class ResonanceTest : public ::testing::Test {
     RigidMotion<JoolCentric, KSP> const to_heliocentric(
         RigidTransformation<JoolCentric, KSP>(
             inner_system_barycentre.Get().position(),
-            jool_barycentre_initial_state.position(), id.Inverse()),
+            jool_barycentre_initial_state.position(),
+            id.Inverse()),
         AngularVelocity<JoolCentric>(),
-        /*velocity_of_to_frame_origin=*/inner_system_barycentre.Get()
-                .velocity() - id(jool_barycentre_initial_state.velocity()));
+        /*velocity_of_to_frame_origin=*/
+            inner_system_barycentre.Get().velocity() -
+            id(jool_barycentre_initial_state.velocity()));
 
     // The Sun and Jool.
     std::vector<DegreesOfFreedom<KSP>> initial_states = {
@@ -323,8 +326,13 @@ class ResonanceTest : public ::testing::Test {
   }
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> owned_bodies_;
-  not_null<MassiveBody const *> const sun_, jool_, laythe_, vall_, tylo_, bop_,
-      pol_;
+  not_null<MassiveBody const*> const sun_;
+  not_null<MassiveBody const*> const jool_;
+  not_null<MassiveBody const*> const laythe_;
+  not_null<MassiveBody const*> const vall_;
+  not_null<MassiveBody const*> const tylo_;
+  not_null<MassiveBody const*> const bop_;
+  not_null<MassiveBody const*> const pol_;
   std::vector<not_null<MassiveBody const*>> bodies_;
   std::vector<not_null<MassiveBody const*>> jool_system_;
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
@@ -350,6 +358,8 @@ class ResonanceTest : public ::testing::Test {
 };
 
 using ResonanceDeathTest = ResonanceTest;
+
+#if !defined(_DEBUG)
 
 TEST_F(ResonanceDeathTest, Stock) {
   ComputeStockOrbits();
