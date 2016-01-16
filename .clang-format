@@ -1,0 +1,18 @@
+# Start from Google style.
+BasedOnStyle: Google
+
+# Make sure we use C++11 style.
+Standard: Cpp11
+
+# Bind pointers and references to the type, even if the file is misformatted.
+DerivePointerAlignment: false
+
+# Don't bin-pack arguments and parameters.
+BinPackArguments: false
+BinPackParameters: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# Avoid single-line constructs.
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
