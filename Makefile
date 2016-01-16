@@ -150,8 +150,11 @@ IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py --nosafe_headers
 
-iwyu: %.cpp
+iwyu_generated_mappings:
+	./generate_no_include_bodies_iwyu_mapping.sh
+
+iwyu iwyu_generated_mappings: %.cpp
 	$(IWYU) $(CXXFLAGS) $< $(IWYU_FLAGS) | FIX_INCLUDES
 
-iwyu: %_test.cpp
+iwyu iwyu_generated_mappings: %_test.cpp
 	$(IWYU) $(CXXFLAGS) $< $(IWYU_FLAGS) -Xiwyu --check_also=$*_body.hpp | FIX_INCLUDES
