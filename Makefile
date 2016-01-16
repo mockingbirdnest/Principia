@@ -1,6 +1,5 @@
 CXX := clang++
 
-
 VERSION_HEADER := base/version.hpp
 
 CPP_SOURCES := ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp 
@@ -145,3 +144,14 @@ clean_test-%:
 clean:  $(addprefix clean_test-,$(TEST_DIRS))
 	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
 	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_test_objects)
+
+##### IWYU #####
+IWYU := deps/include-what-you-use/bin/include-what-you-use
+IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
+FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py --nosafe_headers
+
+iwyu: %.cpp
+	$(IWYU) $(CXXFLAGS) $< $(IWYU_FLAGS) | FIX_INCLUDES
+
+iwyu: %_test.cpp
+	$(IWYU) $(CXXFLAGS) $< $(IWYU_FLAGS) -Xiwyu --check_also=$*_body.hpp | FIX_INCLUDES
