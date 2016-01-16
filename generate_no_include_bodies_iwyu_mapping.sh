@@ -1,0 +1,1 @@
+ls */*_body.hpp | awk -f generate_no_include_bodies_iwyu_mapping.awk > no_include_bodies.imp
