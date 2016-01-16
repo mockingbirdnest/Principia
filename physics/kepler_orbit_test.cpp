@@ -38,6 +38,19 @@ class KeplerOrbitTest : public ::testing::Test {};
 // A = 3.870051955415476E+05 AD= 4.054737084971346E+05 PR= 2.381395621619845E+06
 // X = 1.177367562036580E+05 Y =-3.419908628150604E+05 Z =-1.150659799281941E+05
 // VX= 9.745048087261129E-01 VY= 3.500672337210811E-01 VZ= 1.066306010215636E-01
+// Symbol meaning
+//   EC     Eccentricity, e
+//   QR     Periapsis distance, q (km)
+//   IN     Inclination w.r.t xy-plane, i (degrees)
+//   OM     Longitude of Ascending Node, OMEGA, (degrees)
+//   W      Argument of Perifocus, w (degrees)
+//   Tp     Time of periapsis (Julian day number)
+//   N      Mean motion, n (degrees/sec)
+//   MA     Mean anomaly, M (degrees)
+//   TA     True anomaly, nu (degrees)
+//   A      Semi-major axis, a (km)
+//   AD     Apoapsis distance (km)
+//   PR     Sidereal orbit period (sec)
 
 TEST_F(KeplerOrbitTest, EarthMoon) {
   SolarSystem<ICRFJ2000Equator> solar_system;
@@ -57,8 +70,8 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
           4.0350323550225975E+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second)), 1));
   Instant const date = JulianDate(2457397.500000000);
   KeplerianElements<ICRFJ2000Equator> elements;
-  elements.conic.eccentricity          = 4.772161502830355E-02;
-  elements.conic.semimajor_axis        = 3.870051955415476E+05 * Kilo(Metre);
+  elements.eccentricity                = 4.772161502830355E-02;
+  elements.semimajor_axis              = 3.870051955415476E+05 * Kilo(Metre);
   elements.inclination                 = 1.842335956339145E+01 * Degree;
   elements.longitude_of_ascending_node = 1.752118723367974E+00 * Degree;
   elements.argument_of_periapsis       = 3.551364385683149E+02 * Degree;
@@ -76,11 +89,11 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(expected_displacement, 13));
   EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
-  EXPECT_THAT(moon_orbit.mean_motion(),
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().mean_motion,
               AlmostEquals(1.511718576836574E-04 * (Degree / Second), 2));
 
-  elements.conic.semimajor_axis = std::experimental::nullopt;
-  elements.conic.mean_motion = 1.511718576836574E-04 * (Degree / Second);
+  elements.semimajor_axis = std::experimental::nullopt;
+  elements.mean_motion = 1.511718576836574E-04 * (Degree / Second);
   moon_orbit = KeplerOrbit<ICRFJ2000Equator>(*earth, *moon, date, elements);
   EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 15));

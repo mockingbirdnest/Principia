@@ -8,15 +8,12 @@
 namespace principia {
 namespace physics {
 
-struct Conic {
-  double eccentricity;
-  std::experimental::optional<Length> semimajor_axis;
-  std::experimental::optional<AngularFrequency> mean_motion;
-};
 
 template<typename Frame>
 struct KeplerianElements {
-  Conic conic;
+  double eccentricity;
+  std::experimental::optional<Length> semimajor_axis;
+  std::experimental::optional<AngularFrequency> mean_motion;
   Angle inclination;
   Angle longitude_of_ascending_node;
   Angle argument_of_periapsis;
@@ -28,6 +25,8 @@ class KeplerOrbit {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
+  // Exactly one of the |optional|s must be filled in  the given
+  // |KeplerianElements|.
   KeplerOrbit(MassiveBody const& primary,
               Body const& secondary,
               Instant const& epoch,
@@ -35,22 +34,12 @@ class KeplerOrbit {
 
   // The |DegreesOfFreedom| of the secondary minus those of the primary.
   RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
-  // The |DegreesOfFreedom| of the secondary minus those of the barycentre of
-  // the primary and secondary.
-  RelativeDegreesOfFreedom<Frame> BarycentricStateVectors(
-      Instant const& t) const;
 
-  AngularFrequency mean_motion() const;
+  // All |optional|s are filled in the result.
+  KeplerianElements<Frame> const& elements_at_epoch() const;
 
  private:
-  // The state vectors of a massless body orbiting a body with the given
-  // |gravitational_parameter| in an orbit with the given |elements|.
-  static RelativeDegreesOfFreedom<Frame> TestParticleStateVectors(
-      KeplerianElements<Frame> const& elements,
-      GravitationalParameter const& gravitational_parameter);
-
-  GravitationalParameter primary_gravitational_parameter_;
-  GravitationalParameter secondary_gravitational_parameter_;
+  GravitationalParameter gravitational_parameter_;
   KeplerianElements<Frame> elements_at_epoch_;
   Instant epoch_;
 };

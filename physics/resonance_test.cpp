@@ -43,38 +43,38 @@ class ResonanceTest : public ::testing::Test {
         jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
         joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {
     // Elements from the KSP wiki.
-    elements_[jool_].conic.eccentricity = 0.05;
-    elements_[jool_].conic.semimajor_axis = 68'773'560'320 * Metre;
+    elements_[jool_].eccentricity = 0.05;
+    elements_[jool_].semimajor_axis = 68'773'560'320 * Metre;
     elements_[jool_].inclination = 1.304 * Degree;
     elements_[jool_].longitude_of_ascending_node = 52 * Degree;
     elements_[jool_].argument_of_periapsis =  0 * Degree;
     elements_[jool_].mean_anomaly = 0.1 * Radian;
-    elements_[laythe_].conic.eccentricity = 0;
-    elements_[laythe_].conic.semimajor_axis = 27'184'000 * Metre;
+    elements_[laythe_].eccentricity = 0;
+    elements_[laythe_].semimajor_axis = 27'184'000 * Metre;
     elements_[laythe_].inclination = 0 * Degree;
     elements_[laythe_].longitude_of_ascending_node = 0 * Degree;
     elements_[laythe_].argument_of_periapsis = 0 * Degree;
     elements_[laythe_].mean_anomaly = 3.14 * Radian;
-    elements_[vall_].conic.eccentricity = 0;
-    elements_[vall_].conic.semimajor_axis = 43'152'000 * Metre;
+    elements_[vall_].eccentricity = 0;
+    elements_[vall_].semimajor_axis = 43'152'000 * Metre;
     elements_[vall_].inclination = 0 * Degree;
     elements_[vall_].longitude_of_ascending_node = 0 * Degree;
     elements_[vall_].argument_of_periapsis = 0 * Degree;
     elements_[vall_].mean_anomaly = 0.9 * Radian;
-    elements_[tylo_].conic.eccentricity = 0;
-    elements_[tylo_].conic.semimajor_axis = 68'500'000 * Metre;
+    elements_[tylo_].eccentricity = 0;
+    elements_[tylo_].semimajor_axis = 68'500'000 * Metre;
     elements_[tylo_].inclination = 0.025 * Degree;
     elements_[tylo_].longitude_of_ascending_node = 0 * Degree;
     elements_[tylo_].argument_of_periapsis = 0 * Degree;
     elements_[tylo_].mean_anomaly = 3.14 * Radian;
-    elements_[bop_].conic.eccentricity = 0.24;
-    elements_[bop_].conic.semimajor_axis = 128'500'000 * Metre;
+    elements_[bop_].eccentricity = 0.24;
+    elements_[bop_].semimajor_axis = 128'500'000 * Metre;
     elements_[bop_].inclination = 15 * Degree;
     elements_[bop_].longitude_of_ascending_node = 10 * Degree;
     elements_[bop_].argument_of_periapsis = 25 * Degree;
     elements_[bop_].mean_anomaly = 0.9 * Radian;
-    elements_[pol_].conic.eccentricity = 0.17;
-    elements_[pol_].conic.semimajor_axis = 179'890'000 * Metre;
+    elements_[pol_].eccentricity = 0.17;
+    elements_[pol_].semimajor_axis = 179'890'000 * Metre;
     elements_[pol_].inclination = 4.25 * Degree;
     elements_[pol_].longitude_of_ascending_node = 2 * Degree;
     elements_[pol_].argument_of_periapsis = 15 * Degree;
@@ -111,8 +111,9 @@ class ResonanceTest : public ::testing::Test {
   // of keeping the semimajor axis).
   void UseStockMeanMotions() {
     for (auto const body : jool_system_) {
-      elements_[body].conic.semimajor_axis = std::experimental::nullopt;
-      elements_[body].conic.mean_motion = stock_orbits_.at(body).mean_motion();
+      elements_[body].semimajor_axis = std::experimental::nullopt;
+      elements_[body].mean_motion =
+          stock_orbits_.at(body).elements_at_epoch().mean_motion;
     }
   }
 
@@ -228,7 +229,7 @@ class ResonanceTest : public ::testing::Test {
       Time const actual_period =
           (Bisect( moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
       Time const expected_period = (2 * π * Radian) /
-                                   *elements_[moon].conic.mean_motion;
+                                   *elements_[moon].mean_motion;
       LOG(INFO) << "actual period   : " << actual_period;
       LOG(INFO) << "expected period : " << expected_period;
       LOG(INFO) << "error           :"
@@ -367,14 +368,14 @@ TEST_F(ResonanceTest, Corrected) {
 
   // Instead of putting the moons in a 1:2:4 resonance, put them in a
   // 1:4/φ:16/φ^2 dissonance.
-  elements_[vall_].conic.mean_motion =
-      *elements_[laythe_].conic.mean_motion / 2.47214;
-  *elements_[tylo_].conic.mean_motion =
-      *elements_[vall_].conic.mean_motion / 2.47214;
+  elements_[vall_].mean_motion =
+      *elements_[laythe_].mean_motion / 2.47214;
+  *elements_[tylo_].mean_motion =
+      *elements_[vall_].mean_motion / 2.47214;
 
   // Put Bop somewhere further away so it's not kicked out.  A 2:3 mean-motion
   // resonance with Pol works well.
-  *elements_[bop_].conic.mean_motion = *elements_[pol_].conic.mean_motion / 1.5;
+  *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 1.5;
 
   auto ephemeris = MakeEphemeris(JacobiInitialStates());
   ephemeris.Prolong(reference_);
