@@ -167,7 +167,7 @@ IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
 
 iwyu_generate_mappings:
-	{ls */*_body.hpp && ls */*.generated.h} | awk -f iwyu_generate_mappings.awk > iwyu_generated_mappings.imp
+	{ ls */*_body.hpp && ls */*.generated.h; } | awk -f iwyu_generate_mappings.awk > iwyu_generated_mappings.imp
 
 %.cpp!!iwyu: iwyu_generate_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
