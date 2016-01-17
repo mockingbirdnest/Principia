@@ -1,4 +1,6 @@
-#pragma once
+
+#ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
 
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
@@ -60,3 +62,5 @@ class DynamicFrame {
 }  // namespace principia
 
 #include "physics/dynamic_frame_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
