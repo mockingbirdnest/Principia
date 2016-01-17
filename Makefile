@@ -157,7 +157,9 @@ compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
 
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
-IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
+IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
+IWYU_CHECK_ALL_HPP := -Xiwyu --check_also=*/*.hpp
+IWYU_NOSAFE_HEADERS := --nosafe_headers
 REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f > $$f.nobom; mv $$f.nobom $$f; done
 RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
@@ -173,15 +175,6 @@ no_include_bodies.imp:
 	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*.iwyu) | cat
 	$(RESTORE_BOM)
 
-%.cpp!!iwyu_unsafe: no_include_bodies.imp
-	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $*.iwyu | $(IWYU_CHECK_ERROR)
-	$(FIX_INCLUDES) --nosafe_headers < $*.iwyu | cat
-	rm $*.iwyu
-
 iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
-	rm no_include_bodies.imp
-	rm */*.iwyu
-
-iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
 	rm no_include_bodies.imp
 	rm */*.iwyu
