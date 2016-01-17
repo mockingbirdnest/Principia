@@ -149,14 +149,20 @@ clean:  $(addprefix clean_test-,$(TEST_DIRS))
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
-FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py --nosafe_headers
+FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
 IWYU_TARGETS := $(wildcard */*.cpp)
 
 no_include_bodies.imp:
 	./generate_no_include_bodies_iwyu_mapping.sh
 
-iwyu!!%.cpp!!iwyu: no_include_bodies.imp
+%.cpp!!iwyu: no_include_bodies.imp
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp 2>&1 | $(FIX_INCLUDES) | cat
 
-iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(addprefix iwyu!!,$(IWYU_TARGETS))))
+%.cpp!!iwyu_unsafe: no_include_bodies.imp
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp 2>&1 | $(FIX_INCLUDES) --nosafe_headers | cat
+
+iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
+	rm no_include_bodies.imp
+
+iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
 	rm no_include_bodies.imp
