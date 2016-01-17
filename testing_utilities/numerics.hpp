@@ -47,6 +47,11 @@ Scalar AbsoluteError(
     geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& expected,
     geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& actual);
 
+// Uses the underlying multivector.
+template<typename Scalar>
+Scalar AbsoluteError(geometry::Point<Scalar> const& expected,
+                     geometry::Point<Scalar> const& actual);
+
 template<typename T, typename NormType>
 double RelativeError(T const& expected, T const& actual,
                      NormType (T::* norm)() const);

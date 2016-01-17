@@ -21,7 +21,9 @@ Argument Bisect(Function f,
   Value const zero{};
   Value f_upper = f(upper_bound);
   Value f_lower = f(lower_bound);
-  CHECK(f_lower > zero &&  zero > f_upper || f_lower < zero &&  zero < f_upper);
+  CHECK(f_lower > zero && zero > f_upper || f_lower < zero && zero < f_upper)
+      << lower_bound << ": " << f_lower << ", "
+      << upper_bound << ": " << f_upper;
   Argument lower = lower_bound;
   Argument upper = upper_bound;
   for (;;) {

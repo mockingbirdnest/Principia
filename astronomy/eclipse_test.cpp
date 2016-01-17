@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "numerics/root_finders.hpp"
 #include "physics/solar_system.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -18,6 +19,7 @@ using astronomy::ICRFJ2000Equator;
 using geometry::JulianDate;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
+using numerics::Bisect;
 using physics::Ephemeris;
 using quantities::ArcCos;
 using quantities::si::Day;
@@ -33,6 +35,8 @@ using ::testing::Lt;
 namespace physics {
 
 namespace {
+
+Time interval = 10 * Minute;
 
 Sign const U14 = Sign(1);
 Sign const U23 = Sign(-1);
@@ -57,81 +61,145 @@ class EclipseTest : public testing::Test {
         45 * Minute, 5 * Milli(Metre));
   }
 
+  // A positive |time_error| means that the actual contact happens after
+  // |current_time|.
   void CheckLunarUmbralEclipse(Instant const& current_time,
                                Sign const moon_offset_sign,
-                               Angle const angular_error) {
-    ephemeris_->Prolong(current_time);
+                               Angle const& angular_error,
+                               Time const& time_error) {
+    ephemeris_->Prolong(current_time + interval);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
-    auto const q_sun = ephemeris_->trajectory(sun)
-                           ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_moon = ephemeris_->trajectory(moon)
-                            ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_earth = ephemeris_->trajectory(earth)
-                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
-
-    // Checking body angles at the target time.
     // Angle formed by a right circular cone with sides defined by tangent lines
     // between Sun and Earth, and axis running through the centers of each.
-    auto const umbral_half_aperture =
-        ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
-    auto const apex_of_moon_locus_at_umbral_contact =
-        q_earth +
-        Normalize(q_earth - q_sun) * (r_earth + moon_offset_sign * r_moon) /
-            Sin(umbral_half_aperture);
-    // Angle between Earth and Moon as seen at
-    // apex_of_moon_locus_at_umbral_contact.
-    auto const earth_moon_angle =
-        ArcCos(InnerProduct(apex_of_moon_locus_at_umbral_contact - q_earth,
-                            apex_of_moon_locus_at_umbral_contact - q_moon) /
-               ((apex_of_moon_locus_at_umbral_contact - q_moon).Norm() *
-                (apex_of_moon_locus_at_umbral_contact - q_earth).Norm()));
+    auto const umbral_half_aperture = [this, earth, moon, sun](
+        Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      return ArcSin((r_sun - r_earth) / (q_sun - q_earth).Norm());
+    };
+
+    auto const earth_moon_angle = [this,
+                                   earth,
+                                   moon,
+                                   moon_offset_sign,
+                                   sun,
+                                   umbral_half_aperture](Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const apex_of_moon_locus_at_umbral_contact =
+          q_earth +
+          Normalize(q_earth - q_sun) * (r_earth + moon_offset_sign * r_moon) /
+              Sin(umbral_half_aperture(t));
+      // Angle between Earth and Moon as seen at
+      // |apex_of_moon_locus_at_umbral_contact|.
+      return ArcCos(
+          InnerProduct(apex_of_moon_locus_at_umbral_contact - q_earth,
+                       apex_of_moon_locus_at_umbral_contact - q_moon) /
+          ((apex_of_moon_locus_at_umbral_contact - q_moon).Norm() *
+           (apex_of_moon_locus_at_umbral_contact - q_earth).Norm()));
+    };
+
     // We are at the desired contact if the angle between Earth and Moon from
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the umbra (Earth-Sun cone).
-    EXPECT_THAT(AbsoluteError(umbral_half_aperture, earth_moon_angle),
+    EXPECT_THAT(AbsoluteError(umbral_half_aperture(current_time),
+                              earth_moon_angle(current_time)),
                 AllOf(Lt(angular_error), Gt(0.5 * angular_error)))
-        << NAMED(umbral_half_aperture) << ", " << NAMED(earth_moon_angle)
-        << ", " << NAMED(current_time);
+        << NAMED(umbral_half_aperture(current_time)) << ", "
+        << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
+
+    Instant const& actual_contact_time = Bisect(
+        [earth_moon_angle, umbral_half_aperture](Instant const& t) {
+          return umbral_half_aperture(t) - earth_moon_angle(t);
+        },
+        current_time - interval,
+        current_time + interval);
+    EXPECT_EQ(Sign(actual_contact_time - current_time),
+              Sign(time_error));
+    EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
+                AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
+        << NAMED(actual_contact_time) << ", " << NAMED(current_time);
   }
 
+  // A positive |time_error| means that the actual contact happens after
+  // |current_time|.
   void CheckLunarPenumbralEclipse(Instant const& current_time,
                                   Sign const moon_offset_sign,
-                                  Angle const angular_error) {
-    ephemeris_->Prolong(current_time);
+                                  Angle const& angular_error,
+                                  Time const& time_error) {
+    ephemeris_->Prolong(current_time + interval);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
-    auto const q_sun = ephemeris_->trajectory(sun)
-                           ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_moon = ephemeris_->trajectory(moon)
-                            ->EvaluatePosition(current_time, /*hint=*/nullptr);
-    auto const q_earth = ephemeris_->trajectory(earth)
-                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
+    auto const penumbral_half_aperture = [this, earth, moon, sun](
+        Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      return ArcSin((r_sun + r_earth) / (q_sun - q_earth).Norm());
+    };
 
-    auto const penumbral_half_aperture =
-        ArcSin((r_sun + r_earth) / (q_sun - q_earth).Norm());
-    auto const apex_of_moon_locus_at_penumbral_contact =
-        q_earth +
-        Normalize(q_sun - q_earth) * (r_earth + moon_offset_sign * r_moon) /
-            Sin(penumbral_half_aperture);
-    // Angle between Earth and Moon as seen at
-    // apex_of_moon_locus_at_penumbral_contact.
-    auto const earth_moon_angle =
-        ArcCos(InnerProduct(apex_of_moon_locus_at_penumbral_contact - q_earth,
-                            apex_of_moon_locus_at_penumbral_contact - q_moon) /
-               ((apex_of_moon_locus_at_penumbral_contact - q_moon).Norm() *
-                (apex_of_moon_locus_at_penumbral_contact - q_earth).Norm()));
+    auto const earth_moon_angle = [this,
+                                   earth,
+                                   moon,
+                                   moon_offset_sign,
+                                   sun,
+                                   penumbral_half_aperture](Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+
+      auto const apex_of_moon_locus_at_penumbral_contact =
+          q_earth +
+          Normalize(q_sun - q_earth) * (r_earth + moon_offset_sign * r_moon) /
+              Sin(penumbral_half_aperture(t));
+      // Angle between Earth and Moon as seen at
+      // apex_of_moon_locus_at_penumbral_contact.
+      return ArcCos(
+          InnerProduct(apex_of_moon_locus_at_penumbral_contact - q_earth,
+                       apex_of_moon_locus_at_penumbral_contact - q_moon) /
+          ((apex_of_moon_locus_at_penumbral_contact - q_moon).Norm() *
+           (apex_of_moon_locus_at_penumbral_contact - q_earth).Norm()));
+    };
+
     // We are at the desired contact if the angle between Earth and Moon from
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the penumbra.
-    EXPECT_THAT(AbsoluteError(penumbral_half_aperture, earth_moon_angle),
+    EXPECT_THAT(AbsoluteError(penumbral_half_aperture(current_time),
+                              earth_moon_angle(current_time)),
                 AllOf(Lt(angular_error), Gt(0.5 * angular_error)))
-        << NAMED(penumbral_half_aperture) << ", " << NAMED(earth_moon_angle)
-        << ", " << NAMED(current_time);
+        << NAMED(penumbral_half_aperture(current_time)) << ", "
+        << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
+
+    Instant const& actual_contact_time = Bisect(
+        [earth_moon_angle, penumbral_half_aperture](Instant const& t) {
+          return penumbral_half_aperture(t) - earth_moon_angle(t);
+        },
+        current_time - interval,
+        current_time + interval);
+    EXPECT_EQ(Sign(actual_contact_time - current_time),
+              Sign(time_error));
+    EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
+                AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
+        << NAMED(actual_contact_time) << ", " << NAMED(current_time);
   }
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
@@ -151,12 +219,12 @@ TEST_F(EclipseTest, Year1950) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian);
-  CheckLunarUmbralEclipse(U1, U14, 7E-5 * Radian);
-  CheckLunarUmbralEclipse(U2, U23, 2E-4 * Radian);
-  CheckLunarUmbralEclipse(U3, U23, 1E-4 * Radian);
-  CheckLunarUmbralEclipse(U4, U14, 3E-5 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian,  100 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    7E-5 * Radian,  100 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2E-4 * Radian,  330 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    1E-4 * Radian, -270 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-5 * Radian,  -50 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian,  -40 * Second);
 
   // Times are TDB Julian Day for 1950-09-26.
   P1 = JulianDate(2433550.55712016);  // 01:21:43 UT
@@ -166,12 +234,12 @@ TEST_F(EclipseTest, Year1950) {
   U4 = JulianDate(2433550.75144885);  // 06:01:33
   P4 = JulianDate(2433550.800222);    // 07:11:47
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian);
-  CheckLunarUmbralEclipse(U1, U14, 7E-5 * Radian);
-  CheckLunarUmbralEclipse(U2, U23, 2E-4 * Radian);
-  CheckLunarUmbralEclipse(U3, U23, 9E-5 * Radian);
-  CheckLunarUmbralEclipse(U4, U14, 3E-5 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian,  110 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    7E-5 * Radian,  120 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2E-4 * Radian,  220 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    9E-5 * Radian, -150 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-5 * Radian,  -50 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian,  -40 * Second);
 }
 
 TEST_F(EclipseTest, Year1951) {
@@ -179,15 +247,15 @@ TEST_F(EclipseTest, Year1951) {
   auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
-  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian, 140 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian, -90 * Second);
 
   // Times are TDB Julian Day for 1951-09-15.
   P1 = JulianDate(2433904.93736321);  // 10:29:16
   P4 = JulianDate(2433905.1002799);   // 14:23:52
 
-  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian, 130 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian, -80 * Second);
 }
 
 TEST_F(EclipseTest, Year1952) {
@@ -197,10 +265,10 @@ TEST_F(EclipseTest, Year1952) {
   auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
   auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian);
-  CheckLunarUmbralEclipse(U1, U14, 6E-5 * Radian);
-  CheckLunarUmbralEclipse(U4, U14, 4E-5 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian,  120 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    6E-5 * Radian,  270 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    4E-5 * Radian, -210 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian,  -50 * Second);
 
   // Times are TDB Julian Day for 1952-08-05.
   P1 = JulianDate(2434230.22830075);  // P1 = 17:28:13 UT
@@ -208,17 +276,17 @@ TEST_F(EclipseTest, Year1952) {
   U4 = JulianDate(2434230.37606695);  // U4 = 21:01:00
   P4 = JulianDate(2434230.42161093);  // P4 = 22:06:35
 
-  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian);
-  CheckLunarUmbralEclipse(U1, U14, 6E-5 * Radian);
-  CheckLunarUmbralEclipse(U4, U14, 4E-5 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian,  90 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    6E-5 * Radian, 110 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    4E-5 * Radian, -70 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, -50 * Second);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 }
 
-#if 0
+#if 1
 TEST_F(EclipseTest, Year2048) {
   // Times are TDB Julian Day for 2048-01-01.
   auto P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
@@ -228,12 +296,12 @@ TEST_F(EclipseTest, Year2048) {
   auto U4 = JulianDate(2469076.86158778);  // 08:39:33
   auto P4 = JulianDate(2469076.91195815);  // 09:52:05
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian);
-  CheckLunarUmbralEclipse(U1, U14, 2E-4 * Radian);
-  CheckLunarUmbralEclipse(U2, U23, 2E-4 * Radian);
-  CheckLunarUmbralEclipse(U3, U23, 5E-4 * Radian);
-  CheckLunarUmbralEclipse(U4, U14, 3E-4 * Radian);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -270 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2E-4 * Radian, -260 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2E-4 * Radian, -200 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    5E-4 * Radian, -480 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-4 * Radian, -420 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -410 * Second);
 }
 #endif
 
