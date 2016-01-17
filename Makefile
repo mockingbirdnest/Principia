@@ -151,10 +151,11 @@ IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py --nosafe_headers
 IWYU_TARGETS := $(wildcard */*.cpp)
 
-no_include_bodies.imp: generate_no_include_bodies_iwyu_mapping.sh
+no_include_bodies.imp:
 	./generate_no_include_bodies_iwyu_mapping.sh
 
 iwyu!!%.cpp!!iwyu: no_include_bodies.imp
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp 2>&1 | $(FIX_INCLUDES) | cat
 
 iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(addprefix iwyu!!,$(IWYU_TARGETS))))
+	rm no_include_bodies.imp
