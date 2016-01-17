@@ -127,7 +127,7 @@ GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))
 ksp_plugin_test_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp)) $(patsubst %.cpp,%.o,$(wildcard ksp_plugin_test/*.cpp))
-journal_objects = journal/profiles.o, journal/recorder.o
+journal_objects = journal/profiles.o journal/recorder.o
 
 # We need to special-case ksp_plugin_test because it requires object files from ksp_plugin. The other tests don't do this.
 .SECONDEXPANSION:
