@@ -126,12 +126,16 @@ GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gm
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))
-ksp_plugin_test_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp)) $(patsubst %.cpp,%.o,$(wildcard ksp_plugin_test/*.cpp))
+ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
 journal_objects = journal/profiles.o journal/recorder.o
 
-# We need to special-case ksp_plugin_test because it requires object files from ksp_plugin. The other tests don't do this.
+# We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin. The other tests don't do this.
 .SECONDEXPANSION:
-ksp_plugin_test/test: $$(ksp_plugin_test_objects) $$(journal_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+
+.SECONDEXPANSION:
+journal/test: $$(ksp_plugin_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 .SECONDEXPANSION:
@@ -144,7 +148,7 @@ clean_test-%:
 
 clean:  $(addprefix clean_test-,$(TEST_DIRS))
 	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_test_objects)
+	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_objects)
 
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
