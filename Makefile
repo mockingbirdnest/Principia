@@ -151,6 +151,10 @@ clean:  $(addprefix clean_test-,$(TEST_DIRS))
 	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
 	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_objects)
 
+##### EVERYTHING #####
+# Compiles everything, but does not link anything.  Used to check standard compliance on code that we don't want to run on *nix.
+compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
+
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
