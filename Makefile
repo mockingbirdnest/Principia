@@ -166,10 +166,10 @@ FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
 IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
 
-no_include_bodies.imp:
-	./generate_no_include_bodies_iwyu_mapping.sh
+no_include_bodies:
+	ls */*_body.hpp | awk -f generate_no_include_bodies_iwyu_mapping.awk > no_include_bodies.imp
 
-%.cpp!!iwyu: no_include_bodies.imp
+%.cpp!!iwyu: no_include_bodies
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
 	$(REMOVE_BOM) 
 	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*.iwyu) | cat
