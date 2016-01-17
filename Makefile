@@ -159,7 +159,7 @@ compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
 IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
-IWYU_CHECK_ERROR := test ! `(grep ' error: ')`
+IWYU_CHECK_ERROR := test -z $$(grep ' error: ')
 IWYU_TARGETS := $(wildcard */*.cpp)
 
 no_include_bodies.imp:
