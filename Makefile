@@ -159,7 +159,7 @@ compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
 IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
 REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f > $$f.nobom; mv $$f.nobom $$f; done
-RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^$/,"\xef\xbb\xbf");sub(/^.+$/,"\xef\xbb\xbf\n")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
+RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^$/,"\xef\xbb\xbf");sub(/^.+$/,"\xef\xbb\xbf\\n")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
 IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
