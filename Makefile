@@ -13,7 +13,7 @@ GENERATED_SOURCES := journal/profiles.generated.h journal/profiles.generated.cc
 OBJECTS := $(CPP_SOURCES:.cpp=.o)
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
 TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
-TEST_DIRS := base geometry integrators ksp_plugin_test physics quantities testing_utilities numerics
+TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
 TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
 PROJECT_DIR := ksp_plugin_adapter/
