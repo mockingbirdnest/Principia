@@ -36,7 +36,7 @@ namespace physics {
 
 namespace {
 
-Time interval = 10 * Minute;
+Time const bisection_interval = 10 * Minute;
 
 Sign const U14 = Sign(1);
 Sign const U23 = Sign(-1);
@@ -67,7 +67,7 @@ class EclipseTest : public testing::Test {
                                Sign const moon_offset_sign,
                                Angle const& angular_error,
                                Time const& time_error) {
-    ephemeris_->Prolong(current_time + interval);
+    ephemeris_->Prolong(current_time + bisection_interval);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
@@ -123,8 +123,8 @@ class EclipseTest : public testing::Test {
         [earth_moon_angle, umbral_half_aperture](Instant const& t) {
           return umbral_half_aperture(t) - earth_moon_angle(t);
         },
-        current_time - interval,
-        current_time + interval);
+        current_time - bisection_interval,
+        current_time + bisection_interval);
     EXPECT_EQ(Sign(actual_contact_time - current_time),
               Sign(time_error));
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
@@ -138,7 +138,7 @@ class EclipseTest : public testing::Test {
                                   Sign const moon_offset_sign,
                                   Angle const& angular_error,
                                   Time const& time_error) {
-    ephemeris_->Prolong(current_time + interval);
+    ephemeris_->Prolong(current_time + bisection_interval);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
@@ -193,8 +193,8 @@ class EclipseTest : public testing::Test {
         [earth_moon_angle, penumbral_half_aperture](Instant const& t) {
           return penumbral_half_aperture(t) - earth_moon_angle(t);
         },
-        current_time - interval,
-        current_time + interval);
+        current_time - bisection_interval,
+        current_time + bisection_interval);
     EXPECT_EQ(Sign(actual_contact_time - current_time),
               Sign(time_error));
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
