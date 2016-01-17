@@ -286,7 +286,7 @@ TEST_F(EclipseTest, Year1952) {
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 }
 
-#if 1
+#if 0
 TEST_F(EclipseTest, Year2048) {
   // Times are TDB Julian Day for 2048-01-01.
   auto P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
