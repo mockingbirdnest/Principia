@@ -160,4 +160,4 @@ iwyu!!%.cpp!!iwyu: iwyu_generated_mappings
 iwyu!!%_test.cpp!!iwyu: iwyu_generated_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!, /, $*_test.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=$(subst !SLASH!, /, $*)_body.hpp | FIX_INCLUDES
 
-iwyu: $(subst /, !SLASH!, $addsuffix($(addprefix iwyu!!,$(IWYU_TARGETS))!!iwyu))
+iwyu: $(subst /, !SLASH!, $(addsuffix !!iwyu $(addprefix iwyu!!,$(IWYU_TARGETS))))
