@@ -146,9 +146,9 @@ clean:  $(addprefix clean_test-,$(TEST_DIRS))
 	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_test_objects)
 
 ##### IWYU #####
-IWYU := this_is_not_a_command #deps/include-what-you-use/bin/include-what-you-use
+IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
-FIX_INCLUDES := this_is_not_a_command_either #deps/include-what-you-use/bin/fix_includes.py --nosafe_headers
+FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py --nosafe_headers
 IWYU_TARGETS := $(wildcard */*.cpp)
 
 iwyu_generated_mappings:
