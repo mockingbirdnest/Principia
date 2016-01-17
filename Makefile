@@ -155,9 +155,9 @@ iwyu_generated_mappings:
 	./generate_no_include_bodies_iwyu_mapping.sh
 
 iwyu-%.cpp: iwyu_generated_mappings
-	$(IWYU) $(CXXFLAGS) $< $(IWYU_FLAGS) | FIX_INCLUDES
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!, /, $<) $(IWYU_FLAGS) | FIX_INCLUDES
 
 iwyu-%_test.cpp: iwyu_generated_mappings
-	$(IWYU) $(CXXFLAGS) $< $(IWYU_FLAGS) -Xiwyu --check_also=$*_body.hpp | FIX_INCLUDES
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!, /, $<) $(IWYU_FLAGS) -Xiwyu --check_also=$(subst !SLASH!, /, $*)_body.hpp | FIX_INCLUDES
 
-iwyu: $(addprefix iwyu-,$(IWYU_TARGETS))
+iwyu: $(subst /, !SLASH!, $(addprefix iwyu-,$(IWYU_TARGETS)))
