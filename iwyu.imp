@@ -1,5 +1,7 @@
 [
   { ref: no_include_bodies.imp },
   { symbol: ["std::string", private, "<string>", public] },
+  { include: ["<__functional_base>", private, "<functional>", public] }
+  { include: ["<__tree>", private, "<map>", public] }
   { include: ["\"optional.hpp\"", private, "<experimental/optional>", public] }
 ]
