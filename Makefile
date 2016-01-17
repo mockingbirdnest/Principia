@@ -158,17 +158,23 @@ compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
+REMOVE_BOM := for f in `ls */*.{hpp,cpp}`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f > $$f.nobom; mv $f.nobom $f; done
+RESTORE_BOM := for f in `ls */*.{hpp,cpp}`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf")}1' $$f > $$f.nobom; mv $f.nobom $f; done
+STEM := $(subst !SLASH!,/, $*)
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
-IWYU_CHECK_ERROR := test ! "$$(grep ' error: ')"
+IWYU_CHECK_ERROR := test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
 
 no_include_bodies.imp:
 	./generate_no_include_bodies_iwyu_mapping.sh
 
+.SECONDEXPANSION:
 %.cpp!!iwyu: no_include_bodies.imp
-	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $*.iwyu | $(IWYU_CHECK_ERROR)
-	$(FIX_INCLUDES) < $*.iwyu | cat
-	rm $*.iwyu
+	$(IWYU) $(CXXFLAGS) .cpp $(IWYU_FLAGS) 2>&1 | tee $$(STEM).iwyu | $(IWYU_CHECK_ERROR)
+	$(REMOVE_BOM) 
+	$(FIX_INCLUDES) < $$(STEM).iwyu | cat
+	$(RESTORE_BOM)
+	rm $$(STEM).iwyu
 
 %.cpp!!iwyu_unsafe: no_include_bodies.imp
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $*.iwyu | $(IWYU_CHECK_ERROR)
