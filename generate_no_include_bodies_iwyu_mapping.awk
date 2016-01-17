@@ -6,10 +6,10 @@ BEGIN {
   body = $0
   header = body
   sub(/_body\.hpp$/, ".hpp", header)
-  if (header != "massless.hpp" &&
-      header != "massive.hpp" &&
-      header != "oblate.hpp" &&
-      header != "rotating.hpp") {
+  if (header != "physics/massless.hpp" &&
+      header != "physics/massive.hpp" &&
+      header != "physics/oblate.hpp" &&
+      header != "physics/rotating.hpp") {
     print "{ include: [\"\\\"" body "\\\"\", private, \"\\\"" header "\\\"\", public] },"
   }
 }
