@@ -165,6 +165,7 @@ RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
 IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
+IWYU_CLEAN := rm iwyu_generated_mappings.imp; rm */*.iwyu
 
 iwyu_generate_mappings:
 	{ ls */*_body.hpp && ls */*.generated.h; } | awk -f iwyu_generate_mappings.awk > iwyu_generated_mappings.imp
@@ -176,8 +177,7 @@ iwyu_generate_mappings:
 	$(RESTORE_BOM)
 
 iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
-	rm no_include_bodies.imp
-	rm */*.iwyu
+	$(IWYU_CLEAN)
 
 %.cpp!!iwyu_unsafe: iwyu_generate_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) $(IWYU_CHECK_ALL_HPP) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
@@ -186,5 +186,4 @@ iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
 	$(RESTORE_BOM)
 
 iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
-	rm iwyu_generated_mappings.imp
-	rm */*.iwyu
+	$(IWYU_CLEAN)
