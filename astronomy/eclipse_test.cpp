@@ -25,7 +25,6 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
-using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
 using ::testing::Gt;
@@ -34,8 +33,16 @@ using ::testing::Lt;
 namespace physics {
 
 namespace {
+
 Sign const U14 = Sign(1);
 Sign const U23 = Sign(-1);
+
+// MassiveBody will need radius information.  Or non-hardcoded data from
+// https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
+Length const r_sun = 696000.0 * Kilo(Metre);
+Length const r_earth = 6378.1363 * Kilo(Metre);
+Length const r_moon = 1738.0 * Kilo(Metre);
+
 }  // namespace
 
 class EclipseTest : public testing::Test {
@@ -51,7 +58,8 @@ class EclipseTest : public testing::Test {
   }
 
   void CheckLunarUmbralEclipse(Instant const& current_time,
-                               Sign const moon_offset_sign) {
+                               Sign const moon_offset_sign,
+                               Angle const angular_error) {
     ephemeris_->Prolong(current_time);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
@@ -63,12 +71,6 @@ class EclipseTest : public testing::Test {
                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
     auto const q_earth = ephemeris_->trajectory(earth)
                              ->EvaluatePosition(current_time, /*hint=*/nullptr);
-
-    // MassiveBody will need radius information.  Or non-hardcoded data from
-    // https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
-    auto const r_sun = 696000.0 * Kilo(Metre);
-    auto const r_earth = 6378.1363 * Kilo(Metre);
-    auto const r_moon = 1738.0 * Kilo(Metre);
 
     // Checking body angles at the target time.
     // Angle formed by a right circular cone with sides defined by tangent lines
@@ -90,13 +92,14 @@ class EclipseTest : public testing::Test {
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the umbra (Earth-Sun cone).
     EXPECT_THAT(AbsoluteError(umbral_half_aperture, earth_moon_angle),
-                AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+                AllOf(Lt(angular_error), Gt(0.5 * angular_error)))
         << NAMED(umbral_half_aperture) << ", " << NAMED(earth_moon_angle)
         << ", " << NAMED(current_time);
   }
 
   void CheckLunarPenumbralEclipse(Instant const& current_time,
-                                  Sign const moon_offset_sign) {
+                                  Sign const moon_offset_sign,
+                                  Angle const angular_error) {
     ephemeris_->Prolong(current_time);
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
@@ -108,12 +111,6 @@ class EclipseTest : public testing::Test {
                             ->EvaluatePosition(current_time, /*hint=*/nullptr);
     auto const q_earth = ephemeris_->trajectory(earth)
                              ->EvaluatePosition(current_time, /*hint=*/nullptr);
-
-    // MassiveBody will need radius information.  Or non-hardcoded data from
-    // https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
-    auto const r_sun = 696000.0 * Kilo(Metre);
-    auto const r_earth = 6378.1363 * Kilo(Metre);
-    auto const r_moon = 1738.0 * Kilo(Metre);
 
     auto const penumbral_half_aperture =
         ArcSin((r_sun + r_earth) / (q_sun - q_earth).Norm());
@@ -132,7 +129,7 @@ class EclipseTest : public testing::Test {
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the penumbra.
     EXPECT_THAT(AbsoluteError(penumbral_half_aperture, earth_moon_angle),
-                AllOf(Lt(1.0 * Milli(Radian)), Gt(1.0 * Nano(Radian))))
+                AllOf(Lt(angular_error), Gt(0.5 * angular_error)))
         << NAMED(penumbral_half_aperture) << ", " << NAMED(earth_moon_angle)
         << ", " << NAMED(current_time);
   }
@@ -146,7 +143,7 @@ std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
 
 #if !defined(_DEBUG)
 TEST_F(EclipseTest, Year1950) {
-  // Dates are TDB Julian Day for 1950-04-02.
+  // Times are TDB Julian Day for 1950-04-02.
   auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
   auto U1 = JulianDate(2433374.29850909);  // 19:09:19
   auto U2 = JulianDate(2433374.354979);    // 20:30:38
@@ -154,14 +151,14 @@ TEST_F(EclipseTest, Year1950) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarUmbralEclipse(U1, U14);
-  CheckLunarUmbralEclipse(U2, U23);
-  CheckLunarUmbralEclipse(U3, U23);
-  CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian);
+  CheckLunarUmbralEclipse(U1, U14, 7E-5 * Radian);
+  CheckLunarUmbralEclipse(U2, U23, 2E-4 * Radian);
+  CheckLunarUmbralEclipse(U3, U23, 1E-4 * Radian);
+  CheckLunarUmbralEclipse(U4, U14, 3E-5 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
 
-  // Dates are TDB Julian Day for 1950-09-26.
+  // Times are TDB Julian Day for 1950-09-26.
   P1 = JulianDate(2433550.55712016);  // 01:21:43 UT
   U1 = JulianDate(2433550.60578913);  // 02:31:48
   U2 = JulianDate(2433550.66325441);  // 03:54:33
@@ -169,57 +166,77 @@ TEST_F(EclipseTest, Year1950) {
   U4 = JulianDate(2433550.75144885);  // 06:01:33
   P4 = JulianDate(2433550.800222);    // 07:11:47
 
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarUmbralEclipse(U1, U14);
-  CheckLunarUmbralEclipse(U2, U23);
-  CheckLunarUmbralEclipse(U3, U23);
-  CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian);
+  CheckLunarUmbralEclipse(U1, U14, 7E-5 * Radian);
+  CheckLunarUmbralEclipse(U2, U23, 2E-4 * Radian);
+  CheckLunarUmbralEclipse(U3, U23, 9E-5 * Radian);
+  CheckLunarUmbralEclipse(U4, U14, 3E-5 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
 }
 
 TEST_F(EclipseTest, Year1951) {
-  // Dates are TDB Julian Day for 1951-03-23.
+  // Times are TDB Julian Day for 1951-03-23.
   auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian);
 
-  // Dates are TDB Julian Day for 1951-09-15.
+  // Times are TDB Julian Day for 1951-09-15.
   P1 = JulianDate(2433904.93736321);  // 10:29:16
   P4 = JulianDate(2433905.1002799);   // 14:23:52
 
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian);
 }
 
 TEST_F(EclipseTest, Year1952) {
-  // Dates are TDB Julian Day for 1952-02-11 (or 10 for P1).
+  // Times are TDB Julian Day for 1952-02-11 (or 10 for P1).
   auto P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
   auto U1 = JulianDate(2434053.50334705);  // U1 = 00:04:17
   auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
   auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
 
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarUmbralEclipse(U1, U14);
-  CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P1, U14, 5E-5 * Radian);
+  CheckLunarUmbralEclipse(U1, U14, 6E-5 * Radian);
+  CheckLunarUmbralEclipse(U4, U14, 4E-5 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
 
-  // Dates are TDB Julian Day for 1952-08-05.
+  // Times are TDB Julian Day for 1952-08-05.
   P1 = JulianDate(2434230.22830075);  // P1 = 17:28:13 UT
   U1 = JulianDate(2434230.27385631);  // U1 = 18:33:49
   U4 = JulianDate(2434230.37606695);  // U4 = 21:01:00
   P4 = JulianDate(2434230.42161093);  // P4 = 22:06:35
 
-  CheckLunarPenumbralEclipse(P1, U14);
-  CheckLunarUmbralEclipse(U1, U14);
-  CheckLunarUmbralEclipse(U4, U14);
-  CheckLunarPenumbralEclipse(P4, U14);
+  CheckLunarPenumbralEclipse(P1, U14, 4E-5 * Radian);
+  CheckLunarUmbralEclipse(U1, U14, 6E-5 * Radian);
+  CheckLunarUmbralEclipse(U4, U14, 4E-5 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 }
+
+#if 0
+TEST_F(EclipseTest, Year2048) {
+  // Times are TDB Julian Day for 2048-01-01.
+  auto P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
+  auto U1 = JulianDate(2469076.71279148);  // 05:05:17
+  auto U2 = JulianDate(2469076.76776833);  // 06:24:27
+  auto U3 = JulianDate(2469076.80661092);  // 07:20:23
+  auto U4 = JulianDate(2469076.86158778);  // 08:39:33
+  auto P4 = JulianDate(2469076.91195815);  // 09:52:05
+
+  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian);
+  CheckLunarUmbralEclipse(U1, U14, 2E-4 * Radian);
+  CheckLunarUmbralEclipse(U2, U23, 2E-4 * Radian);
+  CheckLunarUmbralEclipse(U3, U23, 5E-4 * Radian);
+  CheckLunarUmbralEclipse(U4, U14, 3E-4 * Radian);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian);
+}
+#endif
+
 #endif
 
 }  // namespace physics
