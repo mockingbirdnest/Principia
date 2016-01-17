@@ -168,11 +168,11 @@ no_include_bodies.imp:
 	./generate_no_include_bodies_iwyu_mapping.sh
 
 %.cpp!!iwyu: no_include_bodies.imp
-	$(IWYU) $(CXXFLAGS) .cpp $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*).iwyu | $(IWYU_CHECK_ERROR)
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
 	$(REMOVE_BOM) 
-	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*).iwyu | cat
+	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*.iwyu) | cat
 	$(RESTORE_BOM)
-	rm $(subst !SLASH!,/, $*).iwyu
+	rm $(subst !SLASH!,/, $*.iwyu)
 
 %.cpp!!iwyu_unsafe: no_include_bodies.imp
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $*.iwyu | $(IWYU_CHECK_ERROR)
