@@ -49,6 +49,8 @@ template<typename Frame>
 class RelativeDegreesOfFreedom
     : public Pair<Displacement<Frame>, Velocity<Frame>> {
  public:
+  RelativeDegreesOfFreedom() = default;
+
   RelativeDegreesOfFreedom(Displacement<Frame> const& displacement,
                            Velocity<Frame> const& velocity);
 
