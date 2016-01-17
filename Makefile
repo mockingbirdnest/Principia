@@ -155,6 +155,6 @@ no_include_bodies.imp: generate_no_include_bodies_iwyu_mapping.sh
 	./generate_no_include_bodies_iwyu_mapping.sh
 
 iwyu!!%.cpp!!iwyu: no_include_bodies.imp
-	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp | $(FIX_INCLUDES)
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp 2>&1 | $(FIX_INCLUDES)
 
 iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(addprefix iwyu!!,$(IWYU_TARGETS))))
