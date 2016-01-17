@@ -129,13 +129,14 @@ test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))
 ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
 journal_objects = journal/profiles.o journal/recorder.o
 
-# We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin. The other tests don't do this.
+# We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin
+# and journal.  The other tests don't do this.
 .SECONDEXPANSION:
 ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 .SECONDEXPANSION:
-journal/test: $$(ksp_plugin_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+journal/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 .SECONDEXPANSION:
