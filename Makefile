@@ -178,3 +178,13 @@ no_include_bodies:
 iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
 	rm no_include_bodies.imp
 	rm */*.iwyu
+
+%.cpp!!iwyu_unsafe: no_include_bodies
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) $(IWYU_CHECK_ALL_HPP) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
+	$(REMOVE_BOM) 
+	$(FIX_INCLUDES) $(IWYU_NOSAFE_HEADERS) < $(subst !SLASH!,/, $*.iwyu) | cat
+	$(RESTORE_BOM)
+
+iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
+	rm no_include_bodies.imp
+	rm */*.iwyu
