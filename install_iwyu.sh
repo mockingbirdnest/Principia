@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Just download the ubuntu binaries, we'll come back to it if we want to make it portable.
 
 cd deps
