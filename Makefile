@@ -186,3 +186,6 @@ iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
 
 iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
 	$(IWYU_CLEAN)
+
+iwyu_clean:
+	$(IWYU_CLEAN)
