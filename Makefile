@@ -157,18 +157,23 @@ compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
 
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
-IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp"
+IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
+IWYU_CHECK_ERROR := [[ ! $$(grep ' error: ') ]]
 IWYU_TARGETS := $(wildcard */*.cpp)
 
 no_include_bodies.imp:
 	./generate_no_include_bodies_iwyu_mapping.sh
 
 %.cpp!!iwyu: no_include_bodies.imp
-	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp 2>&1 | $(FIX_INCLUDES) | cat
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $*.iwyu | $(IWYU_CHECK_ERROR)
+	$(FIX_INCLUDES) < $*.iwyu | cat
+	rm $*.iwyu
 
 %.cpp!!iwyu_unsafe: no_include_bodies.imp
-	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) -Xiwyu --check_also=*/*.hpp 2>&1 | $(FIX_INCLUDES) --nosafe_headers | cat
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $*.iwyu | $(IWYU_CHECK_ERROR)
+	$(FIX_INCLUDES) --nosafe_headers < $*.iwyu | cat
+	rm $*.iwyu
 
 iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
 	rm no_include_bodies.imp
