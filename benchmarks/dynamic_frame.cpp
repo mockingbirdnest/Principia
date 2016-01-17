@@ -65,7 +65,7 @@ const Length kTolerance = 0.01 * Metre;
 using Rendering = Frame<serialization::Frame::TestTag,
                         serialization::Frame::TEST, false>;
 
-template<typename F, template<typename F> class T>
+template<typename F, template<typename> class T>
 void FillLinearTrajectory(Position<F> const& initial,
                           Velocity<F> const& velocity,
                           Instant const& t0,
