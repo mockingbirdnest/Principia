@@ -245,7 +245,7 @@ class Plugin {
   virtual void SetPredictionSpeedTolerance(Speed const& v);
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
-  virtual not_null<Vessel*> Plugin::GetVessel(GUID const & vessel_guid) const;
+  virtual not_null<Vessel*> GetVessel(GUID const & vessel_guid) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(
