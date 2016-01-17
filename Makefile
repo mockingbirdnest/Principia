@@ -166,10 +166,10 @@ FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
 IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
 
-no_include_bodies:
-	ls */*_body.hpp | awk -f generate_no_include_bodies_iwyu_mapping.awk > no_include_bodies.imp
+iwyu_generate_mappings:
+	{ls */*_body.hpp && ls */*.generated.h} | awk -f iwyu_generate_mappings.awk > iwyu_generated_mappings.imp
 
-%.cpp!!iwyu: no_include_bodies
+%.cpp!!iwyu: iwyu_generate_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
 	$(REMOVE_BOM) 
 	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*.iwyu) | cat
@@ -179,12 +179,12 @@ iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
 	rm no_include_bodies.imp
 	rm */*.iwyu
 
-%.cpp!!iwyu_unsafe: no_include_bodies
+%.cpp!!iwyu_unsafe: iwyu_generate_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) $(IWYU_CHECK_ALL_HPP) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
 	$(REMOVE_BOM) 
 	$(FIX_INCLUDES) $(IWYU_NOSAFE_HEADERS) < $(subst !SLASH!,/, $*.iwyu) | cat
 	$(RESTORE_BOM)
 
 iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
-	rm no_include_bodies.imp
+	rm iwyu_generated_mappings.imp
 	rm */*.iwyu

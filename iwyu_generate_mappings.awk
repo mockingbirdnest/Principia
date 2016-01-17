@@ -14,6 +14,14 @@ BEGIN {
   }
 }
 
+/^(.*)\.generated\.h/ {
+  body = $0
+  header = body
+  sub(/\.generated\.h$/, ".h", header)
+  print "{ include: [\"\\\"" body "\\\"\", private, \"\\\"" header "\\\"\", public] },"
+}
+
+
 END {
   print "]"
 }
