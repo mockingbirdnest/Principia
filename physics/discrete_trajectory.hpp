@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include <functional>
@@ -171,4 +172,4 @@ class UniqueDiscreteTrajectory
 }  // namespace physics
 }  // namespace principia
 
-#include "discrete_trajectory_body.hpp"
+#include "physics/discrete_trajectory_body.hpp"

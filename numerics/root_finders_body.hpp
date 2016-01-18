@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "root_finders.hpp"

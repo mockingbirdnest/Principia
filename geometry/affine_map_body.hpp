@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"

@@ -1,3 +1,4 @@
+﻿
 #include "journal/recorder.hpp"
 
 #include <list>

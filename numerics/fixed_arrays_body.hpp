@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "numerics/fixed_arrays.hpp"

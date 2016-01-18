@@ -1,3 +1,4 @@
+﻿
 #include "geometry/barycentre_calculator.hpp"
 
 #include <vector>

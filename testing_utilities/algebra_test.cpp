@@ -1,3 +1,4 @@
+﻿
 #include "testing_utilities/algebra.hpp"
 
 #include <functional>

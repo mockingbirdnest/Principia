@@ -1,3 +1,4 @@
+﻿
 #include "tools/generate_configuration.hpp"
 
 #include <experimental/filesystem>

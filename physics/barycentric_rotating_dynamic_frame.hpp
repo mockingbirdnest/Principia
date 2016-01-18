@@ -1,4 +1,13 @@
-#pragma once
+﻿
+// The files containing the tree of child classes of |DynamicFrame| must be
+// included in the order of inheritance to avoid circular dependencies.  This
+// class will end up being reincluded as part of the implementation of its
+// parent.
+#ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#include "physics/dynamic_frame.hpp"
+#else
+#ifndef PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_DYNAMIC_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_DYNAMIC_FRAME_HPP_
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -73,3 +82,6 @@ class BarycentricRotatingDynamicFrame
 }  // namespace principia
 
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_DYNAMIC_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

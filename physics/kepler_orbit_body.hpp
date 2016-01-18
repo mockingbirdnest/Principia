@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 #include "physics/kepler_orbit.hpp"
 
@@ -10,6 +11,7 @@ namespace principia {
 
 using geometry::Bivector;
 using numerics::Bisect;
+using quantities::Cbrt;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Time;
@@ -20,29 +22,40 @@ template<typename Frame>
 KeplerOrbit<Frame>::KeplerOrbit(
     MassiveBody const& primary,
     Body const& secondary,
-    Instant const& epoch,
-    KeplerianElements<Frame> const& elements_at_epoch)
-    : system_gravitational_parameter_(
+    KeplerianElements<Frame> const& elements_at_epoch,
+    Instant const& epoch)
+    : gravitational_parameter_(
           primary.gravitational_parameter() +
           (secondary.is_massless()
                ? GravitationalParameter{}
                : dynamic_cast<MassiveBody const&>(secondary).
                      gravitational_parameter())),
-      epoch_(epoch),
-      elements_at_epoch_(elements_at_epoch) {}
+      elements_at_epoch_(elements_at_epoch),
+      epoch_(epoch) {
+  CHECK(static_cast<bool>(elements_at_epoch_.semimajor_axis) ^
+        static_cast<bool>(elements_at_epoch_.mean_motion));
+  GravitationalParameter const μ = gravitational_parameter_;
+  if (elements_at_epoch_.semimajor_axis) {
+    Length const& a = *elements_at_epoch_.semimajor_axis;
+    elements_at_epoch_.mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
+  } else {
+    AngularFrequency const& n = *elements_at_epoch_.mean_motion;
+    elements_at_epoch_.semimajor_axis = Cbrt(μ / Pow<2>(n / Radian));
+  }
+}
 
 template<typename Frame>
 RelativeDegreesOfFreedom<Frame>
 KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
-  GravitationalParameter const μ = system_gravitational_parameter_;
-  double const eccentricity = elements_at_epoch_.eccentricity;
-  Length const a = elements_at_epoch_.semimajor_axis;
-  Angle const i = elements_at_epoch_.inclination;
-  Angle const Ω = elements_at_epoch_.longitude_of_ascending_node;
-  Angle const ω = elements_at_epoch_.argument_of_periapsis;
-  AngularFrequency const mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
-  Angle const mean_anomaly = elements_at_epoch_.mean_anomaly +
-                             mean_motion * (t - epoch_);
+  GravitationalParameter const& μ = gravitational_parameter_;
+  double const& eccentricity = elements_at_epoch_.eccentricity;
+  Length const& a = *elements_at_epoch_.semimajor_axis;
+  Angle const& i = elements_at_epoch_.inclination;
+  Angle const& Ω = elements_at_epoch_.longitude_of_ascending_node;
+  Angle const& ω = elements_at_epoch_.argument_of_periapsis;
+  Angle const mean_anomaly =
+      elements_at_epoch_.mean_anomaly +
+      *elements_at_epoch_.mean_motion * (t - epoch_);
   if (eccentricity < 1) {
     // Elliptic case.
     auto const kepler_equation =
@@ -91,6 +104,11 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
     LOG(FATAL) << "not yet implemented";
     base::noreturn();
   }
+}
+
+template<typename Frame>
+KeplerianElements<Frame> const& KeplerOrbit<Frame>::elements_at_epoch() const {
+  return elements_at_epoch_;
 }
 
 }  // namespace physics

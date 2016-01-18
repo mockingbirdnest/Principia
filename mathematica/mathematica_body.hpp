@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "mathematica/mathematica.hpp"

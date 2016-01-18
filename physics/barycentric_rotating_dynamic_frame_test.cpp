@@ -1,4 +1,5 @@
-﻿#include "physics/barycentric_rotating_dynamic_frame.hpp"
+﻿
+#include "physics/barycentric_rotating_dynamic_frame.hpp"
 
 #include <memory>
 

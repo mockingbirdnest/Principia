@@ -1,3 +1,4 @@
+﻿
 #include "journal/profiles.hpp"
 
 #include <fstream>
@@ -20,8 +21,8 @@ template<typename T>
 void Insert(not_null<Player::PointerMap*> const pointer_map,
             std::uint64_t const address,
             T* const pointer) {
-  void* const inserted_pointer =
-      static_cast<void*>(const_cast<std::remove_cv<T>::type*>(pointer));
+  void* const inserted_pointer = static_cast<void*>(
+      const_cast<typename std::remove_cv<T>::type*>(pointer));
   auto inserted = pointer_map->emplace(address, inserted_pointer);
   if (!inserted.second) {
     CHECK_EQ(inserted.first->second, inserted_pointer);

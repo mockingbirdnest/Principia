@@ -1,4 +1,5 @@
-﻿#include "physics/ephemeris.hpp"
+﻿
+#include "physics/ephemeris.hpp"
 
 #include <limits>
 #include <map>

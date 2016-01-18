@@ -38,13 +38,13 @@
     <ClInclude Include="root_finders_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="newhall.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="newhall.mathematica.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fixed_arrays_test.cpp">
       <Filter>Test Files</Filter>

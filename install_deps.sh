@@ -52,3 +52,6 @@ git clone "https://github.com/Norgg/eggsperimental_filesystem.git"
 
 # Optional doesn't need to be compiled either
 git clone "https://github.com/mockingbirdnest/Optional.git"
+
+# TODO(egg): This probably needs to be compiled
+git clone "https://github.com/mockingbirdnest/benchmark"

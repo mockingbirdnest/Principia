@@ -1,4 +1,5 @@
-﻿#include "ksp_plugin/flight_plan.hpp"
+﻿
+#include "ksp_plugin/flight_plan.hpp"
 
 #include <vector>
 

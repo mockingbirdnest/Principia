@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "geometry/named_quantities.hpp"

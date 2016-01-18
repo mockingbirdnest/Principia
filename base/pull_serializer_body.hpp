@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "base/pull_serializer.hpp"

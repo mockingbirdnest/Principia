@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include <map>
@@ -62,4 +63,4 @@ using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 }  // namespace ksp_plugin
 }  // namespace principia
 
-#include "part_body.hpp"
+#include "ksp_plugin/part_body.hpp"

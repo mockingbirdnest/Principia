@@ -1,4 +1,5 @@
-﻿#include "physics/continuous_trajectory.hpp"
+﻿
+#include "physics/continuous_trajectory.hpp"
 
 #include <deque>
 #include <functional>

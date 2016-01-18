@@ -8,7 +8,7 @@
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
-#include "numerics/newhall.mathematica.cpp"
+#include "numerics/newhall.mathematica.h"
 
 namespace principia {
 

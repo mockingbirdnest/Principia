@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "geometry/barycentre_calculator.hpp"

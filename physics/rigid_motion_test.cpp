@@ -1,4 +1,5 @@
-﻿#include "physics/rigid_motion.hpp"
+﻿
+#include "physics/rigid_motion.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/permutation.hpp"

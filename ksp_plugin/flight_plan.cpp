@@ -1,4 +1,5 @@
-﻿#include "ksp_plugin/flight_plan.hpp"
+﻿
+#include "ksp_plugin/flight_plan.hpp"
 
 #include "testing_utilities/make_not_null.hpp"
 

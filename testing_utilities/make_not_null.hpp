@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "base/not_null.hpp"

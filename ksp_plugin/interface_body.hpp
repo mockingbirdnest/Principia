@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "ksp_plugin/interface.hpp"
