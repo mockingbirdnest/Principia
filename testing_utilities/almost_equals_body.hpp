@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "testing_utilities/almost_equals.hpp"

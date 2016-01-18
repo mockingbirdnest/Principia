@@ -1,4 +1,5 @@
-﻿#include "numerics/root_finders.hpp"
+﻿
+#include "numerics/root_finders.hpp"
 
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"

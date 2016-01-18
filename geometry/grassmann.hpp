@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)

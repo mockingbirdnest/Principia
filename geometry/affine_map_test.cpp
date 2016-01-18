@@ -1,4 +1,5 @@
-﻿#include "geometry/affine_map.hpp"
+﻿
+#include "geometry/affine_map.hpp"
 
 #include <limits>
 #include <vector>

@@ -1,3 +1,4 @@
+﻿
 #include "ksp_plugin_test/mock_flight_plan.hpp"
 
 namespace principia {

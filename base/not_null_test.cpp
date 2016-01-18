@@ -1,3 +1,4 @@
+﻿
 #include "base/not_null.hpp"
 
 #include <memory>

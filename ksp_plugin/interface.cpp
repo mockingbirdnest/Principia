@@ -1,4 +1,5 @@
-﻿#include "ksp_plugin/interface.hpp"
+﻿
+#include "ksp_plugin/interface.hpp"
 
 #include <cctype>
 #include <cstring>

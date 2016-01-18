@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"

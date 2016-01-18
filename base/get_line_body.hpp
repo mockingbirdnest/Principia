@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "base/get_line.hpp"

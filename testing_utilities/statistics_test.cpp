@@ -1,3 +1,4 @@
+﻿
 #include "testing_utilities/statistics.hpp"
 
 #include <vector>

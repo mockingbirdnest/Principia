@@ -1,4 +1,5 @@
-﻿#include "testing_utilities/almost_equals.hpp"
+﻿
+#include "testing_utilities/almost_equals.hpp"
 
 #include <sstream>
 

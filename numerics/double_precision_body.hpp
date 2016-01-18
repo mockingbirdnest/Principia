@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "numerics/double_precision.hpp"

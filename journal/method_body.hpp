@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "journal/method.hpp"

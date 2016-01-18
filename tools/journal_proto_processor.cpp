@@ -1,3 +1,4 @@
+﻿
 #include "tools/journal_proto_processor.hpp"
 
 #include <algorithm>

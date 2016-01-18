@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "physics/discrete_trajectory.hpp"

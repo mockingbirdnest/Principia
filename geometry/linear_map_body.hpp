@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "geometry/linear_map.hpp"

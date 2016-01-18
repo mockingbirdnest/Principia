@@ -1,3 +1,4 @@
+﻿
 #include "tools/generate_profiles.hpp"
 
 #include <experimental/filesystem>  // NOLINT

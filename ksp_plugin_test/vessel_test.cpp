@@ -1,4 +1,4 @@
-
+﻿
 #include "ksp_plugin/vessel.hpp"
 
 #include "gmock/gmock.h"

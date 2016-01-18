@@ -1,4 +1,5 @@
-﻿#include "ksp_plugin/burn.hpp"
+﻿
+#include "ksp_plugin/burn.hpp"
 
 namespace principia {
 namespace ksp_plugin {

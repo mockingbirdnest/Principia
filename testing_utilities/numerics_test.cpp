@@ -1,4 +1,5 @@
-﻿#include "testing_utilities/numerics.hpp"
+﻿
+#include "testing_utilities/numerics.hpp"
 
 #include <cmath>
 #include <limits>
