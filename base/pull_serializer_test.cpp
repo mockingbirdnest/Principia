@@ -1,3 +1,4 @@
+﻿
 #include "base/pull_serializer.hpp"
 
 #include <cstring>

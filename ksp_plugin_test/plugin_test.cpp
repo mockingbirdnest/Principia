@@ -1,4 +1,5 @@
-﻿#include "ksp_plugin/plugin.hpp"
+﻿
+#include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
 #include <cmath>

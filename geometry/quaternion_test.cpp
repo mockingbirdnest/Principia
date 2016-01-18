@@ -1,3 +1,4 @@
+﻿
 #include "geometry/quaternion.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

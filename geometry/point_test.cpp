@@ -1,3 +1,4 @@
+﻿
 #include "geometry/point.hpp"
 
 #include <vector>

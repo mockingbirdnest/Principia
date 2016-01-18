@@ -1,4 +1,5 @@
-﻿#include "ksp_plugin/manœuvre.hpp"
+﻿
+#include "ksp_plugin/manœuvre.hpp"
 
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"

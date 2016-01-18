@@ -1,4 +1,5 @@
-﻿#include "quantities/parser.hpp"
+﻿
+#include "quantities/parser.hpp"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

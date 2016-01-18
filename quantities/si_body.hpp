@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "quantities/si.hpp"

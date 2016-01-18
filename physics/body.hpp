@@ -1,4 +1,5 @@
-﻿#ifndef PRINCIPIA_PHYSICS_BODY_HPP_
+﻿
+#ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #define PRINCIPIA_PHYSICS_BODY_HPP_
 
 #include "base/not_null.hpp"

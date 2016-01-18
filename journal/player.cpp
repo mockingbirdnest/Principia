@@ -1,3 +1,4 @@
+﻿
 #include "journal/player.hpp"
 
 #include <string>

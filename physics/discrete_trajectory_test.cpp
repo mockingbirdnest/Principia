@@ -1,3 +1,4 @@
+﻿
 #include "physics/discrete_trajectory.hpp"
 
 #include <functional>

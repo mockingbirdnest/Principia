@@ -1,4 +1,4 @@
-
+﻿
 // .\Release\benchmarks.exe --benchmark_min_time=2 --benchmark_repetitions=10 --benchmark_filter=codePi  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 2672 MHz CPU
 // 2015/02/14-23:12:32

@@ -1,4 +1,5 @@
-﻿#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+﻿
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
 #include <vector>
