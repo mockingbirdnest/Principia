@@ -211,7 +211,8 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 }
 
 inline Vessel::Vessel()
-    : parent_(testing_utilities::make_not_null<Celestial const*>()) {}
+    : body_(),
+      parent_(testing_utilities::make_not_null<Celestial const*>()) {}
 
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -1,6 +1,5 @@
 CXX := clang++
 
-
 VERSION_HEADER := base/version.hpp
 
 CPP_SOURCES := ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp 
@@ -14,7 +13,7 @@ GENERATED_SOURCES := journal/profiles.generated.h journal/profiles.generated.cc
 OBJECTS := $(CPP_SOURCES:.cpp=.o)
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
 TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
-TEST_DIRS := base geometry integrators ksp_plugin_test physics quantities testing_utilities numerics
+TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
 TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
 PROJECT_DIR := ksp_plugin_adapter/
@@ -127,11 +126,17 @@ GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gm
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))
-ksp_plugin_test_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp)) $(patsubst %.cpp,%.o,$(wildcard ksp_plugin_test/*.cpp))
+ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
+journal_objects = journal/profiles.o journal/recorder.o
 
-# We need to special-case ksp_plugin_test because it requires object files from ksp_plugin. The other tests don't do this.
+# We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin
+# and journal.  The other tests don't do this.
 .SECONDEXPANSION:
-ksp_plugin_test/test: $$(ksp_plugin_test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+
+.SECONDEXPANSION:
+journal/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 .SECONDEXPANSION:
@@ -144,4 +149,43 @@ clean_test-%:
 
 clean:  $(addprefix clean_test-,$(TEST_DIRS))
 	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_test_objects)
+	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_objects)
+
+##### EVERYTHING #####
+# Compiles everything, but does not link anything.  Used to check standard compliance on code that we don't want to run on *nix.
+compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
+
+##### IWYU #####
+IWYU := deps/include-what-you-use/bin/include-what-you-use
+IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
+IWYU_NOSAFE_HEADERS := --nosafe_headers
+REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f > $$f.nobom; mv $$f.nobom $$f; done
+RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
+FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
+IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
+IWYU_TARGETS := $(wildcard */*.cpp)
+IWYU_CLEAN := rm iwyu_generated_mappings.imp; rm */*.iwyu
+
+iwyu_generate_mappings:
+	{ ls */*_body.hpp && ls */*.generated.h; } | awk -f iwyu_generate_mappings.awk > iwyu_generated_mappings.imp
+
+%.cpp!!iwyu: iwyu_generate_mappings
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
+	$(REMOVE_BOM) 
+	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*.iwyu) | cat
+	$(RESTORE_BOM)
+
+iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
+	$(IWYU_CLEAN)
+
+%.cpp!!iwyu_unsafe: iwyu_generate_mappings
+	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
+	$(REMOVE_BOM) 
+	$(FIX_INCLUDES) $(IWYU_NOSAFE_HEADERS) < $(subst !SLASH!,/, $*.iwyu) | cat
+	$(RESTORE_BOM)
+
+iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
+	$(IWYU_CLEAN)
+
+iwyu_clean:
+	$(IWYU_CLEAN)

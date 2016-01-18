@@ -239,8 +239,9 @@ class ResonanceTest : public ::testing::Test {
     }
   }
 
-  Ephemeris<KSP> MakeEphemeris(std::vector<DegreesOfFreedom<KSP>> states) {
-    return Ephemeris<KSP>(
+  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
+      std::vector<DegreesOfFreedom<KSP>> states) {
+    return make_not_null_unique<Ephemeris<KSP>>(
                std::move(owned_bodies_),
                states,
                game_epoch_,
@@ -364,13 +365,13 @@ using ResonanceDeathTest = ResonanceTest;
 TEST_F(ResonanceDeathTest, Stock) {
   ComputeStockOrbits();
   UseStockMeanMotions();
-  auto ephemeris = MakeEphemeris(StockInitialStates());
-  ephemeris.Prolong(reference_);
-  LogPeriods(ephemeris);
-  LogEphemeris(ephemeris, /*reference=*/true, "stock");
+  auto const ephemeris = MakeEphemeris(StockInitialStates());
+  ephemeris->Prolong(reference_);
+  LogPeriods(*ephemeris);
+  LogEphemeris(*ephemeris, /*reference=*/true, "stock");
   // Where is thy sting?
   EXPECT_DEATH(
-      { ephemeris.Prolong(long_time_); },
+      { ephemeris->Prolong(long_time_); },
       R"regex(Apocalypse occurred at \+8\.22960000000000000e\+06 s)regex");
 }
 
@@ -389,13 +390,13 @@ TEST_F(ResonanceTest, Corrected) {
   // resonance with Pol works well.
   *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 1.5;
 
-  auto ephemeris = MakeEphemeris(JacobiInitialStates());
-  ephemeris.Prolong(reference_);
-  LogPeriods(ephemeris);
-  LogEphemeris(ephemeris, /*reference=*/true, "corrected");
-  ephemeris.Prolong(long_time_);
-  ephemeris.Prolong(comparison_);
-  LogEphemeris(ephemeris, /*reference=*/false, "corrected");
+  auto const ephemeris = MakeEphemeris(JacobiInitialStates());
+  ephemeris->Prolong(reference_);
+  LogPeriods(*ephemeris);
+  LogEphemeris(*ephemeris, /*reference=*/true, "corrected");
+  ephemeris->Prolong(long_time_);
+  ephemeris->Prolong(comparison_);
+  LogEphemeris(*ephemeris, /*reference=*/false, "corrected");
 }
 
 #endif
