@@ -14,7 +14,7 @@ BEGIN {
   sub(/.*: ([0-9]+ )?/, "", body)
   bodies[n++] = body
 }
-/^[0-9]+\.[0-9]+ = .* \(CT\)/ {
+/^[0-9]+\.[0-9]+ = .* \(TDB\)/ {
   if ($1 == juliandate) {
     skip = 0
     humandate = $4 " " $5
