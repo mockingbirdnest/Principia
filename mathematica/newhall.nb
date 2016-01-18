@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     26725,        661]
-NotebookOptionsPosition[     24870,        602]
-NotebookOutlinePosition[     25448,        623]
-CellTagsIndexPosition[     25405,        620]
+NotebookDataLength[     26776,        662]
+NotebookOptionsPosition[     24920,        603]
+NotebookOutlinePosition[     25499,        624]
+CellTagsIndexPosition[     25456,        621]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -65,7 +65,8 @@ Cell[BoxData[
    3.6414547427469935`*^9, {3.6414549191156282`*^9, 3.6414549255702744`*^9}, {
    3.641454963873104*^9, 3.6414549836000767`*^9}, 3.6414553923619485`*^9, 
    3.6523680002656956`*^9, 3.6555736696468344`*^9, {3.655573763584227*^9, 
-   3.655573787177586*^9}, 3.655573832788147*^9, 3.6555755761551704`*^9}]
+   3.655573787177586*^9}, 3.655573832788147*^9, 3.6555755761551704`*^9, 
+   3.6621318273458405`*^9}]
 }, Open  ]],
 
 Cell[TextData[{
@@ -507,7 +508,7 @@ Cell[BoxData[{
        RowBox[{
         RowBox[{"DirectoryName", "[", 
          RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",", 
-        "\"\<numerics\>\"", ",", "\"\<newhall.mathematica.cpp\>\""}], "}"}], 
+        "\"\<numerics\>\"", ",", "\"\<newhall.mathematica.h\>\""}], "}"}], 
       "]"}], ",", 
      RowBox[{"BinaryFormat", "\[Rule]", "True"}], ",", 
      RowBox[{"PageWidth", "\[Rule]", "Infinity"}]}], "]"}]}], 
@@ -575,7 +576,7 @@ Cell[BoxData[{
    3.6414549814848647`*^9}, {3.6414553862393365`*^9, 3.641455386414354*^9}, 
    3.6523679428659563`*^9, {3.6555733366485376`*^9, 3.655573336900563*^9}, {
    3.655573599791849*^9, 3.655573619807851*^9}, {3.655573720147884*^9, 
-   3.6555737344123096`*^9}}],
+   3.6555737344123096`*^9}, 3.6621318039751673`*^9}],
 
 Cell["Save a pdf printout of this file for documentation purposes.", "Text",
  CellChangeTimes->{{3.6414544152977495`*^9, 3.6414544271229315`*^9}}],
@@ -608,7 +609,7 @@ PrintingOptions->{"Magnification"->1.,
 "PaperOrientation"->"Portrait",
 "PaperSize"->{594.96, 842.04}},
 PrivateNotebookOptions->{"VersionedStylesheet"->{"Default.nb"[8.] -> False}},
-FrontEndVersion->"10.1 for Microsoft Windows (64-bit) (March 23, 2015)",
+FrontEndVersion->"10.3 for Microsoft Windows (64-bit) (October 9, 2015)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -630,37 +631,37 @@ Cell[930, 31, 99, 1, 70, "Section"],
 Cell[1032, 34, 161, 3, 30, "Text"],
 Cell[CellGroupData[{
 Cell[1218, 41, 509, 9, 31, "Input"],
-Cell[1730, 52, 723, 15, 31, "Output"]
+Cell[1730, 52, 751, 16, 31, "Output"]
 }, Open  ]],
-Cell[2468, 70, 817, 19, 49, "Text"],
-Cell[3288, 91, 1715, 40, 132, "Input"],
-Cell[5006, 133, 380, 8, 30, "Text"],
-Cell[5389, 143, 716, 17, 33, "Input"],
-Cell[6108, 162, 363, 10, 30, "Text"],
-Cell[6474, 174, 699, 16, 52, "Input"],
-Cell[7176, 192, 951, 23, 52, "Input"],
-Cell[8130, 217, 385, 8, 31, "Input"],
-Cell[8518, 227, 324, 8, 31, "Input"],
-Cell[8845, 237, 834, 20, 92, "Input"],
-Cell[9682, 259, 361, 10, 30, "Text"],
-Cell[10046, 271, 507, 12, 31, "Input"],
-Cell[10556, 285, 522, 13, 31, "Input"],
-Cell[11081, 300, 551, 15, 52, "Input"],
-Cell[11635, 317, 508, 16, 32, "Text"],
-Cell[12146, 335, 487, 12, 52, "Input"]
+Cell[2496, 71, 817, 19, 49, "Text"],
+Cell[3316, 92, 1715, 40, 132, "Input"],
+Cell[5034, 134, 380, 8, 30, "Text"],
+Cell[5417, 144, 716, 17, 33, "Input"],
+Cell[6136, 163, 363, 10, 30, "Text"],
+Cell[6502, 175, 699, 16, 52, "Input"],
+Cell[7204, 193, 951, 23, 52, "Input"],
+Cell[8158, 218, 385, 8, 31, "Input"],
+Cell[8546, 228, 324, 8, 31, "Input"],
+Cell[8873, 238, 834, 20, 92, "Input"],
+Cell[9710, 260, 361, 10, 30, "Text"],
+Cell[10074, 272, 507, 12, 31, "Input"],
+Cell[10584, 286, 522, 13, 31, "Input"],
+Cell[11109, 301, 551, 15, 52, "Input"],
+Cell[11663, 318, 508, 16, 32, "Text"],
+Cell[12174, 336, 487, 12, 52, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[12670, 352, 108, 1, 70, "Section"],
-Cell[12781, 355, 344, 6, 49, "Text"],
-Cell[13128, 363, 1740, 34, 172, "Input"],
-Cell[14871, 399, 170, 3, 30, "Text"],
-Cell[15044, 404, 2923, 50, 212, "Input"],
-Cell[17970, 456, 141, 1, 30, "Text"],
-Cell[18114, 459, 1557, 28, 132, "Input"],
-Cell[19674, 489, 347, 8, 30, "Text"],
-Cell[20024, 499, 4038, 78, 572, "Input"],
-Cell[24065, 579, 146, 1, 30, "Text"],
-Cell[24214, 582, 628, 16, 52, "Input"]
+Cell[12698, 353, 108, 1, 70, "Section"],
+Cell[12809, 356, 344, 6, 49, "Text"],
+Cell[13156, 364, 1740, 34, 172, "Input"],
+Cell[14899, 400, 170, 3, 30, "Text"],
+Cell[15072, 405, 2923, 50, 212, "Input"],
+Cell[17998, 457, 141, 1, 30, "Text"],
+Cell[18142, 460, 1557, 28, 132, "Input"],
+Cell[19702, 490, 347, 8, 30, "Text"],
+Cell[20052, 500, 4060, 78, 572, "Input"],
+Cell[24115, 580, 146, 1, 30, "Text"],
+Cell[24264, 583, 628, 16, 52, "Input"]
 }, Open  ]]
 }, Open  ]]
 }
