@@ -43,6 +43,8 @@ Sign const U23 = Sign(-1);
 
 // MassiveBody will need radius information.  Or non-hardcoded data from
 // https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
+
+// Interesting analysis of the Sun radius at http://www.icra.it/solar/Sole2.pdf.
 Length const r_sun = 696000.0 * Kilo(Metre);
 Length const r_earth = 6378.1363 * Kilo(Metre);
 Length const r_moon = 1738.0 * Kilo(Metre);
