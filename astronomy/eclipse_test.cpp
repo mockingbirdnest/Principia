@@ -60,7 +60,7 @@ class EclipseTest : public testing::Test {
             "initial_state_jd_2433282_500000000.proto.txt");
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-        45 * Minute, 5 * Milli(Metre));
+        60 * Minute, 5 * Milli(Metre));
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -212,6 +212,41 @@ SolarSystem<ICRFJ2000Equator> EclipseTest::solar_system_1950_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
 
 #if !defined(_DEBUG)
+
+TEST_F(EclipseTest, FirstContact) {
+  SolarSystem<ICRFJ2000Equator> solar_system_first_contact;
+  solar_system_first_contact.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2433374_257884090.proto.txt");
+
+  Instant const& t = solar_system_first_contact.epoch();
+  LOG(ERROR)<<t<<" "<<solar_system_1950_.epoch();
+  ephemeris_->Prolong(t);
+
+  auto const sun_1950 = solar_system_1950_.massive_body(*ephemeris_, "Sun");
+  auto const earth_1950 = solar_system_1950_.massive_body(*ephemeris_, "Earth");
+  auto const moon_1950 = solar_system_1950_.massive_body(*ephemeris_, "Moon");
+
+  auto const q_sun_1950 =
+      ephemeris_->trajectory(sun_1950)->EvaluatePosition(t, /*hint=*/nullptr);
+  auto const q_moon_1950 =
+      ephemeris_->trajectory(moon_1950)->EvaluatePosition(t, /*hint=*/nullptr);
+  auto const q_earth_1950 =
+      ephemeris_->trajectory(earth_1950)->EvaluatePosition(t, /*hint=*/nullptr);
+
+  auto const q_sun_first_contact =
+      solar_system_first_contact.initial_state("Sun").position();
+  auto const q_earth_first_contact =
+      solar_system_first_contact.initial_state("Earth").position();
+  auto const q_moon_first_contact =
+      solar_system_first_contact.initial_state("Moon").position();
+
+  EXPECT_THAT(AbsoluteError(q_sun_first_contact, q_sun_1950), Lt(1 * Metre));
+  EXPECT_THAT(AbsoluteError(q_earth_first_contact, q_earth_1950), Lt(1 * Metre));
+  EXPECT_THAT(AbsoluteError(q_moon_first_contact, q_moon_1950), Lt(1 * Metre));
+}
+
 TEST_F(EclipseTest, Year1950) {
   // Times are TDB Julian Day for 1950-04-02.
   auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
