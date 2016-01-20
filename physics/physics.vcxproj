@@ -167,6 +167,7 @@
     <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
+    <ClInclude Include="jacobi_coordinates.hpp" />
     <ClInclude Include="kepler_orbit.hpp" />
     <ClInclude Include="kepler_orbit_body.hpp" />
     <ClInclude Include="mock_continuous_trajectory.hpp" />

@@ -125,6 +125,9 @@
     <ClInclude Include="kepler_orbit_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="jacobi_coordinates.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
