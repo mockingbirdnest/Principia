@@ -226,6 +226,8 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> {
   void Add(Pair<T1, T2> const& pair, Weight const& weight);
   Pair<T1, T2> Get() const;
 
+  Weight const& weight() const;
+
  private:
   bool empty_ = true;
   decltype(std::declval<typename vector_of<T1>::type>() *

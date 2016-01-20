@@ -114,6 +114,8 @@ class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> {
            Weight const& weight);
   physics::DegreesOfFreedom<Frame> Get() const;
 
+  Weight const& weight() const;
+
  private:
   BarycentreCalculator<Pair<Position<Frame>, Velocity<Frame>>, Weight>
       implementation_;
@@ -129,6 +131,8 @@ class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight> {
                relative_degrees_of_freedom,
            Weight const& weight);
   physics::RelativeDegreesOfFreedom<Frame> Get() const;
+
+  Weight const& weight() const;
 
  private:
   BarycentreCalculator<Pair<Displacement<Frame>, Velocity<Frame>>, Weight>

@@ -170,5 +170,10 @@ Point<Vector> BarycentreCalculator<Point<Vector>, Weight>::Get() const {
   return origin + weighted_sum_ / weight_;
 }
 
+template<typename Vector, typename Weight>
+Weight const& BarycentreCalculator<Point<Vector>, Weight>::weight() const {
+  return weight_
+}
+
 }  // namespace geometry
 }  // namespace principia

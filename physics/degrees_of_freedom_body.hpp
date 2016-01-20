@@ -118,6 +118,12 @@ BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::Get() const {
 }
 
 template<typename Frame, typename Weight>
+inline Weight const&
+BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::weight() const {
+  return implementation_.weight();
+}
+
+template<typename Frame, typename Weight>
 void
 BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::Add(
     physics::RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom,
@@ -130,6 +136,13 @@ physics::RelativeDegreesOfFreedom<Frame>
 BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::Get()
     const {
   return implementation_.Get();
+}
+
+template<typename Frame, typename Weight>
+inline Weight const&
+BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::weight()
+    const {
+  return implementation_.weight();
 }
 
 }  // namespace geometry
