@@ -4,6 +4,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 
@@ -35,7 +36,7 @@ class JacobiCoordinates {
   //       KeplerOrbit<Frame>(/*primary=*/System(),
   //                          /*secondary=*/body,
   //                          osculating_elements_wrt_system,
-  //                          epoch).RelativeDegreesOfFreedom(epoch));
+  //                          epoch).StateVectors(epoch));
   // for any |epoch|.
   void Add(
       MassiveBody const& body,
@@ -50,8 +51,8 @@ class JacobiCoordinates {
   std::vector<RelativeDegreesOfFreedom<Frame>> BarycentricCoordinates() const;
 
  private:
-  // A reference frame parallel to |Frame|, in which the primary is immobile at
-  // the origin.
+  // A reference frame parallel to |Frame|, in which the primary is motionless
+  // at the origin.
   // TODO(egg): some saner tag for local/private frames.
   using PrimocentricFrame = geometry::Frame<serialization::Frame::TestTag,
                                             serialization::Frame::TEST,
@@ -69,5 +70,39 @@ class JacobiCoordinates {
                        GravitationalParameter> system_barycentre_;
 };
 
+template<typename Frame>
+class HierarchicalSystem {
+ public:
+  struct BarycentricSystem {
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+    std::vector<DegreesOfFreedom<Frame>> barycentric_degrees_of_freedom;
+  };
+
+  HierachicalSystem(not_null<std::unique_ptr<MassiveBody const>> primary);
+
+  void Add(not_null<std::unique_ptr<MassiveBody const>> body,
+           not_null<MassiveBody const*> const parent,
+           KeplerianElements<Frame> const& jacobi_osculating_elements);
+
+  // Puts the barycentre of the system at the immobile origin of |Frame|;
+  // |*this| is invalid after a call to |Get()|.
+  BarycentricSystem Get();
+
+ private:
+  struct Subsystem;
+  struct System {
+    virtual ~System() = default;
+    not_null<std::unique_ptr<MassiveBody const>> primary;
+    std::vector<not_null<Subsystem const*>> satellites;
+  };
+  struct Subsystem : public System {
+    KeplerianElements<Frame> elements;
+  };
+
+  System system_;
+};
+
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/jacobi_coordinates_body.hpp"
