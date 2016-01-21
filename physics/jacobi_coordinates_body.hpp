@@ -161,8 +161,9 @@ HierarchicalSystem<Frame>::Get() {
           // In what frame?
           auto const barycentric_coordinates =
               jacobi_coordinates.BarycentricCoordinates();
-          for (auto const& dof : barycentric_coordinates) {
-            barycentres_of_subsystems.push_back(system_barycentre + id_fb(dof));
+          for (auto const& barycentric_dof : barycentric_coordinates) {
+            barycentres_of_subsystems.push_back(system_barycentre +
+                                                id_fb(barycentric_dof));
           }
         }
 
@@ -170,11 +171,12 @@ HierarchicalSystem<Frame>::Get() {
         // The primary.
         result.barycentric_degrees_of_freedom.emplace_back(
             id_bf(barycentres_of_subsystems.front() - system_barycentre));
+        // The bodies in satellite subsystems.
         for (int n = 0; n < satellite_degrees_of_freedom.size(); ++n) {
           // |n + 1| because the primary is at |barycentres_of_subsystems[0]|.
           DegreesOfFreedom<SystemBarycentre> const subsystem_barycentre =
               barycentres_of_subsystems[n + 1];
-          for (RelativeDegreesOfFreedom<Frame> const& body_dof_wrt_subsystem_barycentre :
+          for (auto const& body_dof_wrt_subsystem_barycentre :
                satellite_degrees_of_freedom[n]) {
             DegreesOfFreedom<SystemBarycentre> const body_dof =
                 subsystem_barycentre + id_fb(body_dof_wrt_subsystem_barycentre);
