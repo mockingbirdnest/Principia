@@ -111,10 +111,11 @@ TEST_F(JacobiCoordinatesTest, Hierarchical) {
   system.Add(new_body(1 * Kilogram), /*parent=*/bodies[1], elements);
 
   auto barycentric_system = system.Get();
+  // primary, closest secondary, furthest secondary, tertiary.
   std::vector<int> expected_order = {0, 2, 1, 3};
   for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
-    LOG(ERROR) << body_indices[barycentric_system.bodies[i].get()];
-    //EXPECT_TRUE(bodies[i] == barycentric_system.bodies[i].get()) << i;
+    EXPECT_TRUE(bodies[expected_order[i]] == barycentric_system.bodies[i].get())
+        << i;
   }
   std::vector<Length> x_positions;
   std::transform(barycentric_system.degrees_of_freedom.begin(),
@@ -126,8 +127,8 @@ TEST_F(JacobiCoordinatesTest, Hierarchical) {
   EXPECT_THAT(x_positions,
               ElementsAre(AlmostEquals(-1.5 * Metre, 1),
                           AlmostEquals(-0.5 * Metre, 2),
-                          AlmostEquals(0.5 * Metre, 1),
-                          AlmostEquals(1.5 * Metre, 2)));
+                          1.5 * Metre,
+                          0.5 * Metre));
 }
 
 }  // namespace physics
