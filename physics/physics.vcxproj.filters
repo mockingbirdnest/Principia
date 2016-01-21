@@ -128,6 +128,9 @@
     <ClInclude Include="jacobi_coordinates.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="jacobi_coordinates_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -167,6 +170,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="resonance_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jacobi_coordinates_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
