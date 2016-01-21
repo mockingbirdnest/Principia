@@ -75,7 +75,7 @@ class HierarchicalSystem {
  public:
   struct BarycentricSystem {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-    std::vector<DegreesOfFreedom<Frame>> barycentric_degrees_of_freedom;
+    std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   };
 
   HierarchicalSystem(not_null<std::unique_ptr<MassiveBody const>> primary);
@@ -109,7 +109,7 @@ class HierarchicalSystem {
   System system_;
   // Invariant: |subsystems_[p]->primary.get() == p|.
   // None of these pointers should be null, but I want to use operator[].
-  std::map<not_null<MassiveBody const*>, System*> subsystems_;
+  std::map<not_null<MassiveBody const*>, System*> systems_;
 };
 
 }  // namespace physics

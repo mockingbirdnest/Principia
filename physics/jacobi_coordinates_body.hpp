@@ -68,7 +68,7 @@ template<typename Frame>
 HierarchicalSystem<Frame>::HierarchicalSystem(
     not_null<std::unique_ptr<MassiveBody const>> primary)
     : system_(std::move(primary)) {
-  subsystems_[system_.primary.get()] = &system_;
+  systems_[system_.primary.get()] = &system_;
 }
 
 template<typename Frame>
@@ -76,13 +76,15 @@ void HierarchicalSystem<Frame>::Add(
     not_null<std::unique_ptr<MassiveBody const>> body,
     not_null<MassiveBody const*> const parent,
     KeplerianElements<Frame> const& jacobi_osculating_elements) {
-  System& parent_system = *subsystems_[parent];
+  not_null<MassiveBody const*> unowned_body = body.get();
+  System& parent_system = *systems_[parent];
   parent_system.satellites.emplace_back(
       make_not_null_unique<Subsystem>(std::move(body)));
-  not_null<Subsystem*> inserted_system = parent_system.satellites.back().get();
-  {
-    not_null<MassiveBody const*> body = inserted_system->primary.get();
-    subsystems_[body] = inserted_system;
+  {  // Hide the moved-from |body|.
+    not_null<MassiveBody const*> body = unowned_body;
+    not_null<Subsystem*> inserted_system =
+        parent_system.satellites.back().get();
+    systems_[body] = inserted_system;
     inserted_system->jacobi_osculating_elements = jacobi_osculating_elements;
   }
 }
@@ -190,10 +192,16 @@ HierarchicalSystem<Frame>::Get() {
         return std::move(result);
       };
 
-  to_barycentric(system_);
-
-
-  return BarycentricSystem();
+  BarycentricSystem result;
+  auto barycentric_result = to_barycentric(system_);
+  result.bodies = std::move(barycentric_result.bodies);
+  static DegreesOfFreedom<Frame> const system_barycentre = {Frame::origin,
+                                                            Velocity<Frame>()};
+  for (auto const& barycentric_dof :
+       barycentric_result.barycentric_degrees_of_freedom) {
+    result.degrees_of_freedom.emplace_back(system_barycentre + barycentric_dof);
+  }
+  return std::move(result);
 }
 
 }  // namespace physics
