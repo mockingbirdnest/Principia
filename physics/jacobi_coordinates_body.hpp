@@ -97,9 +97,13 @@ HierarchicalSystem<Frame>::Get() {
            right->jacobi_osculating_elements.semimajor_axis;
   };
 
+  // Data about a |Subsystem|.
   struct BarycentricSubystem {
+    // A |MassiveBody| with the mass of the whole subsystem.
     std::unique_ptr<MassiveBody> equivalent_body;
+    // The bodies composing the subsystem.
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+    // Their |DegreesOfFreedom| with respect to the barycentre of the subsystem.
     std::vector<RelativeDegreesOfFreedom<Frame>> barycentric_degrees_of_freedom;
   };
 
@@ -110,6 +114,19 @@ HierarchicalSystem<Frame>::Get() {
                   semimajor_axis_less_than);
 
         BarycentricSubystem result;
+
+        // A reference frame wherein the barycentre of |system| is motionless
+        // at the origin.
+        // TODO(egg): declaring these frame tags to make sure that local frames
+        // don't go out of scope is a bit cumbersome.
+        enum class LocalFrameTag { kFrameTag };
+        using SystemBarycentre = geometry::Frame<LocalFrameTag,
+                                                 LocalFrameTag::kFrameTag,
+                                                 /*frame_is_inertial=*/false>;
+        static DegreesOfFreedom<SystemBarycentre> const system_barycentre = {
+            SystemBarycentre::origin, Velocity<SystemBarycentre>()};
+        static Identity<SystemBarycentre, Frame> const id_bf;
+        static Identity<Frame, SystemBarycentre> const id_fb;
 
         // Jacobi coordinates for |system|, with satellite subsystems treated
         // as point masses at their barycentres.
@@ -137,21 +154,32 @@ HierarchicalSystem<Frame>::Get() {
                     std::back_inserter(result.bodies));
         }
 
+        std::vector<DegreesOfFreedom<SystemBarycentre>>
+            barycentres_of_subsystems;
+        {
+          // TODO(egg): should BarycentricCoordinates return DegreesOfFreedom?
+          // In what frame?
+          auto const barycentric_coordinates =
+              jacobi_coordinates.BarycentricCoordinates();
+          for (auto const& dof : barycentric_coordinates) {
+            barycentres_of_subsystems.push_back(system_barycentre + id_fb(dof));
+          }
+        }
+
         // Fill |result.barycentric_degrees_of_freedom|.
-        std::vector<RelativeDegreesOfFreedom<Frame>> const
-            barycentres_of_subsystems =
-                jacobi_coordinates.BarycentricCoordinates();
         // The primary.
         result.barycentric_degrees_of_freedom.emplace_back(
-            barycentres_of_subsystems.front());
+            id_bf(barycentres_of_subsystems.front() - system_barycentre));
         for (int n = 0; n < satellite_degrees_of_freedom.size(); ++n) {
           // |n + 1| because the primary is at |barycentres_of_subsystems[0]|.
-          RelativeDegreesOfFreedom<Frame> const subsystem_barycentre =
+          DegreesOfFreedom<SystemBarycentre> const subsystem_barycentre =
               barycentres_of_subsystems[n + 1];
-          for (auto const& body_dof_wrt_subsystem_barycentre :
+          for (RelativeDegreesOfFreedom<Frame> const& body_dof_wrt_subsystem_barycentre :
                satellite_degrees_of_freedom[n]) {
+            DegreesOfFreedom<SystemBarycentre> const body_dof =
+                subsystem_barycentre + id_fb(body_dof_wrt_subsystem_barycentre);
             result.barycentric_degrees_of_freedom.emplace_back(
-                body_dof_wrt_subsystem_barycentre + subsystem_barycentre);
+                id_bf(body_dof - system_barycentre));
           }
         }
 
