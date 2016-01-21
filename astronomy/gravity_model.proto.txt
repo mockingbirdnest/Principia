@@ -30,10 +30,10 @@ gravity_model {
 
   # Gas giants.
   # Gravitational parameters from
-  # http://ssd.jpl.nasa.gov/?gravity_fields_op, retrieved 2015-08-03.
+  # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
   body {
     name                    : "Jupiter"
-    gravitational_parameter : "1.266865349218008E+08 km^3/s^2"
+    gravitational_parameter : "126712764.8 km^3/s^2"
     axis_right_ascension    : "268.056595 deg"
     axis_declination        : "64.495303 deg"
     j2                      : "14695.62E-6"
@@ -41,7 +41,7 @@ gravity_model {
   }
   body {
     name                    : "Saturn"
-    gravitational_parameter : "3.793120749865224E+07 km^3/s^2"
+    gravitational_parameter : "37940585.2 km^3/s^2"
     axis_right_ascension    : "40.589 deg"
     axis_declination        : "83.537 deg"
     j2                      : "16290.71E-6"
