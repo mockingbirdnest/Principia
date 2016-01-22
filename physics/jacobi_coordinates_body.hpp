@@ -9,7 +9,7 @@ namespace physics {
 
 template<typename Frame>
 JacobiCoordinates<Frame>::JacobiCoordinates(MassiveBody const& primary) {
-  DegreesOfFreedom<PrimocentricFrame> motionless_origin = {
+  static DegreesOfFreedom<PrimocentricFrame> const motionless_origin = {
       PrimocentricFrame::origin, Velocity<PrimocentricFrame>()};
   primocentric_dof_.emplace_back(motionless_origin);
   system_barycentre_.Add(primocentric_dof_.back(),
@@ -19,9 +19,9 @@ JacobiCoordinates<Frame>::JacobiCoordinates(MassiveBody const& primary) {
 template<typename Frame>
 void JacobiCoordinates<Frame>::Add(
     MassiveBody const& body,
-    RelativeDegreesOfFreedom<Frame> const& dof_wrt_system) {
+    RelativeDegreesOfFreedom<Frame> const& dof_relative_to_system) {
   primocentric_dof_.emplace_back(system_barycentre_.Get() +
-                                 id_fp_(dof_wrt_system));
+                                 id_fp_(dof_relative_to_system));
   system_barycentre_.Add(primocentric_dof_.back(),
                          body.gravitational_parameter());
 }
@@ -29,12 +29,12 @@ void JacobiCoordinates<Frame>::Add(
 template<typename Frame>
 void JacobiCoordinates<Frame>::Add(
     MassiveBody const& body,
-    KeplerianElements<Frame> const& osculating_elements_wrt_system) {
+    KeplerianElements<Frame> const& osculating_elements_relative_to_system) {
   Instant const epoch;
   Add(body,
       KeplerOrbit<Frame>(/*primary=*/System(),
                          /*secondary=*/body,
-                         osculating_elements_wrt_system,
+                         osculating_elements_relative_to_system,
                          epoch).StateVectors(epoch));
 }
 
@@ -45,7 +45,7 @@ MassiveBody JacobiCoordinates<Frame>::System() const {
 
 template<typename Frame>
 std::vector<RelativeDegreesOfFreedom<Frame>>
-JacobiCoordinates<Frame>::BarycentricCoordinates() const {
+JacobiCoordinates<Frame>::BarycentricDegreesOfFreedom() const {
   std::vector<RelativeDegreesOfFreedom<Frame>> result;
   DegreesOfFreedom<PrimocentricFrame> system_barycentre =
       system_barycentre_.Get();
