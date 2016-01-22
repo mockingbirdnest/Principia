@@ -12,7 +12,7 @@ namespace physics {
 
 template<typename Frame>
 struct KeplerianElements {
-  double eccentricity;
+  double eccentricity{};
   std::experimental::optional<Length> semimajor_axis;
   std::experimental::optional<AngularFrequency> mean_motion;
   Angle inclination;

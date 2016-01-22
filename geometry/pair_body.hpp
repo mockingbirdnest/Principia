@@ -173,6 +173,11 @@ Pair<T1, T2> BarycentreCalculator<Pair<T1, T2>, Weight>::Get() const {
 }
 
 template<typename T1, typename T2, typename Weight>
+Weight const& BarycentreCalculator<Pair<T1, T2>, Weight>::weight() const {
+  return weight_;
+}
+
+template<typename T1, typename T2, typename Weight>
 T1 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t1_;
 
 template<typename T1, typename T2, typename Weight>

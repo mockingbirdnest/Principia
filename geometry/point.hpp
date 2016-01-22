@@ -101,6 +101,8 @@ class BarycentreCalculator<Point<Vector>, Weight> {
   void Add(Point<Vector> const& point, Weight const& weight);
   Point<Vector> Get() const;
 
+  Weight const& weight() const;
+
  private:
   bool empty_ = true;
   decltype(std::declval<Vector>() * std::declval<Weight>()) weighted_sum_;

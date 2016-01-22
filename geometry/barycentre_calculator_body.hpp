@@ -29,6 +29,11 @@ Vector BarycentreCalculator<Vector, Scalar>::Get() const {
   return Vector(weighted_sum_ / weight_);
 }
 
+template<typename Vector, typename Scalar>
+Scalar const& BarycentreCalculator<Vector, Scalar>::weight() const {
+  return weight_;
+}
+
 template<typename T, typename Scalar>
 T Barycentre(std::vector<T> const& ts, std::vector<Scalar> const& weights) {
   CHECK_EQ(ts.size(), weights.size()) << "Ts and weights of unequal sizes";

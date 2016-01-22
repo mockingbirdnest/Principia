@@ -17,6 +17,9 @@ class BarycentreCalculator {
   void Add(Vector const& vector, Scalar const& weight);
   Vector Get() const;
 
+  // The sum of the weights added so far.
+  Scalar const& weight() const;
+
  private:
   bool empty_ = true;
   decltype(std::declval<Vector>() * std::declval<Scalar>()) weighted_sum_;
