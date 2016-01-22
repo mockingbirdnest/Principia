@@ -59,7 +59,8 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   system.Add(new_body(1 * Kilogram), /*parent=*/bodies[1], elements);
 
   auto barycentric_system = system.Get();
-  // primary, closest secondary, furthest secondary, tertiary.
+  // primary, closest secondary, furthest secondary, child of furthest
+  // secondary.
   std::vector<int> expected_order = {0, 2, 1, 3};
   for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
     EXPECT_TRUE(bodies[expected_order[i]] == barycentric_system.bodies[i].get())
