@@ -102,13 +102,13 @@ HierarchicalSystem<Frame>::Get() {
         std::vector<DegreesOfFreedom<SystemBarycentre>>
             barycentres_of_subsystems;
         {
-          // TODO(egg): should BarycentricCoordinates return DegreesOfFreedom?
-          // In what frame?
-          auto const barycentric_coordinates =
-              jacobi_coordinates.BarycentricCoordinates();
-          for (auto const& barycentric_dof : barycentric_coordinates) {
-            barycentres_of_subsystems.push_back(system_barycentre +
-                                                id_fb(barycentric_dof));
+          // TODO(egg): should BarycentricDegreesOfFreedom return
+          // DegreesOfFreedom instead of RelativeDegreesOfFreedom?  In what
+          // frame?
+          auto const barycentric_dof =
+              jacobi_coordinates.BarycentricDegreesOfFreedom();
+          for (auto const& dof : barycentric_dof) {
+            barycentres_of_subsystems.push_back(system_barycentre + id_fb(dof));
           }
         }
 
