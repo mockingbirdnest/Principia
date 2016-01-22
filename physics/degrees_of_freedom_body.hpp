@@ -118,7 +118,7 @@ BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::Get() const {
 }
 
 template<typename Frame, typename Weight>
-inline Weight const&
+Weight const&
 BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::weight() const {
   return implementation_.weight();
 }
@@ -139,9 +139,8 @@ BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::Get()
 }
 
 template<typename Frame, typename Weight>
-inline Weight const&
-BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>::weight()
-    const {
+Weight const& BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>,
+                                   Weight>::weight() const {
   return implementation_.weight();
 }
 

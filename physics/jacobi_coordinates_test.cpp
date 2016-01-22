@@ -1,6 +1,7 @@
 ﻿
 #include "jacobi_coordinates.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "geometry/frame.hpp"
@@ -32,9 +33,9 @@ class JacobiCoordinatesTest : public ::testing::Test {
 TEST_F(JacobiCoordinatesTest, Jacobi) {
   auto const x_positions = [](JacobiCoordinates<Frame> const& system) {
     std::vector<Length> result;
-    auto const barycentric_coordinates = system.BarycentricCoordinates();
-    std::transform(barycentric_coordinates.begin(),
-                   barycentric_coordinates.end(),
+    auto const barycentric_dof = system.BarycentricDegreesOfFreedom();
+    std::transform(barycentric_dof.begin(),
+                   barycentric_dof.end(),
                    std::back_inserter(result),
                    [](RelativeDegreesOfFreedom<Frame> const& dof) {
                      return dof.displacement().coordinates().x;

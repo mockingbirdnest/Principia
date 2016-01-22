@@ -17,6 +17,7 @@ class BarycentreCalculator {
   void Add(Vector const& vector, Scalar const& weight);
   Vector Get() const;
 
+  // The sum of the weights added so far.
   Scalar const& weight() const;
 
  private:
