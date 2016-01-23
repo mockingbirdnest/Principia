@@ -111,6 +111,8 @@
     <Text Include="initial_state_jd_2433374_470754460.proto.txt" />
     <Text Include="initial_state_jd_2436116_311504629.proto.txt" />
     <Text Include="initial_state_jd_2436145_604166667.proto.txt" />
+    <Text Include="initial_state_jd_2451564_587154910.proto.txt" />
+    <Text Include="initial_state_jd_2451564_808127140.proto.txt" />
     <Text Include="initial_state_two_bodies_test.proto.txt" />
   </ItemGroup>
   <ItemGroup>
