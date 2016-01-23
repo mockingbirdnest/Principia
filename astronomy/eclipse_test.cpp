@@ -61,15 +61,20 @@ class EclipseTest : public testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
         45 * Minute, 5 * Milli(Metre));
-    atmospheric_depth_ = ComputeAtmosphericDepthAtFirstContact();
+    atmospheric_depth_ = ComputeAtmosphericDepth();
   }
 
-  static Length ComputeAtmosphericDepthAtFirstContact() {
+  static Length ComputeAtmosphericDepth() {
     SolarSystem<ICRFJ2000Equator> solar_system_first_contact;
     solar_system_first_contact.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
             "initial_state_jd_2451564_587154910.proto.txt");
+    SolarSystem<ICRFJ2000Equator> solar_system_last_contact;
+    solar_system_last_contact.Initialize(
+        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" /
+            "initial_state_jd_2433374_470754460.proto.txt");
 
     auto const q_sun_first_contact =
         solar_system_first_contact.initial_state("Sun").position();
@@ -77,37 +82,63 @@ class EclipseTest : public testing::Test {
         solar_system_first_contact.initial_state("Earth").position();
     auto const q_moon_first_contact =
         solar_system_first_contact.initial_state("Moon").position();
+    auto const q_sun_last_contact =
+        solar_system_last_contact.initial_state("Sun").position();
+    auto const q_earth_last_contact =
+        solar_system_last_contact.initial_state("Earth").position();
+    auto const q_moon_last_contact =
+        solar_system_last_contact.initial_state("Moon").position();
 
     // Angle between the Sun-Earth axis and the tangent ray from the Sun to the
     // Earth.
-    auto const alpha = [&q_earth_first_contact,
-                        &q_sun_first_contact](Length const& depth) {
-      return ArcSin((r_sun + r_earth + depth) /
-                    (q_sun_first_contact - q_earth_first_contact).Norm());
+    auto const alpha = [](Length const& depth,
+                          Position<ICRFJ2000Equator> const& q_sun,
+                          Position<ICRFJ2000Equator> const& q_earth) {
+      return ArcSin((r_sun + r_earth + depth) / (q_sun - q_earth).Norm());
     };
 
     // Angle between the Earth-Moon axis and the tangent ray from the Earth to
     // the moon.
-    auto const beta = [&q_earth_first_contact,
-                       &q_moon_first_contact](Length const& depth) {
-      return ArcSin((r_moon + r_earth + depth) /
-                    (q_moon_first_contact - q_earth_first_contact).Norm());
+    auto const beta = [](Length const& depth,
+                         Position<ICRFJ2000Equator> const& q_earth,
+                         Position<ICRFJ2000Equator> const& q_moon) {
+      return ArcSin((r_moon + r_earth + depth) / (q_moon - q_earth).Norm());
     };
 
     // Angle between the Sun-Earth axis and the Earth-Moon axis.
-    auto const gamma =
-        ArcCos(InnerProduct(q_sun_first_contact - q_earth_first_contact,
-                            q_earth_first_contact - q_moon_first_contact) /
-               ((q_earth_first_contact - q_moon_first_contact).Norm() *
-                (q_sun_first_contact - q_earth_first_contact).Norm()));
+    auto const gamma = [](Position<ICRFJ2000Equator> const& q_sun,
+                          Position<ICRFJ2000Equator> const& q_earth,
+                          Position<ICRFJ2000Equator> const& q_moon) {
+      return ArcCos(InnerProduct(q_sun - q_earth, q_earth - q_moon) /
+                    ((q_earth - q_moon).Norm() * (q_sun - q_earth).Norm()));
+    };
 
-    // Find the atmospheric depth that cancels the error at this contact.
+    // Find the atmospheric depth that minimizes the error at both contacts.  We
+    // solve error(first_contact) + error(last_contact) = 0, which amounts to
+    // minimizing error(first_contact)^2 + error(last_contact)^2.
     Length const& actual_depth = Bisect(
-        [alpha, beta, gamma](Length const& depth) {
-          return gamma - alpha(depth) - beta(depth);
+        [alpha,
+         beta,
+         gamma,
+         q_sun_first_contact,
+         q_earth_first_contact,
+         q_moon_first_contact,
+         q_sun_last_contact,
+         q_earth_last_contact,
+         q_moon_last_contact](Length const& depth) {
+          return (gamma(q_sun_first_contact,
+                           q_earth_first_contact,
+                           q_moon_first_contact) -
+                     alpha(depth, q_sun_first_contact, q_earth_first_contact) -
+                     beta(depth, q_earth_first_contact, q_moon_first_contact)) +
+                 (gamma(q_sun_last_contact,
+                           q_earth_last_contact,
+                           q_moon_last_contact) -
+                     alpha(depth, q_sun_last_contact, q_earth_last_contact) -
+                     beta(depth, q_earth_last_contact, q_moon_last_contact));
         },
-        0 * Kilo(Metre),
-        1000 * Kilo(Metre));
+        10 * Kilo(Metre),
+        100 * Kilo(Metre));
     return actual_depth;
   }
 
@@ -178,10 +209,16 @@ class EclipseTest : public testing::Test {
         current_time - bisection_interval,
         current_time + bisection_interval);
     EXPECT_EQ(Sign(actual_contact_time - current_time),
-              Sign(time_error)) << NAMED(time_error);
+              Sign(time_error)) << NAMED(actual_contact_time - current_time);
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
                 AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
+    LOG(ERROR) << "-------------->"
+               << AbsoluteError(umbral_half_aperture(current_time),
+                                earth_moon_angle(current_time))
+               << " "
+               << Sign(actual_contact_time - current_time) *
+                      AbsoluteError(actual_contact_time, current_time);
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -250,10 +287,18 @@ class EclipseTest : public testing::Test {
         current_time - bisection_interval,
         current_time + bisection_interval);
     EXPECT_EQ(Sign(actual_contact_time - current_time),
-              Sign(time_error)) << NAMED(time_error);
+              Sign(time_error)) << NAMED(actual_contact_time - current_time);
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
                 AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
+    LOG(ERROR) << "-------------->"
+               << Sign(penumbral_half_aperture(current_time) -
+                       earth_moon_angle(current_time)) *
+                      AbsoluteError(penumbral_half_aperture(current_time),
+                                    earth_moon_angle(current_time))
+               << " "
+               << Sign(actual_contact_time - current_time) *
+                      AbsoluteError(actual_contact_time, current_time);
   }
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
@@ -281,12 +326,12 @@ TEST_F(EclipseTest, Year1950) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-7 * Radian,   -1 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    5E-7 * Radian,   -1 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-5 * Radian,  -60 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    5E-5 * Radian,  120 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    4E-5 * Radian,   60 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,   60 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian,   30 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian,   40 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2E-5 * Radian,   50 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    5E-6 * Radian,   12 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian,   30 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian,   30 * Second);
 
   // Times are TDB Julian Day for 1950-09-26.
   P1 = JulianDate(2433550.55712016);  // 01:21:43 UT
@@ -348,7 +393,24 @@ TEST_F(EclipseTest, Year1952) {
   // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 }
 
-#if 0
+#if 1
+TEST_F(EclipseTest, Year2000) {
+  // Times are TDB Julian Day for 2000-01-21.
+  auto P1 = JulianDate(2451564.58715491);  // 02:04:26 UT
+  auto U1 = JulianDate(2451564.62701602);  // 03:01:50
+  auto U2 = JulianDate(2451564.67089334);  // 04:05:01
+  auto U3 = JulianDate(2451564.72435399);  // 05:22:00
+  auto U4 = JulianDate(2451564.76820815);  // 06:25:09
+  auto P4 = JulianDate(2451564.80812714);  // 07:22:38
+
+  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -370 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -370 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -390 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -290 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -310 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -310 * Second);
+}
+
 TEST_F(EclipseTest, Year2048) {
   // Times are TDB Julian Day for 2048-01-01.
   auto P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
