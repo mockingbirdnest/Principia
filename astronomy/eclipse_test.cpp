@@ -69,7 +69,7 @@ class EclipseTest : public testing::Test {
     solar_system_first_contact.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433374_257884090.proto.txt");
+            "initial_state_jd_2451564_587154910.proto.txt");
 
     auto const q_sun_first_contact =
         solar_system_first_contact.initial_state("Sun").position();
