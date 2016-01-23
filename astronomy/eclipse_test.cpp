@@ -49,11 +49,18 @@ Length const r_sun = 696000.0 * Kilo(Metre);
 Length const r_earth = 6378.1363 * Kilo(Metre);
 Length const r_moon = 1738.0 * Kilo(Metre);
 
+// We follow A. Danjon, see http://eclipse.gsfc.nasa.gov/LEcat5/shadow.html and
+// http://www.imcce.fr/langues/fr/ephemerides/phenomenes/eclipses/lune/.
+Length const atmospheric_depth = (1.0 / 85.0 - 1.0 / 594.0) * r_earth;
+
+char const arrow[] = "-------------------> ";
+
 }  // namespace
 
 class EclipseTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
+    google::LogToStderr();
     solar_system_1950_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
@@ -61,54 +68,6 @@ class EclipseTest : public testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
         45 * Minute, 5 * Milli(Metre));
-    atmospheric_depth_ = ComputeAtmosphericDepthAtFirstContact();
-  }
-
-  static Length ComputeAtmosphericDepthAtFirstContact() {
-    SolarSystem<ICRFJ2000Equator> solar_system_first_contact;
-    solar_system_first_contact.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433374_257884090.proto.txt");
-
-    auto const q_sun_first_contact =
-        solar_system_first_contact.initial_state("Sun").position();
-    auto const q_earth_first_contact =
-        solar_system_first_contact.initial_state("Earth").position();
-    auto const q_moon_first_contact =
-        solar_system_first_contact.initial_state("Moon").position();
-
-    // Angle between the Sun-Earth axis and the tangent ray from the Sun to the
-    // Earth.
-    auto const alpha = [&q_earth_first_contact,
-                        &q_sun_first_contact](Length const& depth) {
-      return ArcSin((r_sun + r_earth + depth) /
-                    (q_sun_first_contact - q_earth_first_contact).Norm());
-    };
-
-    // Angle between the Earth-Moon axis and the tangent ray from the Earth to
-    // the moon.
-    auto const beta = [&q_earth_first_contact,
-                       &q_moon_first_contact](Length const& depth) {
-      return ArcSin((r_moon + r_earth + depth) /
-                    (q_moon_first_contact - q_earth_first_contact).Norm());
-    };
-
-    // Angle between the Sun-Earth axis and the Earth-Moon axis.
-    auto const gamma =
-        ArcCos(InnerProduct(q_sun_first_contact - q_earth_first_contact,
-                            q_earth_first_contact - q_moon_first_contact) /
-               ((q_earth_first_contact - q_moon_first_contact).Norm() *
-                (q_sun_first_contact - q_earth_first_contact).Norm()));
-
-    // Find the atmospheric depth that cancels the error at this contact.
-    Length const& actual_depth = Bisect(
-        [alpha, beta, gamma](Length const& depth) {
-          return gamma - alpha(depth) - beta(depth);
-        },
-        0 * Kilo(Metre),
-        1000 * Kilo(Metre));
-    return actual_depth;
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -132,7 +91,7 @@ class EclipseTest : public testing::Test {
           ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
       auto const q_earth =
           ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
-      return ArcSin((r_sun - (r_earth + atmospheric_depth_)) /
+      return ArcSin((r_sun - (r_earth + atmospheric_depth)) /
                     (q_sun - q_earth).Norm());
     };
 
@@ -151,7 +110,7 @@ class EclipseTest : public testing::Test {
       auto const apex_of_moon_locus_at_umbral_contact =
           q_earth +
           Normalize(q_earth - q_sun) *
-              (r_earth + atmospheric_depth_ + moon_offset_sign * r_moon) /
+              (r_earth + atmospheric_depth + moon_offset_sign * r_moon) /
               Sin(umbral_half_aperture(t));
       // Angle between Earth and Moon as seen at
       // |apex_of_moon_locus_at_umbral_contact|.
@@ -180,14 +139,13 @@ class EclipseTest : public testing::Test {
     EXPECT_EQ(Sign(actual_contact_time - current_time),
               Sign(time_error)) << NAMED(actual_contact_time - current_time);
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
-                AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
+                AllOf(Lt(Abs(time_error)), Gt(0.9 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
-    LOG(ERROR) << "-------------->"
-               << AbsoluteError(umbral_half_aperture(current_time),
-                                earth_moon_angle(current_time))
-               << " "
-               << Sign(actual_contact_time - current_time) *
-                      AbsoluteError(actual_contact_time, current_time);
+    LOG(INFO) << arrow << AbsoluteError(umbral_half_aperture(current_time),
+                                        earth_moon_angle(current_time))
+              << " "
+              << Sign(actual_contact_time - current_time) *
+                     AbsoluteError(actual_contact_time, current_time);
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -209,7 +167,7 @@ class EclipseTest : public testing::Test {
           ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
       auto const q_earth =
           ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
-      return ArcSin((r_sun + r_earth + atmospheric_depth_) /
+      return ArcSin((r_sun + r_earth + atmospheric_depth) /
                     (q_sun - q_earth).Norm());
     };
 
@@ -229,7 +187,7 @@ class EclipseTest : public testing::Test {
       auto const apex_of_moon_locus_at_penumbral_contact =
           q_earth +
           Normalize(q_sun - q_earth) *
-              (r_earth + atmospheric_depth_ + moon_offset_sign * r_moon) /
+              (r_earth + atmospheric_depth + moon_offset_sign * r_moon) /
               Sin(penumbral_half_aperture(t));
       // Angle between Earth and Moon as seen at
       // apex_of_moon_locus_at_penumbral_contact.
@@ -258,33 +216,26 @@ class EclipseTest : public testing::Test {
     EXPECT_EQ(Sign(actual_contact_time - current_time),
               Sign(time_error)) << NAMED(actual_contact_time - current_time);
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
-                AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
+                AllOf(Lt(Abs(time_error)), Gt(0.9 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
-    LOG(ERROR) << "-------------->"
-               << Sign(penumbral_half_aperture(current_time) -
-                       earth_moon_angle(current_time)) *
-                      AbsoluteError(penumbral_half_aperture(current_time),
-                                    earth_moon_angle(current_time))
-               << " "
-               << Sign(actual_contact_time - current_time) *
-                      AbsoluteError(actual_contact_time, current_time);
+    LOG(INFO) << arrow
+              << Sign(penumbral_half_aperture(current_time) -
+                      earth_moon_angle(current_time)) *
+                     AbsoluteError(penumbral_half_aperture(current_time),
+                                   earth_moon_angle(current_time))
+              << " "
+              << Sign(actual_contact_time - current_time) *
+                     AbsoluteError(actual_contact_time, current_time);
   }
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
   static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
-  static Length atmospheric_depth_;
 };
 
 SolarSystem<ICRFJ2000Equator> EclipseTest::solar_system_1950_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
-Length EclipseTest::atmospheric_depth_;
 
 #if !defined(_DEBUG)
-
-TEST_F(EclipseTest, AtmosphericDepth) {
-  EXPECT_THAT(atmospheric_depth_, AllOf(Lt(92 * Kilo(Metre)),
-                                        Gt(91 * Kilo(Metre))));
-}
 
 TEST_F(EclipseTest, Year1950) {
   // Times are TDB Julian Day for 1950-04-02.
@@ -295,12 +246,12 @@ TEST_F(EclipseTest, Year1950) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-7 * Radian,   -1 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    5E-7 * Radian,   -1 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-5 * Radian,  -60 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    5E-5 * Radian,  120 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    4E-5 * Radian,   60 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,   60 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 27 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian, 29 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2E-5 * Radian, 41 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    8E-6 * Radian, 19 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 29 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 30 * Second);
 
   // Times are TDB Julian Day for 1950-09-26.
   P1 = JulianDate(2433550.55712016);  // 01:21:43 UT
@@ -310,12 +261,12 @@ TEST_F(EclipseTest, Year1950) {
   U4 = JulianDate(2433550.75144885);  // 06:01:33
   P4 = JulianDate(2433550.800222);    // 07:11:47
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-6 * Radian,    3 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-6 * Radian,    4 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    2E-5 * Radian,  -30 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    6E-5 * Radian,  100 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    5E-5 * Radian,   70 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,   70 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 34 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3E-5 * Radian, 36 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-5 * Radian, 43 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    2E-5 * Radian, 27 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-5 * Radian, 35 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 36 * Second);
 }
 
 TEST_F(EclipseTest, Year1951) {
@@ -323,15 +274,15 @@ TEST_F(EclipseTest, Year1951) {
   auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-6 * Radian, -15 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,  70 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 29 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 26 * Second);
 
   // Times are TDB Julian Day for 1951-09-15.
   P1 = JulianDate(2433904.93736321);  // 10:29:16
   P4 = JulianDate(2433905.1002799);   // 14:23:52
 
-  CheckLunarPenumbralEclipse(P1, U14, 5E-6 * Radian, -13 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,  70 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 27 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 24 * Second);
 }
 
 TEST_F(EclipseTest, Year1952) {
@@ -341,10 +292,10 @@ TEST_F(EclipseTest, Year1952) {
   auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
   auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
 
-  CheckLunarPenumbralEclipse(P1, U14, 3E-6 * Radian,  -9 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian, -90 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    4E-5 * Radian, 150 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,  80 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 1E-5 * Radian, 29 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    4E-6 * Radian, 17 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 52 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 41 * Second);
 
   // Times are TDB Julian Day for 1952-08-05.
   P1 = JulianDate(2434230.22830075);  // P1 = 17:28:13 UT
@@ -352,10 +303,10 @@ TEST_F(EclipseTest, Year1952) {
   U4 = JulianDate(2434230.37606695);  // U4 = 21:01:00
   P4 = JulianDate(2434230.42161093);  // P4 = 22:06:35
 
-  CheckLunarPenumbralEclipse(P1, U14, 6E-6 * Radian, -13 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian, -30 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    4E-5 * Radian,  70 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 3E-5 * Radian,  60 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 8E-6 * Radian, 17 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    9E-6 * Radian, 17 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 26 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 27 * Second);
 
   // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
   // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
@@ -372,12 +323,12 @@ TEST_F(EclipseTest, Year2000) {
   auto U4 = JulianDate(2451564.76820815);  // 06:25:09
   auto P4 = JulianDate(2451564.80812714);  // 07:22:38
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -370 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -370 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -390 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -290 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -310 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -310 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9E-5 * Radian, -167 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2E-4 * Radian, -165 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -166 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -161 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -160 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8E-5 * Radian, -159 * Second);
 }
 
 TEST_F(EclipseTest, Year2048) {
@@ -389,12 +340,12 @@ TEST_F(EclipseTest, Year2048) {
   auto U4 = JulianDate(2469076.86158778);  // 08:39:33
   auto P4 = JulianDate(2469076.91195815);  // 09:52:05
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -370 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -370 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -390 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -290 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -310 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -310 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -339 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -337 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -334 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -339 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-4 * Radian, -335 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -334 * Second);
 }
 #endif
 
