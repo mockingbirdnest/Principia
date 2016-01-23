@@ -25,7 +25,8 @@ class HierarchicalSystem {
     std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   };
 
-  HierarchicalSystem(not_null<std::unique_ptr<MassiveBody const>> primary);
+  explicit HierarchicalSystem(
+      not_null<std::unique_ptr<MassiveBody const>> primary);
 
   // Adds the given |body| with the given |parent|.  |parent| must already have
   // been inserted.  |jacobi_osculating_elements| must be a valid argument to
@@ -35,21 +36,31 @@ class HierarchicalSystem {
            KeplerianElements<Frame> const& jacobi_osculating_elements);
 
   // Puts the barycentre of the system at the motionless origin of |Frame|;
-  // |*this| is invalid after a call to |Get()|.
-  BarycentricSystem Get();
+  // |ConsumeBarycentricSystem().bodies| is in preorder, where the satellites of
+  // a body are ordered by increasing semimajor axis.
+  // |*this| is invalid after a call to |ConsumeBarycentricSystem()|.
+  BarycentricSystem ConsumeBarycentricSystem();
 
  private:
   struct Subsystem;
+  // A |System| represents a |primary| body with orbiting |Subsystem|s, e.g.,
+  // the sun and its orbiting planetary systems.  |satellites| may be empty,
+  // representing the body |primary| with no satellites, e.g., Venus.
   struct System {
-    System(not_null<std::unique_ptr<MassiveBody const>> p)
-        : primary(std::move(p)){};
+    explicit System(not_null<std::unique_ptr<MassiveBody const>> primary)
+        : primary(std::move(primary)) {}
     virtual ~System() = default;
     not_null<std::unique_ptr<MassiveBody const>> primary;
     std::vector<not_null<std::unique_ptr<Subsystem>>> satellites;
   };
+  // A |Subsystem| is a |System| with osculating elements, seen as the
+  // osculating elements of its barycentre around the inner parent subsystem,
+  // e.g., the elements of the Jovian |Subsystem| would be the osculating
+  // elements of the barycentre of the Jovian system around the barycentre of
+  // the Sun and inner planets.
   struct Subsystem : public System {
-    Subsystem(not_null<std::unique_ptr<MassiveBody const>> p)
-        : System(std::move(p)){};
+    explicit Subsystem(not_null<std::unique_ptr<MassiveBody const>> primary)
+        : System(std::move(primary)) {}
     KeplerianElements<Frame> jacobi_osculating_elements;
   };
 

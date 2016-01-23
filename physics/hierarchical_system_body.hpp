@@ -2,7 +2,9 @@
 
 #include "physics/hierarchical_system.hpp"
 
+#include <algorithm>
 #include <iterator>
+#include <vector>
 
 namespace principia {
 namespace physics {
@@ -34,7 +36,7 @@ void HierarchicalSystem<Frame>::Add(
 
 template<typename Frame>
 typename HierarchicalSystem<Frame>::BarycentricSystem
-HierarchicalSystem<Frame>::Get() {
+HierarchicalSystem<Frame>::ConsumeBarycentricSystem() {
   auto const semimajor_axis_less_than = [](
       not_null<std::unique_ptr<Subsystem>> const& left,
       not_null<std::unique_ptr<Subsystem>> const& right) -> bool {
@@ -46,9 +48,11 @@ HierarchicalSystem<Frame>::Get() {
   struct BarycentricSubystem {
     // A |MassiveBody| with the mass of the whole subsystem.
     std::unique_ptr<MassiveBody> equivalent_body;
-    // The bodies composing the subsystem.
+    // The bodies composing the subsystem, in preorder, where the satellites
+    // are ordered by increasing semimajor axis.
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-    // Their |DegreesOfFreedom| with respect to the barycentre of the subsystem.
+    // Their |DegreesOfFreedom| with respect to the barycentre of the subsystem,
+    // in the same order.
     std::vector<RelativeDegreesOfFreedom<Frame>> barycentric_degrees_of_freedom;
   };
 
@@ -76,6 +80,7 @@ HierarchicalSystem<Frame>::Get() {
         // Jacobi coordinates for |system|, with satellite subsystems treated
         // as point masses at their barycentres.
         JacobiCoordinates<Frame> jacobi_coordinates(*system.primary);
+        // Add the primary first (preorder).
         result.bodies.emplace_back(std::move(system.primary));
 
         // The |n|th element of |satellite_degrees_of_freedom| contains the list

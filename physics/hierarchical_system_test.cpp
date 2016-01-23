@@ -1,6 +1,7 @@
 ﻿
 #include "hierarchical_system.hpp"
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -58,7 +59,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   elements.mean_anomaly = π * Radian;
   system.Add(new_body(1 * Kilogram), /*parent=*/bodies[1], elements);
 
-  auto barycentric_system = system.Get();
+  auto barycentric_system = system.ConsumeBarycentricSystem();
   // primary, closest secondary, furthest secondary, child of furthest
   // secondary.
   std::vector<int> expected_order = {0, 2, 1, 3};
