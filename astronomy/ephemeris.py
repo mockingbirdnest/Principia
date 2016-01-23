@@ -40,6 +40,15 @@ from astropy.time import Time
 # U4 = 21:01:00
 # P4 = 22:06:35
 
+# Total eclipse in January 2000.
+# 2000-01-21
+# P1 = 02:04:26 UT
+# U1 = 03:01:50
+# U2 = 04:05:01
+# U3 = 05:22:00
+# U4 = 06:25:09
+# P4 = 07:22:38
+
 # Last Lunar Eclipse will be 2048-01-01 
 # P1 = 03:52:39 UT
 # U1 = 05:05:17
@@ -90,6 +99,14 @@ eclipseTimes = Time(P1U14P4, format='isot', scale='utc')
 et2 = eclipseTimes.tdb
 csv.write(str(et2.jd))
 csv.write('\n')
+
+PP1U1234P4 = ['2000-01-21T02:04:26', '2000-01-21T03:01:50', \
+              '2000-01-21T04:05:01', '2000-01-21T05:22:00', \
+              '2000-01-21T06:25:09', '2000-01-21T07:22:38']
+eclipseTimes = Time(P1U1234P4, format='isot', scale='utc')
+et2 = eclipseTimes.tdb
+csv.write(str(et2.jd))
+csv.close()
 
 P1U1234P4 = ['2048-01-01T03:52:39', '2048-01-01T05:05:17', \
              '2048-01-01T06:24:27', '2048-01-01T07:20:23', \
