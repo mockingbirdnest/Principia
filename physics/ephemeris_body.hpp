@@ -724,11 +724,27 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
     auto const μ1_over_Δq_cubed = μ1 * one_over_Δq_cubed;
     acceleration_on_b2 += Δq * μ1_over_Δq_cubed;
 
+#if 0
+    Vector<Acceleration, Frame> const schwarzschild_acceleration1 =
+        3 * Δq * μ1 * (μ1 + μ2) /
+        (quantities::constants::SpeedOfLight *
+         quantities::constants::SpeedOfLight * Δq_squared * Δq_squared);
+    acceleration_on_b2 += schwarzschild_acceleration1;
+#endif
+
     // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
     // sive corporum duorum actiones in se mutuo semper esse æquales &
     // in partes contrarias dirigi.
     auto const μ2_over_Δq_cubed = μ2 * one_over_Δq_cubed;
     acceleration_on_b1 -= Δq * μ2_over_Δq_cubed;
+
+#if 0
+    Vector<Acceleration, Frame> const schwarzschild_acceleration2 =
+        3 * Δq * μ2 * (μ1 + μ2) /
+        (quantities::constants::SpeedOfLight *
+         quantities::constants::SpeedOfLight * Δq_squared * Δq_squared);
+    acceleration_on_b1 -= schwarzschild_acceleration2;
+#endif
 
     if (body1_is_oblate || body2_is_oblate) {
       Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;

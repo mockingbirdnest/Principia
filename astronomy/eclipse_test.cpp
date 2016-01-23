@@ -46,7 +46,7 @@ Sign const U23 = Sign(-1);
 
 // Interesting analysis of the Sun radius at http://www.icra.it/solar/Sole2.pdf.
 Length const r_sun = 696000.0 * Kilo(Metre);
-Length const r_earth = 6378.1363 * Kilo(Metre);
+Length const r_earth = (90 + 6378.1363) * Kilo(Metre);
 Length const r_moon = 1738.0 * Kilo(Metre);
 
 }  // namespace
@@ -60,7 +60,7 @@ class EclipseTest : public testing::Test {
             "initial_state_jd_2433282_500000000.proto.txt");
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-        60 * Minute, 5 * Milli(Metre));
+        45 * Minute, 5 * Milli(Metre));
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -145,6 +145,43 @@ class EclipseTest : public testing::Test {
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
+    auto const alpha = [this, earth, moon, sun](
+        Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      return ArcSin((r_sun + r_earth) / (q_sun - q_earth).Norm());
+    };
+
+    auto const beta = [this, earth, moon, sun](
+        Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      return ArcSin((r_moon + r_earth) / (q_moon - q_earth).Norm());
+    };
+
+    auto const gamma = [this, earth, moon, sun](
+        Instant const& t) {
+      auto const q_sun =
+          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_moon =
+          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_earth =
+          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      return ArcCos(
+          InnerProduct(q_sun - q_earth,
+                       q_earth - q_moon) /
+          ((q_earth - q_moon).Norm() *
+           (q_sun - q_earth).Norm()));
+    };
+
     auto const penumbral_half_aperture = [this, earth, moon, sun](
         Instant const& t) {
       auto const q_sun =
@@ -191,6 +228,19 @@ class EclipseTest : public testing::Test {
         << NAMED(penumbral_half_aperture(current_time)) << ", "
         << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
 
+    LOG(ERROR)<<AbsoluteError(penumbral_half_aperture(current_time),
+                              earth_moon_angle(current_time));
+    LOG(ERROR)<<"alpha="<<alpha(current_time)
+      <<" beta="<<beta(current_time)
+      <<" gamma="<<gamma(current_time)
+      <<" err="<<gamma(current_time)-alpha(current_time)-beta(current_time);
+    Instant const& actual_contact_time2 = Bisect(
+        [alpha, beta, gamma](Instant const& t) {
+          return gamma(t) - alpha(t) - beta(t);
+        },
+        current_time - bisection_interval,
+        current_time + bisection_interval);
+
     Instant const& actual_contact_time = Bisect(
         [earth_moon_angle, penumbral_half_aperture](Instant const& t) {
           return penumbral_half_aperture(t) - earth_moon_angle(t);
@@ -202,6 +252,10 @@ class EclipseTest : public testing::Test {
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
                 AllOf(Lt(Abs(time_error)), Gt(0.5 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
+
+    LOG(ERROR)<<AbsoluteError(actual_contact_time2, current_time)
+    <<" "<<AbsoluteError(actual_contact_time, current_time);
+
   }
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
@@ -213,12 +267,13 @@ std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
 
 #if !defined(_DEBUG)
 
-TEST_F(EclipseTest, FirstContact) {
+#if 0
+TEST_F(EclipseTest, FirstContact0) {
   SolarSystem<ICRFJ2000Equator> solar_system_first_contact;
   solar_system_first_contact.Initialize(
       SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2433374_257884090.proto.txt");
+          "initial_state_jd_2433292_500000000.proto.txt");
 
   Instant const& t = solar_system_first_contact.epoch();
   LOG(ERROR)<<t<<" "<<solar_system_1950_.epoch();
@@ -246,6 +301,129 @@ TEST_F(EclipseTest, FirstContact) {
   EXPECT_THAT(AbsoluteError(q_earth_first_contact, q_earth_1950), Lt(1 * Metre));
   EXPECT_THAT(AbsoluteError(q_moon_first_contact, q_moon_1950), Lt(1 * Metre));
 }
+#endif
+
+TEST_F(EclipseTest, FirstContact) {
+  SolarSystem<ICRFJ2000Equator> solar_system_first_contact;
+  solar_system_first_contact.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2433374_257884090.proto.txt");
+
+  Instant const& epoch = solar_system_first_contact.epoch();
+  LOG(ERROR) << epoch << " " << solar_system_1950_.epoch();
+  ephemeris_->Prolong(epoch);
+
+  auto const sun_1950 = solar_system_1950_.massive_body(*ephemeris_, "Sun");
+  auto const earth_1950 = solar_system_1950_.massive_body(*ephemeris_, "Earth");
+  auto const moon_1950 = solar_system_1950_.massive_body(*ephemeris_, "Moon");
+
+  auto const q_sun_1950 = ephemeris_->trajectory(sun_1950)->EvaluatePosition(
+      epoch, /*hint=*/nullptr);
+  auto const q_moon_1950 = ephemeris_->trajectory(moon_1950)->EvaluatePosition(
+      epoch, /*hint=*/nullptr);
+  auto const q_earth_1950 = ephemeris_->trajectory(earth_1950)
+                                ->EvaluatePosition(epoch, /*hint=*/nullptr);
+
+  auto const q_sun_first_contact =
+      solar_system_first_contact.initial_state("Sun").position();
+  auto const q_earth_first_contact =
+      solar_system_first_contact.initial_state("Earth").position();
+  auto const q_moon_first_contact =
+      solar_system_first_contact.initial_state("Moon").position();
+
+  auto const alpha = [solar_system_first_contact](
+      Length const& depth) {
+    auto const q_sun_first_contact =
+        solar_system_first_contact.initial_state("Sun").position();
+    auto const q_earth_first_contact =
+        solar_system_first_contact.initial_state("Earth").position();
+    auto const q_moon_first_contact =
+        solar_system_first_contact.initial_state("Moon").position();
+    return ArcSin((r_sun + r_earth + depth) /
+                  (q_sun_first_contact - q_earth_first_contact).Norm());
+  };
+
+  auto const beta = [solar_system_first_contact](
+      Length const& depth) {
+    auto const q_sun_first_contact =
+        solar_system_first_contact.initial_state("Sun").position();
+    auto const q_earth_first_contact =
+        solar_system_first_contact.initial_state("Earth").position();
+    auto const q_moon_first_contact =
+        solar_system_first_contact.initial_state("Moon").position();
+    return ArcSin((r_moon + r_earth + depth) /
+                  (q_moon_first_contact - q_earth_first_contact).Norm());
+  };
+
+  auto const gamma = [solar_system_first_contact](
+      Length const& depth) {
+    auto const q_sun_first_contact =
+        solar_system_first_contact.initial_state("Sun").position();
+    auto const q_earth_first_contact =
+        solar_system_first_contact.initial_state("Earth").position();
+    auto const q_moon_first_contact =
+        solar_system_first_contact.initial_state("Moon").position();
+    return ArcCos(InnerProduct(q_sun_first_contact - q_earth_first_contact,
+                               q_earth_first_contact - q_moon_first_contact) /
+                  ((q_earth_first_contact - q_moon_first_contact).Norm() *
+                   (q_sun_first_contact - q_earth_first_contact).Norm()));
+  };
+
+  LOG(ERROR) << "alpha=" << alpha(0 * Metre)
+             << " beta=" << beta(0 * Metre)
+             << " gamma=" << gamma(0 * Metre)
+             << " err=" << gamma(0 * Metre) - alpha(0 * Metre) - beta(0 * Metre);
+
+  Length const& actual_depth = Bisect(
+      [alpha, beta, gamma](Length const& depth) {
+        return gamma(depth) - alpha(depth) - beta(depth);
+      },
+      0 * Kilo(Metre),
+      1000 * Kilo(Metre));
+  LOG(ERROR) << actual_depth;
+
+  EXPECT_THAT(AbsoluteError(q_sun_first_contact, q_sun_1950), Lt(1 * Metre));
+  EXPECT_THAT(AbsoluteError(q_earth_first_contact, q_earth_1950),
+              Lt(1 * Metre));
+  EXPECT_THAT(AbsoluteError(q_moon_first_contact, q_moon_1950), Lt(1 * Metre));
+}
+
+#if 0
+TEST_F(EclipseTest, FirstContact1) {
+  SolarSystem<ICRFJ2000Equator> solar_system_first_contact;
+  solar_system_first_contact.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2436145_604166667.proto.txt");
+
+  Instant const& t = solar_system_first_contact.epoch();
+  LOG(ERROR)<<t<<" "<<solar_system_1950_.epoch();
+  ephemeris_->Prolong(t);
+
+  auto const sun_1950 = solar_system_1950_.massive_body(*ephemeris_, "Sun");
+  auto const earth_1950 = solar_system_1950_.massive_body(*ephemeris_, "Earth");
+  auto const moon_1950 = solar_system_1950_.massive_body(*ephemeris_, "Moon");
+
+  auto const q_sun_1950 =
+      ephemeris_->trajectory(sun_1950)->EvaluatePosition(t, /*hint=*/nullptr);
+  auto const q_moon_1950 =
+      ephemeris_->trajectory(moon_1950)->EvaluatePosition(t, /*hint=*/nullptr);
+  auto const q_earth_1950 =
+      ephemeris_->trajectory(earth_1950)->EvaluatePosition(t, /*hint=*/nullptr);
+
+  auto const q_sun_first_contact =
+      solar_system_first_contact.initial_state("Sun").position();
+  auto const q_earth_first_contact =
+      solar_system_first_contact.initial_state("Earth").position();
+  auto const q_moon_first_contact =
+      solar_system_first_contact.initial_state("Moon").position();
+
+  EXPECT_THAT(AbsoluteError(q_sun_first_contact, q_sun_1950), Lt(1 * Metre));
+  EXPECT_THAT(AbsoluteError(q_earth_first_contact, q_earth_1950), Lt(1 * Metre));
+  EXPECT_THAT(AbsoluteError(q_moon_first_contact, q_moon_1950), Lt(1 * Metre));
+}
+#endif
 
 TEST_F(EclipseTest, Year1950) {
   // Times are TDB Julian Day for 1950-04-02.
