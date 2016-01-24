@@ -35,8 +35,11 @@ class BurnEditor {
                     FormatTimeSpan(
                         TimeSpan.FromSeconds(
                             Planetarium.GetUniversalTime() - value)));
-    reference_frame_selector_ =
-        new ReferenceFrameSelector(manager, plugin, ReferenceFrameChanged);
+    reference_frame_selector_ = new ReferenceFrameSelector(
+                                    manager,
+                                    plugin,
+                                    ReferenceFrameChanged,
+                                    "Manœuvring frame");
     plugin_ = plugin;
     vessel_ = vessel;
     ComputeEngineCharacterestics();

@@ -49,6 +49,7 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Rect main_window_rectangle_;
 
   private Controlled<ReferenceFrameSelector> plotting_frame_selector_;
+  private Controlled<FlightPlanner> flight_planner_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -430,7 +431,11 @@ public partial class PrincipiaPluginAdapter
       Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
       plotting_frame_selector_.reset(
-          new ReferenceFrameSelector(this, plugin_, UpdateRenderingFrame));
+          new ReferenceFrameSelector(this, 
+                                     plugin_,
+                                     UpdateRenderingFrame,
+                                     "Plotting frame"));
+      flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
       plugin_source_ = PluginSource.SAVED_STATE;
@@ -823,6 +828,7 @@ public partial class PrincipiaPluginAdapter
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
+    flight_planner_.reset();
     DestroyRenderedTrajectory();
     navball_changed_ = true;
   }
@@ -888,6 +894,7 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
                                      "Force 2D trajectories");
     ReferenceFrameSelection();
+    flight_planner_.get().RenderButton();
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
@@ -1003,7 +1010,6 @@ public partial class PrincipiaPluginAdapter
 
   // NOTE(egg): Dummy UI elements for testing purposes, rendered in an
   // irrelevant part of the UI.
-  FlightPlanner test_flight_planner_;
 
   private void PredictionSettings() {
     bool changed_settings = false;
@@ -1017,10 +1023,6 @@ public partial class PrincipiaPluginAdapter
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
-    if (test_flight_planner_ == null) {
-      test_flight_planner_ = new FlightPlanner();
-    }
-    test_flight_planner_.Render();
   }
 
   private void KSPFeatures() {
@@ -1265,7 +1267,11 @@ public partial class PrincipiaPluginAdapter
       plugin_.EndInitialization();
     }
     plotting_frame_selector_.reset(
-        new ReferenceFrameSelector(this, plugin_, UpdateRenderingFrame));
+        new ReferenceFrameSelector(this,
+                                   plugin_,
+                                   UpdateRenderingFrame,
+                                   "Plotting frame"));
+    flight_planner_.reset(new FlightPlanner(this, plugin_));
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =

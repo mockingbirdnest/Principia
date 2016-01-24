@@ -7,14 +7,36 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class FlightPlanner {
+class FlightPlanner : WindowRenderer {
   public FlightPlanner(WindowRenderer.ManagerInterface manager,
-                       IntPtr plugin) {
+                       IntPtr plugin) : base(manager) {
     manager_ = manager;
     plugin_ = plugin;
   }
 
-  public void Render() {
+  protected override void RenderWindow() {
+    var old_skin = UnityEngine.GUI.skin;
+    UnityEngine.GUI.skin = null;
+    if (show_planner_) {
+      window_rectangle_ = UnityEngine.GUILayout.Window(
+                              id         : this.GetHashCode(),
+                              screenRect : window_rectangle_,
+                              func       : RenderPlanner,
+                              text       : "Flight plan");
+    }
+    UnityEngine.GUI.skin = old_skin;
+  }
+
+  public void RenderButton() {
+    var old_skin = UnityEngine.GUI.skin;
+    UnityEngine.GUI.skin = null;
+    if (UnityEngine.GUILayout.Button("Flight plan...")) {
+      show_planner_ = !show_planner_;
+    }
+    UnityEngine.GUI.skin = old_skin;
+  }
+
+  private void RenderPlanner(int window_id) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     UnityEngine.GUILayout.BeginVertical();
@@ -44,6 +66,7 @@ class FlightPlanner {
               plugin_.FlightPlanCreate(vessel_guid,
                                        plugin_.CurrentTime() + 1000,
                                        vessel_.GetTotalMass());
+              Shrink();
             }
           }
         }
@@ -54,25 +77,36 @@ class FlightPlanner {
           for (int i = 0; i < burn_editors_.Count - 1; ++i) {
             burn_editors_[i].Render(enabled : false);
           }
-          burn_editors_.Last().Render(enabled : true);
           if (burn_editors_.Count > 0) {
+            BurnEditor last_burn = burn_editors_.Last();
+            if (last_burn.Render(enabled : true)) {
+              plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
+              last_burn.Reset(
+                  plugin_.FlightPlanGetManoeuvre(
+                      vessel_guid,
+                      burn_editors_.Count - 1).burn);
+            }
             if (UnityEngine.GUILayout.Button(
                     "Delete",
                     UnityEngine.GUILayout.ExpandWidth(true))) {
               plugin_.FlightPlanRemoveLast(vessel_guid);
               burn_editors_.Last().Close();
               burn_editors_.RemoveAt(burn_editors_.Count - 1);
+              Shrink();
             }
           }
           if (UnityEngine.GUILayout.Button(
                   "Add",
                   UnityEngine.GUILayout.ExpandWidth(true))) {
-            double initial_time =
-                (burn_editors_.Count == 0
-                     ? plugin_.CurrentTime()
-                     : plugin_.FlightPlanGetManoeuvre(
-                           vessel_guid,
-                           burn_editors_.Count - 1).final_time) + 60;
+            double initial_time;
+            if (burn_editors_.Count == 0) {
+              initial_time = plugin_.CurrentTime() + 60;
+            } else {
+              initial_time =
+                  plugin_.FlightPlanGetManoeuvre(
+                      vessel_guid,
+                      burn_editors_.Count - 1).final_time + 60;
+            }
             burn_editors_.Add(
                 new BurnEditor(manager_, plugin_, vessel_, initial_time));
             bool inserted = plugin_.FlightPlanAppend(
@@ -81,11 +115,17 @@ class FlightPlanner {
             if (!inserted) {
               burn_editors_.RemoveAt(burn_editors_.Count - 1);
             }
+            Shrink();
           }
         }
       }
     }
     UnityEngine.GUILayout.EndVertical();
+
+    UnityEngine.GUI.DragWindow(
+        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+                                        height : 10000f));
+
     UnityEngine.GUI.skin = old_skin;
   }
 
@@ -93,8 +133,16 @@ class FlightPlanner {
     foreach (BurnEditor editor in burn_editors_) {
       editor.Close();
     }
+    if (burn_editors_ != null) {
+      Shrink();
+    }
     burn_editors_ = null;
     vessel_ = FlightGlobals.ActiveVessel;
+  }
+
+  private void Shrink() {
+    window_rectangle_.height = 0.0f;
+    window_rectangle_.width = 0.0f;
   }
 
   // Not owned.
@@ -103,8 +151,8 @@ class FlightPlanner {
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 
-  // TODO(egg): make mutable.
-  private const double excess_time_ = 60;
+  private bool show_planner_ = false;
+  private UnityEngine.Rect window_rectangle_;
 }
 
 }  // namespace ksp_plugin_adapter
