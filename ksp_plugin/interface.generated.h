@@ -148,23 +148,6 @@ void CDECL principia__DeserializePlugin(
     Plugin const** const plugin);
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__DirectlyInsertCelestial(
-    Plugin* const plugin,
-    int const celestial_index,
-    int const* const parent_index,
-    char const* const gravitational_parameter,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius,
-    char const* const x,
-    char const* const y,
-    char const* const z,
-    char const* const vx,
-    char const* const vy,
-    char const* const vz);
-
-extern "C" PRINCIPIA_DLL
 void CDECL principia__EndInitialization(
     Plugin* const plugin);
 
@@ -279,12 +262,38 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__InitGoogleLogging();
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__InsertCelestial(
+void CDECL principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
-    double const gravitational_parameter,
-    int const parent_index,
-    QP const from_parent);
+    int const* const parent_index,
+    char const* const gravitational_parameter,
+    char const* const axis_right_ascension,
+    char const* const axis_declination,
+    char const* const j2,
+    char const* const reference_radius,
+    char const* const x,
+    char const* const y,
+    char const* const z,
+    char const* const vx,
+    char const* const vy,
+    char const* const vz);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__InsertCelestialJacobiKeplerian(
+    Plugin* const plugin,
+    int const celestial_index,
+    int const* const parent_index,
+    char const* const gravitational_parameter,
+    char const* const axis_right_ascension,
+    char const* const axis_declination,
+    char const* const j2,
+    char const* const reference_radius,
+    double const eccentricity,
+    char const* const mean_motion,
+    char const* const inclination,
+    char const* const longitude_of_ascending_node,
+    char const* const argument_of_periapsis,
+    char const* const mean_anomaly);
 
 extern "C" PRINCIPIA_DLL
 bool CDECL principia__InsertOrKeepVessel(

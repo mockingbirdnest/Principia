@@ -154,25 +154,6 @@ internal static partial class Interface {
       ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertCelestial",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DirectlyInsertCelestial(
-      this IntPtr plugin,
-      int celestial_index,
-      ref int parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
-      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
-      [MarshalAs(UnmanagedType.LPStr)] String j2,
-      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
-      [MarshalAs(UnmanagedType.LPStr)] String x,
-      [MarshalAs(UnmanagedType.LPStr)] String y,
-      [MarshalAs(UnmanagedType.LPStr)] String z,
-      [MarshalAs(UnmanagedType.LPStr)] String vx,
-      [MarshalAs(UnmanagedType.LPStr)] String vy,
-      [MarshalAs(UnmanagedType.LPStr)] String vz);
-
-  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__EndInitialization",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void EndInitialization(
@@ -335,14 +316,42 @@ internal static partial class Interface {
   internal static extern void InitGoogleLogging();
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__InsertCelestial",
+             EntryPoint        = "principia__InsertCelestialAbsoluteCartesian",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertCelestial(
+  internal static extern void InsertCelestialAbsoluteCartesian(
       this IntPtr plugin,
       int celestial_index,
-      double gravitational_parameter,
-      int parent_index,
-      QP from_parent);
+      ref int parent_index,
+      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
+      [MarshalAs(UnmanagedType.LPStr)] String j2,
+      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
+      [MarshalAs(UnmanagedType.LPStr)] String x,
+      [MarshalAs(UnmanagedType.LPStr)] String y,
+      [MarshalAs(UnmanagedType.LPStr)] String z,
+      [MarshalAs(UnmanagedType.LPStr)] String vx,
+      [MarshalAs(UnmanagedType.LPStr)] String vy,
+      [MarshalAs(UnmanagedType.LPStr)] String vz);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__InsertCelestialJacobiKeplerian",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void InsertCelestialJacobiKeplerian(
+      this IntPtr plugin,
+      int celestial_index,
+      ref int parent_index,
+      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
+      [MarshalAs(UnmanagedType.LPStr)] String j2,
+      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
+      double eccentricity,
+      [MarshalAs(UnmanagedType.LPStr)] String mean_motion,
+      [MarshalAs(UnmanagedType.LPStr)] String inclination,
+      [MarshalAs(UnmanagedType.LPStr)] String longitude_of_ascending_node,
+      [MarshalAs(UnmanagedType.LPStr)] String argument_of_periapsis,
+      [MarshalAs(UnmanagedType.LPStr)] String mean_anomaly);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InsertOrKeepVessel",

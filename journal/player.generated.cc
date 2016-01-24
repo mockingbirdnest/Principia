@@ -15,7 +15,6 @@
   ran |= RunIfAppropriate<DeletePlugin>(*method);
   ran |= RunIfAppropriate<DeletePluginSerialization>(*method);
   ran |= RunIfAppropriate<DeserializePlugin>(*method);
-  ran |= RunIfAppropriate<DirectlyInsertCelestial>(*method);
   ran |= RunIfAppropriate<EndInitialization>(*method);
   ran |= RunIfAppropriate<FetchAndIncrement>(*method);
   ran |= RunIfAppropriate<FlightPlanAppend>(*method);
@@ -40,7 +39,8 @@
   ran |= RunIfAppropriate<HasPrediction>(*method);
   ran |= RunIfAppropriate<HasVessel>(*method);
   ran |= RunIfAppropriate<InitGoogleLogging>(*method);
-  ran |= RunIfAppropriate<InsertCelestial>(*method);
+  ran |= RunIfAppropriate<InsertCelestialAbsoluteCartesian>(*method);
+  ran |= RunIfAppropriate<InsertCelestialJacobiKeplerian>(*method);
   ran |= RunIfAppropriate<InsertOrKeepVessel>(*method);
   ran |= RunIfAppropriate<InsertSun>(*method);
   ran |= RunIfAppropriate<LogError>(*method);
