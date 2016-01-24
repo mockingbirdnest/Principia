@@ -112,6 +112,13 @@ void principia__FlightPlanDelete(Plugin const* const plugin,
   return m.Return();
 }
 
+bool principia__FlightPlanExists(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanExists> m({plugin, vessel_guid});
+  return m.Return(GetVessel(plugin, vessel_guid)->has_flight_plan());
+}
+
 NavigationManoeuvre principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,

@@ -933,6 +933,8 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(vessel, flight_plan())
       .WillRepeatedly(Return(&flight_plan));
 
+  EXPECT_TRUE(principia__FlightPlanExists(plugin_.get(), kVesselGUID));
+
   EXPECT_CALL(*plugin_, CreateFlightPlan(kVesselGUID,
                                          Instant() + 30 * Second,
                                          100 * Tonne));

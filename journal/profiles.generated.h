@@ -250,6 +250,20 @@ struct FlightPlanDelete {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
+struct FlightPlanExists {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = bool;
+
+  using Message = serialization::FlightPlanExists;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
 struct FlightPlanGetManoeuvre {
   struct In {
     Plugin const* const plugin;
