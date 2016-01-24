@@ -58,6 +58,15 @@
     <Text Include="initial_state_jd_2433292_500000000.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="initial_state_jd_2433374_470754460.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initial_state_jd_2451564_587154910.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initial_state_jd_2451564_808127140.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">
