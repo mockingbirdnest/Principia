@@ -22,11 +22,11 @@ static class CelestialExtensions {
 
 class ReferenceFrameSelector : WindowRenderer {
   public enum FrameType {
-    BODY_CENTRED_NON_ROTATING,
+    BODY_CENTRED_NON_ROTATING = 6000,
 #if HAS_SURFACE
     SURFACE,
 #endif
-    BARYCENTRIC_ROTATING,
+    BARYCENTRIC_ROTATING = 6001,
 #if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
     BODY_CENTRED_ALIGNED_WITH_PARENT
 #endif
@@ -56,10 +56,43 @@ class ReferenceFrameSelector : WindowRenderer {
         expanded_[celestial] = true;
       }
     }
-    ResetFrame();
+    on_change_();
   }
 
   public FrameType frame_type { get; private set; }
+
+  public NavigationFrameParameters FrameParameters() {
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        return new NavigationFrameParameters{
+            extension = (int)frame_type,
+            centre_index = selected_celestial_.flightGlobalsIndex};
+      case FrameType.BARYCENTRIC_ROTATING:
+        return new NavigationFrameParameters{
+            extension = (int)frame_type,
+            primary_index =
+                selected_celestial_.referenceBody.flightGlobalsIndex,
+            secondary_index = selected_celestial_.flightGlobalsIndex};
+      default:
+        throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
+    }
+  }
+
+  public void Reset(NavigationFrameParameters parameters) {
+    frame_type = (FrameType)parameters.extension;
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        selected_celestial_ = FlightGlobals.Bodies[parameters.centre_index];
+        break;
+      case FrameType.BARYCENTRIC_ROTATING:
+        selected_celestial_ = FlightGlobals.Bodies[parameters.secondary_index];
+        break;
+    }
+  }
+
+  public void Hide() {
+    show_selector_ = false;
+  }
 
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
@@ -155,7 +188,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                      celestial.name)) {
       if (selected_celestial_ != celestial) {
         selected_celestial_ = celestial;
-        ResetFrame();
+        on_change_();
       }
     }
     UnityEngine.GUILayout.EndHorizontal();
@@ -175,7 +208,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                     UnityEngine.GUILayout.Height(75))) {
       if (frame_type != value) {
         frame_type = value;
-        ResetFrame();
+        on_change_();
       }
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
@@ -184,34 +217,6 @@ class ReferenceFrameSelector : WindowRenderer {
   private void Shrink() {
     window_rectangle_.height = 0.0f;
     window_rectangle_.width = 0.0f;
-  }
-
-  private void ResetFrame() {
-    on_change_();
-    IntPtr navigation_frame = IntPtr.Zero;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-        navigation_frame = plugin_.NewBodyCentredNonRotatingNavigationFrame(
-                               selected_celestial_.flightGlobalsIndex);
-      break;
-#if HAS_SURFACE
-      case FrameType.SURFACE:
-      break;
-#endif
-      case FrameType.BARYCENTRIC_ROTATING:
-        navigation_frame =
-            plugin_.NewBarycentricRotatingNavigationFrame(
-                primary_index   :
-                    selected_celestial_.referenceBody.flightGlobalsIndex,
-                secondary_index :
-                    selected_celestial_.flightGlobalsIndex);
-      break;
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-      case FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT:
-      break;
-#endif
-    }
-    plugin_.SetPlottingFrame(ref navigation_frame);
   }
 
   private Callback on_change_;
