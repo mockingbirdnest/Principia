@@ -37,9 +37,11 @@ class ReferenceFrameSelector : WindowRenderer {
   public ReferenceFrameSelector(
       ManagerInterface manager,
       IntPtr plugin,
-      Callback on_change) : base(manager) {
+      Callback on_change,
+      string name) : base(manager) {
     plugin_ = plugin;
     on_change_ = on_change;
+    name_ = name;
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -97,7 +99,7 @@ class ReferenceFrameSelector : WindowRenderer {
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (UnityEngine.GUILayout.Button("Reference frame selection...")) {
+    if (UnityEngine.GUILayout.Button(name_ + " selection...")) {
       show_selector_ = !show_selector_;
     }
     UnityEngine.GUI.skin = old_skin;
@@ -111,7 +113,7 @@ class ReferenceFrameSelector : WindowRenderer {
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
                               func       : RenderSelector,
-                              text       : "Reference frame selection");
+                              text       : name_ + " selection");
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -226,6 +228,7 @@ class ReferenceFrameSelector : WindowRenderer {
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private CelestialBody selected_celestial_;
+  private readonly string name_;
 }
 
 }  // namespace ksp_plugin_adapter
