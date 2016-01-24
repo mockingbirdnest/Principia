@@ -24,7 +24,7 @@ class FlightPlanner : WindowRenderer {
                 formatter        : value =>
                     FormatPositiveTimeSpan(
                         TimeSpan.FromSeconds(
-                            value - plugin_.FlightPlanInitialTime(
+                            value - plugin_.FlightPlanGetInitialTime(
                                         vessel_.id.ToString()))));
 
   }
@@ -72,7 +72,7 @@ class FlightPlanner : WindowRenderer {
                  i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
                  ++i) {
               // Dummy initial time, we call |Reset| immediately afterwards.
-              final_time_.value = plugin_.FlightPlanFinalTime(vessel_guid);
+              final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
               burn_editors_.Add(
                   new BurnEditor(manager_, plugin_, vessel_, initial_time : 0));
               burn_editors_.Last().Reset(
@@ -90,7 +90,7 @@ class FlightPlanner : WindowRenderer {
       } else {
         if (final_time_.Render(enabled: true)) {
           plugin_.FlightPlanSetFinalTime(vessel_guid, final_time_.value);
-          final_time_.value = plugin_.FlightPlanFinalTime(vessel_guid);
+          final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
         }
         if (UnityEngine.GUILayout.Button("Delete flight plan")) {
           plugin_.FlightPlanDelete(vessel_guid);
