@@ -167,9 +167,7 @@ void FlightPlan::RecomputeSegments() {
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
-  if (manœuvre.duration() == Time()) {
-    CHECK(manœuvre.Δv() == Speed());
-  } else {
+  if (manœuvre.initial_time() < manœuvre.final_time()) {
     ephemeris_->FlowWithAdaptiveStep(
         segments_.back().get(),
         manœuvre.acceleration(*segments_.back()),
