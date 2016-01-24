@@ -21,6 +21,7 @@
   ran |= RunIfAppropriate<FlightPlanAppend>(*method);
   ran |= RunIfAppropriate<FlightPlanCreate>(*method);
   ran |= RunIfAppropriate<FlightPlanDelete>(*method);
+  ran |= RunIfAppropriate<FlightPlanExists>(*method);
   ran |= RunIfAppropriate<FlightPlanGetManoeuvre>(*method);
   ran |= RunIfAppropriate<FlightPlanNumberOfManoeuvres>(*method);
   ran |= RunIfAppropriate<FlightPlanNumberOfSegments>(*method);

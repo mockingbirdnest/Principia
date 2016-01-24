@@ -209,6 +209,13 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanExists",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern bool FlightPlanExists(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanGetManoeuvre",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(
