@@ -40,6 +40,14 @@ FlightPlan::~FlightPlan() {
   }
 }
 
+Instant FlightPlan::initial_time() const {
+  return initial_time_;
+}
+
+Instant FlightPlan::final_time() const {
+  return final_time_;
+}
+
 int FlightPlan::number_of_manœuvres() const {
   return manœuvres_.size();
 }

@@ -473,6 +473,42 @@ void FlightPlanExists::Run(Message const& message, not_null<Player::PointerMap*>
   CHECK(message.return_().result() == result);
 }
 
+void FlightPlanGetFinalTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanGetFinalTime::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanGetFinalTime::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto const result = interface::principia__FlightPlanGetFinalTime(plugin, vessel_guid);
+  CHECK(message.return_().result() == result);
+}
+
+void FlightPlanGetInitialTime::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_vessel_guid(in.vessel_guid);
+}
+
+void FlightPlanGetInitialTime::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(result);
+}
+
+void FlightPlanGetInitialTime::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto vessel_guid = in.vessel_guid().c_str();
+  auto const result = interface::principia__FlightPlanGetInitialTime(plugin, vessel_guid);
+  CHECK(message.return_().result() == result);
+}
+
 void FlightPlanGetManoeuvre::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));

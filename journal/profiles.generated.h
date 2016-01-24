@@ -264,6 +264,34 @@ struct FlightPlanExists {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
+struct FlightPlanGetFinalTime {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = double;
+
+  using Message = serialization::FlightPlanGetFinalTime;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct FlightPlanGetInitialTime {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+  };
+  using Return = double;
+
+  using Message = serialization::FlightPlanGetInitialTime;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
 struct FlightPlanGetManoeuvre {
   struct In {
     Plugin const* const plugin;

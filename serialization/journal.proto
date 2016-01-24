@@ -66,7 +66,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5074.
+  extensions 5000 to 5999;  // Last used: 5076.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -340,6 +340,38 @@ message FlightPlanExists {
   }
   message Return {
     required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanGetFinalTime {
+  extend Method {
+    optional FlightPlanGetFinalTime extension = 5076;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanGetInitialTime {
+  extend Method {
+    optional FlightPlanGetInitialTime extension = 5075;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required double result = 1;
   }
   required In in = 1;
   required Return return = 3;
