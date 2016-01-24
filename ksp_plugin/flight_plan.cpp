@@ -125,12 +125,7 @@ void FlightPlan::GetSegment(
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
   *begin = segments_[index]->Fork();
-  if (index == number_of_segments() - 1) {
-    *end = segments_[index]->End();
-  } else {
-    // |Find| returns |End| if the time is not found, which is what we need.
-    *end = segments_[index]->Find(segments_[index + 1]->Fork().time());
-  }
+  *end = segments_[index]->End();
 }
 
 FlightPlan::FlightPlan()
