@@ -50,6 +50,9 @@ class FlightPlan {
       Speed const& speed_integration_tolerance);
   virtual ~FlightPlan();
 
+  virtual Instant initial_time() const;
+  virtual Instant final_time() const;
+
   virtual int number_of_manœuvres() const;
   // |index| must be in [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int const index) const;
