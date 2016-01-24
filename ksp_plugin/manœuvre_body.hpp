@@ -68,8 +68,12 @@ void Manœuvre<InertialFrame, Frame>::set_duration(Time const& duration) {
 
 template<typename InertialFrame, typename Frame>
 Speed Manœuvre<InertialFrame, Frame>::Δv() const {
-  // Циолко́вский's equation.
-  return specific_impulse_ * std::log(initial_mass_ / final_mass());
+  if (initial_mass_ == final_mass()) {
+    return Speed();
+  } else {
+    // Циолко́вский's equation.
+    return specific_impulse_ * std::log(initial_mass_ / final_mass());
+  }
 }
 
 template<typename InertialFrame, typename Frame>

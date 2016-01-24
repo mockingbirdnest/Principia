@@ -48,12 +48,14 @@ FlightPlan& GetFlightPlan(Plugin const* const plugin,
 }
 
 Burn GetBurn(NavigationManœuvre const& manœuvre) {
+  Velocity<Frenet<NavigationFrame>> Δv =
+      manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
+                               : manœuvre.Δv() * manœuvre.direction();
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
           principia__GetNavigationFrameParameters(manœuvre.frame()),
           (manœuvre.initial_time() - Instant()) / Second,
-          ToXYZ((manœuvre.Δv() / (Metre / Second)) *
-                    manœuvre.direction().coordinates())};
+          ToXYZ(Δv.coordinates() / (Metre / Second))};
 }
 
 ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {

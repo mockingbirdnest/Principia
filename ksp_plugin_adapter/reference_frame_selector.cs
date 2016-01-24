@@ -32,7 +32,7 @@ class ReferenceFrameSelector : WindowRenderer {
 #endif
   }
 
-  public delegate void Callback();
+  public delegate void Callback(NavigationFrameParameters frame_parameters);
 
   public ReferenceFrameSelector(
       ManagerInterface manager,
@@ -58,7 +58,9 @@ class ReferenceFrameSelector : WindowRenderer {
         expanded_[celestial] = true;
       }
     }
-    on_change_();
+    on_change_(FrameParameters());
+    window_rectangle_.x = UnityEngine.Screen.width / 2;
+    window_rectangle_.y = UnityEngine.Screen.height / 3;
   }
 
   public FrameType frame_type { get; private set; }
@@ -190,7 +192,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                      celestial.name)) {
       if (selected_celestial_ != celestial) {
         selected_celestial_ = celestial;
-        on_change_();
+        on_change_(FrameParameters());
       }
     }
     UnityEngine.GUILayout.EndHorizontal();
@@ -210,7 +212,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                     UnityEngine.GUILayout.Height(75))) {
       if (frame_type != value) {
         frame_type = value;
-        on_change_();
+        on_change_(FrameParameters());
       }
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;

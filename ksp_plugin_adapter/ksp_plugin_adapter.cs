@@ -686,6 +686,9 @@ public partial class PrincipiaPluginAdapter
       return;
     }
     Vessel active_vessel = FlightGlobals.ActiveVessel;
+    if (active_vessel == null) {
+      return;
+    }
     string active_vessel_guid = active_vessel.id.ToString();
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
@@ -829,7 +832,7 @@ public partial class PrincipiaPluginAdapter
         lineName     : "rendered_prediction_",
         linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
         lineMaterial : MapView.OrbitLinesMaterial,
-        color        : XKCDColors.Fuchsia,
+        color        : colour,
         width        : 5,
         lineType     : LineType.Discrete);
     result.vectorObject.transform.parent =
@@ -1180,12 +1183,12 @@ public partial class PrincipiaPluginAdapter
     main_window_rectangle_.width = 0.0f;
   }
 
-  private void UpdateRenderingFrame() {
-    IntPtr new_plotting_frame = plugin_.NewNavigationFrame(
-        plotting_frame_selector_.get().FrameParameters());
+  private void UpdateRenderingFrame(
+      NavigationFrameParameters frame_parameters) {
+    IntPtr new_plotting_frame = plugin_.NewNavigationFrame(frame_parameters);
     plugin_.SetPlottingFrame(ref new_plotting_frame);
     if (fix_navball_in_plotting_frame_) {
-      navball_changed_ = true;
+     navball_changed_ = true;
       reset_rsas_target_ = true;
     }
   }

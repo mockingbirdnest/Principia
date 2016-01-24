@@ -164,13 +164,17 @@ void FlightPlan::RecomputeSegments() {
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
-  ephemeris_->FlowWithAdaptiveStep(
-      segments_.back().get(),
-      manœuvre.acceleration(*segments_.back()),
-      length_integration_tolerance_,
-      speed_integration_tolerance_,
-      integrator_,
-      manœuvre.final_time());
+  if (manœuvre.duration() == Time()) {
+    CHECK(manœuvre.Δv() == Speed());
+  } else {
+    ephemeris_->FlowWithAdaptiveStep(
+        segments_.back().get(),
+        manœuvre.acceleration(*segments_.back()),
+        length_integration_tolerance_,
+        speed_integration_tolerance_,
+        integrator_,
+        manœuvre.final_time());
+  }
 }
 
 void FlightPlan::CoastLastSegment(Instant const& final_time) {

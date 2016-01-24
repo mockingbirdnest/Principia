@@ -12,6 +12,8 @@ class FlightPlanner : WindowRenderer {
                        IntPtr plugin) : base(manager) {
     manager_ = manager;
     plugin_ = plugin;
+    window_rectangle_.x = UnityEngine.Screen.width / 2;
+    window_rectangle_.y = UnityEngine.Screen.height / 3;
   }
 
   protected override void RenderWindow() {
@@ -22,7 +24,8 @@ class FlightPlanner : WindowRenderer {
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
                               func       : RenderPlanner,
-                              text       : "Flight plan");
+                              text       : "Flight plan",
+                              options    : UnityEngine.GUILayout.MinWidth(500));
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -73,6 +76,7 @@ class FlightPlanner : WindowRenderer {
       } else {
         if (UnityEngine.GUILayout.Button("Delete flight plan")) {
           plugin_.FlightPlanDelete(vessel_guid);
+          Reset();
         } else {
           for (int i = 0; i < burn_editors_.Count - 1; ++i) {
             burn_editors_[i].Render(enabled : false);
@@ -109,9 +113,18 @@ class FlightPlanner : WindowRenderer {
             }
             burn_editors_.Add(
                 new BurnEditor(manager_, plugin_, vessel_, initial_time));
-            bool inserted = plugin_.FlightPlanAppend(
-                                vessel_guid,
-                                burn_editors_.Last().Burn());
+            Burn candidate_burn = burn_editors_.Last().Burn();
+            Log.Info("CANDIDATE BURN " + candidate_burn.delta_v.x + " " +
+                     candidate_burn.delta_v.y + " " + candidate_burn.delta_v.z +
+                     " " + candidate_burn.frame.extension + " " +
+                     candidate_burn.frame.centre_index + " " +
+                     candidate_burn.frame.primary_index + " " +
+                     candidate_burn.frame.secondary_index + " " +
+                     candidate_burn.initial_time + " " +
+                     candidate_burn.specific_impulse_in_seconds_g0 + " " +
+                     candidate_burn.thrust_in_kilonewtons);
+            bool inserted = plugin_.FlightPlanAppend(vessel_guid,
+                                                     candidate_burn);
             if (!inserted) {
               burn_editors_.RemoveAt(burn_editors_.Count - 1);
             }
@@ -130,10 +143,10 @@ class FlightPlanner : WindowRenderer {
   }
 
   private void Reset() {
-    foreach (BurnEditor editor in burn_editors_) {
-      editor.Close();
-    }
     if (burn_editors_ != null) {
+      foreach (BurnEditor editor in burn_editors_) {
+        editor.Close();
+      }
       Shrink();
     }
     burn_editors_ = null;

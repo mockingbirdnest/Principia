@@ -35,6 +35,7 @@ class BurnEditor {
                     FormatTimeSpan(
                         TimeSpan.FromSeconds(
                             Planetarium.GetUniversalTime() - value)));
+    initial_time_.value = initial_time;
     reference_frame_selector_ = new ReferenceFrameSelector(
                                     manager,
                                     plugin,
@@ -106,7 +107,7 @@ class BurnEditor {
                           z = Δv_binormal_.value } };
   }
 
-  public void ReferenceFrameChanged() {
+  public void ReferenceFrameChanged(NavigationFrameParameters parameters) {
     changed_reference_frame_ = true;
   }
 
