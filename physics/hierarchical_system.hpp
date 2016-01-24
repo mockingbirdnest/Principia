@@ -64,6 +64,21 @@ class HierarchicalSystem {
     KeplerianElements<Frame> jacobi_osculating_elements;
   };
 
+  // Data about a |Subsystem|.
+  struct BarycentricSubystem {
+    // A |MassiveBody| with the mass of the whole subsystem.
+    std::unique_ptr<MassiveBody> equivalent_body;
+    // The bodies composing the subsystem, in preorder, where the satellites
+    // are ordered by increasing semimajor axis.
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+    // Their |DegreesOfFreedom| relative to the barycentre of the subsystem, in
+    // the same order.
+    std::vector<RelativeDegreesOfFreedom<Frame>> barycentric_degrees_of_freedom;
+  };
+
+  // Invalidates its argument.
+  static BarycentricSubystem ToBarycentric(System& system);
+
   System system_;
   // Invariant: |subsystems_[p]->primary.get() == p|.
   // None of these pointers should be null, but I want to use operator[].
