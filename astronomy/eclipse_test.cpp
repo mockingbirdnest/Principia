@@ -29,6 +29,7 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
+using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 
@@ -136,16 +137,14 @@ class EclipseTest : public testing::Test {
         },
         current_time - bisection_interval,
         current_time + bisection_interval);
-    EXPECT_EQ(Sign(actual_contact_time - current_time),
-              Sign(time_error)) << NAMED(actual_contact_time - current_time);
+    EXPECT_THAT(Sign(actual_contact_time - current_time), Eq(Sign(time_error)))
+        << NAMED(actual_contact_time - current_time);
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
                 AllOf(Lt(Abs(time_error)), Gt(0.9 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
     LOG(INFO) << arrow << AbsoluteError(umbral_half_aperture(current_time),
                                         earth_moon_angle(current_time))
-              << " "
-              << Sign(actual_contact_time - current_time) *
-                     AbsoluteError(actual_contact_time, current_time);
+              << " " << actual_contact_time - current_time;
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -213,8 +212,8 @@ class EclipseTest : public testing::Test {
         },
         current_time - bisection_interval,
         current_time + bisection_interval);
-    EXPECT_EQ(Sign(actual_contact_time - current_time),
-              Sign(time_error)) << NAMED(actual_contact_time - current_time);
+    EXPECT_THAT(Sign(actual_contact_time - current_time), Eq(Sign(time_error)))
+        << NAMED(actual_contact_time - current_time);
     EXPECT_THAT(AbsoluteError(actual_contact_time, current_time),
                 AllOf(Lt(Abs(time_error)), Gt(0.9 * Abs(time_error))))
         << NAMED(actual_contact_time) << ", " << NAMED(current_time);
@@ -223,9 +222,7 @@ class EclipseTest : public testing::Test {
                       earth_moon_angle(current_time)) *
                      AbsoluteError(penumbral_half_aperture(current_time),
                                    earth_moon_angle(current_time))
-              << " "
-              << Sign(actual_contact_time - current_time) *
-                     AbsoluteError(actual_contact_time, current_time);
+              << " " << actual_contact_time - current_time;
   }
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
