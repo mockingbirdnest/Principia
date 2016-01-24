@@ -191,6 +191,11 @@ void CDECL principia__FlightPlanDelete(
     char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
+bool CDECL principia__FlightPlanExists(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
 NavigationManoeuvre CDECL principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
