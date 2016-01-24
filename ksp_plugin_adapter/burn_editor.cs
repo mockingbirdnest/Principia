@@ -43,7 +43,7 @@ class BurnEditor {
                                     "Manœuvring frame");
     plugin_ = plugin;
     vessel_ = vessel;
-    ComputeEngineCharacterestics();
+    ComputeEngineCharacteristics();
   }
 
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
@@ -58,11 +58,11 @@ class BurnEditor {
       UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Button("Active Engines")) {
         engine_warning_ = "";
-        ComputeEngineCharacterestics();
+        ComputeEngineCharacteristics();
         changed = true;
       } else if (UnityEngine.GUILayout.Button("Active RCS")) {
         engine_warning_ = "";
-        ComputeRCSCharacterestics();
+        ComputeRCSCharacteristics();
         changed = true;
       } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
         engine_warning_ = "";
@@ -80,9 +80,6 @@ class BurnEditor {
     changed |= initial_time_.Render(enabled);
     changed |= changed_reference_frame_;
     changed_reference_frame_ = false;
-    UnityEngine.GUILayout.Label(
-        text       : "(from end of previous burn)",
-        options    : UnityEngine.GUILayout.Width(250));
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
@@ -115,7 +112,7 @@ class BurnEditor {
     reference_frame_selector_.Dispose();
   }
 
-  private void ComputeEngineCharacterestics() {
+  private void ComputeEngineCharacteristics() {
     ModuleEngines[] active_engines =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
@@ -144,11 +141,11 @@ class BurnEditor {
     // If there are no engines, fall back onto RCS.
     if (thrust_in_kilonewtons_ == 0) {
       engine_warning_ = "No active engines, falling back to RCS";
-      ComputeRCSCharacterestics();
+      ComputeRCSCharacteristics();
     }
   }
 
-  private void ComputeRCSCharacterestics() {
+  private void ComputeRCSCharacteristics() {
     ModuleRCS[] active_rcs =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
@@ -191,11 +188,13 @@ class BurnEditor {
 
   // Returns the equivalent of the .NET >= 4 format
   // span.ToString(@"ddd \d hh \h mm \m\i\n ss.FFF \s").
+  // TODO(egg): well, there's the sign too...
   private string FormatTimeSpan (TimeSpan span) {
-     return span.Days.ToString("000") + " d " +
-            span.Hours.ToString("00") + " h " +
-            span.Minutes.ToString("00") + " min " +
-            span.Seconds.ToString("00") + " s";
+     return span.Ticks.ToString("+;-") +
+            span.Days.ToString("000;000") + " d " +
+            span.Hours.ToString("00;00") + " h " +
+            span.Minutes.ToString("00;00") + " min " +
+            span.Seconds.ToString("00;00") + " s";
   }
 
   private DifferentialSlider Δv_tangent_;

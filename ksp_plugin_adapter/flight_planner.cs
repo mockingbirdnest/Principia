@@ -14,6 +14,19 @@ class FlightPlanner : WindowRenderer {
     plugin_ = plugin;
     window_rectangle_.x = UnityEngine.Screen.width / 2;
     window_rectangle_.y = UnityEngine.Screen.height / 3;
+    final_time_ = new DifferentialSlider(
+                label : "Plan length",
+                unit : null,
+                log10_lower_rate : Log10TimeLowerRate,
+                log10_upper_rate : Log10TimeUpperRate,
+                min_value        : 10,
+                max_value        : double.PositiveInfinity,
+                formatter        : value =>
+                    FormatPositiveTimeSpan(
+                        TimeSpan.FromSeconds(
+                            value - plugin_.FlightPlanInitialTime(
+                                        vessel_.id.ToString()))));
+
   }
 
   protected override void RenderWindow() {
@@ -59,6 +72,7 @@ class FlightPlanner : WindowRenderer {
                  i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
                  ++i) {
               // Dummy initial time, we call |Reset| immediately afterwards.
+              final_time_.value = plugin_.FlightPlanFinalTime(vessel_guid);
               burn_editors_.Add(
                   new BurnEditor(manager_, plugin_, vessel_, initial_time : 0));
               burn_editors_.Last().Reset(
@@ -74,6 +88,10 @@ class FlightPlanner : WindowRenderer {
           }
         }
       } else {
+        if (final_time_.Render(enabled: true)) {
+          plugin_.FlightPlanSetFinalTime(vessel_guid, final_time_.value);
+          final_time_.value = plugin_.FlightPlanFinalTime(vessel_guid);
+        }
         if (UnityEngine.GUILayout.Button("Delete flight plan")) {
           plugin_.FlightPlanDelete(vessel_guid);
           Reset();
@@ -158,14 +176,26 @@ class FlightPlanner : WindowRenderer {
     window_rectangle_.width = 0.0f;
   }
 
+  private string FormatPositiveTimeSpan (TimeSpan span) {
+     return span.Days.ToString("000;000") + " d " +
+            span.Hours.ToString("00;00") + " h " +
+            span.Minutes.ToString("00;00") + " min " +
+            span.Seconds.ToString("00;00") + " s";
+  }
+
   // Not owned.
   private readonly IntPtr plugin_;
   private readonly WindowRenderer.ManagerInterface manager_;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 
+  private DifferentialSlider final_time_;
+
   private bool show_planner_ = false;
   private UnityEngine.Rect window_rectangle_;
+  
+  private const double Log10TimeLowerRate = 0.0;
+  private const double Log10TimeUpperRate = 7.0;
 }
 
 }  // namespace ksp_plugin_adapter
