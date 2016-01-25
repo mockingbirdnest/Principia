@@ -25,8 +25,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
       initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
       direction_(Normalize(direction)),
-      frame_(std::move(frame)),
-      coasting_trajectory_(nullptr) {}
+      frame_(std::move(frame)) {}
 
 template<typename InertialFrame, typename Frame>
 Force const& Manœuvre<InertialFrame, Frame>::thrust() const {

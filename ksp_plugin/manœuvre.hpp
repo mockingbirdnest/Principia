@@ -106,7 +106,7 @@ class Manœuvre {
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
   not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
-  DiscreteTrajectory<InertialFrame> const* coasting_trajectory_;
+  DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
 
 }  // namespace ksp_plugin
