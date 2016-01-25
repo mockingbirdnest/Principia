@@ -552,7 +552,6 @@ void Plugin::WriteToMessage(
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
   ephemeris_->Prolong(current_time_);
-  ephemeris_->ForgetAfter(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& index_celestial : celestials_) {
     celestial_to_index.emplace(index_celestial.second.get(),

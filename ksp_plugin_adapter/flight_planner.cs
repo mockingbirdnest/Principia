@@ -98,7 +98,7 @@ class FlightPlanner : WindowRenderer {
         } else {
           if (burn_editors_.Count > 0) {
             double current_time = plugin_.CurrentTime();
-            for (int i = 0; i < burn_editors_.Count - 1; ++i) {
+            for (int i = 0; i < burn_editors_.Count; ++i) {
               NavigationManoeuvre manoeuvre =
                   plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
               if (manoeuvre.final_time > current_time) {
