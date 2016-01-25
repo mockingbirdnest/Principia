@@ -96,6 +96,31 @@ class FlightPlanner : WindowRenderer {
           plugin_.FlightPlanDelete(vessel_guid);
           Reset();
         } else {
+          if (burn_editors_.Count > 0) {
+            double current_time = plugin_.CurrentTime();
+            for (int i = 0; i < burn_editors_.Count - 1; ++i) {
+              NavigationManoeuvre manoeuvre =
+                  plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
+              if (manoeuvre.final_time > current_time) {
+                if (manoeuvre.burn.initial_time > current_time) {
+                  UnityEngine.GUILayout.TextArea("Upcoming manœuvre: #" +
+                                                 (i + 1));
+                  UnityEngine.GUILayout.Label(
+                      "Ignition " +
+                      FormatTimeSpan(TimeSpan.FromSeconds(
+                          current_time - manoeuvre.burn.initial_time)));
+                } else {
+                  UnityEngine.GUILayout.TextArea("Ongoing manœuvre: #" +
+                                                 (i + 1));
+                  UnityEngine.GUILayout.Label(
+                      "Cutoff " +
+                      FormatTimeSpan(TimeSpan.FromSeconds(
+                          current_time - manoeuvre.burn.initial_time)));
+                }
+                break;
+              }
+            }
+          }
           for (int i = 0; i < burn_editors_.Count - 1; ++i) {
             UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
             burn_editors_[i].Render(enabled : false);
@@ -169,11 +194,15 @@ class FlightPlanner : WindowRenderer {
     window_rectangle_.width = 0.0f;
   }
 
-  private string FormatPositiveTimeSpan (TimeSpan span) {
+  internal static string FormatPositiveTimeSpan (TimeSpan span) {
      return span.Days.ToString("000;000") + " d " +
             span.Hours.ToString("00;00") + " h " +
             span.Minutes.ToString("00;00") + " min " +
             span.Seconds.ToString("00;00") + " s";
+  }
+
+  internal static string FormatTimeSpan (TimeSpan span) {
+    return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
   }
 
   // Not owned.

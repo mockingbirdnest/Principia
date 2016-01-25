@@ -32,7 +32,7 @@ class BurnEditor {
                 min_value        : 0,
                 max_value        : double.PositiveInfinity,
                 formatter        : value =>
-                    FormatTimeSpan(
+                    FlightPlanner.FormatTimeSpan(
                         TimeSpan.FromSeconds(
                             Planetarium.GetUniversalTime() - value)));
     initial_time_.value = initial_time;
@@ -197,17 +197,6 @@ class BurnEditor {
   private void UseMagicThrust() {
     thrust_in_kilonewtons_ = 1E15;
     specific_impulse_in_seconds_g0_ = 3E7;
-  }
-
-  // Returns the equivalent of the .NET >= 4 format
-  // span.ToString(@"ddd \d hh \h mm \m\i\n ss.FFF \s").
-  // TODO(egg): well, there's the sign too...
-  private string FormatTimeSpan (TimeSpan span) {
-     return span.Ticks.ToString("+;-") +
-            span.Days.ToString("000;000") + " d " +
-            span.Hours.ToString("00;00") + " h " +
-            span.Minutes.ToString("00;00") + " min " +
-            span.Seconds.ToString("00;00") + " s";
   }
 
   private DifferentialSlider Δv_tangent_;
