@@ -79,18 +79,21 @@ class BurnEditor {
     changed |= Δv_binormal_.Render(enabled);
     changed |= initial_time_.Render(enabled);
     changed |= changed_reference_frame_;
+    UnityEngine.GUILayout.Label("Burn duration : " + duration_ + " s");
     changed_reference_frame_ = false;
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
   }
 
-  public void Reset(Burn burn) {
+  public void Reset(NavigationManoeuvre manoeuvre) {
+    Burn burn = manoeuvre.burn;
     Δv_tangent_.value = burn.delta_v.x;
     Δv_normal_.value = burn.delta_v.y;
     Δv_binormal_.value = burn.delta_v.z;
     initial_time_.value = burn.initial_time;
     reference_frame_selector_.Reset(burn.frame);
+    duration_ = manoeuvre.duration;
   }
 
   public Burn Burn() {
@@ -204,6 +207,7 @@ class BurnEditor {
   private ReferenceFrameSelector reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
+  private double duration_;
 
   private const double Log10ΔvLowerRate = -3.0;
   private const double Log10ΔvUpperRate = 3.5;

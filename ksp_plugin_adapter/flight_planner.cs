@@ -76,7 +76,7 @@ class FlightPlanner : WindowRenderer {
               burn_editors_.Add(
                   new BurnEditor(manager_, plugin_, vessel_, initial_time : 0));
               burn_editors_.Last().Reset(
-                  plugin_.FlightPlanGetManoeuvre(vessel_guid, i).burn);
+                  plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
             }
           } else {
             if (UnityEngine.GUILayout.Button("Create flight plan")) {
@@ -97,16 +97,18 @@ class FlightPlanner : WindowRenderer {
           Reset();
         } else {
           for (int i = 0; i < burn_editors_.Count - 1; ++i) {
+            UnityEngine.GUILayout.TextArea("Manœuvre #" + i + ":");
             burn_editors_[i].Render(enabled : false);
           }
           if (burn_editors_.Count > 0) {
             BurnEditor last_burn = burn_editors_.Last();
+            UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
+                                           (burn_editors_.Count - 1) + ":");
             if (last_burn.Render(enabled : true)) {
               plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
               last_burn.Reset(
-                  plugin_.FlightPlanGetManoeuvre(
-                      vessel_guid,
-                      burn_editors_.Count - 1).burn);
+                  plugin_.FlightPlanGetManoeuvre(vessel_guid,
+                                                 burn_editors_.Count - 1));
             }
             if (UnityEngine.GUILayout.Button(
                     "Delete",
@@ -129,22 +131,13 @@ class FlightPlanner : WindowRenderer {
                       vessel_guid,
                       burn_editors_.Count - 1).final_time + 60;
             }
-            burn_editors_.Add(
-                new BurnEditor(manager_, plugin_, vessel_, initial_time));
-            Burn candidate_burn = burn_editors_.Last().Burn();
-            Log.Info("CANDIDATE BURN " + candidate_burn.delta_v.x + " " +
-                     candidate_burn.delta_v.y + " " + candidate_burn.delta_v.z +
-                     " " + candidate_burn.frame.extension + " " +
-                     candidate_burn.frame.centre_index + " " +
-                     candidate_burn.frame.primary_index + " " +
-                     candidate_burn.frame.secondary_index + " " +
-                     candidate_burn.initial_time + " " +
-                     candidate_burn.specific_impulse_in_seconds_g0 + " " +
-                     candidate_burn.thrust_in_kilonewtons);
+            var editor =
+                new BurnEditor(manager_, plugin_, vessel_, initial_time);
+            Burn candidate_burn = editor.Burn();
             bool inserted = plugin_.FlightPlanAppend(vessel_guid,
                                                      candidate_burn);
-            if (!inserted) {
-              burn_editors_.RemoveAt(burn_editors_.Count - 1);
+            if (inserted) {
+              burn_editors_.Add(editor);
             }
             Shrink();
           }
