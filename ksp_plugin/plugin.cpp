@@ -543,6 +543,10 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
                                Vector<double, Frenet<Navigation>>({0, 0, 1}));
 }
 
+OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
+  return kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget();
+}
+
 Instant Plugin::CurrentTime() const {
   return current_time_;
 }
@@ -753,10 +757,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   return Rotation<Barycentric, AliceSun>(
       planetarium_rotation_,
       Bivector<double, Barycentric>({0, 0, -1}));
-}
-
-OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
-  return kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget();
 }
 
 void Plugin::CleanUpVessels() {

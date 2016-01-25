@@ -21,6 +21,7 @@ using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
+using ksp_plugin::WorldSun;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -66,7 +67,8 @@ ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {
               ToR3Element(burn.delta_v) * (Metre / Second))};
 }
 
-NavigationManoeuvre ToNavigationManoeuvre(NavigationManœuvre const& manœuvre) {
+NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin, 
+                                          NavigationManœuvre const& manœuvre) {
   NavigationManoeuvre result;
   result.burn = GetBurn(manœuvre);
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
@@ -77,7 +79,11 @@ NavigationManoeuvre ToNavigationManoeuvre(NavigationManœuvre const& manœuvre) 
   result.time_of_half_delta_v =
       (manœuvre.time_of_half_Δv() - Instant()) / Second;
   result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
-  result.direction = ToXYZ(manœuvre.direction().coordinates());
+  Vector<double, Barycentric> barycentric_inertial_direction =
+      manœuvre.inertial_direction();
+  Vector<double, World> world_inertial_direction = Identity<WorldSun, World>()(
+      plugin->BarycentricToWorldSun()(barycentric_inertial_direction));
+  result.inertial_direction = ToXYZ(world_inertial_direction.coordinates());
   return result;
 }
 
@@ -141,7 +147,8 @@ NavigationManoeuvre principia__FlightPlanGetManoeuvre(
                                                       vessel_guid,
                                                       index});
   return m.Return(ToNavigationManoeuvre(
-             GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
+                      plugin,
+                      GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
 }
 
 int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,

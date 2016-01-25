@@ -45,7 +45,7 @@ struct NavigationManoeuvre {
   double final_time;
   double time_of_half_delta_v;
   double time_to_half_delta_v;
-  XYZ direction;
+  XYZ inertial_direction;
 };
 
 static_assert(std::is_standard_layout<NavigationManoeuvre>::value,

@@ -42,7 +42,7 @@ class Manœuvre {
                frame);
   Manœuvre(Manœuvre&&) = default;
   Manœuvre& operator=(Manœuvre&&) = default;
-  ~Manœuvre() = default;
+  virtual ~Manœuvre() = default;
 
   Force const& thrust() const;
   Mass const& initial_mass() const;
@@ -92,7 +92,7 @@ class Manœuvre {
       not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory);
 
   // Intensity, timing and coasting trajectory must have been set.
-  Vector<double, InertialFrame> inertial_direction() const;
+  virtual Vector<double, InertialFrame> inertial_direction() const;
 
   // Intensity, timing and coasting trajectory must have been set.  The result
   // is valid until |*this| is destroyed.
