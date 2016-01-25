@@ -48,7 +48,7 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
-  private Controlled<ReferenceFrameSelector> plotting_frame_selector_;
+  internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
   private Controlled<FlightPlanner> flight_planner_;
 
   private IntPtr plugin_ = IntPtr.Zero;

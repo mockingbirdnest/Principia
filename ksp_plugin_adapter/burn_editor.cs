@@ -7,7 +7,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class BurnEditor {
-  public BurnEditor(WindowRenderer.ManagerInterface manager,
+  public BurnEditor(PrincipiaPluginAdapter adapter,
                     IntPtr plugin,
                     Vessel vessel,
                     double initial_time) {
@@ -37,12 +37,15 @@ class BurnEditor {
                             Planetarium.GetUniversalTime() - value)));
     initial_time_.value = initial_time;
     reference_frame_selector_ = new ReferenceFrameSelector(
-                                    manager,
+                                    adapter,
                                     plugin,
                                     ReferenceFrameChanged,
                                     "Manœuvring frame");
     plugin_ = plugin;
     vessel_ = vessel;
+    adapter_ = adapter;
+    reference_frame_selector_.Reset(
+        adapter_.plotting_frame_selector_.get().FrameParameters());
     ComputeEngineCharacteristics();
   }
 
@@ -54,7 +57,6 @@ class BurnEditor {
     UnityEngine.GUILayout.BeginVertical();
     bool changed = false;
     if (enabled) {
-      reference_frame_selector_.RenderButton();
       UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Button("Active Engines")) {
         engine_warning_ = "";
@@ -71,15 +73,23 @@ class BurnEditor {
       }
       UnityEngine.GUILayout.EndHorizontal();
       UnityEngine.GUILayout.TextArea(engine_warning_);
+      reference_frame_selector_.RenderButton();
     } else {
       reference_frame_selector_.Hide();
     }
+    string frame_warning = "";
+    if (!reference_frame_selector_.FrameParameters().Equals(
+            adapter_.plotting_frame_selector_.get().FrameParameters())) {
+      frame_warning = "Manœuvre frame differs from plotting frame";
+    }
+    UnityEngine.GUILayout.TextArea(frame_warning);
     changed |= Δv_tangent_.Render(enabled);
     changed |= Δv_normal_.Render(enabled);
     changed |= Δv_binormal_.Render(enabled);
     changed |= initial_time_.Render(enabled);
     changed |= changed_reference_frame_;
-    UnityEngine.GUILayout.Label("Burn duration : " + duration_ + " s");
+    UnityEngine.GUILayout.Label("Burn duration : " + Math.Round(duration_) +
+                                " s");
     changed_reference_frame_ = false;
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;
@@ -156,17 +166,17 @@ class BurnEditor {
                        (module as ModuleRCS).rcsEnabled
                  select module as ModuleRCS)).SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
-    List<double> thrusts = new List<double>();
-    foreach (ModuleRCS rcs in active_rcs) {
-      thrusts.Add(0);
-      for (int i = 0; i < rcs.thrusterTransforms.Count; ++i) {
-        thrusts[thrusts.Count - 1] +=
-            Math.Max(0,
-                     Vector3d.Dot(-rcs.thrusterTransforms[i].forward *
-                                      rcs.thrustForces[i],
-                                  reference_direction));
-      }
-    }
+    // NOTE(egg): NathanKell informs me that in > 1.0.5, RCS has a useZaxis
+    // property, that controls whether they thrust up or -forward.  The madness
+    // keeps piling up.
+    double[] thrusts =
+        (from engine in active_rcs
+         select engine.thrusterPower *
+             (from transform in engine.thrusterTransforms
+              select Math.Max(0,
+                              Vector3d.Dot(reference_direction,
+                                           transform.up))).Average()).
+            ToArray();
     thrust_in_kilonewtons_ = thrusts.Sum();
 
     // This would use zip if we had 4.0 or later.  We loop for now.
@@ -217,6 +227,7 @@ class BurnEditor {
   // Not owned.
   private readonly IntPtr plugin_;
   private readonly Vessel vessel_;
+  private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";

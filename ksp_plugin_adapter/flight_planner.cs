@@ -8,9 +8,9 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 class FlightPlanner : WindowRenderer {
-  public FlightPlanner(WindowRenderer.ManagerInterface manager,
-                       IntPtr plugin) : base(manager) {
-    manager_ = manager;
+  public FlightPlanner(PrincipiaPluginAdapter adapter,
+                       IntPtr plugin) : base(adapter) {
+    adapter_ = adapter;
     plugin_ = plugin;
     window_rectangle_.x = UnityEngine.Screen.width / 2;
     window_rectangle_.y = UnityEngine.Screen.height / 3;
@@ -74,7 +74,7 @@ class FlightPlanner : WindowRenderer {
               // Dummy initial time, we call |Reset| immediately afterwards.
               final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
               burn_editors_.Add(
-                  new BurnEditor(manager_, plugin_, vessel_, initial_time : 0));
+                  new BurnEditor(adapter_, plugin_, vessel_, initial_time : 0));
               burn_editors_.Last().Reset(
                   plugin_.FlightPlanGetManoeuvre(vessel_guid, i));
             }
@@ -97,13 +97,13 @@ class FlightPlanner : WindowRenderer {
           Reset();
         } else {
           for (int i = 0; i < burn_editors_.Count - 1; ++i) {
-            UnityEngine.GUILayout.TextArea("Manœuvre #" + i + ":");
+            UnityEngine.GUILayout.TextArea("Manœuvre #" + (i + 1) + ":");
             burn_editors_[i].Render(enabled : false);
           }
           if (burn_editors_.Count > 0) {
             BurnEditor last_burn = burn_editors_.Last();
             UnityEngine.GUILayout.TextArea("Editing manœuvre #" +
-                                           (burn_editors_.Count - 1) + ":");
+                                           (burn_editors_.Count) + ":");
             if (last_burn.Render(enabled : true)) {
               plugin_.FlightPlanReplaceLast(vessel_guid, last_burn.Burn());
               last_burn.Reset(
@@ -132,7 +132,7 @@ class FlightPlanner : WindowRenderer {
                       burn_editors_.Count - 1).final_time + 60;
             }
             var editor =
-                new BurnEditor(manager_, plugin_, vessel_, initial_time);
+                new BurnEditor(adapter_, plugin_, vessel_, initial_time);
             Burn candidate_burn = editor.Burn();
             bool inserted = plugin_.FlightPlanAppend(vessel_guid,
                                                      candidate_burn);
@@ -178,7 +178,7 @@ class FlightPlanner : WindowRenderer {
 
   // Not owned.
   private readonly IntPtr plugin_;
-  private readonly WindowRenderer.ManagerInterface manager_;
+  private readonly PrincipiaPluginAdapter adapter_;
   private Vessel vessel_;
   private List<BurnEditor> burn_editors_;
 
