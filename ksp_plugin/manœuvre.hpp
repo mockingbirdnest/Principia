@@ -85,11 +85,18 @@ class Manœuvre {
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 
-  // Intensity and timing must have been set.  The result is valid until
-  // |*this| is destroyed.  |coasting_trajectory| must have a point at
-  // |initial_time()|.
-  typename Ephemeris<InertialFrame>::IntrinsicAcceleration acceleration(
-      DiscreteTrajectory<InertialFrame> const& coasting_trajectory) const;
+  // Sets the trajectory at the end of which the mannœuvre takes place.  Must
+  // be called before any of the functions below.  |coasting_trajectory| must
+  // have a point at |initial_time()|.
+  void set_coasting_trajectory(
+      not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory);
+
+  // Intensity, timing and coasting trajectory must have been set.
+  Vector<double, InertialFrame> inertial_direction() const;
+
+  // Intensity, timing and coasting trajectory must have been set.  The result
+  // is valid until |*this| is destroyed.
+  typename Ephemeris<InertialFrame>::IntrinsicAcceleration acceleration() const;
 
  private:
   Force const thrust_;
@@ -99,6 +106,7 @@ class Manœuvre {
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
   not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
+  DiscreteTrajectory<InertialFrame> const* coasting_trajectory_;
 };
 
 }  // namespace ksp_plugin
