@@ -166,9 +166,12 @@ class BurnEditor {
                        (module as ModuleRCS).rcsEnabled
                  select module as ModuleRCS)).SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
-    // NOTE(egg): NathanKell informs me that in > 1.0.5, RCS has a useZaxis
+    // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
     // property, that controls whether they thrust up or -forward.  The madness
     // keeps piling up.
+    // <NathanKell> except due to a typo it's +forward not -forward at the
+    //              moment. I'll fix that for 1.1.
+    // It keeps piling up, I tell you.
     double[] thrusts =
         (from engine in active_rcs
          select engine.thrusterPower *
