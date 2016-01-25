@@ -11,6 +11,9 @@ class MockFlightPlan : public FlightPlan {
  public:
   MockFlightPlan() : FlightPlan() {}
 
+  MOCK_CONST_METHOD0(initial_time, Instant());
+  MOCK_CONST_METHOD0(final_time, Instant());
+
   MOCK_CONST_METHOD0(number_of_manœuvres, int());
   MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int const index));
 

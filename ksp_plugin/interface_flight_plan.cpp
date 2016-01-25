@@ -119,6 +119,20 @@ bool principia__FlightPlanExists(
   return m.Return(GetVessel(plugin, vessel_guid)->has_flight_plan());
 }
 
+double principia__FlightPlanGetFinalTime(Plugin const* const plugin,
+                                         char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetFinalTime> m({plugin, vessel_guid});
+  return m.Return(
+      (GetFlightPlan(plugin, vessel_guid).final_time() - Instant()) / Second);
+}
+
+double principia__FlightPlanGetInitialTime(Plugin const* const plugin,
+                                           char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetInitialTime> m({plugin, vessel_guid});
+  return m.Return(
+      (GetFlightPlan(plugin, vessel_guid).initial_time() - Instant()) / Second);
+}
+
 NavigationManoeuvre principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,

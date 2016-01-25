@@ -216,6 +216,20 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanGetFinalTime",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern double FlightPlanGetFinalTime(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanGetInitialTime",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern double FlightPlanGetInitialTime(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanGetManoeuvre",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(

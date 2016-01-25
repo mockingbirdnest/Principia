@@ -949,6 +949,14 @@ TEST_F(InterfaceTest, FlightPlan) {
                                                 kVesselGUID,
                                                 60));
 
+  EXPECT_CALL(flight_plan, initial_time())
+      .WillOnce(Return(Instant() + 3 * Second));
+  EXPECT_EQ(3, principia__FlightPlanGetInitialTime(plugin_.get(), kVesselGUID));
+
+  EXPECT_CALL(flight_plan, final_time())
+      .WillOnce(Return(Instant() + 4 * Second));
+  EXPECT_EQ(4, principia__FlightPlanGetFinalTime(plugin_.get(), kVesselGUID));
+
   EXPECT_CALL(flight_plan, SetTolerances(111 * Metre, 222 * (Metre / Second)));
   principia__FlightPlanSetTolerances(plugin_.get(), kVesselGUID, 111, 222);
 

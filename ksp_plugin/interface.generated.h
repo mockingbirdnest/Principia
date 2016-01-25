@@ -196,6 +196,16 @@ bool CDECL principia__FlightPlanExists(
     char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
+double CDECL principia__FlightPlanGetFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+double CDECL principia__FlightPlanGetInitialTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
 NavigationManoeuvre CDECL principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
