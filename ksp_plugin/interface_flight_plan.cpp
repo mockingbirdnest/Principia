@@ -67,7 +67,7 @@ ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {
               ToR3Element(burn.delta_v) * (Metre / Second))};
 }
 
-NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin, 
+NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin,
                                           NavigationManœuvre const& manœuvre) {
   NavigationManoeuvre result;
   result.burn = GetBurn(manœuvre);
