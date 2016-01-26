@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include "base/macros.hpp"
+#include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {

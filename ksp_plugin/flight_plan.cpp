@@ -173,8 +173,10 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      integrator_(*testing_utilities::make_not_null<AdaptiveStepSizeIntegrator<
-                      Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
+      integrator_(
+          *testing_utilities::make_not_null<
+              AdaptiveStepSizeIntegrator<
+                  Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
