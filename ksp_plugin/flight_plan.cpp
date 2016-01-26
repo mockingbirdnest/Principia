@@ -7,11 +7,11 @@ namespace principia {
 namespace ksp_plugin {
 
 FlightPlan::FlightPlan(
-    not_null<DiscreteTrajectory<Barycentric>*> root,
+    not_null<DiscreteTrajectory<Barycentric>*> const root,
     Instant const& initial_time,
     Instant const& final_time,
     Mass const& initial_mass,
-    not_null<Ephemeris<Barycentric>*> ephemeris,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
     AdaptiveStepSizeIntegrator<
         Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
     Length const& length_integration_tolerance,
@@ -133,12 +133,48 @@ void FlightPlan::GetSegment(
   }
 }
 
+void FlightPlan::WriteToMessage(
+    not_null<serialization::FlightPlan*> const message) const {
+  initial_mass_.WriteToMessage(message->mutable_initial_mass());
+  initial_time_.WriteToMessage(message->mutable_initial_time());
+  final_time_.WriteToMessage(message->mutable_final_time());
+  length_integration_tolerance_.WriteToMessage(
+      message->mutable_length_integration_tolerance());
+  speed_integration_tolerance_.WriteToMessage(
+      message->mutable_speed_integration_tolerance());
+  integrator_.WriteToMessage(message->mutable_integrator());
+  for (auto const& manœuvre : manœuvres_) {
+    serialization::Manoeuvre* serialized_manoeuvre = message->add_manoeuvre();
+    manœuvre.WriteToMessage(serialized_manoeuvre);
+  }
+}
+
+std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
+    not_null<DiscreteTrajectory<Barycentric>*> const root,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    serialization::FlightPlan const& message) {
+  auto flight_plan = std::make_unique<FlightPlan>(
+      root,
+      Instant::ReadFromMessage(message.initial_time()),
+      Instant::ReadFromMessage(message.final_time()),
+      Mass::ReadFromMessage(message.initial_mass()),
+      ephemeris,
+      AdaptiveStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation>::
+          ReadFromMessage(message.integrator()),
+      Length::ReadFromMessage(message.length_integration_tolerance()),
+      Speed::ReadFromMessage(message.speed_integration_tolerance()));
+  for (auto const& manoeuvre : message.manoeuvre()) {
+    flight_plan->Append(NavigationManœuvre::ReadFromMessage(ephemeris,
+                                                           manoeuvre));
+  }
+  return std::move(flight_plan);
+}
+
 FlightPlan::FlightPlan()
     : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      integrator_(
-          *testing_utilities::make_not_null<
-              AdaptiveStepSizeIntegrator<
-                  Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
+      integrator_(*testing_utilities::make_not_null<AdaptiveStepSizeIntegrator<
+                      Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));

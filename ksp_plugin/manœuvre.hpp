@@ -102,7 +102,9 @@ class Manœuvre {
   // Intensity and timing must have been set.  |coasting_trajectory| is neither
   // written nor read.
   void WriteToMessage(not_null<serialization::Manoeuvre*> const message) const;
-  static Manœuvre ReadFromMessage(serialization::Manoeuvre const& message);
+  static Manœuvre ReadFromMessage(
+      not_null<Ephemeris<InertialFrame>*> const ephemeris,
+      serialization::Manoeuvre const& message);
 
  private:
   Force const thrust_;
