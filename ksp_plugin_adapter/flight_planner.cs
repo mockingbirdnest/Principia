@@ -125,10 +125,10 @@ class FlightPlanner : WindowRenderer {
                     guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
                         manoeuvre.burn.initial_time);
                   }
-                  guidance_node_.UT = manoeuvre.burn.initial_time;
-                  guidance_node_.DeltaV =
+                  guidance_node_.OnGizmoUpdated(
                       ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-                      (Vector3d)manoeuvre.inertial_direction;
+                          (Vector3d)manoeuvre.inertial_direction,
+                      manoeuvre.burn.initial_time);
                   should_clear_guidance = true;
                 } else {
                   show_guidance_ = false;
