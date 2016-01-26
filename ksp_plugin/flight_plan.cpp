@@ -166,7 +166,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
   for (auto const& manoeuvre : message.manoeuvre()) {
     flight_plan->Append(NavigationManœuvre::ReadFromMessage(ephemeris,
-                                                           manoeuvre));
+                                                            manoeuvre));
   }
   return std::move(flight_plan);
 }
