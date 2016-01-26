@@ -118,20 +118,35 @@ class FlightPlanner : WindowRenderer {
                       FormatTimeSpan(TimeSpan.FromSeconds(
                           current_time - manoeuvre.final_time)));
                 }
-                if (UnityEngine.GUILayout.Toggle(show_guidance_,
-                                                 "Show on navball")) {
-                  show_guidance_ = true;
+                show_guidance_ =
+                    UnityEngine.GUILayout.Toggle(show_guidance_,
+                                                 "Show on navball");
+                if (show_guidance_ &&
+                    !double.IsNaN(manoeuvre.inertial_direction.x +
+                                  manoeuvre.inertial_direction.y +
+                                  manoeuvre.inertial_direction.z)) {
                   if (guidance_node_ == null) {
                     guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
                         manoeuvre.burn.initial_time);
                   }
+                  Vector3d stock_velocity_at_node_time =
+                      vessel_.orbit.getOrbitalVelocityAtUT(
+                                       manoeuvre.burn.initial_time).xzy;
+                  Vector3d stock_displacement_from_parent_at_node_time =
+                      vessel_.orbit.getRelativePositionAtUT(
+                                       manoeuvre.burn.initial_time).xzy;
+                  UnityEngine.Quaternion stock_frenet_frame_to_world =
+                      UnityEngine.Quaternion.LookRotation(
+                          stock_velocity_at_node_time,
+                          Vector3d.Cross(
+                              stock_velocity_at_node_time,
+                              stock_displacement_from_parent_at_node_time));
                   guidance_node_.OnGizmoUpdated(
                       ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-                          (Vector3d)manoeuvre.inertial_direction,
+                          (Vector3d)(stock_frenet_frame_to_world.Inverse() *
+                                     (Vector3d)manoeuvre.inertial_direction),
                       manoeuvre.burn.initial_time);
-                  should_clear_guidance = true;
-                } else {
-                  show_guidance_ = false;
+                  should_clear_guidance = false;
                 }
                 break;
               }
