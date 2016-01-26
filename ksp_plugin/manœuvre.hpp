@@ -8,6 +8,7 @@
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
@@ -97,6 +98,11 @@ class Manœuvre {
   // Intensity, timing and coasting trajectory must have been set.  The result
   // is valid until |*this| is destroyed.
   typename Ephemeris<InertialFrame>::IntrinsicAcceleration acceleration() const;
+
+  // Intensity and timing must have been set.  |coasting_trajectory| is neither
+  // written nor read.
+  void WriteToMessage(not_null<serialization::Manoeuvre*> const message) const;
+  static Manœuvre ReadFromMessage(serialization::Manoeuvre const& message);
 
  private:
   Force const thrust_;
