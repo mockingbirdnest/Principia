@@ -33,7 +33,7 @@ inline bool operator==(NavigationManoeuvre const& left,
          left.final_time == right.final_time &&
          left.time_of_half_delta_v == right.time_of_half_delta_v &&
          left.time_to_half_delta_v == right.time_to_half_delta_v &&
-         left.direction == right.direction;
+         left.inertial_direction == right.inertial_direction;
 }
 
 inline bool operator==(QP const& left, QP const& right) {

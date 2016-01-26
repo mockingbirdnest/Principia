@@ -295,6 +295,10 @@ class Plugin {
   virtual Vector<double, World> VesselNormal(GUID const& vessel_guid) const;
   virtual Vector<double, World> VesselBinormal(GUID const& vessel_guid) const;
 
+  // Returns
+  // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
+  virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
+
   virtual Instant CurrentTime() const;
 
   // Must be called after initialization.
@@ -348,10 +352,6 @@ class Plugin {
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
   Rotation<Barycentric, AliceSun> PlanetariumRotation() const;
-
-  // returns
-  // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
-  OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
   // Utilities for |AdvanceTime|.
 

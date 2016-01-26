@@ -134,27 +134,37 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
   return begin < initial_time() && final_time() < end;
 }
 
-template<typename InertialFrame, typename Frame>
-typename Ephemeris<InertialFrame>::IntrinsicAcceleration
-Manœuvre<InertialFrame, Frame>::acceleration(
-    DiscreteTrajectory<InertialFrame> const& coasting_trajectory) const {
+template <typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
+    not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory) {
+  coasting_trajectory_ = trajectory;
+}
+
+template <typename InertialFrame, typename Frame>
+Vector<double, InertialFrame>
+    Manœuvre<InertialFrame, Frame>::inertial_direction() const {
+  CHECK_NOTNULL(coasting_trajectory_);
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
-      coasting_trajectory.Find(initial_time());
-  CHECK(it != coasting_trajectory.End());
+      coasting_trajectory_->Find(initial_time());
+  CHECK(it != coasting_trajectory_->End());
   RigidMotion<InertialFrame, Frame> const to_frame_at_initial_time =
       frame_->ToThisFrameAtTime(initial_time());
   OrthogonalMap<Frame, InertialFrame> const from_frame_at_initial_time =
       to_frame_at_initial_time.orthogonal_map().Inverse();
-  Rotation<Frenet<Frame>, Frame> const from_frenet_frame =
-      frame_->FrenetFrame(initial_time(),
-                          to_frame_at_initial_time(it.degrees_of_freedom()));
-  Vector<double, InertialFrame> inertial_direction =
-      from_frame_at_initial_time(from_frenet_frame(direction_));
+  Rotation<Frenet<Frame>, Frame> const from_frenet_frame = frame_->FrenetFrame(
+      initial_time(),
+      to_frame_at_initial_time(it.degrees_of_freedom()));
+  return from_frame_at_initial_time(from_frenet_frame(direction_));
+}
 
-  return [this, inertial_direction](
-      Instant const& time) -> Vector<Acceleration, InertialFrame> {
+template <typename InertialFrame, typename Frame>
+typename Ephemeris<InertialFrame>::IntrinsicAcceleration
+    Manœuvre<InertialFrame, Frame>::acceleration() const {
+  Vector<double, InertialFrame> const direction = inertial_direction();
+  return [this, direction](
+             Instant const& time) -> Vector<Acceleration, InertialFrame> {
     if (time >= initial_time() && time <= final_time()) {
-      return inertial_direction * thrust_ /
+      return direction * thrust_ /
              (initial_mass_ - (time - initial_time()) * mass_flow());
     } else {
       return Vector<Acceleration, InertialFrame>();
