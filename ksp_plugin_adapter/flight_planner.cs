@@ -98,6 +98,7 @@ class FlightPlanner : WindowRenderer {
         } else {
           if (burn_editors_.Count > 0) {
             double current_time = plugin_.CurrentTime();
+            bool should_clear_guidance = true;
             for (int i = 0; i < burn_editors_.Count; ++i) {
               NavigationManoeuvre manoeuvre =
                   plugin_.FlightPlanGetManoeuvre(vessel_guid, i);
@@ -115,10 +116,29 @@ class FlightPlanner : WindowRenderer {
                   UnityEngine.GUILayout.Label(
                       "Cutoff " +
                       FormatTimeSpan(TimeSpan.FromSeconds(
-                          current_time - manoeuvre.burn.initial_time)));
+                          current_time - manoeuvre.final_time)));
+                }
+                if (UnityEngine.GUILayout.Toggle(show_guidance_,
+                                                 "Show on navball")) {
+                  show_guidance_ = true;
+                  if (guidance_node_ == null) {
+                    guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
+                        manoeuvre.burn.initial_time);
+                  }
+                  guidance_node_.UT = manoeuvre.burn.initial_time;
+                  guidance_node_.DeltaV =
+                      ((Vector3d)manoeuvre.burn.delta_v).magnitude *
+                      (Vector3d)manoeuvre.inertial_direction;
+                  should_clear_guidance = true;
+                } else {
+                  show_guidance_ = false;
                 }
                 break;
               }
+            }
+            if (should_clear_guidance && guidance_node_ != null) {
+              vessel_.patchedConicSolver.RemoveManeuverNode(guidance_node_);
+              guidance_node_ = null;
             }
           }
           for (int i = 0; i < burn_editors_.Count - 1; ++i) {
@@ -214,6 +234,8 @@ class FlightPlanner : WindowRenderer {
   private DifferentialSlider final_time_;
 
   private bool show_planner_ = false;
+  private bool show_guidance_ = false;
+  private ManeuverNode guidance_node_;
   private UnityEngine.Rect window_rectangle_;
   
   private const double Log10TimeLowerRate = 0.0;

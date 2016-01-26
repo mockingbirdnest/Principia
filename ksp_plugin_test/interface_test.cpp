@@ -13,6 +13,7 @@
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"
+#include "ksp_plugin_test/mock_manœuvre.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
@@ -35,12 +36,14 @@ using ksp_plugin::Index;
 using ksp_plugin::LineSegment;
 using ksp_plugin::MakeNavigationManœuvre;
 using ksp_plugin::MockFlightPlan;
+using ksp_plugin::MockManœuvre;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
 using ksp_plugin::RenderedTrajectory;
+using ksp_plugin::WorldSun;
 using physics::Frenet;
 using physics::MockDynamicFrame;
 using quantities::Pow;
@@ -984,19 +987,22 @@ TEST_F(InterfaceTest, FlightPlan) {
   MockDynamicFrame<Barycentric, Navigation> const* const
       navigation_manœuvre_frame =
           new MockDynamicFrame<Barycentric, Navigation>;
-  NavigationManœuvre navigation_manœuvre(
-                         10 * Kilo(Newton),
-                         20 * Tonne,
-                         30 * Second * StandardGravity,
-                         Vector<double, Frenet<Navigation>>({40, 50, 60}),
-                         std::unique_ptr<
-                             DynamicFrame<Barycentric, Navigation> const>(
-                                 navigation_manœuvre_frame));
+  MockManœuvre<Barycentric, Navigation> navigation_manœuvre(
+      10 * Kilo(Newton),
+      20 * Tonne,
+      30 * Second * StandardGravity,
+      Vector<double, Frenet<Navigation>>({1, 1, 1}),
+      std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
+          navigation_manœuvre_frame));
   navigation_manœuvre.set_initial_time(Instant());
   navigation_manœuvre.set_duration(7 * Second);
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
+  EXPECT_CALL(navigation_manœuvre, inertial_direction())
+      .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
+  EXPECT_CALL(*plugin_, BarycentricToWorldSun())
+      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
       principia__FlightPlanGetManoeuvre(plugin_.get(),
                                         kVesselGUID,
@@ -1005,9 +1011,9 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
   EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
-  EXPECT_EQ(40 / sqrt(7700), navigation_manoeuvre.direction.x);
-  EXPECT_EQ(50 / sqrt(7700), navigation_manoeuvre.direction.y);
-  EXPECT_EQ(60 / sqrt(7700), navigation_manoeuvre.direction.z);
+  EXPECT_EQ(40, navigation_manoeuvre.inertial_direction.x);
+  EXPECT_EQ(50, navigation_manoeuvre.inertial_direction.y);
+  EXPECT_EQ(60, navigation_manoeuvre.inertial_direction.z);
 
   EXPECT_CALL(flight_plan, number_of_segments())
       .WillOnce(Return(12));

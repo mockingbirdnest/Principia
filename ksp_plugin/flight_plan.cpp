@@ -139,9 +139,10 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
   {
     // Hide the moved-from |manœuvre|.
-    NavigationManœuvre const& manœuvre = manœuvres_.back();
+    NavigationManœuvre& manœuvre = manœuvres_.back();
     ResetLastSegment();
     CoastLastSegment(manœuvre.initial_time());
+    manœuvre.set_coasting_trajectory(segments_.back().get());
     AddSegment();
     BurnLastSegment(manœuvre);
     AddSegment();
@@ -157,8 +158,9 @@ void FlightPlan::RecomputeSegments() {
     segments_.pop_back();
   }
   ResetLastSegment();
-  for (auto const& manœuvre : manœuvres_) {
+  for (auto& manœuvre : manœuvres_) {
     CoastLastSegment(manœuvre.initial_time());
+    manœuvre.set_coasting_trajectory(segments_.back().get());
     AddSegment();
     BurnLastSegment(manœuvre);
     AddSegment();
@@ -170,7 +172,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (manœuvre.initial_time() < manœuvre.final_time()) {
     ephemeris_->FlowWithAdaptiveStep(
         segments_.back().get(),
-        manœuvre.acceleration(*segments_.back()),
+        manœuvre.acceleration(),
         length_integration_tolerance_,
         speed_integration_tolerance_,
         integrator_,

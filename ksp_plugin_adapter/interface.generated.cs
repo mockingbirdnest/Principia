@@ -42,7 +42,7 @@ internal partial struct NavigationManoeuvre {
   public double final_time;
   public double time_of_half_delta_v;
   public double time_to_half_delta_v;
-  public XYZ direction;
+  public XYZ inertial_direction;
 }
 
 [StructLayout(LayoutKind.Sequential)]

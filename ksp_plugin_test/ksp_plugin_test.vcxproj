@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_flight_plan.hpp" />
+    <ClInclude Include="mock_manœuvre.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>
