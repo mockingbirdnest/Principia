@@ -126,7 +126,7 @@ inline void Vessel::CreateFlightPlan(
     return;
   }
   flight_plan_ = std::make_unique<FlightPlan>(
-                     mutable_history()->NewForkAtLast(),
+                     mutable_history(),
                      /*initial_time=*/history().last().time(),
                      /*final_time=*/final_time,
                      initial_mass,
@@ -205,7 +205,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             vessel->history_.get());
     if (message.has_flight_plan()) {
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
-          vessel->history_->NewForkAtLast(), ephemeris, message.flight_plan());
+          vessel->history_.get(), ephemeris, message.flight_plan());
     }
   } else if (message.has_owned_prolongation()) {
     vessel->owned_prolongation_ =
