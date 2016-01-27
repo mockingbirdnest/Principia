@@ -4,20 +4,27 @@
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
 using geometry::Frame;
+using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::MassiveBody;
 using physics::MockDynamicFrame;
+using physics::MockEphemeris;
 using physics::RigidTransformation;
 using quantities::Pow;
 using quantities::si::Kilo;
@@ -26,6 +33,7 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::uk::Foot;
+using testing_utilities::make_not_null;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -34,7 +42,9 @@ using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Return;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
+using ::testing::_;
 
 namespace ksp_plugin {
 
@@ -53,6 +63,7 @@ class ManœuvreTest : public ::testing::Test {
     return std::move(owned_mock_dynamic_frame);
   }
 
+  Instant const t0_;
   StrictMock<MockDynamicFrame<World, Rendering>> const* mock_dynamic_frame_;
   DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
@@ -74,7 +85,6 @@ class ManœuvreTest : public ::testing::Test {
 };
 
 TEST_F(ManœuvreTest, TimedBurn) {
-  Instant const t0 = Instant();
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
 
   Manœuvre<World, Rendering> manœuvre(
@@ -95,10 +105,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ((2 - Sqrt(2)) * Second, manœuvre.time_to_half_Δv());
   EXPECT_EQ(1 * Kilogram, manœuvre.final_mass());
 
-  manœuvre.set_initial_time(t0);
-  EXPECT_EQ(t0, manœuvre.initial_time());
-  EXPECT_EQ(t0 + 1 * Second, manœuvre.final_time());
-  EXPECT_EQ(t0 + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
+  manœuvre.set_initial_time(t0_);
+  EXPECT_EQ(t0_, manœuvre.initial_time());
+  EXPECT_EQ(t0_ + 1 * Second, manœuvre.final_time());
+  EXPECT_EQ(t0_ + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
 
   discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
   EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
@@ -127,7 +137,6 @@ TEST_F(ManœuvreTest, TimedBurn) {
 }
 
 TEST_F(ManœuvreTest, TargetΔv) {
-  Instant const t0 = Instant();
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
       1 * Newton /*thrust*/,
@@ -147,10 +156,10 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ((2 - 2 / Sqrt(e)) * Second, manœuvre.time_to_half_Δv());
   EXPECT_EQ((2 / e) * Kilogram, manœuvre.final_mass());
 
-  manœuvre.set_time_of_half_Δv(t0);
-  EXPECT_EQ(t0 - (2 - 2 / Sqrt(e)) * Second, manœuvre.initial_time());
-  EXPECT_EQ(t0 + (2 / Sqrt(e) - 2 / e) * Second, manœuvre.final_time());
-  EXPECT_EQ(t0, manœuvre.time_of_half_Δv());
+  manœuvre.set_time_of_half_Δv(t0_);
+  EXPECT_EQ(t0_ - (2 - 2 / Sqrt(e)) * Second, manœuvre.initial_time());
+  EXPECT_EQ(t0_ + (2 / Sqrt(e) - 2 / e) * Second, manœuvre.final_time());
+  EXPECT_EQ(t0_, manœuvre.time_of_half_Δv());
 
   discrete_trajectory_.Append(manœuvre.initial_time(), dof_);
   EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
@@ -310,6 +319,60 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // From the Apollo 8 flight journal.
   EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_burn.Δv()),
               Lt(20 * Metre / Second));
+}
+
+TEST_F(ManœuvreTest, Serialization) {
+  auto mock_dynamic_frame = MakeMockDynamicFrame();
+  auto const unowned_dynamic_frame = mock_dynamic_frame.get();
+  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+  Manœuvre<World, Rendering> manœuvre(
+      1 * Newton /*thrust*/,
+      2 * Kilogram /*initial_mass*/,
+      1 * Newton * Second / Kilogram /*specific_impulse*/,
+      e_y /*direction*/,
+      std::move(mock_dynamic_frame));
+  manœuvre.set_Δv(1 * Metre / Second);
+  manœuvre.set_time_of_half_Δv(t0_);
+
+  serialization::DynamicFrame serialized_mock_dynamic_frame;
+  serialized_mock_dynamic_frame.MutableExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::
+          body_centred_non_rotating_dynamic_frame)->set_centre(666);
+  EXPECT_CALL(*unowned_dynamic_frame, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(serialized_mock_dynamic_frame));
+  serialization::Manoeuvre message;
+  manœuvre.WriteToMessage(&message);
+
+  EXPECT_TRUE(message.has_thrust());
+  EXPECT_TRUE(message.has_initial_mass());
+  EXPECT_TRUE(message.has_specific_impulse());
+  EXPECT_TRUE(message.has_direction());
+  EXPECT_TRUE(message.has_duration());
+  EXPECT_TRUE(message.has_initial_time());
+  EXPECT_TRUE(message.has_frame());
+
+  MockEphemeris<World> ephemeris;
+  EXPECT_CALL(ephemeris, body_for_serialization_index(666))
+      .WillOnce(Return(make_not_null<MassiveBody const*>()));
+  EXPECT_CALL(ephemeris, trajectory(_))
+      .WillOnce(Return(make_not_null<ContinuousTrajectory<World> const*>()));
+  Manœuvre<World, Rendering> const manœuvre_read =
+      Manœuvre<World, Rendering>::ReadFromMessage(&ephemeris, message);
+
+  EXPECT_EQ(1 * Newton, manœuvre_read.thrust());
+  EXPECT_EQ(2 * Kilogram, manœuvre_read.initial_mass());
+  EXPECT_EQ(1 * Metre / Second, manœuvre_read.specific_impulse());
+  EXPECT_EQ(e_y, manœuvre_read.direction());
+  EXPECT_EQ(1 * Kilogram / Second, manœuvre_read.mass_flow());
+
+  EXPECT_EQ(1 * Metre / Second, manœuvre.Δv());
+  EXPECT_EQ((2 - 2 / e) * Second, manœuvre_read.duration());
+  EXPECT_EQ((2 - 2 / Sqrt(e)) * Second, manœuvre_read.time_to_half_Δv());
+  EXPECT_EQ((2 / e) * Kilogram, manœuvre_read.final_mass());
+
+  EXPECT_EQ(t0_ - (2 - 2 / Sqrt(e)) * Second, manœuvre_read.initial_time());
+  EXPECT_EQ(t0_ + (2 / Sqrt(e) - 2 / e) * Second, manœuvre_read.final_time());
+  EXPECT_EQ(t0_, manœuvre_read.time_of_half_Δv());
 }
 
 }  // namespace ksp_plugin

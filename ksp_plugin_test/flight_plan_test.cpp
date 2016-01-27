@@ -6,12 +6,15 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
@@ -195,6 +198,46 @@ TEST_F(FlightPlanTest, Segments) {
     EXPECT_LT(last_times_size, times.size());
     last_times_size = times.size();
   }
+}
+
+TEST_F(FlightPlanTest, Serialization) {
+  auto const first_burn = [this]() -> Burn {
+    return {/*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            /*initial_time=*/t0_ + 1 * Second,
+            Velocity<Frenet<Navigation>>(
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  };
+  auto const second_burn = [this, first_burn]() -> Burn {
+    auto burn = first_burn();
+    burn.initial_time += 1 * Second;
+    return burn;
+  };
+
+  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_TRUE(flight_plan_->Append(second_burn()));
+
+  serialization::FlightPlan message;
+  flight_plan_->WriteToMessage(&message);
+  EXPECT_TRUE(message.has_initial_mass());
+  EXPECT_TRUE(message.has_initial_time());
+  EXPECT_TRUE(message.has_final_time());
+  EXPECT_TRUE(message.has_length_integration_tolerance());
+  EXPECT_TRUE(message.has_speed_integration_tolerance());
+  EXPECT_EQ(2, message.manoeuvre_size());
+
+  DiscreteTrajectory<Barycentric> trajectory;
+  trajectory.Append(t0_,
+                    DegreesOfFreedom<Barycentric>(Barycentric::origin,
+                                                  Velocity<Barycentric>()));
+  std::unique_ptr<FlightPlan> flight_plan_read =
+      FlightPlan::ReadFromMessage(&trajectory, ephemeris_.get(), message);
+  EXPECT_EQ(t0_, flight_plan_read->initial_time());
+  EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->final_time());
+  EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
+  EXPECT_EQ(5, flight_plan_read->number_of_segments());
 }
 
 }  // namespace ksp_plugin

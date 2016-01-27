@@ -23,6 +23,26 @@ message Part {
   required Multivector gravitational_acceleration_to_be_applied_by_ksp = 3;
 }
 
+message Manoeuvre {
+  required Quantity thrust = 1;
+  required Quantity initial_mass = 2;
+  required Quantity specific_impulse = 3;
+  required Multivector direction = 4;
+  required Quantity duration = 5;
+  required Point initial_time = 6;
+  required DynamicFrame frame = 7;
+}
+
+message FlightPlan {
+  required Quantity initial_mass = 1;
+  required Point initial_time = 2;
+  required Point final_time = 3;
+  required Quantity length_integration_tolerance = 4;
+  required Quantity speed_integration_tolerance = 5;
+  required AdaptiveStepSizeIntegrator integrator = 6;
+  repeated Manoeuvre manoeuvre = 7;
+}
+
 message PhysicsBubble {
   message FullState {
     message GuidAndDegreesOfFreedom {
