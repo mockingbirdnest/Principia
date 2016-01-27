@@ -183,11 +183,15 @@ inline void Vessel::WriteToMessage(
   } else {
     owned_prolongation_->WriteToMessage(message->mutable_owned_prolongation());
   }
+  if (flight_plan_ != nullptr) {
+    flight_plan_->WriteToMessage(message->mutable_flight_plan());
+  }
 }
 
 inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
-    serialization::Vessel const& message,
-    not_null<Celestial const*> const parent) {
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    not_null<Celestial const*> const parent,
+    serialization::Vessel const& message) {
   auto vessel = make_not_null_unique<Vessel>(parent);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -199,11 +203,16 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
             message.history_and_prolongation().prolongation(),
             vessel->history_.get());
+    if (message.has_flight_plan()) {
+      vessel->flight_plan_ = FlightPlan::ReadFromMessage(
+          vessel->history_->NewForkAtLast(), ephemeris, message.flight_plan());
+    }
   } else if (message.has_owned_prolongation()) {
     vessel->owned_prolongation_ =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.owned_prolongation());
     vessel->prolongation_ = vessel->owned_prolongation_.get();
+    CHECK(!message.has_flight_plan());
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";
     base::noreturn();

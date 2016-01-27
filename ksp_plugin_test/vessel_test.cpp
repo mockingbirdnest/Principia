@@ -3,9 +3,11 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/mock_ephemeris.hpp"
 
 namespace principia {
 
+using physics::MockEphemeris;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
@@ -36,6 +38,7 @@ class VesselTest : public testing::Test {
                               16 * Metre / Second})};
   Instant const t1_ = kUniversalTimeEpoch;
   Instant const t2_ = kUniversalTimeEpoch + 42 * Second;
+  MockEphemeris<Barycentric> ephemeris_;
 };
 
 using VesselDeathTest = VesselTest;
@@ -76,7 +79,7 @@ TEST_F(VesselDeathTest, SerializationError) {
   }, "is_initialized");
   EXPECT_DEATH({
     serialization::Vessel message;
-    Vessel::ReadFromMessage(message, &parent_);
+    Vessel::ReadFromMessage(&ephemeris_, &parent_, message);
   }, "message does not represent an initialized Vessel");
 }
 
@@ -88,7 +91,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_owned_prolongation());
   EXPECT_FALSE(message.has_history_and_prolongation());
-  vessel_ = Vessel::ReadFromMessage(message, &parent_);
+  vessel_ = Vessel::ReadFromMessage(&ephemeris_, &parent_, message);
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_FALSE(vessel_->is_synchronized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
@@ -96,7 +99,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->WriteToMessage(&message);
   EXPECT_FALSE(message.has_owned_prolongation());
   EXPECT_TRUE(message.has_history_and_prolongation());
-  vessel_ = Vessel::ReadFromMessage(message, &parent_);
+  vessel_ = Vessel::ReadFromMessage(&ephemeris_, &parent_, message);
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_TRUE(vessel_->is_synchronized());
 }
