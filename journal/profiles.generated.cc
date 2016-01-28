@@ -333,53 +333,6 @@ void DeserializePlugin::Run(Message const& message, not_null<Player::PointerMap*
   Insert(pointer_map, message.out().plugin(), plugin);
 }
 
-void DirectlyInsertCelestial::Fill(In const& in, not_null<Message*> const message) {
-  auto* const m = message->mutable_in();
-  m->set_plugin(SerializePointer(in.plugin));
-  m->set_celestial_index(in.celestial_index);
-  if (in.parent_index != nullptr) {
-    m->set_parent_index(*in.parent_index);
-  }
-  m->set_gravitational_parameter(in.gravitational_parameter);
-  if (in.axis_right_ascension != nullptr) {
-    m->set_axis_right_ascension(in.axis_right_ascension);
-  }
-  if (in.axis_declination != nullptr) {
-    m->set_axis_declination(in.axis_declination);
-  }
-  if (in.j2 != nullptr) {
-    m->set_j2(in.j2);
-  }
-  if (in.reference_radius != nullptr) {
-    m->set_reference_radius(in.reference_radius);
-  }
-  m->set_x(in.x);
-  m->set_y(in.y);
-  m->set_z(in.z);
-  m->set_vx(in.vx);
-  m->set_vy(in.vy);
-  m->set_vz(in.vz);
-}
-
-void DirectlyInsertCelestial::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
-  auto celestial_index = in.celestial_index();
-  auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
-  auto gravitational_parameter = in.gravitational_parameter().c_str();
-  auto axis_right_ascension = in.has_axis_right_ascension() ? in.axis_right_ascension().c_str() : nullptr;
-  auto axis_declination = in.has_axis_declination() ? in.axis_declination().c_str() : nullptr;
-  auto j2 = in.has_j2() ? in.j2().c_str() : nullptr;
-  auto reference_radius = in.has_reference_radius() ? in.reference_radius().c_str() : nullptr;
-  auto x = in.x().c_str();
-  auto y = in.y().c_str();
-  auto z = in.z().c_str();
-  auto vx = in.vx().c_str();
-  auto vy = in.vy().c_str();
-  auto vz = in.vz().c_str();
-  interface::principia__DirectlyInsertCelestial(plugin, celestial_index, parent_index.get(), gravitational_parameter, axis_right_ascension, axis_declination, j2, reference_radius, x, y, z, vx, vy, vz);
-}
-
 void EndInitialization::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_plugin(SerializePointer(in.plugin));
 }
@@ -786,23 +739,98 @@ void InitGoogleLogging::Run(Message const& message, not_null<Player::PointerMap*
   interface::principia__InitGoogleLogging();
 }
 
-void InsertCelestial::Fill(In const& in, not_null<Message*> const message) {
+void InsertCelestialAbsoluteCartesian::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_celestial_index(in.celestial_index);
+  if (in.parent_index != nullptr) {
+    m->set_parent_index(*in.parent_index);
+  }
   m->set_gravitational_parameter(in.gravitational_parameter);
-  m->set_parent_index(in.parent_index);
-  *m->mutable_from_parent() = SerializeQP(in.from_parent);
+  if (in.axis_right_ascension != nullptr) {
+    m->set_axis_right_ascension(in.axis_right_ascension);
+  }
+  if (in.axis_declination != nullptr) {
+    m->set_axis_declination(in.axis_declination);
+  }
+  if (in.j2 != nullptr) {
+    m->set_j2(in.j2);
+  }
+  if (in.reference_radius != nullptr) {
+    m->set_reference_radius(in.reference_radius);
+  }
+  m->set_x(in.x);
+  m->set_y(in.y);
+  m->set_z(in.z);
+  m->set_vx(in.vx);
+  m->set_vy(in.vy);
+  m->set_vz(in.vz);
 }
 
-void InsertCelestial::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+void InsertCelestialAbsoluteCartesian::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
-  auto gravitational_parameter = in.gravitational_parameter();
-  auto parent_index = in.parent_index();
-  auto from_parent = DeserializeQP(in.from_parent());
-  interface::principia__InsertCelestial(plugin, celestial_index, gravitational_parameter, parent_index, from_parent);
+  auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
+  auto gravitational_parameter = in.gravitational_parameter().c_str();
+  auto axis_right_ascension = in.has_axis_right_ascension() ? in.axis_right_ascension().c_str() : nullptr;
+  auto axis_declination = in.has_axis_declination() ? in.axis_declination().c_str() : nullptr;
+  auto j2 = in.has_j2() ? in.j2().c_str() : nullptr;
+  auto reference_radius = in.has_reference_radius() ? in.reference_radius().c_str() : nullptr;
+  auto x = in.x().c_str();
+  auto y = in.y().c_str();
+  auto z = in.z().c_str();
+  auto vx = in.vx().c_str();
+  auto vy = in.vy().c_str();
+  auto vz = in.vz().c_str();
+  interface::principia__InsertCelestialAbsoluteCartesian(plugin, celestial_index, parent_index.get(), gravitational_parameter, axis_right_ascension, axis_declination, j2, reference_radius, x, y, z, vx, vy, vz);
+}
+
+void InsertCelestialJacobiKeplerian::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_celestial_index(in.celestial_index);
+  if (in.parent_index != nullptr) {
+    m->set_parent_index(*in.parent_index);
+  }
+  m->set_gravitational_parameter(in.gravitational_parameter);
+  if (in.axis_right_ascension != nullptr) {
+    m->set_axis_right_ascension(in.axis_right_ascension);
+  }
+  if (in.axis_declination != nullptr) {
+    m->set_axis_declination(in.axis_declination);
+  }
+  if (in.j2 != nullptr) {
+    m->set_j2(in.j2);
+  }
+  if (in.reference_radius != nullptr) {
+    m->set_reference_radius(in.reference_radius);
+  }
+  m->set_eccentricity(in.eccentricity);
+  m->set_mean_motion(in.mean_motion);
+  m->set_inclination(in.inclination);
+  m->set_longitude_of_ascending_node(in.longitude_of_ascending_node);
+  m->set_argument_of_periapsis(in.argument_of_periapsis);
+  m->set_mean_anomaly(in.mean_anomaly);
+}
+
+void InsertCelestialJacobiKeplerian::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
+  auto celestial_index = in.celestial_index();
+  auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
+  auto gravitational_parameter = in.gravitational_parameter().c_str();
+  auto axis_right_ascension = in.has_axis_right_ascension() ? in.axis_right_ascension().c_str() : nullptr;
+  auto axis_declination = in.has_axis_declination() ? in.axis_declination().c_str() : nullptr;
+  auto j2 = in.has_j2() ? in.j2().c_str() : nullptr;
+  auto reference_radius = in.has_reference_radius() ? in.reference_radius().c_str() : nullptr;
+  auto eccentricity = in.eccentricity();
+  auto mean_motion = in.mean_motion().c_str();
+  auto inclination = in.inclination().c_str();
+  auto longitude_of_ascending_node = in.longitude_of_ascending_node().c_str();
+  auto argument_of_periapsis = in.argument_of_periapsis().c_str();
+  auto mean_anomaly = in.mean_anomaly().c_str();
+  interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index.get(), gravitational_parameter, axis_right_ascension, axis_declination, j2, reference_radius, eccentricity, mean_motion, inclination, longitude_of_ascending_node, argument_of_periapsis, mean_anomaly);
 }
 
 void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {

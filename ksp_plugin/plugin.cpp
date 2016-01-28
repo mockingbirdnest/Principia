@@ -79,42 +79,23 @@ Plugin::Plugin(Instant const& initial_time,
       current_time_(initial_time),
       history_time_(initial_time) {}
 
-void Plugin::InsertCelestial(
-    Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter,
-    Index const parent_index,
-    RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  auto body = std::make_unique<MassiveBody>(gravitational_parameter);
-  LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
-            << celestial_index << ": " << from_parent;
-  auto const relative = PlanetariumRotation().Inverse()(from_parent);
-  LOG(INFO) << "In barycentric coordinates: " << relative;
-  DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
-      FindOrDie(*initial_state_, parent_index);
-  DirectlyInsertCelestial(celestial_index,
-                          &parent_index,
-                          parent_degrees_of_freedom + relative,
-                          std::move(body));
-}
-
 void Plugin::InsertSun(Index const celestial_index,
                        GravitationalParameter const& gravitational_parameter) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
   auto body = std::make_unique<MassiveBody>(gravitational_parameter);
-  DirectlyInsertCelestial(celestial_index,
-                          nullptr /*parent_index*/,
-                          {Barycentric::origin, Velocity<Barycentric>()},
-                          std::move(body));
+  InsertCelestialAbsoluteCartesian(
+      celestial_index,
+      /*parent_index=*/std::experimental::nullopt,
+      {Barycentric::origin, Velocity<Barycentric>()},
+      std::move(body));
 }
 
-void Plugin::DirectlyInsertCelestial(
+void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
-    Index const* const parent_index,
+    std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    std::unique_ptr<MassiveBody> body) {
+    base::not_null<std::unique_ptr<MassiveBody>> body) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
   auto const inserted =
@@ -123,15 +104,23 @@ void Plugin::DirectlyInsertCelestial(
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   not_null<Celestial*> const celestial = inserted.first->second.get();
   bodies_->emplace(celestial_index, std::move(body));
-  if (parent_index == nullptr) {
-    CHECK(sun_ == nullptr);
-    sun_ = celestial;
-  } else {
+  if (parent_index) {
     not_null<Celestial const*> parent =
         FindOrDie(celestials_, *parent_index).get();
     celestial->set_parent(parent);
+  } else {
+    CHECK(sun_ == nullptr);
+    sun_ = celestial;
   }
   initial_state_->emplace(celestial_index, initial_state);
+}
+
+void Plugin::InsertCelestialJacobiKeplerian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    KeplerianElements<Barycentric> const& keplerian_elements,
+    base::not_null<std::unique_ptr<MassiveBody>> body) {
+  //TODO(egg): Implement.
 }
 
 void Plugin::EndInitialization() {

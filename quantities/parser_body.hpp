@@ -114,6 +114,11 @@ inline Angle ParseUnit(std::string const& s) {
 }
 
 template<>
+inline AngularFrequency ParseUnit(std::string const& s) {
+  return ParseQuotientUnit(s, &ParseUnit<Angle>, &ParseUnit<Time>);
+}
+
+template<>
 inline Speed ParseUnit(std::string const& s) {
   return ParseQuotientUnit(s, &ParseUnit<Length>, &ParseUnit<Time>);
 }

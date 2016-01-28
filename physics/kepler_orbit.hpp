@@ -9,7 +9,6 @@
 namespace principia {
 namespace physics {
 
-
 template<typename Frame>
 struct KeplerianElements {
   double eccentricity{};

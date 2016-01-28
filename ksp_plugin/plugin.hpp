@@ -24,6 +24,7 @@
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -43,6 +44,7 @@ using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
+using physics::KeplerianElements;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Angle;
 using quantities::si::Hour;
@@ -90,23 +92,6 @@ class Plugin {
   // is set to |planetarium_rotation|.
   Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
 
-  // Inserts a new celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|.  No body with index |celestial_index|
-  // must already have been inserted.  The parent of the new body is the body
-  // at index |parent_index|, which must already have been inserted. The state
-  // of the new body at current time is given by |AliceSun| offsets from the
-  // parent. Must only be called during initialization.
-  // For a KSP |CelestialBody| |b|, the arguments correspond to:
-  // |b.flightGlobalsIndex|,
-  // |b.gravParameter|,
-  // |b.orbit.referenceBody.flightGlobalsIndex|,
-  // |{b.orbit.pos, b.orbit.vel}|.
-  virtual void InsertCelestial(
-    Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter,
-    Index const parent_index,
-    RelativeDegreesOfFreedom<AliceSun> const& from_parent);
-
   // Inserts a celestial body with index |celestial_index| and gravitational
   // parameter |gravitational_parameter|.  No body with index |celestial_index|
   // must already have been inserted.  The new body has no parent.
@@ -119,11 +104,17 @@ class Plugin {
   // If |parent_index| is null, inserts the sun, otherwise the parent of the new
   // body is the body with index |*parent_index|, which must already have been
   // inserted.
-  virtual void DirectlyInsertCelestial(
+  virtual void InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
-    Index const* const parent_index,
+    std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    std::unique_ptr<MassiveBody> body);
+    base::not_null<std::unique_ptr<MassiveBody>> body);
+
+  virtual void InsertCelestialJacobiKeplerian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    KeplerianElements<Barycentric> const& keplerian_elements,
+    base::not_null<std::unique_ptr<MassiveBody>> body);
 
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
@@ -315,7 +306,7 @@ class Plugin {
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
   using IndexToMassiveBody =
-      std::map<Index, std::unique_ptr<MassiveBody const>>;
+      std::map<Index, base::not_null<std::unique_ptr<MassiveBody const>>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;

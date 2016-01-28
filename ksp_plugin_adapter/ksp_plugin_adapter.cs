@@ -1256,7 +1256,7 @@ public partial class PrincipiaPluginAdapter
           ConfigNode gravity_model = name_to_gravity_model[body.name];
           ConfigNode initial_state = name_to_initial_state[body.name];
           int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
-          plugin_.DirectlyInsertCelestial(
+          plugin_.InsertCelestialAbsoluteCartesian(
               celestial_index: body.flightGlobalsIndex,
               parent_index: ref parent_index,
               gravitational_parameter:
@@ -1294,11 +1294,12 @@ public partial class PrincipiaPluginAdapter
                         Planetarium.fetch.Sun.gravParameter);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        plugin_.InsertCelestial(body.flightGlobalsIndex,
-                                body.gravParameter,
-                                body.orbit.referenceBody.flightGlobalsIndex,
-                                new QP{q = (XYZ)body.orbit.pos,
-                                       p = (XYZ)body.orbit.vel});
+        // TODO(egg): Fix
+        //plugin_.InsertCelestial(body.flightGlobalsIndex,
+        //                        body.gravParameter,
+        //                        body.orbit.referenceBody.flightGlobalsIndex,
+        //                        new QP{q = (XYZ)body.orbit.pos,
+        //                               p = (XYZ)body.orbit.vel});
       };
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();

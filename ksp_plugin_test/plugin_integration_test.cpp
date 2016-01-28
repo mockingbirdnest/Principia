@@ -88,16 +88,17 @@ class PluginIntegrationTest : public testing::Test {
     for (int index = SolarSystemFactory::kSun;
          index <= SolarSystemFactory::kLastBody;
          ++index) {
-      std::unique_ptr<Index> parent_index =
+      std::experimental::optional<Index> parent_index =
           index == SolarSystemFactory::kSun
-              ? nullptr
-              : std::make_unique<Index>(SolarSystemFactory::parent(index));
+              ? std::experimental::nullopt
+              : std::experimental::make_optional(
+                    SolarSystemFactory::parent(index));
       DegreesOfFreedom<Barycentric> const initial_state =
           ICRFToBarycentric(
               solar_system_->initial_state(SolarSystemFactory::name(index)));
-    plugin_->DirectlyInsertCelestial(
+    plugin_->InsertCelestialAbsoluteCartesian(
         index,
-        parent_index.get(),
+        parent_index,
         initial_state,
         SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
             solar_system_->gravity_model_message(
