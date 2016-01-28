@@ -216,7 +216,7 @@ class Forkable {
   // i.e. is the parent timeline's own fork time.
   std::experimental::optional<TimelineConstIterator>
       position_in_parent_timeline_;
-
+  public:
   Children children_;
 
   template<typename, typename>

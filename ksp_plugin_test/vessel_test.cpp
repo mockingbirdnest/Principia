@@ -79,7 +79,7 @@ TEST_F(VesselDeathTest, SerializationError) {
   }, "is_initialized");
   EXPECT_DEATH({
     serialization::Vessel message;
-    Vessel::ReadFromMessage(&ephemeris_, &parent_, message);
+    Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
   }, "message does not represent an initialized Vessel");
 }
 
@@ -91,7 +91,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_owned_prolongation());
   EXPECT_FALSE(message.has_history_and_prolongation());
-  vessel_ = Vessel::ReadFromMessage(&ephemeris_, &parent_, message);
+  vessel_ = Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_FALSE(vessel_->is_synchronized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
@@ -99,7 +99,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->WriteToMessage(&message);
   EXPECT_FALSE(message.has_owned_prolongation());
   EXPECT_TRUE(message.has_history_and_prolongation());
-  vessel_ = Vessel::ReadFromMessage(&ephemeris_, &parent_, message);
+  vessel_ = Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_TRUE(vessel_->is_synchronized());
 }

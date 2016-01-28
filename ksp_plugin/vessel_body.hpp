@@ -183,15 +183,18 @@ inline void Vessel::WriteToMessage(
   } else {
     owned_prolongation_->WriteToMessage(message->mutable_owned_prolongation());
   }
+  if (prediction_ != nullptr) {
+    prediction_->WritePointerToMessage(message->mutable_prediction());
+  }
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
 }
 
 inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
+    serialization::Vessel const& message,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-    not_null<Celestial const*> const parent,
-    serialization::Vessel const& message) {
+    not_null<Celestial const*> const parent) {
   auto vessel = make_not_null_unique<Vessel>(parent);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -203,9 +206,15 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
             message.history_and_prolongation().prolongation(),
             vessel->history_.get());
+    if (message.has_prediction()) {
+      vessel->prediction_ =
+          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
+              message.prediction(),
+              vessel->history_.get());
+    }
     if (message.has_flight_plan()) {
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
-          vessel->history_.get(), ephemeris, message.flight_plan());
+          message.flight_plan(), vessel->history_.get(), ephemeris);
     }
   } else if (message.has_owned_prolongation()) {
     vessel->owned_prolongation_ =

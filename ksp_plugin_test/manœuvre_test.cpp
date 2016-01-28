@@ -357,7 +357,7 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillOnce(Return(make_not_null<ContinuousTrajectory<World> const*>()));
   Manœuvre<World, Rendering> const manœuvre_read =
-      Manœuvre<World, Rendering>::ReadFromMessage(&ephemeris, message);
+      Manœuvre<World, Rendering>::ReadFromMessage(message, &ephemeris);
 
   EXPECT_EQ(1 * Newton, manœuvre_read.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre_read.initial_mass());

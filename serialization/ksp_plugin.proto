@@ -40,7 +40,8 @@ message FlightPlan {
   required Quantity length_integration_tolerance = 4;
   required Quantity speed_integration_tolerance = 5;
   required AdaptiveStepSizeIntegrator integrator = 6;
-  repeated Manoeuvre manoeuvre = 7;
+  repeated Trajectory.Pointer segment = 7;
+  repeated Manoeuvre manoeuvre = 8;
 }
 
 message PhysicsBubble {
@@ -101,6 +102,7 @@ message Plugin {
 message Vessel {
   required MasslessBody body = 1;
   optional FlightPlan flight_plan = 4;
+  optional Trajectory.Pointer prediction = 5;
   oneof trajectory_bundle {
     HistoryAndProlongation history_and_prolongation = 2;
     Trajectory owned_prolongation = 3;
