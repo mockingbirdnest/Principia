@@ -362,7 +362,7 @@ void principia__InsertCelestialAbsoluteCartesian(
 void principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
-    int const* const parent_index,
+    int const parent_index,
     char const* const gravitational_parameter,
     char const* const axis_right_ascension,
     char const* const axis_declination,
@@ -401,9 +401,7 @@ void principia__InsertCelestialJacobiKeplerian(
   CHECK_NOTNULL(plugin)
       ->InsertCelestialJacobiKeplerian(
           celestial_index,
-          parent_index == nullptr
-              ? std::experimental::nullopt
-              : std::experimental::make_optional(*parent_index),
+          parent_index,
           keplerian_elements,
           MakeMassiveBody(gravitational_parameter,
                           axis_right_ascension,

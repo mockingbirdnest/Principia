@@ -1288,18 +1288,29 @@ public partial class PrincipiaPluginAdapter
       }
     } else {
       plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
-      plugin_ = Interface.NewPlugin(Planetarium.GetUniversalTime(),
+      plugin_ = Interface.NewPlugin(0,
                                     Planetarium.InverseRotAngle);
       plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        // TODO(egg): Fix
-        //plugin_.InsertCelestial(body.flightGlobalsIndex,
-        //                        body.gravParameter,
-        //                        body.orbit.referenceBody.flightGlobalsIndex,
-        //                        new QP{q = (XYZ)body.orbit.pos,
-        //                               p = (XYZ)body.orbit.vel});
+        Orbit orbit = body.orbit;
+        double mean_motion = 2 * Math.PI * orbit.period;
+        plugin_.InsertCelestialJacobiKeplerian(
+            celestial_index             : body.flightGlobalsIndex,
+            parent_index                : body.referenceBody.flightGlobalsIndex,
+            gravitational_parameter     : body.gravParameter + " m^3/s^2",
+            axis_right_ascension        : null,
+            axis_declination            : null,
+            j2                          : null,
+            reference_radius            : null,
+            eccentricity                : orbit.eccentricity,
+            mean_motion                 : mean_motion + " rad/s",
+            inclination                 : orbit.inclination + " deg",
+            longitude_of_ascending_node : orbit.LAN + " deg",
+            argument_of_periapsis       : orbit.argumentOfPeriapsis + " deg",
+            mean_anomaly                : orbit.meanAnomalyAtEpoch -
+                                          orbit.epoch * mean_motion + " rad");
       };
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();

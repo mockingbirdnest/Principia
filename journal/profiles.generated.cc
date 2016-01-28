@@ -790,9 +790,7 @@ void InsertCelestialJacobiKeplerian::Fill(In const& in, not_null<Message*> const
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_celestial_index(in.celestial_index);
-  if (in.parent_index != nullptr) {
-    m->set_parent_index(*in.parent_index);
-  }
+  m->set_parent_index(in.parent_index);
   m->set_gravitational_parameter(in.gravitational_parameter);
   if (in.axis_right_ascension != nullptr) {
     m->set_axis_right_ascension(in.axis_right_ascension);
@@ -818,7 +816,7 @@ void InsertCelestialJacobiKeplerian::Run(Message const& message, not_null<Player
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
-  auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
+  auto parent_index = in.parent_index();
   auto gravitational_parameter = in.gravitational_parameter().c_str();
   auto axis_right_ascension = in.has_axis_right_ascension() ? in.axis_right_ascension().c_str() : nullptr;
   auto axis_declination = in.has_axis_declination() ? in.axis_declination().c_str() : nullptr;
@@ -830,7 +828,7 @@ void InsertCelestialJacobiKeplerian::Run(Message const& message, not_null<Player
   auto longitude_of_ascending_node = in.longitude_of_ascending_node().c_str();
   auto argument_of_periapsis = in.argument_of_periapsis().c_str();
   auto mean_anomaly = in.mean_anomaly().c_str();
-  interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index.get(), gravitational_parameter, axis_right_ascension, axis_declination, j2, reference_radius, eccentricity, mean_motion, inclination, longitude_of_ascending_node, argument_of_periapsis, mean_anomaly);
+  interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index, gravitational_parameter, axis_right_ascension, axis_declination, j2, reference_radius, eccentricity, mean_motion, inclination, longitude_of_ascending_node, argument_of_periapsis, mean_anomaly);
 }
 
 void InsertOrKeepVessel::Fill(In const& in, not_null<Message*> const message) {

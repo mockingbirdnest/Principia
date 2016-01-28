@@ -297,7 +297,7 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
-    int const* const parent_index,
+    int const parent_index,
     char const* const gravitational_parameter,
     char const* const axis_right_ascension,
     char const* const axis_declination,

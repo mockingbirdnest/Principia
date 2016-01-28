@@ -361,7 +361,7 @@ internal static partial class Interface {
   internal static extern void InsertCelestialJacobiKeplerian(
       this IntPtr plugin,
       int celestial_index,
-      ref int parent_index,
+      int parent_index,
       [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
       [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
       [MarshalAs(UnmanagedType.LPStr)] String axis_declination,

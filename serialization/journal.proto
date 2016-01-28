@@ -644,7 +644,7 @@ message InsertCelestialJacobiKeplerian {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 celestial_index = 2;
-    optional int32 parent_index = 3;
+    required int32 parent_index = 3;
     required string gravitational_parameter = 4;
     optional string axis_right_ascension = 5;
     optional string axis_declination = 6;

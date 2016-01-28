@@ -112,7 +112,7 @@ class Plugin {
 
   virtual void InsertCelestialJacobiKeplerian(
     Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
+    Index const parent_index,
     KeplerianElements<Barycentric> const& keplerian_elements,
     base::not_null<std::unique_ptr<MassiveBody>> body);
 
