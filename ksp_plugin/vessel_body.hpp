@@ -221,6 +221,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.owned_prolongation());
     vessel->prolongation_ = vessel->owned_prolongation_.get();
+    CHECK(!message.has_prediction());
     CHECK(!message.has_flight_plan());
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";
