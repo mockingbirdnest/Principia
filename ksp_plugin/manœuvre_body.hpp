@@ -5,10 +5,12 @@
 
 #include <cmath>
 
+#include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
 
+using base::check_not_null;
 using physics::RigidMotion;
 using quantities::Sqrt;
 
@@ -174,6 +176,36 @@ typename Ephemeris<InertialFrame>::IntrinsicAcceleration
       return Vector<Acceleration, InertialFrame>();
     }
   };
+}
+
+template <typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::WriteToMessage(
+    not_null<serialization::Manoeuvre*> const message) const {
+  thrust_.WriteToMessage(message->mutable_thrust());
+  initial_mass_.WriteToMessage(message->mutable_initial_mass());
+  specific_impulse_.WriteToMessage(message->mutable_specific_impulse());
+  direction_.WriteToMessage(message->mutable_direction());
+  duration_->WriteToMessage(message->mutable_duration());
+  initial_time_->WriteToMessage(message->mutable_initial_time());
+  frame_->WriteToMessage(message->mutable_frame());
+}
+
+template <typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
+    not_null<Ephemeris<InertialFrame>*> const ephemeris,
+    serialization::Manoeuvre const& message) {
+  // |check_not_null| is fine below because we don't have to worry about pre-
+  // Brouwer compatibility for this class.
+  Manœuvre manœuvre(
+      Force::ReadFromMessage(message.thrust()),
+      Mass::ReadFromMessage(message.initial_mass()),
+      SpecificImpulse::ReadFromMessage(message.specific_impulse()),
+      Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction()),
+      check_not_null(DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
+          ephemeris, message.frame())));
+  manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
+  manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
+  return manœuvre;
 }
 
 }  // namespace ksp_plugin

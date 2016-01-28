@@ -13,6 +13,7 @@
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
@@ -39,11 +40,11 @@ class FlightPlan {
   // The given |final_time| and tolerances are used, and may be modified by
   // the mutators |SetFinalTime| and |SetTolerances|.
   FlightPlan(
-      not_null<DiscreteTrajectory<Barycentric>*> root,
+      not_null<DiscreteTrajectory<Barycentric>*> const root,
       Instant const& initial_time,
       Instant const& final_time,
       Mass const& initial_mass,
-      not_null<Ephemeris<Barycentric>*> ephemeris,
+      not_null<Ephemeris<Barycentric>*> const ephemeris,
       AdaptiveStepSizeIntegrator<
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Length const& length_integration_tolerance,
@@ -86,6 +87,12 @@ class FlightPlan {
       int const index,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
+
+  void WriteToMessage(not_null<serialization::FlightPlan*> const message) const;
+  static std::unique_ptr<FlightPlan> ReadFromMessage(
+      not_null<DiscreteTrajectory<Barycentric>*> const root,
+      not_null<Ephemeris<Barycentric>*> const ephemeris,
+      serialization::FlightPlan const& message);
 
  protected:
   // For mocking.
