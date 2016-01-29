@@ -207,7 +207,7 @@ class not_null {
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
-               !is_instance_of_not_null<OtherPointer>>>
+               !is_instance_of_not_null<OtherPointer>::value>>
   operator OtherPointer const&&() const&;
 #endif
 
@@ -218,7 +218,7 @@ class not_null {
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
-               !is_instance_of_not_null<OtherPointer>>>
+               !is_instance_of_not_null<OtherPointer>::value>>
   operator OtherPointer&&() &&;
 #endif
 
