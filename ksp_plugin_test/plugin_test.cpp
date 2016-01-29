@@ -102,8 +102,8 @@ class TestablePlugin : public Plugin {
     initializing_.Flop();
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-    auto bodies_it = bodies_->begin();
-    for (auto const& index_state : *initial_state_) {
+    auto bodies_it = absolute_initialization_->bodies.begin();
+    for (auto const& index_state : absolute_initialization_->initial_state) {
       EXPECT_EQ(index_state.first, bodies_it->first);
       auto const inserted =
           trajectories_.emplace(std::piecewise_construct,
@@ -120,8 +120,7 @@ class TestablePlugin : public Plugin {
       }
       ++bodies_it;
     }
-    bodies_.reset();
-    initial_state_.reset();
+    absolute_initialization_ = std::experimental::nullopt;
     ephemeris_ = std::move(mock_ephemeris_);
     for (auto const& index_celestial : celestials_) {
       auto const& index = index_celestial.first;

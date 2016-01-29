@@ -14,7 +14,7 @@ void MockPlugin::InsertCelestialAbsoluteCartesian(
       Index const celestial_index,
       std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
-      base::not_null<std::unique_ptr<MassiveBody>> body) {
+      base::not_null<std::unique_ptr<MassiveBody const>> body) {
   InsertCelestialAbsoluteCartesianConstRef(
       celestial_index, parent_index, initial_state, body);
 }
