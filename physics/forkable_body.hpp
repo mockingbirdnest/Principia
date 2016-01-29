@@ -256,9 +256,12 @@ template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WritePointerToMessage(
     not_null<serialization::Trajectory::Pointer*> const message) const {
   not_null<Tr4jectory const*> ancestor = that();
+  // A child appears before its parent in the message below.
   while (ancestor->parent_ != nullptr) {
-    auto const position_in_parent_children = position_in_parent_children_;
-    auto const position_in_parent_timeline = position_in_parent_timeline_;
+    auto const position_in_parent_children =
+        ancestor->position_in_parent_children_;
+    auto const position_in_parent_timeline =
+        ancestor->position_in_parent_timeline_;
     ancestor = ancestor->parent_;
     int const children_distance = std::distance(ancestor->children_.begin(),
                                                 *position_in_parent_children);
@@ -276,7 +279,9 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
     not_null<Tr4jectory*> const trajectory) {
   CHECK(trajectory->is_root());
   not_null<Tr4jectory*> descendant = trajectory;
-  for (auto const& fork_message : message.fork()) {
+  // Process a parent before its child.
+  for (int i = message.fork_size() - 1; i >= 0; --i) {
+    auto const& fork_message = message.fork(i);
     int const children_distance = fork_message.children_distance();
     int const timeline_distance = fork_message.timeline_distance();
     auto children_it = descendant->children_.begin();

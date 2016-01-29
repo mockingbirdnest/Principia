@@ -188,8 +188,8 @@ void Manœuvre<InertialFrame, Frame>::WriteToMessage(
 
 template <typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
-    not_null<Ephemeris<InertialFrame>*> const ephemeris,
-    serialization::Manoeuvre const& message) {
+    serialization::Manoeuvre const& message,
+    not_null<Ephemeris<InertialFrame>*> const ephemeris) {
   // |check_not_null| is fine below because we don't have to worry about pre-
   // Brouwer compatibility for this class.
   Manœuvre manœuvre(

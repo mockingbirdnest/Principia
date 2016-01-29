@@ -291,6 +291,8 @@ TEST_F(PluginTest, Serialization) {
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
   plugin->AdvanceTime(HistoryTime(sync_time, 6), Angle());
   plugin->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+
+  plugin->CreateFlightPlan(satellite, HistoryTime(sync_time, 7), 4 * Kilogram);
   plugin->SetPlottingFrame(plugin->NewBodyCentredNonRotatingNavigationFrame(
       SolarSystemFactory::kSun + 1));
 
@@ -312,6 +314,7 @@ TEST_F(PluginTest, Serialization) {
 
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystemFactory::kEarth, message.vessel(0).parent_index());
+  EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
   EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
   auto const& vessel_0_history =
       message.vessel(0).vessel().history_and_prolongation().history();

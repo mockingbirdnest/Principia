@@ -126,6 +126,7 @@ class Vessel {
       not_null<serialization::Vessel*> const message) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
+      not_null<Ephemeris<Barycentric>*> const ephemeris,
       not_null<Celestial const*> const parent);
 
  protected:

@@ -230,7 +230,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
 template<typename Frame>
 void UniqueDiscreteTrajectory<Frame>::UniqueDiscreteTrajectoryDeleter(
     DiscreteTrajectory<Frame>* trajectory) {
-  if (trajectory == nullptr && !trajectory->is_root()) {
+  if (trajectory != nullptr && !trajectory->is_root()) {
     trajectory->parent()->DeleteFork(&trajectory);
   }
 }
