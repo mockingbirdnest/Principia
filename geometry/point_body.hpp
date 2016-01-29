@@ -172,7 +172,7 @@ Point<Vector> BarycentreCalculator<Point<Vector>, Weight>::Get() const {
 
 template<typename Vector, typename Weight>
 Weight const& BarycentreCalculator<Point<Vector>, Weight>::weight() const {
-  return weight_
+  return weight_;
 }
 
 }  // namespace geometry
