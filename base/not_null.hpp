@@ -4,6 +4,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "base/macros.hpp"
 #include "glog/logging.h"
 
 // This file defines a pointer wrapper |not_null| that statically ensures
@@ -199,10 +200,27 @@ class not_null {
   // GCC nevertheless incorrectly prefers |T&&| in that case, while clang and
   // MSVC recognize the ambiguity.
   // The |RValue| test gives two examples of this.
+  // Moreover, MSVC seems to get confused by templatized conversion operators.
+#if PRINCIPIA_COMPILER_MSVC
   operator pointer const&&() const&;
+#else
+  template<typename OtherPointer,
+           typename = std::enable_if_t<
+               std::is_convertible<pointer, OtherPointer>::value &&
+               !is_instance_of_not_null<OtherPointer>>>
+  operator OtherPointer const&&() const&;
+#endif
 
   // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
+#if PRINCIPIA_COMPILER_MSVC
   operator pointer&&() &&;
+#else
+  template<typename OtherPointer,
+           typename = std::enable_if_t<
+               std::is_convertible<pointer, OtherPointer>::value &&
+               !is_instance_of_not_null<OtherPointer>>>
+  operator OtherPointer const&&() const&;
+#endif
 
   // Returns |*pointer_|.
   std::add_lvalue_reference_t<element_type> operator*() const;
