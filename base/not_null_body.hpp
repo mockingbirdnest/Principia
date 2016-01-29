@@ -61,7 +61,8 @@ not_null<Pointer>& not_null<Pointer>::operator=(
 }
 
 template<typename Pointer>
-not_null<Pointer>::operator pointer const&&() const& {
+template<typename OtherPointer, typename>
+not_null<Pointer>::operator OtherPointer const&&() const& {
   // This |move| is deceptive: we are not actually moving anything (|*this| is
   // |const&|), we are simply casting to an rvalue reference.
   return std::move(pointer_);

@@ -201,15 +201,11 @@ class not_null {
   // MSVC recognize the ambiguity.
   // The |RValue| test gives two examples of this.
   // Moreover, MSVC seems to get confused by templatized conversion operators.
-#if PRINCIPIA_COMPILER_MSVC
-  operator pointer const&&() const&;
-#else
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
                !is_instance_of_not_null<OtherPointer>::value>>
   operator OtherPointer const&&() const&;
-#endif
 
   // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
 #if PRINCIPIA_COMPILER_MSVC
