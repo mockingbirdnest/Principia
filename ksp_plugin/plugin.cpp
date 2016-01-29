@@ -634,8 +634,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(celestials, vessel_message.parent_index()).get();
-    not_null<std::unique_ptr<Vessel>> vessel =
-        Vessel::ReadFromMessage(vessel_message.vessel(), parent);
+    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
+                                                   vessel_message.vessel(),
+                                                   ephemeris.get(),
+                                                   parent);
     if (vessel_message.dirty()) {
       dirty_vessels.emplace(vessel.get());
     }
