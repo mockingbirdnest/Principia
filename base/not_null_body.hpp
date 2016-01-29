@@ -64,23 +64,27 @@ template<typename Pointer>
 not_null<Pointer>::operator pointer const&&() const& {
   // This |move| is deceptive: we are not actually moving anything (|*this| is
   // |const&|), we are simply casting to an rvalue reference.
+  LOG(ERROR)<<" not actually moving "<<(std::uintptr_t)&*pointer_;
   return std::move(pointer_);
 }
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::operator OtherPointer() const& {
+  LOG(ERROR)<<" converting and copying "<<(std::uintptr_t)&*pointer_;
   return pointer_;
 }
 
 template<typename Pointer>
 not_null<Pointer>::operator pointer&&() && {
+  LOG(ERROR)<<" moving "<<(std::uintptr_t)&*pointer_;
   return std::move(pointer_);
 }
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::operator OtherPointer() && {
+  LOG(ERROR)<<" converting and moving "<<(std::uintptr_t)&*pointer_;
   return std::move(pointer_);
 }
 
