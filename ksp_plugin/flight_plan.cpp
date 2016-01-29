@@ -138,16 +138,18 @@ void FlightPlan::WriteToMessage(
   speed_integration_tolerance_.WriteToMessage(
       message->mutable_speed_integration_tolerance());
   integrator_.WriteToMessage(message->mutable_integrator());
+  for (auto const& segment : segments_) {
+    segment->WritePointerToMessage(message->add_segment());
+  }
   for (auto const& manœuvre : manœuvres_) {
-    serialization::Manoeuvre* serialized_manoeuvre = message->add_manoeuvre();
-    manœuvre.WriteToMessage(serialized_manoeuvre);
+    manœuvre.WriteToMessage(message->add_manoeuvre());
   }
 }
 
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
+    serialization::FlightPlan const& message,
     not_null<DiscreteTrajectory<Barycentric>*> const root,
-    not_null<Ephemeris<Barycentric>*> const ephemeris,
-    serialization::FlightPlan const& message) {
+    not_null<Ephemeris<Barycentric>*> const ephemeris) {
   auto flight_plan = std::make_unique<FlightPlan>(
       root,
       Instant::ReadFromMessage(message.initial_time()),
@@ -159,9 +161,15 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
           ReadFromMessage(message.integrator()),
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
+  // The constructor has forked a segment.  Remove it.
+  flight_plan->segments_.clear();
+  for (auto const& segment : message.segment()) {
+    flight_plan->segments_.emplace_back(
+        DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
+  }
   for (auto const& manoeuvre : message.manoeuvre()) {
-    flight_plan->Append(NavigationManœuvre::ReadFromMessage(ephemeris,
-                                                            manoeuvre));
+    flight_plan->manœuvres_.push_back(
+        NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
   }
   return std::move(flight_plan);
 }

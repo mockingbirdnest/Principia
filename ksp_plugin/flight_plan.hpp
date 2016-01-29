@@ -90,9 +90,9 @@ class FlightPlan {
 
   void WriteToMessage(not_null<serialization::FlightPlan*> const message) const;
   static std::unique_ptr<FlightPlan> ReadFromMessage(
+      serialization::FlightPlan const& message,
       not_null<DiscreteTrajectory<Barycentric>*> const root,
-      not_null<Ephemeris<Barycentric>*> const ephemeris,
-      serialization::FlightPlan const& message);
+      not_null<Ephemeris<Barycentric>*> const ephemeris);
 
  protected:
   // For mocking.

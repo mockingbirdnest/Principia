@@ -103,8 +103,8 @@ class Manœuvre {
   // written nor read.
   void WriteToMessage(not_null<serialization::Manoeuvre*> const message) const;
   static Manœuvre ReadFromMessage(
-      not_null<Ephemeris<InertialFrame>*> const ephemeris,
-      serialization::Manoeuvre const& message);
+      serialization::Manoeuvre const& message,
+      not_null<Ephemeris<InertialFrame>*> const ephemeris);
 
  private:
   Force const thrust_;
