@@ -66,23 +66,23 @@ not_null<Pointer>::operator pointer const&&() const& {
   // |const&|), we are simply casting to an rvalue reference.
   return std::move(pointer_);
 }
-
+/*
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::operator OtherPointer() const& {
   return pointer_;
-}
+}*/
 
 template<typename Pointer>
 not_null<Pointer>::operator pointer&&() && {
   return std::move(pointer_);
 }
-
+/*
 template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::operator OtherPointer() && {
   return std::move(pointer_);
-}
+}*/
 
 template<typename Pointer>
 std::add_lvalue_reference_t<typename not_null<Pointer>::element_type>
