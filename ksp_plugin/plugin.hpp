@@ -24,6 +24,7 @@
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
+#include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -44,6 +45,7 @@ using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
+using physics::HierarchicalSystem;
 using physics::KeplerianElements;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Angle;
@@ -108,7 +110,7 @@ class Plugin {
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    base::not_null<std::unique_ptr<MassiveBody>> body);
+    base::not_null<std::unique_ptr<MassiveBody const>> body);
 
   virtual void InsertCelestialJacobiKeplerian(
     Index const celestial_index,
@@ -418,10 +420,25 @@ class Plugin {
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
-  // |bodies_| and |initial_state_| are null if and only if |!initializing_|.
-  // TODO(egg): optional.
-  std::unique_ptr<IndexToMassiveBody> bodies_;
-  std::unique_ptr<IndexToDegreesOfFreedom> initial_state_;
+
+  struct AbsoluteInitializationObjects {
+    IndexToMassiveBody bodies;
+    IndexToDegreesOfFreedom initial_state;
+  };
+  std::experimental::optional<AbsoluteInitializationObjects>
+      absolute_initialization_;
+
+  struct HierarchicalInitializationObjects {
+    HierarchicalInitializationObjects(
+        not_null<std::unique_ptr<MassiveBody const>> sun)
+        : system(std::move(sun)) {}
+    HierarchicalSystem<Barycentric> system;
+    std::map<Index, MassiveBody const*> indices_to_bodies;
+    std::map<Index, std::experimental::optional<Index>> parents;
+  };
+  std::experimental::optional<HierarchicalInitializationObjects>
+      hierarchical_initialization_;
+
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
