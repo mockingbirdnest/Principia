@@ -188,12 +188,10 @@ TEST_F(NotNullTest, RValue) {
   // compiles this even when it is ambiguous, while clang correctly fails.
   owner_int = make_not_null_unique<int>(1729);
 
-  LOG(ERROR)<<(std::uintptr_t)&*owner_int.get();
   not_null<int*> not_null_access_int = owner_int.get();
   int const* access_const_int = not_null_access_int;
 
   not_null<std::shared_ptr<int>> not_null_shared_int = std::make_shared<int>(3);
-  LOG(ERROR)<<(std::uintptr_t)&*not_null_shared_int.get();
   // This exercises |operator OtherPointer() const&|.  The conversion from
   // |not_null<int*>| to |int const*| does not; instead it goes through the
   // conversion |not_null<int*>| -> |int*| -> |int const*|, where the latter is
