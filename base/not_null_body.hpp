@@ -61,25 +61,28 @@ not_null<Pointer>& not_null<Pointer>::operator=(
 }
 
 template<typename Pointer>
-template<typename OtherPointer, typename>
-not_null<Pointer>::operator OtherPointer const&&() const& {
+not_null<Pointer>::operator pointer const&&() const& {
   // This |move| is deceptive: we are not actually moving anything (|*this| is
   // |const&|), we are simply casting to an rvalue reference.
   return std::move(pointer_);
 }
 
-#if PRINCIPIA_COMPILER_MSVC
+template<typename Pointer>
+template<typename OtherPointer, typename>
+not_null<Pointer>::operator OtherPointer() const& {
+  return pointer_;
+}
+
 template<typename Pointer>
 not_null<Pointer>::operator pointer&&() && {
   return std::move(pointer_);
 }
-#else
+
 template<typename Pointer>
 template<typename OtherPointer, typename>
-not_null<Pointer>::operator OtherPointer&&() && {
+not_null<Pointer>::operator OtherPointer() && {
   return std::move(pointer_);
 }
-#endif
 
 template<typename Pointer>
 std::add_lvalue_reference_t<typename not_null<Pointer>::element_type>

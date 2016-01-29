@@ -188,9 +188,13 @@ TEST_F(NotNullTest, RValue) {
   // compiles this even when it is ambiguous, while clang correctly fails.
   owner_int = make_not_null_unique<int>(1729);
 
-  std::unique_ptr<int const> owner_const_int =
-      not_null<std::unique_ptr<int const>>(make_not_null_unique<int>(5));
+  int* access_int = owner_int.get();
+  int const* access_const_int = access_int;
+  // MSVC seems to be confused by templatized move-conversion operators.
+#if !defined(PRINCIPIA_COMPILER_MSVC)
+  std::unique_ptr<int const> owner_const_int = make_not_null_unique<int>(5);
   EXPECT_EQ(5, *owner_const_int);
+#endif
 }
 
 }  // namespace base
