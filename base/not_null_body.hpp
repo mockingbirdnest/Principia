@@ -68,10 +68,18 @@ not_null<Pointer>::operator OtherPointer const&&() const& {
   return std::move(pointer_);
 }
 
+#if PRINCIPIA_COMPILER_MSVC
 template<typename Pointer>
 not_null<Pointer>::operator pointer&&() && {
   return std::move(pointer_);
 }
+#else
+template<typename Pointer>
+template<typename OtherPointer, typename>
+not_null<Pointer>::operator OtherPointer&&() && {
+  return std::move(pointer_);
+}
+#endif
 
 template<typename Pointer>
 std::add_lvalue_reference_t<typename not_null<Pointer>::element_type>
