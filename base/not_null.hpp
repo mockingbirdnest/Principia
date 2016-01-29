@@ -219,7 +219,7 @@ class not_null {
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
                !is_instance_of_not_null<OtherPointer>>>
-  operator OtherPointer&&() &&&;
+  operator OtherPointer&&() &&;
 #endif
 
   // Returns |*pointer_|.
