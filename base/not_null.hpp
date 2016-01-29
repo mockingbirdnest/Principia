@@ -107,6 +107,10 @@ using _checked_not_null = typename std::enable_if<
                     typename std::remove_reference<Pointer>::type>::value,
     not_null<typename std::remove_reference<Pointer>::type>>::type;
 
+// We cannot refer to the template |not_null| inside of |not_null|.
+template<typename Pointer>
+using is_instance_of_not_null = is_instance_of<not_null, Pointer>;
+
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
 // be a const, reference, rvalue reference, or |not_null|.  |not_null<Pointer>|
@@ -135,7 +139,11 @@ class not_null {
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer> const& other);
   // Constructor from a nullable pointer, performs a null check.
-  not_null(pointer other);  // NOLINT(runtime/explicit)
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               std::is_convertible<OtherPointer, pointer>::value &&
+               !is_instance_of_not_null<pointer>::value>::type>
+  not_null(OtherPointer other);  // NOLINT(runtime/explicit)
   // Explicit copy constructor for static_cast'ing.
   template<typename OtherPointer,
            typename = typename std::enable_if<
