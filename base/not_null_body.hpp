@@ -22,7 +22,8 @@ not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(static_cast<pointer>(other.pointer_)) {}
 
 template<typename Pointer>
-not_null<Pointer>::not_null(pointer other) {
+template<typename OtherPointer, typename>
+not_null<Pointer>::not_null(OtherPointer other) {
   CHECK(other != nullptr);
   pointer_ = std::move(other);
 }
@@ -67,7 +68,19 @@ not_null<Pointer>::operator pointer const&&() const& {
 }
 
 template<typename Pointer>
+template<typename OtherPointer, typename>
+not_null<Pointer>::operator OtherPointer() const& {
+  return pointer_;
+}
+
+template<typename Pointer>
 not_null<Pointer>::operator pointer&&() && {
+  return std::move(pointer_);
+}
+
+template<typename Pointer>
+template<typename OtherPointer, typename>
+not_null<Pointer>::operator OtherPointer() && {
   return std::move(pointer_);
 }
 
