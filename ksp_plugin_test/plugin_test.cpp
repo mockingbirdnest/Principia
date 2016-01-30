@@ -11,6 +11,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -186,27 +187,15 @@ class PluginTest : public testing::Test {
     for (int index = SolarSystemFactory::kSun + 1;
          index <= SolarSystemFactory::kLastMajorBody;
          ++index) {
-      Index const parent_index = SolarSystemFactory::parent(index);
-      RelativeDegreesOfFreedom<Barycentric> const state_vectors =
-          plugin_->InversePlanetariumRotation()(id_icrf_alice_(
-              solar_system_->initial_state(SolarSystemFactory::name(index)) -
-              solar_system_->initial_state(
-                  SolarSystemFactory::name(parent_index))));
-      Instant const t;
-      auto body = make_not_null_unique<MassiveBody>(
-          solar_system_->gravitational_parameter(
-              SolarSystemFactory::name(index)));
-      KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
-          /*primary=*/MassiveBody(solar_system_->gravitational_parameter(
-              SolarSystemFactory::name(parent_index))),
-          /*secondary=*/*body,
-          state_vectors,
-          /*epoch=*/t).elements_at_epoch();
-      elements.semimajor_axis = std::experimental::nullopt;
-      plugin_->InsertCelestialJacobiKeplerian(index,
-                                              parent_index,
-                                              elements,
-                                              std::move(body));
+      DegreesOfFreedom<ICRFJ2000Equator> const foo = solar_system_->initial_state(SolarSystemFactory::name(index));
+      auto lol = id_icrf_alice_(foo);
+      plugin_->InsertCelestialAbsoluteCartesian(
+          index,
+          SolarSystemFactory::parent(index),
+          plugin_->InversePlanetariumRotation()(lol),
+          make_not_null_unique<MassiveBody>(
+              solar_system_->gravitational_parameter(
+                  SolarSystemFactory::name(index))));
     }
   }
 
