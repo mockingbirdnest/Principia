@@ -36,6 +36,7 @@ using quantities::si::Coulomb;
 using quantities::si::Day;
 using quantities::si::Metre;
 using quantities::si::Pascal;
+using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::uk::Foot;
 using quantities::uk::Furlong;
@@ -313,6 +314,18 @@ TEST_F(GrassmannTest, SerializationSuccess) {
   Trivector<Charge, World> const u =
       Trivector<Charge, World>::ReadFromMessage(message);
   EXPECT_EQ(t, u);
+}
+
+TEST_F(GrassmannTest, Angles) {
+  Vector<double, World> const x({1, 0, 0});
+  Vector<double, World> const y({0, 1, 0});
+  Vector<double, World> const z({0, 0, 1});
+  EXPECT_THAT(AngleBetween(x, y), Eq(π / 2 * Radian));
+  EXPECT_THAT(AngleBetween(x, -y), Eq(π / 2 * Radian));
+  EXPECT_THAT(AngleBetween(x, x + y), Eq(π / 4 * Radian));
+  EXPECT_THAT(OrientedAngleBetween(x, y, Wedge(x, y)), Eq(π / 2 * Radian));
+  EXPECT_THAT(OrientedAngleBetween(x, -y, Wedge(x, y)), Eq(-π / 2 * Radian));
+  EXPECT_THAT(AngleBetween(Wedge(x, y), Wedge(y, z)), Eq(π / 2 * Radian));
 }
 
 }  // namespace geometry
