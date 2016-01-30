@@ -7,6 +7,9 @@
 #include <vector>
 
 namespace principia {
+
+using base::make_not_null_unique;
+
 namespace physics {
 
 template<typename Frame>

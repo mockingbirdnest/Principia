@@ -69,8 +69,11 @@ internal static class Log {
     Interface.LogError(message);
   }
 
-  internal static void Fatal(String message) {
+  // Returns an exception so it can be thrown so that the compiler doesn't
+  // complain about non-returning code.
+  internal static Exception Fatal(String message) {
     Interface.LogFatal(message);
+    return new Exception();
   }
 }
 
