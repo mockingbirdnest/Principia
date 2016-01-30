@@ -125,12 +125,7 @@ void FlightPlan::GetSegment(
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
   *begin = segments_[index]->Fork();
-  if (index == number_of_segments() - 1) {
-    *end = segments_[index]->End();
-  } else {
-    // |Find| returns |End| if the time is not found, which is what we need.
-    *end = segments_[index]->Find(segments_[index + 1]->Fork().time());
-  }
+  *end = segments_[index]->End();
 }
 
 void FlightPlan::WriteToMessage(
@@ -220,13 +215,15 @@ void FlightPlan::RecomputeSegments() {
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
-  ephemeris_->FlowWithAdaptiveStep(
-      segments_.back().get(),
-      manœuvre.acceleration(),
-      length_integration_tolerance_,
-      speed_integration_tolerance_,
-      integrator_,
-      manœuvre.final_time());
+  if (manœuvre.initial_time() < manœuvre.final_time()) {
+    ephemeris_->FlowWithAdaptiveStep(
+        segments_.back().get(),
+        manœuvre.acceleration(),
+        length_integration_tolerance_,
+        speed_integration_tolerance_,
+        integrator_,
+        manœuvre.final_time());
+  }
 }
 
 void FlightPlan::CoastLastSegment(Instant const& final_time) {
