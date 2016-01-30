@@ -197,6 +197,7 @@ TEST_F(NotNullTest, RValue) {
   // conversion |not_null<int*>| -> |int*| -> |int const*|, where the latter is
   // a qualification adjustment, part of a standard conversion sequence.
   std::shared_ptr<int const> shared_const_int = not_null_shared_int;
+
   // MSVC seems to be confused by templatized move-conversion operators.
 #if !defined(PRINCIPIA_COMPILER_MSVC)
   std::unique_ptr<int const> owner_const_int = make_not_null_unique<int>(5);
