@@ -106,6 +106,10 @@ class TestablePlugin : public Plugin {
     return mock_ephemeris_.get();
   }
 
+  Rotation<AliceSun, Barycentric> InversePlanetariumRotation() {
+    return PlanetariumRotation().Inverse();
+  }
+
  private:
   // We override this part of initialization in order to create a
   // |MockEphemeris| rather than an |Ephemeris|, and in order to fill in the
@@ -144,7 +148,7 @@ class TestablePlugin : public Plugin {
 class PluginTest : public testing::Test {
  protected:
   PluginTest()
-      : looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
+      : id_icrf_alice_(),
         solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::kMajorBodiesOnly)),
         initial_time_(Instant() + 42 * Second),
@@ -184,10 +188,10 @@ class PluginTest : public testing::Test {
          ++index) {
       Index const parent_index = SolarSystemFactory::parent(index);
       RelativeDegreesOfFreedom<Barycentric> const state_vectors =
-          Identity<ICRFJ2000Equator, Barycentric>()(
+          plugin_->InversePlanetariumRotation()(id_icrf_alice_(
               solar_system_->initial_state(SolarSystemFactory::name(index)) -
               solar_system_->initial_state(
-                  SolarSystemFactory::name(parent_index)));
+                  SolarSystemFactory::name(parent_index))));
       Instant const t;
       auto body = make_not_null_unique<MassiveBody>(
           solar_system_->gravitational_parameter(
@@ -239,7 +243,7 @@ class PluginTest : public testing::Test {
     ++*number_of_new_vessels;
   }
 
-  Permutation<ICRFJ2000Equator, AliceSun> looking_glass_;
+  Identity<ICRFJ2000Equator, AliceSun> const id_icrf_alice_;
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant initial_time_;
@@ -383,10 +387,10 @@ TEST_F(PluginTest, Initialization) {
   LOG(ERROR)<<"foo"<<index;
     EXPECT_THAT(from_parent,
                 Componentwise(
-                    AlmostEquals(looking_glass_.Inverse()(
+                    AlmostEquals(id_icrf_alice_.Inverse()(
                             plugin_->CelestialFromParent(index).displacement()),
                         1, 42380),
-                    AlmostEquals(looking_glass_.Inverse()(
+                    AlmostEquals(id_icrf_alice_.Inverse()(
                             plugin_->CelestialFromParent(index).velocity()),
                         74, 1475468))) << SolarSystemFactory::name(index);
   LOG(ERROR)<<"foo"<<index;
@@ -558,18 +562,18 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
       EXPECT_THAT(
           from_parent,
           Componentwise(
-              AlmostEquals(looking_glass_.Inverse()(
+              AlmostEquals(id_icrf_alice_.Inverse()(
                   plugin_->CelestialFromParent(index).displacement()), 5),
-              AlmostEquals(looking_glass_.Inverse()(
+              AlmostEquals(id_icrf_alice_.Inverse()(
                   plugin_->CelestialFromParent(index).velocity()),
                   146492520))) << SolarSystemFactory::name(index);
     } else {
       EXPECT_THAT(
           from_parent,
           Componentwise(
-              AlmostEquals(looking_glass_.Inverse()(
+              AlmostEquals(id_icrf_alice_.Inverse()(
                   plugin_->CelestialFromParent(index).displacement()), 1, 13),
-              AlmostEquals(looking_glass_.Inverse()(
+              AlmostEquals(id_icrf_alice_.Inverse()(
                   plugin_->CelestialFromParent(index).velocity()),
                   74, 1475468))) << SolarSystemFactory::name(index);
     }
