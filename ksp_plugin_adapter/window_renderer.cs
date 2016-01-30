@@ -30,17 +30,16 @@ internal abstract class WindowRenderer : IDisposable {
   private ManagerInterface manager_;
 }
 
-internal struct Controlled<T> where T : IDisposable {
-  public T all {
-    get {
-      return all_;
+internal struct Controlled<T> where T : class, IDisposable {
+  public T get() {
+    return all_;
+  }
+
+  public void reset(T value = null) {
+    if (all_ != null) {
+      all_.Dispose();
     }
-    set {
-      if (all_ != null) {
-        all_.Dispose();
-      }
-      all_ = value;
-    }
+    all_ = value;
   }
 
   private T all_;

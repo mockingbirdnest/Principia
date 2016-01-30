@@ -48,12 +48,14 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
-  private Controlled<ReferenceFrameSelector> plotting_frame_selector_;
+  internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
+  private Controlled<FlightPlanner> flight_planner_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
+  private VectorLine[] rendered_flight_plan_;
 
   [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
@@ -380,6 +382,8 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out barycentric_navball_texture_,
                      "navball_barycentric.png");
 
+    rendered_flight_plan_ = new VectorLine[0];
+
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
   }
@@ -429,10 +433,12 @@ public partial class PrincipiaPluginAdapter
       }
       Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
 
-      plotting_frame_selector_.all =
-          new ReferenceFrameSelector(this,
+      plotting_frame_selector_.reset(
+          new ReferenceFrameSelector(this, 
                                      plugin_,
-                                     UpdateRenderingFrame);
+                                     UpdateRenderingFrame,
+                                     "Plotting frame"));
+      flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
       plugin_source_ = PluginSource.SAVED_STATE;
@@ -515,7 +521,7 @@ public partial class PrincipiaPluginAdapter
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
           navball_.navBall.renderer.material.mainTexture =
               compass_navball_texture_;
-        } else if (plotting_frame_selector_.all.frame_type ==
+        } else if (plotting_frame_selector_.get().frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
           navball_.navBall.renderer.material.mainTexture =
               inertial_navball_texture_;
@@ -680,9 +686,13 @@ public partial class PrincipiaPluginAdapter
       return;
     }
     Vessel active_vessel = FlightGlobals.ActiveVessel;
+    if (active_vessel == null) {
+      return;
+    }
+    string active_vessel_guid = active_vessel.id.ToString();
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
-        plugin_.HasVessel(active_vessel.id.ToString()); 
+        plugin_.HasVessel(active_vessel_guid); 
     if (ready_to_draw_active_vessel_trajectory) {
       active_vessel.patchedConicRenderer.relativityMode =
           PatchRendering.RelativityMode.RELATIVE;
@@ -723,21 +733,40 @@ public partial class PrincipiaPluginAdapter
       if (rendered_trajectory_ == null || rendered_prediction_ == null) {
         ResetRenderedTrajectory();
       }
+
+      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+
       IntPtr trajectory_iterator = IntPtr.Zero;
       trajectory_iterator = plugin_.RenderedVesselTrajectory(
-                                active_vessel.id.ToString(),
-                                (XYZ)Planetarium.fetch.Sun.position);
+                                active_vessel_guid,
+                                sun_world_position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
-      if (plugin_.HasPrediction(active_vessel.id.ToString())) {
+      if (plugin_.HasPrediction(active_vessel_guid)) {
         trajectory_iterator = plugin_.RenderedPrediction(
-                                  active_vessel.id.ToString(),
-                                  (XYZ)Planetarium.fetch.Sun.position);
+                                  active_vessel_guid,
+                                  sun_world_position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
                                   rendered_prediction_);
       }
+      if (plugin_.FlightPlanExists(active_vessel_guid)) {
+        int number_of_segments =
+            plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
+        if (number_of_segments != rendered_flight_plan_.Length) {
+          ResetRenderedFlightPlan(number_of_segments);
+        }
+        for (int i = 0; i < number_of_segments; ++i) {
+          trajectory_iterator =
+              plugin_.FlightPlanRenderedSegment(active_vessel_guid,
+                                                sun_world_position,
+                                                i);
+          RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                    rendered_flight_plan_[i]);
+        }
+      }
     } else {
       DestroyRenderedTrajectory();
+      DestroyRenderedFlightPlan();
     }
   }
 
@@ -785,30 +814,32 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetRenderedTrajectory() {
     DestroyRenderedTrajectory();
-    rendered_trajectory_ = new VectorLine(
-        lineName     : "rendered_trajectory_",
-        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : XKCDColors.AcidGreen,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    rendered_trajectory_.vectorObject.transform.parent =
-        ScaledSpace.Instance.transform;
-    rendered_trajectory_.vectorObject.renderer.castShadows = false;
-    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
-    rendered_trajectory_.layer = 31;
-    rendered_prediction_ = new VectorLine(
+    rendered_trajectory_ = NewRenderedTrajectory(XKCDColors.AcidGreen);
+    rendered_prediction_ = NewRenderedTrajectory(XKCDColors.Fuchsia);
+  }
+
+  private void ResetRenderedFlightPlan(int segments) {
+    DestroyRenderedFlightPlan();
+    rendered_flight_plan_ = new VectorLine[segments];
+    for (int i = 0; i < segments; ++i) {
+      rendered_flight_plan_[i] = NewRenderedTrajectory(
+          (i % 2 == 0) ? XKCDColors.RoyalBlue : XKCDColors.OrangeRed);
+    }
+  }
+
+  private VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
+    var result = new VectorLine(
         lineName     : "rendered_prediction_",
         linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
         lineMaterial : MapView.OrbitLinesMaterial,
-        color        : XKCDColors.Fuchsia,
+        color        : colour,
         width        : 5,
         lineType     : LineType.Discrete);
-    rendered_prediction_.vectorObject.transform.parent =
-        ScaledSpace.Instance.transform;
-    rendered_prediction_.vectorObject.renderer.castShadows = false;
-    rendered_prediction_.vectorObject.renderer.receiveShadows = false;
-    rendered_prediction_.layer = 31;
+    result.vectorObject.transform.parent = ScaledSpace.Instance.transform;
+    result.vectorObject.renderer.castShadows = false;
+    result.vectorObject.renderer.receiveShadows = false;
+    result.layer = 31;
+    return result;
   }
 
   private void DestroyRenderedTrajectory() {
@@ -820,12 +851,21 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void DestroyRenderedFlightPlan() {
+    for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
+      Vector.DestroyLine(ref rendered_flight_plan_[i]);
+    }
+    rendered_flight_plan_ = new VectorLine[0];
+  }
+
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
-    plotting_frame_selector_.all = null;
+    plotting_frame_selector_.reset();
+    flight_planner_.reset();
     DestroyRenderedTrajectory();
+    DestroyRenderedFlightPlan();
     navball_changed_ = true;
   }
 
@@ -890,6 +930,7 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
                                      "Force 2D trajectories");
     ReferenceFrameSelection();
+    flight_planner_.get().RenderButton();
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
@@ -960,7 +1001,7 @@ public partial class PrincipiaPluginAdapter
         navball_changed_ = true;
         reset_rsas_target_ = true;
       }
-      plotting_frame_selector_.all.RenderButton();
+      plotting_frame_selector_.get().RenderButton();
     }
   }
 
@@ -1005,7 +1046,6 @@ public partial class PrincipiaPluginAdapter
 
   // NOTE(egg): Dummy UI elements for testing purposes, rendered in an
   // irrelevant part of the UI.
-  FlightPlanner test_flight_planner_;
 
   private void PredictionSettings() {
     bool changed_settings = false;
@@ -1019,10 +1059,6 @@ public partial class PrincipiaPluginAdapter
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
-    if (test_flight_planner_ == null) {
-      test_flight_planner_ = new FlightPlanner();
-    }
-    test_flight_planner_.Render();
   }
 
   private void KSPFeatures() {
@@ -1146,9 +1182,12 @@ public partial class PrincipiaPluginAdapter
     main_window_rectangle_.width = 0.0f;
   }
 
-  private void UpdateRenderingFrame() {
+  private void UpdateRenderingFrame(
+      NavigationFrameParameters frame_parameters) {
+    IntPtr new_plotting_frame = plugin_.NewNavigationFrame(frame_parameters);
+    plugin_.SetPlottingFrame(ref new_plotting_frame);
     if (fix_navball_in_plotting_frame_) {
-      navball_changed_ = true;
+     navball_changed_ = true;
       reset_rsas_target_ = true;
     }
   }
@@ -1263,10 +1302,12 @@ public partial class PrincipiaPluginAdapter
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();
     }
-    plotting_frame_selector_.all =
+    plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
                                    plugin_,
-                                   UpdateRenderingFrame);
+                                   UpdateRenderingFrame,
+                                   "Plotting frame"));
+    flight_planner_.reset(new FlightPlanner(this, plugin_));
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =

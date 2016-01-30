@@ -22,24 +22,26 @@ static class CelestialExtensions {
 
 class ReferenceFrameSelector : WindowRenderer {
   public enum FrameType {
-    BODY_CENTRED_NON_ROTATING,
+    BODY_CENTRED_NON_ROTATING = 6000,
 #if HAS_SURFACE
     SURFACE,
 #endif
-    BARYCENTRIC_ROTATING,
+    BARYCENTRIC_ROTATING = 6001,
 #if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
     BODY_CENTRED_ALIGNED_WITH_PARENT
 #endif
   }
 
-  public delegate void Callback();
+  public delegate void Callback(NavigationFrameParameters frame_parameters);
 
   public ReferenceFrameSelector(
       ManagerInterface manager,
       IntPtr plugin,
-      Callback on_change) : base(manager) {
+      Callback on_change,
+      string name) : base(manager) {
     plugin_ = plugin;
     on_change_ = on_change;
+    name_ = name;
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -56,15 +58,50 @@ class ReferenceFrameSelector : WindowRenderer {
         expanded_[celestial] = true;
       }
     }
-    ResetFrame();
+    on_change_(FrameParameters());
+    window_rectangle_.x = UnityEngine.Screen.width / 2;
+    window_rectangle_.y = UnityEngine.Screen.height / 3;
   }
 
   public FrameType frame_type { get; private set; }
 
+  public NavigationFrameParameters FrameParameters() {
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        return new NavigationFrameParameters{
+            extension = (int)frame_type,
+            centre_index = selected_celestial_.flightGlobalsIndex};
+      case FrameType.BARYCENTRIC_ROTATING:
+        return new NavigationFrameParameters{
+            extension = (int)frame_type,
+            primary_index =
+                selected_celestial_.referenceBody.flightGlobalsIndex,
+            secondary_index = selected_celestial_.flightGlobalsIndex};
+      default:
+        throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
+    }
+  }
+
+  public void Reset(NavigationFrameParameters parameters) {
+    frame_type = (FrameType)parameters.extension;
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        selected_celestial_ = FlightGlobals.Bodies[parameters.centre_index];
+        break;
+      case FrameType.BARYCENTRIC_ROTATING:
+        selected_celestial_ = FlightGlobals.Bodies[parameters.secondary_index];
+        break;
+    }
+  }
+
+  public void Hide() {
+    show_selector_ = false;
+  }
+
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (UnityEngine.GUILayout.Button("Reference frame selection...")) {
+    if (UnityEngine.GUILayout.Button(name_ + " selection...")) {
       show_selector_ = !show_selector_;
     }
     UnityEngine.GUI.skin = old_skin;
@@ -78,7 +115,7 @@ class ReferenceFrameSelector : WindowRenderer {
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
                               func       : RenderSelector,
-                              text       : "Reference frame selection");
+                              text       : name_ + " selection");
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -155,7 +192,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                      celestial.name)) {
       if (selected_celestial_ != celestial) {
         selected_celestial_ = celestial;
-        ResetFrame();
+        on_change_(FrameParameters());
       }
     }
     UnityEngine.GUILayout.EndHorizontal();
@@ -175,7 +212,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                     UnityEngine.GUILayout.Height(75))) {
       if (frame_type != value) {
         frame_type = value;
-        ResetFrame();
+        on_change_(FrameParameters());
       }
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
@@ -186,34 +223,6 @@ class ReferenceFrameSelector : WindowRenderer {
     window_rectangle_.width = 0.0f;
   }
 
-  private void ResetFrame() {
-    on_change_();
-    IntPtr navigation_frame = IntPtr.Zero;
-    switch (frame_type) {
-      case FrameType.BODY_CENTRED_NON_ROTATING:
-        navigation_frame = plugin_.NewBodyCentredNonRotatingNavigationFrame(
-                               selected_celestial_.flightGlobalsIndex);
-      break;
-#if HAS_SURFACE
-      case FrameType.SURFACE:
-      break;
-#endif
-      case FrameType.BARYCENTRIC_ROTATING:
-        navigation_frame =
-            plugin_.NewBarycentricRotatingNavigationFrame(
-                primary_index   :
-                    selected_celestial_.referenceBody.flightGlobalsIndex,
-                secondary_index :
-                    selected_celestial_.flightGlobalsIndex);
-      break;
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-      case FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT:
-      break;
-#endif
-    }
-    plugin_.SetPlottingFrame(ref navigation_frame);
-  }
-
   private Callback on_change_;
   // Not owned.
   private IntPtr plugin_;
@@ -221,6 +230,7 @@ class ReferenceFrameSelector : WindowRenderer {
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private CelestialBody selected_celestial_;
+  private readonly string name_;
 }
 
 }  // namespace ksp_plugin_adapter
