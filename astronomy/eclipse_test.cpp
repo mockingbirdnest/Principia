@@ -16,12 +16,12 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using geometry::AngleBetween;
 using geometry::JulianDate;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;
 using physics::Ephemeris;
-using quantities::ArcCos;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -115,11 +115,8 @@ class EclipseTest : public testing::Test {
               Sin(umbral_half_aperture(t));
       // Angle between Earth and Moon as seen at
       // |apex_of_moon_locus_at_umbral_contact|.
-      return ArcCos(
-          InnerProduct(apex_of_moon_locus_at_umbral_contact - q_earth,
-                       apex_of_moon_locus_at_umbral_contact - q_moon) /
-          ((apex_of_moon_locus_at_umbral_contact - q_moon).Norm() *
-           (apex_of_moon_locus_at_umbral_contact - q_earth).Norm()));
+      return AngleBetween(apex_of_moon_locus_at_umbral_contact - q_earth,
+                          apex_of_moon_locus_at_umbral_contact - q_moon);
     };
 
     // We are at the desired contact if the angle between Earth and Moon from
@@ -190,11 +187,8 @@ class EclipseTest : public testing::Test {
               Sin(penumbral_half_aperture(t));
       // Angle between Earth and Moon as seen at
       // apex_of_moon_locus_at_penumbral_contact.
-      return ArcCos(
-          InnerProduct(apex_of_moon_locus_at_penumbral_contact - q_earth,
-                       apex_of_moon_locus_at_penumbral_contact - q_moon) /
-          ((apex_of_moon_locus_at_penumbral_contact - q_moon).Norm() *
-           (apex_of_moon_locus_at_penumbral_contact - q_earth).Norm()));
+      return AngleBetween(apex_of_moon_locus_at_penumbral_contact - q_earth,
+                          apex_of_moon_locus_at_penumbral_contact - q_moon);
     };
 
     // We are at the desired contact if the angle between Earth and Moon from
@@ -304,10 +298,6 @@ TEST_F(EclipseTest, Year1952) {
   CheckLunarUmbralEclipse(U1, U14,    9E-6 * Radian, 17 * Second);
   CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 26 * Second);
   CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 27 * Second);
-
-  // Later on for additional accuracy: 2 * ArcTan((x_norm_y -
-  // y_normx).Norm(),(x_norm_y + y_norm_x).Norm())
-  // x_norm_y = x * y.Norm() and y_norm_x = y * x.Norm()
 }
 
 #if 0
