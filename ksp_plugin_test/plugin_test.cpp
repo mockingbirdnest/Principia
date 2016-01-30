@@ -365,7 +365,7 @@ TEST_F(PluginDeathTest, SunError) {
   EXPECT_DEATH({
     plugin_->InsertSun(42, sun_gravitational_parameter_);
     plugin_->InsertSun(43, sun_gravitational_parameter_);
-  }, "sun_ == nullptr");
+  }, "!hierarchical_initialization_");
 }
 
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
