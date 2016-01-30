@@ -97,7 +97,6 @@ KeplerOrbit<Frame>::KeplerOrbit(
   // since |ascending_node| lies in the xy plane.
   Angle const Ω = positive_angle(
       ArcTan(ascending_node.coordinates().y, ascending_node.coordinates().x));
-  LOG(ERROR)<<ascending_node;
   double const eccentricity = eccentricity_vector.Norm();
   Angle const true_anomaly =
       positive_angle(OrientedAngleBetween(periapsis, r, x_wedge_y));
