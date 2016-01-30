@@ -280,6 +280,33 @@ Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent) {
   }
 }
 
+// Implementation from W. Kahan, 2006, How Futile are Mindless Assessments of
+// Roundoff in Floating-Point Computation?, §12 "Mangled Angles", p. 47.
+// https://www.cs.berkeley.edu/~wkahan/Mindless.pdf
+template<typename LScalar, typename RScalar, typename Frame>
+quantities::Angle AngleBetween(Vector<LScalar, Frame> const& v,
+                               Vector<RScalar, Frame> const& w) {
+  auto const v_norm_w = v * w.Norm();
+  auto const w_norm_v = w * v.Norm();
+  return 2 * ArcTan((v_norm_w - w_norm_v).Norm(), (v_norm_w + w_norm_v).Norm());
+}
+
+template<typename LScalar, typename RScalar, typename Frame>
+quantities::Angle AngleBetween(Bivector<LScalar, Frame> const& v,
+                               Bivector<RScalar, Frame> const& w) {
+  auto const v_norm_w = v * w.Norm();
+  auto const w_norm_v = w * v.Norm();
+  return 2 * ArcTan((v_norm_w - w_norm_v).Norm(), (v_norm_w + w_norm_v).Norm());
+}
+
+template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
+quantities::Angle OrientedAngleBetween(
+    Vector<LScalar, Frame> const& v,
+    Vector<RScalar, Frame> const& w,
+    Bivector<PScalar, Frame> const& positive) {
+  return Sign(InnerProduct(Wedge(v, w), positive)) * AngleBetween(v, w);
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,

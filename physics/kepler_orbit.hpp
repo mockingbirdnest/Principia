@@ -31,6 +31,10 @@ class KeplerOrbit {
               Body const& secondary,
               KeplerianElements<Frame> const& elements_at_epoch,
               Instant const& epoch);
+  KeplerOrbit(MassiveBody const& primary,
+              Body const& secondary,
+              RelativeDegreesOfFreedom<Frame> const& state_vectors,
+              Instant const& epoch);
 
   // The |DegreesOfFreedom| of the secondary minus those of the primary.
   RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
