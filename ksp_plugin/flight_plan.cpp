@@ -125,7 +125,7 @@ void FlightPlan::GetSegment(
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
   *begin = segments_[index]->Fork();
-    *end = segments_[index]->End();
+  *end = segments_[index]->End();
 }
 
 void FlightPlan::WriteToMessage(
@@ -216,13 +216,12 @@ void FlightPlan::RecomputeSegments() {
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (manœuvre.initial_time() < manœuvre.final_time()) {
-  ephemeris_->FlowWithAdaptiveStep(
-      segments_.back().get(),
-      manœuvre.IntrinsicAcceleration(),
-      length_integration_tolerance_,
-      speed_integration_tolerance_,
-      integrator_,
-      manœuvre.final_time());
+    ephemeris_->FlowWithAdaptiveStep(segments_.back().get(),
+                                     manœuvre.IntrinsicAcceleration(),
+                                     length_integration_tolerance_,
+                                     speed_integration_tolerance_,
+                                     integrator_,
+                                     manœuvre.final_time());
   }
 }
 
