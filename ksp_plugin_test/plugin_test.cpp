@@ -197,12 +197,12 @@ class PluginTest : public testing::Test {
               SolarSystemFactory::name(parent_index))),
           /*secondary=*/*body,
           state_vectors,
-          /*epoch=*/t);
+          /*epoch=*/t).elements_at_epoch();
       elements.semimajor_axis = std::experimental::nullopt;
-      plugin_->InsertCelestialJacobiKeplerian(index, parent_index, 
-                               std::move(body),
-                               parent_index,
-                               from_parent);
+      plugin_->InsertCelestialJacobiKeplerian(index,
+                                              parent_index,
+                                              elements,
+                                              std::move(body));
     }
   }
 
