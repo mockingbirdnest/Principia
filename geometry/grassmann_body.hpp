@@ -284,27 +284,27 @@ Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent) {
 // Roundoff in Floating-Point Computation?, §12 "Mangled Angles", p. 47.
 // https://www.cs.berkeley.edu/~wkahan/Mindless.pdf
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Angle AngleBetween(Vector<LScalar, Frame> const& x,
-                               Vector<RScalar, Frame> const& y) {
-  auto const x_norm_y = x * y.Norm();
-  auto const y_norm_x = y * x.Norm();
-  return 2 * ArcTan((x_norm_y - y_norm_x).Norm(), (x_norm_y + y_norm_x).Norm());
+quantities::Angle AngleBetween(Vector<LScalar, Frame> const& v,
+                               Vector<RScalar, Frame> const& w) {
+  auto const v_norm_w = v * w.Norm();
+  auto const w_norm_v = w * v.Norm();
+  return 2 * ArcTan((v_norm_w - w_norm_v).Norm(), (v_norm_w + w_norm_v).Norm());
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Angle AngleBetween(Bivector<LScalar, Frame> const& x,
-                               Bivector<RScalar, Frame> const& y) {
-  auto const x_norm_y = x * y.Norm();
-  auto const y_norm_x = y * x.Norm();
-  return 2 * ArcTan((x_norm_y - y_norm_x).Norm(), (x_norm_y + y_norm_x).Norm());
+quantities::Angle AngleBetween(Bivector<LScalar, Frame> const& v,
+                               Bivector<RScalar, Frame> const& w) {
+  auto const v_norm_w = v * w.Norm();
+  auto const w_norm_v = w * v.Norm();
+  return 2 * ArcTan((v_norm_w - w_norm_v).Norm(), (v_norm_w + w_norm_v).Norm());
 }
 
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
 quantities::Angle OrientedAngleBetween(
-    Vector<LScalar, Frame> const& x,
-    Vector<RScalar, Frame> const& y,
+    Vector<LScalar, Frame> const& v,
+    Vector<RScalar, Frame> const& w,
     Bivector<PScalar, Frame> const& positive) {
-  return Sign(InnerProduct(Wedge(x, y), positive)) * AngleBetween(x, y);
+  return Sign(InnerProduct(Wedge(v, w), positive)) * AngleBetween(v, w);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

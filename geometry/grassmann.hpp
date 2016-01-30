@@ -206,20 +206,20 @@ Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
 
 // The result is in [0, π]; the function is commutative.
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Angle AngleBetween(Vector<LScalar, Frame> const& x,
-                               Vector<RScalar, Frame> const& y);
+quantities::Angle AngleBetween(Vector<LScalar, Frame> const& v,
+                               Vector<RScalar, Frame> const& w);
 
 // The result is in [0, π]; the function is commutative.
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Angle AngleBetween(Bivector<LScalar, Frame> const& x,
-                               Bivector<RScalar, Frame> const& y);
+quantities::Angle AngleBetween(Bivector<LScalar, Frame> const& v,
+                               Bivector<RScalar, Frame> const& w);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
-// [0, π] if |InnerProduct(Wedge(x, y), positive) >= 0|.
+// [0, π] if |InnerProduct(Wedge(v, w), positive) >= 0|.
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
 quantities::Angle OrientedAngleBetween(
-    Vector<LScalar, Frame> const& x,
-    Vector<RScalar, Frame> const& y,
+    Vector<LScalar, Frame> const& v,
+    Vector<RScalar, Frame> const& w,
     Bivector<PScalar, Frame> const& positive);
 
 template<typename LScalar, typename RScalar, typename Frame>
