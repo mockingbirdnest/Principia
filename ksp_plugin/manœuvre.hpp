@@ -4,6 +4,7 @@
 #include <experimental/optional>
 
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
@@ -13,6 +14,7 @@
 namespace principia {
 
 using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::Vector;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
@@ -93,11 +95,15 @@ class Manœuvre {
       not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory);
 
   // Intensity, timing and coasting trajectory must have been set.
-  virtual Vector<double, InertialFrame> inertial_direction() const;
+  virtual Vector<double, InertialFrame> InertialDirection() const;
+
+  // Frenet frame at the beginning of the manœuvre.
+  virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
 
   // Intensity, timing and coasting trajectory must have been set.  The result
   // is valid until |*this| is destroyed.
-  typename Ephemeris<InertialFrame>::IntrinsicAcceleration acceleration() const;
+  typename Ephemeris<InertialFrame>::IntrinsicAcceleration
+  IntrinsicAcceleration() const;
 
   // Intensity and timing must have been set.  |coasting_trajectory| is neither
   // written nor read.

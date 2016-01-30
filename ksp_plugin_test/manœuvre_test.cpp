@@ -118,7 +118,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   manœuvre.set_coasting_trajectory(&discrete_trajectory_);
-  auto const acceleration = manœuvre.acceleration();
+  auto const acceleration = manœuvre.IntrinsicAcceleration();
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
       acceleration(manœuvre.initial_time() - 1 * Second).Norm());
@@ -169,7 +169,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   manœuvre.set_coasting_trajectory(&discrete_trajectory_);
-  auto const acceleration = manœuvre.acceleration();
+  auto const acceleration = manœuvre.IntrinsicAcceleration();
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
       acceleration(manœuvre.initial_time() - 1 * Second).Norm());
@@ -251,7 +251,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   first_burn.set_coasting_trajectory(&discrete_trajectory_);
-  auto const first_acceleration = first_burn.acceleration();
+  auto const first_acceleration = first_burn.IntrinsicAcceleration();
   EXPECT_THAT(
       first_acceleration(first_burn.initial_time()).Norm(),
       AllOf(Gt(5 * Metre / Pow<2>(Second)), Lt(6.25 * Metre / Pow<2>(Second))));
@@ -292,7 +292,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       .WillOnce(
           Return(Rotation<Frenet<Rendering>, Rendering>::Identity()));
   second_burn.set_coasting_trajectory(&discrete_trajectory_);
-  auto const second_acceleration = second_burn.acceleration();
+  auto const second_acceleration = second_burn.IntrinsicAcceleration();
   EXPECT_THAT(second_acceleration(second_burn.initial_time()).Norm(),
               AllOf(Gt(7 * Metre / Pow<2>(Second)),
                     Lt(7.5 * Metre / Pow<2>(Second))));

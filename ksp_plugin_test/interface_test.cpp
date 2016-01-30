@@ -999,8 +999,11 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
-  EXPECT_CALL(navigation_manœuvre, inertial_direction())
+  EXPECT_CALL(navigation_manœuvre, InertialDirection())
       .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
+  EXPECT_CALL(navigation_manœuvre, FrenetFrame())
+      .WillOnce(
+          Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
   EXPECT_CALL(*plugin_, BarycentricToWorldSun())
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =

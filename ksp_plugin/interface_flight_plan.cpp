@@ -71,6 +71,9 @@ ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {
 
 NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin,
                                           NavigationManœuvre const& manœuvre) {
+  OrthogonalMap<Barycentric, World> const barycentric_to_world =
+      OrthogonalMap<WorldSun, World>::Identity() *
+      plugin->BarycentricToWorldSun();
   NavigationManoeuvre result;
   result.burn = GetBurn(manœuvre);
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
@@ -81,11 +84,24 @@ NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin,
   result.time_of_half_delta_v =
       (manœuvre.time_of_half_Δv() - Instant()) / Second;
   result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
-  Vector<double, Barycentric> barycentric_inertial_direction =
-      manœuvre.inertial_direction();
-  Vector<double, World> world_inertial_direction = Identity<WorldSun, World>()(
-      plugin->BarycentricToWorldSun()(barycentric_inertial_direction));
+  Vector<double, Barycentric> const barycentric_inertial_direction =
+      manœuvre.InertialDirection();
+  Vector<double, World> const world_inertial_direction =
+      barycentric_to_world(barycentric_inertial_direction);
   result.inertial_direction = ToXYZ(world_inertial_direction.coordinates());
+  OrthogonalMap<Frenet<Navigation>, Barycentric> barycentric_frenet_frame =
+      manœuvre.FrenetFrame();
+  OrthogonalMap<Frenet<Navigation>, World> world_frenet_frame =
+      barycentric_to_world * barycentric_frenet_frame;
+  result.tangent =
+      ToXYZ(world_frenet_frame(Vector<double, Frenet<Navigation>>({1, 0, 0}))
+                .coordinates());
+  result.normal =
+      ToXYZ(world_frenet_frame(Vector<double, Frenet<Navigation>>({0, 1, 0}))
+                .coordinates());
+  result.binormal =
+      ToXYZ(world_frenet_frame(Vector<double, Frenet<Navigation>>({0, 0, 1}))
+                .coordinates());
   return result;
 }
 
