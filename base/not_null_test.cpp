@@ -188,8 +188,27 @@ TEST_F(NotNullTest, RValue) {
   // compiles this even when it is ambiguous, while clang correctly fails.
   owner_int = make_not_null_unique<int>(1729);
 
+  not_null<int*> not_null_access_int = owner_int.get();
+  int const* access_const_int = not_null_access_int;
+
+  not_null<std::shared_ptr<int>> not_null_shared_int = std::make_shared<int>(3);
+  // This exercises |operator OtherPointer() const&|.  The conversion from
+  // |not_null<int*>| to |int const*| does not; instead it goes through the
+  // conversion |not_null<int*>| -> |int*| -> |int const*|, where the latter is
+  // a qualification adjustment, part of a standard conversion sequence.
+  std::shared_ptr<int const> shared_const_int = not_null_shared_int;
+
+  // MSVC seems to be confused by templatized move-conversion operators.
+#if PRINCIPIA_COMPILER_MSVC
+  // Uses |not_null(not_null<OtherPointer>&& other)| followed by
+  // |operator pointer&&() &&|, so the first conversion has to be explicit.
   std::unique_ptr<int const> owner_const_int =
-      not_null<std::unique_ptr<int const>>(make_not_null_unique<int>(5));
+      static_cast<not_null<std::unique_ptr<int const>>>(
+          make_not_null_unique<int>(5));
+#else
+  // Uses |operator OtherPointer() &&|.
+  std::unique_ptr<int const> owner_const_int = make_not_null_unique<int>(5);
+#endif
   EXPECT_EQ(5, *owner_const_int);
 }
 
