@@ -160,27 +160,8 @@ void Plugin::EndInitialization() {
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
   initializing_.Flop();
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-  for (auto& pair : absolute_initialization_->bodies) {
-    auto& body = pair.second;
-    bodies.emplace_back(std::move(body));
-  }
-  for (auto const& state : absolute_initialization_->initial_state) {
-    initial_state.emplace_back(state.second);
-  }
-  absolute_initialization_ = std::experimental::nullopt;
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
-      std::move(bodies),
-      initial_state,
-      current_time_,
-      history_integrator_,
-      kStep,
-      kFittingTolerance);
-  for (auto const& pair : celestials_) {
-    auto& celestial = *pair.second;
-    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
-  }
+
+  InitializeEphemerisAndSetCelestialTrajectories();
 
   // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
   // the sun's index at hand.
@@ -754,6 +735,31 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
     }
   }
   initializing_.Flop();
+}
+
+
+void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
+  for (auto& pair : absolute_initialization_->bodies) {
+    auto& body = pair.second;
+    bodies.emplace_back(std::move(body));
+  }
+  for (auto const& state : absolute_initialization_->initial_state) {
+    initial_state.emplace_back(state.second);
+  }
+  absolute_initialization_ = std::experimental::nullopt;
+  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
+      std::move(bodies),
+      initial_state,
+      current_time_,
+      history_integrator_,
+      kStep,
+      kFittingTolerance);
+  for (auto const& pair : celestials_) {
+    auto& celestial = *pair.second;
+    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
+  }
 }
 
 not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(

@@ -330,6 +330,10 @@ class Plugin {
          Instant history_time,
          Index sun_index);
 
+  // We virtualize those tasks for testing purposes.
+  // Requires |absolute_initialization_| and consumes it.
+  virtual void InitializeEphemerisAndSetCelestialTrajectories();
+
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
 

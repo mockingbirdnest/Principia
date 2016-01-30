@@ -98,11 +98,19 @@ class TestablePlugin : public Plugin {
         mock_ephemeris_(
             std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
 
-  // We need to override |EndInitialization in order to create a |MockEphemeris|
-  // rather than an |Ephemeris|, and in order to fill in the continuous
-  // trajectories ourselves.
-  void EndInitialization() override {
-    initializing_.Flop();
+  Time const& Δt() const {
+    return Δt_;
+  }
+
+  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {
+    return mock_ephemeris_.get();
+  }
+
+ private:
+  // We override this part of initialization in order to create a
+  // |MockEphemeris| rather than an |Ephemeris|, and in order to fill in the
+  // continuous trajectories ourselves.
+  void InitializeEphemerisAndSetCelestialTrajectories() override {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Barycentric>> initial_state;
     auto bodies_it = absolute_initialization_->bodies.begin();
@@ -130,14 +138,6 @@ class TestablePlugin : public Plugin {
       auto& celestial = *index_celestial.second;
       celestial.set_trajectory(&FindOrDie(trajectories_, index));
     }
-  }
-
-  Time const& Δt() const {
-    return Δt_;
-  }
-
-  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {
-    return mock_ephemeris_.get();
   }
 };
 
@@ -278,15 +278,26 @@ TEST_F(PluginTest, Serialization) {
        index <= SolarSystemFactory::kLastMajorBody;
        ++index) {
     Index const parent_index = SolarSystemFactory::parent(index);
-    RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
-        solar_system_->initial_state(SolarSystemFactory::name(index)) -
-        solar_system_->initial_state(SolarSystemFactory::name(parent_index)));
-    // TODO(egg): Fix
-    //plugin->InsertCelestial(index,
-    //                        solar_system_->gravitational_parameter(
-    //                            SolarSystemFactory::name(index)),
-    //                        parent_index,
-    //                        from_parent);
+    RelativeDegreesOfFreedom<Barycentric> const state_vectors =
+        Identity<ICRFJ2000Equator, Barycentric>()(
+            solar_system_->initial_state(SolarSystemFactory::name(index)) -
+            solar_system_->initial_state(
+                SolarSystemFactory::name(parent_index)));
+    Instant const t;
+    auto body = make_not_null_unique<MassiveBody>(
+        solar_system_->gravitational_parameter(
+            SolarSystemFactory::name(index)));
+    KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
+        /*primary=*/MassiveBody(solar_system_->gravitational_parameter(
+            SolarSystemFactory::name(parent_index))),
+        /*secondary=*/*body,
+        state_vectors,
+        /*epoch=*/t).elements_at_epoch();
+    elements.semimajor_axis = std::experimental::nullopt;
+    plugin->InsertCelestialJacobiKeplerian(index,
+                                            parent_index,
+                                            elements,
+                                            std::move(body));
   }
   plugin->EndInitialization();
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
@@ -355,15 +366,21 @@ TEST_F(PluginTest, Serialization) {
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
+  LOG(ERROR)<<"foo";
   plugin_->EndInitialization();
+  LOG(ERROR)<<"foo";
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  LOG(ERROR)<<"foo";
   for (int index = SolarSystemFactory::kSun + 1;
        index <= SolarSystemFactory::kLastMajorBody;
        ++index) {
+  LOG(ERROR)<<"foo"<<index;
     Index const parent_index = SolarSystemFactory::parent(index);
+  LOG(ERROR)<<"foo"<<index;
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const from_parent =
         solar_system_->initial_state(SolarSystemFactory::name(index)) -
         solar_system_->initial_state(SolarSystemFactory::name(parent_index));
+  LOG(ERROR)<<"foo"<<index;
     EXPECT_THAT(from_parent,
                 Componentwise(
                     AlmostEquals(looking_glass_.Inverse()(
@@ -372,6 +389,7 @@ TEST_F(PluginTest, Initialization) {
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).velocity()),
                         74, 1475468))) << SolarSystemFactory::name(index);
+  LOG(ERROR)<<"foo"<<index;
   }
 }
 
