@@ -14,6 +14,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/kepler_orbit.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -27,6 +28,8 @@ using astronomy::ICRFJ2000Equator;
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
+using physics::KeplerianElements;
+using physics::KeplerOrbit;
 using physics::MockEphemeris;
 using quantities::Abs;
 using quantities::ArcTan;
@@ -180,15 +183,26 @@ class PluginTest : public testing::Test {
          index <= SolarSystemFactory::kLastMajorBody;
          ++index) {
       Index const parent_index = SolarSystemFactory::parent(index);
-      RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
-          solar_system_->initial_state(SolarSystemFactory::name(index)) -
-          solar_system_->initial_state(SolarSystemFactory::name(parent_index)));
-      // TODO(egg): Fix.
-      //plugin_->InsertCelestial(index,
-      //                         solar_system_->gravitational_parameter(
-      //                             SolarSystemFactory::name(index)),
-      //                         parent_index,
-      //                         from_parent);
+      RelativeDegreesOfFreedom<Barycentric> const state_vectors =
+          Identity<ICRFJ2000Equator, Barycentric>()(
+              solar_system_->initial_state(SolarSystemFactory::name(index)) -
+              solar_system_->initial_state(
+                  SolarSystemFactory::name(parent_index)));
+      Instant const t;
+      auto body = make_not_null_unique<MassiveBody>(
+          solar_system_->gravitational_parameter(
+              SolarSystemFactory::name(index)));
+      KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
+          /*primary=*/MassiveBody(solar_system_->gravitational_parameter(
+              SolarSystemFactory::name(parent_index))),
+          /*secondary=*/*body,
+          state_vectors,
+          /*epoch=*/t);
+      elements.semimajor_axis = std::experimental::nullopt;
+      plugin_->InsertCelestialJacobiKeplerian(index, parent_index, 
+                               std::move(body),
+                               parent_index,
+                               from_parent);
     }
   }
 
