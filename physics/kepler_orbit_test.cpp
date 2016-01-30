@@ -100,6 +100,30 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(expected_displacement, 15));
   EXPECT_THAT(moon_orbit_n.StateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
+
+  KeplerOrbit<ICRFJ2000Equator> moon_orbit_from_state_vectors(
+      *earth,
+      *moon,
+      {expected_displacement, expected_velocity},
+      date);
+  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch().eccentricity,
+              AlmostEquals(moon_orbit.elements_at_epoch().eccentricity, 8));
+  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().semimajor_axis,
+              AlmostEquals(*moon_orbit.elements_at_epoch().semimajor_axis, 1));
+  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().mean_motion,
+              AlmostEquals(*moon_orbit.elements_at_epoch().mean_motion, 1));
+  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch().inclination,
+              AlmostEquals(moon_orbit.elements_at_epoch().inclination, 1));
+  EXPECT_THAT(
+      moon_orbit_from_state_vectors.elements_at_epoch()
+          .longitude_of_ascending_node,
+      AlmostEquals(moon_orbit.elements_at_epoch().longitude_of_ascending_node,
+                   28));
+  EXPECT_THAT(
+      moon_orbit_from_state_vectors.elements_at_epoch().argument_of_periapsis,
+      AlmostEquals(moon_orbit.elements_at_epoch().argument_of_periapsis, 6));
+  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch().mean_anomaly,
+              AlmostEquals(moon_orbit.elements_at_epoch().mean_anomaly, 6));
 }
 
 }  // namespace physics

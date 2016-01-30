@@ -9,10 +9,20 @@
 
 namespace principia {
 
+using geometry::AngleBetween;
 using geometry::Bivector;
+using geometry::Commutator;
+using geometry::InnerProduct;
+using geometry::Normalize;
+using geometry::OrientedAngleBetween;
+using geometry::Wedge;
 using numerics::Bisect;
+using quantities::ArcCos;
 using quantities::Cbrt;
 using quantities::Pow;
+using quantities::SpecificAngularMomentum;
+using quantities::SpecificEnergy;
+using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
 
@@ -42,6 +52,73 @@ KeplerOrbit<Frame>::KeplerOrbit(
     AngularFrequency const& n = *elements_at_epoch_.mean_motion;
     elements_at_epoch_.semimajor_axis = Cbrt(μ / Pow<2>(n / Radian));
   }
+}
+
+template<typename Frame>
+KeplerOrbit<Frame>::KeplerOrbit(
+    MassiveBody const& primary,
+    Body const& secondary,
+    RelativeDegreesOfFreedom<Frame> const& state_vectors,
+    Instant const& epoch)
+    : gravitational_parameter_(
+          primary.gravitational_parameter() +
+          (secondary.is_massless() ? GravitationalParameter{}
+                                   : dynamic_cast<MassiveBody const&>(secondary)
+                                         .gravitational_parameter())),
+      epoch_(epoch) {
+  GravitationalParameter const& μ = gravitational_parameter_;
+  Displacement<Frame> const& r = state_vectors.displacement();
+  Velocity<Frame> const& v = state_vectors.velocity();
+  Vector<double, Frame> const x({1, 0, 0});
+  Vector<double, Frame> const z({0, 0, 1});
+  Bivector<double, Frame> const x_wedge_y({0, 0, 1});
+
+  Bivector<SpecificAngularMomentum, Frame> const h = Wedge(r, v) * Radian;
+  // The eccentricity vector has magnitude equal to the eccentricity, and points
+  // towards the periapsis.  This is a vector (the direction of the periapsis
+  // does not depend on the coordinate system).
+  Vector<double, Frame> const eccentricity_vector =
+      v * h / Radian / μ - Normalize(r);
+  auto const& periapsis = eccentricity_vector;
+  Vector<SpecificAngularMomentum, Frame> const ascending_node = z * h;
+
+  // Maps [-π, π] to [0, 2π].
+  auto const positive_angle = [](Angle const& α) -> Angle {
+    return α > 0 * Radian ? α : α + 2 * π* Radian;
+  };
+
+  // Inclination (above the xy plane).
+  Angle const i = AngleBetween(x_wedge_y, h);
+  // Argument of periapsis.
+  Angle const ω = positive_angle(
+      OrientedAngleBetween(ascending_node, periapsis, x_wedge_y));
+  // Longitude of ascending node.
+  Angle const Ω = positive_angle(
+      //ArcTan(ascending_node.coordinates().y, ascending_node.coordinates().x));
+      OrientedAngleBetween(x, ascending_node, x_wedge_y));
+  LOG(ERROR)<<ascending_node;
+  double const eccentricity = eccentricity_vector.Norm();
+  Angle const true_anomaly =
+      positive_angle(OrientedAngleBetween(periapsis, r, x_wedge_y));
+  Angle const eccentric_anomaly =
+      ArcTan(Sqrt(1 - Pow<2>(eccentricity)) * Sin(true_anomaly),
+             eccentricity + Cos(true_anomaly));
+  Angle const mean_anomaly = positive_angle(
+      eccentric_anomaly - eccentricity * Sin(eccentric_anomaly) * Radian);
+
+  SpecificEnergy const ε = InnerProduct(v, v) / 2 - μ / r.Norm();
+  // Semimajor axis.
+  Length const a = -μ / (2 * ε);
+  // Mean motion.
+  AngularFrequency const n = Sqrt(μ / Pow<3>(a)) * Radian;
+
+  elements_at_epoch_.eccentricity                = eccentricity;
+  elements_at_epoch_.semimajor_axis              = a;
+  elements_at_epoch_.mean_motion                 = n;
+  elements_at_epoch_.inclination                 = i;
+  elements_at_epoch_.longitude_of_ascending_node = Ω;
+  elements_at_epoch_.argument_of_periapsis       = ω;
+  elements_at_epoch_.mean_anomaly                = mean_anomaly;
 }
 
 template<typename Frame>

@@ -23,7 +23,7 @@ using Action = Product<Energy, Time>;
 
 using AngularFrequency    = Variation<Angle>;
 using AngularAcceleration = Variation<AngularFrequency>;
-using AngularMomentum     = Quotient<Action, Angle>;
+using AngularMomentum     = Product<Action, Angle>;
 using Torque              = Variation<AngularMomentum>;
 using MomentOfInertia     = Quotient<Torque, AngularAcceleration>;
 
