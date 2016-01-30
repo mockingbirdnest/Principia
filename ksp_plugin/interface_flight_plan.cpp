@@ -49,7 +49,7 @@ FlightPlan& GetFlightPlan(Plugin const* const plugin,
 }
 
 Burn GetBurn(NavigationManœuvre const& manœuvre) {
-  Velocity<Frenet<NavigationFrame>> Δv =
+  Velocity<Frenet<NavigationFrame>> const Δv =
       manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
                                : manœuvre.Δv() * manœuvre.direction();
   return {manœuvre.thrust() / Kilo(Newton),

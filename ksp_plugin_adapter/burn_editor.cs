@@ -68,7 +68,7 @@ class BurnEditor {
         changed = true;
       } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
         engine_warning_ = "";
-        UseMagicThrust();
+        UseTheForceLuke();
         changed = true;
       }
       UnityEngine.GUILayout.EndHorizontal();
@@ -114,7 +114,7 @@ class BurnEditor {
         initial_time = initial_time_.value,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
-                          z = Δv_binormal_.value } };
+                          z = Δv_binormal_.value}};
   }
 
   public void ReferenceFrameChanged(NavigationFrameParameters parameters) {
@@ -190,11 +190,11 @@ class BurnEditor {
     // If RCS provides no thrust, model a virtually instant burn.
     if (thrust_in_kilonewtons_ == 0) {
       engine_warning_ = "No active RCS, modeling as instant burn";
-      UseMagicThrust();
+      UseTheForceLuke();
     }
   }
 
-  private void UseMagicThrust() {
+  private void UseTheForceLuke() {
     thrust_in_kilonewtons_ = 1E15;
     specific_impulse_in_seconds_g0_ = 3E7;
   }

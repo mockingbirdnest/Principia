@@ -835,8 +835,7 @@ public partial class PrincipiaPluginAdapter
         color        : colour,
         width        : 5,
         lineType     : LineType.Discrete);
-    result.vectorObject.transform.parent =
-        ScaledSpace.Instance.transform;
+    result.vectorObject.transform.parent = ScaledSpace.Instance.transform;
     result.vectorObject.renderer.castShadows = false;
     result.vectorObject.renderer.receiveShadows = false;
     result.layer = 31;
