@@ -4,6 +4,7 @@
 #include <experimental/optional>
 
 #include "geometry/named_quantities.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
@@ -13,6 +14,7 @@
 namespace principia {
 
 using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::Vector;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
