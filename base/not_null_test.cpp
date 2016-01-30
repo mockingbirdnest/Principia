@@ -200,9 +200,16 @@ TEST_F(NotNullTest, RValue) {
 
   // MSVC seems to be confused by templatized move-conversion operators.
 #if !defined(PRINCIPIA_COMPILER_MSVC)
+  // Uses |operator OtherPointer() &&|.
   std::unique_ptr<int const> owner_const_int = make_not_null_unique<int>(5);
-  EXPECT_EQ(5, *owner_const_int);
+#else
+  // Uses |not_null(not_null<OtherPointer>&& other)| followed by
+  // |operator pointer&&() &&|, so the first conversion has to be explicit.
+  std::unique_ptr<int const> owner_const_int =
+      static_cast<not_null<std::unique_ptr<int const>>>(
+          make_not_null_unique<int>(5));
 #endif
+  EXPECT_EQ(5, *owner_const_int);
 }
 
 }  // namespace base
