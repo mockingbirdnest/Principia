@@ -222,7 +222,7 @@ void FlightPlan::RecomputeSegments() {
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   ephemeris_->FlowWithAdaptiveStep(
       segments_.back().get(),
-      manœuvre.acceleration(),
+      manœuvre.IntrinsicAcceleration(),
       length_integration_tolerance_,
       speed_integration_tolerance_,
       integrator_,
