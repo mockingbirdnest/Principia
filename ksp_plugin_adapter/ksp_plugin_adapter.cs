@@ -138,6 +138,8 @@ public partial class PrincipiaPluginAdapter
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
 
+  private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
+
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -383,6 +385,23 @@ public partial class PrincipiaPluginAdapter
                      "navball_barycentric.png");
 
     rendered_flight_plan_ = new VectorLine[0];
+
+    if (unmodified_orbits_ == null) {
+      unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
+      foreach (CelestialBody celestial in
+               FlightGlobals.Bodies.Where(c => c.orbit != null)) {
+        unmodified_orbits_.Add(
+            celestial,
+            new Orbit(inc  : celestial.orbit.inclination,
+                      e    : celestial.orbit.eccentricity,
+                      sma  : celestial.orbit.semiMajorAxis,
+                      lan  : celestial.orbit.LAN,
+                      w    : celestial.orbit.argumentOfPeriapsis,
+                      mEp  : celestial.orbit.meanAnomalyAtEpoch,
+                      t    : celestial.orbit.epoch,
+                      body : celestial.orbit.referenceBody));
+      }
+    }
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
@@ -1295,7 +1314,7 @@ public partial class PrincipiaPluginAdapter
                         Planetarium.fetch.Sun.gravParameter);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        Orbit orbit = body.orbit;
+        Orbit orbit = unmodified_orbits_[body];
         double mean_motion = 2 * Math.PI / orbit.period;
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
