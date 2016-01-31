@@ -930,7 +930,9 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
                                      "Force 2D trajectories");
     ReferenceFrameSelection();
-    flight_planner_.get().RenderButton();
+    if (PluginRunning()) {
+      flight_planner_.get().RenderButton();
+    }
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
