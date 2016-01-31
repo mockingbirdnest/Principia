@@ -11,6 +11,7 @@
 
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
+#include "base/optional_logging.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -48,6 +49,7 @@ using quantities::Force;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
+using ::operator<<;
 
 namespace {
 
@@ -77,12 +79,19 @@ Plugin::Plugin(Instant const& initial_time,
       current_time_(initial_time),
       history_time_(initial_time) {}
 
+// The three celestial-inserting functions log at the INFO level.  This is not
+// a concern since they are only called at initialization, which should happen
+// once per game.
+
 void Plugin::InsertSun(Index const celestial_index,
                        GravitationalParameter const& gravitational_parameter) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
   CHECK(!absolute_initialization_);
   CHECK(!hierarchical_initialization_);
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(celestial_index) << "\n"
+            << NAMED(gravitational_parameter);
   auto sun = make_not_null_unique<MassiveBody>(gravitational_parameter);
   auto const unowned_sun = sun.get();
   hierarchical_initialization_.emplace(std::move(sun));
@@ -100,6 +109,11 @@ void Plugin::InsertCelestialAbsoluteCartesian(
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
   CHECK(!hierarchical_initialization_);
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(celestial_index) << "\n"
+            << NAMED(parent_index) << "\n"
+            << NAMED(initial_state) << "\n"
+            << NAMED(body);
   if (!absolute_initialization_) {
     absolute_initialization_.emplace();
   }
@@ -126,6 +140,11 @@ void Plugin::InsertCelestialJacobiKeplerian(
     Index const parent_index,
     KeplerianElements<Barycentric> const& keplerian_elements,
     base::not_null<std::unique_ptr<MassiveBody>> body) {
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(celestial_index) << "\n"
+            << NAMED(parent_index) << "\n"
+            << NAMED(keplerian_elements) << "\n"
+            << NAMED(body);
   CHECK(initializing_);
   CHECK(hierarchical_initialization_);
   hierarchical_initialization_->parents[celestial_index] = parent_index;
