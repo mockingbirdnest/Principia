@@ -78,13 +78,13 @@ KeplerOrbit<Frame>::KeplerOrbit(
   // towards the periapsis.  This is a vector (the direction of the periapsis
   // does not depend on the coordinate system).
   Vector<double, Frame> const eccentricity_vector =
-      v * h / Radian / μ - Normalize(r);
+      v * h / μ / Radian - Normalize(r);
   auto const& periapsis = eccentricity_vector;
   Vector<SpecificAngularMomentum, Frame> const ascending_node = z * h;
 
   // Maps [-π, π] to [0, 2π].
   auto const positive_angle = [](Angle const& α) -> Angle {
-    return α > 0 * Radian ? α : α + 2 * π* Radian;
+    return α > 0 * Radian ? α : α + 2 * π * Radian;
   };
 
   // Inclination (above the xy plane).
