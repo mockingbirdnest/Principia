@@ -32,6 +32,7 @@ using geometry::Trivector;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MockEphemeris;
+using physics::RigidTransformation;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -149,8 +150,7 @@ class TestablePlugin : public Plugin {
 class PluginTest : public testing::Test {
  protected:
   PluginTest()
-      : id_icrf_alice_(),
-        solar_system_(SolarSystemFactory::AtСпутник1Launch(
+      : solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::kMajorBodiesOnly)),
         initial_time_(Instant() + 42 * Second),
         sun_gravitational_parameter_(
@@ -183,16 +183,18 @@ class PluginTest : public testing::Test {
   }
 
   void InsertAllSolarSystemBodies() {
-    plugin_->InsertSun(SolarSystemFactory::kSun, sun_gravitational_parameter_);
-    for (int index = SolarSystemFactory::kSun + 1;
+    for (int index = SolarSystemFactory::kSun;
          index <= SolarSystemFactory::kLastMajorBody;
          ++index) {
-      DegreesOfFreedom<ICRFJ2000Equator> const foo = solar_system_->initial_state(SolarSystemFactory::name(index));
-      auto lol = id_icrf_alice_(foo);
+      std::experimental::optional<Index> parent_index;
+      if (index != SolarSystemFactory::kSun) {
+        parent_index = SolarSystemFactory::parent(index);
+      }
       plugin_->InsertCelestialAbsoluteCartesian(
           index,
-          SolarSystemFactory::parent(index),
-          plugin_->InversePlanetariumRotation()(lol),
+          parent_index,
+          id_icrf_barycentric_(
+              solar_system_->initial_state(SolarSystemFactory::name(index))),
           make_not_null_unique<MassiveBody>(
               solar_system_->gravitational_parameter(
                   SolarSystemFactory::name(index))));
@@ -232,7 +234,7 @@ class PluginTest : public testing::Test {
     ++*number_of_new_vessels;
   }
 
-  Identity<ICRFJ2000Equator, AliceSun> const id_icrf_alice_;
+  static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant initial_time_;
@@ -245,6 +247,15 @@ class PluginTest : public testing::Test {
   Displacement<AliceSun> satellite_initial_displacement_;
   Velocity<AliceSun> satellite_initial_velocity_;
 };
+
+RigidMotion<ICRFJ2000Equator, Barycentric> const
+    PluginTest::id_icrf_barycentric_(
+        RigidTransformation<ICRFJ2000Equator, Barycentric>(
+            ICRFJ2000Equator::origin,
+            Barycentric::origin,
+            OrthogonalMap<ICRFJ2000Equator, Barycentric>::Identity()),
+        AngularVelocity<ICRFJ2000Equator>(),
+        Velocity<ICRFJ2000Equator>());
 
 using PluginDeathTest = PluginTest;
 
@@ -359,30 +370,28 @@ TEST_F(PluginTest, Serialization) {
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
-  LOG(ERROR)<<"foo";
   plugin_->EndInitialization();
-  LOG(ERROR)<<"foo";
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  LOG(ERROR)<<"foo";
   for (int index = SolarSystemFactory::kSun + 1;
        index <= SolarSystemFactory::kLastMajorBody;
        ++index) {
-  LOG(ERROR)<<"foo"<<index;
+    auto const to_icrf = id_icrf_barycentric_.orthogonal_map().Inverse() *
+                         plugin_->InversePlanetariumRotation().Forget();
     Index const parent_index = SolarSystemFactory::parent(index);
-  LOG(ERROR)<<"foo"<<index;
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const from_parent =
         solar_system_->initial_state(SolarSystemFactory::name(index)) -
         solar_system_->initial_state(SolarSystemFactory::name(parent_index));
-  LOG(ERROR)<<"foo"<<index;
     EXPECT_THAT(from_parent,
                 Componentwise(
-                    AlmostEquals(id_icrf_alice_.Inverse()(
-                            plugin_->CelestialFromParent(index).displacement()),
-                        1, 42380),
-                    AlmostEquals(id_icrf_alice_.Inverse()(
-                            plugin_->CelestialFromParent(index).velocity()),
-                        74, 1475468))) << SolarSystemFactory::name(index);
-  LOG(ERROR)<<"foo"<<index;
+                    AlmostEquals(to_icrf(plugin_->CelestialFromParent(index)
+                                             .displacement()),
+                                 0,
+                                 42380),
+                    AlmostEquals(
+                        to_icrf(plugin_->CelestialFromParent(index).velocity()),
+                        74,
+                        1475468)))
+        << SolarSystemFactory::name(index);
   }
 }
 
@@ -525,8 +534,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                     satellite_initial_velocity_));
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
-                  AlmostEquals(satellite_initial_displacement_, 7460),
-                  AlmostEquals(satellite_initial_velocity_, 5)));
+                  AlmostEquals(satellite_initial_displacement_, 14496),
+                  AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
@@ -541,6 +550,8 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   for (int index = SolarSystemFactory::kSun + 1;
        index <= SolarSystemFactory::kLastMajorBody;
        ++index) {
+    auto const to_icrf = id_icrf_barycentric_.orthogonal_map().Inverse() *
+                         plugin_->InversePlanetariumRotation().Forget();
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const from_parent =
         solar_system_->initial_state(SolarSystemFactory::name(index)) -
         solar_system_->initial_state(
@@ -551,20 +562,26 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
       EXPECT_THAT(
           from_parent,
           Componentwise(
-              AlmostEquals(id_icrf_alice_.Inverse()(
-                  plugin_->CelestialFromParent(index).displacement()), 5),
-              AlmostEquals(id_icrf_alice_.Inverse()(
-                  plugin_->CelestialFromParent(index).velocity()),
-                  146492520))) << SolarSystemFactory::name(index);
+              AlmostEquals(
+                  to_icrf(plugin_->CelestialFromParent(index).displacement()),
+                  2),
+              AlmostEquals(
+                  to_icrf(plugin_->CelestialFromParent(index).velocity()),
+                  20155840)))
+          << SolarSystemFactory::name(index);
     } else {
       EXPECT_THAT(
           from_parent,
           Componentwise(
-              AlmostEquals(id_icrf_alice_.Inverse()(
-                  plugin_->CelestialFromParent(index).displacement()), 1, 13),
-              AlmostEquals(id_icrf_alice_.Inverse()(
-                  plugin_->CelestialFromParent(index).velocity()),
-                  74, 1475468))) << SolarSystemFactory::name(index);
+              AlmostEquals(
+                  to_icrf(plugin_->CelestialFromParent(index).displacement()),
+                  0,
+                  13),
+              AlmostEquals(
+                  to_icrf(plugin_->CelestialFromParent(index).velocity()),
+                  74,
+                  1475468)))
+          << SolarSystemFactory::name(index);
     }
   }
 }
