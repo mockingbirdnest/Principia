@@ -1296,7 +1296,7 @@ public partial class PrincipiaPluginAdapter
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = body.orbit;
-        double mean_motion = 2 * Math.PI * orbit.period;
+        double mean_motion = 2 * Math.PI / orbit.period;
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
             parent_index                : body.referenceBody.flightGlobalsIndex,
