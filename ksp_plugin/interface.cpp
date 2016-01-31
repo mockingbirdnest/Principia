@@ -408,6 +408,7 @@ void principia__InsertCelestialJacobiKeplerian(
                           axis_declination,
                           j2,
                           reference_radius));
+  return m.Return();
 }
 
 void principia__InsertSun(Plugin* const plugin,
