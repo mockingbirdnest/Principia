@@ -34,7 +34,10 @@ NavigationManoeuvre DeserializeNavigationManoeuvre(serialization::NavigationMano
           navigation_manoeuvre.final_time(),
           navigation_manoeuvre.time_of_half_delta_v(),
           navigation_manoeuvre.time_to_half_delta_v(),
-          DeserializeXYZ(navigation_manoeuvre.inertial_direction())};
+          DeserializeXYZ(navigation_manoeuvre.inertial_direction()),
+          DeserializeXYZ(navigation_manoeuvre.binormal()),
+          DeserializeXYZ(navigation_manoeuvre.normal()),
+          DeserializeXYZ(navigation_manoeuvre.tangent())};
 }
 
 KSPPart DeserializeKSPPart(serialization::KSPPart const& ksp_part) {
@@ -100,6 +103,9 @@ serialization::NavigationManoeuvre SerializeNavigationManoeuvre(NavigationManoeu
   m.set_time_of_half_delta_v(navigation_manoeuvre.time_of_half_delta_v);
   m.set_time_to_half_delta_v(navigation_manoeuvre.time_to_half_delta_v);
   *m.mutable_inertial_direction() = SerializeXYZ(navigation_manoeuvre.inertial_direction);
+  *m.mutable_binormal() = SerializeXYZ(navigation_manoeuvre.binormal);
+  *m.mutable_normal() = SerializeXYZ(navigation_manoeuvre.normal);
+  *m.mutable_tangent() = SerializeXYZ(navigation_manoeuvre.tangent);
   return m;
 }
 

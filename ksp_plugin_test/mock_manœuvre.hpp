@@ -22,7 +22,10 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
                  direction,
                  std::move(frame)) {}
 
-  MOCK_CONST_METHOD0_T(inertial_direction, Vector<double, InertialFrame>());
+  MOCK_CONST_METHOD0_T(InertialDirection, Vector<double, InertialFrame>());
+
+  MOCK_CONST_METHOD0_T(FrenetFrame,
+                       OrthogonalMap<Frenet<Frame>, InertialFrame>());
 };
 
 }  // namespace ksp_plugin

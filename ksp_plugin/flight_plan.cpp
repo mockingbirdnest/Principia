@@ -216,13 +216,12 @@ void FlightPlan::RecomputeSegments() {
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (manœuvre.initial_time() < manœuvre.final_time()) {
-    ephemeris_->FlowWithAdaptiveStep(
-        segments_.back().get(),
-        manœuvre.acceleration(),
-        length_integration_tolerance_,
-        speed_integration_tolerance_,
-        integrator_,
-        manœuvre.final_time());
+    ephemeris_->FlowWithAdaptiveStep(segments_.back().get(),
+                                     manœuvre.IntrinsicAcceleration(),
+                                     length_integration_tolerance_,
+                                     speed_integration_tolerance_,
+                                     integrator_,
+                                     manœuvre.final_time());
   }
 }
 
