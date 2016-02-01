@@ -790,27 +790,26 @@ public partial class PrincipiaPluginAdapter
             NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
                                                 active_vessel_guid,
                                                 manoeuvre_index);
-            Vector3d scaled_point =
-                ScaledSpace.LocalToScaledSpace(first_point_of_segment);
             double scale = (ScaledSpace.ScaledToLocalSpace(
                                 MapView.MapCamera.transform.position) -
-                            first_point_of_segment).magnitude * 0.1;
+                            first_point_of_segment).magnitude * 0.03;
+            Func<Vector3d, UnityEngine.Vector2> world_to_screen =
+                (world_position) =>
+                    MapView.MapCamera.camera.WorldToScreenPoint(
+                          ScaledSpace.LocalToScaledSpace(world_position));
             for (int j = 0; j < 3; ++j) {
-              rendered_frenet_trihedra_[3 * manoeuvre_index + j].points3[0] =
-                  scaled_point;
+              rendered_frenet_trihedra_[3 * manoeuvre_index + j].points2[0] =
+                  world_to_screen(first_point_of_segment);
             }
-            rendered_frenet_trihedra_[3 * manoeuvre_index].points3[1] =
-                ScaledSpace.LocalToScaledSpace(
-                    first_point_of_segment +
-                    scale * (Vector3d)manoeuvre.tangent);
-            rendered_frenet_trihedra_[3 * manoeuvre_index + 1].points3[1] =
-                ScaledSpace.LocalToScaledSpace(
-                    first_point_of_segment +
-                    scale * (Vector3d)manoeuvre.normal);
-            rendered_frenet_trihedra_[3 * manoeuvre_index + 2].points3[1] =
-                ScaledSpace.LocalToScaledSpace(
-                    first_point_of_segment +
-                    scale * (Vector3d)manoeuvre.binormal);
+            rendered_frenet_trihedra_[3 * manoeuvre_index].points2[1] =
+                world_to_screen(first_point_of_segment +
+                                scale * (Vector3d)manoeuvre.tangent);
+            rendered_frenet_trihedra_[3 * manoeuvre_index + 1].points2[1] =
+                world_to_screen(first_point_of_segment +
+                                scale * (Vector3d)manoeuvre.normal);
+            rendered_frenet_trihedra_[3 * manoeuvre_index + 2].points2[1] =
+                world_to_screen(first_point_of_segment +
+                                scale * (Vector3d)manoeuvre.binormal);
             for (int j = 0; j < 3; ++j) {
               Vector.DrawLine(
                   rendered_frenet_trihedra_[3 * manoeuvre_index + j]);
@@ -874,9 +873,9 @@ public partial class PrincipiaPluginAdapter
   private void ResetRenderedTrajectory() {
     DestroyRenderedTrajectory();
     rendered_trajectory_ =
-        NewRenderedTrajectory(XKCDColors.AcidGreen, kMaxVectorLinePoints);
+        NewRenderedTrajectory(XKCDColors.AcidGreen);
     rendered_prediction_ =
-        NewRenderedTrajectory(XKCDColors.Fuchsia, kMaxVectorLinePoints);
+        NewRenderedTrajectory(XKCDColors.Fuchsia);
   }
 
   private void ResetRenderedFlightPlan(int segments) {
@@ -884,26 +883,23 @@ public partial class PrincipiaPluginAdapter
     rendered_flight_plan_ = new VectorLine[segments];
     for (int i = 0; i < segments; ++i) {
       rendered_flight_plan_[i] = NewRenderedTrajectory(
-          (i % 2 == 0) ? XKCDColors.RoyalBlue : XKCDColors.OrangeRed,
-          kMaxVectorLinePoints);
+          (i % 2 == 0) ? XKCDColors.RoyalBlue : XKCDColors.OrangeRed);
     }
     rendered_frenet_trihedra_ = new VectorLine[3 * (segments / 2)];
     for (int i = 0; i < segments / 2; ++i) {
       rendered_frenet_trihedra_[3 * i] =
-          NewRenderedTrajectory(new UnityEngine.Color(0.84f, 1, 0), 2);
+          NewUILine(new UnityEngine.Color(0.84f, 1, 0));
       rendered_frenet_trihedra_[3 * i + 1] =
-          NewRenderedTrajectory(new UnityEngine.Color(0, 0.84f, 0.84f), 2);
+          NewUILine(new UnityEngine.Color(0, 0.84f, 0.84f));
       rendered_frenet_trihedra_[3 * i + 2] =
-          NewRenderedTrajectory(new UnityEngine.Color(0.84f, 0, 0.84f), 2);
+          NewUILine(new UnityEngine.Color(0.84f, 0, 0.84f));
     }
   }
 
-  private VectorLine NewRenderedTrajectory(UnityEngine.Color colour,
-                                           int points) {
-    UnityEngine.Vector3[] line_points = new UnityEngine.Vector3[points];
+  private VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
     var result = new VectorLine(
-        lineName     : "rendered_prediction_",
-        linePoints   : line_points,
+        lineName     : "RenderedTrajectory",
+        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : colour,
         width        : 5,
@@ -912,6 +908,18 @@ public partial class PrincipiaPluginAdapter
     result.vectorObject.renderer.castShadows = false;
     result.vectorObject.renderer.receiveShadows = false;
     result.layer = 31;
+    return result;
+  }
+
+  private VectorLine NewUILine(UnityEngine.Color colour) {
+    UnityEngine.Vector2[] line_points = new UnityEngine.Vector2[2];
+    var result = new VectorLine(
+        lineName     : "UILine",
+        linePoints   : line_points,
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : colour,
+        width        : 5,
+        lineType     : LineType.Discrete);
     return result;
   }
 
