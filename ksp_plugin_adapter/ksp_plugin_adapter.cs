@@ -816,6 +816,8 @@ public partial class PrincipiaPluginAdapter
             }
           }
         }
+      } else {
+        DestroyRenderedFlightPlan();
       }
     } else {
       DestroyRenderedTrajectory();
