@@ -797,19 +797,25 @@ public partial class PrincipiaPluginAdapter
                 (world_position) =>
                     MapView.MapCamera.camera.WorldToScreenPoint(
                           ScaledSpace.LocalToScaledSpace(world_position));
-            for (int j = 0; j < 3; ++j) {
-              rendered_frenet_trihedra_[3 * manoeuvre_index + j].points2[0] =
-                  world_to_screen(first_point_of_segment);
-            }
-            rendered_frenet_trihedra_[3 * manoeuvre_index].points2[1] =
-                world_to_screen(first_point_of_segment +
-                                scale * (Vector3d)manoeuvre.tangent);
-            rendered_frenet_trihedra_[3 * manoeuvre_index + 1].points2[1] =
-                world_to_screen(first_point_of_segment +
-                                scale * (Vector3d)manoeuvre.normal);
-            rendered_frenet_trihedra_[3 * manoeuvre_index + 2].points2[1] =
-                world_to_screen(first_point_of_segment +
-                                scale * (Vector3d)manoeuvre.binormal);
+            Action<int, XYZ> set_arrow = (arrow_index, world_direction) => {
+              VectorLine line =
+                  rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
+              line.points2[0] = world_to_screen(first_point_of_segment);
+              line.points2[1] =
+                  world_to_screen(first_point_of_segment +
+                                  0.9 * scale * (Vector3d)world_direction);
+              line.points2[2] =
+                  world_to_screen(first_point_of_segment +
+                                  0.7 * scale * (Vector3d)world_direction);
+              line.points2[3] =
+                  world_to_screen(first_point_of_segment +
+                                  0.85 * scale * (Vector3d)world_direction);
+              line.points2[4] = world_to_screen(
+                  first_point_of_segment + scale * (Vector3d)world_direction);
+            };
+            set_arrow(0, manoeuvre.tangent);
+            set_arrow(1, manoeuvre.normal);
+            set_arrow(2, manoeuvre.binormal);
             for (int j = 0; j < 3; ++j) {
               Vector.DrawLine(
                   rendered_frenet_trihedra_[3 * manoeuvre_index + j]);
@@ -890,11 +896,11 @@ public partial class PrincipiaPluginAdapter
     rendered_frenet_trihedra_ = new VectorLine[3 * (segments / 2)];
     for (int i = 0; i < segments / 2; ++i) {
       rendered_frenet_trihedra_[3 * i] =
-          NewUILine(new UnityEngine.Color(0.84f, 1, 0));
+          NewUIArrow(new UnityEngine.Color(0.84f, 1, 0));
       rendered_frenet_trihedra_[3 * i + 1] =
-          NewUILine(new UnityEngine.Color(0, 0.84f, 0.84f));
+          NewUIArrow(new UnityEngine.Color(0, 0.84f, 0.84f));
       rendered_frenet_trihedra_[3 * i + 2] =
-          NewUILine(new UnityEngine.Color(0.84f, 0, 0.84f));
+          NewUIArrow(new UnityEngine.Color(0.84f, 0, 0.84f));
     }
   }
 
@@ -913,15 +919,17 @@ public partial class PrincipiaPluginAdapter
     return result;
   }
 
-  private VectorLine NewUILine(UnityEngine.Color colour) {
-    UnityEngine.Vector2[] line_points = new UnityEngine.Vector2[2];
+  private VectorLine NewUIArrow(UnityEngine.Color colour) {
+    UnityEngine.Vector2[] line_points = new UnityEngine.Vector2[5];
     var result = new VectorLine(
-        lineName     : "UILine",
+        lineName     : "UIArrow",
         linePoints   : line_points,
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : colour,
         width        : 5,
-        lineType     : LineType.Discrete);
+        lineType     : LineType.Continuous);
+    Vector.SetWidths(result, new float[]{5, 5, 10, 0});
+    result.smoothWidth = true;
     return result;
   }
 
