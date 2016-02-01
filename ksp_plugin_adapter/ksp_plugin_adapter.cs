@@ -792,7 +792,7 @@ public partial class PrincipiaPluginAdapter
                                                 manoeuvre_index);
             double scale = (ScaledSpace.ScaledToLocalSpace(
                                 MapView.MapCamera.transform.position) -
-                            first_point_of_segment).magnitude * 0.03;
+                            first_point_of_segment).magnitude * 0.015;
             Func<Vector3d, UnityEngine.Vector2> world_to_screen =
                 (world_position) =>
                     MapView.MapCamera.camera.WorldToScreenPoint(
