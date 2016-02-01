@@ -401,6 +401,7 @@ public partial class PrincipiaPluginAdapter
                       t    : celestial.orbit.epoch,
                       body : celestial.orbit.referenceBody));
       }
+      Fix631();
     }
 
     GameEvents.onShowUI.Add(ShowGUI);
@@ -1362,6 +1363,87 @@ public partial class PrincipiaPluginAdapter
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
                                 (float)Math.Max(body.timeWarpAltitudeLimits[1],
                                                 body.atmosphereDepth));
+  }
+
+  // Deals with issue #631, unstability of the Jool system's resonance.
+  private void Fix631() {
+    // Check whether this looks like stock.
+    if (FlightGlobals.Bodies.Count < 14) {
+      return;
+    }
+    Func<CelestialBody, double> mean_longitude =
+        (celestial) =>
+            (celestial.orbit.LAN + celestial.orbit.argumentOfPeriapsis) *
+                180 / Math.PI +
+            celestial.orbit.meanAnomalyAtEpoch;
+    CelestialBody jool = FlightGlobals.Bodies[8];
+    CelestialBody laythe = FlightGlobals.Bodies[9];
+    CelestialBody vall = FlightGlobals.Bodies[10];
+    CelestialBody bop = FlightGlobals.Bodies[11];
+    CelestialBody tylo = FlightGlobals.Bodies[12];
+    CelestialBody pol = FlightGlobals.Bodies[14];
+    bool is_stock = true;
+    is_stock &= jool.orbitingBodies.Count == 5;
+    is_stock &= jool.name   == "Jool";
+    is_stock &= laythe.name == "Laythe";
+    is_stock &= vall.name   == "Vall";
+    is_stock &= bop.name    == "Bop";
+    is_stock &= tylo.name   == "Tylo";
+    is_stock &= pol.name    == "Pol";
+    is_stock &= laythe.referenceBody == jool;
+    is_stock &= vall.referenceBody   == jool;
+    is_stock &= tylo.referenceBody   == jool;
+    is_stock &= (float)laythe.orbit.semiMajorAxis == 27184000f;
+    is_stock &= (float)vall.orbit.semiMajorAxis   == 43152000f;
+    is_stock &= (float)tylo.orbit.semiMajorAxis   == 68500000f;
+    is_stock &= (float)laythe.orbit.inclination == 0f;
+    is_stock &= (float)vall.orbit.inclination   == 0f;
+    is_stock &= (float)tylo.orbit.inclination   == 0.025f;
+    is_stock &= (float)mean_longitude(laythe)   == 3.14f;
+    is_stock &= (float)mean_longitude(vall)     == 0.9f;
+    is_stock &= (float)mean_longitude(tylo)     == 3.14f;
+    if (!is_stock) {
+      // TODO(egg): remove that.
+      Log.Fatal("did not look like stock");
+      return;
+    }
+    unmodified_orbits_[laythe] =
+        new Orbit(laythe.orbit.inclination,
+                  laythe.orbit.eccentricity,
+                  laythe.orbit.semiMajorAxis,
+                  laythe.orbit.LAN,
+                  laythe.orbit.argumentOfPeriapsis,
+                  laythe.orbit.meanAnomalyAtEpoch,
+                  laythe.orbit.epoch,
+                  jool);
+    unmodified_orbits_[vall] = new Orbit(
+        vall.orbit.inclination,
+        vall.orbit.eccentricity,
+        laythe.orbit.semiMajorAxis * Math.Pow(2.472135954999579, 2.0 / 3.0),
+        vall.orbit.LAN,
+        vall.orbit.argumentOfPeriapsis,
+        vall.orbit.meanAnomalyAtEpoch,
+        vall.orbit.epoch,
+        jool);
+    unmodified_orbits_[tylo] = new Orbit(
+        tylo.orbit.inclination,
+        tylo.orbit.eccentricity,
+        laythe.orbit.semiMajorAxis *
+            Math.Pow(2.472135954999579 * 2.472135954999579, 2.0 / 3.0),
+        tylo.orbit.LAN,
+        tylo.orbit.argumentOfPeriapsis,
+        tylo.orbit.meanAnomalyAtEpoch,
+        tylo.orbit.epoch,
+        jool);
+    unmodified_orbits_[bop] =
+        new Orbit(bop.orbit.inclination,
+                  bop.orbit.eccentricity,
+                  pol.orbit.semiMajorAxis * Math.Pow(1.5, 2.0 / 3.0),
+                  bop.orbit.LAN,
+                  bop.orbit.argumentOfPeriapsis,
+                  bop.orbit.meanAnomalyAtEpoch,
+                  bop.orbit.epoch,
+                  jool);
   }
 
 }
