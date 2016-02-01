@@ -892,9 +892,9 @@ public partial class PrincipiaPluginAdapter
       rendered_frenet_trihedra_[3 * i] =
           NewRenderedTrajectory(new UnityEngine.Color(0.84f, 1, 0), 2);
       rendered_frenet_trihedra_[3 * i + 1] =
-          NewRenderedTrajectory(new UnityEngine.Color(0.84f, 0, 0.84f), 2);
-      rendered_frenet_trihedra_[3 * i + 2] =
           NewRenderedTrajectory(new UnityEngine.Color(0, 0.84f, 0.84f), 2);
+      rendered_frenet_trihedra_[3 * i + 2] =
+          NewRenderedTrajectory(new UnityEngine.Color(0.84f, 0, 0.84f), 2);
     }
   }
 
