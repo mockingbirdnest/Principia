@@ -386,6 +386,7 @@ public partial class PrincipiaPluginAdapter
                      "navball_barycentric.png");
 
     rendered_flight_plan_ = new VectorLine[0];
+    rendered_frenet_trihedra_ = new VectorLine[0];
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -927,6 +928,10 @@ public partial class PrincipiaPluginAdapter
     for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
       Vector.DestroyLine(ref rendered_flight_plan_[i]);
     }
+    for (int i = 0; i < rendered_frenet_trihedra_.Length; ++i) {
+      Vector.DestroyLine(ref rendered_frenet_trihedra_[i]);
+    }
+    rendered_frenet_trihedra_ = new VectorLine[0];
     rendered_flight_plan_ = new VectorLine[0];
   }
 
