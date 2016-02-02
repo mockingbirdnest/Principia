@@ -111,5 +111,10 @@ TEST_F(ParserTest, ParseGravitationalParameter) {
               AlmostEquals(1.23 * Pow<3>(AstronomicalUnit) / Pow<2>(Day), 1));
 }
 
+TEST_F(ParserTest, ParseAngularFrequency) {
+  EXPECT_EQ(1.23 * Radian / Second,
+            ParseQuantity<AngularFrequency>("1.23 rad/s"));
+}
+
 }  // namespace quantities
 }  // namespace principia

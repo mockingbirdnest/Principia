@@ -24,6 +24,8 @@
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
+#include "physics/hierarchical_system.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -43,6 +45,8 @@ using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
+using physics::HierarchicalSystem;
+using physics::KeplerianElements;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Angle;
 using quantities::si::Hour;
@@ -90,26 +94,10 @@ class Plugin {
   // is set to |planetarium_rotation|.
   Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
 
-  // Inserts a new celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|.  No body with index |celestial_index|
-  // must already have been inserted.  The parent of the new body is the body
-  // at index |parent_index|, which must already have been inserted. The state
-  // of the new body at current time is given by |AliceSun| offsets from the
-  // parent. Must only be called during initialization.
-  // For a KSP |CelestialBody| |b|, the arguments correspond to:
-  // |b.flightGlobalsIndex|,
-  // |b.gravParameter|,
-  // |b.orbit.referenceBody.flightGlobalsIndex|,
-  // |{b.orbit.pos, b.orbit.vel}|.
-  virtual void InsertCelestial(
-    Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter,
-    Index const parent_index,
-    RelativeDegreesOfFreedom<AliceSun> const& from_parent);
-
   // Inserts a celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|.  No body with index |celestial_index|
-  // must already have been inserted.  The new body has no parent.
+  // parameter |gravitational_parameter|.  If this is called, it must be the
+  // first call during initialization; it initiates hierarchical initialization.
+  // TODO(phl): fuse with InsertCelestialJacobiKeplerian?
   virtual void InsertSun(
     Index const celestial_index,
     GravitationalParameter const& gravitational_parameter);
@@ -118,12 +106,19 @@ class Plugin {
   // giving it the initial state |initial_state|.
   // If |parent_index| is null, inserts the sun, otherwise the parent of the new
   // body is the body with index |*parent_index|, which must already have been
-  // inserted.
-  virtual void DirectlyInsertCelestial(
+  // inserted.  Hierarchical initialization must not be ongoing.
+  virtual void InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
-    Index const* const parent_index,
+    std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    std::unique_ptr<MassiveBody> body);
+    base::not_null<std::unique_ptr<MassiveBody const>> body);
+
+  // Hierarchical initialization must be ongoing.
+  virtual void InsertCelestialJacobiKeplerian(
+    Index const celestial_index,
+    Index const parent_index,
+    KeplerianElements<Barycentric> const& keplerian_elements,
+    base::not_null<std::unique_ptr<MassiveBody>> body);
 
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
@@ -315,7 +310,7 @@ class Plugin {
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
   using IndexToMassiveBody =
-      std::map<Index, std::unique_ptr<MassiveBody const>>;
+      std::map<Index, base::not_null<std::unique_ptr<MassiveBody const>>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
@@ -336,6 +331,10 @@ class Plugin {
          Instant current_time,
          Instant history_time,
          Index sun_index);
+
+  // We virtualize this function for testing purposes.
+  // Requires |absolute_initialization_| and consumes it.
+  virtual void InitializeEphemerisAndSetCelestialTrajectories();
 
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
@@ -427,10 +426,25 @@ class Plugin {
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
-  // |bodies_| and |initial_state_| are null if and only if |!initializing_|.
-  // TODO(egg): optional.
-  std::unique_ptr<IndexToMassiveBody> bodies_;
-  std::unique_ptr<IndexToDegreesOfFreedom> initial_state_;
+
+  struct AbsoluteInitializationObjects {
+    IndexToMassiveBody bodies;
+    IndexToDegreesOfFreedom initial_state;
+  };
+  std::experimental::optional<AbsoluteInitializationObjects>
+      absolute_initialization_;
+
+  struct HierarchicalInitializationObjects {
+    HierarchicalInitializationObjects(
+        not_null<std::unique_ptr<MassiveBody const>> sun)
+        : system(std::move(sun)) {}
+    HierarchicalSystem<Barycentric> system;
+    std::map<Index, MassiveBody const*> indices_to_bodies;
+    std::map<Index, std::experimental::optional<Index>> parents;
+  };
+  std::experimental::optional<HierarchicalInitializationObjects>
+      hierarchical_initialization_;
+
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;

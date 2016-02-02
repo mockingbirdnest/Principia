@@ -11,6 +11,7 @@
 
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
+#include "base/optional_logging.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -48,6 +49,7 @@ using quantities::Force;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
+using ::operator<<;
 
 namespace {
 
@@ -67,8 +69,6 @@ Length const kFittingTolerance = 1 * Milli(Metre);
 Plugin::Plugin(Instant const& initial_time,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
-      bodies_(std::make_unique<IndexToMassiveBody>()),
-      initial_state_(std::make_unique<IndexToDegreesOfFreedom>()),
       history_integrator_(
           McLachlanAtela1992Order5Optimal<Position<Barycentric>>()),
       prolongation_integrator_(
@@ -79,96 +79,113 @@ Plugin::Plugin(Instant const& initial_time,
       current_time_(initial_time),
       history_time_(initial_time) {}
 
-void Plugin::InsertCelestial(
-    Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter,
-    Index const parent_index,
-    RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  auto body = std::make_unique<MassiveBody>(gravitational_parameter);
-  LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
-            << celestial_index << ": " << from_parent;
-  auto const relative = PlanetariumRotation().Inverse()(from_parent);
-  LOG(INFO) << "In barycentric coordinates: " << relative;
-  DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
-      FindOrDie(*initial_state_, parent_index);
-  DirectlyInsertCelestial(celestial_index,
-                          &parent_index,
-                          parent_degrees_of_freedom + relative,
-                          std::move(body));
-}
+// The three celestial-inserting functions log at the INFO level.  This is not
+// a concern since they are only called at initialization, which should happen
+// once per game.
 
 void Plugin::InsertSun(Index const celestial_index,
                        GravitationalParameter const& gravitational_parameter) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
-  auto body = std::make_unique<MassiveBody>(gravitational_parameter);
-  DirectlyInsertCelestial(celestial_index,
-                          nullptr /*parent_index*/,
-                          {Barycentric::origin, Velocity<Barycentric>()},
-                          std::move(body));
+  CHECK(!absolute_initialization_);
+  CHECK(!hierarchical_initialization_);
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(celestial_index) << "\n"
+            << NAMED(gravitational_parameter);
+  auto sun = make_not_null_unique<MassiveBody>(gravitational_parameter);
+  auto const unowned_sun = sun.get();
+  hierarchical_initialization_.emplace(std::move(sun));
+  hierarchical_initialization_->indices_to_bodies[celestial_index] =
+      unowned_sun;
+  hierarchical_initialization_->parents[celestial_index] =
+      std::experimental::nullopt;
 }
 
-void Plugin::DirectlyInsertCelestial(
+void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
-    Index const* const parent_index,
+    std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    std::unique_ptr<MassiveBody> body) {
+    base::not_null<std::unique_ptr<MassiveBody const>> body) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
-  auto const inserted =
-    celestials_.emplace(celestial_index,
-                        std::make_unique<Celestial>(body.get()));
+  CHECK(!hierarchical_initialization_);
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(celestial_index) << "\n"
+            << NAMED(parent_index) << "\n"
+            << NAMED(initial_state) << "\n"
+            << NAMED(body);
+  if (!absolute_initialization_) {
+    absolute_initialization_.emplace();
+  }
+  auto const inserted = celestials_.emplace(
+      celestial_index,
+      std::make_unique<Celestial>(body.get()));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   not_null<Celestial*> const celestial = inserted.first->second.get();
-  bodies_->emplace(celestial_index, std::move(body));
-  if (parent_index == nullptr) {
-    CHECK(sun_ == nullptr);
-    sun_ = celestial;
-  } else {
+  absolute_initialization_->bodies.emplace(celestial_index, std::move(body));
+  if (parent_index) {
     not_null<Celestial const*> parent =
         FindOrDie(celestials_, *parent_index).get();
     celestial->set_parent(parent);
+  } else {
+    CHECK(sun_ == nullptr);
+    sun_ = celestial;
   }
-  initial_state_->emplace(celestial_index, initial_state);
+  absolute_initialization_->initial_state.emplace(celestial_index,
+                                                  initial_state);
+}
+
+void Plugin::InsertCelestialJacobiKeplerian(
+    Index const celestial_index,
+    Index const parent_index,
+    KeplerianElements<Barycentric> const& keplerian_elements,
+    base::not_null<std::unique_ptr<MassiveBody>> body) {
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(celestial_index) << "\n"
+            << NAMED(parent_index) << "\n"
+            << NAMED(keplerian_elements) << "\n"
+            << NAMED(body);
+  CHECK(initializing_);
+  CHECK(hierarchical_initialization_);
+  bool inserted =
+      hierarchical_initialization_->parents.emplace(celestial_index,
+                                                    parent_index).second;
+  inserted &=
+      hierarchical_initialization_->
+          indices_to_bodies.emplace(celestial_index, body.get()).second;
+  CHECK(inserted);
+  hierarchical_initialization_->system.Add(
+      std::move(body),
+      hierarchical_initialization_->indices_to_bodies[parent_index],
+      keplerian_elements);
 }
 
 void Plugin::EndInitialization() {
+  CHECK(initializing_);
+  if (hierarchical_initialization_) {
+    HierarchicalSystem<Barycentric>::BarycentricSystem system =
+        hierarchical_initialization_->system.ConsumeBarycentricSystem();
+    std::map<not_null<MassiveBody const*>, Index> bodies_to_indices;
+    for (auto const& index_body :
+         hierarchical_initialization_->indices_to_bodies) {
+      bodies_to_indices[index_body.second] = index_body.first;
+    }
+    auto const parents = std::move(hierarchical_initialization_->parents);
+    hierarchical_initialization_ = std::experimental::nullopt;
+    for (int i = 0; i < system.bodies.size(); ++i) {
+      Index const celestial_index = bodies_to_indices[system.bodies[i].get()];
+      InsertCelestialAbsoluteCartesian(
+          celestial_index,
+          FindOrDie(parents, celestial_index),
+          system.degrees_of_freedom[i],
+          std::move(system.bodies[i]));
+    }
+  }
+  CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
   initializing_.Flop();
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-  for (auto& pair : *bodies_) {
-    auto& body = pair.second;
-    bodies.emplace_back(std::move(body));
-  }
-  bodies_.reset();
-  for (auto const& state : *initial_state_) {
-    initial_state.emplace_back(state.second);
-  }
-  initial_state_.reset();
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
-      std::move(bodies),
-      initial_state,
-      current_time_,
-      history_integrator_,
-      kStep,
-      kFittingTolerance);
-  for (auto const& pair : celestials_) {
-    auto& celestial = *pair.second;
-    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
-  }
 
-  // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
-  // the sun's index at hand.
-  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
-  // then export |FindOrDie(celestials_, _)|.
-  SetPlottingFrame(
-      make_not_null_unique<
-          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
-          ephemeris_.get(),
-          sun_->body()));
+  InitializeEphemerisAndSetCelestialTrajectories();
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
@@ -732,6 +749,41 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
     }
   }
   initializing_.Flop();
+}
+
+
+void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
+  for (auto& pair : absolute_initialization_->bodies) {
+    auto& body = pair.second;
+    bodies.emplace_back(std::move(body));
+  }
+  for (auto const& state : absolute_initialization_->initial_state) {
+    initial_state.emplace_back(state.second);
+  }
+  absolute_initialization_ = std::experimental::nullopt;
+  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
+      std::move(bodies),
+      initial_state,
+      current_time_,
+      history_integrator_,
+      kStep,
+      kFittingTolerance);
+  for (auto const& pair : celestials_) {
+    auto& celestial = *pair.second;
+    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
+  }
+
+  // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
+  // the sun's index at hand.
+  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
+  // then export |FindOrDie(celestials_, _)|.
+  SetPlottingFrame(
+      make_not_null_unique<
+          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+          ephemeris_.get(),
+          sun_->body()));
 }
 
 not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(

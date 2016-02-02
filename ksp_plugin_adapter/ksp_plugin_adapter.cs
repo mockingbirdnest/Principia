@@ -138,6 +138,8 @@ public partial class PrincipiaPluginAdapter
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
 
+  private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
+
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -383,6 +385,23 @@ public partial class PrincipiaPluginAdapter
                      "navball_barycentric.png");
 
     rendered_flight_plan_ = new VectorLine[0];
+
+    if (unmodified_orbits_ == null) {
+      unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
+      foreach (CelestialBody celestial in
+               FlightGlobals.Bodies.Where(c => c.orbit != null)) {
+        unmodified_orbits_.Add(
+            celestial,
+            new Orbit(inc  : celestial.orbit.inclination,
+                      e    : celestial.orbit.eccentricity,
+                      sma  : celestial.orbit.semiMajorAxis,
+                      lan  : celestial.orbit.LAN,
+                      w    : celestial.orbit.argumentOfPeriapsis,
+                      mEp  : celestial.orbit.meanAnomalyAtEpoch,
+                      t    : celestial.orbit.epoch,
+                      body : celestial.orbit.referenceBody));
+      }
+    }
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
@@ -930,7 +949,9 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
                                      "Force 2D trajectories");
     ReferenceFrameSelection();
-    flight_planner_.get().RenderButton();
+    if (PluginRunning()) {
+      flight_planner_.get().RenderButton();
+    }
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
@@ -1255,7 +1276,7 @@ public partial class PrincipiaPluginAdapter
           ConfigNode gravity_model = name_to_gravity_model[body.name];
           ConfigNode initial_state = name_to_initial_state[body.name];
           int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
-          plugin_.DirectlyInsertCelestial(
+          plugin_.InsertCelestialAbsoluteCartesian(
               celestial_index: body.flightGlobalsIndex,
               parent_index: ref parent_index,
               gravitational_parameter:
@@ -1287,17 +1308,32 @@ public partial class PrincipiaPluginAdapter
       }
     } else {
       plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
-      plugin_ = Interface.NewPlugin(Planetarium.GetUniversalTime(),
+      // We create the plugin at time 0, rather than
+      // |Planetarium.GetUniversalTime()|, in order to get a deterministic
+      // initial state.
+      plugin_ = Interface.NewPlugin(0,
                                     Planetarium.InverseRotAngle);
       plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        plugin_.InsertCelestial(body.flightGlobalsIndex,
-                                body.gravParameter,
-                                body.orbit.referenceBody.flightGlobalsIndex,
-                                new QP{q = (XYZ)body.orbit.pos,
-                                       p = (XYZ)body.orbit.vel});
+        Orbit orbit = unmodified_orbits_[body];
+        double mean_motion = 2 * Math.PI / orbit.period;
+        plugin_.InsertCelestialJacobiKeplerian(
+            celestial_index             : body.flightGlobalsIndex,
+            parent_index                : body.referenceBody.flightGlobalsIndex,
+            gravitational_parameter     : body.gravParameter + " m^3/s^2",
+            axis_right_ascension        : null,
+            axis_declination            : null,
+            j2                          : null,
+            reference_radius            : null,
+            eccentricity                : orbit.eccentricity,
+            mean_motion                 : mean_motion + " rad/s",
+            inclination                 : orbit.inclination + " deg",
+            longitude_of_ascending_node : orbit.LAN + " deg",
+            argument_of_periapsis       : orbit.argumentOfPeriapsis + " deg",
+            mean_anomaly                : orbit.meanAnomalyAtEpoch -
+                                          orbit.epoch * mean_motion + " rad");
       };
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();

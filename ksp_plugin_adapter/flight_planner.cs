@@ -114,7 +114,7 @@ class FlightPlanner : WindowRenderer {
                                                  burn_editors_.Count - 1));
             }
             if (UnityEngine.GUILayout.Button(
-                    "Delete",
+                    "Delete last manœuvre",
                     UnityEngine.GUILayout.ExpandWidth(true))) {
               plugin_.FlightPlanRemoveLast(vessel_guid);
               burn_editors_.Last().Close();
@@ -123,7 +123,7 @@ class FlightPlanner : WindowRenderer {
             }
           }
           if (UnityEngine.GUILayout.Button(
-                  "Add",
+                  "Add manœuvre",
                   UnityEngine.GUILayout.ExpandWidth(true))) {
             double initial_time;
             if (burn_editors_.Count == 0) {

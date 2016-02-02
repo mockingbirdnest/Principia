@@ -23,6 +23,7 @@
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
 #include "ksp_plugin/part.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
 #include "serialization/astronomy.pb.h"
@@ -43,6 +44,7 @@ using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::LineSegment;
 using ksp_plugin::Part;
+using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RotatingBody;
@@ -82,6 +84,29 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
   std::unique_ptr<T[]> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
+}
+
+base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
+    char const* const gravitational_parameter,
+    char const* const axis_right_ascension,
+    char const* const axis_declination,
+    char const* const j2,
+    char const* const reference_radius) {
+  serialization::GravityModel::Body gravity_model;
+  gravity_model.set_gravitational_parameter(gravitational_parameter);
+  if (axis_right_ascension != nullptr) {
+    gravity_model.set_axis_right_ascension(axis_right_ascension);
+  }
+  if (axis_declination != nullptr) {
+    gravity_model.set_axis_declination(axis_declination);
+  }
+  if (j2 != nullptr) {
+    gravity_model.set_j2(j2);
+  }
+  if (reference_radius != nullptr) {
+    gravity_model.set_reference_radius(reference_radius);
+  }
+  return SolarSystem<Barycentric>::MakeMassiveBody(gravity_model);
 }
 
 }  // namespace
@@ -286,7 +311,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
   return m.Return();
 }
 
-void principia__DirectlyInsertCelestial(
+void principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
@@ -301,65 +326,88 @@ void principia__DirectlyInsertCelestial(
     char const* const vx,
     char const* const vy,
     char const* const vz) {
-  journal::Method<journal::DirectlyInsertCelestial> m({plugin,
-                                                       celestial_index,
-                                                       parent_index,
-                                                       gravitational_parameter,
-                                                       axis_right_ascension,
-                                                       axis_declination,
-                                                       j2,
-                                                       reference_radius,
-                                                       x, y, z,
-                                                       vx, vy, vz});
-  serialization::GravityModel::Body gravity_model;
+  journal::Method<journal::InsertCelestialAbsoluteCartesian> m(
+      {plugin,
+       celestial_index,
+       parent_index,
+       gravitational_parameter,
+       axis_right_ascension,
+       axis_declination,
+       j2,
+       reference_radius,
+       x, y, z,
+       vx, vy, vz});
   serialization::InitialState::Body initial_state;
-  gravity_model.set_gravitational_parameter(gravitational_parameter);
-  if (axis_right_ascension != nullptr) {
-    gravity_model.set_axis_right_ascension(axis_right_ascension);
-  }
-  if (axis_declination != nullptr) {
-    gravity_model.set_axis_declination(axis_declination);
-  }
-  if (j2 != nullptr) {
-    gravity_model.set_j2(j2);
-  }
-  if (reference_radius != nullptr) {
-    gravity_model.set_reference_radius(reference_radius);
-  }
   initial_state.set_x(x);
   initial_state.set_y(y);
   initial_state.set_z(z);
   initial_state.set_vx(vx);
   initial_state.set_vy(vy);
   initial_state.set_vz(vz);
-  CHECK_NOTNULL(plugin)->
-      DirectlyInsertCelestial(
+  CHECK_NOTNULL(plugin)
+      ->InsertCelestialAbsoluteCartesian(
           celestial_index,
-          parent_index,
+          parent_index == nullptr
+              ? std::experimental::nullopt
+              : std::experimental::make_optional(*parent_index),
           SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
-          SolarSystem<Barycentric>::MakeMassiveBody(gravity_model));
+          MakeMassiveBody(gravitational_parameter,
+                          axis_right_ascension,
+                          axis_declination,
+                          j2,
+                          reference_radius));
   return m.Return();
 }
 
-// Calls |plugin->InsertCelestial| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-void principia__InsertCelestial(Plugin* const plugin,
-                                int const celestial_index,
-                                double const gravitational_parameter,
-                                int const parent_index,
-                                QP const from_parent) {
-  journal::Method<journal::InsertCelestial> m({plugin,
-                                               celestial_index,
-                                               gravitational_parameter,
-                                               parent_index,
-                                               from_parent});
-  CHECK_NOTNULL(plugin)->InsertCelestial(
-      celestial_index,
-      gravitational_parameter * SIUnit<GravitationalParameter>(),
-      parent_index,
-      RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
-          Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+void principia__InsertCelestialJacobiKeplerian(
+    Plugin* const plugin,
+    int const celestial_index,
+    int const parent_index,
+    char const* const gravitational_parameter,
+    char const* const axis_right_ascension,
+    char const* const axis_declination,
+    char const* const j2,
+    char const* const reference_radius,
+    double const eccentricity,
+    char const* const mean_motion,
+    char const* const inclination,
+    char const* const longitude_of_ascending_node,
+    char const* const argument_of_periapsis,
+    char const* const mean_anomaly) {
+  journal::Method<journal::InsertCelestialJacobiKeplerian> m(
+      {plugin,
+       celestial_index,
+       parent_index,
+       gravitational_parameter,
+       axis_right_ascension,
+       axis_declination,
+       j2,
+       reference_radius,
+       eccentricity,
+       mean_motion,
+       inclination,
+       longitude_of_ascending_node,
+       argument_of_periapsis,
+       mean_anomaly});
+  KeplerianElements<Barycentric> keplerian_elements;
+  keplerian_elements.eccentricity = eccentricity;
+  keplerian_elements.mean_motion = ParseQuantity<AngularFrequency>(mean_motion);
+  keplerian_elements.inclination = ParseQuantity<Angle>(inclination);
+  keplerian_elements.longitude_of_ascending_node =
+      ParseQuantity<Angle>(longitude_of_ascending_node);
+  keplerian_elements.argument_of_periapsis =
+      ParseQuantity<Angle>(argument_of_periapsis);
+  keplerian_elements.mean_anomaly = ParseQuantity<Angle>(mean_anomaly);
+  CHECK_NOTNULL(plugin)
+      ->InsertCelestialJacobiKeplerian(
+          celestial_index,
+          parent_index,
+          keplerian_elements,
+          MakeMassiveBody(gravitational_parameter,
+                          axis_right_ascension,
+                          axis_declination,
+                          j2,
+                          reference_radius));
   return m.Return();
 }
 

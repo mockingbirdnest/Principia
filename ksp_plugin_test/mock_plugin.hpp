@@ -20,27 +20,22 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
   ~MockPlugin() override = default;
 
-  MOCK_METHOD4(InsertCelestial,
-               void(Index const celestial_index,
-                    GravitationalParameter const& gravitational_parameter,
-                    Index const parent_index,
-                    RelativeDegreesOfFreedom<AliceSun> const& from_parent));
-
   MOCK_METHOD2(InsertSun,
                void(Index const celestial_index,
                     GravitationalParameter const& gravitational_parameter));
 
-  void DirectlyInsertCelestial(
+  void InsertCelestialAbsoluteCartesian(
       Index const celestial_index,
-      Index const* const parent_index,
+      std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
-      std::unique_ptr<MassiveBody> body) override;
+      base::not_null<std::unique_ptr<MassiveBody const>> body) override;
 
-  MOCK_METHOD4(DirectlyInsertCelestialConstRef,
-               void(Index const celestial_index,
-                    Index const* const parent_index,
-                    DegreesOfFreedom<Barycentric> const& initial_state,
-                    std::unique_ptr<MassiveBody> const& body));
+  MOCK_METHOD4(
+      InsertCelestialAbsoluteCartesianConstRef,
+      void(Index const celestial_index,
+           std::experimental::optional<Index> const& parent_index,
+           DegreesOfFreedom<Barycentric> const& initial_state,
+           base::not_null<std::unique_ptr<MassiveBody const>> const& body));
 
   MOCK_METHOD0(EndInitialization,
                void());

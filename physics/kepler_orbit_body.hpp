@@ -3,6 +3,8 @@
 
 #include "physics/kepler_orbit.hpp"
 
+#include <string>
+
 #include "geometry/rotation.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -19,6 +21,7 @@ using geometry::Wedge;
 using numerics::Bisect;
 using quantities::ArcCos;
 using quantities::Cbrt;
+using quantities::DebugString;
 using quantities::Pow;
 using quantities::SpecificAngularMomentum;
 using quantities::SpecificEnergy;
@@ -27,6 +30,36 @@ using quantities::Sqrt;
 using quantities::Time;
 
 namespace physics {
+
+template<typename Frame>
+std::string DebugString(KeplerianElements<Frame> const& elements) {
+  std::string result = "{";
+  auto const append = [&result](
+      std::string const& symbol,
+      auto const& value,
+      bool end = false) {
+    result += symbol + " = " + quantities::DebugString(value) +
+              (end ? "}" : ", ");
+  };
+  append("e", elements.eccentricity);
+  if (elements.semimajor_axis) {
+    append("a", *elements.semimajor_axis);
+  }
+  if (elements.mean_motion) {
+    append("n", *elements.mean_motion);
+  }
+  append("i", elements.inclination);
+  append(u8"Ω", elements.longitude_of_ascending_node);
+  append(u8"ω", elements.argument_of_periapsis);
+  append("M", elements.mean_anomaly, /*end=*/true);
+  return result;
+}
+
+template<typename Frame>
+std::ostream& operator<<(std::ostream& out,
+                         KeplerianElements<Frame> const& elements) {
+  return out << DebugString(elements);
+}
 
 template<typename Frame>
 KeplerOrbit<Frame>::KeplerOrbit(

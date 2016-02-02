@@ -1,14 +1,15 @@
 ﻿
 #pragma once
 
-#include "experimental/optional"
+#include <experimental/optional>
+#include <ostream>
+#include <string>
 
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
-
 
 template<typename Frame>
 struct KeplerianElements {
@@ -20,6 +21,13 @@ struct KeplerianElements {
   Angle argument_of_periapsis;
   Angle mean_anomaly;
 };
+
+template<typename Frame>
+std::string DebugString(KeplerianElements<Frame> const& elements);
+
+template<typename Frame>
+std::ostream& operator<<(std::ostream& out,
+                         KeplerianElements<Frame> const& elements);
 
 template<typename Frame>
 class KeplerOrbit {

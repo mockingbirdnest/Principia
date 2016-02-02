@@ -161,30 +161,6 @@ struct DeserializePlugin {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct DirectlyInsertCelestial {
-  struct In {
-    Plugin* const plugin;
-    int const celestial_index;
-    int const* const parent_index;
-    char const* const gravitational_parameter;
-    char const* const axis_right_ascension;
-    char const* const axis_declination;
-    char const* const j2;
-    char const* const reference_radius;
-    char const* const x;
-    char const* const y;
-    char const* const z;
-    char const* const vx;
-    char const* const vy;
-    char const* const vz;
-  };
-
-  using Message = serialization::DirectlyInsertCelestial;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
 struct EndInitialization {
   struct In {
     Plugin* const plugin;
@@ -524,16 +500,49 @@ struct InitGoogleLogging {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct InsertCelestial {
+struct InsertCelestialAbsoluteCartesian {
   struct In {
     Plugin* const plugin;
     int const celestial_index;
-    double const gravitational_parameter;
-    int const parent_index;
-    QP const from_parent;
+    int const* const parent_index;
+    char const* const gravitational_parameter;
+    char const* const axis_right_ascension;
+    char const* const axis_declination;
+    char const* const j2;
+    char const* const reference_radius;
+    char const* const x;
+    char const* const y;
+    char const* const z;
+    char const* const vx;
+    char const* const vy;
+    char const* const vz;
   };
 
-  using Message = serialization::InsertCelestial;
+  using Message = serialization::InsertCelestialAbsoluteCartesian;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
+struct InsertCelestialJacobiKeplerian {
+  struct In {
+    Plugin* const plugin;
+    int const celestial_index;
+    int const parent_index;
+    char const* const gravitational_parameter;
+    char const* const axis_right_ascension;
+    char const* const axis_declination;
+    char const* const j2;
+    char const* const reference_radius;
+    double const eccentricity;
+    char const* const mean_motion;
+    char const* const inclination;
+    char const* const longitude_of_ascending_node;
+    char const* const argument_of_periapsis;
+    char const* const mean_anomaly;
+  };
+
+  using Message = serialization::InsertCelestialJacobiKeplerian;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
