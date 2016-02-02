@@ -147,8 +147,13 @@ void Plugin::InsertCelestialJacobiKeplerian(
             << NAMED(body);
   CHECK(initializing_);
   CHECK(hierarchical_initialization_);
-  hierarchical_initialization_->parents[celestial_index] = parent_index;
-  hierarchical_initialization_->indices_to_bodies[celestial_index] = body.get();
+  bool inserted =
+      hierarchical_initialization_->parents.emplace(celestial_index,
+                                                    parent_index).second;
+  inserted &=
+      hierarchical_initialization_->
+          indices_to_bodies.emplace(celestial_index, body.get()).second;
+  CHECK(inserted);
   hierarchical_initialization_->system.Add(
       std::move(body),
       hierarchical_initialization_->indices_to_bodies[parent_index],

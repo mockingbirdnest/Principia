@@ -30,7 +30,7 @@ class HierarchicalSystemTest : public ::testing::Test {
 };
 
 TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
-  // e, i, ?, ?, and mean anomaly are 0.
+  // e, i, Ω, ω, and mean anomaly are 0.
   KeplerianElements<Frame> elements;
 
   // Invariant: |body_indices[bodies[i]] == i| for all |i|.
