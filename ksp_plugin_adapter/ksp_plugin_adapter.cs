@@ -1309,6 +1309,9 @@ public partial class PrincipiaPluginAdapter
       }
     } else {
       plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
+      // We create the plugin at time 0, rather than
+      // |Planetarium.GetUniversalTime()|, in order to get a deterministic
+      // initial state.
       plugin_ = Interface.NewPlugin(0,
                                     Planetarium.InverseRotAngle);
       plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,

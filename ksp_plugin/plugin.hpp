@@ -95,8 +95,9 @@ class Plugin {
   Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
 
   // Inserts a celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|.  No body with index |celestial_index|
-  // must already have been inserted.  The new body has no parent.
+  // parameter |gravitational_parameter|.  If this is called, it must be the
+  // first call during initialization; it initiates hierarchical initialization.
+  // TODO(phl): fuse with InsertCelestialJacobiKeplerian?
   virtual void InsertSun(
     Index const celestial_index,
     GravitationalParameter const& gravitational_parameter);
@@ -105,13 +106,14 @@ class Plugin {
   // giving it the initial state |initial_state|.
   // If |parent_index| is null, inserts the sun, otherwise the parent of the new
   // body is the body with index |*parent_index|, which must already have been
-  // inserted.
+  // inserted.  Hierarchical initialization must not be ongoing.
   virtual void InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
     base::not_null<std::unique_ptr<MassiveBody const>> body);
 
+  // Hierarchical initialization must be ongoing.
   virtual void InsertCelestialJacobiKeplerian(
     Index const celestial_index,
     Index const parent_index,
@@ -330,7 +332,7 @@ class Plugin {
          Instant history_time,
          Index sun_index);
 
-  // We virtualize those tasks for testing purposes.
+  // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
   virtual void InitializeEphemerisAndSetCelestialTrajectories();
 

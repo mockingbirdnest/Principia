@@ -385,14 +385,51 @@ TEST_F(PluginTest, Initialization) {
                 Componentwise(
                     AlmostEquals(to_icrf(plugin_->CelestialFromParent(index)
                                              .displacement()),
-                                 0,
-                                 42380),
+                                 0, 42380),
                     AlmostEquals(
                         to_icrf(plugin_->CelestialFromParent(index).velocity()),
-                        74,
-                        1475468)))
+                        74, 1475468)))
         << SolarSystemFactory::name(index);
   }
+}
+
+TEST_F(PluginTest, HierarchicalInitialization) {
+  // e, i, Ω, ω, and mean anomaly are 0.
+  KeplerianElements<Barycentric> elements;
+
+  // We construct a system as follows, inserting the bodies in the order
+  // S0, P1, P2, M3.
+  // |<1 m>|     |<1 m>|
+  // 2     1     1     2
+  //   |<   7/3 m   >|
+  // S0    P2    M3    P1
+  plugin_->InsertSun(0, 2 * SIUnit<GravitationalParameter>());
+  elements.semimajor_axis = 7.0 / 3.0 * Metre;
+  plugin_->InsertCelestialJacobiKeplerian(
+      /*celestial_index=*/1,
+      /*parent_index=*/0,
+      elements,
+      make_not_null_unique<MassiveBody>(2 * SIUnit<GravitationalParameter>()));
+  elements.semimajor_axis = 1 * Metre;
+  plugin_->InsertCelestialJacobiKeplerian(
+      /*celestial_index=*/2,
+      /*parent_index=*/0,
+      elements,
+      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+  elements.mean_anomaly = π * Radian;
+  plugin_->InsertCelestialJacobiKeplerian(
+      /*celestial_index=*/3,
+      /*parent_index=*/1,
+      elements,
+      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+  plugin_->EndInitialization();
+  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
+              AlmostEquals(3.0 * Metre, 1));
+  EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
+              Eq(1 * Metre));
+  EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
+              Eq(1 * Metre));
 }
 
 TEST_F(PluginDeathTest, SunError) {
@@ -575,12 +612,10 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
           Componentwise(
               AlmostEquals(
                   to_icrf(plugin_->CelestialFromParent(index).displacement()),
-                  0,
-                  13),
+                  0, 13),
               AlmostEquals(
                   to_icrf(plugin_->CelestialFromParent(index).velocity()),
-                  74,
-                  1475468)))
+                  74, 1475468)))
           << SolarSystemFactory::name(index);
     }
   }
