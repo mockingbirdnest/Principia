@@ -231,12 +231,12 @@ XYZSegment principia__FlightPlanRenderedSegmentEndpoints(
       World::origin +
       Displacement<World>(ToR3Element(sun_world_position) * Metre);
   Position<World> first_position =
-      CHECK_NOTNULL(plugin)->BarycentricToPlottingFrame(
+      CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
           begin.time(),
           begin.degrees_of_freedom().position(),
           sun_position);
   Position<World> last_position =
-      CHECK_NOTNULL(plugin)->BarycentricToPlottingFrame(
+      CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
           last.time(),
           last.degrees_of_freedom().position(),
           sun_position);

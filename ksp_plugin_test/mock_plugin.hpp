@@ -134,7 +134,7 @@ class MockPlugin : public Plugin {
                      not_null<NavigationFrame const*>());
 
   MOCK_CONST_METHOD3(
-      BarycentricToPlottingFrame,
+      PlotBarycentricPosition,
       Position<World>(Instant const& t,
                       Position<Barycentric> const& position,
                       Position<World> const& sun_world_position));

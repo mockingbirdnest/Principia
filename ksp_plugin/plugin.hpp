@@ -260,7 +260,7 @@ class Plugin {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
-  virtual Position<World> BarycentricToPlottingFrame(
+  virtual Position<World> PlotBarycentricPosition(
       Instant const& t,
       Position<Barycentric> const& position,
       Position<World> const& sun_world_position) const;
