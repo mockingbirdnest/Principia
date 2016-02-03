@@ -70,7 +70,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5076.
+  extensions 5000 to 5999;  // Last used: 5077.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -456,6 +456,24 @@ message FlightPlanRenderedSegment {
   message Return {
     required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
                                  (is_produced) = true];
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanRenderedSegmentEndpoints {
+  extend Method {
+    optional FlightPlanRenderedSegmentEndpoints extension = 5077;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required XYZSegment result = 1;
   }
   required In in = 1;
   required Return return = 3;

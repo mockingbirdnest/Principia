@@ -271,6 +271,15 @@ internal static partial class Interface {
       int index);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanRenderedSegmentEndpoints",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern XYZSegment FlightPlanRenderedSegmentEndpoints(
+      this IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ sun_world_position,
+      int index);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanReplaceLast",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool FlightPlanReplaceLast(
