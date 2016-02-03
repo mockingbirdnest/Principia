@@ -1404,9 +1404,9 @@ public partial class PrincipiaPluginAdapter
     is_stock &= (float)laythe.orbit.inclination == 0f;
     is_stock &= (float)vall.orbit.inclination   == 0f;
     is_stock &= (float)tylo.orbit.inclination   == 0.025f;
-    is_stock &= (float)mean_longitude(laythe)   == 3.14f;
-    is_stock &= (float)mean_longitude(vall)     == 0.9f;
-    is_stock &= (float)mean_longitude(tylo)     == 3.14f;
+    is_stock &= (float)mean_longitude(laythe) == 3.14f;
+    is_stock &= (float)mean_longitude(vall)   == 0.9f;
+    is_stock &= (float)mean_longitude(tylo)   == 3.14f;
     if (!is_stock) {
       // TODO(egg): remove that.
       Log.Fatal("did not look like stock");
@@ -1442,12 +1442,21 @@ public partial class PrincipiaPluginAdapter
         jool);
     unmodified_orbits_[bop] =
         new Orbit(bop.orbit.inclination,
-                  bop.orbit.eccentricity,
-                  pol.orbit.semiMajorAxis * Math.Pow(1.5, 2.0 / 3.0),
+                  bop.orbit.eccentricity * 1.5,
+                  pol.orbit.semiMajorAxis * Math.Pow(1.2, 2.0 / 3.0),
                   bop.orbit.LAN,
                   bop.orbit.argumentOfPeriapsis,
                   bop.orbit.meanAnomalyAtEpoch,
                   bop.orbit.epoch,
+                  jool);
+    unmodified_orbits_[pol] =
+        new Orbit(pol.orbit.inclination,
+                  pol.orbit.eccentricity,
+                  pol.orbit.semiMajorAxis * Math.Pow(1.5, 2.0 / 3.0),
+                  pol.orbit.LAN,
+                  pol.orbit.argumentOfPeriapsis,
+                  pol.orbit.meanAnomalyAtEpoch,
+                  pol.orbit.epoch,
                   jool);
   }
 

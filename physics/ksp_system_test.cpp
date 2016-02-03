@@ -18,7 +18,6 @@
 
 namespace principia {
 
-using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -224,7 +223,7 @@ class KSPSystemTest : public ::testing::Test {
         std::move(barycentric_system.bodies),
         std::move(barycentric_system.degrees_of_freedom),
         ksp_epoch,
-        McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+        integrators::BlanesMoan2002SRKN11B<Position<KSP>>(),
         45 * Minute,
         1 * Milli(Metre));
   }
@@ -288,7 +287,9 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 
   std::swap(bop.elements.mean_motion, pol.elements.mean_motion);
   bop.elements.mean_motion = *pol.elements.mean_motion / 0.8;
-  bop.elements.eccentricity *= 1.5;
+  bop.elements.eccentricity *= 1.1;
+  LOG(INFO) << bop.elements;
+  LOG(INFO) << pol.elements;
 
   auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
 
