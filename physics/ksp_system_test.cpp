@@ -284,9 +284,16 @@ class KSPSystemTest : public ::testing::Test {
 };
 
 TEST_F(KSPSystemTest, KerbalSystem) {
+  google::LogToStderr();
+  laythe.elements.mean_anomaly = 0 * Radian;
+  vall.elements.mean_anomaly = 5.0832036923152598 * Radian;
+  tylo.elements.mean_anomaly = 3 * 5.0832036923152598 * Radian;
+  //vall.elements.mean_motion = 3 * *laythe.elements.mean_motion;
+  //tylo.elements.mean_motion = 9 * *laythe.elements.mean_motion;
   auto const ephemeris = MakeEphemeris();
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
   ephemeris->Prolong(a_century_hence);
+  LOG(INFO) << "Done integrating";
   auto const jool_trajectory = ephemeris->trajectory(jool.body);
   auto const vall_trajectory = ephemeris->trajectory(vall.body);
   std::vector<double> extremal_separations_in_m;
