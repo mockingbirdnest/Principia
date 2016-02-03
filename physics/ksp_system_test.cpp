@@ -1,4 +1,5 @@
 ﻿
+#include <fstream>
 #include <map>
 #include <string>
 #include <vector>
@@ -6,8 +7,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
-#include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "rigid_motion.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -18,9 +21,11 @@ namespace principia {
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
+using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Minute;
 using testing_utilities::RelativeError;
 
 namespace physics {
@@ -34,10 +39,64 @@ class KSPSystemTest : public ::testing::Test {
   struct KSPCelestial {
     KeplerianElements<KSP> elements;
     KSPCelestial* parent = nullptr;
-    not_null<std::unique_ptr<MassiveBody>> body;
+    MassiveBody* body;
+    std::unique_ptr<MassiveBody> owned_body;
   };
 
   KSPSystemTest() {
+    sun.owned_body = make_not_null_unique<MassiveBody>(
+        1.1723327948324908E+18 * SIUnit<GravitationalParameter>());
+    eeloo.owned_body = make_not_null_unique<MassiveBody>(
+        74410814527.049576 * SIUnit<GravitationalParameter>());
+    jool.owned_body = make_not_null_unique<MassiveBody>(
+        282528004209995.31 * SIUnit<GravitationalParameter>());
+    pol.owned_body = make_not_null_unique<MassiveBody>(
+        721702080.00000012 * SIUnit<GravitationalParameter>());
+    bop.owned_body = make_not_null_unique<MassiveBody>(
+        2486834944.414907 * SIUnit<GravitationalParameter>());
+    tylo.owned_body = make_not_null_unique<MassiveBody>(
+        2825280042099.9531 * SIUnit<GravitationalParameter>());
+    vall.owned_body = make_not_null_unique<MassiveBody>(
+        207481499473.75098 * SIUnit<GravitationalParameter>());
+    laythe.owned_body = make_not_null_unique<MassiveBody>(
+        1962000029236.0784 * SIUnit<GravitationalParameter>());
+    dres.owned_body = make_not_null_unique<MassiveBody>(
+        21484488600.000004 * SIUnit<GravitationalParameter>());
+    duna.owned_body = make_not_null_unique<MassiveBody>(
+        301363211975.09772 * SIUnit<GravitationalParameter>());
+    ike.owned_body = make_not_null_unique<MassiveBody>(
+        18568368573.144012 * SIUnit<GravitationalParameter>());
+    kerbin.owned_body = make_not_null_unique<MassiveBody>(
+        3531600000000 * SIUnit<GravitationalParameter>());
+    minmus.owned_body = make_not_null_unique<MassiveBody>(
+        1765800026.3124719 * SIUnit<GravitationalParameter>());
+    mun.owned_body = make_not_null_unique<MassiveBody>(
+        65138397520.780701 * SIUnit<GravitationalParameter>());
+    eve.owned_body = make_not_null_unique<MassiveBody>(
+        8171730229210.874 * SIUnit<GravitationalParameter>());
+    gilly.owned_body = make_not_null_unique<MassiveBody>(
+        8289449.814716354 * SIUnit<GravitationalParameter>());
+    moho.owned_body = make_not_null_unique<MassiveBody>(
+        168609378654.50949 * SIUnit<GravitationalParameter>());
+    for (auto const celestial : all_bodies) {
+      celestial->body = celestial->owned_body.get();
+    }
+    eeloo.parent = &sun;
+    jool.parent = &sun;
+    pol.parent = &jool;
+    bop.parent = &jool;
+    tylo.parent = &jool;
+    vall.parent = &jool;
+    laythe.parent = &jool;
+    dres.parent = &sun;
+    duna.parent = &sun;
+    ike.parent = &duna;
+    kerbin.parent = &sun;
+    minmus.parent = &kerbin;
+    mun.parent = &kerbin;
+    eve.parent = &sun;
+    gilly.parent = &eve;
+    moho.parent = &sun;
     eeloo.elements.eccentricity = +2.60000000000000009e-01;
     eeloo.elements.mean_motion = +4.00223155970064009e-08 * (Radian / Second);
     eeloo.elements.inclination = +1.07337748997651278e-01 * Radian;
@@ -152,6 +211,27 @@ class KSPSystemTest : public ::testing::Test {
     moho.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
   }
 
+  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {
+    HierarchicalSystem<KSP> hierarchical_system(std::move(sun.owned_body));
+    for (auto const celestial : planets_and_moons ) {
+      hierarchical_system.Add(std::move(celestial->owned_body),
+                 celestial->parent->body,
+                 celestial->elements);
+    }
+    HierarchicalSystem<KSP>::BarycentricSystem barycentric_system =
+        hierarchical_system.ConsumeBarycentricSystem();
+    return make_not_null_unique<Ephemeris<KSP>>(
+        std::move(barycentric_system.bodies),
+        std::move(barycentric_system.degrees_of_freedom),
+        ksp_epoch,
+        McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+        45 * Minute,
+        1 * Milli(Metre));
+  }
+
+  Instant const ksp_epoch;
+
+  KSPCelestial sun;
   KSPCelestial eeloo;
   KSPCelestial jool;
   KSPCelestial pol;
@@ -168,4 +248,72 @@ class KSPSystemTest : public ::testing::Test {
   KSPCelestial eve;
   KSPCelestial gilly;
   KSPCelestial moho;
+  std::vector<not_null<KSPCelestial*>> const all_bodies = {&sun,
+                                                           &eeloo,
+                                                           &jool,
+                                                           &pol,
+                                                           &bop,
+                                                           &tylo,
+                                                           &vall,
+                                                           &laythe,
+                                                           &dres,
+                                                           &duna,
+                                                           &ike,
+                                                           &kerbin,
+                                                           &minmus,
+                                                           &mun,
+                                                           &eve,
+                                                           &gilly,
+                                                           &moho};
+  std::vector<not_null<KSPCelestial*>> const planets_and_moons = {&eeloo,
+                                                                  &jool,
+                                                                  &pol,
+                                                                  &bop,
+                                                                  &tylo,
+                                                                  &vall,
+                                                                  &laythe,
+                                                                  &dres,
+                                                                  &duna,
+                                                                  &ike,
+                                                                  &kerbin,
+                                                                  &minmus,
+                                                                  &mun,
+                                                                  &eve,
+                                                                  &gilly,
+                                                                  &moho};
 };
+
+TEST_F(KSPSystemTest, KerbalSystem) {
+  auto const ephemeris = MakeEphemeris();
+  auto const a_century_hence = ksp_epoch + 100 * JulianYear;
+  ephemeris->Prolong(a_century_hence);
+  auto const jool_trajectory = ephemeris->trajectory(jool.body);
+  auto const vall_trajectory = ephemeris->trajectory(vall.body);
+  std::vector<double> extremal_separations_in_m;
+  std::vector<double> times_in_s;
+  Instant t = ksp_epoch;
+  Length last_separation;
+  Sign last_separation_change(+1);
+  for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
+    auto const jool_position =
+        jool_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
+    auto const vall_position =
+        vall_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
+    Length const separation = (jool_position - vall_position).Norm();
+    Sign separation_change = Sign(separation - last_separation);
+    if (separation_change != last_separation_change) {
+      extremal_separations_in_m.emplace_back(last_separation / Metre);
+      times_in_s.emplace_back((t - 1 * Hour - ksp_epoch) / Second);
+    }
+    last_separation = separation;
+    last_separation_change = separation_change;
+  }
+  std::ofstream file;
+  file.open("ksp_system.generated.wl");
+  file << mathematica::Assign("times", times_in_s);
+  file << mathematica::Assign("extremalSeparations", extremal_separations_in_m);
+  file.close();
+}
+
+}  // namespace physics
+}  // namespace principia
