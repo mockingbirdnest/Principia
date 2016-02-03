@@ -286,6 +286,10 @@ class KSPSystemTest : public ::testing::Test {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
 
+  std::swap(bop.elements.mean_motion, pol.elements.mean_motion);
+  bop.elements.mean_motion = *pol.elements.mean_motion / 0.8;
+  bop.elements.eccentricity *= 1.5;
+
   auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
 
   auto const ephemeris = MakeEphemeris();
