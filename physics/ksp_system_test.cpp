@@ -290,13 +290,37 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   //tylo.elements.mean_anomaly = 0 * Radian;
   //vall.elements.mean_motion = 3 * *laythe.elements.mean_motion;
   //tylo.elements.mean_motion = 9 * *laythe.elements.mean_motion;
+  auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
+
   auto const ephemeris = MakeEphemeris();
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
   LOG(INFO) << "Starting integration";
   ephemeris->Prolong(a_century_hence);
   LOG(INFO) << "Done";
+
+  std::vector<Vector<double, KSP>> positions;
+  std::vector<Vector<double, KSP>> velocities;
+  for (auto const* moon : moons) {
+    positions.emplace_back((ephemeris->trajectory(moon->body)
+                                ->EvaluatePosition(ksp_epoch, nullptr) -
+                            ephemeris->trajectory(jool.body)
+                                ->EvaluatePosition(ksp_epoch, nullptr)) /
+                           Metre);
+  }
+  for (auto const* moon : moons) {
+    velocities.emplace_back((ephemeris->trajectory(moon->body)
+                                ->EvaluateVelocity(ksp_epoch, nullptr) -
+                            ephemeris->trajectory(jool.body)
+                                ->EvaluateVelocity(ksp_epoch, nullptr)) /
+                           (Metre / Second));
+  }
+  std::ofstream file2;
+  file2.open("jool2.generated.wl");
+  file2 << mathematica::Assign("q2", positions);
+  file2 << mathematica::Assign("v2", velocities);
+  file2.close();
+
   auto const jool_trajectory = ephemeris->trajectory(jool.body);
-  auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
   std::map<not_null<KSPCelestial const*>, ContinuousTrajectory<KSP> const*>
       moon_trajectories;
   for (auto const* moon : moons) {

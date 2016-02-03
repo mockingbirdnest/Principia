@@ -392,6 +392,28 @@ TEST_F(ResonanceTest, Corrected) {
 
   auto const ephemeris = MakeEphemeris(JacobiInitialStates());
   ephemeris->Prolong(reference_);
+
+  std::vector<Vector<double, KSP>> positions;
+  std::vector<Vector<double, KSP>> velocities;
+  for (auto const moon : joolian_moons_) {
+    positions.emplace_back((ephemeris->trajectory(moon)
+                                ->EvaluatePosition(game_epoch_, nullptr) -
+                            ephemeris->trajectory(jool_)
+                                ->EvaluatePosition(game_epoch_, nullptr)) /
+                           Metre);
+  }
+  for (auto const moon : joolian_moons_) {
+    velocities.emplace_back(
+        (ephemeris->trajectory(moon)->EvaluateVelocity(game_epoch_, nullptr) -
+         ephemeris->trajectory(jool_)->EvaluateVelocity(game_epoch_, nullptr)) /
+        (Metre / Second));
+  }
+  std::ofstream file2;
+  file2.open("jool1.generated.wl");
+  file2 << mathematica::Assign("q1", positions);
+  file2 << mathematica::Assign("v1", velocities);
+  file2.close();
+
   LogPeriods(*ephemeris);
   LogEphemeris(*ephemeris, /*reference=*/true, "corrected");
   ephemeris->Prolong(long_time_);
