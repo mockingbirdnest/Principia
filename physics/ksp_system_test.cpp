@@ -286,17 +286,46 @@ class KSPSystemTest : public ::testing::Test {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
   //laythe.elements.mean_anomaly = 0 * Radian;
+  laythe.elements.mean_anomaly = 3.14 * Radian;
   vall.elements.mean_anomaly = 0.9 * Radian;
+  tylo.elements.mean_anomaly = 3.14 * Radian;
+  LOG(INFO) << KeplerOrbit<KSP>(
+                   *jool.body, MasslessBody(), laythe.elements, ksp_epoch)
+                   .elements_at_epoch();
+  LOG(INFO) << KeplerOrbit<KSP>(
+                   *jool.body, MasslessBody(), vall.elements, ksp_epoch)
+                   .elements_at_epoch();
+  LOG(INFO) << KeplerOrbit<KSP>(
+                   *jool.body, MasslessBody(), tylo.elements, ksp_epoch)
+                   .elements_at_epoch();
+  vall.elements.mean_motion = *laythe.elements.mean_motion / 2.47214;
+  *tylo.elements.mean_motion = *vall.elements.mean_motion / 2.47214;
   //tylo.elements.mean_anomaly = 0 * Radian;
   //vall.elements.mean_motion = 3 * *laythe.elements.mean_motion;
   //tylo.elements.mean_motion = 9 * *laythe.elements.mean_motion;
   auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
 
+  JacobiCoordinates<KSP> jacobi(*jool.body);
+  for (auto const* moon : moons) {
+    jacobi.Add(*moon->body, moon->elements);
+  }
+  std::vector<Vector<double, KSP>> q;
+  std::vector<Vector<double, KSP>> v;
+  auto const bdof = jacobi.BarycentricDegreesOfFreedom();
+  for (auto const& dof : bdof) {
+    q.emplace_back((dof.displacement() - bdof.front().displacement())/Metre);
+    v.emplace_back((dof.velocity() - bdof.front().velocity())/(Metre/Second));
+  }
+  std::ofstream file3;
+  file3.open("jool3.generated.wl");
+  file3 << mathematica::Assign("q3", q);
+  file3 << mathematica::Assign("v3", v);
+  file3.close();
+
   auto const ephemeris = MakeEphemeris();
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
-  LOG(INFO) << "Starting integration";
-  ephemeris->Prolong(a_century_hence);
-  LOG(INFO) << "Done";
+
+  ephemeris->Prolong(ksp_epoch + 1 * Minute);
 
   std::vector<Vector<double, KSP>> positions;
   std::vector<Vector<double, KSP>> velocities;
@@ -319,6 +348,10 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   file2 << mathematica::Assign("q2", positions);
   file2 << mathematica::Assign("v2", velocities);
   file2.close();
+
+  LOG(INFO) << "Starting integration";
+  ephemeris->Prolong(a_century_hence);
+  LOG(INFO) << "Done";
 
   auto const jool_trajectory = ephemeris->trajectory(jool.body);
   std::map<not_null<KSPCelestial const*>, ContinuousTrajectory<KSP> const*>
