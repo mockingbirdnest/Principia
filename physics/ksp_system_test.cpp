@@ -286,7 +286,7 @@ class KSPSystemTest : public ::testing::Test {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
   //laythe.elements.mean_anomaly = 0 * Radian;
-  //vall.elements.mean_anomaly = 0 * Radian;
+  vall.elements.mean_anomaly = 0.9 * Radian;
   //tylo.elements.mean_anomaly = 0 * Radian;
   //vall.elements.mean_motion = 3 * *laythe.elements.mean_motion;
   //tylo.elements.mean_motion = 9 * *laythe.elements.mean_motion;
