@@ -292,33 +292,59 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   //tylo.elements.mean_motion = 9 * *laythe.elements.mean_motion;
   auto const ephemeris = MakeEphemeris();
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
+  LOG(INFO) << "Starting integration";
   ephemeris->Prolong(a_century_hence);
-  LOG(INFO) << "Done integrating";
+  LOG(INFO) << "Done";
   auto const jool_trajectory = ephemeris->trajectory(jool.body);
-  auto const vall_trajectory = ephemeris->trajectory(vall.body);
-  std::vector<double> extremal_separations_in_m;
-  std::vector<double> times_in_s;
+  auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
+  std::map<not_null<KSPCelestial const*>, ContinuousTrajectory<KSP> const*>
+      moon_trajectories;
+  for (auto const* moon : moons) {
+    moon_trajectories[moon] = ephemeris->trajectory(moon->body);
+  }
+  std::map<not_null<KSPCelestial const*>, std::vector<double>>
+      extremal_separations_in_m;
+  std::map<not_null<KSPCelestial const*>, std::vector<double>> times_in_s;
   Instant t = ksp_epoch;
-  Length last_separation;
-  Sign last_separation_change(+1);
+  std::map<not_null<KSPCelestial const*>, Length> last_separations;
+  std::map<not_null<KSPCelestial const*>, Sign> last_separation_changes;
+  for (auto const* moon : moons) {
+    last_separation_changes.emplace(moon, Sign(+1));
+  }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
     auto const jool_position =
         jool_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
-    auto const vall_position =
-        vall_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
-    Length const separation = (jool_position - vall_position).Norm();
-    Sign separation_change = Sign(separation - last_separation);
-    if (separation_change != last_separation_change) {
-      extremal_separations_in_m.emplace_back(last_separation / Metre);
-      times_in_s.emplace_back((t - 1 * Hour - ksp_epoch) / Second);
+    for (auto const* moon : moons) {
+      auto const moon_position =
+          moon_trajectories[moon]->EvaluatePosition(t, /*hint=*/nullptr);
+      Length const separation = (jool_position - moon_position).Norm();
+      Sign separation_change = Sign(separation - last_separations[moon]);
+      if (separation_change != last_separation_changes.at(moon)) {
+        extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
+                                                     Metre);
+        times_in_s[moon].emplace_back((t - 1 * Hour - ksp_epoch) / Second);
+      }
+      last_separations[moon] = separation;
+      last_separation_changes.at(moon) = separation_change;
     }
-    last_separation = separation;
-    last_separation_change = separation_change;
   }
   std::ofstream file;
   file.open("ksp_system.generated.wl");
-  file << mathematica::Assign("times", times_in_s);
-  file << mathematica::Assign("extremalSeparations", extremal_separations_in_m);
+  file << mathematica::Assign("laytheTimes", times_in_s[&laythe]);
+  file << mathematica::Assign("vallTimes", times_in_s[&vall]);
+  file << mathematica::Assign("tyloTimes", times_in_s[&tylo]);
+  file << mathematica::Assign("polTimes", times_in_s[&pol]);
+  file << mathematica::Assign("bopTimes", times_in_s[&bop]);
+  file << mathematica::Assign("laytheSeparations",
+                              extremal_separations_in_m[&laythe]);
+  file << mathematica::Assign("vallSeparations",
+                              extremal_separations_in_m[&vall]);
+  file << mathematica::Assign("tyloSeparations",
+                              extremal_separations_in_m[&tylo]);
+  file << mathematica::Assign("polSeparations",
+                              extremal_separations_in_m[&pol]);
+  file << mathematica::Assign("bopSeparations",
+                              extremal_separations_in_m[&bop]);
   file.close();
 }
 
