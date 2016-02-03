@@ -265,14 +265,14 @@ class KSPSystemTest : public ::testing::Test {
                                                            &eve,
                                                            &gilly,
                                                            &moho};
-  std::vector<not_null<KSPCelestial*>> const planets_and_moons = {&eeloo,
+  std::vector<not_null<KSPCelestial*>> const planets_and_moons = {//&eeloo,
                                                                   &jool,
                                                                   &pol,
                                                                   &bop,
                                                                   &tylo,
                                                                   &vall,
                                                                   &laythe,
-                                                                  &dres,
+                                                                  /*&dres,
                                                                   &duna,
                                                                   &ike,
                                                                   &kerbin,
@@ -280,14 +280,14 @@ class KSPSystemTest : public ::testing::Test {
                                                                   &mun,
                                                                   &eve,
                                                                   &gilly,
-                                                                  &moho};
+                                                                  &moho*/};
 };
 
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
-  laythe.elements.mean_anomaly = 0 * Radian;
-  vall.elements.mean_anomaly = 0 * Radian;
-  tylo.elements.mean_anomaly = 0 * Radian;
+  //laythe.elements.mean_anomaly = 0 * Radian;
+  //vall.elements.mean_anomaly = 0 * Radian;
+  //tylo.elements.mean_anomaly = 0 * Radian;
   //vall.elements.mean_motion = 3 * *laythe.elements.mean_motion;
   //tylo.elements.mean_motion = 9 * *laythe.elements.mean_motion;
   auto const ephemeris = MakeEphemeris();
