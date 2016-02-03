@@ -206,6 +206,7 @@
     <ClCompile Include="hierarchical_system_test.cpp" />
     <ClCompile Include="jacobi_coordinates_test.cpp" />
     <ClCompile Include="kepler_orbit_test.cpp" />
+    <ClCompile Include="ksp_system_test.cpp" />
     <ClCompile Include="resonance_test.cpp" />
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />

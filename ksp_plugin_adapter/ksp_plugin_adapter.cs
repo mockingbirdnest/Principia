@@ -1316,7 +1316,9 @@ public partial class PrincipiaPluginAdapter
                                     Planetarium.InverseRotAngle);
       plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter);
+      Log.Info("### sun.body = make_not_null_unique<MassiveBody>(" + Planetarium.fetch.Sun.gravParameter + " * SIUnit<GravitationalParameter>());");
       BodyProcessor insert_body = body => {
+        Log.Info("### " + body.name.ToLower() +".body = make_not_null_unique<MassiveBody>(" + body.gravParameter + " * SIUnit<GravitationalParameter>());");
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];
         double mean_motion = 2 * Math.PI / orbit.period;
