@@ -223,7 +223,7 @@ class KSPSystemTest : public ::testing::Test {
         std::move(barycentric_system.bodies),
         std::move(barycentric_system.degrees_of_freedom),
         ksp_epoch,
-        integrators::BlanesMoan2002SRKN11B<Position<KSP>>(),
+        integrators::BlanesMoan2002SRKN14A<Position<KSP>>(),
         45 * Minute,
         1 * Milli(Metre));
   }
@@ -285,9 +285,9 @@ class KSPSystemTest : public ::testing::Test {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
 
-  std::swap(bop.elements.mean_motion, pol.elements.mean_motion);
-  bop.elements.mean_motion = *pol.elements.mean_motion / 0.8;
-  bop.elements.eccentricity *= 1.1;
+  bop.elements.inclination = π * Radian - bop.elements.inclination;
+  bop.elements.mean_motion = *pol.elements.mean_motion / 0.7;
+  bop.elements.eccentricity *= 1.2;
   LOG(INFO) << bop.elements;
   LOG(INFO) << pol.elements;
 

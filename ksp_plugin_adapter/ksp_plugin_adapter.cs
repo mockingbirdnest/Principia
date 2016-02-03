@@ -1441,22 +1441,13 @@ public partial class PrincipiaPluginAdapter
         tylo.orbit.epoch,
         jool);
     unmodified_orbits_[bop] =
-        new Orbit(bop.orbit.inclination,
-                  bop.orbit.eccentricity * 1.5,
-                  pol.orbit.semiMajorAxis * Math.Pow(1.2, 2.0 / 3.0),
+        new Orbit(180.0 - bop.orbit.inclination,
+                  bop.orbit.eccentricity * 1.2,
+                  pol.orbit.semiMajorAxis * Math.Pow(0.7, 2.0 / 3.0),
                   bop.orbit.LAN,
                   bop.orbit.argumentOfPeriapsis,
                   bop.orbit.meanAnomalyAtEpoch,
                   bop.orbit.epoch,
-                  jool);
-    unmodified_orbits_[pol] =
-        new Orbit(pol.orbit.inclination,
-                  pol.orbit.eccentricity,
-                  pol.orbit.semiMajorAxis * Math.Pow(1.5, 2.0 / 3.0),
-                  pol.orbit.LAN,
-                  pol.orbit.argumentOfPeriapsis,
-                  pol.orbit.meanAnomalyAtEpoch,
-                  pol.orbit.epoch,
                   jool);
   }
 
