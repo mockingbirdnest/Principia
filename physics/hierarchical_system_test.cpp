@@ -44,8 +44,8 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
     return body;
   };
 
-  // We construct a system as follows, where the |body_indices|
-  // are, from left to right, 0, 2, 3, 1.
+  // We construct a system as follows, where the |body_indices| are, from left
+  // to right, 0, 2, 3, 1.
   // |<1 m>|     |<1 m>|
   // 2     1     1     2
   //   |<   7/3 m   >|
@@ -58,7 +58,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   elements.mean_anomaly = π * Radian;
   system.Add(new_body(1 * Kilogram), /*parent=*/bodies[1], elements);
 
-  auto barycentric_system = system.ConsumeBarycentricSystem();
+  auto const barycentric_system = system.ConsumeBarycentricSystem();
   // primary, closest secondary, furthest secondary, child of furthest
   // secondary.
   std::vector<int> expected_order = {0, 2, 1, 3};
@@ -88,31 +88,27 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   std::map<not_null<MassiveBody const*>, int> body_indices;
   std::vector<not_null<MassiveBody const*>> bodies;
 
-  auto const new_body = [&body_indices,
-                         &bodies](GravitationalParameter const& mass) {
-    auto body = make_not_null_unique<MassiveBody>(mass);
+  auto const new_body = [&body_indices, &bodies]() {
+    auto body =
+        make_not_null_unique<MassiveBody>(SIUnit<GravitationalParameter>());
     bodies.emplace_back(body.get());
     body_indices[body.get()] = body_indices.size();
     return body;
   };
 
-  // We construct a system as follows, where the |body_indices|
-  // are, from left to right, 0, 2, 1.
+  // We construct a system as follows, where the |body_indices| are, from left
+  // to right, 0, 2, 1.  All bodies have unit gravitational parameter.
   // |<1 m>|
-  // 1     1     1
+  // .     .     .
   //    |<1.5 m >|
 
-  HierarchicalSystem<Frame> system(new_body(SIUnit<GravitationalParameter>()));
+  HierarchicalSystem<Frame> system(new_body());
   elements.mean_motion = Sqrt(3 / Pow<3>(1.5)) * Radian / Second;
-  system.Add(new_body(SIUnit<GravitationalParameter>()),
-             /*parent=*/bodies[0],
-             elements);
+  system.Add(new_body(), /*parent=*/bodies[0], elements);
   elements.mean_motion = Sqrt(2) * Radian / Second;
-  system.Add(new_body(SIUnit<GravitationalParameter>()),
-             /*parent=*/bodies[0],
-             elements);
+  system.Add(new_body(), /*parent=*/bodies[0], elements);
 
-  auto barycentric_system = system.ConsumeBarycentricSystem();
+  auto const barycentric_system = system.ConsumeBarycentricSystem();
 
   std::vector<int> expected_order = {0, 2, 1};
   for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
