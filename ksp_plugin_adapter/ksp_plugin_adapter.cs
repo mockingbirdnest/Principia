@@ -435,6 +435,7 @@ public partial class PrincipiaPluginAdapter
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       SetRotatingFrameThresholds();
+      RemoveBuggyTidalLocking();
       Log.SetBufferedLogging(buffered_logging_);
       Log.SetSuppressedLogging(suppressed_logging_);
       Log.SetStderrLogging(stderr_logging_);
@@ -1217,6 +1218,7 @@ public partial class PrincipiaPluginAdapter
   private void ResetPlugin() {
     Cleanup();
     SetRotatingFrameThresholds();
+    RemoveBuggyTidalLocking();
     ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
     if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
@@ -1366,6 +1368,10 @@ public partial class PrincipiaPluginAdapter
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
                                 (float)Math.Max(body.timeWarpAltitudeLimits[1],
                                                 body.atmosphereDepth));
+  }
+
+  private void RemoveBuggyTidalLocking() {
+    ApplyToBodyTree(body => body.tidallyLocked = false);
   }
 
   // Deals with issue #631, unstability of the Jool system's resonance.
