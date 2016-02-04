@@ -128,7 +128,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
                  });
   EXPECT_THAT(x_positions,
               ElementsAre(-1 * Metre,
-                          0 * Metre,
+                          VanishesBefore(1 * Metre, 1),
                           1 * Metre));
 }
 
