@@ -117,9 +117,9 @@ class KSPSystemTest : public ::testing::Test {
         +3.49065850398865909e-02 * Radian;
     pol.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
     pol.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    bop.elements.eccentricity = +2.34999999403953996e-01;
-    bop.elements.mean_motion = +4.64439297048081960e-06 * (Radian / Second);
-    bop.elements.inclination = +2.61799387799149408e-01 * Radian;
+    bop.elements.eccentricity = +2.81999999284744785e-01;
+    bop.elements.mean_motion = +9.95227065103033049e-06 * (Radian / Second);
+    bop.elements.inclination = +2.87979326579064354e+00 * Radian;
     bop.elements.longitude_of_ascending_node =
         +1.74532925199432948e-01 * Radian;
     bop.elements.argument_of_periapsis = +4.36332312998582383e-01 * Radian;
@@ -130,21 +130,21 @@ class KSPSystemTest : public ::testing::Test {
     tylo.elements.longitude_of_ascending_node =
         +0.00000000000000000e+00 * Radian;
     tylo.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    tylo.elements.mean_anomaly = +3.14159265358979001e+00 * Radian;
+    tylo.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
     vall.elements.eccentricity = +0.00000000000000000e+00;
     vall.elements.mean_motion = +4.79720588121814983e-05 * (Radian / Second);
     vall.elements.inclination = +0.00000000000000000e+00 * Radian;
     vall.elements.longitude_of_ascending_node =
         +0.00000000000000000e+00 * Radian;
     vall.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    vall.elements.mean_anomaly = +0.00000000000000000e+00 * Radian;
+    vall.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
     laythe.elements.eccentricity = +0.00000000000000000e+00;
     laythe.elements.mean_motion = +1.18593451424947995e-04 * (Radian / Second);
     laythe.elements.inclination = +0.00000000000000000e+00 * Radian;
     laythe.elements.longitude_of_ascending_node =
         +0.00000000000000000e+00 * Radian;
     laythe.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    laythe.elements.mean_anomaly = +3.14159265358979001e+00 * Radian;
+    laythe.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
     dres.elements.eccentricity = +1.44999999999999990e-01;
     dres.elements.mean_motion = +1.31191970097993002e-07 * (Radian / Second);
     dres.elements.inclination = +8.72664625997164739e-02 * Radian;
@@ -284,12 +284,6 @@ class KSPSystemTest : public ::testing::Test {
 
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
-
-  bop.elements.inclination = π * Radian - bop.elements.inclination;
-  bop.elements.mean_motion = *pol.elements.mean_motion / 0.7;
-  bop.elements.eccentricity *= 1.2;
-  LOG(INFO) << bop.elements;
-  LOG(INFO) << pol.elements;
 
   auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
 
