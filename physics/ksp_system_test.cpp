@@ -117,7 +117,7 @@ class KSPSystemTest : public ::testing::Test {
         +3.49065850398865909e-02 * Radian;
     pol.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
     pol.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    bop.elements.eccentricity = +2.81999999284744785e-01;
+    bop.elements.eccentricity = +2.58499999344349418e-01;
     bop.elements.mean_motion = +9.95227065103033049e-06 * (Radian / Second);
     bop.elements.inclination = +2.87979326579064354e+00 * Radian;
     bop.elements.longitude_of_ascending_node =
