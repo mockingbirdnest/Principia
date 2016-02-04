@@ -223,7 +223,7 @@ class KSPSystemTest : public ::testing::Test {
         std::move(barycentric_system.bodies),
         std::move(barycentric_system.degrees_of_freedom),
         ksp_epoch,
-        integrators::BlanesMoan2002SRKN14A<Position<KSP>>(),
+        integrators::McLachlanAtela1992Order5Optimal<Position<KSP>>(),
         45 * Minute,
         1 * Milli(Metre));
   }
@@ -286,6 +286,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
 
   auto const moons = {&laythe, &vall, &tylo, &pol, &bop};
+  auto const jool_system = {&jool, &laythe, &vall, &tylo, &pol, &bop};
 
   auto const ephemeris = MakeEphemeris();
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
@@ -306,16 +307,36 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   Instant t = ksp_epoch;
   std::map<not_null<KSPCelestial const*>, Length> last_separations;
   std::map<not_null<KSPCelestial const*>, Sign> last_separation_changes;
+
+  std::vector<double> bop_eccentricities;
+  std::vector<double> bop_inclinations_in_degrees;
+  std::vector<double> bop_nodes_in_degrees;
+  std::vector<double> bop_arguments_of_periapsis_in_degrees;
+
+  // Elements around the barycentre of Jool, Laythe, and Vall.
+  std::vector<double> bop_jacobi_eccentricities;
+  std::vector<double> bop_jacobi_nodes_in_degrees;
+  std::vector<double> bop_jacobi_inclinations_in_degrees;
+  std::vector<double> bop_jacobi_arguments_of_periapsis_in_degrees;
+
   for (auto const* moon : moons) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
     auto const jool_position =
         jool_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
+    auto const moon_position = [t, &moon_trajectories](
+        not_null<KSPCelestial const*> moon) {
+      return moon_trajectories[moon]->EvaluatePosition(t, /*hint=*/nullptr);
+    };
+    auto const degrees_of_freedom = [t, &ephemeris](
+        KSPCelestial const& celestial) {
+      return ephemeris->trajectory(celestial.body)->
+                 EvaluateDegreesOfFreedom(t, /*hint=*/nullptr);
+    };
+
     for (auto const* moon : moons) {
-      auto const moon_position =
-          moon_trajectories[moon]->EvaluatePosition(t, /*hint=*/nullptr);
-      Length const separation = (jool_position - moon_position).Norm();
+      Length const separation = (jool_position - moon_position(moon)).Norm();
       Sign separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
@@ -325,7 +346,77 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
     }
-  }
+
+    {
+      auto const bop_elements =
+          KeplerOrbit<KSP>(*jool.body,
+                           *bop.body,
+                           degrees_of_freedom(bop) - degrees_of_freedom(jool),
+                           t).elements_at_epoch();
+      bop_eccentricities.emplace_back(bop_elements.eccentricity);
+      bop_inclinations_in_degrees.emplace_back(bop_elements.inclination /
+                                               Degree);
+      bop_nodes_in_degrees.emplace_back(
+          bop_elements.longitude_of_ascending_node / Degree);
+      bop_arguments_of_periapsis_in_degrees.emplace_back(
+          bop_elements.argument_of_periapsis / Degree);
+    }
+
+    {
+      BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
+          innermost_jool_system;
+      for (auto const* celestial : {&jool, &laythe, &vall, &tylo}) {
+        innermost_jool_system.Add(degrees_of_freedom(*celestial),
+                                  celestial->body->gravitational_parameter());
+      }
+      auto const bop_jacobi_elements =
+          KeplerOrbit<KSP>(
+              MassiveBody(innermost_jool_system.weight()),
+              *bop.body,
+              degrees_of_freedom(bop) - innermost_jool_system.Get(),
+              t).elements_at_epoch();
+      bop_jacobi_eccentricities.emplace_back(bop_jacobi_elements.eccentricity);
+      bop_jacobi_inclinations_in_degrees.emplace_back(
+          bop_jacobi_elements.inclination / Degree);
+      bop_jacobi_nodes_in_degrees.emplace_back(
+          bop_jacobi_elements.longitude_of_ascending_node / Degree);
+      bop_arguments_of_periapsis_in_degrees.emplace_back(
+          bop_jacobi_elements.argument_of_periapsis / Degree);
+    }
+  };
+
+  auto const fill_with_300_days = [this, &ephemeris, &jool_system](
+      Instant const& initial_time,
+      std::vector<std::vector<Vector<double, KSP>>> container) {
+    for (Instant t = initial_time;
+         t < ksp_epoch + 300 * Day;
+         t += 45 * Minute) {
+      auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
+        return ephemeris->trajectory(celestial.body)->
+                   EvaluatePosition(t, /*hint=*/nullptr);
+      };
+      BarycentreCalculator<Position<KSP>, GravitationalParameter>
+          jool_system_barycentre;
+      for (auto const* celestial : jool_system) {
+        jool_system_barycentre.Add(position(*celestial),
+                                   celestial->body->gravitational_parameter());
+      }
+      container.emplace_back();
+      for (auto const* celestial : jool_system) {
+        container.back().emplace_back(
+            (position(*celestial) - jool_system_barycentre.Get()) / Metre);
+      }
+    }
+  };
+
+  // 300 days from the start of the game.
+  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
+  fill_with_300_days(ksp_epoch, barycentric_positions);
+  // 300 days from t_0 + 600 000 h, when bop's eccentricity is high.
+  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_eccentric;
+  fill_with_300_days(ksp_epoch + 600'000 * Hour,
+                     barycentric_positions_eccentric);
+
   std::ofstream file;
   file.open("ksp_system.generated.wl");
   file << mathematica::Assign("laytheTimes", times_in_s[&laythe]);
@@ -343,6 +434,23 @@ TEST_F(KSPSystemTest, KerbalSystem) {
                               extremal_separations_in_m[&pol]);
   file << mathematica::Assign("bopSeparations",
                               extremal_separations_in_m[&bop]);
+
+  file << mathematica::Assign("bopEccentricities", bop_eccentricities);
+  file << mathematica::Assign("bopInclinations", bop_inclinations_in_degrees);
+  file << mathematica::Assign("bopNodes", bop_nodes_in_degrees);
+  file << mathematica::Assign("bopArguments",
+                              bop_arguments_of_periapsis_in_degrees);
+  file << mathematica::Assign("bopJacobiEccentricities",
+                              bop_jacobi_eccentricities);
+  file << mathematica::Assign("bopJacobiInclinations",
+                              bop_jacobi_inclinations_in_degrees);
+  file << mathematica::Assign("bopJacobiNodes", bop_jacobi_nodes_in_degrees);
+  file << mathematica::Assign("bopJacobiArguments",
+                              bop_jacobi_arguments_of_periapsis_in_degrees);
+
+  file << mathematica::Assign("barycentricPositions", barycentric_positions);
+  file << mathematica::Assign("barycentricPositionsEccentric",
+                              barycentric_positions);
   file.close();
 }
 
