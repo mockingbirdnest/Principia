@@ -49,7 +49,6 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   // |<1 m>|     |<1 m>|
   // 2     1     1     2
   //   |<   7/3 m   >|
-  std::vector<int> left_to_right = {0, 2, 3, 1};
 
   HierarchicalSystem<Frame> system(new_body(2 * Kilogram));
   elements.semimajor_axis = 7.0 / 3.0 * Metre;
@@ -80,6 +79,59 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
                           1.5 * Metre,
                           0.5 * Metre));
 }
+
+TEST_F(HierarchicalSystemTest, FromMeanMotions) {
+  // e, i, Ω, ω, and mean anomaly are 0.
+  KeplerianElements<Frame> elements;
+
+  // Invariant: |body_indices[bodies[i]] == i| for all |i|.
+  std::map<not_null<MassiveBody const*>, int> body_indices;
+  std::vector<not_null<MassiveBody const*>> bodies;
+
+  auto const new_body = [&body_indices,
+                         &bodies](GravitationalParameter const& mass) {
+    auto body = make_not_null_unique<MassiveBody>(mass);
+    bodies.emplace_back(body.get());
+    body_indices[body.get()] = body_indices.size();
+    return body;
+  };
+
+  // We construct a system as follows, where the |body_indices|
+  // are, from left to right, 0, 2, 1.
+  // |<1 m>|
+  // 1     1     1
+  //    |<1.5 m >|
+
+  HierarchicalSystem<Frame> system(new_body(SIUnit<GravitationalParameter>()));
+  elements.mean_motion = Sqrt(3 / Pow<3>(1.5)) * Radian / Second;
+  system.Add(new_body(SIUnit<GravitationalParameter>()),
+             /*parent=*/bodies[0],
+             elements);
+  elements.mean_motion = Sqrt(2) * Radian / Second;
+  system.Add(new_body(SIUnit<GravitationalParameter>()),
+             /*parent=*/bodies[0],
+             elements);
+
+  auto barycentric_system = system.ConsumeBarycentricSystem();
+
+  std::vector<int> expected_order = {0, 2, 1};
+  for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
+    EXPECT_TRUE(bodies[expected_order[i]] == barycentric_system.bodies[i].get())
+        << i;
+  }
+  std::vector<Length> x_positions;
+  std::transform(barycentric_system.degrees_of_freedom.begin(),
+                 barycentric_system.degrees_of_freedom.end(),
+                 std::back_inserter(x_positions),
+                 [](DegreesOfFreedom<Frame> const& dof) {
+                   return (dof.position() - Frame::origin).coordinates().x;
+                 });
+  EXPECT_THAT(x_positions,
+              ElementsAre(-1 * Metre,
+                          0 * Metre,
+                          1 * Metre));
+}
+
 
 }  // namespace physics
 }  // namespace principia
