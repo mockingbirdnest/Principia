@@ -339,6 +339,22 @@ struct FlightPlanRenderedSegment {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
+struct FlightPlanRenderedSegmentEndpoints {
+  struct In {
+    Plugin const* const plugin;
+    char const* const vessel_guid;
+    XYZ const sun_world_position;
+    int const index;
+  };
+  using Return = XYZSegment;
+
+  using Message = serialization::FlightPlanRenderedSegmentEndpoints;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
 struct FlightPlanReplaceLast {
   struct In {
     Plugin const* const plugin;

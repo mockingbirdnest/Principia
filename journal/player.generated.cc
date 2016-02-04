@@ -28,6 +28,7 @@
   ran |= RunIfAppropriate<FlightPlanNumberOfSegments>(*method);
   ran |= RunIfAppropriate<FlightPlanRemoveLast>(*method);
   ran |= RunIfAppropriate<FlightPlanRenderedSegment>(*method);
+  ran |= RunIfAppropriate<FlightPlanRenderedSegmentEndpoints>(*method);
   ran |= RunIfAppropriate<FlightPlanReplaceLast>(*method);
   ran |= RunIfAppropriate<FlightPlanSetFinalTime>(*method);
   ran |= RunIfAppropriate<FlightPlanSetTolerances>(*method);
