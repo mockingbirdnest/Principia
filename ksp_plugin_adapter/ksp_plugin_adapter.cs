@@ -1316,9 +1316,7 @@ public partial class PrincipiaPluginAdapter
                                     Planetarium.InverseRotAngle);
       plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter);
-      Log.Info("### sun.body = make_not_null_unique<MassiveBody>(" + Planetarium.fetch.Sun.gravParameter.ToString("G17") + " * SIUnit<GravitationalParameter>());");
       BodyProcessor insert_body = body => {
-        Log.Info("### " + body.name.ToLower() +".body = make_not_null_unique<MassiveBody>(" + body.gravParameter.ToString("G17") + " * SIUnit<GravitationalParameter>());");
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];
         double mean_motion = 2 * Math.PI / orbit.period;
@@ -1408,8 +1406,6 @@ public partial class PrincipiaPluginAdapter
     is_stock &= (float)mean_longitude(vall)   == 0.9f;
     is_stock &= (float)mean_longitude(tylo)   == 3.14f;
     if (!is_stock) {
-      // TODO(egg): remove that.
-      Log.Fatal("did not look like stock");
       return;
     }
     unmodified_orbits_[laythe] =
