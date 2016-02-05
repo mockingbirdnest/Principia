@@ -73,6 +73,7 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
              right->jacobi_osculating_elements.mean_motion;
     }
     LOG(FATAL) << "improperly initialized elements";
+    base::noreturn();
   };
 
   std::sort(system.satellites.begin(),
