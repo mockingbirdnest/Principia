@@ -781,18 +781,21 @@ public partial class PrincipiaPluginAdapter
               plugin_.FlightPlanRenderedSegment(active_vessel_guid,
                                                 sun_world_position,
                                                 i);
-          Vector3d first_point_of_segment =
-              (Vector3d)RenderAndDeleteTrajectory(
-                  ref trajectory_iterator,
-                  rendered_flight_plan_[i]);
+          RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                    rendered_flight_plan_[i]);
           if (i % 2 == 1) {
+            Vector3d position_at_ignition =
+                (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
+                              active_vessel_guid,
+                              sun_world_position,
+                              i).begin;
             int manoeuvre_index = i / 2;
             NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
                                                 active_vessel_guid,
                                                 manoeuvre_index);
             double scale = (ScaledSpace.ScaledToLocalSpace(
                                 MapView.MapCamera.transform.position) -
-                            first_point_of_segment).magnitude * 0.015;
+                            position_at_ignition).magnitude * 0.015;
             Func<Vector3d, UnityEngine.Vector2> world_to_screen =
                 (world_position) =>
                     MapView.MapCamera.camera.WorldToScreenPoint(
@@ -800,9 +803,9 @@ public partial class PrincipiaPluginAdapter
             Action<int, XYZ> set_vector = (arrow_index, world_direction) => {
               VectorLine line =
                   rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
-              line.points2[0] = world_to_screen(first_point_of_segment);
+              line.points2[0] = world_to_screen(position_at_ignition);
               line.points2[1] = world_to_screen(
-                  first_point_of_segment + scale * (Vector3d)world_direction);
+                  position_at_ignition + scale * (Vector3d)world_direction);
             };
             set_vector(0, manoeuvre.tangent);
             set_vector(1, manoeuvre.normal);
@@ -822,10 +825,9 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private Vector3d? RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
+  private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
                                               VectorLine vector_line) {
     int new_min_draw_index = 0;
-    Vector3d? first_point = null;
     try {
       XYZSegment segment;
       int index_in_line_points = vector_line.points3.Length -
@@ -853,9 +855,6 @@ public partial class PrincipiaPluginAdapter
             ScaledSpace.LocalToScaledSpace((Vector3d)segment.begin);
         vector_line.points3[index_in_line_points++] =
             ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
-        if (first_point == null) {
-          first_point = (Vector3d)segment.begin;
-        }
       }
     } finally {
       Interface.DeleteLineAndIterator(ref trajectory_iterator);
@@ -866,7 +865,6 @@ public partial class PrincipiaPluginAdapter
       Vector.DrawLine(vector_line);
     }
     vector_line.minDrawIndex = new_min_draw_index;
-    return first_point;
   }
 
   private void ResetRenderedTrajectory() {
