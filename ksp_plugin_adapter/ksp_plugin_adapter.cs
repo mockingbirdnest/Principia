@@ -826,7 +826,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
-                                              VectorLine vector_line) {
+                                         VectorLine vector_line) {
     int new_min_draw_index = 0;
     try {
       XYZSegment segment;
@@ -869,10 +869,8 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetRenderedTrajectory() {
     DestroyRenderedTrajectory();
-    rendered_trajectory_ =
-        NewRenderedTrajectory(XKCDColors.AcidGreen);
-    rendered_prediction_ =
-        NewRenderedTrajectory(XKCDColors.Fuchsia);
+    rendered_trajectory_ = NewRenderedTrajectory(XKCDColors.AcidGreen);
+    rendered_prediction_ = NewRenderedTrajectory(XKCDColors.Fuchsia);
   }
 
   private void ResetRenderedFlightPlan(int segments) {
