@@ -117,7 +117,7 @@ class KSPSystemTest : public ::testing::Test {
         +3.49065850398865909e-02 * Radian;
     pol.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
     pol.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    bop.elements.eccentricity = +2.58499999344349418e-01;
+    bop.elements.eccentricity = +2.34999999403953996e-01;
     bop.elements.mean_motion = +9.95227065103033049e-06 * (Radian / Second);
     bop.elements.inclination = +2.87979326579064354e+00 * Radian;
     bop.elements.longitude_of_ascending_node =
@@ -308,6 +308,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::map<not_null<KSPCelestial const*>, Length> last_separations;
   std::map<not_null<KSPCelestial const*>, Sign> last_separation_changes;
 
+  // Stock elements.
   std::vector<double> bop_eccentricities;
   std::vector<double> bop_inclinations_in_degrees;
   std::vector<double> bop_nodes_in_degrees;
@@ -319,24 +320,26 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::vector<double> bop_jacobi_inclinations_in_degrees;
   std::vector<double> bop_jacobi_arguments_of_periapsis_in_degrees;
 
+  std::vector<double> tylo_bop_separations_in_m;
+  std::vector<double> pol_bop_separations_in_m;
+
   for (auto const* moon : moons) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
-    auto const jool_position =
-        jool_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
-    auto const moon_position = [t, &moon_trajectories](
-        not_null<KSPCelestial const*> moon) {
-      return moon_trajectories[moon]->EvaluatePosition(t, /*hint=*/nullptr);
+    auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
+      return ephemeris->trajectory(celestial.body)->
+                 EvaluatePosition(t, /*hint=*/nullptr);
     };
     auto const degrees_of_freedom = [t, &ephemeris](
         KSPCelestial const& celestial) {
       return ephemeris->trajectory(celestial.body)->
                  EvaluateDegreesOfFreedom(t, /*hint=*/nullptr);
     };
+    auto const jool_position = position(jool);
 
     for (auto const* moon : moons) {
-      Length const separation = (jool_position - moon_position(moon)).Norm();
+      Length const separation = (jool_position - position(*moon)).Norm();
       Sign separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
@@ -347,10 +350,16 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       last_separation_changes.at(moon) = separation_change;
     }
 
+    tylo_bop_separations_in_m.emplace_back(
+        (position(tylo) - position(bop)).Norm() / Metre);
+    pol_bop_separations_in_m.emplace_back(
+        (position(pol) - position(bop)).Norm() / Metre);
+
     {
+      // KSP's osculating elements.
       auto const bop_elements =
           KeplerOrbit<KSP>(*jool.body,
-                           *bop.body,
+                           MasslessBody(),
                            degrees_of_freedom(bop) - degrees_of_freedom(jool),
                            t).elements_at_epoch();
       bop_eccentricities.emplace_back(bop_elements.eccentricity);
@@ -380,16 +389,17 @@ TEST_F(KSPSystemTest, KerbalSystem) {
           bop_jacobi_elements.inclination / Degree);
       bop_jacobi_nodes_in_degrees.emplace_back(
           bop_jacobi_elements.longitude_of_ascending_node / Degree);
-      bop_arguments_of_periapsis_in_degrees.emplace_back(
+      bop_jacobi_arguments_of_periapsis_in_degrees.emplace_back(
           bop_jacobi_elements.argument_of_periapsis / Degree);
     }
   };
 
-  auto const fill_with_300_days = [this, &ephemeris, &jool_system](
+  auto const fill_positions = [this, &ephemeris, &jool_system](
       Instant const& initial_time,
-      std::vector<std::vector<Vector<double, KSP>>> container) {
+      Time const& duration,
+      std::vector<std::vector<Vector<double, KSP>>>& container) {
     for (Instant t = initial_time;
-         t < ksp_epoch + 300 * Day;
+         t < initial_time + duration;
          t += 45 * Minute) {
       auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
         return ephemeris->trajectory(celestial.body)->
@@ -409,13 +419,10 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     }
   };
 
-  // 300 days from the start of the game.
-  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
-  fill_with_300_days(ksp_epoch, barycentric_positions);
-  // 300 days from t_0 + 600 000 h, when bop's eccentricity is high.
-  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_eccentric;
-  fill_with_300_days(ksp_epoch + 600'000 * Hour,
-                     barycentric_positions_eccentric);
+  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_1_year;
+  fill_positions(ksp_epoch, 1 * JulianYear, barycentric_positions_1_year);
+  std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_2_year;
+  fill_positions(ksp_epoch, 2 * JulianYear, barycentric_positions_2_year);
 
   std::ofstream file;
   file.open("ksp_system.generated.wl");
@@ -448,9 +455,13 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   file << mathematica::Assign("bopJacobiArguments",
                               bop_jacobi_arguments_of_periapsis_in_degrees);
 
-  file << mathematica::Assign("barycentricPositions", barycentric_positions);
-  file << mathematica::Assign("barycentricPositionsEccentric",
-                              barycentric_positions);
+  file << mathematica::Assign("tyloBop", tylo_bop_separations_in_m);
+  file << mathematica::Assign("polBop", pol_bop_separations_in_m);
+
+  file << mathematica::Assign("barycentricPositions1",
+                              barycentric_positions_1_year);
+  file << mathematica::Assign("barycentricPositions2",
+                              barycentric_positions_2_year);
   file.close();
 }
 

@@ -1444,7 +1444,7 @@ public partial class PrincipiaPluginAdapter
         jool);
     unmodified_orbits_[bop] =
         new Orbit(180.0 - bop.orbit.inclination,
-                  bop.orbit.eccentricity * 1.2,
+                  bop.orbit.eccentricity,
                   pol.orbit.semiMajorAxis * Math.Pow(0.7, 2.0 / 3.0),
                   bop.orbit.LAN,
                   bop.orbit.argumentOfPeriapsis,
