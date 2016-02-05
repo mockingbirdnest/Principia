@@ -300,12 +300,6 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   ephemeris->Prolong(a_century_hence);
   LOG(INFO) << "Done";
 
-  auto const jool_trajectory = ephemeris->trajectory(jool.body);
-  std::map<not_null<KSPCelestial const*>, ContinuousTrajectory<KSP> const*>
-      moon_trajectories;
-  for (auto const* moon : moons) {
-    moon_trajectories[moon] = ephemeris->trajectory(moon->body);
-  }
   std::map<not_null<KSPCelestial const*>, std::vector<double>>
       extremal_separations_in_m;
   std::map<not_null<KSPCelestial const*>, std::vector<double>> times_in_s;
