@@ -128,6 +128,5 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
                           1 * Metre));
 }
 
-
 }  // namespace physics
 }  // namespace principia
