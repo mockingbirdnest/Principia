@@ -212,7 +212,7 @@ class KSPSystemTest : public ::testing::Test {
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {
     HierarchicalSystem<KSP> hierarchical_system(std::move(sun.owned_body));
-    for (auto const celestial : planets_and_moons ) {
+    for (auto const celestial : planets_and_moons) {
       hierarchical_system.Add(std::move(celestial->owned_body),
                  celestial->parent->body,
                  celestial->elements);
@@ -397,7 +397,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       bop_jacobi_arguments_of_periapsis_in_degrees.emplace_back(
           bop_jacobi_elements.argument_of_periapsis / Degree);
     }
-  };
+  }
 
   auto const fill_positions = [this, &ephemeris, &jool_system](
       Instant const& initial_time,
