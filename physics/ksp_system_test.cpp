@@ -289,7 +289,12 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   auto const jool_system = {&jool, &laythe, &vall, &tylo, &pol, &bop};
 
   auto const ephemeris = MakeEphemeris();
+#if NDEBUG
+#if 0
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
+#else  // A small century so the tests don't take too long.
+  auto const a_century_hence = ksp_epoch + 5 * JulianYear;
+#endif
 
   LOG(INFO) << "Starting integration";
   ephemeris->Prolong(a_century_hence);
@@ -463,6 +468,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   file << mathematica::Assign("barycentricPositions2",
                               barycentric_positions_2_year);
   file.close();
+#endif
 }
 
 }  // namespace physics
