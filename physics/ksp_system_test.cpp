@@ -43,39 +43,39 @@ class KSPSystemTest : public ::testing::Test {
   };
 
   KSPSystemTest() {
-    sun.owned_body = make_not_null_unique<MassiveBody>(
+    sun.owned_body = std::make_unique<MassiveBody>(
         1.1723327948324908E+18 * SIUnit<GravitationalParameter>());
-    eeloo.owned_body = make_not_null_unique<MassiveBody>(
+    eeloo.owned_body = std::make_unique<MassiveBody>(
         74410814527.049576 * SIUnit<GravitationalParameter>());
-    jool.owned_body = make_not_null_unique<MassiveBody>(
+    jool.owned_body = std::make_unique<MassiveBody>(
         282528004209995.31 * SIUnit<GravitationalParameter>());
-    pol.owned_body = make_not_null_unique<MassiveBody>(
+    pol.owned_body = std::make_unique<MassiveBody>(
         721702080.00000012 * SIUnit<GravitationalParameter>());
-    bop.owned_body = make_not_null_unique<MassiveBody>(
+    bop.owned_body = std::make_unique<MassiveBody>(
         2486834944.414907 * SIUnit<GravitationalParameter>());
-    tylo.owned_body = make_not_null_unique<MassiveBody>(
+    tylo.owned_body = std::make_unique<MassiveBody>(
         2825280042099.9531 * SIUnit<GravitationalParameter>());
-    vall.owned_body = make_not_null_unique<MassiveBody>(
+    vall.owned_body = std::make_unique<MassiveBody>(
         207481499473.75098 * SIUnit<GravitationalParameter>());
-    laythe.owned_body = make_not_null_unique<MassiveBody>(
+    laythe.owned_body = std::make_unique<MassiveBody>(
         1962000029236.0784 * SIUnit<GravitationalParameter>());
-    dres.owned_body = make_not_null_unique<MassiveBody>(
+    dres.owned_body = std::make_unique<MassiveBody>(
         21484488600.000004 * SIUnit<GravitationalParameter>());
-    duna.owned_body = make_not_null_unique<MassiveBody>(
+    duna.owned_body = std::make_unique<MassiveBody>(
         301363211975.09772 * SIUnit<GravitationalParameter>());
-    ike.owned_body = make_not_null_unique<MassiveBody>(
+    ike.owned_body = std::make_unique<MassiveBody>(
         18568368573.144012 * SIUnit<GravitationalParameter>());
-    kerbin.owned_body = make_not_null_unique<MassiveBody>(
+    kerbin.owned_body = std::make_unique<MassiveBody>(
         3531600000000 * SIUnit<GravitationalParameter>());
-    minmus.owned_body = make_not_null_unique<MassiveBody>(
+    minmus.owned_body = std::make_unique<MassiveBody>(
         1765800026.3124719 * SIUnit<GravitationalParameter>());
-    mun.owned_body = make_not_null_unique<MassiveBody>(
+    mun.owned_body = std::make_unique<MassiveBody>(
         65138397520.780701 * SIUnit<GravitationalParameter>());
-    eve.owned_body = make_not_null_unique<MassiveBody>(
+    eve.owned_body = std::make_unique<MassiveBody>(
         8171730229210.874 * SIUnit<GravitationalParameter>());
-    gilly.owned_body = make_not_null_unique<MassiveBody>(
+    gilly.owned_body = std::make_unique<MassiveBody>(
         8289449.814716354 * SIUnit<GravitationalParameter>());
-    moho.owned_body = make_not_null_unique<MassiveBody>(
+    moho.owned_body = std::make_unique<MassiveBody>(
         168609378654.50949 * SIUnit<GravitationalParameter>());
     for (auto const celestial : all_bodies) {
       celestial->body = celestial->owned_body.get();
