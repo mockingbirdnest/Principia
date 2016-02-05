@@ -58,8 +58,22 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   auto const semimajor_axis_less_than = [](
       not_null<std::unique_ptr<Subsystem>> const& left,
       not_null<std::unique_ptr<Subsystem>> const& right) -> bool {
-    return left->jacobi_osculating_elements.semimajor_axis <
-           right->jacobi_osculating_elements.semimajor_axis;
+    bool const has_semimajor_axes =
+        left->jacobi_osculating_elements.semimajor_axis &&
+        right->jacobi_osculating_elements.semimajor_axis;
+    bool const has_mean_motions =
+        left->jacobi_osculating_elements.mean_motion &&
+        right->jacobi_osculating_elements.mean_motion;
+    if (has_semimajor_axes) {
+      return left->jacobi_osculating_elements.semimajor_axis <
+             right->jacobi_osculating_elements.semimajor_axis;
+    }
+    if (has_mean_motions) {
+      return left->jacobi_osculating_elements.mean_motion >
+             right->jacobi_osculating_elements.mean_motion;
+    }
+    LOG(FATAL) << "improperly initialized elements";
+    base::noreturn();
   };
 
   std::sort(system.satellites.begin(),
