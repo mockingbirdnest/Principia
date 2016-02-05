@@ -212,6 +212,40 @@ LineAndIterator* principia__FlightPlanRenderedSegment(
   return m.Return(result.release());
 }
 
+XYZSegment principia__FlightPlanRenderedSegmentEndpoints(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    int const index) {
+  journal::Method<journal::FlightPlanRenderedSegmentEndpoints> m(
+      {plugin,
+       vessel_guid,
+       sun_world_position,
+       index});
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
+  DiscreteTrajectory<Barycentric>::Iterator last = end;
+  --last;
+  Position<World> sun_position =
+      World::origin +
+      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+  Position<World> first_position =
+      CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
+          begin.time(),
+          begin.degrees_of_freedom().position(),
+          sun_position);
+  Position<World> last_position =
+      CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
+          last.time(),
+          last.degrees_of_freedom().position(),
+          sun_position);
+  XYZSegment result;
+  result.begin = ToXYZ((first_position - World::origin).coordinates() / Metre);
+  result.end = ToXYZ((last_position - World::origin).coordinates() / Metre);
+  return m.Return(result);
+}
+
 bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
                                       char const* const vessel_guid,
                                       Burn const burn) {

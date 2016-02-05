@@ -220,6 +220,13 @@ LineAndIterator* CDECL principia__FlightPlanRenderedSegment(
     int const index);
 
 extern "C" PRINCIPIA_DLL
+XYZSegment CDECL principia__FlightPlanRenderedSegmentEndpoints(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    int const index);
+
+extern "C" PRINCIPIA_DLL
 bool CDECL principia__FlightPlanReplaceLast(
     Plugin const* const plugin,
     char const* const vessel_guid,
