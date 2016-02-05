@@ -1414,15 +1414,6 @@ public partial class PrincipiaPluginAdapter
     if (!is_stock) {
       return;
     }
-    unmodified_orbits_[laythe] =
-        new Orbit(laythe.orbit.inclination,
-                  laythe.orbit.eccentricity,
-                  laythe.orbit.semiMajorAxis,
-                  laythe.orbit.LAN,
-                  laythe.orbit.argumentOfPeriapsis,
-                  laythe.orbit.meanAnomalyAtEpoch,
-                  laythe.orbit.epoch,
-                  jool);
     unmodified_orbits_[vall] = new Orbit(
         vall.orbit.inclination,
         vall.orbit.eccentricity,
@@ -1451,6 +1442,22 @@ public partial class PrincipiaPluginAdapter
                   bop.orbit.meanAnomalyAtEpoch,
                   bop.orbit.epoch,
                   jool);
+    // Keep the rotation of vall and tylo equal to their orbital period.
+    foreach (CelestialBody body in new CelestialBody[]{vall, tylo}) {
+      body.orbit.inclination = unmodified_orbits_[body].inclination;
+      body.orbit.eccentricity = unmodified_orbits_[body].eccentricity;
+      body.orbit.semiMajorAxis = unmodified_orbits_[body].semiMajorAxis;
+      body.orbit.LAN = unmodified_orbits_[body].LAN;
+      body.orbit.argumentOfPeriapsis =
+          unmodified_orbits_[body].argumentOfPeriapsis;
+      body.orbit.meanAnomalyAtEpoch =
+          unmodified_orbits_[body].meanAnomalyAtEpoch;
+      body.orbit.epoch = unmodified_orbits_[body].epoch;
+      body.orbit.referenceBody = unmodified_orbits_[body].referenceBody;
+      body.orbit.Init();
+      body.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
+      body.CBUpdate();
+    }
   }
 
 }
