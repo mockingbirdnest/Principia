@@ -83,6 +83,7 @@ class FlightPlanner : WindowRenderer {
               plugin_.FlightPlanCreate(vessel_guid,
                                        plugin_.CurrentTime() + 1000,
                                        vessel_.GetTotalMass());
+              final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
               Shrink();
             }
           }
@@ -140,6 +141,8 @@ class FlightPlanner : WindowRenderer {
             bool inserted = plugin_.FlightPlanAppend(vessel_guid,
                                                      candidate_burn);
             if (inserted) {
+              editor.Reset(plugin_.FlightPlanGetManoeuvre(vessel_guid,
+                                                          burn_editors_.Count));
               burn_editors_.Add(editor);
             }
             Shrink();
@@ -229,10 +232,11 @@ class FlightPlanner : WindowRenderer {
   }
 
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
-     return span.Days.ToString("000;000") + " d " +
-            span.Hours.ToString("00;00") + " h " +
-            span.Minutes.ToString("00;00") + " min " +
-            span.Seconds.ToString("00;00") + " s";
+    return span.Days.ToString("000;000") + " d " +
+           span.Hours.ToString("00;00") + " h " +
+           span.Minutes.ToString("00;00") + " min " +
+           (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
+           " s";
   }
 
   internal static string FormatTimeSpan (TimeSpan span) {
