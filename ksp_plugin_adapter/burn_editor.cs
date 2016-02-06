@@ -55,7 +55,18 @@ class BurnEditor {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     UnityEngine.GUILayout.BeginVertical();
+    var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
+    warning_style.normal.textColor = XKCDColors.Orange;
     bool changed = false;
+    // When we are first rendered, the |initial_mass_in_tonnes_| will just have
+    // been set.  If we have fallen back to instant impulse, we should use this
+    // mass to set the thrust.
+    if (first_time_rendering) {
+      first_time_rendering = false;
+      changed = true;
+      engine_warning_ = "";
+      ComputeEngineCharacteristics();
+    }
     if (enabled) {
       UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Button("Active Engines")) {
@@ -72,7 +83,7 @@ class BurnEditor {
         changed = true;
       }
       UnityEngine.GUILayout.EndHorizontal();
-      UnityEngine.GUILayout.TextArea(engine_warning_);
+      UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
       reference_frame_selector_.RenderButton();
     } else {
       reference_frame_selector_.Hide();
@@ -82,13 +93,13 @@ class BurnEditor {
             adapter_.plotting_frame_selector_.get().FrameParameters())) {
       frame_warning = "Manœuvre frame differs from plotting frame";
     }
-    UnityEngine.GUILayout.TextArea(frame_warning);
+    UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
     changed |= Δv_tangent_.Render(enabled);
     changed |= Δv_normal_.Render(enabled);
     changed |= Δv_binormal_.Render(enabled);
     changed |= initial_time_.Render(enabled);
     changed |= changed_reference_frame_;
-    UnityEngine.GUILayout.Label("Burn duration : " + Math.Round(duration_) +
+    UnityEngine.GUILayout.Label("Burn duration : " + duration_.ToString("0.0") +
                                 " s");
     changed_reference_frame_ = false;
     UnityEngine.GUILayout.EndVertical();
@@ -104,6 +115,7 @@ class BurnEditor {
     initial_time_.value = burn.initial_time;
     reference_frame_selector_.Reset(burn.frame);
     duration_ = manoeuvre.duration;
+    initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;
   }
 
   public Burn Burn() {
@@ -153,7 +165,7 @@ class BurnEditor {
 
     // If there are no engines, fall back onto RCS.
     if (thrust_in_kilonewtons_ == 0) {
-      engine_warning_ = "No active engines, falling back to RCS";
+      engine_warning_ += "No active engines, falling back to RCS. ";
       ComputeRCSCharacteristics();
     }
   }
@@ -189,14 +201,25 @@ class BurnEditor {
 
     // If RCS provides no thrust, model a virtually instant burn.
     if (thrust_in_kilonewtons_ == 0) {
-      engine_warning_ = "No active RCS, modeling as instant burn";
+      engine_warning_ += "No active RCS, modeling as instant burn. ";
       UseTheForceLuke();
     }
   }
 
   private void UseTheForceLuke() {
-    thrust_in_kilonewtons_ = 1E15;
-    specific_impulse_in_seconds_g0_ = 3E7;
+    // The burn can last at most (9.80665 / scale) s.
+    const double scale = 1;
+    // This, together with |scale = 1|, ensures that, when |initial_time| is
+    // less than 2 ** 32 s, |Δv(initial_time + duration)| does not overflow if
+    // Δv is less than 100 km/s, and that |initial_time + duration| does not
+    // fully cancel if Δv is more than 1 mm/s.
+    // TODO(egg): Before the C* release, add a persisted flag to indicate to the
+    // user that we are not using the craft's engines (we can also use that
+    // flag to remember whether the burn was created for active engines or
+    // active RCS).
+    const double range = 1000;
+    thrust_in_kilonewtons_ = initial_mass_in_tonnes_ * range * scale;
+    specific_impulse_in_seconds_g0_ = range;
   }
 
   private DifferentialSlider Δv_tangent_;
@@ -207,6 +230,9 @@ class BurnEditor {
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
+  private double initial_mass_in_tonnes_;
+
+  private bool first_time_rendering = true;
 
   private const double Log10ΔvLowerRate = -3.0;
   private const double Log10ΔvUpperRate = 3.5;
