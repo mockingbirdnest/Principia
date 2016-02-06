@@ -1249,7 +1249,7 @@ public partial class PrincipiaPluginAdapter
             name_to_gravity_model[Planetarium.fetch.Sun.name];
         ConfigNode sun_initial_state =
             name_to_initial_state[Planetarium.fetch.Sun.name];
-        plugin_.DirectlyInsertCelestial(
+        plugin_.InsertCelestialAbsoluteCartesian(
             celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
             parent_index: IntPtr.Zero,
             gravitational_parameter:

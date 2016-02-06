@@ -38,9 +38,9 @@ internal static partial class Interface {
   // Manual overload needed to be able to pass |null| for a missing
   // |parent_index|.
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DirectlyInsertCelestial",
+             EntryPoint        = "principia__InsertCelestialAbsoluteCartesian",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DirectlyInsertCelestial(
+  internal static extern void InsertCelestialAbsoluteCartesian(
       this IntPtr plugin,
       int celestial_index,
       IntPtr parent_index,
