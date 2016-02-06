@@ -89,19 +89,26 @@ NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin,
   Vector<double, World> const world_inertial_direction =
       barycentric_to_world(barycentric_inertial_direction);
   result.inertial_direction = ToXYZ(world_inertial_direction.coordinates());
-  OrthogonalMap<Frenet<Navigation>, Barycentric> barycentric_frenet_frame =
+
+  OrthogonalMap<Frenet<Navigation>, Barycentric> frenet_to_barycentric =
       manœuvre.FrenetFrame();
-  OrthogonalMap<Frenet<Navigation>, World> world_frenet_frame =
-      barycentric_to_world * barycentric_frenet_frame;
-  result.tangent =
-      ToXYZ(world_frenet_frame(Vector<double, Frenet<Navigation>>({1, 0, 0}))
-                .coordinates());
-  result.normal =
-      ToXYZ(world_frenet_frame(Vector<double, Frenet<Navigation>>({0, 1, 0}))
-                .coordinates());
-  result.binormal =
-      ToXYZ(world_frenet_frame(Vector<double, Frenet<Navigation>>({0, 0, 1}))
-                .coordinates());
+  Instant const current_time = plugin->CurrentTime();
+  Instant const initial_time = manœuvre.initial_time();
+  auto const plotting_frame = plugin->GetPlottingFrame();
+  OrthogonalMap<Frenet<Navigation>, World> frenet_to_plotted_world =
+      barycentric_to_world *
+      plotting_frame->FromThisFrameAtTime(current_time).orthogonal_map() *
+      plotting_frame->ToThisFrameAtTime(initial_time).orthogonal_map() *
+      frenet_to_barycentric;
+  result.tangent = ToXYZ(
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0}))
+          .coordinates());
+  result.normal = ToXYZ(
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0}))
+          .coordinates());
+  result.binormal = ToXYZ(
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1}))
+          .coordinates());
   return result;
 }
 
