@@ -256,7 +256,7 @@ class KSPSystemTest : public ::testing::Test {
             (position(*celestial) - jool_system_barycentre.Get()) / Metre);
       }
     }
-  };
+  }
 
   Instant const ksp_epoch;
 
