@@ -119,7 +119,9 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 void principia__InitGoogleLogging() {
-  journal::Method<journal::InitGoogleLogging> m;
+  // TODO(phl): This function is no longer journalled.  Ultimately we want to
+  // remove its message from journal.proto, but at the moment we have precious
+  // journals which contain that message.
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -161,7 +163,6 @@ void principia__InitGoogleLogging() {
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
 #endif
   }
-  return m.Return();
 }
 
 // If |activate| is true and there is no active journal, create one and
