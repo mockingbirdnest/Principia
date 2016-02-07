@@ -234,8 +234,7 @@ operator*(R3Element<LScalar> const& left,
 }
 
 template<typename LScalar, typename RDimension>
-R3Element<quantities::Quotient<LScalar,
-                                      quantities::Quantity<RDimension>>>
+R3Element<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>>
 operator/(R3Element<LScalar> const& left,
           quantities::Quantity<RDimension> const& right) {
   return R3Element<quantities::Quotient<LScalar,

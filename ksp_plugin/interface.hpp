@@ -50,6 +50,11 @@ R3Element<double> ToR3Element(XYZ const& xyz);
 WXYZ ToWXYZ(Quaternion const& quaternion);
 XYZ ToXYZ(R3Element<double> const& r3_element);
 
+// A factory for NavigationFrame objects.
+not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
+    Plugin const* const plugin,
+    NavigationFrameParameters const& parameters);
+
 }  // namespace interface
 }  // namespace principia
 

@@ -52,9 +52,41 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
   Velocity<Frenet<NavigationFrame>> const Δv =
       manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
                                : manœuvre.Δv() * manœuvre.direction();
+
+  // When building the parameters, make sure that the "optional" fields get a
+  // deterministic default.
+  NavigationFrameParameters parameters;
+  parameters.centre_index = -1;
+  parameters.primary_index = -1;
+  parameters.secondary_index = -1;
+
+  serialization::DynamicFrame message;
+  manœuvre.frame()->WriteToMessage(&message);
+  if (message.HasExtension(
+          serialization::BarycentricRotatingDynamicFrame::
+              barycentric_rotating_dynamic_frame)) {
+    auto const& extension = message.GetExtension(
+        serialization::BarycentricRotatingDynamicFrame::
+            barycentric_rotating_dynamic_frame);
+    parameters.extension = serialization::BarycentricRotatingDynamicFrame::
+                               kBarycentricRotatingDynamicFrameFieldNumber;
+    parameters.primary_index = extension.primary();
+    parameters.secondary_index = extension.secondary();
+  }
+  if (message.HasExtension(
+          serialization::BodyCentredNonRotatingDynamicFrame::
+              body_centred_non_rotating_dynamic_frame)) {
+    auto const& extension = message.GetExtension(
+        serialization::BodyCentredNonRotatingDynamicFrame::
+            body_centred_non_rotating_dynamic_frame);
+    parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
+                               kBodyCentredNonRotatingDynamicFrameFieldNumber;
+    parameters.centre_index = extension.centre();
+  }
+
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
-          principia__GetNavigationFrameParameters(manœuvre.frame()),
+          parameters,
           (manœuvre.initial_time() - Instant()) / Second,
           ToXYZ(Δv.coordinates() / (Metre / Second))};
 }
@@ -62,8 +94,7 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
 ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {
   return {burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
-          base::check_not_null(std::unique_ptr<NavigationFrame>(
-              principia__NewNavigationFrame(plugin, burn.frame))),
+          NewNavigationFrame(plugin, burn.frame),
           Instant() + burn.initial_time * Second,
           Velocity<Frenet<Navigation>>(
               ToR3Element(burn.delta_v) * (Metre / Second))};
