@@ -35,7 +35,6 @@
   ran |= RunIfAppropriate<ForgetAllHistoriesBefore>(*method);
   ran |= RunIfAppropriate<GetBufferDuration>(*method);
   ran |= RunIfAppropriate<GetBufferedLogging>(*method);
-  ran |= RunIfAppropriate<GetNavigationFrameParameters>(*method);
   ran |= RunIfAppropriate<GetPlottingFrame>(*method);
   ran |= RunIfAppropriate<GetStderrLogging>(*method);
   ran |= RunIfAppropriate<GetSuppressedLogging>(*method);

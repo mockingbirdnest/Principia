@@ -669,22 +669,6 @@ void GetBufferedLogging::Run(Message const& message, not_null<Player::PointerMap
   CHECK(message.return_().result() == result);
 }
 
-void GetNavigationFrameParameters::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_navigation_frame(SerializePointer(in.navigation_frame));
-}
-
-void GetNavigationFrameParameters::Fill(Return const& result, not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_result() = SerializeNavigationFrameParameters(result);
-}
-
-void GetNavigationFrameParameters::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto navigation_frame = DeserializePointer<NavigationFrame const*>(*pointer_map, in.navigation_frame());
-  auto const result = interface::principia__GetNavigationFrameParameters(navigation_frame);
-  Delete(pointer_map, in.navigation_frame());
-  CHECK(DeserializeNavigationFrameParameters(message.return_().result()) == result);
-}
-
 void GetPlottingFrame::Fill(In const& in, not_null<Message*> const message) {
   message->mutable_in()->set_plugin(SerializePointer(in.plugin));
 }

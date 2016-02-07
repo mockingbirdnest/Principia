@@ -303,12 +303,6 @@ internal static partial class Interface {
   internal static extern int GetBufferedLogging();
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__GetNavigationFrameParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern NavigationFrameParameters GetNavigationFrameParameters(
-      IntPtr navigation_frame);
-
-  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__GetPlottingFrame",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern IntPtr GetPlottingFrame(

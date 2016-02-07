@@ -542,54 +542,7 @@ NavigationFrame* principia__NewNavigationFrame(
     Plugin const* const plugin,
     NavigationFrameParameters const parameters) {
   journal::Method<journal::NewNavigationFrame> m({plugin, parameters});
-  switch (parameters.extension) {
-    case serialization::BarycentricRotatingDynamicFrame::
-             kBarycentricRotatingDynamicFrameFieldNumber:
-      return m.Return(CHECK_NOTNULL(plugin)->
-          NewBarycentricRotatingNavigationFrame(parameters.primary_index,
-                                                parameters.secondary_index).
-              release());
-    case serialization::BodyCentredNonRotatingDynamicFrame::
-             kBodyCentredNonRotatingDynamicFrameFieldNumber:
-      return m.Return(CHECK_NOTNULL(plugin)->
-          NewBodyCentredNonRotatingNavigationFrame(parameters.centre_index).
-              release());
-    default:
-      LOG(FATAL) << "Unexpected extension " << parameters.extension;
-      base::noreturn();
-  }
-}
-
-// Returns the parameters for the given frame, which must not be null.
-NavigationFrameParameters principia__GetNavigationFrameParameters(
-    NavigationFrame const* const navigation_frame) {
-  journal::Method<journal::GetNavigationFrameParameters> m({navigation_frame});
-
-  NavigationFrameParameters parameters;
-  serialization::DynamicFrame message;
-  CHECK_NOTNULL(navigation_frame)->WriteToMessage(&message);
-  if (message.HasExtension(
-          serialization::BarycentricRotatingDynamicFrame::
-              barycentric_rotating_dynamic_frame)) {
-    auto const& extension = message.GetExtension(
-        serialization::BarycentricRotatingDynamicFrame::
-            barycentric_rotating_dynamic_frame);
-    parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                               kBarycentricRotatingDynamicFrameFieldNumber;
-    parameters.primary_index = extension.primary();
-    parameters.secondary_index = extension.secondary();
-  }
-  if (message.HasExtension(
-          serialization::BodyCentredNonRotatingDynamicFrame::
-              body_centred_non_rotating_dynamic_frame)) {
-    auto const& extension = message.GetExtension(
-        serialization::BodyCentredNonRotatingDynamicFrame::
-            body_centred_non_rotating_dynamic_frame);
-    parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                               kBodyCentredNonRotatingDynamicFrameFieldNumber;
-    parameters.centre_index = extension.centre();
-  }
-  return m.Return(parameters);
+  return m.Return(NewNavigationFrame(plugin, parameters).release());
 }
 
 // |navigation_frame| must not be null.  No transfer of ownership of

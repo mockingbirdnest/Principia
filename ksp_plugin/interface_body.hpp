@@ -68,5 +68,23 @@ inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
+    Plugin const* const plugin,
+    NavigationFrameParameters const& parameters) {
+  switch (parameters.extension) {
+    case serialization::BarycentricRotatingDynamicFrame::
+        kBarycentricRotatingDynamicFrameFieldNumber:
+      return CHECK_NOTNULL(plugin)->NewBarycentricRotatingNavigationFrame(
+          parameters.primary_index, parameters.secondary_index);
+    case serialization::BodyCentredNonRotatingDynamicFrame::
+        kBodyCentredNonRotatingDynamicFrameFieldNumber:
+      return CHECK_NOTNULL(plugin)->NewBodyCentredNonRotatingNavigationFrame(
+          parameters.centre_index);
+    default:
+      LOG(FATAL) << "Unexpected extension " << parameters.extension;
+      base::noreturn();
+  }
+}
+
 }  // namespace interface
 }  // namespace principia

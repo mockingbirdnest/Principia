@@ -257,10 +257,6 @@ extern "C" PRINCIPIA_DLL
 int CDECL principia__GetBufferedLogging();
 
 extern "C" PRINCIPIA_DLL
-NavigationFrameParameters CDECL principia__GetNavigationFrameParameters(
-    NavigationFrame const* const navigation_frame);
-
-extern "C" PRINCIPIA_DLL
 NavigationFrame const* CDECL principia__GetPlottingFrame(
     Plugin const* const plugin);
 
