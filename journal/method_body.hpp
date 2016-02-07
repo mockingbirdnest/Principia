@@ -15,6 +15,7 @@ template<typename Profile>
 Method<Profile>::Method() {
   if (Recorder::active_recorder_ != nullptr) {
     message_ = std::make_unique<typename Profile::Message>();
+    LogMethodIfDebug();
   }
 }
 
@@ -24,6 +25,7 @@ Method<Profile>::Method(typename P::In const& in) {
   if (Recorder::active_recorder_ != nullptr) {
     message_ = std::make_unique<typename Profile::Message>();
     Profile::Fill(in, message_.get());
+    LogMethodIfDebug();
   }
 }
 
@@ -34,6 +36,7 @@ Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
     message_ = std::make_unique<typename Profile::Message>();
     out_filler_ = [this, out]() { Profile::Fill(out, message_.get()); };
     Profile::Fill(in, message_.get());
+    LogMethodIfDebug();
   }
 }
 
@@ -67,6 +70,15 @@ typename P::Return Method<Profile>::Return(
     Profile::Fill(result, message_.get());
   }
   return result;
+}
+
+template<typename Profile>
+void Method<Profile>::LogMethodIfDebug() {
+#ifdef _DEBUG
+  LOG(INFO) << message_->GetDescriptor()->name() << "\n"
+            << message_->DebugString();
+  google::FlushLogFiles(google::INFO);
+#endif
 }
 
 }  // namespace journal

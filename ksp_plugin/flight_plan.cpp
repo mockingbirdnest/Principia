@@ -167,9 +167,12 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     flight_plan->segments_.emplace_back(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
   }
-  for (auto const& manoeuvre : message.manoeuvre()) {
+  for (int i = 0; i < message.manoeuvre_size(); ++i) {
+    auto const& manoeuvre = message.manoeuvre(i);
     flight_plan->manœuvres_.push_back(
         NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
+    flight_plan->manœuvres_[i].set_coasting_trajectory(
+        flight_plan->segments_[2 * i].get());
   }
   return std::move(flight_plan);
 }

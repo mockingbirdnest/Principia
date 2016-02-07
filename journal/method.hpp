@@ -53,6 +53,8 @@ class Method {
   typename P::Return Return(typename P::Return const& result);
 
  private:
+  void LogMethodIfDebug();
+
   std::unique_ptr<typename Profile::Message> message_;
   std::function<void()> out_filler_;
   bool returned_ = false;

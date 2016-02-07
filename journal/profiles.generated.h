@@ -429,19 +429,6 @@ struct GetBufferedLogging {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
-struct GetNavigationFrameParameters {
-  struct In {
-    NavigationFrame const* const navigation_frame;
-  };
-  using Return = NavigationFrameParameters;
-
-  using Message = serialization::GetNavigationFrameParameters;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Return const& result, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
 struct GetPlottingFrame {
   struct In {
     Plugin const* const plugin;
