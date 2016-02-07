@@ -46,6 +46,7 @@ using ksp_plugin::RenderedTrajectory;
 using ksp_plugin::WorldSun;
 using physics::Frenet;
 using physics::MockDynamicFrame;
+using physics::RigidTransformation;
 using quantities::Pow;
 using quantities::constants::StandardGravity;
 using quantities::si::AstronomicalUnit;
@@ -955,6 +956,8 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(4, principia__FlightPlanNumberOfManoeuvres(plugin_.get(),
                                                        kVesselGUID));
 
+  auto const plotting_frame =
+      make_not_null_unique<MockDynamicFrame<Barycentric, Navigation>>();
   MockDynamicFrame<Barycentric, Navigation> const* const
       navigation_manœuvre_frame =
           new MockDynamicFrame<Barycentric, Navigation>;
@@ -967,6 +970,13 @@ TEST_F(InterfaceTest, FlightPlan) {
           navigation_manœuvre_frame));
   navigation_manœuvre.set_initial_time(Instant());
   navigation_manœuvre.set_duration(7 * Second);
+  auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
+      RigidTransformation<Barycentric, Navigation>(
+          Barycentric::origin,
+          Navigation::origin,
+          OrthogonalMap<Barycentric, Navigation>::Identity()),
+      AngularVelocity<Barycentric>(),
+      Velocity<Barycentric>());
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
@@ -975,6 +985,13 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())
       .WillOnce(
           Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(Instant() - 4 * Second));
+  EXPECT_CALL(*plugin_, GetPlottingFrame())
+      .WillOnce(Return(plotting_frame.get()));
+  EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
+      .WillOnce(Return(barycentric_to_plotting));
+  EXPECT_CALL(*plotting_frame, FromThisFrameAtTime(Instant() - 4 * Second))
+      .WillOnce(Return(barycentric_to_plotting.Inverse()));
   EXPECT_CALL(*plugin_, BarycentricToWorldSun())
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =

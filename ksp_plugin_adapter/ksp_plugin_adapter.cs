@@ -56,6 +56,7 @@ public partial class PrincipiaPluginAdapter
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
   private VectorLine[] rendered_flight_plan_;
+  private VectorLine[] rendered_frenet_trihedra_;
 
   [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
@@ -385,6 +386,7 @@ public partial class PrincipiaPluginAdapter
                      "navball_barycentric.png");
 
     rendered_flight_plan_ = new VectorLine[0];
+    rendered_frenet_trihedra_ = new VectorLine[0];
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -781,7 +783,41 @@ public partial class PrincipiaPluginAdapter
                                                 i);
           RenderAndDeleteTrajectory(ref trajectory_iterator,
                                     rendered_flight_plan_[i]);
+          if (i % 2 == 1) {
+            Vector3d position_at_ignition =
+                (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
+                              active_vessel_guid,
+                              sun_world_position,
+                              i).begin;
+            int manoeuvre_index = i / 2;
+            NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
+                                                active_vessel_guid,
+                                                manoeuvre_index);
+            double scale = (ScaledSpace.ScaledToLocalSpace(
+                                MapView.MapCamera.transform.position) -
+                            position_at_ignition).magnitude * 0.015;
+            Func<Vector3d, UnityEngine.Vector2> world_to_screen =
+                (world_position) =>
+                    MapView.MapCamera.camera.WorldToScreenPoint(
+                        ScaledSpace.LocalToScaledSpace(world_position));
+            Action<int, XYZ> set_vector = (arrow_index, world_direction) => {
+              VectorLine line =
+                  rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
+              line.points2[0] = world_to_screen(position_at_ignition);
+              line.points2[1] = world_to_screen(
+                  position_at_ignition + scale * (Vector3d)world_direction);
+            };
+            set_vector(0, manoeuvre.tangent);
+            set_vector(1, manoeuvre.normal);
+            set_vector(2, manoeuvre.binormal);
+            for (int j = 0; j < 3; ++j) {
+              Vector.DrawLine(
+                  rendered_frenet_trihedra_[3 * manoeuvre_index + j]);
+            }
+          }
         }
+      } else {
+        DestroyRenderedFlightPlan();
       }
     } else {
       DestroyRenderedTrajectory();
@@ -844,11 +880,17 @@ public partial class PrincipiaPluginAdapter
       rendered_flight_plan_[i] = NewRenderedTrajectory(
           (i % 2 == 0) ? XKCDColors.RoyalBlue : XKCDColors.OrangeRed);
     }
+    rendered_frenet_trihedra_ = new VectorLine[3 * (segments / 2)];
+    for (int i = 0; i < segments / 2; ++i) {
+      rendered_frenet_trihedra_[3 * i] = NewUILine(XKCDColors.NeonYellow);
+      rendered_frenet_trihedra_[3 * i + 1] = NewUILine(XKCDColors.AquaBlue);
+      rendered_frenet_trihedra_[3 * i + 2] = NewUILine(XKCDColors.PurplePink);
+    }
   }
 
   private VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
     var result = new VectorLine(
-        lineName     : "rendered_prediction_",
+        lineName     : "RenderedTrajectory",
         linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : colour,
@@ -858,6 +900,18 @@ public partial class PrincipiaPluginAdapter
     result.vectorObject.renderer.castShadows = false;
     result.vectorObject.renderer.receiveShadows = false;
     result.layer = 31;
+    return result;
+  }
+
+  private VectorLine NewUILine(UnityEngine.Color colour) {
+    UnityEngine.Vector2[] line_points = new UnityEngine.Vector2[2];
+    var result = new VectorLine(
+        lineName     : "UILine",
+        linePoints   : line_points,
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : colour,
+        width        : 5,
+        lineType     : LineType.Discrete);
     return result;
   }
 
@@ -874,6 +928,10 @@ public partial class PrincipiaPluginAdapter
     for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
       Vector.DestroyLine(ref rendered_flight_plan_[i]);
     }
+    for (int i = 0; i < rendered_frenet_trihedra_.Length; ++i) {
+      Vector.DestroyLine(ref rendered_frenet_trihedra_[i]);
+    }
+    rendered_frenet_trihedra_ = new VectorLine[0];
     rendered_flight_plan_ = new VectorLine[0];
   }
 
