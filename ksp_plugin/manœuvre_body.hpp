@@ -151,6 +151,7 @@ Vector<double, InertialFrame>
 template <typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
+  CHECK_NOTNULL(coasting_trajectory_);
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
       coasting_trajectory_->Find(initial_time());
   CHECK(it != coasting_trajectory_->End());
