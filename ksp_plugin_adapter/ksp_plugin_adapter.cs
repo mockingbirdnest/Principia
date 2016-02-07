@@ -799,7 +799,7 @@ public partial class PrincipiaPluginAdapter
             Func<Vector3d, UnityEngine.Vector2> world_to_screen =
                 (world_position) =>
                     MapView.MapCamera.camera.WorldToScreenPoint(
-                          ScaledSpace.LocalToScaledSpace(world_position));
+                        ScaledSpace.LocalToScaledSpace(world_position));
             Action<int, XYZ> set_vector = (arrow_index, world_direction) => {
               VectorLine line =
                   rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
@@ -882,12 +882,9 @@ public partial class PrincipiaPluginAdapter
     }
     rendered_frenet_trihedra_ = new VectorLine[3 * (segments / 2)];
     for (int i = 0; i < segments / 2; ++i) {
-      rendered_frenet_trihedra_[3 * i] =
-          NewUILine(new UnityEngine.Color(0.84f, 1, 0));
-      rendered_frenet_trihedra_[3 * i + 1] =
-          NewUILine(new UnityEngine.Color(0, 0.84f, 0.84f));
-      rendered_frenet_trihedra_[3 * i + 2] =
-          NewUILine(new UnityEngine.Color(0.84f, 0, 0.84f));
+      rendered_frenet_trihedra_[3 * i] = NewUILine(XKCDColors.NeonYellow);
+      rendered_frenet_trihedra_[3 * i + 1] = NewUILine(XKCDColors.AquaBlue);
+      rendered_frenet_trihedra_[3 * i + 2] = NewUILine(XKCDColors.PurplePink);
     }
   }
 

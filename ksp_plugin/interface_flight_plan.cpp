@@ -94,6 +94,9 @@ NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin,
       manœuvre.FrenetFrame();
   Instant const current_time = plugin->CurrentTime();
   Instant const initial_time = manœuvre.initial_time();
+  // TODO(egg): a separate |Frame| for plotted geometry (for now plotting goes
+  // from |Barycentric| to itself, so it's easily forgotten), an utility for
+  // plotting |Vector|s like the one for |Position|s.
   auto const plotting_frame = plugin->GetPlottingFrame();
   OrthogonalMap<Frenet<Navigation>, World> frenet_to_plotted_world =
       barycentric_to_world *
