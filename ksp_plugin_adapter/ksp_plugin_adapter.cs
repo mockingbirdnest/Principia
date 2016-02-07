@@ -403,6 +403,7 @@ public partial class PrincipiaPluginAdapter
                       t    : celestial.orbit.epoch,
                       body : celestial.orbit.referenceBody));
       }
+      Fix631();
     }
 
     GameEvents.onShowUI.Add(ShowGUI);
@@ -436,6 +437,7 @@ public partial class PrincipiaPluginAdapter
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       SetRotatingFrameThresholds();
+      RemoveBuggyTidalLocking();
       Log.SetBufferedLogging(buffered_logging_);
       Log.SetSuppressedLogging(suppressed_logging_);
       Log.SetStderrLogging(stderr_logging_);
@@ -1274,6 +1276,7 @@ public partial class PrincipiaPluginAdapter
   private void ResetPlugin() {
     Cleanup();
     SetRotatingFrameThresholds();
+    RemoveBuggyTidalLocking();
     ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
     if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
@@ -1423,6 +1426,110 @@ public partial class PrincipiaPluginAdapter
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
                                 (float)Math.Max(body.timeWarpAltitudeLimits[1],
                                                 body.atmosphereDepth));
+  }
+
+  private void RemoveBuggyTidalLocking() {
+    ApplyToBodyTree(body => body.tidallyLocked = false);
+  }
+
+  // Deals with issue #631, unstability of the Jool system's resonance.
+  private void Fix631() {
+    // Check whether this looks like stock.
+    if (FlightGlobals.Bodies.Count < 15) {
+      return;
+    }
+    Func<CelestialBody, double> mean_longitude =
+        (celestial) =>
+            (celestial.orbit.LAN + celestial.orbit.argumentOfPeriapsis) *
+                180 / Math.PI +
+            celestial.orbit.meanAnomalyAtEpoch;
+    CelestialBody jool = FlightGlobals.Bodies[8];
+    CelestialBody laythe = FlightGlobals.Bodies[9];
+    CelestialBody vall = FlightGlobals.Bodies[10];
+    CelestialBody bop = FlightGlobals.Bodies[11];
+    CelestialBody tylo = FlightGlobals.Bodies[12];
+    CelestialBody pol = FlightGlobals.Bodies[14];
+    bool is_stock = true;
+    is_stock &= jool.orbitingBodies.Count == 5;
+    is_stock &= jool.name   == "Jool";
+    is_stock &= laythe.name == "Laythe";
+    is_stock &= vall.name   == "Vall";
+    is_stock &= bop.name    == "Bop";
+    is_stock &= tylo.name   == "Tylo";
+    is_stock &= pol.name    == "Pol";
+    is_stock &= laythe.referenceBody == jool;
+    is_stock &= vall.referenceBody   == jool;
+    is_stock &= tylo.referenceBody   == jool;
+    is_stock &= (float)laythe.orbit.semiMajorAxis == 27184000f;
+    is_stock &= (float)vall.orbit.semiMajorAxis   == 43152000f;
+    is_stock &= (float)tylo.orbit.semiMajorAxis   == 68500000f;
+    is_stock &= (float)laythe.orbit.inclination == 0f;
+    is_stock &= (float)vall.orbit.inclination   == 0f;
+    is_stock &= (float)tylo.orbit.inclination   == 0.025f;
+    is_stock &= (float)mean_longitude(laythe) == 3.14f;
+    is_stock &= (float)mean_longitude(vall)   == 0.9f;
+    is_stock &= (float)mean_longitude(tylo)   == 3.14f;
+    if (!is_stock) {
+      return;
+    }
+    const double φ = 1.61803398875;
+    // The |unmodified_orbits_| are unmodified in the sense that they are
+    // unaffected by the plugin's computation; they are the orbits from which
+    // we can reproducibly construct a fresh plugin.  In stock we modify them
+    // from their stock values for stability reasons.
+    unmodified_orbits_[vall] = new Orbit(
+        vall.orbit.inclination,
+        vall.orbit.eccentricity,
+        laythe.orbit.semiMajorAxis * Math.Pow(4 / φ, 2.0 / 3.0),
+        vall.orbit.LAN,
+        vall.orbit.argumentOfPeriapsis,
+        vall.orbit.meanAnomalyAtEpoch,
+        vall.orbit.epoch,
+        jool);
+    unmodified_orbits_[tylo] = new Orbit(
+        tylo.orbit.inclination,
+        tylo.orbit.eccentricity,
+        laythe.orbit.semiMajorAxis *
+            Math.Pow(16 / (φ * φ), 2.0 / 3.0),
+        tylo.orbit.LAN,
+        tylo.orbit.argumentOfPeriapsis,
+        tylo.orbit.meanAnomalyAtEpoch,
+        tylo.orbit.epoch,
+        jool);
+    unmodified_orbits_[bop] =
+        new Orbit(180.0 - bop.orbit.inclination,
+                  bop.orbit.eccentricity,
+                  pol.orbit.semiMajorAxis * Math.Pow(0.7, 2.0 / 3.0),
+                  bop.orbit.LAN,
+                  bop.orbit.argumentOfPeriapsis,
+                  bop.orbit.meanAnomalyAtEpoch,
+                  bop.orbit.epoch,
+                  jool);
+    // Vall and Tylo are tidally locked, so KSP will set their rotation period
+    // to their orbital period.  Since we disable tidal locking before starting
+    // the plugin (because tidal locking is buggy), we set their orbits here
+    // to set their rotation period to their orbital period, so that they still
+    // appear tidally locked (note that since we set the rotation to the Jacobi
+    // osculating orbital period, there remains some noticeable drift; it may be
+    // a good idea to compute the mean orbital period offline instead).  We do
+    // not do that for Bop (which is tidally locked in stock) to make it look
+    // like a more irregular satellite (in any case, Bop orbits retrograde, and
+    // it is not clear whether the game supports retrograde rotation).
+    foreach (CelestialBody body in new CelestialBody[]{vall, tylo}) {
+      body.orbit.inclination = unmodified_orbits_[body].inclination;
+      body.orbit.eccentricity = unmodified_orbits_[body].eccentricity;
+      body.orbit.semiMajorAxis = unmodified_orbits_[body].semiMajorAxis;
+      body.orbit.LAN = unmodified_orbits_[body].LAN;
+      body.orbit.argumentOfPeriapsis =
+          unmodified_orbits_[body].argumentOfPeriapsis;
+      body.orbit.meanAnomalyAtEpoch =
+          unmodified_orbits_[body].meanAnomalyAtEpoch;
+      body.orbit.epoch = unmodified_orbits_[body].epoch;
+      body.orbit.referenceBody = unmodified_orbits_[body].referenceBody;
+      body.orbit.Init();
+      body.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
+      body.CBUpdate();
+    }
   }
 
 }
