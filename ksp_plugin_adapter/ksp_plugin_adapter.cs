@@ -1377,7 +1377,7 @@ public partial class PrincipiaPluginAdapter
   // Deals with issue #631, unstability of the Jool system's resonance.
   private void Fix631() {
     // Check whether this looks like stock.
-    if (FlightGlobals.Bodies.Count < 14) {
+    if (FlightGlobals.Bodies.Count < 15) {
       return;
     }
     Func<CelestialBody, double> mean_longitude =
@@ -1414,10 +1414,15 @@ public partial class PrincipiaPluginAdapter
     if (!is_stock) {
       return;
     }
+    const double φ = 1.61803398875;
+    // The |unmodified_orbits_| are unmodified in the sense that they are
+    // unaffected by the plugin's computation; they are the orbits from which
+    // we can reproducibly construct a fresh plugin.  In stock we modify them
+    // from their stock values for stability reasons.
     unmodified_orbits_[vall] = new Orbit(
         vall.orbit.inclination,
         vall.orbit.eccentricity,
-        laythe.orbit.semiMajorAxis * Math.Pow(2.472135954999579, 2.0 / 3.0),
+        laythe.orbit.semiMajorAxis * Math.Pow(4 / φ, 2.0 / 3.0),
         vall.orbit.LAN,
         vall.orbit.argumentOfPeriapsis,
         vall.orbit.meanAnomalyAtEpoch,
@@ -1427,7 +1432,7 @@ public partial class PrincipiaPluginAdapter
         tylo.orbit.inclination,
         tylo.orbit.eccentricity,
         laythe.orbit.semiMajorAxis *
-            Math.Pow(2.472135954999579 * 2.472135954999579, 2.0 / 3.0),
+            Math.Pow(16 / (φ * φ), 2.0 / 3.0),
         tylo.orbit.LAN,
         tylo.orbit.argumentOfPeriapsis,
         tylo.orbit.meanAnomalyAtEpoch,
@@ -1442,7 +1447,16 @@ public partial class PrincipiaPluginAdapter
                   bop.orbit.meanAnomalyAtEpoch,
                   bop.orbit.epoch,
                   jool);
-    // Keep the rotation of vall and tylo equal to their orbital period.
+    // Vall and Tylo are tidally locked, so KSP will set their rotation period
+    // to their orbital period.  Since we disable tidal locking before starting
+    // the plugin (because tidal locking is buggy), we set their orbits here
+    // to set their rotation period to their orbital period, so that they still
+    // appear tidally locked (note that since we set the rotation to the Jacobi
+    // osculating orbital period, there remains some noticeable drift; it may be
+    // a good idea to compute the mean orbital period offline instead).  We do
+    // not do that for Bop (which is tidally locked in stock) to make it look
+    // like a more irregular satellite (in any case, Bop orbits retrograde, and
+    // it is not clear whether the game supports retrograde rotation).
     foreach (CelestialBody body in new CelestialBody[]{vall, tylo}) {
       body.orbit.inclination = unmodified_orbits_[body].inclination;
       body.orbit.eccentricity = unmodified_orbits_[body].eccentricity;
