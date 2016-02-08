@@ -596,7 +596,6 @@ public partial class PrincipiaPluginAdapter
           navball_.antiNormalVector.transform.localPosition =
               -navball_.normalVector.transform.localPosition;
           // Make the autopilot target our Frenet trihedron.
-          // TODO(egg): just the tangent for now.
           if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
               (Delegate)(FlightInputCallback)OverrideRSASTarget) {
             Log.Info("Prepending RSAS override");
