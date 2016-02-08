@@ -35,7 +35,8 @@ TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include
 INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional $(TEST_INCLUDES)
 SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic \
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
-	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")'
+	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
+	-DNDEBUG
 
 # detect OS
 UNAME_S := $(shell uname -s)
@@ -111,6 +112,7 @@ plugin: $(ADAPTER) $(LIB)
 ##### TESTS #####
 run_tests: tests
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
+	-astronomy/test
 	-base/test
 	-geometry/test
 	-integrators/test
