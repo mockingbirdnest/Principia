@@ -3,15 +3,22 @@
 
 #include "ksp_plugin/interface.hpp"
 
+#include <cmath>
+
 namespace principia {
 namespace interface {
 
+inline bool NaNIndependentEq(double const left, double const right) {
+  return (left == right) || (std::isnan(left) && std::isnan(right));
+}
+
 inline bool operator==(Burn const& left, Burn const& right) {
-  return left.thrust_in_kilonewtons == right.thrust_in_kilonewtons &&
-         left.specific_impulse_in_seconds_g0 ==
-             right.specific_impulse_in_seconds_g0 &&
+  return NaNIndependentEq(left.thrust_in_kilonewtons,
+                          right.thrust_in_kilonewtons) &&
+         NaNIndependentEq(left.specific_impulse_in_seconds_g0,
+                          right.specific_impulse_in_seconds_g0) &&
          left.frame == right.frame &&
-         left.initial_time == right.initial_time &&
+         NaNIndependentEq(left.initial_time, right.initial_time) &&
          left.delta_v == right.delta_v;
 }
 
@@ -26,14 +33,21 @@ inline bool operator==(NavigationFrameParameters const& left,
 inline bool operator==(NavigationManoeuvre const& left,
                        NavigationManoeuvre const& right) {
   return left.burn == right.burn &&
-         left.initial_mass_in_tonnes == right.initial_mass_in_tonnes &&
-         left.final_mass_in_tonnes == right.final_mass_in_tonnes &&
-         left.mass_flow == right.mass_flow &&
-         left.duration == right.duration &&
-         left.final_time == right.final_time &&
-         left.time_of_half_delta_v == right.time_of_half_delta_v &&
-         left.time_to_half_delta_v == right.time_to_half_delta_v &&
-         left.inertial_direction == right.inertial_direction;
+         NaNIndependentEq(left.initial_mass_in_tonnes,
+                          right.initial_mass_in_tonnes) &&
+         NaNIndependentEq(left.final_mass_in_tonnes,
+                          right.final_mass_in_tonnes) &&
+         NaNIndependentEq(left.mass_flow, right.mass_flow) &&
+         NaNIndependentEq(left.duration, right.duration) &&
+         NaNIndependentEq(left.final_time, right.final_time) &&
+         NaNIndependentEq(left.time_of_half_delta_v,
+                          right.time_of_half_delta_v) &&
+         NaNIndependentEq(left.time_to_half_delta_v,
+                          right.time_to_half_delta_v) &&
+         left.inertial_direction == right.inertial_direction &&
+         left.binormal == right.binormal &&
+         left.normal == right.normal &&
+         left.tangent == right.tangent;
 }
 
 inline bool operator==(QP const& left, QP const& right) {
@@ -41,12 +55,16 @@ inline bool operator==(QP const& left, QP const& right) {
 }
 
 inline bool operator==(WXYZ const& left, WXYZ const& right) {
-  return left.w == right.w && left.x == right.x &&
-         left.y == right.y && left.z == right.z;
+  return NaNIndependentEq(left.w, right.w) &&
+         NaNIndependentEq(left.x, right.x) &&
+         NaNIndependentEq(left.y, right.y) &&
+         NaNIndependentEq(left.z, right.z);
 }
 
 inline bool operator==(XYZ const& left, XYZ const& right) {
-  return left.x == right.x && left.y == right.y && left.z == right.z;
+  return NaNIndependentEq(left.x, right.x) &&
+         NaNIndependentEq(left.y, right.y) &&
+         NaNIndependentEq(left.z, right.z);
 }
 
 inline bool operator==(XYZSegment const& left, XYZSegment const& right) {

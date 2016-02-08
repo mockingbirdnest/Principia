@@ -27,6 +27,12 @@ bool Player::Play() {
   if (method == nullptr) {
     return false;
   }
+  // TODO(phl): We don't want to run this method, it directs the output to
+  // stderr.log.  Remove it from the protocol buffer at some point.  This
+  // will be incompatible with existing journals.
+  if (method->HasExtension(serialization::InitGoogleLogging::extension)) {
+    return true;
+  }
 
 #include "journal/player.generated.cc"
   return true;
