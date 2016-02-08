@@ -7,25 +7,16 @@ namespace ksp_plugin_adapter {
 internal class DifferentialSlider {
   public delegate string ValueFormatter(double value);
 
-  public DifferentialSlider(string label,
-                            string unit,
-                            double log10_lower_rate,
-                            double log10_upper_rate)
-      : this(label,
-             unit,
-             log10_lower_rate,
-             log10_upper_rate,
-             double.NegativeInfinity,
-             double.PositiveInfinity) {}
-
   // Rates are in units of |value| per real-time second.
-  public DifferentialSlider(string label,
-                            string unit,
-                            double log10_lower_rate,
-                            double log10_upper_rate,
-                            double min_value,
-                            double max_value,
-                            ValueFormatter formatter = null) {
+  public
+   DifferentialSlider(string label,
+                      string unit,
+                      double log10_lower_rate,
+                      double log10_upper_rate,
+                      double min_value = double.NegativeInfinity,
+                      double max_value = double.PositiveInfinity,
+                      ValueFormatter formatter = null,
+                      UnityEngine.Color? text_colour = null) {
     label_ = label;
     unit_ = unit;
     culture_= new CultureInfo("");
@@ -39,7 +30,8 @@ internal class DifferentialSlider {
     log10_upper_rate_ = log10_upper_rate;
     min_value_ = min_value;
     max_value_ = max_value;
-  }
+    text_colour_ = text_colour;
+}
 
   public double value { get; set; }
 
@@ -50,9 +42,14 @@ internal class DifferentialSlider {
     UnityEngine.GUI.skin = null;
     UnityEngine.GUILayout.BeginHorizontal();
 
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+    if (text_colour_.HasValue) {
+      style.normal.textColor = text_colour_.Value;
+    }
     UnityEngine.GUILayout.Label(
         text       : label_,
-        options    : UnityEngine.GUILayout.Width(75));
+        options    : UnityEngine.GUILayout.Width(75),
+        style      : style);
 
     var old_alignment = UnityEngine.GUI.skin.label.alignment;
     UnityEngine.GUI.skin.label.alignment = UnityEngine.TextAnchor.UpperRight;
@@ -114,6 +111,7 @@ internal class DifferentialSlider {
   private readonly double max_value_;
 
   private readonly ValueFormatter format_;
+  private readonly UnityEngine.Color? text_colour_;
 }
 
 }  // namespace ksp_plugin_adapter
