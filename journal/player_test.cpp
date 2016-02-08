@@ -16,6 +16,7 @@
 namespace principia {
 namespace journal {
 
+// The benchmark is only run if --gtest_filter=PlayerTest.Benchmarks
 void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     Player player(R"(P:\Public Mockingbird\Principia\JOURNAL.20160207-192649)");
@@ -28,9 +29,7 @@ void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   }
 }
 
-#if 0
 BENCHMARK(BM_PlayForReal);
-#endif
 
 #if 0
 // An example of how journalling may be used for debugging.  You must set |path|
@@ -61,15 +60,12 @@ void BM_PlayForDebug(benchmark::State& state) {  // NOLINT(runtime/references)
 BENCHMARK(BM_PlayForDebug);
 #endif
 
-class PlayerTest : public testing::Test {
+class PlayerTest : public ::testing::Test {
  protected:
-  static void SetUpTestCase() {
-    benchmark::RunSpecifiedBenchmarks();
-  }
-
   PlayerTest()
-      : test_name_(
-            testing::UnitTest::GetInstance()->current_test_info()->name()),
+      : test_info_(testing::UnitTest::GetInstance()->current_test_info()),
+        test_case_name_(test_info_->test_case_name()),
+        test_name_(test_info_->name()),
         plugin_(interface::principia__NewPlugin(1, 2)),
         recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
@@ -79,6 +75,8 @@ class PlayerTest : public testing::Test {
     Recorder::Deactivate();
   }
 
+  ::testing::TestInfo const* const test_info_;
+  std::string const test_case_name_;
   std::string const test_name_;
   std::unique_ptr<ksp_plugin::Plugin> plugin_;
   Recorder* recorder_;
@@ -105,6 +103,14 @@ TEST_F(PlayerTest, PlayTiny) {
     ++count;
   }
   EXPECT_EQ(2, count);
+}
+
+// This test (a.k.a. benchmark) is only run if the --gtest_filter flag names it
+// explicitly.
+TEST_F(PlayerTest, Benchmarks) {
+  if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
+    benchmark::RunSpecifiedBenchmarks();
+  }
 }
 
 }  // namespace journal
