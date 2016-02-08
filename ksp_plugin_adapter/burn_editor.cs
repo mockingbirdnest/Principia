@@ -11,18 +11,24 @@ class BurnEditor {
                     IntPtr plugin,
                     Vessel vessel,
                     double initial_time) {
-    Δv_tangent_ = new DifferentialSlider(label            : "Δv tangent",
-                                         unit             : "m / s",
-                                         log10_lower_rate : Log10ΔvLowerRate,
-                                         log10_upper_rate : Log10ΔvUpperRate);
-    Δv_normal_ = new DifferentialSlider(label            : "Δv normal",
-                                        unit             : "m / s",
-                                        log10_lower_rate : Log10ΔvLowerRate,
-                                        log10_upper_rate : Log10ΔvUpperRate);
-    Δv_binormal_ = new DifferentialSlider(label            : "Δv binormal",
-                                          unit             : "m / s",
-                                          log10_lower_rate : Log10ΔvLowerRate,
-                                          log10_upper_rate : Log10ΔvUpperRate);
+    Δv_tangent_ =
+        new DifferentialSlider(label            : "Δv tangent",
+                               unit             : "m / s",
+                               log10_lower_rate : Log10ΔvLowerRate,
+                               log10_upper_rate : Log10ΔvUpperRate,
+                               text_colour      : XKCDColors.NeonYellow);
+    Δv_normal_ =
+        new DifferentialSlider(label            : "Δv normal",
+                               unit             : "m / s",
+                               log10_lower_rate : Log10ΔvLowerRate,
+                               log10_upper_rate : Log10ΔvUpperRate,
+                               text_colour      : XKCDColors.AquaBlue);
+    Δv_binormal_ =
+        new DifferentialSlider(label            : "Δv binormal",
+                               unit             : "m / s",
+                               log10_lower_rate : Log10ΔvLowerRate,
+                               log10_upper_rate : Log10ΔvUpperRate,
+                               text_colour      : XKCDColors.PurplePink);
     initial_time_ =
         new DifferentialSlider(
                 label            : "t initial",
