@@ -123,9 +123,9 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
                    return (dof.position() - Frame::origin).coordinates().x;
                  });
   EXPECT_THAT(x_positions,
-              ElementsAre(-1 * Metre,
-                          VanishesBefore(1 * Metre, 1),
-                          1 * Metre));
+              ElementsAre(AlmostEquals(-1 * Metre, 0, 1),
+                          VanishesBefore(1 * Metre, 0, 1),
+                          AlmostEquals(1 * Metre, 0, 1)));
 }
 
 }  // namespace physics

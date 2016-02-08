@@ -97,7 +97,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   elements.mean_motion = 1.511718576836574E-04 * (Degree / Second);
   KeplerOrbit<ICRFJ2000Equator> moon_orbit_n(*earth, *moon, elements, date);
   EXPECT_THAT(moon_orbit_n.StateVectors(date).displacement(),
-              AlmostEquals(expected_displacement, 15));
+              AlmostEquals(expected_displacement, 13, 15));
   EXPECT_THAT(moon_orbit_n.StateVectors(date).velocity(),
               AlmostEquals(expected_velocity, 12));
 
