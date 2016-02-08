@@ -29,7 +29,6 @@ void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   }
 }
 
-// To prevent the benchmarks from running, set --benchmark_filter=none.
 BENCHMARK(BM_PlayForReal);
 
 #if 0
