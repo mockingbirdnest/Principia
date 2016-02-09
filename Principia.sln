@@ -97,6 +97,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "serialization", "serialization\serialization.vcxproj", "{5C482C18-BBAE-484D-A211-A25C86370061}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathematica", "mathematica\mathematica.vcxproj", "{83A31DA7-3F62-464D-9F6B-09CCE07A865A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stacktrace_decoder", "stacktrace_decoder\stacktrace_decoder.csproj", "{0AC374A7-36CD-40FC-B831-112389B6D9ED}"
 EndProject
