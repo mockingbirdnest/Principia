@@ -22,12 +22,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry", "geometry\geometry.vcxproj", "{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "testing_utilities\testing_utilities.vcxproj", "{2E28828E-8364-4962-A9FF-C20A72EB884C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "integrators", "integrators\integrators.vcxproj", "{86AFF67D-38CD-487E-B4C1-B93984A9ED0D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "benchmarks", "benchmarks\benchmarks.vcxproj", "{7B174B21-0837-4BEE-864E-08AD3C74046A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "physics", "physics\physics.vcxproj", "{41332E9A-729C-45C4-BDE1-A567608DADF2}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -52,6 +64,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_adapter", "ksp_p
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin", "ksp_plugin\ksp_plugin.vcxproj", "{A3F94607-2666-408F-AF98-0E47D61C98BB}"
 	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
 		{873680B3-2406-4A30-9EE7-569E9B9DA661} = {873680B3-2406-4A30-9EE7-569E9B9DA661}
 	EndProjectSection
 EndProject
@@ -61,6 +74,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin_test", "ksp_plug
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj", "{7E7CC89A-FC65-409C-A975-9C3A6A50786B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}"
 	ProjectSection(SolutionItems) = preProject
@@ -85,6 +101,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stacktrace_decoder", "stacktrace_decoder\stacktrace_decoder.csproj", "{0AC374A7-36CD-40FC-B831-112389B6D9ED}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics", "numerics\numerics.vcxproj", "{9E0AE155-47B1-4090-AF00-038AF87A876D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "benchmark_automation", "benchmark_automation\benchmark_automation.csproj", "{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}"
 EndProject
@@ -106,6 +125,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal", "journal\journal.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "tools\tools.vcxproj", "{873680B3-2406-4A30-9EE7-569E9B9DA661}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
