@@ -118,3 +118,6 @@ deps/
 
 # Mailboxes
 *.mbox
+
+# Generated files
+*.generated.*
