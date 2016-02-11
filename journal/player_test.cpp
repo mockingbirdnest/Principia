@@ -93,7 +93,7 @@ TEST_F(PlayerTest, Debug) {
     // |path| and fill the |m| protocol buffer.  This probably requires to make
     // RunIfAppropriate public.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\PrincipiaCrash2\JOURNAL.20160211-225301)";
+        R"(P:\Public Mockingbird\Principia\PrincipiaCrash2\JOURNAL.20160211-225301)";  // NOLINT
     Player player(path);
     int count = 0;
     while (player.Play()) {
