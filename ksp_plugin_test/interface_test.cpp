@@ -146,7 +146,8 @@ class InterfaceTest : public testing::Test {
   static void SetUpTestCase() {
     std::string const test_case_name =
         testing::UnitTest::GetInstance()->current_test_case()->name();
-    recorder_ = new journal::Recorder(test_case_name + ".journal.hex");
+    recorder_ = new journal::Recorder(test_case_name + ".journal.hex",
+                                      /*verbose=*/false);
     journal::Recorder::Activate(recorder_);
   }
 
@@ -221,7 +222,7 @@ TEST_F(InterfaceDeathTest, ActivateRecorder) {
   EXPECT_DEATH({
     journal::Recorder::Deactivate();
     // Fails because the glog directory doesn't exist.
-    principia__ActivateRecorder(true);
+    principia__ActivateRecorder(true, false);
   }, "glog.Principia.JOURNAL");
 }
 

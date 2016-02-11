@@ -34,7 +34,8 @@ struct LineAndIterator {
 #include "ksp_plugin/interface.generated.h"
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__ActivateRecorder(bool const activate);
+void CDECL principia__ActivateRecorder(bool const activate,
+                                       bool const verbose);
 
 bool operator==(Burn const& left, Burn const& right);
 bool operator==(NavigationFrameParameters const& left,

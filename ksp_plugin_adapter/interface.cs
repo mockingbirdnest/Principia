@@ -33,7 +33,8 @@ internal static partial class Interface {
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__ActivateRecorder",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ActivateRecorder(bool activate);
+  internal static extern void ActivateRecorder(bool activate,
+                                               bool verbose);
 
   // Manual overload needed to be able to pass |null| for a missing
   // |parent_index|.
