@@ -13,8 +13,8 @@ internal static class Log {
     Interface.InitGoogleLogging();
   }
 
-  internal static void ActivateRecorder(bool activate) {
-    Interface.ActivateRecorder(activate);
+  internal static void ActivateRecorder(bool activate, bool verbose) {
+    Interface.ActivateRecorder(activate, verbose);
   }
 
   internal static void SetBufferedLogging(int max_severity) {

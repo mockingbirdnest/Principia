@@ -67,7 +67,8 @@ class PlayerTest : public ::testing::Test {
         test_case_name_(test_info_->test_case_name()),
         test_name_(test_info_->name()),
         plugin_(interface::principia__NewPlugin(1, 2)),
-        recorder_(new Recorder(test_name_ + ".journal.hex")) {
+        recorder_(new Recorder(test_name_ + ".journal.hex",
+                               /*verbose=*/false)) {
     Recorder::Activate(recorder_);
   }
 

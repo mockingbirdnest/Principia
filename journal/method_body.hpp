@@ -74,11 +74,11 @@ typename P::Return Method<Profile>::Return(
 
 template<typename Profile>
 void Method<Profile>::LogMethodIfDebug() {
-#ifdef _DEBUG
-  LOG(INFO) << message_->GetDescriptor()->name() << "\n"
-            << message_->DebugString();
-  google::FlushLogFiles(google::INFO);
-#endif
+  if (Recorder::active_recorder_->verbose_) {
+    LOG(INFO) << message_->GetDescriptor()->name() << "\n"
+              << message_->DebugString();
+    google::FlushLogFiles(google::INFO);
+  }
 }
 
 }  // namespace journal

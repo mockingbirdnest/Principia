@@ -12,8 +12,10 @@ using base::UniqueBytes;
 
 namespace journal {
 
-Recorder::Recorder(std::experimental::filesystem::path const& path)
-    : stream_(path, std::ios::out) {
+Recorder::Recorder(std::experimental::filesystem::path const& path,
+                   bool const verbose)
+    : stream_(path, std::ios::out),
+      verbose_(verbose) {
   CHECK(!stream_.fail()) << path;
 }
 

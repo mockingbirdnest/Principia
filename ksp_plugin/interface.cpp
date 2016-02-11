@@ -168,8 +168,10 @@ void principia__InitGoogleLogging() {
 // If |activate| is true and there is no active journal, create one and
 // activate it.  If |activate| is false and there is an active journal,
 // deactivate it.  Does nothing if there is already a journal in the desired
-// state.
-void principia__ActivateRecorder(bool const activate) {
+// state.  |verbose| causes methods to be output in the INFO log before being
+// executed.
+void principia__ActivateRecorder(bool const activate,
+                                 bool const verbose) {
   // NOTE: Do not journal!  You'd end up with half a message in the journal and
   // that would cause trouble.
   if (activate && !journal::Recorder::IsActivated()) {
@@ -181,7 +183,8 @@ void principia__ActivateRecorder(bool const activate) {
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
     journal::Recorder* const recorder =
         new journal::Recorder(std::experimental::filesystem::path("glog") /
-                              "Principia" / name.str());
+                                  "Principia" / name.str(),
+                              verbose);
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();

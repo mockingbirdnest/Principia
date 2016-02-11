@@ -12,7 +12,8 @@ namespace journal {
 
 class Recorder {
  public:
-  explicit Recorder(std::experimental::filesystem::path const& path);
+  Recorder(std::experimental::filesystem::path const& path,
+           bool const verbose);
   ~Recorder();
 
   void Write(serialization::Method const& method);
@@ -23,6 +24,7 @@ class Recorder {
 
  private:
   std::ofstream stream_;
+  bool const verbose_;
 
   static Recorder* active_recorder_;
 
