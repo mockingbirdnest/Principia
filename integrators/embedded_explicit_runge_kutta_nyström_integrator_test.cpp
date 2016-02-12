@@ -27,6 +27,7 @@ using ::std::placeholders::_3;
 using ::testing::AllOf;
 using ::testing::Ge;
 using ::testing::Le;
+using ::testing::Lt;
 
 namespace integrators {
 
@@ -151,6 +152,75 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
             evaluations);
   EXPECT_EQ(1, initial_rejections);
   EXPECT_EQ(11, subsequent_rejections);
+}
+
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
+       MaxSteps) {
+  AdaptiveStepSizeIntegrator<ODE> const& integrator =
+      DormandElMikkawyPrince1986RKN434FM<Length>();
+  Length const x_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  Time const period = 2 * π * Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 10 * period;
+  Length const length_tolerance = 1 * Milli(Metre);
+  Speed const speed_tolerance = 1 * Milli(Metre) / Second;
+  // The number of steps if no step limit is set.
+  std::int64_t const steps_forward = 132;
+
+  int evaluations = 0;
+  auto const step_size_callback = [](bool tolerable) {};
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, &evaluations);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
+  problem.initial_state = &initial_state;
+  problem.t_final = t_final;
+  problem.append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+  AdaptiveStepSize<ODE> adaptive_step_size;
+  adaptive_step_size.first_time_step = t_final - t_initial;
+  adaptive_step_size.safety_factor = 0.9;
+  adaptive_step_size.tolerance_to_error_ratio =
+      std::bind(HarmonicOscillatorToleranceRatio,
+                _1, _2, length_tolerance, speed_tolerance, step_size_callback);
+  adaptive_step_size.max_steps = 100;
+
+  integrator.Solve(problem, adaptive_step_size);
+  EXPECT_THAT(AbsoluteError(
+                  x_initial * Cos(ω * (solution.back().time.value - t_initial)),
+                      solution.back().positions[0].value),
+              AllOf(Ge(8E-4 * Metre), Le(9E-4 * Metre)));
+  EXPECT_THAT(AbsoluteError(
+                  -v_amplitude *
+                      Sin(ω * (solution.back().time.value - t_initial)),
+                  solution.back().velocities[0].value),
+              AllOf(Ge(1E-3 * Metre / Second), Le(2E-3 * Metre / Second)));
+  EXPECT_THAT(solution.back().time.value, Lt(t_final));
+  EXPECT_EQ(100, solution.size());
+
+  // Check that a |max_steps| greater than or equal to the unconstrained number
+  // of steps has no effect.
+  for (std::int64_t const max_steps :
+       {steps_forward, std::numeric_limits<std::int64_t>::max()}) {
+    solution.clear();
+    adaptive_step_size.max_steps = steps_forward;
+    integrator.Solve(problem, adaptive_step_size);
+    EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
+                AllOf(Ge(3E-4 * Metre), Le(4E-4 * Metre)));
+    EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
+                AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
+    EXPECT_EQ(t_final, solution.back().time.value);
+    EXPECT_EQ(steps_forward, solution.size());
+  }
 }
 
 }  // namespace integrators
