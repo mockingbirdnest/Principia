@@ -151,16 +151,23 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   // first step of the FSAL case, |first_stage == 0|.
   int first_stage = 0;
 
+  // The number of steps already performed.
+  std::int64_t step_count = 0
+
   // No step size control on the first step.
   goto runge_kutta_nyström_step;
 
-  while (!at_end) {
+  // TODO(egg): if we wanted to we could templatize things to avoid having the
+  // counter when |!adaptive_step_size.max_steps|.  This would probably be
+  // needlessly convoluted.
+  while (!at_end && (!adaptive_step_size.max_steps ||
+                     step_count < *adaptive_step_size.max_steps)) {
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
-      // especially if we make the order compile-time.
+      // especially since we make the order compile-time.
       h *= adaptive_step_size.safety_factor *
                std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
 
@@ -228,6 +235,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       v_hat[k].Increment(Δv_hat[k]);
     }
     problem.append_state(current_state);
+    ++step_count;
   }
 }
 
