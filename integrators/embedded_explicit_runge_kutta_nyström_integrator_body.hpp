@@ -152,7 +152,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   int first_stage = 0;
 
   // The number of steps already performed.
-  std::int64_t step_count = 0
+  std::int64_t step_count = 0;
 
   // No step size control on the first step.
   goto runge_kutta_nyström_step;
