@@ -157,11 +157,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   // No step size control on the first step.
   goto runge_kutta_nyström_step;
 
-  // TODO(egg): if we wanted to we could templatize things to avoid having the
-  // counter when |!adaptive_step_size.max_steps|.  This would probably be
-  // needlessly convoluted.
-  while (!at_end && (!adaptive_step_size.max_steps ||
-                     step_count < *adaptive_step_size.max_steps)) {
+  while (!at_end && step_count < adaptive_step_size.max_steps) {
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {

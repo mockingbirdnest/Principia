@@ -210,7 +210,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   // Check that a |max_steps| greater than or equal to the unconstrained number
   // of steps has no effect.
   for (std::int64_t const max_steps :
-       {steps_forward, std::numeric_limits<std::int64_t>::max()}) {
+       {steps_forward, steps_forward + 1234}) {
     solution.clear();
     adaptive_step_size.max_steps = steps_forward;
     integrator.Solve(problem, adaptive_step_size);

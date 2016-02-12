@@ -4,6 +4,7 @@
 
 #include <experimental/optional>
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -93,9 +94,9 @@ struct AdaptiveStepSize {
   // In both cases, the new step size is chosen so as to try and make the result
   // of the next call to |tolerance_to_error_ratio| close to |safety_factor|.
   ToleranceToErrorRatio tolerance_to_error_ratio;
-  // If |max_steps|, integration will stop after |*max_steps| even if it has not
-  // reached |t_final|.
-  std::experimental::optional<std::int64_t> max_steps;
+  // Integration will stop after |*max_steps| even if it has not reached
+  // |t_final|.
+  std::int64_t max_steps = std::numeric_limits<std::int64_t>::max();
 };
 
 // A base class for integrators.
