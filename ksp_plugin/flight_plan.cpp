@@ -28,15 +28,28 @@ FlightPlan::FlightPlan(
   if (it.time() != initial_time_) {
     --it;
   }
+
+  // Create a fork for the first coasting trajectory.  We set a callback to be
+  // notified when it goes away.  This is not necessary for correctness, but it
+  // helps to detect bugs
   segments_.emplace_back(root->NewForkWithCopy(it.time()));
+  segments_.front()->set_on_destroy(
+      [this](not_null<DiscreteTrajectory<Barycentric> const*> trajectory) {
+        LOG(FATAL) << "Destroying the first segment of flight plan " << this;
+      });
+
   ResetLastSegment();  // TODO(phl): A NewForkWithoutCopy would be nicer.
   CoastLastSegment(final_time_);
 }
 
 FlightPlan::~FlightPlan() {
-  // Destroy in the right order.
-  while (segments_.size() > 1) {
-    segments_.pop_back();
+  // |segments_| is empty for a mock object.
+  if (!segments_.empty()) {
+    // Deleting the first fork deletes everything.
+    DiscreteTrajectory<Barycentric>* trajectory = segments_.front();
+    CHECK(!trajectory->is_root());
+    trajectory->set_on_destroy(nullptr);
+    trajectory->parent()->DeleteFork(&trajectory);
   }
 }
 
@@ -74,8 +87,8 @@ bool FlightPlan::Append(Burn burn) {
 void FlightPlan::RemoveLast() {
   CHECK(!manœuvres_.empty());
   manœuvres_.pop_back();
-  segments_.pop_back();  // Last coast.
-  segments_.pop_back();  // Last burn.
+  PopLastSegment();  // Last coast.
+  PopLastSegment();  // Last burn.
   ResetLastSegment();
   CoastLastSegment(final_time_);
 }
@@ -86,8 +99,8 @@ bool FlightPlan::ReplaceLast(Burn burn) {
       MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
   if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_)) {
     manœuvres_.pop_back();
-    segments_.pop_back();  // Last coast.
-    segments_.pop_back();  // Last burn.
+    PopLastSegment();  // Last coast.
+    PopLastSegment();  // Last burn.
     Append(std::move(manœuvre));
     return true;
   } else {
@@ -162,7 +175,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
   // The constructor has forked a segment.  Remove it.
-  flight_plan->segments_.clear();
+  flight_plan->segments_.front()->set_on_destroy(nullptr);
+  flight_plan->PopLastSegment();
   for (auto const& segment : message.segment()) {
     flight_plan->segments_.emplace_back(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
@@ -172,7 +186,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     flight_plan->manœuvres_.push_back(
         NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
     flight_plan->manœuvres_[i].set_coasting_trajectory(
-        flight_plan->segments_[2 * i].get());
+        flight_plan->segments_[2 * i]);
   }
   return std::move(flight_plan);
 }
@@ -191,7 +205,7 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
     NavigationManœuvre& manœuvre = manœuvres_.back();
     ResetLastSegment();
     CoastLastSegment(manœuvre.initial_time());
-    manœuvre.set_coasting_trajectory(segments_.back().get());
+    manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
     BurnLastSegment(manœuvre);
     AddSegment();
@@ -201,15 +215,14 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
 
 void FlightPlan::RecomputeSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
-  // order, since the destructor of each segment references the previous
-  // segment.
+  // order of the forks.
   while (segments_.size() > 1) {
-    segments_.pop_back();
+    PopLastSegment();
   }
   ResetLastSegment();
   for (auto& manœuvre : manœuvres_) {
     CoastLastSegment(manœuvre.initial_time());
-    manœuvre.set_coasting_trajectory(segments_.back().get());
+    manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
     BurnLastSegment(manœuvre);
     AddSegment();
@@ -219,7 +232,7 @@ void FlightPlan::RecomputeSegments() {
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (manœuvre.initial_time() < manœuvre.final_time()) {
-    ephemeris_->FlowWithAdaptiveStep(segments_.back().get(),
+    ephemeris_->FlowWithAdaptiveStep(segments_.back(),
                                      manœuvre.IntrinsicAcceleration(),
                                      length_integration_tolerance_,
                                      speed_integration_tolerance_,
@@ -230,7 +243,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
 
 void FlightPlan::CoastLastSegment(Instant const& final_time) {
   ephemeris_->FlowWithAdaptiveStep(
-      segments_.back().get(),
+      segments_.back(),
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       length_integration_tolerance_,
       speed_integration_tolerance_,
@@ -244,6 +257,13 @@ void FlightPlan::AddSegment() {
 
 void FlightPlan::ResetLastSegment() {
   segments_.back()->ForgetAfter(segments_.back()->Fork().time());
+}
+
+void FlightPlan::PopLastSegment() {
+  DiscreteTrajectory<Barycentric>* trajectory = segments_.back();
+  CHECK(!trajectory->is_root());
+  trajectory->parent()->DeleteFork(&trajectory);
+  segments_.pop_back();
 }
 
 Instant FlightPlan::start_of_last_coast() const {

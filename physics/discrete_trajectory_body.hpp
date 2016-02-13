@@ -56,10 +56,9 @@ DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
   }
 }
 
-template<typename Frame>
+template <typename Frame>
 void DiscreteTrajectory<Frame>::set_on_destroy(
-    std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
-        on_destroy) {
+    std::function<void(not_null<DiscreteTrajectory const*>)> on_destroy) {
   on_destroy_ = on_destroy;
 }
 
@@ -226,21 +225,6 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message);
 }
-
-template<typename Frame>
-void UniqueDiscreteTrajectory<Frame>::UniqueDiscreteTrajectoryDeleter(
-    DiscreteTrajectory<Frame>* trajectory) {
-  if (trajectory != nullptr && !trajectory->is_root()) {
-    trajectory->parent()->DeleteFork(&trajectory);
-  }
-}
-
-template<typename Frame>
-template<typename... T>
-UniqueDiscreteTrajectory<Frame>::UniqueDiscreteTrajectory(T&&... t)
-    : std::unique_ptr<DiscreteTrajectory<Frame>,
-                      std::function<void(DiscreteTrajectory<Frame>*)>>(
-          t..., &UniqueDiscreteTrajectoryDeleter) {}
 
 }  // namespace physics
 }  // namespace principia
