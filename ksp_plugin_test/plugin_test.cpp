@@ -589,7 +589,9 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  //plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+  EXPECT_DEATH({
+    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+  }, "Destroying the first segment of flight plan");
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 

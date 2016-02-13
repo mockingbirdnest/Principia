@@ -74,6 +74,14 @@ class FlightPlanTest : public testing::Test {
   std::unique_ptr<FlightPlan> flight_plan_;
 };
 
+using FlightPlanDeathTest = FlightPlanTest;
+
+TEST_F(FlightPlanDeathTest, DestroyingFirstSegment) {
+  EXPECT_DEATH({
+    root_.ForgetAfter(t0_ - 7 * Second);
+  }, "Destroying the first segment of flight plan");
+}
+
 TEST_F(FlightPlanTest, Append) {
   auto const first_burn = [this]() -> Burn {
     return {/*thrust=*/1 * Newton,
