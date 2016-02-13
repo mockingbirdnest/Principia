@@ -180,7 +180,7 @@ class Forkable {
   // at or after the fork time of this trajectory, if any.
   void DeleteAllForksAfter(Instant const& time);
 
-  // Deletes all forks for times less than or equal to |time|.  This trajectory
+  // Deletes all forks for times (strictly) less than |time|.  This trajectory
   // must be a root.
   void DeleteAllForksBefore(Instant const& time);
 

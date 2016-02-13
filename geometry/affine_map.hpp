@@ -32,8 +32,6 @@ class AffineMap {
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:
-  AffineMap() = default;
-
   Point<FromVector> from_origin_;
   Point<ToVector> to_origin_;
   LinearMap<FromFrame, ToFrame> linear_map_;

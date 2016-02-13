@@ -44,7 +44,9 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Identity() {
-  return AffineMap();
+  return AffineMap(Point<FromVector>(),
+                   Point<ToVector>(),
+                   LinearMap<FromFrame, ToFrame>::Identity());
 }
 
 template <typename FromFrame,

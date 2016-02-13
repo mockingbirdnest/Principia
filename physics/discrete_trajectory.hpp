@@ -76,7 +76,7 @@ class DiscreteTrajectory
 
   // Sets a callback to be run before this trajectory gets destroyed.
   void set_on_destroy(
-      std::function<void(not_null<DiscreteTrajectory<Frame>const*> const)>
+      std::function<void(not_null<DiscreteTrajectory const*> const)>
           on_destroy);
 
   // Returns an iterator at the last point of the trajectory.  Complexity is
@@ -108,8 +108,8 @@ class DiscreteTrajectory
   // must be at or after the fork time, if any.
   void ForgetAfter(Instant const& time);
 
-  // Removes all data for times less than or equal to |time|, as well as all
-  // child trajectories forked at times less than or equal to |time|.  This
+  // Removes all data for times (strictly) less than |time|, as well as all
+  // child trajectories forked at times (strictly) less than |time|.  This
   // trajectory must be a root.
   void ForgetBefore(Instant const& time);
 
@@ -140,7 +140,7 @@ class DiscreteTrajectory
 
   Timeline timeline_;
 
-  std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
+  std::function<void(not_null<DiscreteTrajectory const*> const)>
       on_destroy_;
 
   template<typename, typename>
@@ -151,22 +151,6 @@ class DiscreteTrajectory
   // For using the private constructor in maps.
   template<typename, typename>
   friend struct std::pair;
-};
-
-// An owning object convenient for deleting forks: if the owned trajectory is a
-// fork, it is deleted when the |UniqueDiscreteTrajectory| is deleted.  Beware,
-// any subsequent forks are deleted too by the semantics of |Forkable|.
-template<typename Frame>
-class UniqueDiscreteTrajectory
-    : public std::unique_ptr<
-                 DiscreteTrajectory<Frame>,
-                 std::function<void(DiscreteTrajectory<Frame>*)>> {
-  static void UniqueDiscreteTrajectoryDeleter(
-      DiscreteTrajectory<Frame>* trajectory);
-
- public:
-  template<typename... T>
-  UniqueDiscreteTrajectory(T&&... t);
 };
 
 }  // namespace physics

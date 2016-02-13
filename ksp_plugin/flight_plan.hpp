@@ -21,7 +21,6 @@ using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::DiscreteTrajectory;
-using physics::UniqueDiscreteTrajectory;
 using physics::Ephemeris;
 using quantities::Length;
 using quantities::Mass;
@@ -113,23 +112,26 @@ class FlightPlan {
   // Flows the last segment until |final_time| with no intrinsic acceleration.
   void CoastLastSegment(Instant const& final_time);
 
-  // Adds a trajectory to |segment_|, forked at the end of the last one.
+  // Adds a trajectory to |segments_|, forked at the end of the last one.
   void AddSegment();
   // Forgets the last segment after its fork.
   void ResetLastSegment();
+
+  // Deletes the last segment and removes it from |segments_|.
+  void PopLastSegment();
 
   Instant start_of_last_coast() const;
   Instant start_of_penultimate_coast() const;
 
   Mass const initial_mass_;
-  Instant const initial_time_;
+  Instant initial_time_;
   Instant final_time_;
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Each segment is a fork of the previous
   // one.
-  std::vector<UniqueDiscreteTrajectory<Barycentric>> segments_;
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<

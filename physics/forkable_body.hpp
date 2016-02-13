@@ -319,7 +319,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::DeleteAllForksAfter(Instant const& time) {
   // Get an iterator denoting the first entry with time > |time|.  Remove that
-  // entry and all the entries that follow it.  This preserve any entry with
+  // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   CHECK(is_root() ||
         time >= internal::ForkableTraits<Tr4jectory>::time(Fork().current_))
@@ -331,9 +331,9 @@ void Forkable<Tr4jectory, It3rator>::DeleteAllForksAfter(Instant const& time) {
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::DeleteAllForksBefore(Instant const& time) {
   CHECK(is_root()) << "DeleteAllForksBefore on a nonroot trajectory";
-  // Get an iterator denoting the first entry with time > |time|.  Remove all
-  // the entries that precede it.  This removes any entry with time == |time|.
-  auto it = children_.upper_bound(time);
+  // Get an iterator denoting the first entry with time >= |time|.  Remove all
+  // the entries that precede it.  This preserves any entry with time == |time|.
+  auto it = children_.lower_bound(time);
   children_.erase(children_.begin(), it);
 }
 
