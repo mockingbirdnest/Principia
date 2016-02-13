@@ -246,7 +246,7 @@ TEST_F(FlightPlanTest, Serialization) {
 
   std::unique_ptr<FlightPlan> flight_plan_read =
       FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());
-  EXPECT_EQ(t0_, flight_plan_read->initial_time());
+  EXPECT_EQ(t0_ - 2 * π * Second, flight_plan_read->initial_time());
   EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->final_time());
   EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
   EXPECT_EQ(5, flight_plan_read->number_of_segments());

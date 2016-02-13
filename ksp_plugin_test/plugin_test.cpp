@@ -365,9 +365,11 @@ TEST_F(PluginTest, Serialization) {
   auto const& vessel_0_history =
       message.vessel(0).vessel().history_and_prolongation().history();
 #if defined(WE_LOVE_228)
-  EXPECT_EQ(1, vessel_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(sync_time, 6) - Instant()) / (1 * Second),
+  EXPECT_EQ(2, vessel_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(sync_time, 3) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
+  EXPECT_EQ((HistoryTime(sync_time, 6) - Instant()) / (1 * Second),
+            vessel_0_history.timeline(1).instant().scalar().magnitude());
 #else
   EXPECT_EQ(3, vessel_0_history.timeline_size());
   EXPECT_EQ((HistoryTime(sync_time, 4) - Instant()) / (1 * Second),

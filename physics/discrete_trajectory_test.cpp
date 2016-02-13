@@ -540,9 +540,11 @@ TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
   positions = Positions(*massive_trajectory_);
   velocities = Velocities(*massive_trajectory_);
   times = Times(*massive_trajectory_);
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t3_));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t2_, t3_));
   // Don't use fork, it is dangling.
 }
 
