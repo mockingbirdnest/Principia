@@ -127,7 +127,7 @@ TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libg
 GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gmock_main.cc $(DEP_DIR)/googletest/src/gtest-all.cc
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
-test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))
+test_objects = $(patsubst %.cpp,%.o,$(wildcard $(@D)/*.cpp))
 ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
 journal_objects = journal/profiles.o journal/recorder.o
 
