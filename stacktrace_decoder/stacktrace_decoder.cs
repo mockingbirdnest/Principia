@@ -38,13 +38,13 @@ class StackTraceDecoder {
         base_address_regex.Match(stream.ReadLine()).Groups[1].ToString();
     Int64 base_address = Convert.ToInt64(base_address_string, 16);
     var stack_regex = new Regex(
-        @"^\s+@\s+[0-9A-F]+\s+\(No symbol\) \[0x([0-9A-F]+)\]");
+        @"@\s+[0-9A-F]+\s+\(No symbol\) \[0x([0-9A-F]+)\]");
     Match stack_match;
     do {
       stack_match = stack_regex.Match(stream.ReadLine());
     } while (!stack_match.Success);
     var file_regex = new Regex(
-        @"file\s+:\s+.*\\principia\\([a-z_]+)\\([a-z_]+\.[ch]pp)");
+        @"file\s+:\s+.*\\principia\\([a-z_]+)\\(\S+)");
     var line_regex = new Regex(@"line\s+:\s+([0-9]+)");
     for (;
          stack_match.Success;
