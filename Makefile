@@ -95,7 +95,7 @@ $(LIB_DIR):
 $(VERSION_HEADER): .git
 	./generate_version_header.sh
 
-%.generated.h %.generated.cc %.generated.cs: tools
+$(GENERATED_SOURCES): tools
 	tools/tools generate_profiles
 
 %.pb.cc %.pb.h: %.proto
