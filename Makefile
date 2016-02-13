@@ -137,8 +137,9 @@ journal_objects = journal/profiles.o journal/recorder.o
 ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
+# We cannot link the player test because we do not have the benchmarks.  We only build the recorder test.
 .SECONDEXPANSION:
-journal/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journal/recorder_test.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 .SECONDEXPANSION:
