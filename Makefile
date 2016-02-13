@@ -81,8 +81,8 @@ $(ADAPTER):
 $(TOOLS_BIN): $(PROTO_HEADERS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS)
 	$(CXX) $(LDFLAGS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS) -o $(TOOLS_BIN) $(LIBS)
 
-$(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_OBJECTS) $(OBJECTS)
-	$(CXX) -shared $(LDFLAGS) $(PROTO_OBJECTS) $(OBJECTS) -o $(LIB) $(LIBS) 
+$(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_OBJECTS) $(ksp_plugin_objects) $(journal_objects)
+	$(CXX) -shared $(LDFLAGS) $(PROTO_OBJECTS) $(ksp_plugin_objects) $(journal_objects) -o $(LIB) $(LIBS)
 
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
