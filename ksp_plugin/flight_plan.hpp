@@ -124,7 +124,7 @@ class FlightPlan {
   Instant start_of_penultimate_coast() const;
 
   Mass const initial_mass_;
-  Instant const initial_time_;
+  Instant initial_time_;
   Instant final_time_;
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;

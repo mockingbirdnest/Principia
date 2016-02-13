@@ -108,8 +108,8 @@ class DiscreteTrajectory
   // must be at or after the fork time, if any.
   void ForgetAfter(Instant const& time);
 
-  // Removes all data for times less than or equal to |time|, as well as all
-  // child trajectories forked at times less than or equal to |time|.  This
+  // Removes all data for times (strictly) less than |time|, as well as all
+  // child trajectories forked at times (strictly) less than |time|.  This
   // trajectory must be a root.
   void ForgetBefore(Instant const& time);
 

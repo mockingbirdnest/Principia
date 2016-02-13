@@ -123,7 +123,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   this->DeleteAllForksAfter(time);
 
   // Get an iterator denoting the first entry with time > |time|.  Remove that
-  // entry and all the entries that follow it.  This preserve any entry with
+  // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   auto const it = timeline_.upper_bound(time);
   timeline_.erase(it, timeline_.end());
@@ -133,9 +133,9 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   this->DeleteAllForksBefore(time);
 
-  // Get an iterator denoting the first entry with time > |time|.  Remove all
-  // the entries that precede it.  This removes any entry with time == |time|.
-  auto it = timeline_.upper_bound(time);
+  // Get an iterator denoting the first entry with time >= |time|.  Remove all
+  // the entries that precede it.  This preserves any entry with time == |time|.
+  auto it = timeline_.lower_bound(time);
   timeline_.erase(timeline_.begin(), it);
 }
 

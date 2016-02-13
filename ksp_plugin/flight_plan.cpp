@@ -24,9 +24,10 @@ FlightPlan::FlightPlan(
       length_integration_tolerance_(length_integration_tolerance),
       speed_integration_tolerance_(speed_integration_tolerance) {
   CHECK(final_time_ >= initial_time_);
-  auto it = root->LowerBound(initial_time);
+  auto it = root->LowerBound(initial_time_);
   if (it.time() != initial_time_) {
     --it;
+    initial_time_ = it.time();
   }
 
   // Create a fork for the first coasting trajectory.  We set a callback to be

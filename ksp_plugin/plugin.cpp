@@ -282,12 +282,25 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, history_time_);
-  ephemeris_->ForgetBefore(t);
+
+  // If |t| is after the start of the flight plan of some vessel, adjust it
+  // to avoid destroying the trajectories of that flight plan.
+  Instant forgetting_time = t;
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    if (vessel->has_flight_plan()) {
+      forgetting_time =
+          std::max(forgetting_time,
+                   vessel->flight_plan()->initial_time());
+    }
+  }
+
+  ephemeris_->ForgetBefore(forgetting_time);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     // Only forget the synchronized vessels, the others don't have an history.
     if (unsynchronized_vessels_.count(vessel.get()) == 0) {
-      vessel->mutable_history()->ForgetBefore(t);
+      vessel->mutable_history()->ForgetBefore(forgetting_time);
     }
   }
 }

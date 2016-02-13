@@ -537,7 +537,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   }, "Check failed: t < history_time_");
 }
 
-TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeWithFlightPlan) {
+TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
   Instant const t = initial_time_ + 100 * Second;
 
@@ -548,6 +548,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(AppendToDiscreteTrajectory());
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
@@ -563,9 +564,9 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->SetVesselStateOffset(guid,
-                               RelativeDegreesOfFreedom<AliceSun>(
-                                   satellite_initial_displacement_,
-                                   satellite_initial_velocity_));
+                                RelativeDegreesOfFreedom<AliceSun>(
+                                    satellite_initial_displacement_,
+                                    satellite_initial_velocity_));
   auto const satellite = plugin_->GetVessel(guid);
 
   Instant const& sync_time = initial_time_ + 1 * Second;
@@ -589,9 +590,9 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  EXPECT_DEATH({
-    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
-  }, "Destroying the first segment of flight plan");
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 1));
+  EXPECT_LE(satellite->history().Begin().time(),
+            satellite->flight_plan()->initial_time());
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 
