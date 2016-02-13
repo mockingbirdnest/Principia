@@ -56,7 +56,7 @@ DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
   }
 }
 
-template <typename Frame>
+template<typename Frame>
 void DiscreteTrajectory<Frame>::set_on_destroy(
     std::function<void(not_null<DiscreteTrajectory const*>)> on_destroy) {
   on_destroy_ = on_destroy;
