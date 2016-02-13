@@ -8,9 +8,12 @@ PROTO_SOURCES := $(wildcard */*.proto)
 PROTO_CC_SOURCES := $(PROTO_SOURCES:.proto=.pb.cc)
 PROTO_HEADERS := $(PROTO_SOURCES:.proto=.pb.h)
 
-GENERATED_SOURCES := journal/profiles.generated.h journal/profiles.generated.cc
+GENERATED_SOURCES := journal/profiles.generated.h \
+	journal/profiles.generated.cc \
+	journal/player.generated.cc \
+	ksp_plugin/interface.generated.h \
+	ksp_plugin_adapter/interface.generated.cs
 
-OBJECTS := $(CPP_SOURCES:.cpp=.o)
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
 TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
 TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
@@ -61,6 +64,7 @@ LDFLAGS := $(SHARED_ARGS)
 .PHONY: all adapter generated_sources lib tests tools check plugin run_tests clean
 .PRECIOUS: %.o
 .DEFAULT_GOAL := plugin
+.SUFFIXES:
 
 ##### CONVENIENCE TARGETS #####
 all: $(LIB) $(ADAPTER) tests
@@ -75,13 +79,14 @@ tools: $(TOOLS_BIN)
 check: run_tests
 
 ##### CORE #####
-$(ADAPTER):
+$(ADAPTER): $(GENERATED_SOURCES)
 	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
-$(TOOLS_BIN): $(PROTO_HEADERS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS)
+$(TOOLS_BIN): $(PROTO_OBJECTS) $(TOOLS_OBJECTS)
 	$(CXX) $(LDFLAGS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS) -o $(TOOLS_BIN) $(LIBS)
 
-$(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_OBJECTS) $(ksp_plugin_objects) $(journal_objects)
+.SECONDEXPANSION:
+$(LIB): $(PROTO_OBJECTS) $$(ksp_plugin_objects) $$(journal_objects) $(LIB_DIR)
 	$(CXX) -shared $(LDFLAGS) $(PROTO_OBJECTS) $(ksp_plugin_objects) $(journal_objects) -o $(LIB) $(LIBS)
 
 $(LIB_DIR):
@@ -90,19 +95,22 @@ $(LIB_DIR):
 $(VERSION_HEADER): .git
 	./generate_version_header.sh
 
-generated_sources: tools
+%.generated.h %.generated.cc %.generated.cs: tools
 	tools/tools generate_profiles
-
-$(OBJECTS): %.o: %.cpp generated_sources
-	$(CXX) $(CXXFLAGS) $< -o $@
 
 %.pb.cc %.pb.h: %.proto
 	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
 
-%.o: %.cpp
+%.pb.o: %.pb.cc $(VERSION_HEADER) $(PROTO_HEADERS)
 	$(CXX) $(CXXFLAGS) $< -o $@ 
 
-%.o: %.cc $(PROTO_HEADERS)
+tools/%.o: tools/%.cpp $(VERSION_HEADER) $(PROTO_HEADERS)
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+%.o: %.cpp $(VERSION_HEADER) $(PROTO_HEADERS) $(GENERATED_SOURCES)
+	$(CXX) $(CXXFLAGS) $< -o $@ 
+
+%.o: %.cc $(VERSION_HEADER) $(PROTO_HEADERS) $(GENERATED_SOURCES)
 	$(CXX) $(CXXFLAGS) $< -o $@ 
 
 ##### DISTRIBUTION #####
@@ -147,12 +155,9 @@ journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journa
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 ##### CLEAN #####
-clean_test-%:
-	rm -f $(test_objects)
-
-clean:  $(addprefix clean_test-,$(TEST_DIRS))
+clean:
 	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_BINS) $(TOOLS_BIN) $(TOOLS_OBJECTS) $(LIB) $(ksp_plugin_objects)
+	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(TEST_BINS) $(TOOLS_BIN) $(LIB) */*.o
 
 ##### EVERYTHING #####
 # Compiles everything, but does not link anything.  Used to check standard compliance on code that we don't want to run on *nix.
