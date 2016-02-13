@@ -101,7 +101,7 @@ $(GENERATED_SOURCES): $(TOOLS_BIN) serialization/journal.proto
 %.pb.cc %.pb.h: %.proto
 	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
 
-%.pb.o: %.pb.cc $(VERSION_HEADER) $(PROTO_HEADERS)
+%.pb.o: %.pb.cc $(PROTO_HEADERS)
 	$(CXX) $(CXXFLAGS) $< -o $@ 
 
 tools/%.o: tools/%.cpp $(VERSION_HEADER) $(PROTO_HEADERS)
