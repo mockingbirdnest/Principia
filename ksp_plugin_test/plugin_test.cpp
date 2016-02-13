@@ -16,6 +16,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/kepler_orbit.hpp"
+#include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -31,6 +32,7 @@ using geometry::Permutation;
 using geometry::Trivector;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
+using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidTransformation;
 using quantities::Abs;
@@ -42,6 +44,7 @@ using quantities::si::Day;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Minute;
+using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::AstronomicalUnit;
 using testing_utilities::AbsoluteError;
@@ -59,6 +62,7 @@ using ::testing::InSequence;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Ref;
+using ::testing::Return;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -82,6 +86,16 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
   }
   *result_listener << "has no intrinsic acceleration";
   return false;
+}
+
+ACTION(AppendToDiscreteTrajectories) {
+  for (auto const& trajectory : arg0) {
+    trajectory->Append(arg3, {Barycentric::origin, Velocity<Barycentric>()});
+  }
+}
+
+ACTION(AppendToDiscreteTrajectory) {
+  arg0->Append(arg5, {Barycentric::origin, Velocity<Barycentric>()});
 }
 
 }  // namespace
@@ -299,9 +313,9 @@ TEST_F(PluginTest, Serialization) {
         /*epoch=*/t).elements_at_epoch();
     elements.semimajor_axis = std::experimental::nullopt;
     plugin->InsertCelestialJacobiKeplerian(index,
-                                            parent_index,
-                                            elements,
-                                            std::move(body));
+                                           parent_index,
+                                           elements,
+                                           std::move(body));
   }
   plugin->EndInitialization();
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
@@ -519,6 +533,62 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
     plugin_->AdvanceTime(t, Angle());
     plugin_->ForgetAllHistoriesBefore(t);
   }, "Check failed: t < history_time_");
+}
+
+TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeWithFlightPlan) {
+  GUID const guid = "Test Satellite";
+  Instant const t = initial_time_ + 100 * Second;
+
+  auto* const mock_dynamic_frame =
+      new MockDynamicFrame<Barycentric, Navigation>();
+  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillRepeatedly(AppendToDiscreteTrajectory());
+  EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
+      .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
+      .WillRepeatedly(Return(
+          RigidMotion<Barycentric, Navigation>(
+              RigidTransformation<Barycentric, Navigation>::Identity(),
+              AngularVelocity<Barycentric>(),
+              Velocity<Barycentric>())));
+  EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
+      .WillRepeatedly(Return(
+          MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
+
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->SetVesselStateOffset(guid,
+                               RelativeDegreesOfFreedom<AliceSun>(
+                                   satellite_initial_displacement_,
+                                   satellite_initial_velocity_));
+  auto const satellite = plugin_->GetVessel(guid);
+
+  Instant const& sync_time = initial_time_ + 1 * Second;
+  plugin_->AdvanceTime(sync_time, Angle());
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+
+  auto const burn = [this, mock_dynamic_frame, sync_time]() -> Burn {
+    return {/*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            std::unique_ptr<MockDynamicFrame<Barycentric, Navigation>>(
+                mock_dynamic_frame),
+            /*initial_time=*/HistoryTime(sync_time, 4),
+            Velocity<Frenet<Navigation>>(
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  };
+  plugin_->CreateFlightPlan(guid,
+                            /*final_time=*/HistoryTime(sync_time, 8),
+                            /*initial_mass=*/1 * Kilogram);
+  satellite->flight_plan()->Append(burn());
+
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+  EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
