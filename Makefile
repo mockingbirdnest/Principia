@@ -61,8 +61,8 @@ CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
 
 
-.PHONY: all adapter generated_sources lib tests tools check plugin run_tests clean
-.PRECIOUS: %.o
+.PHONY: all adapter lib tests tools check plugin run_tests clean
+.PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES)
 .DEFAULT_GOAL := plugin
 .SUFFIXES:
 
@@ -95,7 +95,7 @@ $(LIB_DIR):
 $(VERSION_HEADER): .git
 	./generate_version_header.sh
 
-$(GENERATED_SOURCES): tools
+$(GENERATED_SOURCES): $(TOOLS_BIN) serialization/journal.proto
 	tools/tools generate_profiles
 
 %.pb.cc %.pb.h: %.proto
