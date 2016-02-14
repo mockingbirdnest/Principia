@@ -25,6 +25,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
@@ -52,6 +53,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -73,8 +75,9 @@ class EphemerisTest : public testing::Test {
 
   EphemerisTest() {
     solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
-        SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
+        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" /
+            "initial_state_jd_2433282_500000000.proto.txt");
     t0_ = solar_system_.epoch();
   }
 
@@ -85,12 +88,22 @@ class EphemerisTest : public testing::Test {
           initial_state,
       not_null<Position<ICRFJ2000Equator>*> const centre_of_mass,
       not_null<Time*> const period) {
+    // Make the bodies non-oblate so that the system can be computed explicitly.
+    serialization::GravityModel::Body earth_gravity_model =
+        solar_system_.gravity_model_message("Earth");
+    earth_gravity_model.clear_j2();
+    earth_gravity_model.clear_reference_radius();
+    serialization::GravityModel::Body moon_gravity_model =
+        solar_system_.gravity_model_message("Moon");
+    moon_gravity_model.clear_j2();
+    moon_gravity_model.clear_reference_radius();
+
     // Create the Moon before the Earth to exercise a bug caused by the order of
     // pointers differing from the order of bodies (don't ask).
-    auto moon = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-        solar_system_.gravity_model_message("Moon"));
-    auto earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-        solar_system_.gravity_model_message("Earth"));
+    auto moon =
+        SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(moon_gravity_model);
+    auto earth =
+        SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(earth_gravity_model);
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
@@ -98,8 +111,8 @@ class EphemerisTest : public testing::Test {
         Displacement<ICRFJ2000Equator>({0 * Metre, 0 * Metre, 0 * Metre});
     Position<ICRFJ2000Equator> const q2 = ICRFJ2000Equator::origin +
         Displacement<ICRFJ2000Equator>({0 * Metre,
-                                           4E8 * Metre,
-                                           0 * Metre});
+                                        4E8 * Metre,
+                                        0 * Metre});
     Length const semi_major_axis = (q1 - q2).Norm();
     *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (earth->gravitational_parameter() +
@@ -231,13 +244,13 @@ TEST_F(EphemerisTest, Forget) {
   MassiveBody const* const moon = bodies[1].get();
 
   Ephemeris<ICRFJ2000Equator>
-    ephemeris(
-      std::move(bodies),
-      initial_state,
-      t0_,
-      McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-      period / 10,
-      5 * Milli(Metre));
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+          period / 10,
+          5 * Milli(Metre));
 
   ephemeris.Prolong(t0_ + 16 * period);
 
@@ -318,16 +331,16 @@ TEST_F(EphemerisTest, Moon) {
 
   EXPECT_THAT(moon_positions.size(), Eq(101));
   EXPECT_THAT(moon_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v, 12));
+              AlmostEquals(0.25 * period * v, 362));
   EXPECT_THAT(moon_positions[25].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v, 11));
+              AlmostEquals(0.50 * period * v, 135));
   EXPECT_THAT(moon_positions[50].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v, 18));
+              AlmostEquals(0.75 * period * v, 543));
   EXPECT_THAT(moon_positions[75].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v, 13));
+              AlmostEquals(1.00 * period * v, 383));
   EXPECT_THAT(moon_positions[100].coordinates().y, Eq(q));
 }
 
@@ -401,16 +414,16 @@ TEST_F(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 9));
+              AlmostEquals(0.25 * period * v_earth, 551));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 9));
+              AlmostEquals(0.50 * period * v_earth, 230));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 4));
+              AlmostEquals(0.75 * period * v_earth, 413));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 6));
+              AlmostEquals(1.00 * period * v_earth, 622));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
@@ -425,9 +438,9 @@ TEST_F(EphemerisTest, EarthProbe) {
     probe_positions.push_back(it.degrees_of_freedom().position() -
                               ICRFJ2000Equator::origin);
   }
-  EXPECT_THAT(probe_positions.size(), Eq(11));
+  EXPECT_THAT(probe_positions.size(), Eq(476));
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 1));
+              AlmostEquals(1.00 * period * v_probe, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 }
@@ -515,16 +528,16 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 9));
+              AlmostEquals(0.25 * period * v_earth, 551));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 9));
+              AlmostEquals(0.50 * period * v_earth, 230));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 4));
+              AlmostEquals(0.75 * period * v_earth, 413));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 6));
+              AlmostEquals(1.00 * period * v_earth, 622));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
@@ -559,9 +572,9 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
 #endif
   EXPECT_THAT(probe1_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe1, 2));
+              AlmostEquals(1.00 * period * v_probe1, 15));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe2, 2));
+              AlmostEquals(1.00 * period * v_probe2, 0));
   EXPECT_THAT(probe1_positions.back().coordinates().y,
               Eq(q_probe1));
   EXPECT_THAT(probe2_positions.back().coordinates().y,
@@ -818,13 +831,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 
   auto earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
       solar_system_.gravity_model_message("Earth"));
-  Velocity<ICRFJ2000Equator> const v({0 * SIUnit<Speed>(),
-                                         0 * SIUnit<Speed>(),
-                                         0 * SIUnit<Speed>()});
-  Position<ICRFJ2000Equator> const q = ICRFJ2000Equator::origin +
-      Vector<Length, ICRFJ2000Equator>({0 * AstronomicalUnit,
-                                           0 * AstronomicalUnit,
-                                           0 * AstronomicalUnit});
+  Velocity<ICRFJ2000Equator> const v;
+  Position<ICRFJ2000Equator> const q = ICRFJ2000Equator::origin;
 
   bodies.push_back(std::move(earth));
   initial_state.emplace_back(q, v);
@@ -860,8 +868,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           Position<ICRFJ2000Equator>>(),
       t0_ + kDuration);
 
-  Speed const v_elephant =
+  Speed const v_elephant_x =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
+  Speed const v_elephant_y =
+      trajectory.last().degrees_of_freedom().velocity().coordinates().y;
   std::vector<Displacement<ICRFJ2000Equator>> elephant_positions;
   std::vector<Vector<Acceleration, ICRFJ2000Equator>> elephant_accelerations;
   for (DiscreteTrajectory<ICRFJ2000Equator>::Iterator it =
@@ -874,19 +884,25 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
         ephemeris.ComputeGravitationalAccelerationOnMasslessBody(
             &trajectory, it.time()));
   }
-  EXPECT_THAT(elephant_positions.size(), Eq(8));
+
+  // The small residual in x comes from the fact that the cosine of the
+  // declination (90 degrees) is not exactly zero, so the axis of our Earth is
+  // slightly tilted.  This greatly annoys the elephant.
+  EXPECT_THAT(elephant_positions.size(), Eq(9));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
-              AlmostEquals(kDuration * v_elephant, 0));
+              VanishesBefore(1 * Metre, 0));
+  EXPECT_THAT(elephant_positions.back().coordinates().y,
+              AlmostEquals(kDuration * v_elephant_y, 0));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           kEarthPolarRadius), 8E-7);
 
-  EXPECT_THAT(elephant_accelerations.size(), Eq(8));
+  EXPECT_THAT(elephant_accelerations.size(), Eq(9));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
-              AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+              VanishesBefore(1 * Metre / Second / Second, 0));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
-                          -9.832 * SIUnit<Acceleration>()), 4.9E-5);
+                          -9.832 * SIUnit<Acceleration>()), 6.7E-6);
 }
 
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {

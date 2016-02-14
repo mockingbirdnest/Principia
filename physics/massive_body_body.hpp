@@ -73,6 +73,7 @@ inline void MassiveBody::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
   parameters_.gravitational_parameter_.WriteToMessage(
       message->mutable_gravitational_parameter());
+  parameters_.radius_.WriteToMessage(message->mutable_radius());
 }
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
@@ -102,7 +103,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
                                   message.gravitational_parameter()),
                               message.has_radius()
                                   ? Length::ReadFromMessage(message.radius())
-                                  : 1 * Metre);
+                                  : Length());
 
   // First see if we have an extension that has a frame and if so read the
   // frame.  Need to take care of pre-Brouwer compatibility.
