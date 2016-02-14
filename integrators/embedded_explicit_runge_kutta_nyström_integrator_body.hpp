@@ -239,7 +239,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     problem.append_state(current_state);
     ++step_count;
     if (step_count == adaptive_step_size.max_steps && !at_end) {
-      return TerminationCondition::MaxSteps;
+      return TerminationCondition::ReachedMaximalStepCount;
     }
   }
   return TerminationCondition::Done;

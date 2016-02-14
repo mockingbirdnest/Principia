@@ -134,7 +134,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
 
 enum class TerminationCondition {
   Done,
-  MaxSteps,
+  ReachedMaximalStepCount,
   VanishingStepSize,
 };
 

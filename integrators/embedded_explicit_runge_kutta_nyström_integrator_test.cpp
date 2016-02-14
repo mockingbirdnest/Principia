@@ -120,10 +120,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, length_tolerance, speed_tolerance, step_size_callback);
 
-  {
-    auto const outcome = integrator.Solve(problem, adaptive_step_size);
-    EXPECT_EQ(TerminationCondition::Done, outcome);
-  }
+  auto outcome = integrator.Solve(problem, adaptive_step_size);
+  EXPECT_EQ(TerminationCondition::Done, outcome);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(3E-4 * Metre), Le(4E-4 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
@@ -148,10 +146,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                 _1, _2, 2 * length_tolerance, 2 * speed_tolerance,
                 step_size_callback);
 
-  {
-    auto const outcome = integrator.Solve(problem, adaptive_step_size);
-    EXPECT_EQ(TerminationCondition::Done, outcome);
-  }
+  outcome = integrator.Solve(problem, adaptive_step_size);
+  EXPECT_EQ(TerminationCondition::Done, outcome);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(1E-3 * Metre), Le(2E-3 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
@@ -205,10 +201,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                 _1, _2, length_tolerance, speed_tolerance, step_size_callback);
   adaptive_step_size.max_steps = 100;
 
-  {
-    auto const outcome = integrator.Solve(problem, adaptive_step_size);
-    EXPECT_EQ(TerminationCondition::MaxSteps, outcome);
-  }
+  auto const outcome = integrator.Solve(problem, adaptive_step_size);
+  EXPECT_EQ(TerminationCondition::ReachedMaximalStepCount, outcome);
   EXPECT_THAT(AbsoluteError(
                   x_initial * Cos(ω * (solution.back().time.value - t_initial)),
                       solution.back().positions[0].value),
@@ -238,8 +232,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   }
 }
 
-TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
-       Singularity) {
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   // Integrating the position of an ideal rocket,
   //   x"(t) = m' I_sp / m(t),
   //   x'(0) = 0, x(0) = 0,
