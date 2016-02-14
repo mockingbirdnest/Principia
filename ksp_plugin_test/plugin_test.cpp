@@ -204,14 +204,16 @@ class PluginTest : public testing::Test {
       if (index != SolarSystemFactory::kSun) {
         parent_index = SolarSystemFactory::parent(index);
       }
+      std::string const name = SolarSystemFactory::name(index);
       plugin_->InsertCelestialAbsoluteCartesian(
           index,
           parent_index,
           id_icrf_barycentric_(
               solar_system_->initial_state(SolarSystemFactory::name(index))),
           make_not_null_unique<MassiveBody>(
-              solar_system_->gravitational_parameter(
-                  SolarSystemFactory::name(index))));
+              MassiveBody::Parameters(
+                  solar_system_->gravitational_parameter(name),
+                  solar_system_->mean_radius(name))));
     }
   }
 
@@ -295,19 +297,22 @@ TEST_F(PluginTest, Serialization) {
   for (int index = SolarSystemFactory::kSun + 1;
        index <= SolarSystemFactory::kLastMajorBody;
        ++index) {
+    std::string const name = SolarSystemFactory::name(index);
     Index const parent_index = SolarSystemFactory::parent(index);
+    std::string const parent_name = SolarSystemFactory::name(parent_index);
     RelativeDegreesOfFreedom<Barycentric> const state_vectors =
         Identity<ICRFJ2000Equator, Barycentric>()(
-            solar_system_->initial_state(SolarSystemFactory::name(index)) -
-            solar_system_->initial_state(
-                SolarSystemFactory::name(parent_index)));
+            solar_system_->initial_state(name) -
+            solar_system_->initial_state(parent_name));
     Instant const t;
     auto body = make_not_null_unique<MassiveBody>(
-        solar_system_->gravitational_parameter(
-            SolarSystemFactory::name(index)));
+        MassiveBody::Parameters(
+            solar_system_->gravitational_parameter(name),
+            solar_system_->mean_radius(name)));
     KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
-        /*primary=*/MassiveBody(solar_system_->gravitational_parameter(
-            SolarSystemFactory::name(parent_index))),
+        /*primary=*/MassiveBody(
+            {solar_system_->gravitational_parameter(parent_name),
+             solar_system_->mean_radius(parent_name)}),
         /*secondary=*/*body,
         state_vectors,
         /*epoch=*/t).elements_at_epoch();
@@ -427,19 +432,25 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       /*celestial_index=*/1,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(2 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<MassiveBody>(
+          MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>(),
+                                  1 * Metre)));
   elements.semimajor_axis = 1 * Metre;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/2,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<MassiveBody>(
+          MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>(),
+                                  2 * Metre)));
   elements.mean_anomaly = π * Radian;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/3,
       /*parent_index=*/1,
       elements,
-      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<MassiveBody>(
+          MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>(),
+                                  3 * Metre)));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
