@@ -68,29 +68,36 @@ double const kEarthJ2 = 0.00108262545;
 
 class EphemerisTest : public testing::Test {
  protected:
-  using EarthMoonOrbitPlane = Frame<serialization::Frame::TestTag,
-                                    serialization::Frame::TEST, true>;
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
+
+  EphemerisTest() {
+    solar_system_.Initialize(
+        SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
+        SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
+    t0_ = solar_system_.epoch();
+  }
 
   void SetUpEarthMoonSystem(
       not_null<std::vector<not_null<std::unique_ptr<MassiveBody const>>>*> const
           bodies,
-      not_null<std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>>*> const
+      not_null<std::vector<DegreesOfFreedom<ICRFJ2000Equator>>*> const
           initial_state,
-      not_null<Position<EarthMoonOrbitPlane>*> const centre_of_mass,
+      not_null<Position<ICRFJ2000Equator>*> const centre_of_mass,
       not_null<Time*> const period) {
     // Create the Moon before the Earth to exercise a bug caused by the order of
     // pointers differing from the order of bodies (don't ask).
-    auto moon = std::make_unique<MassiveBody const>(7.3459E22 * Kilogram);
-    auto earth = std::make_unique<MassiveBody const>(5.9721986E24 * Kilogram);
+    auto moon = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
+        solar_system_.gravity_model_message("Moon"));
+    auto earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
+        solar_system_.gravity_model_message("Earth"));
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    Position<EarthMoonOrbitPlane> const q1 = EarthMoonOrbitPlane::origin +
-        Displacement<EarthMoonOrbitPlane>({0 * Metre, 0 * Metre, 0 * Metre});
-    Position<EarthMoonOrbitPlane> const q2 = EarthMoonOrbitPlane::origin +
-        Displacement<EarthMoonOrbitPlane>({0 * Metre,
+    Position<ICRFJ2000Equator> const q1 = ICRFJ2000Equator::origin +
+        Displacement<ICRFJ2000Equator>({0 * Metre, 0 * Metre, 0 * Metre});
+    Position<ICRFJ2000Equator> const q2 = ICRFJ2000Equator::origin +
+        Displacement<ICRFJ2000Equator>({0 * Metre,
                                            4E8 * Metre,
                                            0 * Metre});
     Length const semi_major_axis = (q1 - q2).Norm();
@@ -98,13 +105,13 @@ class EphemerisTest : public testing::Test {
                                (earth->gravitational_parameter() +
                                 moon->gravitational_parameter()));
     *centre_of_mass =
-        Barycentre<Position<EarthMoonOrbitPlane>, Mass>(
+        Barycentre<Position<ICRFJ2000Equator>, Mass>(
             {q1, q2}, {earth->mass(), moon->mass()});
-    Velocity<EarthMoonOrbitPlane> const v1(
+    Velocity<ICRFJ2000Equator> const v1(
         {-2 * π * (q1 - *centre_of_mass).Norm() / *period,
          0 * SIUnit<Speed>(),
          0 * SIUnit<Speed>()});
-    Velocity<EarthMoonOrbitPlane> const v2(
+    Velocity<ICRFJ2000Equator> const v2(
         {2 * π * (q2 - *centre_of_mass).Norm() / *period,
          0 * SIUnit<Speed>(),
          0 * SIUnit<Speed>()});
@@ -115,27 +122,28 @@ class EphemerisTest : public testing::Test {
     initial_state->emplace_back(q2, v2);
   }
 
+  SolarSystem<ICRFJ2000Equator> solar_system_;
   Instant t0_;
 };
 
 TEST_F(EphemerisTest, ProlongSpecialCases) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 100,
           5 * Milli(Metre));
   EXPECT_THAT(
       ephemeris.planetary_integrator(),
-      Ref(McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>()));
+      Ref(McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>()));
 
   EXPECT_EQ(t0_ - std::numeric_limits<double>::infinity() * Second,
             ephemeris.t_max());
@@ -161,32 +169,32 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
 // The canonical Earth-Moon system, tuned to produce circular orbits.
 TEST_F(EphemerisTest, EarthMoon) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 100,
           5 * Milli(Metre));
 
   ephemeris.Prolong(t0_ + period);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& moon_trajectory =
       *ephemeris.trajectory(moon);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
-  std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
+  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
+  std::vector<Displacement<ICRFJ2000Equator>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
       earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
@@ -198,7 +206,7 @@ TEST_F(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(earth_positions[75].coordinates().y), Lt(2E-2 * Metre));
   EXPECT_THAT(Abs(earth_positions[100].coordinates().x), Lt(3E-2 * Metre));
 
-  std::vector<Displacement<EarthMoonOrbitPlane>> moon_positions;
+  std::vector<Displacement<ICRFJ2000Equator>> moon_positions;
   for (int i = 0; i <= 100; ++i) {
     moon_positions.push_back(
       moon_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
@@ -214,28 +222,28 @@ TEST_F(EphemerisTest, EarthMoon) {
 // Test the behavior of ForgetAfter and ForgetBefore on the Earth-Moon system.
 TEST_F(EphemerisTest, Forget) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
     ephemeris(
       std::move(bodies),
       initial_state,
       t0_,
-      McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+      McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
       period / 10,
       5 * Milli(Metre));
 
   ephemeris.Prolong(t0_ + 16 * period);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
     *ephemeris.trajectory(earth);
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& moon_trajectory =
     *ephemeris.trajectory(moon);
 
   Instant t_max = ephemeris.t_max();
@@ -271,8 +279,8 @@ TEST_F(EphemerisTest, Forget) {
 // The Moon alone.  It moves in straight line.
 TEST_F(EphemerisTest, Moon) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
@@ -281,31 +289,31 @@ TEST_F(EphemerisTest, Moon) {
 
   MassiveBody const* const moon = bodies[0].get();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 100,
           5 * Milli(Metre));
 
   ephemeris.Prolong(t0_ + period);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& moon_trajectory =
       *ephemeris.trajectory(moon);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
-  DegreesOfFreedom<EarthMoonOrbitPlane> const moon_degrees_of_freedom =
+  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
+  DegreesOfFreedom<ICRFJ2000Equator> const moon_degrees_of_freedom =
       moon_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
   Length const q = (moon_degrees_of_freedom.position() -
-                    EarthMoonOrbitPlane::origin).coordinates().y;
+                    ICRFJ2000Equator::origin).coordinates().y;
   Speed const v = moon_degrees_of_freedom.velocity().coordinates().x;
-  std::vector<Displacement<EarthMoonOrbitPlane>> moon_positions;
+  std::vector<Displacement<ICRFJ2000Equator>> moon_positions;
   for (int i = 0; i <= 100; ++i) {
     moon_positions.push_back(
         moon_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
-            EarthMoonOrbitPlane::origin);
+            ICRFJ2000Equator::origin);
   }
 
   EXPECT_THAT(moon_positions.size(), Eq(101));
@@ -329,8 +337,8 @@ TEST_F(EphemerisTest, Moon) {
 TEST_F(EphemerisTest, EarthProbe) {
   Length const kDistance = 1E9 * Metre;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
@@ -338,30 +346,30 @@ TEST_F(EphemerisTest, EarthProbe) {
   initial_state.erase(initial_state.begin() + 1);
 
   MassiveBody const* const earth = bodies[0].get();
-  Position<EarthMoonOrbitPlane> const earth_position =
+  Position<ICRFJ2000Equator> const earth_position =
       initial_state[0].position();
-  Velocity<EarthMoonOrbitPlane> const earth_velocity =
+  Velocity<ICRFJ2000Equator> const earth_velocity =
       initial_state[0].velocity();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 100,
           5 * Milli(Metre));
 
   MasslessBody probe;
-  DiscreteTrajectory<EarthMoonOrbitPlane> trajectory;
+  DiscreteTrajectory<ICRFJ2000Equator> trajectory;
   trajectory.Append(t0_,
-                    DegreesOfFreedom<EarthMoonOrbitPlane>(
-                        earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                    DegreesOfFreedom<ICRFJ2000Equator>(
+                        earth_position + Vector<Length, ICRFJ2000Equator>(
                             {0 * Metre, kDistance, 0 * Metre}),
                         earth_velocity));
   auto const intrinsic_acceleration =
       [earth, kDistance](Instant const& t) {
-        return Vector<Acceleration, EarthMoonOrbitPlane>(
+        return Vector<Acceleration, ICRFJ2000Equator>(
             {0 * SIUnit<Acceleration>(),
              earth->gravitational_parameter() / (kDistance * kDistance),
              0 * SIUnit<Acceleration>()});
@@ -372,23 +380,23 @@ TEST_F(EphemerisTest, EarthProbe) {
                                  1E-9 * Metre,
                                  2.6E-15 * Metre / Second,
                                  DormandElMikkawyPrince1986RKN434FM<
-                                     Position<EarthMoonOrbitPlane>>(),
+                                     Position<ICRFJ2000Equator>>(),
                                  t0_ + period);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
-  DegreesOfFreedom<EarthMoonOrbitPlane> const earth_degrees_of_freedom =
+  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
+  DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
       earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
   Length const q_earth = (earth_degrees_of_freedom.position() -
-                          EarthMoonOrbitPlane::origin).coordinates().y;
+                          ICRFJ2000Equator::origin).coordinates().y;
   Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
-  std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
+  std::vector<Displacement<ICRFJ2000Equator>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
         earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
-            EarthMoonOrbitPlane::origin);
+            ICRFJ2000Equator::origin);
   }
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
@@ -406,16 +414,16 @@ TEST_F(EphemerisTest, EarthProbe) {
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
-                         EarthMoonOrbitPlane::origin).coordinates().y;
+                         ICRFJ2000Equator::origin).coordinates().y;
   Speed const v_probe =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
-  std::vector<Displacement<EarthMoonOrbitPlane>> probe_positions;
-  for (DiscreteTrajectory<EarthMoonOrbitPlane>::Iterator it =
+  std::vector<Displacement<ICRFJ2000Equator>> probe_positions;
+  for (DiscreteTrajectory<ICRFJ2000Equator>::Iterator it =
            trajectory.Begin();
        it != trajectory.End();
        ++it) {
     probe_positions.push_back(it.degrees_of_freedom().position() -
-                              EarthMoonOrbitPlane::origin);
+                              ICRFJ2000Equator::origin);
   }
   EXPECT_THAT(probe_positions.size(), Eq(11));
   EXPECT_THAT(probe_positions.back().coordinates().x,
@@ -430,8 +438,8 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   Length const kDistance1 = 1E9 * Metre;
   Length const kDistance2 = 3E9 * Metre;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
@@ -439,45 +447,45 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   initial_state.erase(initial_state.begin() + 1);
 
   MassiveBody const* const earth = bodies[0].get();
-  Position<EarthMoonOrbitPlane> const earth_position =
+  Position<ICRFJ2000Equator> const earth_position =
       initial_state[0].position();
-  Velocity<EarthMoonOrbitPlane> const earth_velocity =
+  Velocity<ICRFJ2000Equator> const earth_velocity =
       initial_state[0].velocity();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 100,
           5 * Milli(Metre));
 
   MasslessBody probe1;
-  DiscreteTrajectory<EarthMoonOrbitPlane> trajectory1;
+  DiscreteTrajectory<ICRFJ2000Equator> trajectory1;
   trajectory1.Append(t0_,
-                     DegreesOfFreedom<EarthMoonOrbitPlane>(
-                         earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                     DegreesOfFreedom<ICRFJ2000Equator>(
+                         earth_position + Vector<Length, ICRFJ2000Equator>(
                              {0 * Metre, kDistance1, 0 * Metre}),
                          earth_velocity));
   auto const intrinsic_acceleration1 =
       [earth, kDistance1](Instant const& t) {
-        return Vector<Acceleration, EarthMoonOrbitPlane>(
+        return Vector<Acceleration, ICRFJ2000Equator>(
             {0 * SIUnit<Acceleration>(),
              earth->gravitational_parameter() / (kDistance1 * kDistance1),
              0 * SIUnit<Acceleration>()});
       };
 
   MasslessBody probe2;
-  DiscreteTrajectory<EarthMoonOrbitPlane> trajectory2;
+  DiscreteTrajectory<ICRFJ2000Equator> trajectory2;
   trajectory2.Append(t0_,
-                     DegreesOfFreedom<EarthMoonOrbitPlane>(
-                         earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                     DegreesOfFreedom<ICRFJ2000Equator>(
+                         earth_position + Vector<Length, ICRFJ2000Equator>(
                              {0 * Metre, -kDistance2, 0 * Metre}),
                          earth_velocity));
   auto const intrinsic_acceleration2 =
       [earth, kDistance2](Instant const& t) {
-        return Vector<Acceleration, EarthMoonOrbitPlane>(
+        return Vector<Acceleration, ICRFJ2000Equator>(
             {0 * SIUnit<Acceleration>(),
              -earth->gravitational_parameter() / (kDistance2 * kDistance2),
              0 * SIUnit<Acceleration>()});
@@ -489,20 +497,20 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
       period / 1000,
       t0_ + period);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+  ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
 
-  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
-  DegreesOfFreedom<EarthMoonOrbitPlane> const earth_degrees_of_freedom =
+  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
+  DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
       earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
   Length const q_earth = (earth_degrees_of_freedom.position() -
-                          EarthMoonOrbitPlane::origin).coordinates().y;
+                          ICRFJ2000Equator::origin).coordinates().y;
   Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
-  std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
+  std::vector<Displacement<ICRFJ2000Equator>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
         earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
-            EarthMoonOrbitPlane::origin);
+            ICRFJ2000Equator::origin);
   }
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
@@ -520,28 +528,28 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
-                     EarthMoonOrbitPlane::origin).coordinates().y;
+                     ICRFJ2000Equator::origin).coordinates().y;
   Length const q_probe2 = (trajectory2.last().degrees_of_freedom().position() -
-                     EarthMoonOrbitPlane::origin).coordinates().y;
+                     ICRFJ2000Equator::origin).coordinates().y;
   Speed const v_probe1 =
       trajectory1.last().degrees_of_freedom().velocity().coordinates().x;
   Speed const v_probe2 =
       trajectory2.last().degrees_of_freedom().velocity().coordinates().x;
-  std::vector<Displacement<EarthMoonOrbitPlane>> probe1_positions;
-  std::vector<Displacement<EarthMoonOrbitPlane>> probe2_positions;
-  for (DiscreteTrajectory<EarthMoonOrbitPlane>::Iterator it =
+  std::vector<Displacement<ICRFJ2000Equator>> probe1_positions;
+  std::vector<Displacement<ICRFJ2000Equator>> probe2_positions;
+  for (DiscreteTrajectory<ICRFJ2000Equator>::Iterator it =
            trajectory1.Begin();
        it != trajectory1.End();
        ++it) {
     probe1_positions.push_back(it.degrees_of_freedom().position() -
-                               EarthMoonOrbitPlane::origin);
+                               ICRFJ2000Equator::origin);
   }
-  for (DiscreteTrajectory<EarthMoonOrbitPlane>::Iterator it =
+  for (DiscreteTrajectory<ICRFJ2000Equator>::Iterator it =
            trajectory2.Begin();
        it != trajectory2.End();
        ++it) {
     probe2_positions.push_back(it.degrees_of_freedom().position() -
-                               EarthMoonOrbitPlane::origin);
+                               ICRFJ2000Equator::origin);
   }
 #if defined(WE_LOVE_228)
   EXPECT_THAT(probe1_positions.size(), Eq(2));
@@ -745,20 +753,20 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
 
 TEST_F(EphemerisTest, Serialization) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
-  Position<EarthMoonOrbitPlane> centre_of_mass;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 100,
           5 * Milli(Metre));
   ephemeris.Prolong(t0_ + period);
@@ -772,7 +780,7 @@ TEST_F(EphemerisTest, Serialization) {
   ephemeris.WriteToMessage(&message);
 
   auto const ephemeris_read =
-      Ephemeris<EarthMoonOrbitPlane>::ReadFromMessage(message);
+      Ephemeris<ICRFJ2000Equator>::ReadFromMessage(message);
   MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
   MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
 
@@ -806,72 +814,62 @@ TEST_F(EphemerisTest, Serialization) {
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Time const kDuration = 1 * Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
 
-  auto* earth = new OblateBody<EarthMoonOrbitPlane>(
-                        5.9721986E24 * Kilogram,
-                        RotatingBody<EarthMoonOrbitPlane>::Parameters(
-                            1 * Radian,
-                            t0_,
-                            AngularVelocity<EarthMoonOrbitPlane>({
-                                0 * Radian / Second,
-                                0 * Radian / Second,
-                                4 * Radian / Second})),
-                        OblateBody<EarthMoonOrbitPlane>::Parameters(
-                            kEarthJ2,
-                            kEarthPolarRadius));
-  Velocity<EarthMoonOrbitPlane> const v({0 * SIUnit<Speed>(),
+  auto earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
+      solar_system_.gravity_model_message("Earth"));
+  Velocity<ICRFJ2000Equator> const v({0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>(),
                                          0 * SIUnit<Speed>()});
-  Position<EarthMoonOrbitPlane> const q = EarthMoonOrbitPlane::origin +
-      Vector<Length, EarthMoonOrbitPlane>({0 * AstronomicalUnit,
+  Position<ICRFJ2000Equator> const q = ICRFJ2000Equator::origin +
+      Vector<Length, ICRFJ2000Equator>({0 * AstronomicalUnit,
                                            0 * AstronomicalUnit,
                                            0 * AstronomicalUnit});
 
-  bodies.push_back(std::unique_ptr<MassiveBody const>(earth));
+  bodies.push_back(std::move(earth));
   initial_state.emplace_back(q, v);
 
-  Position<EarthMoonOrbitPlane> const earth_position =
+  Position<ICRFJ2000Equator> const earth_position =
       initial_state[0].position();
-  Velocity<EarthMoonOrbitPlane> const earth_velocity =
+  Velocity<ICRFJ2000Equator> const earth_velocity =
       initial_state[0].velocity();
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           kDuration / 100,
           5 * Milli(Metre));
 
   MasslessBody elephant;
-  DiscreteTrajectory<EarthMoonOrbitPlane> trajectory;
+  DiscreteTrajectory<ICRFJ2000Equator> trajectory;
   trajectory.Append(t0_,
-                    DegreesOfFreedom<EarthMoonOrbitPlane>(
-                        earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                    DegreesOfFreedom<ICRFJ2000Equator>(
+                        earth_position + Vector<Length, ICRFJ2000Equator>(
                             {0 * Metre, 0 * Metre, kEarthPolarRadius}),
                         earth_velocity));
 
   ephemeris.FlowWithAdaptiveStep(
       &trajectory,
-      Ephemeris<EarthMoonOrbitPlane>::kNoIntrinsicAcceleration,
+      Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
       1E-9 * Metre,
       2.6E-15 * Metre / Second,
       DormandElMikkawyPrince1986RKN434FM<
-          Position<EarthMoonOrbitPlane>>(),
+          Position<ICRFJ2000Equator>>(),
       t0_ + kDuration);
 
   Speed const v_elephant =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
-  std::vector<Displacement<EarthMoonOrbitPlane>> elephant_positions;
-  std::vector<Vector<Acceleration, EarthMoonOrbitPlane>> elephant_accelerations;
-  for (DiscreteTrajectory<EarthMoonOrbitPlane>::Iterator it =
+  std::vector<Displacement<ICRFJ2000Equator>> elephant_positions;
+  std::vector<Vector<Acceleration, ICRFJ2000Equator>> elephant_accelerations;
+  for (DiscreteTrajectory<ICRFJ2000Equator>::Iterator it =
            trajectory.Begin();
        it != trajectory.End();
        ++it) {
     elephant_positions.push_back(it.degrees_of_freedom().position() -
-                                 EarthMoonOrbitPlane::origin);
+                                 ICRFJ2000Equator::origin);
     elephant_accelerations.push_back(
         ephemeris.ComputeGravitationalAccelerationOnMasslessBody(
             &trajectory, it.time()));
@@ -901,7 +899,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Mass const m2 = 3 * SolarMass;
   Mass const m3 = 4 * SolarMass;
 
-  auto const b0 = new OblateBody<World>(m0,
+  auto const b0 = new OblateBody<World>({m0, Length()},
                                         RotatingBody<World>::Parameters(
                                             1 * Radian,
                                             t0_,
@@ -911,9 +909,9 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                                 4 * Radian / Second})),
                                         OblateBody<World>::Parameters(
                                             kJ2, kRadius));
-  auto const b1 = new MassiveBody(m1);
-  auto const b2 = new MassiveBody(m2);
-  auto const b3 = new MassiveBody(m3);
+  auto const b1 = new MassiveBody({m1, Length()});
+  auto const b2 = new MassiveBody({m2, Length()});
+  auto const b3 = new MassiveBody({m3, Length()});
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;

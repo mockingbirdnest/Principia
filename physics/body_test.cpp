@@ -16,6 +16,7 @@ namespace principia {
 using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::Normalize;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using ::testing::IsNull;
@@ -40,7 +41,9 @@ class BodyTest : public testing::Test {
                             2 * Radian / Second,
                             5 * Radian / Second});
     auto const rotating_body =
-        RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),
+        RotatingBody<F>(MassiveBody::Parameters(
+                            17 * SIUnit<GravitationalParameter>(),
+                            1 * Metre),
                         typename RotatingBody<F>::Parameters(
                             3 * Radian,
                             Instant() + 4 * Second,
@@ -68,15 +71,19 @@ class BodyTest : public testing::Test {
                               5 * Radian / Second});
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
-      MassiveBody(42 * SIUnit<GravitationalParameter>());
+      MassiveBody({42 * SIUnit<GravitationalParameter>(), 1 * Metre});
   RotatingBody<World> rotating_body_ =
-      RotatingBody<World>(17 * SIUnit<GravitationalParameter>(),
+      RotatingBody<World>(MassiveBody::Parameters(
+                              17 * SIUnit<GravitationalParameter>(),
+                              1 * Metre),
                           RotatingBody<World>::Parameters(
                               3 * Radian,
                               Instant() + 4 * Second,
                               angular_velocity_));
   OblateBody<World> oblate_body_ =
-      OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
+      OblateBody<World>(MassiveBody::Parameters(
+                            17 * SIUnit<GravitationalParameter>(),
+                            1 * Metre),
                         RotatingBody<World>::Parameters(
                             3 * Radian,
                             Instant() + 4 * Second,

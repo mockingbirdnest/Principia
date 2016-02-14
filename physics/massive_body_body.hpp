@@ -16,22 +16,27 @@
 namespace principia {
 
 using quantities::constants::GravitationalConstant;
+using quantities::si::Metre;
 using geometry::Frame;
 using geometry::ReadFrameFromMessage;
 
 namespace physics {
 
 inline MassiveBody::Parameters::Parameters(
-    GravitationalParameter const& gravitational_parameter)
+    GravitationalParameter const& gravitational_parameter,
+    Length const& radius)
     : gravitational_parameter_(gravitational_parameter),
-      mass_(gravitational_parameter / GravitationalConstant) {
+      mass_(gravitational_parameter / GravitationalConstant),
+      radius_(radius) {
   CHECK_NE(gravitational_parameter, GravitationalParameter())
       << "Massive body cannot have zero gravitational parameter";
 }
 
-inline MassiveBody::Parameters::Parameters(Mass const& mass)
+inline MassiveBody::Parameters::Parameters(Mass const& mass,
+                                           Length const& radius)
     : gravitational_parameter_(mass * GravitationalConstant),
-      mass_(mass) {
+      mass_(mass),
+      radius_(radius) {
   CHECK_NE(mass, Mass()) << "Massive body cannot have zero mass";
 }
 
@@ -45,6 +50,10 @@ MassiveBody::gravitational_parameter() const {
 
 inline Mass const& MassiveBody::mass() const {
   return parameters_.mass_;
+}
+
+inline Length const& MassiveBody::radius() const {
+  return parameters_.radius_;
 }
 
 inline bool MassiveBody::is_massless() const {
@@ -90,7 +99,10 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
   Parameters const parameters(GravitationalParameter::ReadFromMessage(
-                                  message.gravitational_parameter()));
+                                  message.gravitational_parameter()),
+                              message.has_radius()
+                                  ? Length::ReadFromMessage(message.radius())
+                                  : 1 * Metre);
 
   // First see if we have an extension that has a frame and if so read the
   // frame.  Need to take care of pre-Brouwer compatibility.

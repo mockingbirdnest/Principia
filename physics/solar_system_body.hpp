@@ -192,7 +192,8 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
   CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
   MassiveBody::Parameters massive_body_parameters(
                               ParseQuantity<GravitationalParameter>(
-                                  body.gravitational_parameter()));
+                                  body.gravitational_parameter()),
+                              ParseQuantity<Length>(body.radius()));
   if (body.has_axis_declination()) {
     // TODO(phl): Parse the additional parameters.
     typename RotatingBody<Frame>::Parameters
