@@ -81,11 +81,12 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                                 higher_order,
-                                                 lower_order,
-                                                 stages,
-                                                 first_same_as_last>::Solve(
+TerminationCondition
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::Solve(
     IntegrationProblem<ODE> const& problem,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   using Displacement = typename ODE::Displacement;
@@ -157,7 +158,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   // No step size control on the first step.
   goto runge_kutta_nyström_step;
 
-  while (!at_end && step_count < adaptive_step_size.max_steps) {
+  while (!at_end) {
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {
@@ -166,6 +167,11 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       // especially since we make the order compile-time.
       h *= adaptive_step_size.safety_factor *
                std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
+      // TODO(egg): should we check whether it vanishes in double precision
+      // instead?
+      if (t.value + (t.error + h) == t.value) {
+        return TerminationCondition::VanishingStepSize;
+      }
 
     runge_kutta_nyström_step:
       // Termination condition.
@@ -232,7 +238,11 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     }
     problem.append_state(current_state);
     ++step_count;
+    if (step_count == adaptive_step_size.max_steps && !at_end) {
+      return TerminationCondition::MaxSteps;
+    }
   }
+  return TerminationCondition::Done;
 }
 
 }  // namespace integrators
