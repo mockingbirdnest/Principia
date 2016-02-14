@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -24,6 +25,7 @@ using quantities::si::Milli;
 using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -289,11 +291,13 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
 
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
-  integrator.Solve(problem, adaptive_step_size);
-  LOG(ERROR) << solution.size();
-  LOG(ERROR) << solution.back().positions.back().value
-             << solution.back().velocities.back().value
-             << solution.back().time.value;
+  auto const outcome = integrator.Solve(problem, adaptive_step_size);
+  EXPECT_EQ(TerminationCondition::VanishingStepSize, outcome);
+  EXPECT_EQ(130, solution.size());
+  EXPECT_THAT(solution.back().time.value - t_initial,
+              AlmostEquals(t_singular - t_initial, 20));
+  EXPECT_THAT(solution.back().positions.back().value,
+              AlmostEquals(specific_impulse * initial_mass / mass_flow, 711));
 }
 
 }  // namespace integrators
