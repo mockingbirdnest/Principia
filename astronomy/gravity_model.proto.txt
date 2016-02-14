@@ -21,6 +21,7 @@ gravity_model {
   body {
     # J2 coefficient and reference radius from
     # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
+    # Interesting analysis of the Sun radius at http://www.icra.it/solar/Sole2.pdf.
     name                    : "Sun"
     gravitational_parameter : "1.3271244004193938E+11 km^3/s^2"
     mean_radius             : "696000.0 km"
