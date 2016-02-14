@@ -104,6 +104,7 @@ Index const kParentIndex = 2;
 
 double const kGravitationalParameter = 3;
 double const kPlanetariumRotation = 10;
+double const kRadius = 144;
 double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};
@@ -249,10 +250,12 @@ TEST_F(InterfaceTest, InsertSun) {
   EXPECT_CALL(*plugin_,
               InsertSun(
                   kCelestialIndex,
-                  kGravitationalParameter * SIUnit<GravitationalParameter>()));
+                  kGravitationalParameter * SIUnit<GravitationalParameter>(),
+                  kRadius * Metre));
   principia__InsertSun(plugin_.get(),
                        kCelestialIndex,
-                       kGravitationalParameter);
+                       kGravitationalParameter,
+                       kRadius);
 }
 
 
@@ -275,11 +278,14 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
-                             1.2345E6 * SIUnit<GravitationalParameter>())))));
+                             1.2345E6 * SIUnit<GravitationalParameter>()),
+                    Property(&MassiveBody::mean_radius,
+                             666 * Kilo(Metre))))));
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,
                                               "1.2345E6  m^3/s^2",
+                                              "666 km",
                                               nullptr /*axis_right_ascension*/,
                                               nullptr /*axis_declination*/,
                                               nullptr /*j2*/,
@@ -312,11 +318,14 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
               AllOf(Property(&MassiveBody::is_oblate, true),
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345E6 *
-                                 Pow<3>(Kilo(Metre)) / Pow<2>(Second))))));
+                                 Pow<3>(Kilo(Metre)) / Pow<2>(Second)),
+                    Property(&MassiveBody::mean_radius,
+                             666 * Kilo(Metre))))));
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,
                                               "1.2345E6  km^3 / s^2",
+                                              "666 km",
                                               "42 deg",
                                               u8"8°",
                                               "123e-6",

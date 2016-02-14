@@ -144,7 +144,7 @@ GravitationalParameter SolarSystem<Frame>::gravitational_parameter(
 
 template<typename Frame>
 Length SolarSystem<Frame>::mean_radius(std::string const& name) const {
-  return MakeMassiveBody(*gravity_model_map_.at(name))->radius();
+  return MakeMassiveBody(*gravity_model_map_.at(name))->mean_radius();
 }
 
 template<typename Frame>

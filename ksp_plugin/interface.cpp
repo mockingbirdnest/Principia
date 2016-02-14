@@ -429,7 +429,8 @@ void principia__InsertSun(Plugin* const plugin,
                           double const mean_radius) {
   journal::Method<journal::InsertSun> m({plugin,
                                          celestial_index,
-                                         gravitational_parameter});
+                                         gravitational_parameter,
+                                         mean_radius});
   CHECK_NOTNULL(plugin)->InsertSun(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
