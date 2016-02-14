@@ -24,19 +24,19 @@ namespace physics {
 
 inline MassiveBody::Parameters::Parameters(
     GravitationalParameter const& gravitational_parameter,
-    Length const& radius)
+    Length const& mean_radius)
     : gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant),
-      radius_(radius) {
+      mean_radius_(mean_radius) {
   CHECK_NE(gravitational_parameter, GravitationalParameter())
       << "Massive body cannot have zero gravitational parameter";
 }
 
 inline MassiveBody::Parameters::Parameters(Mass const& mass,
-                                           Length const& radius)
+                                           Length const& mean_radius)
     : gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass),
-      radius_(radius) {
+      mean_radius_(mean_radius) {
   CHECK_NE(mass, Mass()) << "Massive body cannot have zero mass";
 }
 
@@ -52,8 +52,8 @@ inline Mass const& MassiveBody::mass() const {
   return parameters_.mass_;
 }
 
-inline Length const& MassiveBody::radius() const {
-  return parameters_.radius_;
+inline Length const& MassiveBody::mean_radius() const {
+  return parameters_.mean_radius_;
 }
 
 inline bool MassiveBody::is_massless() const {
@@ -73,7 +73,7 @@ inline void MassiveBody::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
   parameters_.gravitational_parameter_.WriteToMessage(
       message->mutable_gravitational_parameter());
-  parameters_.radius_.WriteToMessage(message->mutable_radius());
+  parameters_.mean_radius_.WriteToMessage(message->mutable_mean_radius());
 }
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
@@ -99,11 +99,12 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
-  Parameters const parameters(GravitationalParameter::ReadFromMessage(
-                                  message.gravitational_parameter()),
-                              message.has_radius()
-                                  ? Length::ReadFromMessage(message.radius())
-                                  : Length());
+  Parameters const parameters(
+                       GravitationalParameter::ReadFromMessage(
+                            message.gravitational_parameter()),
+                       message.has_mean_radius()
+                           ? Length::ReadFromMessage(message.mean_radius())
+                           : Length());
 
   // First see if we have an extension that has a frame and if so read the
   // frame.  Need to take care of pre-Brouwer compatibility.

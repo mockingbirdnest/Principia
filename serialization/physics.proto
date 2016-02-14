@@ -62,7 +62,7 @@ message Ephemeris {
 
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
-  optional Quantity radius = 2;
+  optional Quantity mean_radius = 2;
   extensions 2000 to 2999;  // Last used: 2002.
 }
 

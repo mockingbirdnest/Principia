@@ -23,18 +23,18 @@ class MassiveBody : public Body {
  public:
   // We use the gravitational parameter μ = G M in order not to accumulate
   // unit roundoffs from repeated multiplications by G.  The mass or
-  // gravitational parameter must not be zero.  The radius may be zero.
+  // gravitational parameter must not be zero.  The mean_radius may be zero.
   class Parameters {
    public:
     Parameters(GravitationalParameter const& gravitational_parameter,
-               Length const& radius);
+               Length const& mean_radius);
     Parameters(Mass const& mass,
-               Length const& radius);
+               Length const& mean_radius);
 
    private:
     GravitationalParameter const gravitational_parameter_;
     Mass const mass_;
-    Length const radius_;
+    Length const mean_radius_;
     friend class MassiveBody;
   };
 
@@ -44,7 +44,7 @@ class MassiveBody : public Body {
   // Returns the construction parameter.
   GravitationalParameter const& gravitational_parameter() const;
   Mass const& mass() const;
-  Length const& radius() const;
+  Length const& mean_radius() const;
 
   // Returns false.
   bool is_massless() const override;
