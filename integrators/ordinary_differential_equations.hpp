@@ -132,6 +132,12 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
+enum class TerminationCondition {
+  Done,
+  ReachedMaximalStepCount,
+  VanishingStepSize,
+};
+
 // An integrator using a fixed step size.
 template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
@@ -139,8 +145,9 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   using ODE = DifferentialEquation;
   // The last call to |problem.append_state| will have
   // |state.time.value == problem.t_final|.
-  virtual void Solve(IntegrationProblem<ODE> const& problem,
-                     AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+  virtual TerminationCondition Solve(
+      IntegrationProblem<ODE> const& problem,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   void WriteToMessage(
       not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const;

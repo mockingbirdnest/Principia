@@ -78,8 +78,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
-  void Solve(IntegrationProblem<ODE> const& problem,
-             AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+  TerminationCondition Solve(
+      IntegrationProblem<ODE> const& problem,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
  protected:
   FixedVector<double, stages> const c_;
