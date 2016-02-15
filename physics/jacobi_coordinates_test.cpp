@@ -26,8 +26,8 @@ class JacobiCoordinatesTest : public ::testing::Test {
                                 serialization::Frame::TEST,
                                 /*frame_is_inertial=*/true>;
 
-  MassiveBody m1_ = MassiveBody({1 * Kilogram, Length()});
-  MassiveBody m2_ = MassiveBody({2 * Kilogram, Length()});
+  MassiveBody m1_ = MassiveBody({1 * Kilogram, 1 * Metre});
+  MassiveBody m2_ = MassiveBody({2 * Kilogram, 2 * Metre});
 };
 
 TEST_F(JacobiCoordinatesTest, Jacobi) {

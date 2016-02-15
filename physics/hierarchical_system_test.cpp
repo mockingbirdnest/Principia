@@ -39,7 +39,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
 
   auto const new_body = [&body_indices, &bodies](Mass const& mass) {
     auto body = make_not_null_unique<MassiveBody>(
-        MassiveBody::Parameters(mass, Length()));
+        MassiveBody::Parameters(mass, 1 * Metre));
     bodies.emplace_back(body.get());
     body_indices[body.get()] = body_indices.size();
     return body;
@@ -91,7 +91,8 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
 
   auto const new_body = [&body_indices, &bodies]() {
     auto body = make_not_null_unique<MassiveBody>(
-        MassiveBody::Parameters(SIUnit<GravitationalParameter>(), Length()));
+        MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>(),
+                                1 * Metre));
     bodies.emplace_back(body.get());
     body_indices[body.get()] = body_indices.size();
     return body;

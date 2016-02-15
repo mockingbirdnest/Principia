@@ -915,7 +915,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Mass const m2 = 3 * SolarMass;
   Mass const m3 = 4 * SolarMass;
 
-  auto const b0 = new OblateBody<World>({m0, Length()},
+  auto const b0 = new OblateBody<World>({m0, 1 * Metre},
                                         RotatingBody<World>::Parameters(
                                             1 * Radian,
                                             t0_,
@@ -925,9 +925,9 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                                 4 * Radian / Second})),
                                         OblateBody<World>::Parameters(
                                             kJ2, kRadius));
-  auto const b1 = new MassiveBody({m1, Length()});
-  auto const b2 = new MassiveBody({m2, Length()});
-  auto const b3 = new MassiveBody({m3, Length()});
+  auto const b1 = new MassiveBody({m1, 2 * Metre});
+  auto const b2 = new MassiveBody({m2, 3 * Metre});
+  auto const b3 = new MassiveBody({m3, 4 * Metre});
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;

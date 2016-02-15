@@ -49,39 +49,56 @@ class KSPSystemTest : public ::testing::Test {
 
   KSPSystemTest() {
     sun_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        1.1723327948324908E+18 * SIUnit<GravitationalParameter>(), Length()));
+        1.1723327948324908E+18 * SIUnit<GravitationalParameter>(),
+        261'600 * Kilo(Metre)));
     eeloo_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        74410814527.049576 * SIUnit<GravitationalParameter>(), Length()));
+        74410814527.049576 * SIUnit<GravitationalParameter>(),
+        210 * Kilo(Metre)));
     jool_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        282528004209995.31 * SIUnit<GravitationalParameter>(), Length()));
+        282528004209995.31 * SIUnit<GravitationalParameter>(),
+        6000 * Kilo(Metre)));
     pol_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        721702080.00000012 * SIUnit<GravitationalParameter>(), Length()));
+        721702080.00000012 * SIUnit<GravitationalParameter>(),
+        44 * Kilo(Metre)));
     bop_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        2486834944.414907 * SIUnit<GravitationalParameter>(), Length()));
+        2486834944.414907 * SIUnit<GravitationalParameter>(),
+        65 * Kilo(Metre)));
     tylo_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        2825280042099.9531 * SIUnit<GravitationalParameter>(), Length()));
+        2825280042099.9531 * SIUnit<GravitationalParameter>(),
+        600 * Kilo(Metre)));
     vall_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        207481499473.75098 * SIUnit<GravitationalParameter>(), Length()));
+        207481499473.75098 * SIUnit<GravitationalParameter>(),
+        300 * Kilo(Metre)));
     laythe_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        1962000029236.0784 * SIUnit<GravitationalParameter>(), Length()));
+        1962000029236.0784 * SIUnit<GravitationalParameter>(),
+        500 * Kilo(Metre)));
     dres_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        21484488600.000004 * SIUnit<GravitationalParameter>(), Length()));
+        21484488600.000004 * SIUnit<GravitationalParameter>(),
+        138 * Kilo(Metre)));
     duna_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        301363211975.09772 * SIUnit<GravitationalParameter>(), Length()));
+        301363211975.09772 * SIUnit<GravitationalParameter>(),
+        320 * Kilo(Metre)));
     ike_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        18568368573.144012 * SIUnit<GravitationalParameter>(), Length()));
+        18568368573.144012 * SIUnit<GravitationalParameter>(),
+        130 * Kilo(Metre)));
     kerbin_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        3531600000000 * SIUnit<GravitationalParameter>(), Length()));
+        3531600000000 * SIUnit<GravitationalParameter>(),
+        600 * Kilo(Metre)));
     minmus_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        1765800026.3124719 * SIUnit<GravitationalParameter>(), Length()));
+        1765800026.3124719 * SIUnit<GravitationalParameter>(),
+        60 * Kilo(Metre)));
     mun_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        65138397520.780701 * SIUnit<GravitationalParameter>(), Length()));
+        65138397520.780701 * SIUnit<GravitationalParameter>(),
+        200 * Kilo(Metre)));
     eve_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        8171730229210.874 * SIUnit<GravitationalParameter>(), Length()));
+        8171730229210.874 * SIUnit<GravitationalParameter>(),
+        700 * Kilo(Metre)));
     gilly_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        8289449.814716354 * SIUnit<GravitationalParameter>(), Length()));
+        8289449.814716354 * SIUnit<GravitationalParameter>(),
+        13 * Kilo(Metre)));
     moho_.owned_body = std::make_unique<MassiveBody>(MassiveBody::Parameters(
-        168609378654.50949 * SIUnit<GravitationalParameter>(), Length()));
+        168609378654.50949 * SIUnit<GravitationalParameter>(),
+        250 * Kilo(Metre)));
     for (auto const celestial : all_bodies_) {
       celestial->body = celestial->owned_body.get();
     }
@@ -410,7 +427,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       }
       auto const bop_jacobi_elements =
           KeplerOrbit<KSP>(
-            MassiveBody({innermost_jool_system.weight(), Length()}),
+              MassiveBody({innermost_jool_system.weight(), Length()}),
               *bop_.body,
               degrees_of_freedom(bop_) - innermost_jool_system.Get(),
               t).elements_at_epoch();
