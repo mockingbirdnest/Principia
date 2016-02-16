@@ -82,12 +82,13 @@ class Ephemeris {
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t);
 
-  // Integrates, until exactly |t|, the |trajectory| followed by a massless body
-  // in the gravitational potential described by |*this|.  If |t > t_max()|,
-  // calls |Prolong(t)| beforehand.  The |length_| and
-  // |speed_integration_tolerance|s are used to compute the
+  // Integrates, until exactly |t| (except for timeouts or singularities), the
+  // |trajectory| followed by a massless body in the gravitational potential
+  // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
+  // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
-  virtual void FlowWithAdaptiveStep(
+  // Returns true if and only if |*trajectory| was integrated until |t|.
+  bool void FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Length const& length_integration_tolerance,
