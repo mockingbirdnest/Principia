@@ -25,6 +25,7 @@
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centered_non_rotating_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
+#include "physics/rotating_body.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -45,6 +46,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DynamicFrame;
 using physics::Frenet;
+using physics::RotatingBody;
 using quantities::Force;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -93,8 +95,15 @@ void Plugin::InsertSun(Index const celestial_index,
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(gravitational_parameter);
-  auto sun = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(gravitational_parameter, mean_radius));
+  auto sun = make_not_null_unique<RotatingBody<Barycentric>>(
+      gravitational_parameter,
+      RotatingBody<Barycentric>::Parameters(
+          mean_radius,
+          Angle(),
+          Instant(),
+          AngularVelocity<Barycentric>({1 * Radian / Second,
+                                        1 * Radian / Second,
+                                        1 * Radian / Second})));
   auto const unowned_sun = sun.get();
   hierarchical_initialization_.emplace(std::move(sun));
   hierarchical_initialization_->indices_to_bodies[celestial_index] =
