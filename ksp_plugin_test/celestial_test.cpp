@@ -15,7 +15,7 @@ namespace ksp_plugin {
 class CelestialTest : public testing::Test {
  protected:
   CelestialTest()
-      : body_({1 * Kilogram, 1 * Metre}),
+      : body_(1 * Kilogram),
         celestial_(make_not_null_unique<Celestial>(&body_)),
         trajectory_(1 * Second, 1 * Metre) {}
 

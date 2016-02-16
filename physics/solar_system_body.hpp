@@ -143,11 +143,6 @@ GravitationalParameter SolarSystem<Frame>::gravitational_parameter(
 }
 
 template<typename Frame>
-Length SolarSystem<Frame>::mean_radius(std::string const& name) const {
-  return MakeMassiveBody(*gravity_model_map_.at(name))->mean_radius();
-}
-
-template<typename Frame>
 not_null<MassiveBody const*> SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {
@@ -197,8 +192,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
   CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
   MassiveBody::Parameters massive_body_parameters(
                               ParseQuantity<GravitationalParameter>(
-                                  body.gravitational_parameter()),
-                              ParseQuantity<Length>(body.mean_radius()));
+                                  body.gravitational_parameter()));
   if (body.has_axis_declination()) {
     // TODO(phl): Parse the additional parameters.
     typename RotatingBody<Frame>::Parameters

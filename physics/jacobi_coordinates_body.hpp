@@ -40,8 +40,7 @@ void JacobiCoordinates<Frame>::Add(
 
 template<typename Frame>
 MassiveBody JacobiCoordinates<Frame>::System() const {
-  // A point mass.
-  return MassiveBody({system_barycentre_.weight(), Length()});
+  return MassiveBody(system_barycentre_.weight());
 }
 
 template<typename Frame>

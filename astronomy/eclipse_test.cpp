@@ -42,6 +42,18 @@ Time const bisection_interval = 10 * Minute;
 Sign const U14 = Sign(1);
 Sign const U23 = Sign(-1);
 
+// MassiveBody will need radius information.  Or non-hardcoded data from
+// https://github.com/mockingbirdnest/Principia/blob/master/astronomy/gravity_model.proto.txt
+
+// Interesting analysis of the Sun radius at http://www.icra.it/solar/Sole2.pdf.
+Length const r_sun = 696000.0 * Kilo(Metre);
+Length const r_earth = 6378.1363 * Kilo(Metre);
+Length const r_moon = 1738.0 * Kilo(Metre);
+
+// We follow A. Danjon, see http://eclipse.gsfc.nasa.gov/LEcat5/shadow.html and
+// http://www.imcce.fr/langues/fr/ephemerides/phenomenes/eclipses/lune/.
+Length const atmospheric_depth = (1.0 / 85.0 - 1.0 / 594.0) * r_earth;
+
 char const arrow[] = "-------------------> ";
 
 }  // namespace
@@ -57,15 +69,6 @@ class EclipseTest : public testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
         45 * Minute, 5 * Milli(Metre));
-    r_sun_ = solar_system_1950_.mean_radius("Sun");
-    r_moon_ = solar_system_1950_.mean_radius("Moon");
-
-    // We follow A. Danjon, see http://eclipse.gsfc.nasa.gov/LEcat5/shadow.html
-    // and http://www.imcce.fr/langues/fr/ephemerides/phenomenes/eclipses/lune/.
-    // In particular, this means that we must use the equatorial radius for the
-    // Earth, not the mean radius.
-    r_earth_ = 6378.1363 * Kilo(Metre);
-    atmospheric_depth_ = (1.0 / 85.0 - 1.0 / 594.0) * r_earth_;
   }
 
   // A positive |time_error| means that the actual contact happens after
@@ -89,7 +92,7 @@ class EclipseTest : public testing::Test {
           ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
       auto const q_earth =
           ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
-      return ArcSin((r_sun_ - (r_earth_ + atmospheric_depth_)) /
+      return ArcSin((r_sun - (r_earth + atmospheric_depth)) /
                     (q_sun - q_earth).Norm());
     };
 
@@ -108,7 +111,7 @@ class EclipseTest : public testing::Test {
       auto const apex_of_moon_locus_at_umbral_contact =
           q_earth +
           Normalize(q_earth - q_sun) *
-              (r_earth_ + atmospheric_depth_ + moon_offset_sign * r_moon_) /
+              (r_earth + atmospheric_depth + moon_offset_sign * r_moon) /
               Sin(umbral_half_aperture(t));
       // Angle between Earth and Moon as seen at
       // |apex_of_moon_locus_at_umbral_contact|.
@@ -160,7 +163,7 @@ class EclipseTest : public testing::Test {
           ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
       auto const q_earth =
           ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
-      return ArcSin((r_sun_ + r_earth_ + atmospheric_depth_) /
+      return ArcSin((r_sun + r_earth + atmospheric_depth) /
                     (q_sun - q_earth).Norm());
     };
 
@@ -180,7 +183,7 @@ class EclipseTest : public testing::Test {
       auto const apex_of_moon_locus_at_penumbral_contact =
           q_earth +
           Normalize(q_sun - q_earth) *
-              (r_earth_ + atmospheric_depth_ + moon_offset_sign * r_moon_) /
+              (r_earth + atmospheric_depth + moon_offset_sign * r_moon) /
               Sin(penumbral_half_aperture(t));
       // Angle between Earth and Moon as seen at
       // apex_of_moon_locus_at_penumbral_contact.
@@ -218,18 +221,10 @@ class EclipseTest : public testing::Test {
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
   static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
-  static Length r_sun_;
-  static Length r_earth_;
-  static Length r_moon_;
-  static Length atmospheric_depth_;
 };
 
 SolarSystem<ICRFJ2000Equator> EclipseTest::solar_system_1950_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
-Length EclipseTest::r_sun_;
-Length EclipseTest::r_earth_;
-Length EclipseTest::r_moon_;
-Length EclipseTest::atmospheric_depth_;
 
 #if !defined(_DEBUG)
 
@@ -242,11 +237,11 @@ TEST_F(EclipseTest, Year1950) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 28 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian, 30 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    2E-5 * Radian, 39 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    9E-6 * Radian, 21 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 28 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 27 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian, 29 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2E-5 * Radian, 41 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    8E-6 * Radian, 19 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 29 * Second);
   CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 30 * Second);
 
   // Times are TDB Julian Day for 1950-09-26.
@@ -259,9 +254,9 @@ TEST_F(EclipseTest, Year1950) {
 
   CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 34 * Second);
   CheckLunarUmbralEclipse(U1, U14,    3E-5 * Radian, 36 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-5 * Radian, 42 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    2E-5 * Radian, 29 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    3E-5 * Radian, 34 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-5 * Radian, 43 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    2E-5 * Radian, 27 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-5 * Radian, 35 * Second);
   CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 36 * Second);
 }
 
@@ -270,15 +265,15 @@ TEST_F(EclipseTest, Year1951) {
   auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
-  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 30 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 25 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 29 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 26 * Second);
 
   // Times are TDB Julian Day for 1951-09-15.
   P1 = JulianDate(2433904.93736321);  // 10:29:16
   P4 = JulianDate(2433905.1002799);   // 14:23:52
 
-  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 28 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 23 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 27 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 24 * Second);
 }
 
 TEST_F(EclipseTest, Year1952) {
@@ -288,10 +283,10 @@ TEST_F(EclipseTest, Year1952) {
   auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
   auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
 
-  CheckLunarPenumbralEclipse(P1, U14, 1E-5 * Radian, 30 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    4E-6 * Radian, 19 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    1E-5 * Radian, 50 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 40 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 1E-5 * Radian, 29 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    4E-6 * Radian, 17 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 52 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 41 * Second);
 
   // Times are TDB Julian Day for 1952-08-05.
   P1 = JulianDate(2434230.22830075);  // P1 = 17:28:13 UT
@@ -299,10 +294,10 @@ TEST_F(EclipseTest, Year1952) {
   U4 = JulianDate(2434230.37606695);  // U4 = 21:01:00
   P4 = JulianDate(2434230.42161093);  // P4 = 22:06:35
 
-  CheckLunarPenumbralEclipse(P1, U14, 8E-6 * Radian, 18 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    9E-6 * Radian, 18 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 25 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 26 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 8E-6 * Radian, 17 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    9E-6 * Radian, 17 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 26 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 27 * Second);
 }
 
 #if 0
@@ -315,12 +310,12 @@ TEST_F(EclipseTest, Year2000) {
   auto U4 = JulianDate(2451564.76820815);  // 06:25:09
   auto P4 = JulianDate(2451564.80812714);  // 07:22:38
 
-  CheckLunarPenumbralEclipse(P1, U14, 8E-5 * Radian, -167 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-4 * Radian, -164 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -167 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    2E-4 * Radian, -160 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -161 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 8E-5 * Radian, -160 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9E-5 * Radian, -167 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2E-4 * Radian, -165 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -166 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -161 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -160 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8E-5 * Radian, -159 * Second);
 }
 
 TEST_F(EclipseTest, Year2048) {
@@ -332,12 +327,12 @@ TEST_F(EclipseTest, Year2048) {
   auto U4 = JulianDate(2469076.86158778);  // 08:39:33
   auto P4 = JulianDate(2469076.91195815);  // 09:52:05
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -338 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -336 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -335 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -337 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    3E-4 * Radian, -336 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -335 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -339 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -337 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -334 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -339 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3E-4 * Radian, -335 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -334 * Second);
 }
 #endif
 

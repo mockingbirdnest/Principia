@@ -30,9 +30,7 @@ class FlightPlanTest : public testing::Test {
   FlightPlanTest() {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     bodies.emplace_back(
-        make_not_null_unique<MassiveBody>(
-            MassiveBody::Parameters(1 * Pow<3>(Metre) / Pow<2>(Second),
-                                    1 * Metre)));
+        make_not_null_unique<MassiveBody>(1 * Pow<3>(Metre) / Pow<2>(Second)));
     std::vector<DegreesOfFreedom<Barycentric>> initial_state{
         {Barycentric::origin, Velocity<Barycentric>()}};
     ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
