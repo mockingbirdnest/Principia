@@ -107,7 +107,8 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
     MassiveBody::Parameters const& massive_body_parameters) {
   auto const axis = Vector<double, Frame>::ReadFromMessage(message.axis());
   typename RotatingBody<Frame>::Parameters
-      rotating_body_parameters(0 * Radian,
+      rotating_body_parameters(Length(),
+                               Angle(),
                                Instant(),
                                AngularVelocity<Frame>(
                                    axis.coordinates() * Radian / Second));

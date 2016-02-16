@@ -194,32 +194,49 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
   CHECK(body.has_gravitational_parameter());
   CHECK_EQ(body.has_j2(), body.has_reference_radius());
+  CHECK(body.has_mean_radius() || !body.has_axis_declination());
   CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
   MassiveBody::Parameters massive_body_parameters(
                               ParseQuantity<GravitationalParameter>(
                                   body.gravitational_parameter()));
-  if (body.has_axis_declination()) {
+  if (body.has_mean_radius()) {
     // TODO(phl): Parse the additional parameters.
-    typename RotatingBody<Frame>::Parameters
-        rotating_body_parameters(
-            0 * Radian,
-            Instant(),
-            Bivector<double, Frame>(
-                RadiusLatitudeLongitude(
-                    1.0,
-                    ParseQuantity<Angle>(body.axis_declination()),
-                    ParseQuantity<Angle>(body.axis_right_ascension())).
-                ToCartesian()) * Radian / Second);
+    std::unique_ptr<typename RotatingBody<Frame>::Parameters>
+        rotating_body_parameters;
+    if (body.has_axis_declination()) {
+      rotating_body_parameters =
+          std::make_unique<typename RotatingBody<Frame>::Parameters>(
+              ParseQuantity<Length>(body.mean_radius()),
+              Angle(),
+              Instant(),
+              Bivector<double, Frame>(
+                  RadiusLatitudeLongitude(
+                      1.0,
+                      ParseQuantity<Angle>(body.axis_declination()),
+                      ParseQuantity<Angle>(body.axis_right_ascension()))
+                      .ToCartesian()) *
+                  Radian / Second);
+    } else {
+      rotating_body_parameters =
+          std::make_unique<typename RotatingBody<Frame>::Parameters>(
+              ParseQuantity<Length>(body.mean_radius()),
+              Angle(),
+              Instant(),
+              Bivector<double, Frame>(
+                  RadiusLatitudeLongitude(1.0, Angle(), Angle())
+                      .ToCartesian()) *
+                  Radian / Second);
+    }
     if (body.has_j2()) {
       typename OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
           ParseQuantity<Length>(body.reference_radius()));
       return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
-                                                 rotating_body_parameters,
+                                                 *rotating_body_parameters,
                                                  oblate_body_parameters);
     } else {
       return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
-                                                   rotating_body_parameters);
+                                                   *rotating_body_parameters);
     }
   } else {
     return std::make_unique<MassiveBody>(massive_body_parameters);
@@ -258,6 +275,7 @@ SolarSystem<Frame>::MakeAllMassiveBodies() {
     serialization::GravityModel::Body const* const body = pair.second;
     CHECK(body->has_gravitational_parameter());
     CHECK_EQ(body->has_j2(), body->has_reference_radius());
+    CHECK(body->has_mean_radius() || !body->has_axis_declination());
     CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
     bodies.emplace_back(MakeMassiveBody(*body));
   }

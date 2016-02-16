@@ -62,7 +62,6 @@ message Ephemeris {
 
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
-  optional Quantity mean_radius = 2;
   extensions 2000 to 2999;  // Last used: 2002.
 }
 
@@ -89,6 +88,7 @@ message RotatingBody {
     optional RotatingBody extension = 2002;
   }
   required Frame frame = 1;
+  optional Quantity mean_radius = 5;
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
   required Multivector angular_velocity = 4;

@@ -17,10 +17,12 @@ namespace physics {
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(
+    Length const& mean_radius,
     Angle const& reference_angle,
     Instant const& reference_instant,
     AngularVelocity<Frame> const& angular_velocity)
-    : reference_angle_(reference_angle),
+    : mean_radius_(mean_radius),
+      reference_angle_(reference_angle),
       reference_instant_(reference_instant),
       angular_velocity_(angular_velocity) {
   CHECK_NE(angular_velocity_.Norm(), 0.0 * SIUnit<AngularFrequency>())
@@ -33,6 +35,11 @@ RotatingBody<Frame>::RotatingBody(
     Parameters const& parameters)
     : MassiveBody(massive_body_parameters),
       parameters_(parameters) {}
+
+template<typename Frame>
+Length RotatingBody<Frame>::mean_radius() const {
+  return parameters_.mean_radius_;
+}
 
 template<typename Frame>
 AngularVelocity<Frame> const& RotatingBody<Frame>::angular_velocity() const {
@@ -88,7 +95,11 @@ not_null<std::unique_ptr<RotatingBody<Frame>>>
 RotatingBody<Frame>::ReadFromMessage(
     serialization::RotatingBody const& message,
     MassiveBody::Parameters const& massive_body_parameters) {
+  // For pre-Buffon compatibility, build a point mass.
   Parameters parameters(
+                 message.has_mean_radius()
+                     ? Length::ReadFromMessage(message.mean_radius())
+                     : Length(),
                  Angle::ReadFromMessage(message.reference_angle()),
                  Instant::ReadFromMessage(message.reference_instant()),
                  AngularVelocity<Frame>::ReadFromMessage(

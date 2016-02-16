@@ -917,6 +917,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 
   auto const b0 = new OblateBody<World>(m0,
                                         RotatingBody<World>::Parameters(
+                                            1 * Metre,
                                             1 * Radian,
                                             t0_,
                                             AngularVelocity<World>({

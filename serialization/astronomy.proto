@@ -8,7 +8,7 @@ message GravityModel {
   message Body {
     required string name = 1;
     required string gravitational_parameter = 2;
-    required string mean_radius = 7;
+    optional string mean_radius = 7;
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
     optional string j2 = 5;

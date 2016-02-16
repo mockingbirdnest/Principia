@@ -45,7 +45,7 @@ class MassiveBody : public Body {
   Mass const& mass() const;
 
   // Returns zero.
-  virtual Length const mean_radius() const;
+  virtual Length mean_radius() const;
 
   // Returns false.
   bool is_massless() const override;
