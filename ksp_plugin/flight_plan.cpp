@@ -158,6 +158,7 @@ void FlightPlan::WriteToMessage(
   for (auto const& manœuvre : manœuvres_) {
     manœuvre.WriteToMessage(message->add_manoeuvre());
   }
+  message->set_anomalous_segments(anomalous_segments_);
 }
 
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
@@ -178,6 +179,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // The constructor has forked a segment.  Remove it.
   flight_plan->segments_.front()->set_on_destroy(nullptr);
   flight_plan->PopLastSegment();
+  flight_plan->anomalous_segments_ = message.anomalous_segments();
   for (auto const& segment : message.segment()) {
     flight_plan->segments_.emplace_back(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));

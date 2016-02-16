@@ -42,6 +42,9 @@ message FlightPlan {
   required AdaptiveStepSizeIntegrator integrator = 6;
   repeated Trajectory.Pointer segment = 7;
   repeated Manoeuvre manoeuvre = 8;
+  // NOTE(egg): |anomalous_segments| will no longer need to be serialized when
+  // we stop serializing recomputable data.
+  optional int32 anomalous_segments = 9 [default = 0];
 }
 
 message PhysicsBubble {
