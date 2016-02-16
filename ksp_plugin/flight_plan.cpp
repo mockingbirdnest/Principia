@@ -232,32 +232,55 @@ void FlightPlan::RecomputeSegments() {
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
-  if (manœuvre.initial_time() < manœuvre.final_time()) {
-    ephemeris_->FlowWithAdaptiveStep(segments_.back(),
-                                     manœuvre.IntrinsicAcceleration(),
-                                     length_integration_tolerance_,
-                                     speed_integration_tolerance_,
-                                     integrator_,
-                                     manœuvre.final_time());
+  if (anomalous_segments_ > 0) {
+    return;
+  } else {
+    if (manœuvre.initial_time() < manœuvre.final_time()) {
+      bool const normal =
+          ephemeris_->FlowWithAdaptiveStep(segments_.back(),
+                                           manœuvre.IntrinsicAcceleration(),
+                                           length_integration_tolerance_,
+                                           speed_integration_tolerance_,
+                                           integrator_,
+                                           manœuvre.final_time());
+      if (!normal) {
+        ++anomalous_segments_;
+      }
+    }
   }
 }
 
 void FlightPlan::CoastLastSegment(Instant const& final_time) {
-  ephemeris_->FlowWithAdaptiveStep(
-      segments_.back(),
-      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-      length_integration_tolerance_,
-      speed_integration_tolerance_,
-      integrator_,
-      final_time);
+  if (anomalous_segments_ > 0) {
+    return;
+  } else {
+    bool const normal = ephemeris_->FlowWithAdaptiveStep(
+                            segments_.back(),
+                            Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+                            length_integration_tolerance_,
+                            speed_integration_tolerance_,
+                            integrator_,
+                            final_time);
+    if (!normal) {
+      ++anomalous_segments_;
+    }
+  }
 }
 
 void FlightPlan::AddSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
+  if (anomalous_segments_ > 0) {
+    ++anomalous_segments_;
+  }
 }
 
 void FlightPlan::ResetLastSegment() {
   segments_.back()->ForgetAfter(segments_.back()->Fork().time());
+  if (anomalous_segments_ == 1) {
+    // If there was one anomalous segment, it was the last one, which was
+    // anomalous because it ended early.  It is no longer anomalous.
+    anomalous_segments_ = 0;
+  }
 }
 
 void FlightPlan::PopLastSegment() {
@@ -265,6 +288,9 @@ void FlightPlan::PopLastSegment() {
   CHECK(!trajectory->is_root());
   trajectory->parent()->DeleteFork(&trajectory);
   segments_.pop_back();
+  if (anomalous_segments_ > 0) {
+    --anomalous_segments_;
+  }
 }
 
 Instant FlightPlan::start_of_last_coast() const {

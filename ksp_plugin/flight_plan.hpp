@@ -136,6 +136,10 @@ class FlightPlan {
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator_;
+  // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
+  // either end prematurely or follow an anomalous segment; in the latter case
+  // they are empty.
+  int anomalous_segments_ = 0;
 };
 
 }  // namespace ksp_plugin
