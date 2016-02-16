@@ -1343,8 +1343,6 @@ public partial class PrincipiaPluginAdapter
               parent_index: ref parent_index,
               gravitational_parameter:
                   gravity_model.GetValue("gravitational_parameter"),
-              mean_radius:
-                  gravity_model.GetValue("mean_value"),
               axis_right_ascension:
                   gravity_model.HasValue("axis_right_ascension") ?
                   gravity_model.GetValue("axis_right_ascension") : null,
@@ -1378,8 +1376,7 @@ public partial class PrincipiaPluginAdapter
       plugin_ = Interface.NewPlugin(0,
                                     Planetarium.InverseRotAngle);
       plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
-                        Planetarium.fetch.Sun.gravParameter,
-                        Planetarium.fetch.Sun.Radius);
+                        Planetarium.fetch.Sun.gravParameter);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];
@@ -1388,7 +1385,6 @@ public partial class PrincipiaPluginAdapter
             celestial_index             : body.flightGlobalsIndex,
             parent_index                : body.referenceBody.flightGlobalsIndex,
             gravitational_parameter     : body.gravParameter + " m^3/s^2",
-            mean_radius                 : body.Radius + " m",
             axis_right_ascension        : null,
             axis_declination            : null,
             j2                          : null,

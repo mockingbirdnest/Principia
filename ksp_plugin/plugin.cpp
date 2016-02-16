@@ -84,8 +84,7 @@ Plugin::Plugin(Instant const& initial_time,
 // once per game.
 
 void Plugin::InsertSun(Index const celestial_index,
-                       GravitationalParameter const& gravitational_parameter,
-                       Length const& mean_radius) {
+                       GravitationalParameter const& gravitational_parameter) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
   CHECK(!absolute_initialization_);
@@ -93,8 +92,7 @@ void Plugin::InsertSun(Index const celestial_index,
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(gravitational_parameter);
-  auto sun = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(gravitational_parameter, mean_radius));
+  auto sun = make_not_null_unique<MassiveBody>(gravitational_parameter);
   auto const unowned_sun = sun.get();
   hierarchical_initialization_.emplace(std::move(sun));
   hierarchical_initialization_->indices_to_bodies[celestial_index] =

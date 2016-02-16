@@ -343,7 +343,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Speed const v0 = 1 * Kilo(Metre) / Day;
   Instant t;
   Plugin plugin(t, 0 * Radian);
-  plugin.InsertSun(celestial, 1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day), 1 * Metre);
+  plugin.InsertSun(celestial, 1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day));
   plugin.EndInitialization();
 
   // Step 1: insert the Enterprise.
@@ -592,7 +592,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(), 0 * Radian);
-  plugin.InsertSun(celestial, 1 * SIUnit<GravitationalParameter>(), 1 * Metre);
+  plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
   plugin.SetPlottingFrame(

@@ -27,9 +27,9 @@ int main(int argc, char const* argv[]) {
     }
     principia::geometry::Instant game_epoch =
         principia::geometry::JulianDate(
-            principia::quantities::ParseQuantity<double>(argv[2]));
-    std::string const gravity_model_stem = argv[3];
-    std::string const initial_state_stem = argv[4];
+            principia::quantities::ParseQuantity<double>(argv[1]));
+    std::string const gravity_model_stem = argv[2];
+    std::string const initial_state_stem = argv[3];
     principia::tools::GenerateConfiguration(game_epoch,
                                             gravity_model_stem,
                                             initial_state_stem);
