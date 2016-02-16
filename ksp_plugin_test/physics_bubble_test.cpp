@@ -71,7 +71,7 @@ class PhysicsBubbleTest : public testing::Test {
             Velocity<Barycentric>({204 * SIUnit<Speed>(),
                                    205 * SIUnit<Speed>(),
                                    206 * SIUnit<Speed>()})),
-      body_(100 * SIUnit<Mass>()),
+      body_({100 * SIUnit<Mass>(), 10 * SIUnit<Length>()}),
       celestial_(&body_),
       celestial_trajectory_(1 * Second, 1 * Metre),
       celestial_world_position_(World::origin + Displacement<World>(

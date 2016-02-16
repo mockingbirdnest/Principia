@@ -290,10 +290,11 @@ class ResonanceTest : public ::testing::Test {
       jool_centric_initial_state.emplace(
           moon,
           inner_system_barycentre.Get() +
-              id(KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
-                                  *moon,
-                                  elements_[moon],
-                                  game_epoch_).StateVectors(game_epoch_)));
+              id(KeplerOrbit<KSP>(
+                     MassiveBody({inner_system_parameter, Length()}),
+                     *moon,
+                     elements_[moon],
+                     game_epoch_).StateVectors(game_epoch_)));
       inner_system_parameter += moon->gravitational_parameter();
       inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
                                   moon->gravitational_parameter());
@@ -353,7 +354,8 @@ class ResonanceTest : public ::testing::Test {
 
  private:
   not_null<MassiveBody const*> AddBody(GravitationalParameter const& μ) {
-    owned_bodies_.emplace_back(make_not_null_unique<MassiveBody>(μ));
+    owned_bodies_.emplace_back(make_not_null_unique<MassiveBody>(
+        MassiveBody::Parameters(μ, Length())));
     return owned_bodies_.back().get();
   }
 };

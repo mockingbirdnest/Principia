@@ -17,7 +17,7 @@ namespace ksp_plugin {
 class VesselTest : public testing::Test {
  protected:
   VesselTest()
-      : body_(1 * Kilogram),
+      : body_({1 * Kilogram, 1 * Metre}),
         parent_(&body_),
         vessel_(make_not_null_unique<Vessel>(&parent_)) {}
 

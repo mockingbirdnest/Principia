@@ -38,7 +38,8 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   std::vector<not_null<MassiveBody const*>> bodies;
 
   auto const new_body = [&body_indices, &bodies](Mass const& mass) {
-    auto body = make_not_null_unique<MassiveBody>(mass);
+    auto body = make_not_null_unique<MassiveBody>(
+        MassiveBody::Parameters(mass, 1 * Metre));
     bodies.emplace_back(body.get());
     body_indices[body.get()] = body_indices.size();
     return body;
@@ -89,8 +90,9 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   std::vector<not_null<MassiveBody const*>> bodies;
 
   auto const new_body = [&body_indices, &bodies]() {
-    auto body =
-        make_not_null_unique<MassiveBody>(SIUnit<GravitationalParameter>());
+    auto body = make_not_null_unique<MassiveBody>(
+        MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>(),
+                                1 * Metre));
     bodies.emplace_back(body.get());
     body_indices[body.get()] = body_indices.size();
     return body;

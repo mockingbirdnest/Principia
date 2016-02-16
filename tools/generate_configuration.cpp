@@ -48,6 +48,8 @@ void GenerateConfiguration(Instant const& game_epoch,
                       << name << "\n";
     gravity_model_cfg << "    gravitational_parameter = "
                       << body.gravitational_parameter() << "\n";
+    gravity_model_cfg << "    mean_radius             = "
+                      << body.mean_radius() << "\n";
     if (body.has_axis_right_ascension()) {
       gravity_model_cfg << "    axis_right_ascension    = "
                         << body.axis_right_ascension() << "\n";

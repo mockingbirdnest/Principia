@@ -100,7 +100,8 @@ class Plugin {
   // TODO(phl): fuse with InsertCelestialJacobiKeplerian?
   virtual void InsertSun(
     Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter);
+    GravitationalParameter const& gravitational_parameter,
+    Length const& mean_radius);
 
   // Inserts a celestial body with index |celestial_index| body |body|,
   // giving it the initial state |initial_state|.

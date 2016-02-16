@@ -34,7 +34,7 @@ class OblateBody : public RotatingBody<Frame> {
    public:
     explicit Parameters(Order2ZonalCoefficient const& j2);
     Parameters(double const j2,
-               Length const& radius);
+               Length const& reference_radius);
 
    private:
     std::experimental::optional<Order2ZonalCoefficient> j2_;

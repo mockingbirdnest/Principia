@@ -51,6 +51,9 @@ class SolarSystem {
   // The gravitational parameter of the body named |name|.
   GravitationalParameter gravitational_parameter(std::string const& name) const;
 
+  // The mean radius of the body named |name|.
+  Length mean_radius(std::string const& name) const;
+
   // The |MassiveBody| for the body named |name|, extracted from the given
   // |ephemeris|.
   not_null<MassiveBody const*> massive_body(Ephemeris<Frame> const& ephemeris,

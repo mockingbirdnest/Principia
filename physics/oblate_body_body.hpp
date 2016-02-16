@@ -18,8 +18,8 @@ namespace physics {
 
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
-                                          Length const& radius)
-    : j2_over_μ_(-j2 * radius * radius) {
+                                          Length const& reference_radius)
+    : j2_over_μ_(-j2 * reference_radius * reference_radius) {
   CHECK_NE(j2, 0.0) << "Oblate body cannot have zero j2";
 }
 

@@ -14,6 +14,7 @@
 namespace principia {
 
 using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Mass;
 
 namespace physics {
@@ -21,18 +22,19 @@ namespace physics {
 class MassiveBody : public Body {
  public:
   // We use the gravitational parameter μ = G M in order not to accumulate
-  // unit roundoffs from repeated multiplications by G.  The parameter must not
-  // be zero.
+  // unit roundoffs from repeated multiplications by G.  The mass or
+  // gravitational parameter must not be zero.  The mean_radius may be zero.
   class Parameters {
    public:
-    // The constructors are implicit on purpose.
-    Parameters(
-        GravitationalParameter const& gravitational_parameter);  // NOLINT
-    Parameters(Mass const& mass);  // NOLINT(runtime/explicit)
+    Parameters(GravitationalParameter const& gravitational_parameter,
+               Length const& mean_radius);
+    Parameters(Mass const& mass,
+               Length const& mean_radius);
 
    private:
     GravitationalParameter const gravitational_parameter_;
     Mass const mass_;
+    Length const mean_radius_;
     friend class MassiveBody;
   };
 
@@ -42,6 +44,7 @@ class MassiveBody : public Body {
   // Returns the construction parameter.
   GravitationalParameter const& gravitational_parameter() const;
   Mass const& mass() const;
+  Length const& mean_radius() const;
 
   // Returns false.
   bool is_massless() const override;
