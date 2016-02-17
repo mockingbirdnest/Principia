@@ -77,7 +77,8 @@ bool FlightPlan::Append(Burn burn) {
       MakeNavigationManœuvre(
           std::move(burn),
           manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
-  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_)) {
+  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_) &&
+      CoastReachesManœuvreInitialTime(last_coast(), manœuvre)) {
     Append(std::move(manœuvre));
     return true;
   } else {
@@ -98,7 +99,8 @@ bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
   auto manœuvre =
       MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
-  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_)) {
+  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_) &&
+      CoastReachesManœuvreInitialTime(penultimate_coast(), manœuvre)) {
     manœuvres_.pop_back();
     PopLastSegment();  // Last coast.
     PopLastSegment();  // Last burn.
@@ -295,6 +297,28 @@ void FlightPlan::PopLastSegment() {
   }
 }
 
+bool FlightPlan::CoastReachesManœuvreInitialTime(
+    DiscreteTrajectory<Barycentric>& coast,
+    NavigationManœuvre const& manœuvre) {
+  // TODO(egg): whenever we call this function we end up recomputing the
+  // following trajectory in |Append|; we could pass it to |Append| instead,
+  // but then we would have to deal with the |set_on_destroy|.
+  DiscreteTrajectory<Barycentric>* recomputed_coast =
+      coast.parent()->NewForkWithCopy(coast.Fork().time());
+  // TODO(phl): NewForkWithoutCopy.
+  recomputed_coast->ForgetAfter(coast.Fork().time());
+  bool const reached_manœuvre_initial_time =
+      ephemeris_->FlowWithAdaptiveStep(
+          recomputed_coast,
+          Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+          length_integration_tolerance_,
+          speed_integration_tolerance_,
+          integrator_,
+          manœuvre.initial_time());
+  recomputed_coast->parent()->DeleteFork(&recomputed_coast);
+  return reached_manœuvre_initial_time;
+}
+
 Instant FlightPlan::start_of_last_coast() const {
   return manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time();
 }
@@ -303,6 +327,15 @@ Instant FlightPlan::start_of_penultimate_coast() const {
   return manœuvres_.size() == 1
              ? initial_time_
              : manœuvres_[manœuvres_.size() - 2].final_time();
+}
+
+DiscreteTrajectory<Barycentric>& FlightPlan::last_coast() {
+  return *segments_.back();
+}
+
+DiscreteTrajectory<Barycentric>& FlightPlan::penultimate_coast() {
+  // The penultimate coast is the antepenultimate segment.
+  return *segments_[segments_.size() - 3];
 }
 
 }  // namespace ksp_plugin

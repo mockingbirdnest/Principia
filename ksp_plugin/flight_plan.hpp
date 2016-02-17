@@ -120,8 +120,15 @@ class FlightPlan {
   // Deletes the last segment and removes it from |segments_|.
   void PopLastSegment();
 
+  bool CoastReachesManœuvreInitialTime(
+      DiscreteTrajectory<Barycentric>& coast,
+      NavigationManœuvre const& manœuvre);
+
   Instant start_of_last_coast() const;
   Instant start_of_penultimate_coast() const;
+
+  DiscreteTrajectory<Barycentric>& last_coast();
+  DiscreteTrajectory<Barycentric>& penultimate_coast();
 
   Mass const initial_mass_;
   Instant initial_time_;
