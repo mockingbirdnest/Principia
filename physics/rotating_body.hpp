@@ -37,11 +37,13 @@ class RotatingBody : public MassiveBody {
     // |reference_angle| is the angle of the prime meridian at
     // |reference_instant|.  |angular_velocity| gives the direction and speed of
     // the rotation of the body.
-    Parameters(Angle const& reference_angle,
+    Parameters(Length const& mean_radius,
+               Angle const& reference_angle,
                Instant const& reference_instant,
                AngularVelocity<Frame> const& angular_velocity);
 
    private:
+    Length const mean_radius_;
     Angle const reference_angle_;
     Instant const reference_instant_;
     AngularVelocity<Frame> const angular_velocity_;
@@ -52,6 +54,9 @@ class RotatingBody : public MassiveBody {
   RotatingBody(MassiveBody::Parameters const& massive_body_parameters,
                Parameters const& parameters);
   ~RotatingBody() = default;
+
+  // Returns the radius passed at construction.
+  Length mean_radius() const override;
 
   // Returns the angular velocity passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;

@@ -215,9 +215,7 @@ class PluginTest : public testing::Test {
           id_icrf_barycentric_(
               solar_system_->initial_state(SolarSystemFactory::name(index))),
           make_not_null_unique<MassiveBody>(
-              MassiveBody::Parameters(
-                  solar_system_->gravitational_parameter(name),
-                  solar_system_->mean_radius(name))));
+              solar_system_->gravitational_parameter(name)));
     }
   }
 
@@ -313,13 +311,10 @@ TEST_F(PluginTest, Serialization) {
             solar_system_->initial_state(parent_name));
     Instant const t;
     auto body = make_not_null_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            solar_system_->gravitational_parameter(name),
-            solar_system_->mean_radius(name)));
+        solar_system_->gravitational_parameter(name));
     KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
         /*primary=*/MassiveBody(
-            {solar_system_->gravitational_parameter(parent_name),
-             solar_system_->mean_radius(parent_name)}),
+            solar_system_->gravitational_parameter(parent_name)),
         /*secondary=*/*body,
         state_vectors,
         /*epoch=*/t).elements_at_epoch();
@@ -439,25 +434,19 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       /*celestial_index=*/1,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(
-          MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>(),
-                                  1 * Metre)));
+      make_not_null_unique<MassiveBody>(2 * SIUnit<GravitationalParameter>()));
   elements.semimajor_axis = 1 * Metre;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/2,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(
-          MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>(),
-                                  2 * Metre)));
+      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
   elements.mean_anomaly = π * Radian;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/3,
       /*parent_index=*/1,
       elements,
-      make_not_null_unique<MassiveBody>(
-          MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>(),
-                                  3 * Metre)));
+      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
