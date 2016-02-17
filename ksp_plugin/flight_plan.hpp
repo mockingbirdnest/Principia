@@ -62,7 +62,8 @@ class FlightPlan {
 
   // The following two functions return false and have no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
-  // burn, or end after |final_time_|.
+  // burn, or end after |final_time_|, or if the integration of the coasting
+  // phase times out or is singular before the burn.
   virtual bool Append(Burn burn);
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(Burn burn);
@@ -146,6 +147,9 @@ class FlightPlan {
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
   // either end prematurely or follow an anomalous segment; in the latter case
   // they are empty.
+  // The contract of |Append| and |ReplaceLast| implies that
+  // |anomalous_segments_| is at most 2: the penultimate coast is never
+  // anomalous.
   int anomalous_segments_ = 0;
 };
 
