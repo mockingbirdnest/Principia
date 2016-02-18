@@ -13,32 +13,55 @@ namespace tools {
 
 class StackTraceDecoder {
   const string kDBH =
-      @"\Program Files (x86)\Windows Kits\8.1\Debuggers\x86\dbh.exe";
+      @"\Program Files (x86)\Windows Kits\10\Debuggers\x86\dbh.exe";
 
   private static void Main(string[] args) {
-    if (args.Length != 2) {
-      Console.WriteLine("Usage: stacktrace_decoder <info_file_uri> <pdb_file>");
+    bool unity_crash;
+    string commit = null;
+    if (args.Length == 2) {
+      unity_crash = false;
+    } else if (args.Length == 3) {
+      var match = Regex.Match(args[2],
+                              "--unity-crash-at-commit=([0-9a-f]{40})");
+      if (match.Success) {
+        unity_crash = true;
+        commit = match.Groups[1].ToString();
+      } else {
+        PrintUsage();
+        return;
+      }
+    } else {
+      PrintUsage();
       return;
     }
     string info_file_uri = args[0];
     string pdb_file = args[1];
     var web_client = new WebClient();
     var stream = new StreamReader(web_client.OpenRead(info_file_uri));
-    var version_regex = new Regex(
-        @"^I.*\] Principia version " + 
-        @"([0-9]{10}-[A-Za-z]+)-[0-9]+-g([0-9a-f]{40}) built");
-    Match version_match;
+    if (!unity_crash) {
+      var version_regex = new Regex(
+          @"^I.*\] Principia version " + 
+          @"([0-9]{10}-[A-Za-z]+)-[0-9]+-g([0-9a-f]{40}) built");
+      Match version_match;
+      do {
+        version_match = version_regex.Match(stream.ReadLine());
+      } while (!version_match.Success);
+      string tag = version_match.Groups[1].ToString();
+      commit = version_match.Groups[2].ToString();
+    }
+    var base_address_regex = new Regex(
+        unity_crash ? @"GameData\\Principia\\principia.dll:principia.dll " +
+                      @"\(([0-9A-F]+)\)"
+                    : @"^I.*\] Base address is ([0-9A-F]+)$");
+    Match base_address_match;
     do {
-      version_match = version_regex.Match(stream.ReadLine());
-    } while (!version_match.Success);
-    string tag = version_match.Groups[1].ToString();
-    string commit = version_match.Groups[2].ToString();
-    var base_address_regex = new Regex(@"^I.*\] Base address is ([0-9A-F]+)$");
-    string base_address_string =
-        base_address_regex.Match(stream.ReadLine()).Groups[1].ToString();
+      base_address_match = base_address_regex.Match(stream.ReadLine());
+    } while (!base_address_match.Success);
+    string base_address_string = base_address_match.Groups[1].ToString();
     Int64 base_address = Convert.ToInt64(base_address_string, 16);
     var stack_regex = new Regex(
-        @"@\s+[0-9A-F]+\s+\(No symbol\) \[0x([0-9A-F]+)\]");
+        unity_crash ? @"\(0x([0-9A-F]+)\) \(.*\): \(filename not available\):"
+                    : @"@\s+[0-9A-F]+\s+\(No symbol\) \[0x([0-9A-F]+)\]");
     Match stack_match;
     do {
       stack_match = stack_regex.Match(stream.ReadLine());
@@ -72,6 +95,12 @@ class StackTraceDecoder {
         Console.WriteLine("[`" + file + ":" + line + "`](" + url + ")");
       }
     }
+  }
+
+  private static void PrintUsage() {
+    Console.WriteLine(
+        "Usage: stacktrace_decoder " +
+        "<info_file_uri> <pdb_file> [--unity-crash-at-commit=<sha1>]");
   }
 }
 
