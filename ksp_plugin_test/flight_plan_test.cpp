@@ -9,6 +9,8 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "serialization/ksp_plugin.pb.h"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
@@ -19,6 +21,10 @@ using physics::MassiveBody;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Newton;
+using testing_utilities::AlmostEquals;
+using testing_utilities::AbsoluteError;
+using ::testing::Eq;
+using ::testing::Lt;
 
 namespace ksp_plugin {
 
@@ -80,6 +86,36 @@ TEST_F(FlightPlanDeathTest, DestroyingFirstSegment) {
   EXPECT_DEATH({
     root_.ForgetAfter(t0_ - 7 * Second);
   }, "Destroying the first segment of flight plan");
+}
+
+TEST_F(FlightPlanTest, Singular) {
+  // A test mass falling from x₀ = 1 m at vanishing initial speed onto a body
+  // with gravitational parameter μ = 1 m³/s².  A singularity occurs for
+  // t² = π² x₀³ / μ.
+  auto const& μ = ephemeris_->bodies().back()->gravitational_parameter();
+  Instant const singularity = t0_ + π * Sqrt(Pow<3>(0.5 * Metre) / μ);
+  flight_plan_.reset();
+  root_.ForgetAfter(root_.Begin().time());
+  root_.Append(t0_,
+               {Barycentric::origin + Displacement<Barycentric>(
+                                          {1 * Metre, 0 * Metre, 0 * Metre}),
+                Velocity<Barycentric>()});
+  flight_plan_ = std::make_unique<FlightPlan>(
+      &root_,
+      /*initial_time=*/t0_,
+      /*final_time=*/singularity + 1.5 * Second,
+      /*initial_mass=*/1 * Kilogram,
+      ephemeris_.get(),
+      integrators::DormandElMikkawyPrince1986RKN434FM<
+          Position<Barycentric>>(),
+      /*length_integration_tolerance=*/ 1 * Milli(Metre),
+      /*speed_integration_tolerance=*/ 1 * Milli(Metre) / Second);
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  flight_plan_->GetSegment(0, &begin, &end);
+  DiscreteTrajectory<Barycentric>::Iterator back = end;
+  --back;
+  EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1E-4 * Second));
 }
 
 TEST_F(FlightPlanTest, Append) {
