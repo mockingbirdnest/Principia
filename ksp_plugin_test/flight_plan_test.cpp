@@ -23,6 +23,8 @@ using quantities::si::Milli;
 using quantities::si::Newton;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteError;
+using ::testing::AllOf;
+using ::testing::Gt;
 using ::testing::Eq;
 using ::testing::Lt;
 
@@ -69,9 +71,21 @@ class FlightPlanTest : public testing::Test {
         ephemeris_.get(),
         integrators::DormandElMikkawyPrince1986RKN434FM<
             Position<Barycentric>>(),
-        /*length_integration_tolerance=*/ 1 * Milli(Metre),
-        /*speed_integration_tolerance=*/ 1 * Milli(Metre) / Second);
+        /*length_integration_tolerance=*/1 * Milli(Metre),
+        /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
   }
+
+  Burn MakeTangentBurn(Force const& thrust,
+                       SpecificImpulse const& specific_impulse,
+                       Instant const& initial_time,
+                       Speed const& Δv) {
+    return {thrust,
+            specific_impulse,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            initial_time,
+            Velocity<Frenet<Navigation>>(
+                {Δv, 0 * Metre / Second, 0 * Metre / Second})};
+  };
 
   Instant const t0_;
   std::unique_ptr<TestNavigationFrame> navigation_frame_;
@@ -96,26 +110,85 @@ TEST_F(FlightPlanTest, Singular) {
   Instant const singularity = t0_ + π * Sqrt(Pow<3>(0.5 * Metre) / μ);
   flight_plan_.reset();
   root_.ForgetAfter(root_.Begin().time());
+  // NOTE(egg): In order for to avoid singular Frenet frames NaNing everything,
+  // we offset our test particle by 100 ε.  The resulting system is still
+  // extremely stiff, indeed the integrator detects a singularity at the exact
+  // same time.  We could avoid doing this if we had absolute direction
+  // specification for manœuvres.
   root_.Append(t0_,
-               {Barycentric::origin + Displacement<Barycentric>(
-                                          {1 * Metre, 0 * Metre, 0 * Metre}),
+               {Barycentric::origin +
+                    Displacement<Barycentric>(
+                        {1 * Metre,
+                         100 * std::numeric_limits<double>::epsilon() * Metre,
+                         0 * Metre}),
                 Velocity<Barycentric>()});
   flight_plan_ = std::make_unique<FlightPlan>(
       &root_,
       /*initial_time=*/t0_,
-      /*final_time=*/singularity + 1.5 * Second,
+      /*final_time=*/singularity + 100 * Second,
       /*initial_mass=*/1 * Kilogram,
       ephemeris_.get(),
-      integrators::DormandElMikkawyPrince1986RKN434FM<
-          Position<Barycentric>>(),
-      /*length_integration_tolerance=*/ 1 * Milli(Metre),
-      /*speed_integration_tolerance=*/ 1 * Milli(Metre) / Second);
+      integrators::DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      /*length_integration_tolerance=*/1 * Milli(Metre),
+      /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   flight_plan_->GetSegment(0, &begin, &end);
   DiscreteTrajectory<Barycentric>::Iterator back = end;
   --back;
   EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1E-4 * Second));
+  // Attempting to put a burn past the singularity fails.
+  EXPECT_FALSE(
+      flight_plan_->Append(
+          MakeTangentBurn(/*thrust=*/1 * Newton,
+                          /*specific_impulse=*/1 * Newton * Second / Kilogram,
+                          /*initial_time=*/singularity + 1 * Milli(Second),
+                          /*Δv=*/1 * Metre / Second)));
+
+  // The singularity occurs during the burn: we're boosting towards the
+  // singularity, so we reach the singularity in less than π / 2√2 s, before the
+  // end of the burn which lasts 10 (1 - 1/e) s.
+  // The derivation of analytic expression for time at which we reach the
+  // singularity is left as an exercise to the reader.
+  EXPECT_TRUE(
+      flight_plan_->Append(
+          MakeTangentBurn(/*thrust=*/1 * Newton,
+                          /*specific_impulse=*/1 * Newton * Second / Kilogram,
+                          /*initial_time=*/t0_ + 0.5 * Second,
+                          /*Δv=*/1 * Metre / Second)));
+  flight_plan_->GetSegment(1, &begin, &end);
+  back = end;
+  --back;
+  EXPECT_THAT(back.time(), Lt(singularity));
+  EXPECT_NE(begin, back);
+  flight_plan_->GetSegment(2, &begin, &end);
+  back = end;
+  --back;
+  EXPECT_EQ(begin, back);
+
+  // The singularity occurs after the burn: we're boosting away from the
+  // singularity, so we reach the singularity in more than π / 2√2 s, after the
+  // end of the burn which lasts (1 - 1/e)/10 s.
+  // The proof of existence of the singularity, as well as the derivation of
+  // analytic expression for time at which we reach the singularity, are left as
+  // an exercise to the reader.
+  EXPECT_TRUE(
+      flight_plan_->ReplaceLast(
+          MakeTangentBurn(/*thrust=*/10 * Newton,
+                          /*specific_impulse=*/1 * Newton * Second / Kilogram,
+                          /*initial_time=*/t0_ + 0.5 * Second,
+                          /*Δv=*/-1 * Metre / Second)));
+  flight_plan_->GetSegment(1, &begin, &end);
+  flight_plan_->GetSegment(1, &begin, &end);
+  back = end;
+  --back;
+  EXPECT_THAT(back.time(), Eq(t0_ + 0.5 * Second + (1 - 1 / e) / 10 * Second));
+  EXPECT_NE(begin, back);
+  flight_plan_->GetSegment(2, &begin, &end);
+  back = end;
+  --back;
+  EXPECT_THAT(back.time(), AllOf(Gt(singularity), Lt(t0_ + 2 * Second)));
+  EXPECT_NE(begin, back);
 }
 
 TEST_F(FlightPlanTest, Append) {
