@@ -88,7 +88,7 @@ class Ephemeris {
   // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   // Returns true if and only if |*trajectory| was integrated until |t|.
-  bool FlowWithAdaptiveStep(
+  virtual bool FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Length const& length_integration_tolerance,
