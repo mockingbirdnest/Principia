@@ -151,11 +151,10 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
     not_null<DiscreteTrajectory<Barycentric>*> const root,
     not_null<Ephemeris<Barycentric>*> const ephemeris) {
-  // Setting |final_time_| to |initial_time_| so that we don't compute a coast.
   auto flight_plan = std::make_unique<FlightPlan>(
       root,
       Instant::ReadFromMessage(message.initial_time()),
-      Instant::ReadFromMessage(message.initial_time()),
+      Instant::ReadFromMessage(message.final_time()),
       Mass::ReadFromMessage(message.initial_mass()),
       ephemeris,
       AdaptiveStepSizeIntegrator<
@@ -167,7 +166,6 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     flight_plan->manœuvres_.emplace_back(
         NavigationManœuvre::ReadFromMessage(message.manoeuvre(i), ephemeris));
   }
-  flight_plan->final_time_ = Instant::ReadFromMessage(message.final_time());
   flight_plan->RecomputeSegments();
   return std::move(flight_plan);
 }
@@ -247,7 +245,6 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
 
 void FlightPlan::ReplaceLastSegment(
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> segment) {
-  CHECK_EQ(segment->parent(), segments_.back()->parent());
   CHECK_EQ(segment->Begin().time(), segments_.back()->Begin().time());
   PopLastSegment();
   // |segment| must not be anomalous, so it cannot not follow an anomalous

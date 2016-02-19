@@ -148,8 +148,8 @@ class FlightPlan {
   Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Every segment is a nonempty root.
-  // Each segment has a |begin()| with the same degrees of freedom and time as
-  // the |last()| of the preceding segment.
+  // For every segment |s| following a segment |p|,
+  // |s->begin().time() == p->last().time()|.
   std::vector<not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>>
       segments_;
   std::vector<NavigationManœuvre> manœuvres_;
