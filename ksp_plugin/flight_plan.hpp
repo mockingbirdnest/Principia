@@ -99,9 +99,9 @@ class FlightPlan {
   FlightPlan();
 
  private:
-  // Appends |manœuvre| to |manœuvres_|, recomputes the last coast segment until
-  // |manœuvre.initial_time()|, and adds a burn and a coast segment.
-  // |manœuvre| must fit between |start_of_last_coast()| and |final_time_|.
+  // Appends |manœuvre| to |manœuvres_|, adds a burn and a coast segment.
+  // |manœuvre| must fit between |start_of_last_coast()| and |final_time_|,
+  // the last coast segment must end at |manœuvre.initial_time()|.
   void Append(NavigationManœuvre manœuvre);
 
   // Recomputes all trajectories in |segments_|.
@@ -113,6 +113,12 @@ class FlightPlan {
   // Flows the last segment until |final_time| with no intrinsic acceleration.
   void CoastLastSegment(Instant const& final_time);
 
+  // Replaces the last segment with |segment|.  |segment| must be forked from
+  // the same trajectory as the last segment, and at the same time.  |segment|
+  // must not be anomalous.
+  void ReplaceLastSegment(
+      not_null<DiscreteTrajectory<Barycentric>*> const segment);
+
   // Adds a trajectory to |segments_|, forked at the end of the last one.
   void AddSegment();
   // Forgets the last segment after its fork.
@@ -121,7 +127,10 @@ class FlightPlan {
   // Deletes the last segment and removes it from |segments_|.
   void PopLastSegment();
 
-  bool CoastReachesManœuvreInitialTime(
+  // If the integration of a coast from the fork of |coast| until
+  // |manœuvre.initial_time()| reaches the end, returns true, and returns the
+  // integrated trajectory.  Otherwise, returns null.
+  DiscreteTrajectory<Barycentric>* CoastIfReachesManœuvreInitialTime(
       DiscreteTrajectory<Barycentric>& coast,
       NavigationManœuvre const& manœuvre);
 

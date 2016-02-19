@@ -63,6 +63,12 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 }
 
 template<typename Frame>
+std::function<void(not_null<DiscreteTrajectory<Frame> const*> const)>
+DiscreteTrajectory<Frame>::get_on_destroy() const {
+  return on_destroy_;
+}
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
   return --this->End();

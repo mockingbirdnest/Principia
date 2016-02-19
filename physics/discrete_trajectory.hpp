@@ -78,6 +78,8 @@ class DiscreteTrajectory
   void set_on_destroy(
       std::function<void(not_null<DiscreteTrajectory const*> const)>
           on_destroy);
+  std::function<void(not_null<DiscreteTrajectory const*> const)>
+  get_on_destroy() const;
 
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.

@@ -77,13 +77,16 @@ bool FlightPlan::Append(Burn burn) {
       MakeNavigationManœuvre(
           std::move(burn),
           manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
-  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_) &&
-      CoastReachesManœuvreInitialTime(last_coast(), manœuvre)) {
-    Append(std::move(manœuvre));
-    return true;
-  } else {
-    return false;
+  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_)) {
+    DiscreteTrajectory<Barycentric>* recomputed_last_coast =
+        CoastIfReachesManœuvreInitialTime(last_coast(), manœuvre);
+    if (recomputed_last_coast) {
+      ReplaceLastSegment(recomputed_last_coast);
+      Append(std::move(manœuvre));
+      return true;
+    }
   }
+  return false;
 }
 
 void FlightPlan::RemoveLast() {
@@ -99,16 +102,19 @@ bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
   auto manœuvre =
       MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
-  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_) &&
-      CoastReachesManœuvreInitialTime(penultimate_coast(), manœuvre)) {
-    manœuvres_.pop_back();
-    PopLastSegment();  // Last coast.
-    PopLastSegment();  // Last burn.
-    Append(std::move(manœuvre));
-    return true;
-  } else {
-    return false;
+  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_)) {
+    DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
+        CoastIfReachesManœuvreInitialTime(penultimate_coast(), manœuvre);
+    if (recomputed_penultimate_coast) {
+      manœuvres_.pop_back();
+      PopLastSegment();  // Last coast.
+      PopLastSegment();  // Last burn.
+      ReplaceLastSegment(recomputed_penultimate_coast);
+      Append(std::move(manœuvre));
+      return true;
+    }
   }
+  return false;
 }
 
 bool FlightPlan::SetFinalTime(Instant const& final_time) {
@@ -208,8 +214,7 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
   {
     // Hide the moved-from |manœuvre|.
     NavigationManœuvre& manœuvre = manœuvres_.back();
-    ResetLastSegment();
-    CoastLastSegment(manœuvre.initial_time());
+    CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
     manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
     BurnLastSegment(manœuvre);
@@ -270,6 +275,19 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
   }
 }
 
+void FlightPlan::ReplaceLastSegment(
+    not_null<DiscreteTrajectory<Barycentric>*> const segment) {
+  CHECK_EQ(segment->parent(), segments_.back()->parent());
+  CHECK_EQ(segment->Fork().time(), segments_.back()->Fork().time());
+  segment->set_on_destroy(segments_.back()->get_on_destroy());
+  segments_.back()->set_on_destroy(nullptr);
+  PopLastSegment();
+  // |segment| must not be anomalous, so it cannot not follow an anomalous
+  // segment.
+  CHECK_EQ(0, anomalous_segments_);
+  segments_.emplace_back(segment);
+}
+
 void FlightPlan::AddSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
   if (anomalous_segments_ > 0) {
@@ -296,12 +314,9 @@ void FlightPlan::PopLastSegment() {
   }
 }
 
-bool FlightPlan::CoastReachesManœuvreInitialTime(
+DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
     DiscreteTrajectory<Barycentric>& coast,
     NavigationManœuvre const& manœuvre) {
-  // TODO(egg): whenever we call this function we end up recomputing the
-  // following trajectory in |Append|; we could pass it to |Append| instead,
-  // but then we would have to deal with the |set_on_destroy|.
   DiscreteTrajectory<Barycentric>* recomputed_coast =
       coast.parent()->NewForkWithCopy(coast.Fork().time());
   // TODO(phl): NewForkWithoutCopy.
@@ -314,8 +329,10 @@ bool FlightPlan::CoastReachesManœuvreInitialTime(
           speed_integration_tolerance_,
           integrator_,
           manœuvre.initial_time());
-  recomputed_coast->parent()->DeleteFork(&recomputed_coast);
-  return reached_manœuvre_initial_time;
+  if (!reached_manœuvre_initial_time) {
+    recomputed_coast->parent()->DeleteFork(&recomputed_coast);
+  }
+  return recomputed_coast;
 }
 
 Instant FlightPlan::start_of_last_coast() const {
