@@ -181,7 +181,6 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // The constructor has forked a segment.  Remove it.
   flight_plan->segments_.front()->set_on_destroy(nullptr);
   flight_plan->PopLastSegment();
-  flight_plan->anomalous_segments_ = message.anomalous_segments();
   for (auto const& segment : message.segment()) {
     flight_plan->segments_.emplace_back(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
@@ -193,6 +192,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     flight_plan->manœuvres_[i].set_coasting_trajectory(
         flight_plan->segments_[2 * i]);
   }
+  flight_plan->anomalous_segments_ = message.anomalous_segments();
   return std::move(flight_plan);
 }
 
@@ -238,18 +238,16 @@ void FlightPlan::RecomputeSegments() {
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (anomalous_segments_ > 0) {
     return;
-  } else {
-    if (manœuvre.initial_time() < manœuvre.final_time()) {
-      bool const normal =
-          ephemeris_->FlowWithAdaptiveStep(segments_.back(),
-                                           manœuvre.IntrinsicAcceleration(),
-                                           length_integration_tolerance_,
-                                           speed_integration_tolerance_,
-                                           integrator_,
-                                           manœuvre.final_time());
-      if (!normal) {
-        ++anomalous_segments_;
-      }
+  } else if (manœuvre.initial_time() < manœuvre.final_time()) {
+    bool const reached_final_time =
+        ephemeris_->FlowWithAdaptiveStep(segments_.back(),
+                                         manœuvre.IntrinsicAcceleration(),
+                                         length_integration_tolerance_,
+                                         speed_integration_tolerance_,
+                                         integrator_,
+                                         manœuvre.final_time());
+    if (!reached_final_time) {
+      ++anomalous_segments_;
     }
   }
 }
@@ -258,14 +256,15 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
   if (anomalous_segments_ > 0) {
     return;
   } else {
-    bool const normal = ephemeris_->FlowWithAdaptiveStep(
-                            segments_.back(),
-                            Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-                            length_integration_tolerance_,
-                            speed_integration_tolerance_,
-                            integrator_,
-                            final_time);
-    if (!normal) {
+    bool const reached_final_time =
+          ephemeris_->FlowWithAdaptiveStep(
+                          segments_.back(),
+                          Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+                          length_integration_tolerance_,
+                          speed_integration_tolerance_,
+                          integrator_,
+                          final_time);
+    if (!reached_final_time) {
       ++anomalous_segments_;
     }
   }

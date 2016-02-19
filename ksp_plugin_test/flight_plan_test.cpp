@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
+#include <limits>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -21,11 +22,11 @@ using physics::MassiveBody;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Newton;
-using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
-using ::testing::Gt;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::Lt;
 
 namespace ksp_plugin {
@@ -85,7 +86,7 @@ class FlightPlanTest : public testing::Test {
             initial_time,
             Velocity<Frenet<Navigation>>(
                 {Δv, 0 * Metre / Second, 0 * Metre / Second})};
-  };
+  }
 
   Instant const t0_;
   std::unique_ptr<TestNavigationFrame> navigation_frame_;
@@ -105,9 +106,10 @@ TEST_F(FlightPlanDeathTest, DestroyingFirstSegment) {
 TEST_F(FlightPlanTest, Singular) {
   // A test mass falling from x₀ = 1 m at vanishing initial speed onto a body
   // with gravitational parameter μ = 1 m³/s².  A singularity occurs for
-  // t² = π² x₀³ / μ.
+  // t² = π² (x₀/2)³ / μ.
   auto const& μ = ephemeris_->bodies().back()->gravitational_parameter();
-  Instant const singularity = t0_ + π * Sqrt(Pow<3>(0.5 * Metre) / μ);
+  Length const x0 = 1 * Metre;
+  Instant const singularity = t0_ + π * Sqrt(Pow<3>(x0 / 2) / μ);
   flight_plan_.reset();
   root_.ForgetAfter(root_.Begin().time());
   // NOTE(egg): In order for to avoid singular Frenet frames NaNing everything,
@@ -118,7 +120,7 @@ TEST_F(FlightPlanTest, Singular) {
   root_.Append(t0_,
                {Barycentric::origin +
                     Displacement<Barycentric>(
-                        {1 * Metre,
+                        {x0,
                          100 * std::numeric_limits<double>::epsilon() * Metre,
                          0 * Metre}),
                 Velocity<Barycentric>()});
@@ -148,7 +150,7 @@ TEST_F(FlightPlanTest, Singular) {
   // The singularity occurs during the burn: we're boosting towards the
   // singularity, so we reach the singularity in less than π / 2√2 s, before the
   // end of the burn which lasts 10 (1 - 1/e) s.
-  // The derivation of analytic expression for time at which we reach the
+  // The derivation of analytic expression for the time at which we reach the
   // singularity is left as an exercise to the reader.
   EXPECT_TRUE(
       flight_plan_->Append(
@@ -170,8 +172,8 @@ TEST_F(FlightPlanTest, Singular) {
   // singularity, so we reach the singularity in more than π / 2√2 s, after the
   // end of the burn which lasts (1 - 1/e)/10 s.
   // The proof of existence of the singularity, as well as the derivation of
-  // analytic expression for time at which we reach the singularity, are left as
-  // an exercise to the reader.
+  // analytic expression for the time at which we reach the singularity, are
+  // left as an exercise to the reader.
   EXPECT_TRUE(
       flight_plan_->ReplaceLast(
           MakeTangentBurn(/*thrust=*/10 * Newton,
