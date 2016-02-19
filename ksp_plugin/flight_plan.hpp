@@ -48,7 +48,7 @@ class FlightPlan {
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance);
-  virtual ~FlightPlan();
+  virtual ~FlightPlan() = default;
 
   virtual Instant initial_time() const;
   virtual Instant final_time() const;
@@ -117,7 +117,7 @@ class FlightPlan {
   // the same trajectory as the last segment, and at the same time.  |segment|
   // must not be anomalous.
   void ReplaceLastSegment(
-      not_null<DiscreteTrajectory<Barycentric>*> const segment);
+      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> segment);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.
   void AddSegment();
@@ -130,15 +130,16 @@ class FlightPlan {
   // If the integration of a coast from the fork of |coast| until
   // |manœuvre.initial_time()| reaches the end, returns true, and returns the
   // integrated trajectory.  Otherwise, returns null.
-  DiscreteTrajectory<Barycentric>* CoastIfReachesManœuvreInitialTime(
-      DiscreteTrajectory<Barycentric>& coast,
-      NavigationManœuvre const& manœuvre);
+  std::unique_ptr<DiscreteTrajectory<Barycentric>>
+  CoastIfReachesManœuvreInitialTime(
+      DiscreteTrajectory<Barycentric> const& coast,
+      NavigationManœuvre const& manœuvre) const;
 
   Instant start_of_last_coast() const;
   Instant start_of_penultimate_coast() const;
 
-  DiscreteTrajectory<Barycentric>& last_coast();
-  DiscreteTrajectory<Barycentric>& penultimate_coast();
+  DiscreteTrajectory<Barycentric> const& last_coast() const;
+  DiscreteTrajectory<Barycentric> const& penultimate_coast() const;
 
   Mass const initial_mass_;
   Instant initial_time_;
@@ -146,9 +147,11 @@ class FlightPlan {
   Length length_integration_tolerance_;
   Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
-  // alternate.  This simulates a stack.  Each segment is a fork of the previous
-  // one.
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
+  // alternate.  This simulates a stack.  Every segment is a nonempty root.
+  // Each segment has a |begin()| with the same degrees of freedom and time as
+  // the |last()| of the preceding segment.
+  std::vector<not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>>
+      segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   AdaptiveStepSizeIntegrator<

@@ -40,11 +40,14 @@ message FlightPlan {
   required Quantity length_integration_tolerance = 4;
   required Quantity speed_integration_tolerance = 5;
   required AdaptiveStepSizeIntegrator integrator = 6;
-  repeated Trajectory.Pointer segment = 7;
   repeated Manoeuvre manoeuvre = 8;
-  // NOTE(egg): |anomalous_segments| will no longer need to be serialized when
-  // we stop serializing recomputable data.
-  optional int32 anomalous_segments = 9 [default = 0];
+  // Strong deprecation as per the protobuf language guide.
+  // repeated Trajectory.Pointer segment = 7;
+  reserved "segment";
+  reserved 7;
+  // optional int32 anomalous_segments = 9 [default = 0];
+  reserved "anomalous_segments";
+  reserved 9;
 }
 
 message PhysicsBubble {
