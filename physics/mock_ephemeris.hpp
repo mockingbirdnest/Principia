@@ -31,7 +31,7 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
   MOCK_METHOD6_T(
       FlowWithAdaptiveStep,
-      void(not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      bool(not_null<DiscreteTrajectory<Frame>*> const trajectory,
            typename Ephemeris<Frame>::IntrinsicAcceleration
                intrinsic_acceleration,
            Length const& length_integration_tolerance,

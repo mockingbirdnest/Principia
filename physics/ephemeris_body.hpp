@@ -270,7 +270,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::FlowWithAdaptiveStep(
+bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Length const& length_integration_tolerance,
@@ -317,8 +317,19 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
                 std::cref(length_integration_tolerance),
                 std::cref(speed_integration_tolerance),
                 _1, _2);
+  // TODO(egg): this should not be hard-coded, but we shouldn't keep adding
+  // parameters to this function.  Perhaps the tolerances, integrator, and
+  // max_steps should be part of the state of the ephemeris, we keep using the
+  // same one, or should form a struct of their own.
+  step_size.max_steps = 1000;
 
-  integrator.Solve(problem, step_size);
+  auto const outcome = integrator.Solve(problem, step_size);
+  // TODO(egg): when we have events in trajectories, we should add a singularity
+  // event at the end if the outcome indicates a singularity
+  // (|VanishingStepSize|).  We should not have an event on the trajectory if
+  // |ReachedMaximalStepCount|, since that is not a physical property, but
+  // rather a self-imposed constraint.
+  return outcome == integrators::TerminationCondition::Done;
 }
 
 template<typename Frame>

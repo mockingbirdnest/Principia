@@ -56,6 +56,7 @@ using testing_utilities::SolarSystemFactory;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::Contains;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
@@ -554,7 +555,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       new MockDynamicFrame<Barycentric, Navigation>();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(AppendToDiscreteTrajectory());
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
   EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
