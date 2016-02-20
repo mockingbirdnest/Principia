@@ -141,8 +141,7 @@ class DiscreteTrajectory
 
   Timeline timeline_;
 
-  std::function<void(not_null<DiscreteTrajectory const*> const)>
-      on_destroy_;
+  OnDestroyCallback on_destroy_;
 
   template<typename, typename>
   friend class internal::ForkableIterator;

@@ -63,7 +63,7 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 }
 
 template<typename Frame>
-DiscreteTrajectory<Frame>::OnDestroyCallback
+typename DiscreteTrajectory<Frame>::OnDestroyCallback
 DiscreteTrajectory<Frame>::get_on_destroy() const {
   return on_destroy_;
 }
