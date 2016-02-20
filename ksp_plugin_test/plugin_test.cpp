@@ -593,7 +593,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 1));
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
   EXPECT_LE(satellite->history().Begin().time(),
             satellite->flight_plan()->initial_time());
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
