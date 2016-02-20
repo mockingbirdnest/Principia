@@ -182,7 +182,7 @@ bool Ephemeris<Frame>::empty() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
-  Instant t_min;
+  Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
     t_min = std::max(t_min, trajectory->t_min());

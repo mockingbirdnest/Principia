@@ -16,6 +16,7 @@ namespace principia {
 using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::Normalize;
+using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using ::testing::IsNull;
@@ -42,6 +43,7 @@ class BodyTest : public testing::Test {
     auto const rotating_body =
         RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),
                         typename RotatingBody<F>::Parameters(
+                            2 * Metre,
                             3 * Radian,
                             Instant() + 4 * Second,
                             angular_velocity));
@@ -72,12 +74,14 @@ class BodyTest : public testing::Test {
   RotatingBody<World> rotating_body_ =
       RotatingBody<World>(17 * SIUnit<GravitationalParameter>(),
                           RotatingBody<World>::Parameters(
+                              1 * Metre,
                               3 * Radian,
                               Instant() + 4 * Second,
                               angular_velocity_));
   OblateBody<World> oblate_body_ =
       OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
                         RotatingBody<World>::Parameters(
+                            1 * Metre,
                             3 * Radian,
                             Instant() + 4 * Second,
                             angular_velocity_),

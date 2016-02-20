@@ -14,6 +14,7 @@
 namespace principia {
 
 using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Mass;
 
 namespace physics {
@@ -42,6 +43,9 @@ class MassiveBody : public Body {
   // Returns the construction parameter.
   GravitationalParameter const& gravitational_parameter() const;
   Mass const& mass() const;
+
+  // Returns zero.
+  virtual Length mean_radius() const;
 
   // Returns false.
   bool is_massless() const override;

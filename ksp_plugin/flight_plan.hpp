@@ -128,8 +128,8 @@ class FlightPlan {
   void PopLastSegment();
 
   // If the integration of a coast from the fork of |coast| until
-  // |manœuvre.initial_time()| reaches the end, returns true, and returns the
-  // integrated trajectory.  Otherwise, returns null.
+  // |manœuvre.initial_time()| reaches the end, returns the integrated
+  // trajectory.  Otherwise, returns null.
   std::unique_ptr<DiscreteTrajectory<Barycentric>>
   CoastIfReachesManœuvreInitialTime(
       DiscreteTrajectory<Barycentric> const& coast,
