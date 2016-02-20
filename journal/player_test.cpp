@@ -47,6 +47,11 @@ class PlayerTest : public ::testing::Test {
     Recorder::Deactivate();
   }
 
+  template<typename Profile>
+  void RunIfAppropriate(serialization::Method const& method, Player& player) {
+    player.RunIfAppropriate<Profile>(method);
+  }
+
   ::testing::TestInfo const* const test_info_;
   std::string const test_case_name_;
   std::string const test_name_;
@@ -90,10 +95,9 @@ TEST_F(PlayerTest, Benchmarks) {
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
     // An example of how journalling may be used for debugging.  You must set
-    // |path| and fill the |m| protocol buffer.  This probably requires to make
-    // RunIfAppropriate public.
+    // |path| and fill the |m| protocol buffer.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\PrincipiaCrash2\JOURNAL.20160211-225301)";  // NOLINT
+        R"(P:\Public Mockingbird\Principia\JOURNAL.20160220-134018)";  // NOLINT
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -101,18 +105,16 @@ TEST_F(PlayerTest, Debug) {
       LOG_IF(ERROR, (count % 100'000) == 0) << count
                                             << " journal entries replayed";
     }
+    LOG(ERROR) << count << " journal entries in total, last one is:\n"
+               << player.last_method().DebugString();
 
     serialization::Method m;
     auto* extension = m.MutableExtension(
-        serialization::FlightPlanRenderedSegment::extension);
+        serialization::SerializePlugin::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(213537672);
-    in->set_vessel_guid("6b68236e-6563-484b-a825-1598bfaed27a");
-    in->mutable_sun_world_position()->set_x(-118919908386.17902);
-    in->mutable_sun_world_position()->set_y(-56606248615.544792);
-    in->mutable_sun_world_position()->set_z(-56606248615.544792);
-    in->set_index(0);
-    player.RunIfAppropriate<FlightPlanRenderedSegment>(m);
+    in->set_plugin(216768776);
+    in->set_serializer(0);
+    RunIfAppropriate<SerializePlugin>(m, player);
   }
 }
 #endif

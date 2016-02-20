@@ -301,7 +301,7 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     if (vessel->has_flight_plan()) {
       forgetting_time =
-          std::max(forgetting_time,
+          std::min(forgetting_time,
                    vessel->flight_plan()->initial_time());
     }
   }

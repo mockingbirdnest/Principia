@@ -185,12 +185,14 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
   // The constructor has forked a segment.  Remove it.
+  auto on_destroy = flight_plan->segments_.front()->get_on_destroy();
   flight_plan->segments_.front()->set_on_destroy(nullptr);
   flight_plan->PopLastSegment();
   for (auto const& segment : message.segment()) {
     flight_plan->segments_.emplace_back(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
   }
+  flight_plan->segments_.front()->set_on_destroy(std::move(on_destroy));
   for (int i = 0; i < message.manoeuvre_size(); ++i) {
     auto const& manoeuvre = message.manoeuvre(i);
     flight_plan->manœuvres_.push_back(
