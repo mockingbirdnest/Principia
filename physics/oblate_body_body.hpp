@@ -18,8 +18,8 @@ namespace physics {
 
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
-                                          Length const& radius)
-    : j2_over_μ_(-j2 * radius * radius) {
+                                          Length const& reference_radius)
+    : j2_over_μ_(-j2 * reference_radius * reference_radius) {
   CHECK_NE(j2, 0.0) << "Oblate body cannot have zero j2";
 }
 
@@ -107,7 +107,8 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
     MassiveBody::Parameters const& massive_body_parameters) {
   auto const axis = Vector<double, Frame>::ReadFromMessage(message.axis());
   typename RotatingBody<Frame>::Parameters
-      rotating_body_parameters(0 * Radian,
+      rotating_body_parameters(Length(),
+                               Angle(),
                                Instant(),
                                AngularVelocity<Frame>(
                                    axis.coordinates() * Radian / Second));

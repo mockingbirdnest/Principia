@@ -20,9 +20,10 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
   ~MockPlugin() override = default;
 
-  MOCK_METHOD2(InsertSun,
+  MOCK_METHOD3(InsertSun,
                void(Index const celestial_index,
-                    GravitationalParameter const& gravitational_parameter));
+                    GravitationalParameter const& gravitational_parameter,
+                    Length const& mean_radius));
 
   void InsertCelestialAbsoluteCartesian(
       Index const celestial_index,

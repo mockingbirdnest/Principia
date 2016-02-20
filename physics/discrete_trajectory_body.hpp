@@ -58,12 +58,12 @@ DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::set_on_destroy(
-    std::function<void(not_null<DiscreteTrajectory const*>)> on_destroy) {
+    OnDestroyCallback on_destroy) {
   on_destroy_ = on_destroy;
 }
 
 template<typename Frame>
-std::function<void(not_null<DiscreteTrajectory<Frame> const*> const)>
+typename DiscreteTrajectory<Frame>::OnDestroyCallback
 DiscreteTrajectory<Frame>::get_on_destroy() const {
   return on_destroy_;
 }

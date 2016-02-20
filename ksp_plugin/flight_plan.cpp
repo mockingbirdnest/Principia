@@ -80,7 +80,7 @@ bool FlightPlan::Append(Burn burn) {
   if (manœuvre.FitsBetween(start_of_last_coast(), final_time_)) {
     DiscreteTrajectory<Barycentric>* recomputed_last_coast =
         CoastIfReachesManœuvreInitialTime(last_coast(), manœuvre);
-    if (recomputed_last_coast) {
+    if (recomputed_last_coast != nullptr) {
       ReplaceLastSegment(recomputed_last_coast);
       Append(std::move(manœuvre));
       return true;
@@ -105,7 +105,7 @@ bool FlightPlan::ReplaceLast(Burn burn) {
   if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_)) {
     DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
         CoastIfReachesManœuvreInitialTime(penultimate_coast(), manœuvre);
-    if (recomputed_penultimate_coast) {
+    if (recomputed_penultimate_coast != nullptr) {
       manœuvres_.pop_back();
       PopLastSegment();  // Last coast.
       PopLastSegment();  // Last burn.
