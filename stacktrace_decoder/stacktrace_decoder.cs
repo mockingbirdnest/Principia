@@ -59,10 +59,20 @@ class StackTraceDecoder {
     } while (!base_address_match.Success);
     string base_address_string = base_address_match.Groups[1].ToString();
     Int64 base_address = Convert.ToInt64(base_address_string, 16);
+    Console.WriteLine("<!--- Using base address " +
+                      Convert.ToString(base_address, 16) + " -->");
     var stack_regex = new Regex(
-        unity_crash ? @"\(0x([0-9A-F]+)\) \(.*\): \(filename not available\):"
+        unity_crash ? @"\(0x([0-9A-F]+)\) .*"
                     : @"@\s+[0-9A-F]+\s+\(No symbol\) \[0x([0-9A-F]+)\]");
     Match stack_match;
+    if (unity_crash) {
+      Match stack_start_match;
+      do {
+        stack_start_match =
+            Regex.Match(stream.ReadLine(),
+                        @"========== OUTPUTING STACK TRACE ==================");
+      } while (!stack_start_match.Success);
+    }
     do {
       stack_match = stack_regex.Match(stream.ReadLine());
     } while (!stack_match.Success);
@@ -93,6 +103,9 @@ class StackTraceDecoder {
         string url = "https://github.com/mockingbirdnest/Principia/blob/" +
                      commit + '/' + file + "#L" + line;
         Console.WriteLine("[`" + file + ":" + line + "`](" + url + ")");
+      } else {
+        Console.WriteLine("<!--- Nothing for " + stack_match.Groups[0] +
+                          " -->");
       }
     }
   }
