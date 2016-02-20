@@ -35,7 +35,12 @@ bool Player::Play() {
   }
 
 #include "journal/player.generated.cc"
+  last_method_ = std::move(method);
   return true;
+}
+
+serialization::Method const & Player::last_method() const {
+  return *last_method_;
 }
 
 std::unique_ptr<serialization::Method> Player::Read() {
