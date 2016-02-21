@@ -509,7 +509,7 @@ public partial class PrincipiaPluginAdapter
       main_window_rectangle_.xMin = main_window_x_;
       main_window_rectangle_.yMin = main_window_y_;
       main_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : 1,
+          id         : this.GetHashCode(),
           screenRect : main_window_rectangle_,
           func       : DrawMainWindow,
           text       : "Principia",
