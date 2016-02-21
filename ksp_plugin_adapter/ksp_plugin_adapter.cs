@@ -509,7 +509,7 @@ public partial class PrincipiaPluginAdapter
       main_window_rectangle_.xMin = main_window_x_;
       main_window_rectangle_.yMin = main_window_y_;
       main_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : 1,
+          id         : this.GetHashCode(),
           screenRect : main_window_rectangle_,
           func       : DrawMainWindow,
           text       : "Principia",
@@ -1000,6 +1000,12 @@ public partial class PrincipiaPluginAdapter
           plugin_source;
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
+    IntPtr version;
+    IntPtr build_date;
+    Interface.GetVersion(build_date: out build_date, version: out version);
+    UnityEngine.GUILayout.TextArea(Marshal.PtrToStringAnsi(version) +
+                                   " built on " +
+                                   Marshal.PtrToStringAnsi(build_date));
     bool changed_history_length = false;
     Selector(history_lengths_,
              ref history_length_index_,
