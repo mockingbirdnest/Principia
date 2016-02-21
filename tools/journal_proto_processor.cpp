@@ -598,6 +598,8 @@ void JournalProtoProcessor::ProcessInOut(
       // For out parameters don't try to deserialize the fields from
       // |message.out()|, they wouldn't be found in the map.  Deserialize 0
       // instead.
+      // TODO(phl): This is probably incorrect for a non-pointer, but then we'll
+      // notice it because it won't compile.
       std::string const cxx_run_field_deserializer_getter =
           Contains(out_, field_descriptor) ? "0" : cxx_run_field_getter;
       cxx_run_body_prolog_[descriptor] +=
