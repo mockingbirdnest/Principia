@@ -29,6 +29,16 @@ Method<Profile>::Method(typename P::In const& in) {
   }
 }
 
+template <typename Profile>
+template <typename P, typename>
+Method<Profile>::Method(typename P::Out const& out) {
+  if (Recorder::active_recorder_ != nullptr) {
+    message_ = std::make_unique<typename Profile::Message>();
+    out_filler_ = [this, out]() { Profile::Fill(out, message_.get()); };
+    LogMethodIfDebug();
+  }
+}
+
 template<typename Profile>
 template<typename P, typename, typename>
 Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
