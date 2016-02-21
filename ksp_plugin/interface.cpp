@@ -915,5 +915,14 @@ char const* principia__SayHello() {
   return m.Return("Hello from native C++!");
 }
 
+void principia__GetVersion(
+    char const** const build_date,
+    char const** const version) {
+  journal::Method<journal::GetVersion> m;
+  *CHECK_NOTNULL(build_date) = base::kBuildDate;
+  *CHECK_NOTNULL(version) = base::kVersion;
+  return m.Return();
+}
+
 }  // namespace interface
 }  // namespace principia

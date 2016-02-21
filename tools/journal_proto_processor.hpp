@@ -81,6 +81,11 @@ class JournalProtoProcessor {
   // level of indirection.
   std::set<FieldDescriptor const*> in_out_;
 
+  // The fields that are out.  Those fields are transmitted through the
+  // interface with an extra level of indirection.  Note that the in fields
+  // present in |in_out_| are not in |out_|.
+  std::set<FieldDescriptor const*> out_;
+
   // For fields that have a (size) option, the name of the size member variable
   // in the In or Out struct.  Special processing is required when filling those
   // fields from the struct members.  No data for other fields.  This map is
@@ -169,6 +174,9 @@ class JournalProtoProcessor {
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& expr)>>
       field_cxx_serializer_fn_;
+
+  // The C# attribute for marshalling a field.
+  std::map<FieldDescriptor const*, std::string> field_cs_marshal_;
 
   // The C#/C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
