@@ -81,6 +81,11 @@ class JournalProtoProcessor {
   // level of indirection.
   std::set<FieldDescriptor const*> in_out_;
 
+  // The fields that are out.  Those fields are transmitted through the
+  // interface with an extra level of indirection.  Note that the in fields
+  // present in |in_out_| are not in |out_|.
+  std::set<FieldDescriptor const*> out_;
+
   // For fields that have a (size) option, the name of the size member variable
   // in the In or Out struct.  Special processing is required when filling those
   // fields from the struct members.  No data for other fields.  This map is

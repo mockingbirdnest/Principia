@@ -39,6 +39,7 @@
   ran |= RunIfAppropriate<GetStderrLogging>(*method);
   ran |= RunIfAppropriate<GetSuppressedLogging>(*method);
   ran |= RunIfAppropriate<GetVerboseLogging>(*method);
+  ran |= RunIfAppropriate<GetVersion>(*method);
   ran |= RunIfAppropriate<HasPrediction>(*method);
   ran |= RunIfAppropriate<HasVessel>(*method);
   ran |= RunIfAppropriate<InitGoogleLogging>(*method);
@@ -57,7 +58,6 @@
   ran |= RunIfAppropriate<NewPlugin>(*method);
   ran |= RunIfAppropriate<NumberOfSegments>(*method);
   ran |= RunIfAppropriate<PhysicsBubbleIsEmpty>(*method);
-  ran |= RunIfAppropriate<PluginGetVersion>(*method);
   ran |= RunIfAppropriate<RenderedPrediction>(*method);
   ran |= RunIfAppropriate<RenderedVesselTrajectory>(*method);
   ran |= RunIfAppropriate<SayHello>(*method);

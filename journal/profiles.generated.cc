@@ -277,6 +277,7 @@ void DeleteLineAndIterator::Fill(Out const& out, not_null<Message*> const messag
 void DeleteLineAndIterator::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto line_and_iterator = DeserializePointer<LineAndIterator*>(*pointer_map, in.line_and_iterator());
+  auto const& out = message.out();
   interface::principia__DeleteLineAndIterator(&line_and_iterator);
   Delete(pointer_map, in.line_and_iterator());
 }
@@ -292,6 +293,7 @@ void DeletePlugin::Fill(Out const& out, not_null<Message*> const message) {
 void DeletePlugin::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto const& out = message.out();
   interface::principia__DeletePlugin(&plugin);
   Delete(pointer_map, in.plugin());
 }
@@ -307,6 +309,7 @@ void DeletePluginSerialization::Fill(Out const& out, not_null<Message*> const me
 void DeletePluginSerialization::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& in = message.in();
   auto serialization = DeserializePointer<char const*>(*pointer_map, in.serialization());
+  auto const& out = message.out();
   interface::principia__DeletePluginSerialization(&serialization);
   Delete(pointer_map, in.serialization());
 }
@@ -329,14 +332,15 @@ void DeserializePlugin::Run(Message const& message, not_null<Player::PointerMap*
   auto serialization = &in.serialization();
   auto deserializer = DeserializePointer<PushDeserializer*>(*pointer_map, in.deserializer());
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
+  auto const& out = message.out();
   interface::principia__DeserializePlugin(serialization->c_str(), serialization->size(), &deserializer, &plugin);
   if (serialization->empty()) {
     Delete(pointer_map, in.deserializer());
   }
   if (!serialization->empty()) {
-    Insert(pointer_map, message.out().deserializer(), deserializer);
+    Insert(pointer_map, out.deserializer(), deserializer);
   }
-  Insert(pointer_map, message.out().plugin(), plugin);
+  Insert(pointer_map, out.plugin(), plugin);
 }
 
 void EndInitialization::Fill(In const& in, not_null<Message*> const message) {
@@ -711,6 +715,19 @@ void GetVerboseLogging::Run(Message const& message, not_null<Player::PointerMap*
   CHECK(message.return_().result() == result);
 }
 
+void GetVersion::Fill(Out const& out, not_null<Message*> const message) {
+  auto* const m = message->mutable_out();
+  m->set_build_date(*out.build_date);
+  m->set_version(*out.version);
+}
+
+void GetVersion::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
+  auto const& out = message.out();
+  auto build_date = out.build_date().c_str();
+  auto version = out.version().c_str();
+  interface::principia__GetVersion(&build_date, &version);
+}
+
 void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
@@ -1048,22 +1065,6 @@ void PhysicsBubbleIsEmpty::Run(Message const& message, not_null<Player::PointerM
   CHECK(message.return_().result() == result);
 }
 
-void PluginGetVersion::Fill(In const& in, not_null<Message*> const message) {
-  message->mutable_in()->set_plugin(SerializePointer(in.plugin));
-}
-
-void PluginGetVersion::Fill(Out const& out, not_null<Message*> const message) {
-  auto* const m = message->mutable_out();
-  m->set_build_date(out.build_date);
-  m->set_version(out.version);
-}
-
-void PluginGetVersion::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
-  auto const& in = message.in();
-  auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
-  interface::principia__PluginGetVersion(plugin);
-}
-
 void RenderedPrediction::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
@@ -1131,12 +1132,13 @@ void SerializePlugin::Run(Message const& message, not_null<Player::PointerMap*> 
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(*pointer_map, in.plugin());
   auto serializer = DeserializePointer<PullSerializer*>(*pointer_map, in.serializer());
+  auto const& out = message.out();
   auto const result = interface::principia__SerializePlugin(plugin, &serializer);
   if (result == nullptr) {
     Delete(pointer_map, in.serializer());
   }
   if (result != nullptr) {
-    Insert(pointer_map, message.out().serializer(), serializer);
+    Insert(pointer_map, out.serializer(), serializer);
   }
   if (result != nullptr) {
     Insert(pointer_map, message.return_().result(), result);
@@ -1177,6 +1179,7 @@ void SetPlottingFrame::Run(Message const& message, not_null<Player::PointerMap*>
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin*>(*pointer_map, in.plugin());
   auto navigation_frame = DeserializePointer<NavigationFrame*>(*pointer_map, in.navigation_frame());
+  auto const& out = message.out();
   interface::principia__SetPlottingFrame(plugin, &navigation_frame);
   Delete(pointer_map, in.navigation_frame());
 }

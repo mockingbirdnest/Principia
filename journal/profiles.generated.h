@@ -469,6 +469,18 @@ struct GetVerboseLogging {
                   not_null<Player::PointerMap*> const pointer_map);
 };
 
+struct GetVersion {
+  struct Out {
+    char const** const build_date;
+    char const** const version;
+  };
+
+  using Message = serialization::GetVersion;
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  not_null<Player::PointerMap*> const pointer_map);
+};
+
 struct HasPrediction {
   struct In {
     Plugin const* const plugin;
@@ -720,22 +732,6 @@ struct PhysicsBubbleIsEmpty {
   using Message = serialization::PhysicsBubbleIsEmpty;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  not_null<Player::PointerMap*> const pointer_map);
-};
-
-struct PluginGetVersion {
-  struct In {
-    Plugin const* const plugin;
-  };
-  struct Out {
-    char const* const build_date;
-    char const* const version;
-  };
-
-  using Message = serialization::PluginGetVersion;
-  static void Fill(In const& in, not_null<Message*> const message);
-  static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
                   not_null<Player::PointerMap*> const pointer_map);
 };

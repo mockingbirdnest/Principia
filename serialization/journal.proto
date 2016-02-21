@@ -70,7 +70,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5077.
+  extensions 5000 to 5999;  // Last used: 5078.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -580,6 +580,17 @@ message GetVerboseLogging {
     required int32 result = 1;
   }
   required Return return = 3;
+}
+
+message GetVersion {
+  extend Method {
+    optional GetVersion extension = 5078;
+  }
+  message Out {
+    required string build_date = 1;
+    required string version = 2;
+  }
+  required Out out = 2;
 }
 
 message HasPrediction {

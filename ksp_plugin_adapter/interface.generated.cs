@@ -324,6 +324,13 @@ internal static partial class Interface {
   internal static extern int GetVerboseLogging();
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__GetVersion",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void GetVersion(
+      ref [MarshalAs(UnmanagedType.LPStr)] String build_date,
+      ref [MarshalAs(UnmanagedType.LPStr)] String version);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__HasPrediction",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool HasPrediction(
@@ -470,12 +477,6 @@ internal static partial class Interface {
              EntryPoint        = "principia__PhysicsBubbleIsEmpty",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool PhysicsBubbleIsEmpty(
-      this IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__PluginGetVersion",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PluginGetVersion(
       this IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,

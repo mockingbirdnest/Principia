@@ -270,6 +270,11 @@ extern "C" PRINCIPIA_DLL
 int CDECL principia__GetVerboseLogging();
 
 extern "C" PRINCIPIA_DLL
+void CDECL principia__GetVersion(
+    char const** const build_date,
+    char const** const version);
+
+extern "C" PRINCIPIA_DLL
 bool CDECL principia__HasPrediction(
     Plugin const* const plugin,
     char const* const vessel_guid);
@@ -380,10 +385,6 @@ int CDECL principia__NumberOfSegments(
 
 extern "C" PRINCIPIA_DLL
 bool CDECL principia__PhysicsBubbleIsEmpty(
-    Plugin const* const plugin);
-
-extern "C" PRINCIPIA_DLL
-void CDECL principia__PluginGetVersion(
     Plugin const* const plugin);
 
 extern "C" PRINCIPIA_DLL

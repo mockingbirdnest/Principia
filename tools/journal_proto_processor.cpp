@@ -461,7 +461,7 @@ void JournalProtoProcessor::ProcessRequiredField(
 
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
-  if (Contains(in_out_, descriptor)) {
+  if (Contains(in_out_, descriptor) || Contains(out_, descriptor)) {
     field_cs_type_[descriptor] = "ref " + field_cs_type_[descriptor];
     field_cxx_type_[descriptor] += "*";
 
@@ -727,7 +727,12 @@ void JournalProtoProcessor::ProcessMethodExtension(
       ProcessInOut(nested_descriptor, &field_descriptors);
     } else if (nested_name == kOut) {
       has_out = true;
-      ProcessInOut(nested_descriptor, &field_descriptors);
+      std::vector<FieldDescriptor const*> out_field_descriptors;
+      ProcessInOut(nested_descriptor, &out_field_descriptors);
+      out_.insert(out_field_descriptors.begin(), out_field_descriptors.end());
+      std::copy(out_field_descriptors.begin(),
+                out_field_descriptors.end(),
+                std::back_inserter(field_descriptors));
     } else if (nested_name == kReturn) {
       has_return = true;
     } else {
