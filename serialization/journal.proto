@@ -586,17 +586,12 @@ message GetVersion {
   extend Method {
     optional GetVersion extension = 5078;
   }
-  message In {
-    required fixed64 build_date = 1 [(pointer_to) = "char const"];
-    required fixed64 version = 2 [(pointer_to) = "char const"];
-  }
   message Out {
     required fixed64 build_date = 1 [(pointer_to) = "char const",
                                      (is_produced) = true];
     required fixed64 version = 2 [(pointer_to) = "char const",
                                   (is_produced) = true];
   }
-  required In in = 1;
   required Out out = 2;
 }
 
