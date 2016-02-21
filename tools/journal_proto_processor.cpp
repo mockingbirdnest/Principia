@@ -31,11 +31,16 @@ bool Contains(Container const& container,
 
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
-  for (int i = 0; i < v.size(); ++i) {
-    if (i == 0) {
-      joined = v[i];
+  bool is_first = true;
+  for (auto const vi : v) {
+    if (vi.empty()) {
+      continue;
+    }
+    if (is_first) {
+      is_first = false;
+      joined = vi;
     } else {
-      joined += joiner + v[i];
+      joined += joiner + vi;
     }
   }
   return joined;
@@ -367,7 +372,8 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)] String";
+  field_cs_marshal_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)]";
+  field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
   if (options.HasExtension(serialization::size)) {
@@ -462,7 +468,11 @@ void JournalProtoProcessor::ProcessRequiredField(
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
   if (Contains(in_out_, descriptor) || Contains(out_, descriptor)) {
-    field_cs_type_[descriptor] = "ref " + field_cs_type_[descriptor];
+    if (Contains(in_out_, descriptor)) {
+      field_cs_type_[descriptor] = "ref " + field_cs_type_[descriptor];
+    } else {
+      field_cs_type_[descriptor] = "out " + field_cs_type_[descriptor];
+    }
     field_cxx_type_[descriptor] += "*";
 
     field_cxx_arguments_fn_[descriptor] =
@@ -606,8 +616,9 @@ void JournalProtoProcessor::ProcessInOut(
 
     if (must_generate_code) {
       cs_interface_parameters_[descriptor].push_back(
-            "  " + field_cs_type_[field_descriptor] + " " +
-            field_descriptor_name);
+            "  " + Join({field_cs_marshal_[field_descriptor],
+                         field_cs_type_[field_descriptor]}, /*joiner=*/" ") +
+            " " + field_descriptor_name);
         cxx_interface_parameters_[descriptor].push_back(
             field_cxx_type_[field_descriptor] + " const " +
             field_descriptor_name);
@@ -652,7 +663,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         " == result);\n";
   }
-  cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
+  cs_interface_return_type_[descriptor] =
+      Join({field_cs_marshal_[field_descriptor],
+            field_cs_type_[field_descriptor]}, /*joiner=*/" ");
   cxx_interface_return_type_[descriptor] = field_cxx_type_[field_descriptor];
   cxx_nested_type_declaration_[descriptor] =
       "  using Return = " + field_cxx_type_[field_descriptor] + ";\n";

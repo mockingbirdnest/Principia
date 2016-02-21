@@ -327,8 +327,8 @@ internal static partial class Interface {
              EntryPoint        = "principia__GetVersion",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void GetVersion(
-      ref [MarshalAs(UnmanagedType.LPStr)] String build_date,
-      ref [MarshalAs(UnmanagedType.LPStr)] String version);
+      [MarshalAs(UnmanagedType.LPStr)] out String build_date,
+      [MarshalAs(UnmanagedType.LPStr)] out String version);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__HasPrediction",

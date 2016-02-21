@@ -175,6 +175,9 @@ class JournalProtoProcessor {
            std::function<std::string(std::string const& expr)>>
       field_cxx_serializer_fn_;
 
+  // The C# attribute for marshalling a field.
+  std::map<FieldDescriptor const*, std::string> field_cs_marshal_;
+
   // The C#/C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_cs_type_;
