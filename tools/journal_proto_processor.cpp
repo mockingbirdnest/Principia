@@ -560,6 +560,11 @@ void JournalProtoProcessor::ProcessInOut(
     }
     ProcessField(field_descriptor);
 
+    // For in-out parameters, the arguments and parameters are generated only
+    // once, on the in occurrence.
+    bool const must_generate_arguments_and_parameters =
+        name == kIn || !Contains(in_out_, field_descriptor);
+
     std::string const cxx_fill_member_name =
         ToLower(name) + "." + field_descriptor_name;
     std::string const cxx_run_field_getter =
@@ -575,8 +580,10 @@ void JournalProtoProcessor::ProcessInOut(
                     cxx_fill_member_name)));
     std::vector<std::string> const field_arguments =
         field_cxx_arguments_fn_[field_descriptor](run_local_variable);
-    std::copy(field_arguments.begin(), field_arguments.end(),
-              std::back_inserter(cxx_run_arguments_[descriptor]));
+    if (must_generate_arguments_and_parameters) {
+      std::copy(field_arguments.begin(), field_arguments.end(),
+                std::back_inserter(cxx_run_arguments_[descriptor]));
+    }
     cxx_run_body_prolog_[descriptor] +=
         "  auto " + run_local_variable + " = " +
         field_cxx_optional_pointer_fn_[field_descriptor](
@@ -597,22 +604,27 @@ void JournalProtoProcessor::ProcessInOut(
               "message." + ToLower(name) + "()." + field_descriptor_name + "()",
               run_local_variable);
     }
-    cs_interface_parameters_[descriptor].push_back(
-        "  " + field_cs_type_[field_descriptor] + " " + field_descriptor_name);
-    cxx_interface_parameters_[descriptor].push_back(
-        field_cxx_type_[field_descriptor] + " const " +
-        field_descriptor_name);
-    cxx_nested_type_declaration_[descriptor] += "    " +
-                                            field_cxx_type_[field_descriptor] +
-                                            " const " +
-                                            field_descriptor_name + ";\n";
+
+    if (must_generate_arguments_and_parameters) {
+      cs_interface_parameters_[descriptor].push_back(
+            "  " + field_cs_type_[field_descriptor] + " " +
+            field_descriptor_name);
+        cxx_interface_parameters_[descriptor].push_back(
+            field_cxx_type_[field_descriptor] + " const " +
+            field_descriptor_name);
+    }
+    cxx_nested_type_declaration_[descriptor] +=
+        "    " +field_cxx_type_[field_descriptor] + " const " +
+        field_descriptor_name + ";\n";
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
-      cs_interface_parameters_[descriptor].push_back(
-          "  int " + size_member_name_[field_descriptor]);
-      cxx_interface_parameters_[descriptor].push_back(
-          "int const " + size_member_name_[field_descriptor]);
+      if (must_generate_arguments_and_parameters) {
+        cs_interface_parameters_[descriptor].push_back(
+            "  int " + size_member_name_[field_descriptor]);
+        cxx_interface_parameters_[descriptor].push_back(
+            "int const " + size_member_name_[field_descriptor]);
+      }
       cxx_nested_type_declaration_[descriptor] +=
           "    int const " + size_member_name_[field_descriptor] + ";\n";
     }
@@ -776,9 +788,14 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cxx_fill_body_[nested_descriptor] +
           "}\n\n";
-      // At the moment we don't have parameters that are out but not in-out.
-      // The arguments and parameters are built in the |kIn| branch above.  This
-      // will need to change if we ever have pure out parameters.
+      cs_interface_parameters +=
+          Join(cs_interface_parameters_[nested_descriptor],
+               /*joiner=*/",\n    ");
+      cxx_interface_parameters +=
+          Join(cxx_interface_parameters_[nested_descriptor],
+               /*joiner=*/",\n    ");
+      cxx_run_arguments += Join(cxx_run_arguments_[nested_descriptor],
+                                /*joiner=*/", ");
     } else if (nested_name == kReturn) {
       ProcessReturn(nested_descriptor);
       cxx_functions_implementation_[descriptor] +=
