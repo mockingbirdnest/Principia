@@ -918,7 +918,8 @@ char const* principia__SayHello() {
 void principia__GetVersion(
     char const** const build_date,
     char const** const version) {
-  journal::Method<journal::GetVersion> m({build_date, version});
+  journal::Method<journal::GetVersion> m({build_date, version},
+                                         {build_date, version});
   *CHECK_NOTNULL(build_date) = base::kBuildDate;
   *CHECK_NOTNULL(version) = base::kVersion;
   return m.Return();
