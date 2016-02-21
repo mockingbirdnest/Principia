@@ -588,7 +588,7 @@ message GetVersion {
   }
   message Out {
     required fixed64 build_date = 1 [(pointer_to) = "char const",
-                                 (is_produced) = true];
+                                     (is_produced) = true];
     required fixed64 version = 2 [(pointer_to) = "char const",
                                  (is_produced) = true];
   }
