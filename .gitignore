@@ -120,4 +120,4 @@ deps/
 *.mbox
 
 # Generated files
-#*.generated.*
+*.generated.*
