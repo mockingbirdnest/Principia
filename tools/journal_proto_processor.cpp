@@ -595,12 +595,17 @@ void JournalProtoProcessor::ProcessInOut(
                 std::back_inserter(cxx_run_arguments_[descriptor]));
     }
     if (must_generate_code) {
+      // For out parameters don't try to deserialize the fields from
+      // |message.out()|, they wouldn't be found in the map.  Deserialize 0
+      // instead.
+      std::string const cxx_run_field_deserializer_getter =
+          Contains(out_, field_descriptor) ? "0" : cxx_run_field_getter;
       cxx_run_body_prolog_[descriptor] +=
           "  auto " + run_local_variable + " = " +
           field_cxx_optional_pointer_fn_[field_descriptor](
               ToLower(name) + ".has_" + field_descriptor_name + "()",
               field_cxx_deserializer_fn_[field_descriptor](
-                  cxx_run_field_getter)) +
+                  cxx_run_field_deserializer_getter)) +
           ";\n";
     }
     if (Contains(field_cxx_deleter_fn_, field_descriptor)) {

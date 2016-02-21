@@ -723,8 +723,8 @@ void GetVersion::Fill(Out const& out, not_null<Message*> const message) {
 
 void GetVersion::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
   auto const& out = message.out();
-  auto build_date = DeserializePointer<char const*>(*pointer_map, out.build_date());
-  auto version = DeserializePointer<char const*>(*pointer_map, out.version());
+  auto build_date = DeserializePointer<char const*>(*pointer_map, 0);
+  auto version = DeserializePointer<char const*>(*pointer_map, 0);
   interface::principia__GetVersion(&build_date, &version);
   Insert(pointer_map, out.build_date(), build_date);
   Insert(pointer_map, out.version(), version);
