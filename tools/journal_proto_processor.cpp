@@ -883,7 +883,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "  internal static extern " + cs_interface_return_type + " " + name + "(";
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] +=
-        "\n    " + Join(cs_interface_parameters, /*joiner=*/",\n    ");
+        "\n    " + Join(cs_interface_parameters, /*joiner=*/",\n    ");  // NOLINT
   }
   cs_interface_method_declaration_[descriptor] += ");\n\n";
 
@@ -892,7 +892,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cxx_interface_return_type + " CDECL principia__" + name + "(";
   if (!cxx_interface_parameters.empty()) {
     cxx_interface_method_declaration_[descriptor] +=
-        "\n    " + Join(cxx_interface_parameters, /*joiner=*/",\n    ");
+        "\n    " + Join(cxx_interface_parameters, /*joiner=*/",\n    ");  // NOLINT
   }
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
 
