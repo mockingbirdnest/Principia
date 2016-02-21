@@ -38,6 +38,10 @@ class Method {
   template<typename P = Profile, typename = typename P::In>
   explicit Method(typename P::In const& in);
 
+  // Only declare this constructor if the profile has an |Out| type.
+  template<typename P = Profile, typename = typename P::Out>
+  explicit Method(typename P::Out const& out);
+
   // Only declare this constructor if the profile has an |In| and an |Out|
   // type.
   template<typename P = Profile,

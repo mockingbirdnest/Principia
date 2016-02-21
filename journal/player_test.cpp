@@ -19,7 +19,7 @@ namespace journal {
 // The benchmark is only run if --gtest_filter=PlayerTest.Benchmarks
 void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
-    Player player(R"(P:\Public Mockingbird\Principia\JOURNAL.20160207-192649)");
+    Player player(R"(P:\Public Mockingbird\Principia\JOURNAL.20160221-174443)");
     int count = 0;
     while (player.Play()) {
       ++count;
