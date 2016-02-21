@@ -560,9 +560,9 @@ void JournalProtoProcessor::ProcessInOut(
     }
     ProcessField(field_descriptor);
 
-    // For in-out parameters, the arguments and parameters are generated only
-    // once, on the in occurrence.
-    bool const must_generate_arguments_and_parameters =
+    // For in-out parameters, the code is generated only once, on the in
+    // occurrence.
+    bool const must_generate_code =
         name == kIn || !Contains(in_out_, field_descriptor);
 
     std::string const cxx_fill_member_name =
@@ -580,32 +580,31 @@ void JournalProtoProcessor::ProcessInOut(
                     cxx_fill_member_name)));
     std::vector<std::string> const field_arguments =
         field_cxx_arguments_fn_[field_descriptor](run_local_variable);
-    if (must_generate_arguments_and_parameters) {
+    if (must_generate_code) {
       std::copy(field_arguments.begin(), field_arguments.end(),
                 std::back_inserter(cxx_run_arguments_[descriptor]));
     }
-    cxx_run_body_prolog_[descriptor] +=
-        "  auto " + run_local_variable + " = " +
-        field_cxx_optional_pointer_fn_[field_descriptor](
-            ToLower(name) + ".has_" + field_descriptor_name + "()",
-            field_cxx_deserializer_fn_[field_descriptor](
-                cxx_run_field_getter)) +
-        ";\n";
+    if (must_generate_code) {
+      cxx_run_body_prolog_[descriptor] +=
+          "  auto " + run_local_variable + " = " +
+          field_cxx_optional_pointer_fn_[field_descriptor](
+              ToLower(name) + ".has_" + field_descriptor_name + "()",
+              field_cxx_deserializer_fn_[field_descriptor](
+                  cxx_run_field_getter)) +
+          ";\n";
+    }
     if (Contains(field_cxx_deleter_fn_, field_descriptor)) {
       cxx_run_body_epilog_[descriptor] +=
           field_cxx_deleter_fn_[field_descriptor](cxx_run_field_getter);
     }
     if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
-      // The reference to |message| below avoids having to generate names for
-      // the |out| fields (we wouldn't use them anywhere else).  This works
-      // because we know that we insert only out parameters.
       cxx_run_body_epilog_[descriptor] +=
           field_cxx_inserter_fn_[field_descriptor](
-              "message." + ToLower(name) + "()." + field_descriptor_name + "()",
+              ToLower(name) + "." + field_descriptor_name + "()",
               run_local_variable);
     }
 
-    if (must_generate_arguments_and_parameters) {
+    if (must_generate_code) {
       cs_interface_parameters_[descriptor].push_back(
             "  " + field_cs_type_[field_descriptor] + " " +
             field_descriptor_name);
@@ -619,7 +618,7 @@ void JournalProtoProcessor::ProcessInOut(
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
-      if (must_generate_arguments_and_parameters) {
+      if (must_generate_code) {
         cs_interface_parameters_[descriptor].push_back(
             "  int " + size_member_name_[field_descriptor]);
         cxx_interface_parameters_[descriptor].push_back(
@@ -754,11 +753,11 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
 
   // The second pass that produces the actual output.
-  std::string cs_interface_parameters;
+  std::vector<std::string> cs_interface_parameters;
+  std::vector<std::string> cxx_interface_parameters;
+  std::vector<std::string> cxx_run_arguments;
   std::string cs_interface_return_type = "void";
-  std::string cxx_interface_parameters;
   std::string cxx_interface_return_type = "void";
-  std::string cxx_run_arguments;
   std::string cxx_run_prolog;
   std::string cxx_run_epilog;
   cxx_toplevel_type_declaration_[descriptor] = "struct " + name + " {\n";
@@ -772,15 +771,16 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cxx_fill_body_[nested_descriptor] +
           "}\n\n";
-      cs_interface_parameters +=
-          Join(cs_interface_parameters_[nested_descriptor],
-               /*joiner=*/",\n    ");
-      cxx_interface_parameters +=
-          Join(cxx_interface_parameters_[nested_descriptor],
-               /*joiner=*/",\n    ");
-      cxx_run_arguments += Join(cxx_run_arguments_[nested_descriptor],
-                                /*joiner=*/", ");
       cxx_run_prolog += cxx_run_body_prolog_[nested_descriptor];
+      std::copy(cs_interface_parameters_[nested_descriptor].begin(),
+                cs_interface_parameters_[nested_descriptor].end(),
+                std::back_inserter(cs_interface_parameters));
+      std::copy(cxx_interface_parameters_[nested_descriptor].begin(),
+                cxx_interface_parameters_[nested_descriptor].end(),
+                std::back_inserter(cxx_interface_parameters));
+      std::copy(cxx_run_arguments_[nested_descriptor].begin(),
+                cxx_run_arguments_[nested_descriptor].end(),
+                std::back_inserter(cxx_run_arguments));
     } else if (nested_name == kOut) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cxx_functions_implementation_[descriptor] +=
@@ -788,14 +788,16 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cxx_fill_body_[nested_descriptor] +
           "}\n\n";
-      cs_interface_parameters +=
-          Join(cs_interface_parameters_[nested_descriptor],
-               /*joiner=*/",\n    ");
-      cxx_interface_parameters +=
-          Join(cxx_interface_parameters_[nested_descriptor],
-               /*joiner=*/",\n    ");
-      cxx_run_arguments += Join(cxx_run_arguments_[nested_descriptor],
-                                /*joiner=*/", ");
+      cxx_run_prolog += cxx_run_body_prolog_[nested_descriptor];
+      std::copy(cs_interface_parameters_[nested_descriptor].begin(),
+                cs_interface_parameters_[nested_descriptor].end(),
+                std::back_inserter(cs_interface_parameters));
+      std::copy(cxx_interface_parameters_[nested_descriptor].begin(),
+                cxx_interface_parameters_[nested_descriptor].end(),
+                std::back_inserter(cxx_interface_parameters));
+      std::copy(cxx_run_arguments_[nested_descriptor].begin(),
+                cxx_run_arguments_[nested_descriptor].end(),
+                std::back_inserter(cxx_run_arguments));
     } else if (nested_name == kReturn) {
       ProcessReturn(nested_descriptor);
       cxx_functions_implementation_[descriptor] +=
@@ -852,7 +854,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
     cxx_functions_implementation_[descriptor] += "  ";
   }
   cxx_functions_implementation_[descriptor] +=
-      "interface::principia__" + name + "(" + cxx_run_arguments + ");\n";
+      "interface::principia__" + name + "(" +
+      Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
   cs_interface_method_declaration_[descriptor] =
@@ -861,8 +864,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "             CallingConvention = CallingConvention.Cdecl)]\n"
       "  internal static extern " + cs_interface_return_type + " " + name + "(";
   if (!cs_interface_parameters.empty()) {
-    cs_interface_method_declaration_[descriptor] += "\n    " +
-                                                    cs_interface_parameters;
+    cs_interface_method_declaration_[descriptor] +=
+        "\n    " + Join(cs_interface_parameters, /*joiner=*/",\n    ");
   }
   cs_interface_method_declaration_[descriptor] += ");\n\n";
 
@@ -870,8 +873,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "extern \"C\" PRINCIPIA_DLL\n" +
   cxx_interface_return_type + " CDECL principia__" + name + "(";
   if (!cxx_interface_parameters.empty()) {
-    cxx_interface_method_declaration_[descriptor] += "\n    " +
-                                                     cxx_interface_parameters;
+    cxx_interface_method_declaration_[descriptor] +=
+        "\n    " + Join(cxx_interface_parameters, /*joiner=*/",\n    ");
   }
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
 
