@@ -273,6 +273,12 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
+  if (Contains(out_, descriptor) && !Contains(in_out_, descriptor)) {
+    CHECK(!options.HasExtension(serialization::is_consumed) &&
+          !options.HasExtension(serialization::is_consumed_if))
+        << "out parameter " + descriptor->full_name() + " cannot be consumed";
+  }
+
   if (options.HasExtension(serialization::is_consumed)) {
     CHECK(options.GetExtension(serialization::is_consumed))
         << descriptor->full_name() << " has incorrect (is_consumed) option";
@@ -618,10 +624,9 @@ void JournalProtoProcessor::ProcessInOut(
             "  auto const " + run_local_variable + " = std::make_unique<" +
             field_cxx_direct_type_[field_descriptor] + ">();\n";
         // Give a deterministic value, yet ensure that the function does no
-        // rely on the initial value of an out argument (for numbers, the
-        // default value 0 could hide bugs with non-zeroed accumulators).
+        // rely on the initial value of an out argument.
         // Note that the resulting object may be invalid, so we must ensure
-        // that assigning to it isn't UB; we thus require
+        // that assigning to it isn't undefined behaviour; we thus require
         // |is_trivially_copyable|, which means that copy and move assignment
         // and construction are equivalent to |memmove|, and that destruction
         // has no effect.
@@ -632,7 +637,9 @@ void JournalProtoProcessor::ProcessInOut(
             "  static_assert(\n    std::is_trivially_copyable<" +
             field_cxx_direct_type_[field_descriptor] +
             ">::value,\n    \"out parameter |" +
-            run_local_variable + "| must have a trivially copyable type\");\n";
+            run_local_variable + "| of |" +
+            field_descriptor->containing_type()->name() +
+            "| must have a trivially copyable type\");\n";
       } else {
         std::string const cxx_run_field_deserializer_getter =
             cxx_run_field_getter;
@@ -650,10 +657,12 @@ void JournalProtoProcessor::ProcessInOut(
           field_cxx_deleter_fn_[field_descriptor](cxx_run_field_getter);
     }
     if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
+      bool const is_out = Contains(out_, field_descriptor) &&
+                          !Contains(in_out_, field_descriptor);
       cxx_run_body_epilog_[descriptor] +=
           field_cxx_inserter_fn_[field_descriptor](
               ToLower(name) + "." + field_descriptor_name + "()",
-              (Contains(out_, field_descriptor) ? "*" : "") +
+              (is_out ? "*" : "") +
               run_local_variable);
     }
 
