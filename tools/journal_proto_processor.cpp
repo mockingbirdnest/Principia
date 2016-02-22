@@ -623,7 +623,7 @@ void JournalProtoProcessor::ProcessInOut(
         cxx_run_body_prolog_[descriptor] +=
             "  auto const " + run_local_variable + " = std::make_unique<" +
             field_cxx_direct_type_[field_descriptor] + ">();\n";
-        // Give a deterministic value, yet ensure that the function does no
+        // Give a deterministic value, yet ensure that the function does not
         // rely on the initial value of an out argument.
         // Note that the resulting object may be invalid, so we must ensure
         // that assigning to it isn't undefined behaviour; we thus require
@@ -638,7 +638,7 @@ void JournalProtoProcessor::ProcessInOut(
             field_cxx_direct_type_[field_descriptor] +
             ">::value,\n    \"out parameter |" +
             run_local_variable + "| of |" +
-            field_descriptor->containing_type()->name() +
+            field_descriptor->containing_type()->containing_type()->name() +
             "| must have a trivially copyable type\");\n";
       } else {
         std::string const cxx_run_field_deserializer_getter =
