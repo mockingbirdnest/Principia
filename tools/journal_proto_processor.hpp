@@ -182,6 +182,9 @@ class JournalProtoProcessor {
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_cs_type_;
   std::map<FieldDescriptor const*, std::string> field_cxx_type_;
+  // For out or in out parameters, the type of the parameter without the
+  // indirection due to the mode.
+  std::map<FieldDescriptor const*, std::string> field_cxx_direct_type_;
 
   // The C#/C++ declaration of an interface method corresponding to a method
   // message.  The key is a descriptor for a method message.

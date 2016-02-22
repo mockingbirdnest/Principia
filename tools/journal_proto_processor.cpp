@@ -465,6 +465,7 @@ void JournalProtoProcessor::ProcessRequiredField(
                  << descriptor->type_name();
   }
 
+  field_cxx_direct_type_[descriptor] = field_cxx_type_[descriptor];
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
   if (Contains(in_out_, descriptor) || Contains(out_, descriptor)) {
@@ -475,10 +476,17 @@ void JournalProtoProcessor::ProcessRequiredField(
     }
     field_cxx_type_[descriptor] += "*";
 
+    if (Contains(in_out_, descriptor)) {
     field_cxx_arguments_fn_[descriptor] =
         [](std::string const& identifier) -> std::vector<std::string> {
           return {"&" + identifier};
         };
+    } else {
+      field_cxx_arguments_fn_[descriptor] =
+        [](std::string const& identifier) -> std::vector<std::string> {
+        return { identifier + ".get()" };
+      };
+    }
     field_cxx_indirect_member_get_fn_[descriptor] =
         [](std::string const& expr) {
           return "*" + expr;
@@ -600,15 +608,42 @@ void JournalProtoProcessor::ProcessInOut(
       // instead.
       // TODO(phl): This is probably incorrect for a non-pointer, but then we'll
       // notice it because it won't compile.
-      std::string const cxx_run_field_deserializer_getter =
-          Contains(out_, field_descriptor) ? "0" : cxx_run_field_getter;
-      cxx_run_body_prolog_[descriptor] +=
-          "  auto " + run_local_variable + " = " +
-          field_cxx_optional_pointer_fn_[field_descriptor](
-              ToLower(name) + ".has_" + field_descriptor_name + "()",
-              field_cxx_deserializer_fn_[field_descriptor](
-                  cxx_run_field_deserializer_getter)) +
-          ";\n";
+      if (Contains(out_, field_descriptor)) {
+        // For an out parameter, we need to allocate some uninitializeed
+        // storage.  The |make_unique| below requires that
+        // |field_cxx_type_[field_descriptor]| be default-constructible.
+        // For more generality, we could initialize the |unique_ptr| to
+        // |reinterpret_cast<T*>(std::operator new(sizeof(T)))|.
+        cxx_run_body_prolog_[descriptor] +=
+            "  auto const " + run_local_variable + " = std::make_unique<" +
+            field_cxx_direct_type_[field_descriptor] + ">();\n";
+        // Give a deterministic value, yet ensure that the function does no
+        // rely on the initial value of an out argument (for numbers, the
+        // default value 0 could hide bugs with non-zeroed accumulators).
+        // Note that the resulting object may be invalid, so we must ensure
+        // that assigning to it isn't UB; we thus require
+        // |is_trivially_copyable|, which means that copy and move assignment
+        // and construction are equivalent to |memmove|, and that destruction
+        // has no effect.
+        cxx_run_body_prolog_[descriptor] +=
+            "  std::memset(" + run_local_variable + ".get(), 0xAB, sizeof (" +
+            field_cxx_direct_type_[field_descriptor] + "));\n";
+        cxx_run_body_prolog_[descriptor] +=
+            "  static_assert(\n    std::is_trivially_copyable<" +
+            field_cxx_direct_type_[field_descriptor] +
+            ">::value,\n    \"out parameter |" +
+            run_local_variable + "| must have a trivially copyable type\");\n";
+      } else {
+        std::string const cxx_run_field_deserializer_getter =
+            cxx_run_field_getter;
+        cxx_run_body_prolog_[descriptor] +=
+            "  auto " + run_local_variable + " = " +
+            field_cxx_optional_pointer_fn_[field_descriptor](
+                ToLower(name) + ".has_" + field_descriptor_name + "()",
+                field_cxx_deserializer_fn_[field_descriptor](
+                    cxx_run_field_deserializer_getter)) +
+            ";\n";
+      }
     }
     if (Contains(field_cxx_deleter_fn_, field_descriptor)) {
       cxx_run_body_epilog_[descriptor] +=
@@ -618,6 +653,7 @@ void JournalProtoProcessor::ProcessInOut(
       cxx_run_body_epilog_[descriptor] +=
           field_cxx_inserter_fn_[field_descriptor](
               ToLower(name) + "." + field_descriptor_name + "()",
+              (Contains(out_, field_descriptor) ? "*" : "") +
               run_local_variable);
     }
 
