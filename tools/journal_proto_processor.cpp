@@ -234,10 +234,10 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
-  // TODO(phl): Need a better way to handle optional parameters in C#.  At the
-  // moment one needs an extra (manual) overload taking an |IntPtr| to be able
-  // to pass |null|.
-  field_cs_type_[descriptor] = "ref int";
+  field_cs_type_[descriptor] = "int?";
+  field_cs_marshal_[descriptor] =
+      "[MarshalAs(UnmanagedType.CustomMarshaler,"
+      "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
   field_cxx_type_[descriptor] = "int const*";
 
   field_cxx_arguments_fn_[descriptor] =
