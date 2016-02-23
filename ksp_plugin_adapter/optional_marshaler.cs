@@ -50,7 +50,6 @@ public class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
               typeof(T).Name));
     }
     T value = value_if_correct_type.Value;
-    Log.Error(value.ToString());
     IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(value));
     Marshal.StructureToPtr(value, ptr, fDeleteOld: false);
     return ptr;
