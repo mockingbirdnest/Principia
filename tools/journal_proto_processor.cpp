@@ -236,7 +236,7 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "int?";
   field_cs_marshal_[descriptor] =
-      "[MarshalAs(UnmanagedType.CustomMarshaler,"
+      "[MarshalAs(UnmanagedType.CustomMarshaler, "
       "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
   field_cxx_type_[descriptor] = "int const*";
 
