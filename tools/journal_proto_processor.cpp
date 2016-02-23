@@ -234,7 +234,9 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "int?";
+  // KSP/Unity's antiquated mono seems to crash when boxing an |int?| to give it
+  // to the marshaler.  We use a boxed (|object|) |int| as a parameter instead.
+  field_cs_type_[descriptor] = "object";
   field_cs_marshal_[descriptor] =
       "[MarshalAs(UnmanagedType.CustomMarshaler, "
       "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
