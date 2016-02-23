@@ -355,7 +355,7 @@ internal static partial class Interface {
   internal static extern void InsertCelestialAbsoluteCartesian(
       this IntPtr plugin,
       int celestial_index,
-      ref int parent_index,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] object parent_index,
       [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
       [MarshalAs(UnmanagedType.LPStr)] String mean_radius,
       [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
