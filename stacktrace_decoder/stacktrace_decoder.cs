@@ -63,7 +63,7 @@ class StackTraceDecoder {
                       Convert.ToString(base_address, 16) + " -->");
     var stack_regex = new Regex(
         unity_crash ? @"\(0x([0-9A-F]+)\) .*"
-                    : @"@\s+[0-9A-F]+\s+\(No symbol\) \[0x([0-9A-F]+)\]");
+                    : @"@\s+[0-9A-F]+\s+.* \[0x([0-9A-F]+)(\+[0-9]+)?\]");
     Match stack_match;
     if (unity_crash) {
       Match stack_start_match;
