@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-public class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
+internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
   // In addition to implementing the |ICustomMarshaler| interface, custom
   // marshalers must implement a static method called |GetInstance| that accepts
   // a |String| as a parameter and has a return type of |ICustomMarshaler|,
@@ -14,32 +14,32 @@ public class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     return instance_;
   }
 
-  public void CleanUpManagedData(object ManagedObj) {}
+  void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
 
-  public void CleanUpNativeData(IntPtr pNativeData) {
-    if (pNativeData == IntPtr.Zero) {
+  void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {
+    if (native_data == IntPtr.Zero) {
       return;
     }
-    Marshal.FreeHGlobal(pNativeData);
+    Marshal.FreeHGlobal(native_data);
   }
 
-  public int GetNativeDataSize() {
+  int ICustomMarshaler.GetNativeDataSize() {
     // I think this is supposed to return -1, and I also think it doesn't
     // matter, but honestly I'm not sure...
     return -1;
   }
 
-  public IntPtr MarshalManagedToNative(object ManagedObj) {
+  IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
     // While we expect that the marshaling attribute will be used on a |T?|,
     // we get it boxed, and boxing has special behaviour on |Nullable|;
     // specifically, |T?| is boxed to either |T| or |null|, depending on whether
     // it has a value.  In the latter case, we lose the type information, so we
     // cannot test whether |object is T?|.  Instead we check whether
-    // |object == null|, if it it's not, we check that it's a |T|.
-    if (ManagedObj == null) {
+    // |object == null|, if it is not, we check that it's a |T|.
+    if (managed_object == null) {
       return IntPtr.Zero;
     }
-    var value_if_correct_type = ManagedObj as T?;
+    var value_if_correct_type = managed_object as T?;
     if (value_if_correct_type == null) {
       throw Log.Fatal(
           String.Format(
@@ -55,11 +55,11 @@ public class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     return ptr;
   }
 
-  public object MarshalNativeToManaged(IntPtr pNativeData) {
-    if (pNativeData == IntPtr.Zero) {
+  object ICustomMarshaler.MarshalNativeToManaged(IntPtr native_data) {
+    if (native_data == IntPtr.Zero) {
       return null;
     } else {
-      return Marshal.PtrToStructure(pNativeData, typeof(T));
+      return Marshal.PtrToStructure(native_data, typeof(T));
     }
   }
 
