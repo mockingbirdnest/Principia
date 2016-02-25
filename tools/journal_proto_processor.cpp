@@ -477,38 +477,44 @@ void JournalProtoProcessor::ProcessRequiredField(
                  << descriptor->type_name();
   }
 
-  field_cxx_direct_type_[descriptor] = field_cxx_type_[descriptor];
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
   if (Contains(in_out_, descriptor) || Contains(out_, descriptor)) {
-    if (Contains(in_out_, descriptor)) {
-      field_cs_type_[descriptor] = "ref " + field_cs_type_[descriptor];
-    } else {
-      field_cs_type_[descriptor] = "out " + field_cs_type_[descriptor];
-    }
-    field_cxx_type_[descriptor] += "*";
-
-    if (Contains(in_out_, descriptor)) {
     field_cxx_arguments_fn_[descriptor] =
         [](std::string const& identifier) -> std::vector<std::string> {
           return {"&" + identifier};
         };
-    } else {
-      field_cxx_arguments_fn_[descriptor] =
-        [](std::string const& identifier) -> std::vector<std::string> {
-        return { identifier + ".get()" };
-      };
-    }
     field_cxx_indirect_member_get_fn_[descriptor] =
         [](std::string const& expr) {
           return "*" + expr;
         };
+
+    if (Contains(in_out_, descriptor)) {
+      field_cs_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return "ref " + type;
+          };
+    } else {
+      field_cs_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return "out " + type;
+          };
+    }
+    field_cxx_mode_fn_[descriptor] =
+        [](std::string const& type) {
+          return type + "*";
+        };
+
   }
 }
 
 void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   // Useful defaults for the lambdas, which ensure that they are set for all
   // fields.  They will be overwritten by actual processing as needed.
+  field_cs_mode_fn_[descriptor] =
+      [](std::string const& type) {
+        return type;
+      };
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
         return {identifier};
@@ -525,6 +531,10 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   field_cxx_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
         return expr;
+      };
+  field_cxx_mode_fn_[descriptor] =
+      [](std::string const& type) {
+        return type;
       };
   field_cxx_optional_assignment_fn_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
@@ -615,46 +625,17 @@ void JournalProtoProcessor::ProcessInOut(
                 std::back_inserter(cxx_run_arguments_[descriptor]));
     }
     if (must_generate_code) {
-      // For out parameters don't try to deserialize the fields from
-      // |message.out()|, they wouldn't be found in the map.  Deserialize 0
-      // instead.
-      // TODO(phl): This is probably incorrect for a non-pointer, but then we'll
-      // notice it because it won't compile.
       if (Contains(out_, field_descriptor)) {
-        // For an out parameter, we need to allocate some uninitializeed
-        // storage.  The |make_unique| below requires that
-        // |field_cxx_type_[field_descriptor]| be default-constructible.
-        // For more generality, we could initialize the |unique_ptr| to
-        // |reinterpret_cast<T*>(std::operator new(sizeof(T)))|.
         cxx_run_body_prolog_[descriptor] +=
-            "  auto const " + run_local_variable + " = std::make_unique<" +
-            field_cxx_direct_type_[field_descriptor] + ">();\n";
-        // Give a deterministic value, yet ensure that the function does not
-        // rely on the initial value of an out argument.
-        // Note that the resulting object may be invalid, so we must ensure
-        // that assigning to it isn't undefined behaviour; we thus require
-        // |is_trivially_copyable|, which means that copy and move assignment
-        // and construction are equivalent to |memmove|, and that destruction
-        // has no effect.
-        cxx_run_body_prolog_[descriptor] +=
-            "  std::memset(" + run_local_variable + ".get(), 0xAB, sizeof (" +
-            field_cxx_direct_type_[field_descriptor] + "));\n";
-        cxx_run_body_prolog_[descriptor] +=
-            "  static_assert(\n    std::is_trivially_copyable<" +
-            field_cxx_direct_type_[field_descriptor] +
-            ">::value,\n    \"out parameter |" +
-            run_local_variable + "| of |" +
-            field_descriptor->containing_type()->containing_type()->name() +
-            "| must have a trivially copyable type\");\n";
+            "  " + field_cxx_type_[field_descriptor] + " " +
+            run_local_variable + ";\n";
       } else {
-        std::string const cxx_run_field_deserializer_getter =
-            cxx_run_field_getter;
         cxx_run_body_prolog_[descriptor] +=
             "  auto " + run_local_variable + " = " +
             field_cxx_optional_pointer_fn_[field_descriptor](
                 ToLower(name) + ".has_" + field_descriptor_name + "()",
                 field_cxx_deserializer_fn_[field_descriptor](
-                    cxx_run_field_deserializer_getter)) +
+                    cxx_run_field_getter)) +
             ";\n";
       }
     }
@@ -663,27 +644,28 @@ void JournalProtoProcessor::ProcessInOut(
           field_cxx_deleter_fn_[field_descriptor](cxx_run_field_getter);
     }
     if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
-      bool const is_out = Contains(out_, field_descriptor) &&
-                          !Contains(in_out_, field_descriptor);
       cxx_run_body_epilog_[descriptor] +=
           field_cxx_inserter_fn_[field_descriptor](
               ToLower(name) + "." + field_descriptor_name + "()",
-              (is_out ? "*" : "") +
               run_local_variable);
     }
 
     if (must_generate_code) {
       cs_interface_parameters_[descriptor].push_back(
             "  " + Join({field_cs_marshal_[field_descriptor],
-                         field_cs_type_[field_descriptor]}, /*joiner=*/" ") +
+                         field_cs_mode_fn_[field_descriptor](
+                             field_cs_type_[field_descriptor])},
+                        /*joiner=*/" ") +
             " " + field_descriptor_name);
         cxx_interface_parameters_[descriptor].push_back(
-            field_cxx_type_[field_descriptor] + " const " +
+            field_cxx_mode_fn_[field_descriptor](
+                field_cxx_type_[field_descriptor]) + " const " +
             field_descriptor_name);
     }
     cxx_nested_type_declaration_[descriptor] +=
-        "    " +field_cxx_type_[field_descriptor] + " const " +
-        field_descriptor_name + ";\n";
+        "    " + field_cxx_mode_fn_[field_descriptor](
+                     field_cxx_type_[field_descriptor]) +
+        " const " + field_descriptor_name + ";\n";
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
