@@ -254,6 +254,32 @@ Multivector<double, Frame, 3> Normalize(
   return multivector / norm;
 }
 
+template<typename Scalar, typename Frame>
+Multivector<double, Frame, 1> NormalizeOrZero(
+    Multivector<Scalar, Frame, 1> const& multivector) {
+  return Multivector<double, Frame, 1>(
+      NormalizeOrZero(multivector.coordinates()));
+}
+
+template<typename Scalar, typename Frame>
+Multivector<double, Frame, 2> NormalizeOrZero(
+    Multivector<Scalar, Frame, 2> const& multivector) {
+  return Multivector<double, Frame, 2>(
+      NormalizeOrZero(multivector.coordinates()));
+}
+
+template<typename Scalar, typename Frame>
+Multivector<double, Frame, 3> NormalizeOrZero(
+    Multivector<Scalar, Frame, 3> const& multivector) {
+  Scalar const norm = multivector.Norm();
+  if (norm == Scalar()) {
+    static Multivector<double, Frame, 3> zero(0);
+    return zero;
+  } else {
+    return multivector / norm;
+  }
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
