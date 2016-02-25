@@ -16,7 +16,7 @@ internal class Boxed<T> where T : struct {
     return new Boxed<T>(all);
   }
 
-  public T all { get; }
+  public T all { get; private set; }
 
   private Boxed(T all) {
     this.all = all;
