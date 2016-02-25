@@ -1317,7 +1317,7 @@ public partial class PrincipiaPluginAdapter
           Log.Info("Inserting " + body.name + "...");
           ConfigNode gravity_model = name_to_gravity_model[body.name];
           ConfigNode initial_state = name_to_initial_state[body.name];
-          object parent_index = null;
+          int? parent_index = null;
           if (body.orbit != null) {
             parent_index = body.orbit.referenceBody.flightGlobalsIndex;
           }

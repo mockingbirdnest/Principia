@@ -30,26 +30,28 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
   }
 
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
-    // While we expect that the marshaling attribute will be used on a |T?|,
-    // we get it boxed, and boxing has special behaviour on |Nullable|;
-    // specifically, |T?| is boxed to either |T| or |null|, depending on whether
-    // it has a value.  In the latter case, we lose the type information, so we
-    // cannot test whether |object is T?|.  Instead we check whether
-    // |object == null|, if it is not, we check that it's a |T|.
     if (managed_object == null) {
-      return IntPtr.Zero;
+      // This is not our job.
+      throw Log.Fatal("The runtime returns null for null objects");
     }
-    var value_if_correct_type = managed_object as T?;
-    if (value_if_correct_type == null) {
-      throw Log.Fatal(
-          String.Format(
-              CultureInfo.InvariantCulture,
-              "|{0}| must be used on a |{1}| or a (possibly boxed) |{2}|.",
-              GetType().Name,
-              typeof(T?).Name,
-              typeof(T).Name));
+    T value;
+    var value_if_boxed = managed_object as T?;
+    if (value_if_boxed != null) {
+      value = value_if_boxed.Value;
+    } else {
+      var value_if_strongly_boxed = managed_object as Boxed<T>;
+      if (value_if_strongly_boxed != null) {
+        value = value_if_strongly_boxed.all;
+      } else {
+        throw Log.Fatal(
+            String.Format(
+                CultureInfo.InvariantCulture,
+                "|{0}<{1}>| must be used on a boxed |{1}| or on a |{2}<{1}>|.",
+                GetType().Name,
+                typeof(T).Name,
+                typeof(Boxed<>).Name));
+      }
     }
-    T value = value_if_correct_type.Value;
     IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(value));
     Marshal.StructureToPtr(value, ptr, fDeleteOld: false);
     return ptr;
