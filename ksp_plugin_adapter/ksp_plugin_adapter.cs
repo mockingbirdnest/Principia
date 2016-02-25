@@ -1313,44 +1313,21 @@ public partial class PrincipiaPluginAdapter
         foreach (ConfigNode node in gravity_models.GetNodes("body")) {
           name_to_gravity_model.Add(node.GetValue("name"), node);
         }
-        ConfigNode sun_gravity_model =
-            name_to_gravity_model[Planetarium.fetch.Sun.name];
-        ConfigNode sun_initial_state =
-            name_to_initial_state[Planetarium.fetch.Sun.name];
-        plugin_.InsertCelestialAbsoluteCartesian(
-            celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
-            parent_index: IntPtr.Zero,
-            gravitational_parameter:
-                sun_gravity_model.GetValue("gravitational_parameter"),
-            axis_right_ascension:
-                sun_gravity_model.HasValue("axis_right_ascension") ?
-                sun_gravity_model.GetValue("axis_right_ascension") : null,
-            axis_declination:
-                sun_gravity_model.HasValue("axis_declination") ?
-                sun_gravity_model.GetValue("axis_declination") : null,
-            j2: sun_gravity_model.HasValue("j2") ?
-                sun_gravity_model.GetValue("j2") : null,
-            reference_radius:
-                sun_gravity_model.HasValue("reference_radius") ?
-                sun_gravity_model.GetValue("reference_radius") : null,
-            x: sun_initial_state.GetValue("x"),
-            y: sun_initial_state.GetValue("y"),
-            z: sun_initial_state.GetValue("z"),
-            vx: sun_initial_state.GetValue("vx"),
-            vy: sun_initial_state.GetValue("vy"),
-            vz: sun_initial_state.GetValue("vz"));
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
           ConfigNode gravity_model = name_to_gravity_model[body.name];
           ConfigNode initial_state = name_to_initial_state[body.name];
-          int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
+          int? parent_index = null;
+          if (body.orbit != null) {
+            parent_index = body.orbit.referenceBody.flightGlobalsIndex;
+          }
           plugin_.InsertCelestialAbsoluteCartesian(
               celestial_index: body.flightGlobalsIndex,
-              parent_index: ref parent_index,
+              parent_index: parent_index,
               gravitational_parameter:
                   gravity_model.GetValue("gravitational_parameter"),
               mean_radius:
-                  gravity_model.GetValue("mean_value"),
+                  gravity_model.GetValue("mean_radius"),
               axis_right_ascension:
                   gravity_model.HasValue("axis_right_ascension") ?
                   gravity_model.GetValue("axis_right_ascension") : null,
@@ -1369,6 +1346,7 @@ public partial class PrincipiaPluginAdapter
               vy: initial_state.GetValue("vy"),
               vz: initial_state.GetValue("vz"));
         };
+        insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
         plugin_.EndInitialization();
         plugin_.AdvanceTime(Planetarium.GetUniversalTime(),

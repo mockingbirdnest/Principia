@@ -234,10 +234,16 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
 
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
-  // TODO(phl): Need a better way to handle optional parameters in C#.  At the
-  // moment one needs an extra (manual) overload taking an |IntPtr| to be able
-  // to pass |null|.
-  field_cs_type_[descriptor] = "ref int";
+  // It is not possible to use a custom marshaler on an |int?|, as this raises
+  // |System.Runtime.InteropServices.MarshalDirectiveException| with the message
+  // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
+  // value types.".  We could use a boxed |int|, whose type would be |object|,
+  // but we would lose static typing.  We use a custom strongly-typed boxed type
+  // instead.
+  field_cs_type_[descriptor] = "Boxed<int>";
+  field_cs_marshal_[descriptor] =
+      "[MarshalAs(UnmanagedType.CustomMarshaler, "
+      "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
   field_cxx_type_[descriptor] = "int const*";
 
   field_cxx_arguments_fn_[descriptor] =
