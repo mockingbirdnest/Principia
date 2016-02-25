@@ -266,6 +266,17 @@ R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
 }
 
 template<typename Scalar>
+R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
+  Scalar const norm = r3_element.Norm();
+  if (norm == Scalar()) {
+    static R3Element<double> const zeroes = {0, 0, 0};
+    return zeroes;
+  } else {
+    return r3_element / norm;
+  }
+}
+
+template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
   std::string result = "{";
   result += quantities::DebugString(r3_element.x);

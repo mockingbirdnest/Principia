@@ -126,6 +126,9 @@ template<typename Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element);
 
 template<typename Scalar>
+R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element);
+
+template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element);
 
 template<typename Scalar>
