@@ -132,6 +132,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tools", "tools\tools.vcxpro
 		{5C482C18-BBAE-484D-A211-A25C86370061} = {5C482C18-BBAE-484D-A211-A25C86370061}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "please_remove_me", "please_remove_me\please_remove_me.csproj", "{0390584F-D475-404C-B495-6FF81D56E2B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -507,6 +509,30 @@ Global
 		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Win32.ActiveCfg = Release|Win32
 		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|Win32.Build.0 = Release|Win32
 		{873680B3-2406-4A30-9EE7-569E9B9DA661}.Release|x64.ActiveCfg = Release|Win32
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|Win32.Build.0 = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Debug|x64.Build.0 = Debug|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|Any CPU.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|Any CPU.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|Mixed Platforms.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|Win32.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|Win32.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|x64.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release_LLVM|x64.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|Win32.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|Win32.Build.0 = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|x64.ActiveCfg = Release|Any CPU
+		{0390584F-D475-404C-B495-6FF81D56E2B4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
