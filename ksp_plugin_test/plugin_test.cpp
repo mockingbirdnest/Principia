@@ -606,6 +606,57 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 
+TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
+  GUID const guid = "Test Satellite";
+  Instant const t = initial_time_ + 100 * Second;
+
+  auto* const mock_dynamic_frame =
+      new MockDynamicFrame<Barycentric, Navigation>();
+  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
+  EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
+      .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
+  EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
+      .WillRepeatedly(Return(
+          RigidMotion<Barycentric, Navigation>(
+              RigidTransformation<Barycentric, Navigation>::Identity(),
+              AngularVelocity<Barycentric>(),
+              Velocity<Barycentric>())));
+  EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
+      .WillRepeatedly(Return(
+          MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
+
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->SetVesselStateOffset(guid,
+                                RelativeDegreesOfFreedom<AliceSun>(
+                                    satellite_initial_displacement_,
+                                    satellite_initial_velocity_));
+  auto const satellite = plugin_->GetVessel(guid);
+
+  Instant const& sync_time = initial_time_ + 1 * Second;
+  plugin_->AdvanceTime(sync_time, Angle());
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+  LOG(ERROR)<<"And believe me I am still alive";
+  plugin_->UpdatePrediction(guid);
+  LOG(ERROR)<<"I'm doing science and I'm still alive";
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  LOG(ERROR)<<"I feel fantastic and I'm still alive";
+  plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
+  LOG(ERROR)<<"While you're dying I'll be still alive";
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+  LOG(ERROR)<<"And when you're dead I will be still alive";
+  auto const rendered_prediction =
+      plugin_->RenderedPrediction(guid, World::origin);
+  LOG(ERROR)<<"still alive";
+}
+
+
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
