@@ -186,7 +186,7 @@ template<typename Scalar, typename Frame, int rank>
 Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector);
 
-// Same as above, but returns its argument if it is the zero multivector.
+// Same as above, but returns the zero multivector if its argument is zero.
 template<typename Scalar, typename Frame, int rank>
 Multivector<double, Frame, rank> NormalizeOrZero(
     Multivector<Scalar, Frame, rank> const& multivector);
