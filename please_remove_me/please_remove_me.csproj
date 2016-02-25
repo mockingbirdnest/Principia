@@ -52,11 +52,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Box.cs" />
+    <Compile Include="..\ksp_plugin_adapter\boxed.cs">
+      <Link>boxed.cs</Link>
+    </Compile>
+    <Compile Include="..\ksp_plugin_adapter\interface.generated.cs">
+      <Link>interface.generated.cs</Link>
+    </Compile>
+    <Compile Include="..\ksp_plugin_adapter\logging.cs">
+      <Link>logging.cs</Link>
+    </Compile>
+    <Compile Include="..\ksp_plugin_adapter\utf8_marshaler.cs">
+      <Link>utf8_marshaler.cs</Link>
+    </Compile>
     <Compile Include="interface.cs" />
-    <Compile Include="interface.generated.cs" />
-    <Compile Include="logging.cs" />
-    <Compile Include="optional_marshaler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

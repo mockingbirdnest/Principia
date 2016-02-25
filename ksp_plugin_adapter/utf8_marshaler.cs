@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
+internal class UTF8Marshaler : ICustomMarshaler {
   // In addition to implementing the |ICustomMarshaler| interface, custom
   // marshalers must implement a static method called |GetInstance| that accepts
   // a |String| as a parameter and has a return type of |ICustomMarshaler|,
@@ -34,24 +35,14 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
       // This is not our job.
       throw Log.Fatal("The runtime returns null for null objects");
     }
-    T value;
-    var value_if_boxed = managed_object as T?;
-    if (value_if_boxed == null) {
-      var value_if_strongly_boxed = managed_object as Box<T>;
-      if (value_if_strongly_boxed == null) {
-        throw Log.Fatal(
-            String.Format(
-                CultureInfo.InvariantCulture,
-                "|{0}<{1}>| must be used on a boxed |{1}| or on a |{2}<{1}>|.",
-                GetType().Name,
-                typeof(T).Name,
-                typeof(Box<>).Name));
-      }
-      value = value_if_strongly_boxed.all;
-    } else {
-      value = value_if_boxed.Value;
+    var value = managed_object as String;
+    if (value == null) {
+      throw Log.Fatal(String.Format(CultureInfo.InvariantCulture,
+                                    "|{0}| must be used on a |{1}|.",
+                                    GetType().Name,
+                                    typeof(String).Name));
     }
-    IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(value));
+    IntPtr ptr = Marshal.AllocHGlobal(utf8_.GetByteCount);
     Marshal.StructureToPtr(value, ptr, fDeleteOld: false);
     return ptr;
   }
@@ -64,8 +55,10 @@ internal class OptionalMarshaler<T> : ICustomMarshaler where T : struct {
     }
   }
 
-  private readonly static OptionalMarshaler<T> instance_ =
-      new OptionalMarshaler<T>();
+  private readonly static UTF8Marshaler instance_ = new UTF8Marshaler();
+  private readonly static Encoding utf8_ =
+      new UTF8Encoding(encoderShouldEmitUTF8Identifier : false,
+                       throwOnInvalidBytes             : true);
 }
 
 }  // namespace ksp_plugin_adapter
