@@ -8,7 +8,7 @@ NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass)
   NavigationManœuvre manœuvre(burn.thrust,
                               initial_mass,
                               burn.specific_impulse,
-                              Normalize(burn.Δv),
+                              NormalizeOrZero(burn.Δv),
                               std::move(burn.frame));
   manœuvre.set_initial_time(burn.initial_time);
   manœuvre.set_Δv(burn.Δv.Norm());

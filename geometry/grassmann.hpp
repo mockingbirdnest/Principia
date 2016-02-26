@@ -186,6 +186,11 @@ template<typename Scalar, typename Frame, int rank>
 Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector);
 
+// Same as above, but returns the zero multivector if its argument is zero.
+template<typename Scalar, typename Frame, int rank>
+Multivector<double, Frame, rank> NormalizeOrZero(
+    Multivector<Scalar, Frame, rank> const& multivector);
+
 // Left action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(

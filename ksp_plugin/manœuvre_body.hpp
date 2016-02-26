@@ -26,7 +26,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
     : thrust_(thrust),
       initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
-      direction_(Normalize(direction)),
+      direction_(NormalizeOrZero(direction)),
       frame_(std::move(frame)) {}
 
 template<typename InertialFrame, typename Frame>
