@@ -61,6 +61,9 @@
     <Compile Include="..\ksp_plugin_adapter\logging.cs">
       <Link>logging.cs</Link>
     </Compile>
+    <Compile Include="..\ksp_plugin_adapter\optional_marshaler.cs">
+      <Link>optional_marshaler.cs</Link>
+    </Compile>
     <Compile Include="..\ksp_plugin_adapter\utf8_marshaler.cs">
       <Link>utf8_marshaler.cs</Link>
     </Compile>
