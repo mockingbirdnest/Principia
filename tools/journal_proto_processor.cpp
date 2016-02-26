@@ -279,6 +279,12 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
+  if (Contains(out_, descriptor) && !Contains(in_out_, descriptor)) {
+    CHECK(!options.HasExtension(serialization::is_consumed) &&
+          !options.HasExtension(serialization::is_consumed_if))
+        << "out parameter " + descriptor->full_name() + " cannot be consumed";
+  }
+
   if (options.HasExtension(serialization::is_consumed)) {
     CHECK(options.GetExtension(serialization::is_consumed))
         << descriptor->full_name() << " has incorrect (is_consumed) option";
@@ -483,13 +489,6 @@ void JournalProtoProcessor::ProcessRequiredField(
   // For in-out fields the data is actually passed with an extra level of
   // indirection.
   if (Contains(in_out_, descriptor) || Contains(out_, descriptor)) {
-    if (Contains(in_out_, descriptor)) {
-      field_cs_type_[descriptor] = "ref " + field_cs_type_[descriptor];
-    } else {
-      field_cs_type_[descriptor] = "out " + field_cs_type_[descriptor];
-    }
-    field_cxx_type_[descriptor] += "*";
-
     field_cxx_arguments_fn_[descriptor] =
         [](std::string const& identifier) -> std::vector<std::string> {
           return {"&" + identifier};
@@ -498,12 +497,32 @@ void JournalProtoProcessor::ProcessRequiredField(
         [](std::string const& expr) {
           return "*" + expr;
         };
+
+    if (Contains(in_out_, descriptor)) {
+      field_cs_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return "ref " + type;
+          };
+    } else {
+      field_cs_mode_fn_[descriptor] =
+          [](std::string const& type) {
+            return "out " + type;
+          };
+    }
+    field_cxx_mode_fn_[descriptor] =
+        [](std::string const& type) {
+          return type + "*";
+        };
   }
 }
 
 void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   // Useful defaults for the lambdas, which ensure that they are set for all
   // fields.  They will be overwritten by actual processing as needed.
+  field_cs_mode_fn_[descriptor] =
+      [](std::string const& type) {
+        return type;
+      };
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
         return {identifier};
@@ -520,6 +539,10 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   field_cxx_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
         return expr;
+      };
+  field_cxx_mode_fn_[descriptor] =
+      [](std::string const& type) {
+        return type;
       };
   field_cxx_optional_assignment_fn_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
@@ -610,20 +633,19 @@ void JournalProtoProcessor::ProcessInOut(
                 std::back_inserter(cxx_run_arguments_[descriptor]));
     }
     if (must_generate_code) {
-      // For out parameters don't try to deserialize the fields from
-      // |message.out()|, they wouldn't be found in the map.  Deserialize 0
-      // instead.
-      // TODO(phl): This is probably incorrect for a non-pointer, but then we'll
-      // notice it because it won't compile.
-      std::string const cxx_run_field_deserializer_getter =
-          Contains(out_, field_descriptor) ? "0" : cxx_run_field_getter;
-      cxx_run_body_prolog_[descriptor] +=
-          "  auto " + run_local_variable + " = " +
-          field_cxx_optional_pointer_fn_[field_descriptor](
-              ToLower(name) + ".has_" + field_descriptor_name + "()",
-              field_cxx_deserializer_fn_[field_descriptor](
-                  cxx_run_field_deserializer_getter)) +
-          ";\n";
+      if (Contains(out_, field_descriptor)) {
+        cxx_run_body_prolog_[descriptor] +=
+            "  " + field_cxx_type_[field_descriptor] + " " +
+            run_local_variable + ";\n";
+      } else {
+        cxx_run_body_prolog_[descriptor] +=
+            "  auto " + run_local_variable + " = " +
+            field_cxx_optional_pointer_fn_[field_descriptor](
+                ToLower(name) + ".has_" + field_descriptor_name + "()",
+                field_cxx_deserializer_fn_[field_descriptor](
+                    cxx_run_field_getter)) +
+            ";\n";
+      }
     }
     if (Contains(field_cxx_deleter_fn_, field_descriptor)) {
       cxx_run_body_epilog_[descriptor] +=
@@ -643,16 +665,19 @@ void JournalProtoProcessor::ProcessInOut(
             "[" + field_cs_marshal_[field_descriptor] + "]";
       }
       cs_interface_parameters_[descriptor].push_back(
-            "  " + Join({field_parameter_marshal,
-                         field_cs_type_[field_descriptor]}, /*joiner=*/" ") +
-            " " + field_descriptor_name);
-        cxx_interface_parameters_[descriptor].push_back(
-            field_cxx_type_[field_descriptor] + " const " +
-            field_descriptor_name);
+          "  " + Join({field_parameter_marshal,
+                       field_cs_mode_fn_[field_descriptor](
+                           field_cs_type_[field_descriptor])},
+                      /*joiner=*/" ") +
+          " " + field_descriptor_name);
+      cxx_interface_parameters_[descriptor].push_back(
+          field_cxx_type_[field_descriptor] + " const " +
+          field_descriptor_name);
     }
     cxx_nested_type_declaration_[descriptor] +=
-        "    " +field_cxx_type_[field_descriptor] + " const " +
-        field_descriptor_name + ";\n";
+        "    " + field_cxx_mode_fn_[field_descriptor](
+                     field_cxx_type_[field_descriptor]) +
+        " const " + field_descriptor_name + ";\n";
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
@@ -745,7 +770,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   cs_interface_type_declaration_[descriptor] += "}\n\n";
   cxx_interface_type_declaration_[descriptor] +=
-      "};\n\nstatic_assert(std::is_standard_layout<" + name +
+      "};\n\nstatic_assert(std::is_pod<" + name +
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }
 
