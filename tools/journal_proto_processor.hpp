@@ -207,10 +207,6 @@ class JournalProtoProcessor {
   std::map<Descriptor const*, std::vector<std::string>>
       cxx_interface_parameters_;
 
-  // The C# marshal attribute for the return type of an interface method.  The
-  // key is a descriptor for a Return message.
-  std::map<Descriptor const*, std::string> cs_interface_return_marshal_;
-
   // The C#/C++ return type of an interface method.  The key is a descriptor for
   // a Return message.
   std::map<Descriptor const*, std::string> cs_interface_return_type_;
