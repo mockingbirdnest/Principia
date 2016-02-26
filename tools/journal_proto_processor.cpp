@@ -504,7 +504,6 @@ void JournalProtoProcessor::ProcessRequiredField(
         [](std::string const& type) {
           return type + "*";
         };
-
   }
 }
 
