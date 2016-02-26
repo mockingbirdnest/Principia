@@ -154,8 +154,8 @@ class JournalProtoProcessor {
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& type)>>
       field_cs_mode_fn_;
-  // For all fields, a lambda that takes a C++ parameter type as stored in
-  // |field_cxx_type_|, and adds a mode to it.
+  // For all fields, a lambda that takes a C++ parameter or member type as
+  // stored in |field_cxx_type_|, and adds a mode to it.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& type)>>
       field_cxx_mode_fn_;
