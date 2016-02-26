@@ -149,14 +149,13 @@ class JournalProtoProcessor {
                                      std::string const& expr2)>>
       field_cxx_inserter_fn_;
 
-  // For all fields, a lambda that takes a C#/C++ parameter type as stored in
-  // |field_cs_type_|, repsectively |field_cxx_type_|, and adds a mode to it,
-  // yielding |T| for an in parameter in either language, |ref T| for an in out
-  // parameter and |out T| for an out parameter in C#, and |T*| for an out or in
-  // out parameter in C++.
+  // For all fields, a lambda that takes a C# parameter type as stored in
+  // |field_cs_type_|, and adds a mode to it.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& type)>>
       field_cs_mode_fn_;
+  // For all fields, a lambda that takes a C++ parameter type as stored in
+  // |field_cxx_type_|, and adds a mode to it.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& type)>>
       field_cxx_mode_fn_;

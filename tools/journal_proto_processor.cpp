@@ -622,8 +622,7 @@ void JournalProtoProcessor::ProcessInOut(
     if (must_generate_code) {
       std::copy(field_arguments.begin(), field_arguments.end(),
                 std::back_inserter(cxx_run_arguments_[descriptor]));
-    }
-    if (must_generate_code) {
+
       if (Contains(out_, field_descriptor)) {
         cxx_run_body_prolog_[descriptor] +=
             "  " + field_cxx_type_[field_descriptor] + " " +
