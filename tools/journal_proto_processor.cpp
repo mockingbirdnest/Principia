@@ -758,7 +758,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
   cs_interface_type_declaration_[descriptor] += "}\n\n";
   cxx_interface_type_declaration_[descriptor] +=
-      "};\n\nstatic_assert(std::is_standard_layout<" + name +
+      "};\n\nstatic_assert(std::is_pod<" + name +
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }
 
