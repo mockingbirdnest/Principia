@@ -10,7 +10,7 @@ struct NavigationFrameParameters {
   int secondary_index;
 };
 
-static_assert(std::is_standard_layout<NavigationFrameParameters>::value,
+static_assert(std::is_pod<NavigationFrameParameters>::value,
               "NavigationFrameParameters is used for interfacing");
 
 extern "C"
@@ -20,7 +20,7 @@ struct XYZ {
   double z;
 };
 
-static_assert(std::is_standard_layout<XYZ>::value,
+static_assert(std::is_pod<XYZ>::value,
               "XYZ is used for interfacing");
 
 extern "C"
@@ -32,7 +32,7 @@ struct Burn {
   XYZ delta_v;
 };
 
-static_assert(std::is_standard_layout<Burn>::value,
+static_assert(std::is_pod<Burn>::value,
               "Burn is used for interfacing");
 
 extern "C"
@@ -51,7 +51,7 @@ struct NavigationManoeuvre {
   XYZ tangent;
 };
 
-static_assert(std::is_standard_layout<NavigationManoeuvre>::value,
+static_assert(std::is_pod<NavigationManoeuvre>::value,
               "NavigationManoeuvre is used for interfacing");
 
 extern "C"
@@ -63,7 +63,7 @@ struct KSPPart {
   uint32_t id;
 };
 
-static_assert(std::is_standard_layout<KSPPart>::value,
+static_assert(std::is_pod<KSPPart>::value,
               "KSPPart is used for interfacing");
 
 extern "C"
@@ -72,7 +72,7 @@ struct QP {
   XYZ p;
 };
 
-static_assert(std::is_standard_layout<QP>::value,
+static_assert(std::is_pod<QP>::value,
               "QP is used for interfacing");
 
 extern "C"
@@ -83,7 +83,7 @@ struct WXYZ {
   double z;
 };
 
-static_assert(std::is_standard_layout<WXYZ>::value,
+static_assert(std::is_pod<WXYZ>::value,
               "WXYZ is used for interfacing");
 
 extern "C"
@@ -92,7 +92,7 @@ struct XYZSegment {
   XYZ end;
 };
 
-static_assert(std::is_standard_layout<XYZSegment>::value,
+static_assert(std::is_pod<XYZSegment>::value,
               "XYZSegment is used for interfacing");
 
 extern "C" PRINCIPIA_DLL
