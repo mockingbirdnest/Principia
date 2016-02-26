@@ -671,8 +671,9 @@ void JournalProtoProcessor::ProcessInOut(
                       /*joiner=*/" ") +
           " " + field_descriptor_name);
       cxx_interface_parameters_[descriptor].push_back(
-          field_cxx_type_[field_descriptor] + " const " +
-          field_descriptor_name);
+          field_cxx_mode_fn_[field_descriptor](
+              field_cxx_type_[field_descriptor]) +
+          " const " + field_descriptor_name);
     }
     cxx_nested_type_declaration_[descriptor] +=
         "    " + field_cxx_mode_fn_[field_descriptor](
