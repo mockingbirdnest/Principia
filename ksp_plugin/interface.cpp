@@ -910,9 +910,9 @@ void principia__DeserializePlugin(char const* const serialization,
 }
 
 // Says hello, convenient for checking that calls to the DLL work.
-char const* principia__SayHello() {
+char const* principia__SayHello(char const* const name) {
   journal::Method<journal::SayHello> m;
-  return m.Return("Hello from native C++!");
+  return m.Return(name);
 }
 
 void principia__GetVersion(

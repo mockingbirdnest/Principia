@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 namespace principia.ksp_plugin_adapter {
   class Program {
     static void Main(string[] args) {
-      string s = Interface.SayHello();
+      string s = Interface.SayHello("hello");
       Console.WriteLine(s);
-      Log.Error("Hello from managed C#!");
-      Log.Error(Interface.SayHello());
+      Log.Error(Interface.SayHello("hello"));
     }
   }
 }

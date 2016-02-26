@@ -6,28 +6,29 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-internal abstract class UTF8Marshaler : ICustomMarshaler {
+// A marshaler for in parameter UTF-8 strings whose ownership is not taken from
+// the caller.
+internal class InUTF8Marshaler : ICustomMarshaler {
+  // In addition to implementing the |ICustomMarshaler| interface, custom
+  // marshalers must implement a static method called |GetInstance| that accepts
+  // a |String| as a parameter and has a return type of |ICustomMarshaler|,
+  // see https://goo.gl/wwmBTa.
+  public static ICustomMarshaler GetInstance(String s) {
+    return instance_;
+  }
+
   void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
 
   void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {
-    if (native_data == IntPtr.Zero) {
-      return;
-    }
     Marshal.FreeHGlobal(native_data);
     Console.WriteLine("freeh " + Convert.ToString(native_data.ToInt64(), 16));
   }
 
   int ICustomMarshaler.GetNativeDataSize() {
-    // I think this is supposed to return -1, and I also think it doesn't
-    // matter, but honestly I'm not sure...
     return -1;
   }
 
-  IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
-    if (managed_object == null) {
-      // This is not our job.
-      throw Log.Fatal("The runtime returns null for null objects");
-    }
+  unsafe IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
     var value = managed_object as String;
     if (value == null) {
       throw Log.Fatal(String.Format(CultureInfo.InvariantCulture,
@@ -37,62 +38,59 @@ internal abstract class UTF8Marshaler : ICustomMarshaler {
     }
     int length = utf8_.GetByteCount(value);
     IntPtr ptr = Marshal.AllocHGlobal(length + 1);
+    byte* bytes = (byte*)ptr;
     Console.WriteLine("alloch " + Convert.ToString(ptr.ToInt64(), 16));
-    Marshal.Copy(utf8_.GetBytes(value), 0, ptr, length);
-    Marshal.WriteByte(ptr, length, 0);
+    fixed (char* utf16_units = value) {
+      utf8_.GetBytes(utf16_units, value.Length, bytes, length);
+    }
+    bytes[length] = 0;
     return ptr;
   }
 
   object ICustomMarshaler.MarshalNativeToManaged(IntPtr native_data) {
-    if (native_data == IntPtr.Zero) {
-      return null;
-    } else {
-      int length = 0;
-      while(Marshal.ReadByte(native_data, length) != 0) { ++length; }
-      byte[] bytes = new byte[length];
-      Marshal.Copy(native_data, bytes, 0, length);
-      string s = utf8_.GetString(bytes);
-      Console.WriteLine(s);
-      return utf8_.GetString(bytes);
-    }
+    throw Log.Fatal("use |OutUTF8Marshaler| for out parameters");
   }
 
+  private readonly static InUTF8Marshaler instance_ = new InUTF8Marshaler();
   private readonly static Encoding utf8_ =
       new UTF8Encoding(encoderShouldEmitUTF8Identifier : false,
                        throwOnInvalidBytes             : true);
 }
 
-internal class InUTF8Marshaler : UTF8Marshaler {
-  // In addition to implementing the |ICustomMarshaler| interface, custom
-  // marshalers must implement a static method called |GetInstance| that accepts
-  // a |String| as a parameter and has a return type of |ICustomMarshaler|,
-  // see https://goo.gl/wwmBTa.
+// A marshaler for out parameter or return value UTF-8 strings whose ownership
+// is not taken by the caller.
+internal class OutUTF8Marshaler : ICustomMarshaler {
   public static ICustomMarshaler GetInstance(String s) {
     return instance_;
   }
 
-  private readonly static InUTF8Marshaler instance_ =
-      new InUTF8Marshaler();
-}
-
-internal class OutUTF8Marshaler : UTF8Marshaler, ICustomMarshaler {
-  // In addition to implementing the |ICustomMarshaler| interface, custom
-  // marshalers must implement a static method called |GetInstance| that accepts
-  // a |String| as a parameter and has a return type of |ICustomMarshaler|,
-  // see https://goo.gl/wwmBTa.
-  public static ICustomMarshaler GetInstance(String s) {
-    return instance_;
-  }
+  void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
 
   void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {}
 
-  // Don't leak.
+  int ICustomMarshaler.GetNativeDataSize() {
+    return -1;
+  }
+
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
     throw Log.Fatal("use |InUTF8Marshaler| for in parameters");
   }
 
-  private readonly static OutUTF8Marshaler instance_ =
-      new OutUTF8Marshaler();
+  unsafe object ICustomMarshaler.MarshalNativeToManaged(IntPtr native_data) {
+    if (native_data == IntPtr.Zero) {
+      return null;
+    } else {
+      sbyte* begin = (sbyte*)native_data;
+      sbyte* end;
+      for (end = begin; *end != 0; ++end) {}
+      return new String(begin, 0, (int)(end - begin), utf8_);
+    }
+  }
+
+  private readonly static OutUTF8Marshaler instance_ = new OutUTF8Marshaler();
+  private readonly static Encoding utf8_ =
+      new UTF8Encoding(encoderShouldEmitUTF8Identifier : false,
+                       throwOnInvalidBytes             : true);
 }
 
 }  // namespace ksp_plugin_adapter
