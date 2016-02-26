@@ -242,8 +242,8 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
   // instead.
   field_cs_type_[descriptor] = "Boxed<int>";
   field_cs_marshal_[descriptor] =
-      "[MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
+      "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = "
+      "typeof(OptionalMarshaler<int>))";
   field_cxx_type_[descriptor] = "int const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -378,7 +378,16 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
-  field_cs_marshal_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)]";
+  if (Contains(out_, descriptor) ||
+      descriptor->containing_type()->name() == kReturn) {
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = "
+        "typeof(OutUTF8Marshaler))";
+  } else {
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = "
+        "typeof(InUTF8Marshaler))";
+  }
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
@@ -628,8 +637,13 @@ void JournalProtoProcessor::ProcessInOut(
     }
 
     if (must_generate_code) {
+      std::string field_parameter_marshal;
+      if (!field_cs_marshal_[field_descriptor].empty()) {
+        field_parameter_marshal =
+            "[" + field_cs_marshal_[field_descriptor] + "]";
+      }
       cs_interface_parameters_[descriptor].push_back(
-            "  " + Join({field_cs_marshal_[field_descriptor],
+            "  " + Join({field_parameter_marshal,
                          field_cs_type_[field_descriptor]}, /*joiner=*/" ") +
             " " + field_descriptor_name);
         cxx_interface_parameters_[descriptor].push_back(
@@ -676,9 +690,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         " == result);\n";
   }
-  cs_interface_return_type_[descriptor] =
-      Join({field_cs_marshal_[field_descriptor],
-            field_cs_type_[field_descriptor]}, /*joiner=*/" ");
+  cs_interface_return_marshal_[descriptor] =
+      "[return: " + field_cs_marshal_[field_descriptor] + "]";
+  cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
   cxx_interface_return_type_[descriptor] = field_cxx_type_[field_descriptor];
   cxx_nested_type_declaration_[descriptor] =
       "  using Return = " + field_cxx_type_[field_descriptor] + ";\n";
@@ -889,11 +903,14 @@ void JournalProtoProcessor::ProcessMethodExtension(
       Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
-  cs_interface_method_declaration_[descriptor] =
-      "  [DllImport(dllName           : kDllPath,\n"
-      "             EntryPoint        = \"principia__" + name + "\",\n"
-      "             CallingConvention = CallingConvention.Cdecl)]\n"
-      "  internal static extern " + cs_interface_return_type + " " + name + "(";
+  cs_interface_method_declaration_[descriptor] = Join(
+      {"  [DllImport(dllName           : kDllPath,\n"
+       "             EntryPoint        = \"principia__" + name + "\",\n"
+       "             CallingConvention = CallingConvention.Cdecl)]",
+       cs_interface_return_marshal_[descriptor],
+       "  internal static extern " + cs_interface_return_type + " " + name +
+           "("},
+      /*joiner=*/"\n");
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] +=
         "\n    " + Join(cs_interface_parameters, /*joiner=*/",\n    ");  // NOLINT

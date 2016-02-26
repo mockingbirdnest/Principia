@@ -587,10 +587,8 @@ message GetVersion {
     optional GetVersion extension = 5078;
   }
   message Out {
-    required fixed64 build_date = 1 [(pointer_to) = "char const",
-                                     (is_produced) = true];
-    required fixed64 version = 2 [(pointer_to) = "char const",
-                                  (is_produced) = true];
+    required string build_date = 1;
+    required string version = 2;
   }
   required Out out = 2;
 }
@@ -903,14 +901,9 @@ message SayHello {
   extend Method {
     optional SayHello extension = 5053;
   }
-  message In {
-    required string name = 1;
-  }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "char const",
-                                 (is_produced) = true];
+    required string result = 1;
   }
-  required In in = 1;
   required Return return = 3;
 }
 
