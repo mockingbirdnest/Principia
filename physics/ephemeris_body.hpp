@@ -104,6 +104,36 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
       length_integration_tolerance_(length_integration_tolerance),
       speed_integration_tolerance_(speed_integration_tolerance) {}
 
+template <typename Frame>
+void Ephemeris<Frame>::AdaptiveStepParameters::SetTolerances(
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance) {
+  length_integration_tolerance_ = length_integration_tolerance;
+  speed_integration_tolerance_ = speed_integration_tolerance;
+}
+
+template <typename Frame>
+template <typename T>
+void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
+    not_null<T*> const t) const {
+  length_integration_tolerance_.WriteToMessage(
+      t->mutable_length_integration_tolerance());
+  speed_integration_tolerance_.WriteToMessage(
+      t->mutable_speed_integration_tolerance());
+  integrator_.WriteToMessage(t->mutable_integrator());
+}
+
+template <typename Frame>
+template <typename T>
+typename Ephemeris<Frame>::AdaptiveStepParameters
+Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(T const& t) {
+  return AdaptiveStepParameters(
+      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          t.integrator()),
+      Length::ReadFromMessage(t.length_integration_tolerance()),
+      Speed::ReadFromMessage(t.speed_integration_tolerance()));
+}
+
 template<typename Frame>
 Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
     FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -581,14 +611,12 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   return ephemeris;
 }
 
-template<typename Frame>
+template <typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     google::protobuf::RepeatedPtrField<
         serialization::Plugin::CelestialAndProperties> const& messages,
-    FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-        planetary_integrator,
-    Time const& step,
-    Length const& fitting_tolerance) {
+    Length const& fitting_tolerance,
+    typename Ephemeris<Frame>::FixedStepParameters const& fixed_parameters) {
   LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
             << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -621,9 +649,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   auto ephemeris = std::make_unique<Ephemeris<Frame>>(std::move(bodies),
                                                       initial_state,
                                                       *initial_time.cbegin(),
-                                                      planetary_integrator,
-                                                      step,
-                                                      fitting_tolerance);
+                                                      fitting_tolerance,
+                                                      fixed_parameters);
 
   // Extend the continuous trajectories using the data from the discrete
   // trajectories.
@@ -639,13 +666,13 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
     for (; it != history->End(); ++it) {
       Time const duration_since_last_time = it.time() - last_time;
-      if (duration_since_last_time == step) {
+      if (duration_since_last_time == fixed_parameters.step_) {
         // A time in the discrete trajectory that is aligned on the continuous
         // trajectory.
         last_time = it.time();
         last_degrees_of_freedom = it.degrees_of_freedom();
         continuous_trajectory->Append(last_time, last_degrees_of_freedom);
-      } else if (duration_since_last_time > step) {
+      } else if (duration_since_last_time > fixed_parameters.step_) {
         // A time in the discrete trajectory that is not aligned on the
         // continuous trajectory.  Stop here, we'll use prolong to recompute the
         // rest.

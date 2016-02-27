@@ -1,9 +1,13 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
+
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+
 namespace ksp_plugin {
 
 FlightPlan::FlightPlan(
@@ -126,8 +130,8 @@ bool FlightPlan::SetFinalTime(Instant const& final_time) {
 void FlightPlan::SetTolerances(
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance) {
-  length_integration_tolerance_ = length_integration_tolerance;
-  speed_integration_tolerance_ = speed_integration_tolerance;
+  adaptive_parameters_.SetTolerances(length_integration_tolerance,
+                                     speed_integration_tolerance);
   RecomputeSegments();
 }
 
@@ -150,11 +154,7 @@ void FlightPlan::WriteToMessage(
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   initial_time_.WriteToMessage(message->mutable_initial_time());
   final_time_.WriteToMessage(message->mutable_final_time());
-  length_integration_tolerance_.WriteToMessage(
-      message->mutable_length_integration_tolerance());
-  speed_integration_tolerance_.WriteToMessage(
-      message->mutable_speed_integration_tolerance());
-  integrator_.WriteToMessage(message->mutable_integrator());
+  adaptive_parameters_.WriteToMessage(message);
   for (auto const& segment : segments_) {
     segment->WritePointerToMessage(message->add_segment());
   }
@@ -174,11 +174,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Instant::ReadFromMessage(message.final_time()),
       Mass::ReadFromMessage(message.initial_mass()),
       ephemeris,
-      AdaptiveStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation>::
-          ReadFromMessage(message.integrator()),
-      Length::ReadFromMessage(message.length_integration_tolerance()),
-      Speed::ReadFromMessage(message.speed_integration_tolerance()));
+      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(message));
   // The constructor has forked a segment.  Remove it.
   auto on_destroy = flight_plan->segments_.front()->get_on_destroy();
   flight_plan->segments_.front()->set_on_destroy(nullptr);
@@ -201,10 +197,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      integrator_(
-          *testing_utilities::make_not_null<
-              AdaptiveStepSizeIntegrator<
-                  Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
+      adaptive_parameters_(DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+                           Length(), Speed()) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));

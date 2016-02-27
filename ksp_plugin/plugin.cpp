@@ -28,7 +28,6 @@
 #include "physics/rotating_body.hpp"
 
 namespace principia {
-namespace ksp_plugin {
 
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -53,6 +52,7 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using ::operator<<;
 
+namespace ksp_plugin {
 namespace {
 
 // The map between the vector spaces of |World| and |AliceWorld|.
@@ -122,7 +122,7 @@ void Plugin::InsertCelestialAbsoluteCartesian(
   CHECK(!hierarchical_initialization_);
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
-            << NAMED(parent_index) << "\n"
+            //<< NAMED(parent_index) << "\n"
             << NAMED(initial_state) << "\n"
             << NAMED(body);
   if (!absolute_initialization_) {
@@ -676,9 +676,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   if (is_pre_bourbaki) {
     ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
         message.pre_bourbaki_celestial(),
-        McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-        kStep,
-        kFittingTolerance);
+        kFittingTolerance,
+        Ephemeris<Barycentric>::FixedStepParameters(
+            McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+            kStep));
     ReadCelestialsFromMessages(*ephemeris,
                                message.pre_bourbaki_celestial(),
                                &celestials);
@@ -810,9 +811,10 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
       std::move(bodies),
       initial_state,
       current_time_,
-      history_integrator_,
-      kStep,
-      kFittingTolerance);
+      kFittingTolerance,
+      Ephemeris<Barycentric>::FixedStepParameters(
+          history_integrator_,
+          kStep));
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
     celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));

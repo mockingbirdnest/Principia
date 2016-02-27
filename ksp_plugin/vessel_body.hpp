@@ -131,9 +131,10 @@ inline void Vessel::CreateFlightPlan(
                      /*final_time=*/final_time,
                      initial_mass,
                      ephemeris,
-                     integrator,
-                     length_integration_tolerance,
-                     speed_integration_tolerance);
+                     Ephemeris<Barycentric>::AdaptiveStepParameters(
+                         integrator,
+                         length_integration_tolerance,
+                         speed_integration_tolerance));
 }
 
 inline void Vessel::DeleteFlightPlan() {

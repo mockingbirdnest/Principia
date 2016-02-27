@@ -51,11 +51,20 @@ class Ephemeris {
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
+    void SetTolerances(Length const& length_integration_tolerance,
+                       Speed const& speed_integration_tolerance);
+
+    template<typename T>
+    void WriteToMessage(not_null<T*> const t) const;
+
+    template<typename T>
+    static AdaptiveStepParameters ReadFromMessage(T const& t);
+
    private:
     // This will refer to a static object returned by a factory.
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator_;
-    Length const length_integration_tolerance_;
-    Speed const speed_integration_tolerance_;
+    Length length_integration_tolerance_;
+    Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;
   };
 
@@ -169,10 +178,8 @@ class Ephemeris {
   static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
       google::protobuf::RepeatedPtrField<
           serialization::Plugin::CelestialAndProperties> const& messages,
-      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-          planetary_integrator,
-      Time const& step,
-      Length const& fitting_tolerance);
+      Length const& fitting_tolerance,
+      typename Ephemeris<Frame>::FixedStepParameters const& fixed_parameters);
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses a dummy
