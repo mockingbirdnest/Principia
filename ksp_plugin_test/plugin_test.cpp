@@ -92,12 +92,12 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 ACTION(AppendToDiscreteTrajectories) {
   for (auto const& trajectory : arg0) {
-    trajectory->Append(arg3, {Barycentric::origin, Velocity<Barycentric>()});
+    trajectory->Append(arg2, {Barycentric::origin, Velocity<Barycentric>()});
   }
 }
 
 ACTION(AppendToDiscreteTrajectory) {
-  arg0->Append(arg5, {Barycentric::origin, Velocity<Barycentric>()});
+  arg0->Append(arg2, {Barycentric::origin, Velocity<Barycentric>()});
 }
 
 }  // namespace
@@ -554,7 +554,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
@@ -611,7 +611,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   Instant const t = initial_time_ + 100 * Second;
 
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());

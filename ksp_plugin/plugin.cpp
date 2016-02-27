@@ -50,9 +50,11 @@ using quantities::Force;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
-using ::operator<<;
 
 namespace ksp_plugin {
+
+using ::operator<<;
+
 namespace {
 
 // The map between the vector spaces of |World| and |AliceWorld|.
@@ -122,7 +124,7 @@ void Plugin::InsertCelestialAbsoluteCartesian(
   CHECK(!hierarchical_initialization_);
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
-            //<< NAMED(parent_index) << "\n"
+            << NAMED(parent_index) << "\n"
             << NAMED(initial_state) << "\n"
             << NAMED(body);
   if (!absolute_initialization_) {
