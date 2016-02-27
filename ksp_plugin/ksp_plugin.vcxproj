@@ -211,9 +211,9 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ profile files for %(FullPath)</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C++ profile files for %(FullPath)</Message>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ profile files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C#/C++ files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C#/C++ files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C#/C++ files for %(FullPath)</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs;%(Outputs)</Outputs>

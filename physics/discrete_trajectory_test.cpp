@@ -506,7 +506,19 @@ TEST_F(DiscreteTrajectoryTest, ForgetAfter) {
   // Don't use fork, it is dangling.
 }
 
-TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
+TEST_F(DiscreteTrajectoryDeathTest, ForgetBeforeError) {
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t1_, d1_);
+    massive_trajectory_->Append(t2_, d2_);
+    massive_trajectory_->Append(t3_, d3_);
+    not_null<DiscreteTrajectory<World>*> const fork =
+        massive_trajectory_->NewForkWithCopy(t2_);
+    fork->Append(t4_, d4_);
+    massive_trajectory_->ForgetBefore(t3_);
+  }, "found 1 fork");
+}
+
+TEST_F(DiscreteTrajectoryTest, ForgetBeforeSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
@@ -545,7 +557,6 @@ TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
   EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t2_, t3_));
-  // Don't use fork, it is dangling.
 }
 
 TEST_F(DiscreteTrajectoryTest, PointerSerializationSuccess) {

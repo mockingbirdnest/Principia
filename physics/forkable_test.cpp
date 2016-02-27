@@ -50,7 +50,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
   using Forkable<FakeTrajectory, Iterator>::NewFork;
   using Forkable<FakeTrajectory, Iterator>::DeleteAllForksAfter;
-  using Forkable<FakeTrajectory, Iterator>::DeleteAllForksBefore;
+  using Forkable<FakeTrajectory, Iterator>::CheckNoForksBefore;
 
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
@@ -317,16 +317,25 @@ TEST_F(ForkableTest, DeleteAllForksAfterSuccess) {
   // Don't use fork, it is dangling.
 }
 
-TEST_F(ForkableDeathTest, DeleteAllForksBeforeError) {
+TEST_F(ForkableDeathTest, CheckNoForksBeforeError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     not_null<FakeTrajectory*> const fork =
         trajectory_.NewFork(trajectory_.timeline_find(t1_));
-    fork->DeleteAllForksBefore(t1_);
+    fork->CheckNoForksBefore(t1_);
   }, "nonroot");
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    trajectory_.push_back(t2_);
+    trajectory_.push_back(t3_);
+    not_null<FakeTrajectory*> const fork =
+        trajectory_.NewFork(trajectory_.timeline_find(t2_));
+    fork->push_back(t4_);
+    trajectory_.CheckNoForksBefore(t3_);
+  }, "found 1 fork");
 }
 
-TEST_F(ForkableTest, DeleteAllForksBeforeSuccess) {
+TEST_F(ForkableTest, CheckNoForksBeforeSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
@@ -334,16 +343,15 @@ TEST_F(ForkableTest, DeleteAllForksBeforeSuccess) {
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork->push_back(t4_);
 
-  trajectory_.DeleteAllForksBefore(t1_ + (t2_ - t1_) / 2);
+  trajectory_.CheckNoForksBefore(t1_ + (t2_ - t1_) / 2);
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
-  trajectory_.DeleteAllForksBefore(t2_);
+  trajectory_.CheckNoForksBefore(t2_);
   times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  // Don't use fork, it is dangling.
 }
 
 TEST_F(ForkableDeathTest, IteratorDecrementError) {

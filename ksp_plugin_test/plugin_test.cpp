@@ -606,6 +606,42 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 
+TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
+  GUID const guid = "Test Satellite";
+  Instant const t = initial_time_ + 100 * Second;
+
+  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
+  EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
+      .WillRepeatedly(AppendToDiscreteTrajectories());
+
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->SetVesselStateOffset(guid,
+                                RelativeDegreesOfFreedom<AliceSun>(
+                                    satellite_initial_displacement_,
+                                    satellite_initial_velocity_));
+  auto const satellite = plugin_->GetVessel(guid);
+
+  Instant const& sync_time = initial_time_ + 1 * Second;
+  plugin_->AdvanceTime(sync_time, Angle());
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+  plugin_->UpdatePrediction(guid);
+  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
+  plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
+  EXPECT_DEATH({
+    EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
+    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+    auto const rendered_prediction =
+        plugin_->RenderedPrediction(guid, World::origin);
+  }, "found 1 fork");
+}
+
+
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({

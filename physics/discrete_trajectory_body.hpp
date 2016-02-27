@@ -137,7 +137,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  this->DeleteAllForksBefore(time);
+  this->CheckNoForksBefore(time);
 
   // Get an iterator denoting the first entry with time >= |time|.  Remove all
   // the entries that precede it.  This preserves any entry with time == |time|.
