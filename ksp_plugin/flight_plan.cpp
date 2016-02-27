@@ -30,14 +30,8 @@ FlightPlan::FlightPlan(
     initial_time_ = it.time();
   }
 
-  // Create a fork for the first coasting trajectory.  We set a callback to be
-  // notified when it goes away.  This is not necessary for correctness, but it
-  // helps to detect bugs
+  // Create a fork for the first coasting trajectory.
   segments_.emplace_back(root->NewForkWithCopy(it.time()));
-  segments_.front()->set_on_destroy(
-      [this](not_null<DiscreteTrajectory<Barycentric> const*> trajectory) {
-        LOG(FATAL) << "Destroying the first segment of flight plan " << this;
-      });
 
   ResetLastSegment();  // TODO(phl): A NewForkWithoutCopy would be nicer.
   CoastLastSegment(final_time_);
@@ -49,7 +43,6 @@ FlightPlan::~FlightPlan() {
     // Deleting the first fork deletes everything.
     DiscreteTrajectory<Barycentric>* trajectory = segments_.front();
     CHECK(!trajectory->is_root());
-    trajectory->set_on_destroy(nullptr);
     trajectory->parent()->DeleteFork(&trajectory);
   }
 }
@@ -185,14 +178,11 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
   // The constructor has forked a segment.  Remove it.
-  auto on_destroy = flight_plan->segments_.front()->get_on_destroy();
-  flight_plan->segments_.front()->set_on_destroy(nullptr);
   flight_plan->PopLastSegment();
   for (auto const& segment : message.segment()) {
     flight_plan->segments_.emplace_back(
         DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
   }
-  flight_plan->segments_.front()->set_on_destroy(std::move(on_destroy));
   for (int i = 0; i < message.manoeuvre_size(); ++i) {
     auto const& manoeuvre = message.manoeuvre(i);
     flight_plan->manœuvres_.push_back(
@@ -281,8 +271,6 @@ void FlightPlan::ReplaceLastSegment(
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   CHECK_EQ(segment->parent(), segments_.back()->parent());
   CHECK_EQ(segment->Fork().time(), segments_.back()->Fork().time());
-  segment->set_on_destroy(segments_.back()->get_on_destroy());
-  segments_.back()->set_on_destroy(nullptr);
   PopLastSegment();
   // |segment| must not be anomalous, so it cannot not follow an anomalous
   // segment.
