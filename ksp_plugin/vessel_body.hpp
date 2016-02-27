@@ -3,6 +3,7 @@
 
 #include "ksp_plugin/vessel.hpp"
 
+#include <limits>
 #include <vector>
 
 #include "quantities/si.hpp"
@@ -112,6 +113,32 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewForkWithCopy(time);
+}
+
+inline void Vessel::AppendToHistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  CHECK(is_synchronized());
+  history_->Append(time, degrees_of_freedom);
+}
+
+inline void Vessel::ForgetBefore(Instant const& time) {
+  CHECK(is_synchronized());
+  history_->ForgetBefore(time);
+}
+
+inline Instant Vessel::ForgettableTime() const {
+  Instant forgettable_time =
+      Instant() + std::numeric_limits<double>::infinity() * Second;
+  if (flight_plan_ != nullptr) {
+    forgettable_time = std::min(forgettable_time,
+                                flight_plan_->initial_time());
+  }
+  if (prediction_ != nullptr) {
+    forgettable_time = std::min(forgettable_time,
+                                prediction_->Fork().time());
+  }
+  return forgettable_time;
 }
 
 inline void Vessel::CreateFlightPlan(

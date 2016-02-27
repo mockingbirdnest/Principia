@@ -12,10 +12,12 @@
 
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
+#include "base/not_null.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
@@ -28,9 +30,11 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using base::not_null;
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
+using physics::ContinuousTrajectory;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MockDynamicFrame;
@@ -126,6 +130,11 @@ class TestablePlugin : public Plugin {
 
   Rotation<AliceSun, Barycentric> InversePlanetariumRotation() {
     return PlanetariumRotation().Inverse();
+  }
+
+  not_null<ContinuousTrajectory<Barycentric> const*> trajectory(
+      Index const index) const {
+    return &trajectories_.at(index);
   }
 
  private:
@@ -606,19 +615,23 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 
-TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
+TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
   Instant const t = initial_time_ + 100 * Second;
 
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+
+  EXPECT_CALL(*mock_ephemeris_, trajectory(_))
+      .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::kSun)));
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
 
-  InsertAllSolarSystemBodies();
-  plugin_->EndInitialization();
-
+  plugin_->SetPlottingFrame(plugin_->NewBodyCentredNonRotatingNavigationFrame(
+      SolarSystemFactory::kSun));
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->SetVesselStateOffset(guid,
                                 RelativeDegreesOfFreedom<AliceSun>(
@@ -627,18 +640,17 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   auto const satellite = plugin_->GetVessel(guid);
 
   Instant const& sync_time = initial_time_ + 1 * Second;
+  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(sync_time, 3)))
+      .Times(1);
   plugin_->AdvanceTime(sync_time, Angle());
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  EXPECT_DEATH({
-    EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
-    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
-    auto const rendered_prediction =
-        plugin_->RenderedPrediction(guid, World::origin);
-  }, "found 1 fork");
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+  auto const rendered_prediction =
+      plugin_->RenderedPrediction(guid, World::origin);
 }
 
 

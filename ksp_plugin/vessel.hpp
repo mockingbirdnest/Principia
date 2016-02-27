@@ -53,6 +53,7 @@ class Vessel {
   virtual void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_synchronized()|.
+  // TODO(phl): Remove the mutable version once synchronization is gone.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
   virtual not_null<DiscreteTrajectory<Barycentric>*> mutable_history();
 
@@ -91,6 +92,14 @@ class Vessel {
   // The vessel must satisfy |is_synchronized()| and |is_initialized()|,
   // |owned_prolongation_| must be null.
   virtual void ResetProlongation(Instant const& time);
+
+  virtual void AppendToHistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+
+  virtual void ForgetBefore(Instant const& time);
+
+  virtual Instant ForgettableTime() const;
 
   // Creates a |flight_plan_| at the end of history using the given parameters.
   // Deletes any pre-existing predictions.
