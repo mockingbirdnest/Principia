@@ -555,12 +555,13 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
       bodies.size(),
       DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
   Instant const initial_time;
-  auto ephemeris = make_not_null_unique<Ephemeris<Frame>>(std::move(bodies),
-                                                          initial_state,
-                                                          initial_time,
-                                                          planetary_integrator,
-                                                          step,
-                                                          fitting_tolerance);
+  auto ephemeris = make_not_null_unique<Ephemeris<Frame>>(
+                       std::move(bodies),
+                       initial_state,
+                       initial_time,
+                       fitting_tolerance,
+                       typename Ephemeris<Frame>::FixedStepParameters(
+                           planetary_integrator, step));
   ephemeris->last_state_ =
       NewtonianMotionEquation::SystemState::ReadFromMessage(
           message.last_state());

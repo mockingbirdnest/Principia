@@ -71,10 +71,11 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
         SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
     t0_ = solar_system_.epoch();
     ephemeris_ = solar_system_.MakeEphemeris(
-                     integrators::McLachlanAtela1992Order4Optimal<
-                         Position<ICRFJ2000Equator>>(),
-                     10 * Milli(Second),
-                     1 * Milli(Metre));
+                    /*fitting_tolerance=*/1 * Milli(Metre),
+                    Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+                        integrators::McLachlanAtela1992Order4Optimal<
+                            Position<ICRFJ2000Equator>>(),
+                        /*step=*/10 * Milli(Second)));
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_initial_state_ = solar_system_.initial_state(kBig);
     big_gravitational_parameter_ = solar_system_.gravitational_parameter(kBig);

@@ -600,9 +600,10 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-          45 * Minute,
-          5 * Milli(Metre));
+          /*fitting_tolerance=*/5 * Milli(Metre),
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+              /*step=*/45 * Minute));
 
   ephemeris->Prolong(at_спутник_2_launch->epoch());
 

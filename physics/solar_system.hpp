@@ -29,11 +29,8 @@ class SolarSystem {
   // The bodies and initial state are constructed from the data passed to
   // |Initialize|.
   std::unique_ptr<Ephemeris<Frame>> MakeEphemeris(
-      FixedStepSizeIntegrator<
-          typename Ephemeris<Frame>::NewtonianMotionEquation> const&
-          planetary_integrator,
-      Time const& step,
-      Length const& fitting_tolerance);
+      Length const& fitting_tolerance,
+      typename Ephemeris<Frame>::FixedStepParameters const& parameters);
 
   // The time origin for the initial state.
   Instant const& epoch() const;

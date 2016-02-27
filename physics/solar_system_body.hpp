@@ -99,17 +99,13 @@ void SolarSystem<Frame>::Initialize(
 
 template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> SolarSystem<Frame>::MakeEphemeris(
-    FixedStepSizeIntegrator<
-        typename Ephemeris<Frame>::NewtonianMotionEquation> const&
-        planetary_integrator,
-    Time const& step,
-    Length const& fitting_tolerance) {
+    Length const& fitting_tolerance,
+    typename Ephemeris<Frame>::FixedStepParameters const& parameters) {
   return std::make_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
                                             MakeAllDegreesOfFreedom(),
                                             epoch_,
-                                            planetary_integrator,
-                                            step,
-                                            fitting_tolerance);
+                                            fitting_tolerance,
+                                            parameters);
 }
 
 template<typename Frame>
