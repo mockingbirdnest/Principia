@@ -606,7 +606,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
 }
 
-TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
+TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
   Instant const t = initial_time_ + 100 * Second;
 
@@ -617,7 +617,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
-  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
@@ -642,18 +641,15 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->AdvanceTime(sync_time, Angle());
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
-  LOG(ERROR)<<"And believe me I am still alive";
   plugin_->UpdatePrediction(guid);
-  LOG(ERROR)<<"I'm doing science and I'm still alive";
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
-  LOG(ERROR)<<"I feel fantastic and I'm still alive";
   plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  LOG(ERROR)<<"While you're dying I'll be still alive";
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
-  LOG(ERROR)<<"And when you're dead I will be still alive";
-  auto const rendered_prediction =
-      plugin_->RenderedPrediction(guid, World::origin);
-  LOG(ERROR)<<"still alive";
+  EXPECT_DEATH({
+    EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
+    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+    auto const rendered_prediction =
+        plugin_->RenderedPrediction(guid, World::origin);
+  }, "found 1 fork");
 }
 
 
