@@ -180,9 +180,8 @@ class Forkable {
   // at or after the fork time of this trajectory, if any.
   void DeleteAllForksAfter(Instant const& time);
 
-  // Deletes all forks for times (strictly) less than |time|.  This trajectory
-  // must be a root.
-  void DeleteAllForksBefore(Instant const& time);
+  // Checks that there exist no forks for times (strictly) less than |time|.
+  void CheckNoForksBefore(Instant const& time);
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
