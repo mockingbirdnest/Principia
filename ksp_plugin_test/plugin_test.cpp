@@ -610,22 +610,11 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
   Instant const t = initial_time_ + 100 * Second;
 
-  auto* const mock_dynamic_frame =
-      new MockDynamicFrame<Barycentric, Navigation>();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
-  EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
-      .WillRepeatedly(Return(
-          RigidMotion<Barycentric, Navigation>(
-              RigidTransformation<Barycentric, Navigation>::Identity(),
-              AngularVelocity<Barycentric>(),
-              Velocity<Barycentric>())));
-  EXPECT_CALL(*mock_dynamic_frame, FrenetFrame(_, _))
-      .WillRepeatedly(Return(
-          MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
 
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
