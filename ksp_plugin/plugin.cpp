@@ -296,24 +296,19 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
   CHECK_LT(t, history_time_);
 
-  // If |t| is after the start of the flight plan of some vessel, adjust it
-  // to avoid destroying the trajectories of that flight plan.
-  Instant forgetting_time = t;
+  // Ask each vessel what is an acceptable time for forgetting.
+  Instant forgettable_time = t;
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    if (vessel->has_flight_plan()) {
-      forgetting_time =
-          std::min(forgetting_time,
-                   vessel->flight_plan()->initial_time());
-    }
+    forgettable_time = std::min(forgettable_time, vessel->ForgettableTime());
   }
 
-  ephemeris_->ForgetBefore(forgetting_time);
+  ephemeris_->ForgetBefore(forgettable_time);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     // Only forget the synchronized vessels, the others don't have an history.
     if (unsynchronized_vessels_.count(vessel.get()) == 0) {
-      vessel->mutable_history()->ForgetBefore(forgetting_time);
+      vessel->ForgetBefore(forgettable_time);
     }
   }
 }
@@ -990,9 +985,8 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   unsynchronized_vessels_.clear();
   for (not_null<Vessel*> const vessel : dirty_vessels_) {
     CHECK(!bubble_->contains(vessel));
-    vessel->mutable_history()->Append(
-        history_time_,
-        vessel->prolongation().last().degrees_of_freedom());
+    vessel->AppendToHistory(history_time_,
+                            vessel->prolongation().last().degrees_of_freedom());
   }
   dirty_vessels_.clear();
   VLOG(1) << "Synchronized the new vessels"
@@ -1007,9 +1001,8 @@ void Plugin::SynchronizeBubbleHistories() {
     RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
         bubble_->from_centre_of_mass(vessel);
     if (vessel->is_synchronized()) {
-      vessel->mutable_history()->Append(
-          history_time_,
-          centre_of_mass + from_centre_of_mass);
+      vessel->AppendToHistory(history_time_,
+                              centre_of_mass + from_centre_of_mass);
     } else {
       vessel->CreateHistoryAndForkProlongation(
           history_time_,

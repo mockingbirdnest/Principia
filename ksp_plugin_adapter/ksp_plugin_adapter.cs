@@ -1000,12 +1000,10 @@ public partial class PrincipiaPluginAdapter
           plugin_source;
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
-    IntPtr version;
-    IntPtr build_date;
+    String version;
+    String build_date;
     Interface.GetVersion(build_date: out build_date, version: out version);
-    UnityEngine.GUILayout.TextArea(Marshal.PtrToStringAnsi(version) +
-                                   " built on " +
-                                   Marshal.PtrToStringAnsi(build_date));
+    UnityEngine.GUILayout.TextArea(version + " built on " + build_date);
     bool changed_history_length = false;
     Selector(history_lengths_,
              ref history_length_index_,
