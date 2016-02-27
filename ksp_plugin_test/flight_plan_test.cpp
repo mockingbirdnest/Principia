@@ -97,12 +97,6 @@ class FlightPlanTest : public testing::Test {
 
 using FlightPlanDeathTest = FlightPlanTest;
 
-TEST_F(FlightPlanDeathTest, DestroyingFirstSegment) {
-  EXPECT_DEATH({
-    root_.ForgetAfter(t0_ - 7 * Second);
-  }, "Destroying the first segment of flight plan");
-}
-
 TEST_F(FlightPlanTest, Singular) {
   // A test mass falling from x₀ = 1 m at vanishing initial speed onto a body
   // with gravitational parameter μ = 1 m³/s².  A singularity occurs for
