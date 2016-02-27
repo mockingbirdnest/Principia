@@ -16,6 +16,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
@@ -31,6 +32,7 @@ using astronomy::ICRFJ2000Equator;
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
+using integrators::McLachlanAtela1992Order5Optimal;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MockDynamicFrame;
@@ -65,6 +67,7 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Ref;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -558,6 +561,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
+      .WillRepeatedly(
+          ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
   EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
@@ -615,6 +621,9 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
+      .WillRepeatedly(
+          ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
 
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
