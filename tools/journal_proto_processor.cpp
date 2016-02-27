@@ -385,7 +385,7 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
   field_cs_marshal_[descriptor] =
-      Contains(descriptor, out_) ? "[MarshalAs(UnmanagedType.CustomMarshaler, "
+      Contains(out_, descriptor) ? "[MarshalAs(UnmanagedType.CustomMarshaler, "
                                    "MarshalTypeRef = typeof(OutUTF8Marshaler))]"
                                  : "[MarshalAs(UnmanagedType.CustomMarshaler, "
                                    "MarshalTypeRef = typeof(InUTF8Marshaler))]";

@@ -587,10 +587,9 @@ message GetVersion {
     optional GetVersion extension = 5078;
   }
   message Out {
-    required fixed64 build_date = 1 [(pointer_to) = "char const",
-                                     (is_produced) = true];
-    required fixed64 version = 2 [(pointer_to) = "char const",
-                                  (is_produced) = true];
+    reserved 1, 2;
+    required string build_date = 3;
+    required string version = 4;
   }
   required Out out = 2;
 }
