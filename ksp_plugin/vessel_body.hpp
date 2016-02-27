@@ -3,6 +3,7 @@
 
 #include "ksp_plugin/vessel.hpp"
 
+#include <algorithm>
 #include <limits>
 #include <vector>
 
