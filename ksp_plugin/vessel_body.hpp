@@ -159,10 +159,11 @@ inline void Vessel::UpdatePrediction(
   ephemeris->FlowWithAdaptiveStep(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-      prediction_length_tolerance,
-      prediction_speed_tolerance,
-      integrator,
-      last_time);
+      last_time,
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          integrator,
+          prediction_length_tolerance,
+          prediction_speed_tolerance));
 }
 
 inline void Vessel::DeletePrediction() {

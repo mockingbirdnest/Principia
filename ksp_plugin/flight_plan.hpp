@@ -44,10 +44,8 @@ class FlightPlan {
       Instant const& final_time,
       Mass const& initial_mass,
       not_null<Ephemeris<Barycentric>*> const ephemeris,
-      AdaptiveStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
-      Length const& length_integration_tolerance,
-      Speed const& speed_integration_tolerance);
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_parameters);
   virtual ~FlightPlan();
 
   virtual Instant initial_time() const;
@@ -143,16 +141,13 @@ class FlightPlan {
   Mass const initial_mass_;
   Instant initial_time_;
   Instant final_time_;
-  Length length_integration_tolerance_;
-  Speed speed_integration_tolerance_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Each segment is a fork of the previous
   // one.
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
-  AdaptiveStepSizeIntegrator<
-      Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
   // either end prematurely or follow an anomalous segment; in the latter case
   // they are empty.

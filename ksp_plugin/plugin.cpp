@@ -923,8 +923,9 @@ void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
   ephemeris_->FlowWithFixedStep(
       histories,
       Ephemeris<Barycentric>::kNoIntrinsicAccelerations,
-      Δt_,
-      t);
+      t,
+      Ephemeris<Barycentric>::FixedStepParameters(
+          ephemeris_->planetary_integrator(), Δt_));
   history_time_ = histories.front()->last().time();
   CHECK_GE(history_time_, current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
@@ -963,12 +964,14 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   for (int i = 0; i < trajectories.size(); ++i) {
     auto const& trajectory = trajectories[i];
     auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     intrinsic_acceleration,
-                                     prolongation_length_tolerance_,
-                                     prolongation_speed_tolerance_,
-                                     prolongation_integrator_,
-                                     history_time_);
+    ephemeris_->FlowWithAdaptiveStep(
+        trajectory,
+        intrinsic_acceleration,
+        history_time_,
+        Ephemeris<Barycentric>::AdaptiveStepParameters(
+            prolongation_integrator_,
+            prolongation_length_tolerance_,
+            prolongation_speed_tolerance_));
   }
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
@@ -1053,12 +1056,14 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   for (int i = 0; i < trajectories.size(); ++i) {
     auto const& trajectory = trajectories[i];
     auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     intrinsic_acceleration,
-                                     prolongation_length_tolerance_,
-                                     prolongation_speed_tolerance_,
-                                     prolongation_integrator_,
-                                     t);
+    ephemeris_->FlowWithAdaptiveStep(
+        trajectory,
+        intrinsic_acceleration,
+        t,
+        Ephemeris<Barycentric>::AdaptiveStepParameters(
+            prolongation_integrator_,
+            prolongation_length_tolerance_,
+            prolongation_speed_tolerance_));
   }
   if (!bubble_->empty()) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =

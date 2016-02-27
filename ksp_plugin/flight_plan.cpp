@@ -12,17 +12,12 @@ FlightPlan::FlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-    AdaptiveStepSizeIntegrator<
-        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance)
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters)
     : initial_time_(initial_time),
       final_time_(final_time),
       initial_mass_(initial_mass),
       ephemeris_(ephemeris),
-      integrator_(integrator),
-      length_integration_tolerance_(length_integration_tolerance),
-      speed_integration_tolerance_(speed_integration_tolerance) {
+      adaptive_parameters_(adaptive_parameters) {
   CHECK(final_time_ >= initial_time_);
   auto it = root->LowerBound(initial_time_);
   if (it.time() != initial_time_) {
@@ -249,10 +244,8 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
     bool const reached_final_time =
         ephemeris_->FlowWithAdaptiveStep(segments_.back(),
                                          manœuvre.IntrinsicAcceleration(),
-                                         length_integration_tolerance_,
-                                         speed_integration_tolerance_,
-                                         integrator_,
-                                         manœuvre.final_time());
+                                         manœuvre.final_time(),
+                                         adaptive_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
     }
@@ -267,10 +260,8 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
           ephemeris_->FlowWithAdaptiveStep(
                           segments_.back(),
                           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-                          length_integration_tolerance_,
-                          speed_integration_tolerance_,
-                          integrator_,
-                          final_time);
+                          final_time,
+                          adaptive_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
     }
@@ -327,10 +318,8 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
       ephemeris_->FlowWithAdaptiveStep(
           recomputed_coast,
           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-          length_integration_tolerance_,
-          speed_integration_tolerance_,
-          integrator_,
-          manœuvre.initial_time());
+          manœuvre.initial_time(),
+          adaptive_parameters_);
   if (!reached_manœuvre_initial_time) {
     recomputed_coast->parent()->DeleteFork(&recomputed_coast);
   }
