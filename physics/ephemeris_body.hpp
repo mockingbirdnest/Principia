@@ -96,17 +96,30 @@ class DummyIntegrator
 }  // namespace
 
 template<typename Frame>
+Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
+    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance)
+    : integrator_(integrator),
+      length_integration_tolerance_(length_integration_tolerance),
+      speed_integration_tolerance_(speed_integration_tolerance) {}
+
+template<typename Frame>
+Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
+    FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+    Time const& step)
+    : integrator_(integrator),
+      step_(step) {}
+
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
-    FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-        planetary_integrator,
-    Time const& step,
-    Length const& fitting_tolerance)
-    : planetary_integrator_(planetary_integrator),
-      step_(step),
-      fitting_tolerance_(fitting_tolerance) {
+    Length const& fitting_tolerance,
+    FixedStepParameters const& parameters)
+    : fitting_tolerance_(fitting_tolerance),
+      parameters_(parameters) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -122,7 +135,7 @@ Ephemeris<Frame>::Ephemeris(
     auto const inserted = bodies_to_trajectories_.emplace(
                               body.get(),
                               std::make_unique<ContinuousTrajectory<Frame>>(
-                                  step_, fitting_tolerance_));
+                                  parameters_.step_, fitting_tolerance_));
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory =
         inserted.first->second.get();
@@ -204,7 +217,7 @@ template<typename Frame>
 FixedStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
 Ephemeris<Frame>::planetary_integrator() const {
-  return planetary_integrator_;
+  return parameters_.integrator_;
 }
 
 template<typename Frame>
@@ -252,7 +265,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // makes progress.
   problem.initial_state = &last_state_;
   if (t <= last_state_.time.value) {
-    problem.t_final = last_state_.time.value + step_;
+    problem.t_final = last_state_.time.value + parameters_.step_;
   } else {
     problem.t_final = t;
   }
@@ -261,11 +274,11 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    planetary_integrator_.Solve(problem, step_);
+    parameters_.integrator_.Solve(problem, parameters_.step_);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
-    problem.t_final += step_;
+    problem.t_final += parameters_.step_;
   }
 }
 
@@ -273,10 +286,8 @@ template<typename Frame>
 bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance,
-    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-    Instant const& t) {
+    Instant const& t,
+    AdaptiveStepParameters const& parameters) {
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
   std::vector<IntrinsicAcceleration> const intrinsic_accelerations =
@@ -314,8 +325,8 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   step_size.safety_factor = 0.9;
   step_size.tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
-                std::cref(length_integration_tolerance),
-                std::cref(speed_integration_tolerance),
+                std::cref(parameters.length_integration_tolerance_),
+                std::cref(parameters.speed_integration_tolerance_),
                 _1, _2);
   // TODO(egg): this should not be hard-coded, but we shouldn't keep adding
   // parameters to this function.  Perhaps the tolerances, integrator, and
@@ -323,7 +334,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // same one, or should form a struct of their own.
   step_size.max_steps = 1000;
 
-  auto const outcome = integrator.Solve(problem, step_size);
+  auto const outcome = parameters.integrator_.Solve(problem, step_size);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
@@ -336,9 +347,9 @@ template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
-    Time const& step,
-    Instant const& t) {
-  VLOG(1) << __FUNCTION__ << " " << NAMED(step) << " " << NAMED(t);
+    Instant const& t,
+    FixedStepParameters const& parameters) {
+  VLOG(1) << __FUNCTION__ << " " << NAMED(parameters.step_) << " " << NAMED(t);
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -379,7 +390,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   problem.t_final = t;
   problem.initial_state = &initial_state;
 
-  planetary_integrator_.Solve(problem, step);
+  parameters.integrator_.Solve(problem, parameters.step_);
 
 #if defined(WE_LOVE_228)
   AppendMasslessBodiesState(last_state, trajectories);
@@ -516,8 +527,9 @@ void Ephemeris<Frame>::WriteToMessage(
   for (auto const& trajectory : trajectories_) {
     trajectory->WriteToMessage(message->add_trajectory());
   }
-  planetary_integrator_.WriteToMessage(message->mutable_planetary_integrator());
-  step_.WriteToMessage(message->mutable_step());
+  parameters_.integrator_.WriteToMessage(
+      message->mutable_planetary_integrator());
+  parameters_.step_.WriteToMessage(message->mutable_step());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
   last_state_.WriteToMessage(message->mutable_last_state());
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -660,7 +672,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
 
 template <typename Frame>
 Ephemeris<Frame>::Ephemeris()
-    : planetary_integrator_(DummyIntegrator<Frame>::Instance()) {}
+    : parameters_(DummyIntegrator<Frame>::Instance(), Time()) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
