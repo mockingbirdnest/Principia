@@ -587,9 +587,8 @@ message GetVersion {
     optional GetVersion extension = 5078;
   }
   message Out {
-    reserved 1, 2;
-    required string build_date = 3;
-    required string version = 4;
+    required string build_date = 1;
+    required string version = 2;
   }
   required Out out = 2;
 }
