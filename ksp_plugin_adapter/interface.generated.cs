@@ -84,7 +84,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void AddVesselToNextPhysicsBubble(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       KSPPart[] parts,
       int count);
 
@@ -151,7 +151,7 @@ internal static partial class Interface {
              EntryPoint        = "principia__DeserializePlugin",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void DeserializePlugin(
-      [MarshalAs(UnmanagedType.LPStr)] String serialization,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String serialization,
       int serialization_size,
       ref IntPtr deserializer,
       ref IntPtr plugin);
@@ -173,7 +173,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool FlightPlanAppend(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       Burn burn);
 
   [DllImport(dllName           : kDllPath,
@@ -181,7 +181,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void FlightPlanCreate(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       double final_time,
       double mass_in_tonnes);
 
@@ -190,35 +190,35 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void FlightPlanDelete(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanExists",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool FlightPlanExists(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanGetFinalTime",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern double FlightPlanGetFinalTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanGetInitialTime",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern double FlightPlanGetInitialTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanGetManoeuvre",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       int index);
 
   [DllImport(dllName           : kDllPath,
@@ -226,28 +226,28 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern int FlightPlanNumberOfManoeuvres(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanNumberOfSegments",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern int FlightPlanNumberOfSegments(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanRemoveLast",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void FlightPlanRemoveLast(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__FlightPlanRenderedSegment",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern IntPtr FlightPlanRenderedSegment(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position,
       int index);
 
@@ -256,7 +256,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZSegment FlightPlanRenderedSegmentEndpoints(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position,
       int index);
 
@@ -265,7 +265,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool FlightPlanReplaceLast(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       Burn burn);
 
   [DllImport(dllName           : kDllPath,
@@ -273,7 +273,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool FlightPlanSetFinalTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       double final_time);
 
   [DllImport(dllName           : kDllPath,
@@ -281,7 +281,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void FlightPlanSetTolerances(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       double length_integration_tolerance,
       double speed_integration_tolerance);
 
@@ -327,22 +327,22 @@ internal static partial class Interface {
              EntryPoint        = "principia__GetVersion",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void GetVersion(
-      out IntPtr build_date,
-      out IntPtr version);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutUTF8Marshaler))] out String build_date,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutUTF8Marshaler))] out String version);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__HasPrediction",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool HasPrediction(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__HasVessel",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool HasVessel(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InitGoogleLogging",
@@ -356,18 +356,18 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] Boxed<int> parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String mean_radius,
-      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
-      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
-      [MarshalAs(UnmanagedType.LPStr)] String j2,
-      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
-      [MarshalAs(UnmanagedType.LPStr)] String x,
-      [MarshalAs(UnmanagedType.LPStr)] String y,
-      [MarshalAs(UnmanagedType.LPStr)] String z,
-      [MarshalAs(UnmanagedType.LPStr)] String vx,
-      [MarshalAs(UnmanagedType.LPStr)] String vy,
-      [MarshalAs(UnmanagedType.LPStr)] String vz);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String gravitational_parameter,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String mean_radius,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String axis_right_ascension,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String axis_declination,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String j2,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String reference_radius,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String x,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String y,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String z,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vx,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vy,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vz);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InsertCelestialJacobiKeplerian",
@@ -376,25 +376,25 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       int parent_index,
-      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
-      [MarshalAs(UnmanagedType.LPStr)] String mean_radius,
-      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
-      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
-      [MarshalAs(UnmanagedType.LPStr)] String j2,
-      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String gravitational_parameter,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String mean_radius,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String axis_right_ascension,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String axis_declination,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String j2,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String reference_radius,
       double eccentricity,
-      [MarshalAs(UnmanagedType.LPStr)] String mean_motion,
-      [MarshalAs(UnmanagedType.LPStr)] String inclination,
-      [MarshalAs(UnmanagedType.LPStr)] String longitude_of_ascending_node,
-      [MarshalAs(UnmanagedType.LPStr)] String argument_of_periapsis,
-      [MarshalAs(UnmanagedType.LPStr)] String mean_anomaly);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String mean_motion,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String inclination,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String longitude_of_ascending_node,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String argument_of_periapsis,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String mean_anomaly);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InsertOrKeepVessel",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool InsertOrKeepVessel(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       int parent_index);
 
   [DllImport(dllName           : kDllPath,
@@ -410,25 +410,25 @@ internal static partial class Interface {
              EntryPoint        = "principia__LogError",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void LogError(
-      [MarshalAs(UnmanagedType.LPStr)] String text);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String text);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__LogFatal",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void LogFatal(
-      [MarshalAs(UnmanagedType.LPStr)] String text);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String text);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__LogInfo",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void LogInfo(
-      [MarshalAs(UnmanagedType.LPStr)] String text);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String text);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__LogWarning",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void LogWarning(
-      [MarshalAs(UnmanagedType.LPStr)] String text);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String text);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__NavballOrientation",
@@ -484,7 +484,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern IntPtr RenderedPrediction(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -492,7 +492,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern IntPtr RenderedVesselTrajectory(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
@@ -570,7 +570,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetVesselStateOffset(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       QP from_parent);
 
   [DllImport(dllName           : kDllPath,
@@ -586,35 +586,35 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void UpdatePrediction(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselBinormal",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ VesselBinormal(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselFromParent",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern QP VesselFromParent(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselNormal",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ VesselNormal(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselTangent",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern XYZ VesselTangent(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
 
 }
 

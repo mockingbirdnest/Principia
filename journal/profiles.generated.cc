@@ -717,8 +717,8 @@ void GetVerboseLogging::Run(Message const& message, not_null<Player::PointerMap*
 
 void GetVersion::Fill(Out const& out, not_null<Message*> const message) {
   auto* const m = message->mutable_out();
-  m->set_build_date(SerializePointer(*out.build_date));
-  m->set_version(SerializePointer(*out.version));
+  m->set_build_date(*out.build_date);
+  m->set_version(*out.version);
 }
 
 void GetVersion::Run(Message const& message, not_null<Player::PointerMap*> const pointer_map) {
@@ -726,8 +726,6 @@ void GetVersion::Run(Message const& message, not_null<Player::PointerMap*> const
   char const* build_date;
   char const* version;
   interface::principia__GetVersion(&build_date, &version);
-  Insert(pointer_map, out.build_date(), build_date);
-  Insert(pointer_map, out.version(), version);
 }
 
 void HasPrediction::Fill(In const& in, not_null<Message*> const message) {
