@@ -384,7 +384,11 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
-  field_cs_marshal_[descriptor] = "[MarshalAs(UnmanagedType.LPStr)]";
+  field_cs_marshal_[descriptor] =
+      Contains(out_, descriptor) ? "[MarshalAs(UnmanagedType.CustomMarshaler, "
+                                   "MarshalTypeRef = typeof(OutUTF8Marshaler))]"
+                                 : "[MarshalAs(UnmanagedType.CustomMarshaler, "
+                                   "MarshalTypeRef = typeof(InUTF8Marshaler))]";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
