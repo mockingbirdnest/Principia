@@ -52,9 +52,9 @@ internal class InUTF8Marshaler : UTF8Marshaler {
                                     typeof(String).Name));
     }
     int size = utf8_.GetByteCount(value);
-    IntPtr ptr = Marshal.AllocHGlobal(size + 1);
+    IntPtr buffer = Marshal.AllocHGlobal(size + 1);
     unsafe {
-      byte* begin = (byte*)ptr;
+      byte* begin = (byte*)buffer;
 #if MARSHAL_DEBUG
       Console.WriteLine("alloch " + Convert.ToString(ptr.ToInt64(), 16));
 #endif
@@ -63,7 +63,7 @@ internal class InUTF8Marshaler : UTF8Marshaler {
       }
       begin[size] = 0;
     }
-    return ptr;
+    return buffer;
   }
 
   public override object MarshalNativeToManaged(IntPtr native_data) {
@@ -97,7 +97,7 @@ internal class OutUTF8Marshaler : UTF8Marshaler {
 
 // A marshaler for out parameter or return value UTF-8 strings whose ownership
 // is taken by the caller.
-internal class UTF8FactoryMarshaler : OutUTF8Marshaler {
+internal class OutOwnedUTF8Marshaler : OutUTF8Marshaler {
   public static new ICustomMarshaler GetInstance(String s) {
     return instance_;
   }
@@ -107,8 +107,8 @@ internal class UTF8FactoryMarshaler : OutUTF8Marshaler {
     Interface.DeletePluginSerialization(ref native_data);
   }
 
-  private readonly static UTF8FactoryMarshaler instance_ =
-      new UTF8FactoryMarshaler();
+  private readonly static OutOwnedUTF8Marshaler instance_ =
+      new OutOwnedUTF8Marshaler();
 }
 
 }  // namespace ksp_plugin_adapter
