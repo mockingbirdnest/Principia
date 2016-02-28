@@ -42,8 +42,6 @@ class Vessel {
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
 
-  // True if, and only if, |history_| is not null.
-  virtual bool is_synchronized() const;
   // True if, and only if, |prolongation_| is not null, i.e., if either
   // |CreateProlongation| or |CreateHistoryAndForkProlongation| was called at
   // some point.
@@ -52,10 +50,7 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> const parent);
 
-  // Both accessors require |is_synchronized()|.
-  // TODO(phl): Remove the mutable version once synchronization is gone.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
-  virtual not_null<DiscreteTrajectory<Barycentric>*> mutable_history();
 
   // Both accessors require |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
@@ -69,28 +64,16 @@ class Vessel {
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
   virtual bool has_prediction() const;
 
-  // Creates an |owned_prolongation_| for this vessel and appends a point with
-  // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy
-  // |is_initialized()| nor |is_synchronized()|, |owned_prolongation_| must be
-  // null.  The vessel |is_initialized()|, but does not satisfy
-  // |is_synchronized()|, after the call.
-  virtual void CreateProlongation(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
-
   // Creates a |history_| for this vessel and appends a point with the
   // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
   // |time|.  Nulls |owned_prolongation_|.  The vessel must not satisfy
-  // |is_synchronized()|.  |*owned_prolongation_| is destroyed *after*
-  // |history_| has been constructed.
-  // The vessel |is_synchronized()| and |is_initialized()| after the call.
+  // |is_initialized()|.  The vessel |is_initialized()| after the call.
   virtual void CreateHistoryAndForkProlongation(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Deletes the |prolongation_| and forks a new one at |time|.
-  // The vessel must satisfy |is_synchronized()| and |is_initialized()|,
-  // |owned_prolongation_| must be null.
+  // The vessel must satisfy |is_initialized()|.
   virtual void ResetProlongation(Instant const& time);
 
   // Appends a point to the history.
@@ -107,10 +90,6 @@ class Vessel {
 
   // Creates a |flight_plan_| at the end of history using the given parameters.
   // Deletes any pre-existing predictions.
-  // Does nothing unless |is_synchronized()|, pending the removal of
-  // synchronization.
-  // TODO(egg): struct containing (integrator, length tol, speed tol) so we
-  // don't need that many parameters...
   virtual void CreateFlightPlan(
       Instant const& final_time,
       Mass const& initial_mass,
@@ -156,10 +135,6 @@ class Vessel {
   // If |history_| is null, this points to |owned_prolongation_| instead.
   // Not owning.
   DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
-  // When the vessel is added, before it is synchonized with the other vessels
-  // and celestials, there is no |history_|.  The prolongation is directly owned
-  // during that time.  Null if, and only if, |history_| is not null.
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> owned_prolongation_;
   // Child trajectory of |history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 

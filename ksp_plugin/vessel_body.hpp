@@ -24,20 +24,9 @@ inline not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
 }
 
-inline bool Vessel::is_synchronized() const {
-  bool const synchronized = history_ != nullptr;
-  if (synchronized) {
-    CHECK(owned_prolongation_ == nullptr);
-  }
-  return synchronized;
-}
-
 inline bool Vessel::is_initialized() const {
-  bool const initialized = prolongation_ != nullptr;
-  if (!initialized) {
-    CHECK(owned_prolongation_ == nullptr);
-  }
-  return initialized;
+  CHECK_EQ(history_ == nullptr, prolongation_ == nullptr);
+  return history_ != nullptr;
 }
 
 inline not_null<Celestial const*> Vessel::parent() const {
@@ -49,13 +38,7 @@ inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 inline DiscreteTrajectory<Barycentric> const& Vessel::history() const {
-  CHECK(is_synchronized());
   return *history_;
-}
-
-inline not_null<DiscreteTrajectory<Barycentric>*> Vessel::mutable_history() {
-  CHECK(is_synchronized());
-  return history_.get();
 }
 
 inline DiscreteTrajectory<Barycentric> const& Vessel::prolongation() const {
@@ -87,31 +70,17 @@ inline bool Vessel::has_prediction() const {
   return prediction_ != nullptr;
 }
 
-inline void Vessel::CreateProlongation(
-    Instant const& time,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(!is_synchronized());
-  CHECK(!is_initialized());
-  CHECK(owned_prolongation_ == nullptr);
-  owned_prolongation_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
-  owned_prolongation_->Append(time, degrees_of_freedom);
-  prolongation_ = owned_prolongation_.get();
-}
-
 inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(!is_synchronized());
+  CHECK(!is_initialized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->NewForkAtLast();
-  owned_prolongation_.reset();
 }
 
 inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_initialized());
-  CHECK(is_synchronized());
-  CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewForkWithCopy(time);
 }
@@ -119,12 +88,12 @@ inline void Vessel::ResetProlongation(Instant const& time) {
 inline void Vessel::AppendToHistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(is_synchronized());
+  CHECK(is_initialized());
   history_->Append(time, degrees_of_freedom);
 }
 
 inline void Vessel::ForgetBefore(Instant const& time) {
-  CHECK(is_synchronized());
+  CHECK(is_initialized());
   history_->ForgetBefore(time);
 }
 
@@ -147,11 +116,8 @@ inline void Vessel::CreateFlightPlan(
     Mass const& initial_mass,
     not_null<Ephemeris<Barycentric>*> ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
-  if (!is_synchronized()) {
-    return;
-  }
   flight_plan_ = std::make_unique<FlightPlan>(
-                     mutable_history(),
+                     history_,
                      /*initial_time=*/history().last().time(),
                      /*final_time=*/final_time,
                      initial_mass,
@@ -167,11 +133,8 @@ inline void Vessel::UpdatePrediction(
     not_null<Ephemeris<Barycentric>*> ephemeris,
     Instant const& last_time,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
-  if (!is_synchronized()) {
-    return;
-  }
   DeletePrediction();
-  prediction_ = mutable_history()->NewForkAtLast();
+  prediction_ = history_->NewForkAtLast();
   if (history().last().time() != prolongation().last().time()) {
     prediction_->Append(prolongation().last().time(),
                         prolongation().last().degrees_of_freedom());
@@ -185,7 +148,7 @@ inline void Vessel::UpdatePrediction(
 
 inline void Vessel::DeletePrediction() {
   if (has_prediction()) {
-    mutable_history()->DeleteFork(&prediction_);
+    history_->DeleteFork(&prediction_);
   }
 }
 
@@ -193,17 +156,11 @@ inline void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   CHECK(is_initialized());
   body_.WriteToMessage(message->mutable_body());
-  if (is_synchronized()) {
-    history_->WriteToMessage(
-        message->mutable_history_and_prolongation()->mutable_history());
-    prolongation_->WritePointerToMessage(
-        message->mutable_history_and_prolongation()->mutable_prolongation());
-  } else {
-    owned_prolongation_->WriteToMessage(message->mutable_owned_prolongation());
-  }
-  if (prediction_ != nullptr) {
-    prediction_->WritePointerToMessage(message->mutable_prediction());
-  }
+  history_->WriteToMessage(
+      message->mutable_history_and_prolongation()->mutable_history());
+  prolongation_->WritePointerToMessage(
+      message->mutable_history_and_prolongation()->mutable_prolongation());
+  prediction_->WritePointerToMessage(message->mutable_prediction());
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -235,10 +192,10 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           message.flight_plan(), vessel->history_.get(), ephemeris);
     }
   } else if (message.has_owned_prolongation()) {
-    vessel->owned_prolongation_ =
-        DiscreteTrajectory<Barycentric>::ReadFromMessage(
-            message.owned_prolongation());
-    vessel->prolongation_ = vessel->owned_prolongation_.get();
+    // Pre-Буняко́вский compatibility.
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                           message.owned_prolongation());
+    vessel->prolongation_ = vessel->history_->NewForkAtLast();
     CHECK(!message.has_prediction());
     CHECK(!message.has_flight_plan());
   } else {

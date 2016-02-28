@@ -173,8 +173,7 @@ class Plugin {
   // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
-  // Forgets the histories of the |celestials_| and of the synchronized vessels
-  // before |t|.
+  // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
 
   // Returns the displacement and velocity of the vessel with GUID |vessel_guid|
