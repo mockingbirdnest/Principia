@@ -18,9 +18,13 @@ internal class Boxed<T> where T : struct {
 
   public T all { get; private set; }
 
-  private Boxed(T all) {
+  protected Boxed(T all) {
     this.all = all;
   }
+}
+
+internal class BoxedInteger : Boxed<int> {
+  protected BoxedInteger(int all) : base(all) {}
 }
 
 }  // namespace ksp_plugin_adapter
