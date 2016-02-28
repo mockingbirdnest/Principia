@@ -144,6 +144,11 @@ Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
 }
 
 template<typename Frame>
+inline Time const& Ephemeris<Frame>::FixedStepParameters::step() const {
+  return step_;
+}
+
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,

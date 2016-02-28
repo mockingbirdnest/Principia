@@ -7,18 +7,26 @@
 #include <limits>
 #include <vector>
 
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
 
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::McLachlanAtela1992Order4Optimal;
 using quantities::si::Kilogram;
 
 namespace ksp_plugin {
 
-inline Vessel::Vessel(not_null<Celestial const*> const parent)
+inline Vessel::Vessel(
+    not_null<Celestial const*> const parent,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters)
     : body_(),
-      parent_(parent) {}
+      parent_(parent),
+      adaptive_parameters_(adaptive_parameters),
+      fixed_parameters_(fixed_parameters) {}
 
 inline not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
@@ -71,7 +79,7 @@ inline bool Vessel::has_prediction() const {
 }
 
 inline void Vessel::set_dirty() {
-  LOG(FATAL)<<"NYI";
+  dirty_ = true;
 }
 
 inline void Vessel::CreateHistoryAndForkProlongation(
@@ -91,7 +99,22 @@ inline void Vessel::AppendToHistory(
 }
 
 inline void Vessel::AdvanceTime(Instant const& time) {
-  LOG(FATAL)<<"NYI";
+  Instant const& history_last_time = history_->last().time();
+  Time const& Δt = fixed_parameters_.step();
+
+  if (history_last_time + Δt <= time) {
+    if (dirty_) {
+      FlowProlongation(history_last_time + Δt);
+      history_->Append(history_last_time + Δt,
+                       prolongation_->last().degrees_of_freedom());
+      dirty_ = false;
+    } else {
+      FlowHistory(time);
+    }
+    history_->DeleteFork(&prolongation_);
+    prolongation_ = history_->NewForkAtLast();
+  }
+  FlowProlongation(time);
 }
 
 inline void Vessel::ForgetBefore(Instant const& time) {
@@ -209,13 +232,15 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
 inline Vessel::Vessel()
     : body_(),
-      parent_(testing_utilities::make_not_null<Celestial const*>()) {}
-
-inline void Vessel::ResetProlongation(Instant const& time) {
-  CHECK(is_initialized());
-  history_->DeleteFork(&prolongation_);
-  prolongation_ = history_->NewForkWithCopy(time);
-}
+      parent_(testing_utilities::make_not_null<Celestial const*>()),
+      adaptive_parameters_(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/1,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second),
+      fixed_parameters_(
+          McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
+          /*step=*/1 * Second) {}
 
 }  // namespace ksp_plugin
 }  // namespace principia

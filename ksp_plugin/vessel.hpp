@@ -37,7 +37,10 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
-  explicit Vessel(not_null<Celestial const*> const parent);
+  Vessel(
+      not_null<Celestial const*> const parent,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters);
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
@@ -128,27 +131,30 @@ class Vessel {
   Vessel();
 
  private:
-  // Deletes the |prolongation_| and forks a new one at |time|.
-  // The vessel must satisfy |is_initialized()|.
-  void ResetProlongation(Instant const& time);
+  void FlowHistory(Instant const& time);
+  void FlowProlongation(Instant const& time);
+  // Deletes the |prolongation_| and forks a new one at the end of the
+  // |history_|.
+  void ResetProlongation();
 
   MasslessBody const body_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
   // The past and present trajectory of the body. It ends at |HistoryTime()|
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.  It is advanced with a constant time step.
   std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
-  // Most of the time, this is a child trajectory of |*history_|. It is forked
-  // at |history_->last_time()| and continues until |current_time_|. It is
-  // computed with a non-constant timestep, which breaks symplecticity.
-  // If |history_| is null, this points to |owned_prolongation_| instead.
-  // Not owning.
+  // A child trajectory of |*history_|. It is forked at |history_->last_time()|
+  // and continues until |current_time_|. It is computed with a non-constant
+  // timestep, which breaks symplecticity.
   DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
   // Child trajectory of |history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   std::unique_ptr<FlightPlan> flight_plan_;
+  bool dirty_ = false;
 };
 
 }  // namespace ksp_plugin
