@@ -51,9 +51,6 @@ class Ephemeris {
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
-    void SetTolerances(Length const& length_integration_tolerance,
-                       Speed const& speed_integration_tolerance);
-
     template<typename T>
     void WriteToMessage(not_null<T*> const t) const;
 
@@ -62,7 +59,8 @@ class Ephemeris {
 
    private:
     // This will refer to a static object returned by a factory.
-    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator_;
+    not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
+        integrator_;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;
@@ -76,8 +74,9 @@ class Ephemeris {
 
    private:
     // This will refer to a static object returned by a factory.
-    FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator_;
-    Time const step_;
+    not_null<FixedStepSizeIntegrator<NewtonianMotionEquation> const*>
+        integrator_;
+    Time step_;
     friend class Ephemeris<Frame>;
   };
 

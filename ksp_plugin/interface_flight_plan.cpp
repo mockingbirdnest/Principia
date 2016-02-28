@@ -307,21 +307,5 @@ bool principia__FlightPlanSetFinalTime(Plugin const* const plugin,
                       SetFinalTime(Instant() + final_time * Second));
 }
 
-void principia__FlightPlanSetTolerances(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    double const length_integration_tolerance,
-    double const speed_integration_tolerance) {
-  journal::Method<journal::FlightPlanSetTolerances>
-      m({plugin,
-         vessel_guid,
-         length_integration_tolerance,
-         speed_integration_tolerance});
-  GetFlightPlan(plugin, vessel_guid).
-      SetTolerances(length_integration_tolerance * Metre,
-                    speed_integration_tolerance * (Metre / Second));
-  return m.Return();
-}
-
 }  // namespace interface
 }  // namespace principia

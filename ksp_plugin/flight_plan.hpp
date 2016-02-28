@@ -70,11 +70,11 @@ class FlightPlan {
   // last manœuvre or before |initial_time_|.
   virtual bool SetFinalTime(Instant const& final_time);
 
-  // Sets the tolerances used to compute the trajectories.  The trajectories are
+  // Sets the parameters used to compute the trajectories.  The trajectories are
   // recomputed.
-  virtual void SetTolerances(
-      Length const& length_integration_tolerance,
-      Speed const& speed_integration_tolerance);
+  virtual void SetAdaptiveStepParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_parameters);
 
   // Returns the number of trajectory segments in this object.
   virtual int number_of_segments() const;
