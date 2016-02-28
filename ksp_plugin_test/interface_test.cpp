@@ -918,9 +918,6 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(Return(Instant() + 4 * Second));
   EXPECT_EQ(4, principia__FlightPlanGetFinalTime(plugin_.get(), kVesselGUID));
 
-  EXPECT_CALL(flight_plan, SetTolerances(111 * Metre, 222 * (Metre / Second)));
-  principia__FlightPlanSetTolerances(plugin_.get(), kVesselGUID, 111, 222);
-
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(

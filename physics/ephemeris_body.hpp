@@ -101,7 +101,7 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
     int const max_steps,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance)
-    : integrator_(integrator),
+    : integrator_(&integrator),
       max_steps_(max_steps),
       length_integration_tolerance_(length_integration_tolerance),
       speed_integration_tolerance_(speed_integration_tolerance) {
@@ -111,20 +111,10 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
 }
 
 template <typename Frame>
-void Ephemeris<Frame>::AdaptiveStepParameters::SetTolerances(
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance) {
-  length_integration_tolerance_ = length_integration_tolerance;
-  speed_integration_tolerance_ = speed_integration_tolerance;
-  CHECK_LT(Length(), length_integration_tolerance_);
-  CHECK_LT(Speed(), speed_integration_tolerance_);
-}
-
-template <typename Frame>
 template <typename T>
 void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
     not_null<T*> const t) const {
-  integrator_.WriteToMessage(t->mutable_integrator());
+  integrator_->WriteToMessage(t->mutable_integrator());
   t->set_max_steps(max_steps_);
   length_integration_tolerance_.WriteToMessage(
       t->mutable_length_integration_tolerance());
@@ -148,7 +138,7 @@ template<typename Frame>
 Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
     FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Time const& step)
-    : integrator_(integrator),
+    : integrator_(&integrator),
       step_(step) {
   CHECK_LT(Time(), step);
 }
@@ -259,7 +249,7 @@ template<typename Frame>
 FixedStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
 Ephemeris<Frame>::planetary_integrator() const {
-  return parameters_.integrator_;
+  return *parameters_.integrator_;
 }
 
 template<typename Frame>
@@ -316,7 +306,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    parameters_.integrator_.Solve(problem, parameters_.step_);
+    parameters_.integrator_->Solve(problem, parameters_.step_);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -372,7 +362,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, _2);
   step_size.max_steps = parameters.max_steps_;
 
-  auto const outcome = parameters.integrator_.Solve(problem, step_size);
+  auto const outcome = parameters.integrator_->Solve(problem, step_size);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
@@ -428,7 +418,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   problem.t_final = t;
   problem.initial_state = &initial_state;
 
-  parameters.integrator_.Solve(problem, parameters.step_);
+  parameters.integrator_->Solve(problem, parameters.step_);
 
 #if defined(WE_LOVE_228)
   AppendMasslessBodiesState(last_state, trajectories);
@@ -565,7 +555,7 @@ void Ephemeris<Frame>::WriteToMessage(
   for (auto const& trajectory : trajectories_) {
     trajectory->WriteToMessage(message->add_trajectory());
   }
-  parameters_.integrator_.WriteToMessage(
+  parameters_.integrator_->WriteToMessage(
       message->mutable_planetary_integrator());
   parameters_.step_.WriteToMessage(message->mutable_step());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());

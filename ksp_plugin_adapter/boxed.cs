@@ -12,15 +12,20 @@ namespace ksp_plugin_adapter {
 // boxed value types, so that |T?| cannot be marshaled, and |object| is not
 // statically typed.
 internal class Boxed<T> where T : struct {
-  public static implicit operator Boxed<T>(T all) {
-    return new Boxed<T>(all);
-  }
-
   public T all { get; private set; }
 
-  private Boxed(T all) {
+  protected Boxed(T all) {
     this.all = all;
   }
+}
+
+// The |MarshalAsAttribute| does not support marshaling of generic types.
+internal class BoxedInt32 : Boxed<int> {
+  public static implicit operator BoxedInt32(int all) {
+    return new BoxedInt32(all);
+  }
+
+  protected BoxedInt32(int all) : base(all) {}
 }
 
 }  // namespace ksp_plugin_adapter

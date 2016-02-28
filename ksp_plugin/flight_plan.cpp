@@ -120,11 +120,9 @@ bool FlightPlan::SetFinalTime(Instant const& final_time) {
   }
 }
 
-void FlightPlan::SetTolerances(
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance) {
-  adaptive_parameters_.SetTolerances(length_integration_tolerance,
-                                     speed_integration_tolerance);
+void FlightPlan::SetAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
+  adaptive_parameters_ = adaptive_parameters;
   RecomputeSegments();
 }
 
