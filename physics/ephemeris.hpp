@@ -45,15 +45,21 @@ class Ephemeris {
   class AdaptiveStepParameters {
    public:
     // The |length_| and |speed_integration_tolerance|s are used to compute the
-    // |tolerance_to_error_ratio| for step size control.
+    // |tolerance_to_error_ratio| for step size control.  The number of steps is
+    // limited to |max_steps|.
     AdaptiveStepParameters(
         AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+        std::int64_t const max_steps,
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
+    // These functions can serialize to/from any message having the right
+    // fields.  It would be nicer if this was a separate message or a part of
+    // the Ephemeris message, but that would break pre-Буняко́вский
+    // compatibility.
+    // TODO(phl): Restructure this after Cantor.
     template<typename T>
     void WriteToMessage(not_null<T*> const t) const;
-
     template<typename T>
     static AdaptiveStepParameters ReadFromMessage(T const& t);
 
@@ -61,6 +67,7 @@ class Ephemeris {
     // This will refer to a static object returned by a factory.
     not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
         integrator_;
+    std::int64_t max_steps_;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;

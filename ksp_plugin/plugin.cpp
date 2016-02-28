@@ -353,10 +353,12 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
       ephemeris_.get(),
-      prediction_integrator_,
       current_time_ + prediction_length_,
-      prediction_length_tolerance_,
-      prediction_speed_tolerance_);
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          prediction_integrator_,
+          prediction_max_steps_,
+          prediction_length_tolerance_,
+          prediction_speed_tolerance_));
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -367,9 +369,11 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
       final_time,
       initial_mass,
       ephemeris_.get(),
-      prediction_integrator_,
-      prediction_length_tolerance_,
-      prediction_speed_tolerance_);
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          prediction_integrator_,
+          prediction_max_steps_,
+          prediction_length_tolerance_,
+          prediction_speed_tolerance_));
 }
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
@@ -963,14 +967,17 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   for (int i = 0; i < trajectories.size(); ++i) {
     auto const& trajectory = trajectories[i];
     auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    ephemeris_->FlowWithAdaptiveStep(
-        trajectory,
-        intrinsic_acceleration,
-        history_time_,
-        Ephemeris<Barycentric>::AdaptiveStepParameters(
-            prolongation_integrator_,
-            prolongation_length_tolerance_,
-            prolongation_speed_tolerance_));
+    bool const reached_final_time =
+        ephemeris_->FlowWithAdaptiveStep(
+            trajectory,
+            intrinsic_acceleration,
+            history_time_,
+            Ephemeris<Barycentric>::AdaptiveStepParameters(
+                prolongation_integrator_,
+                prolongation_max_steps_,
+                prolongation_length_tolerance_,
+                prolongation_speed_tolerance_));
+    CHECK(reached_final_time) << history_time_;
   }
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
@@ -1053,14 +1060,17 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   for (int i = 0; i < trajectories.size(); ++i) {
     auto const& trajectory = trajectories[i];
     auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    ephemeris_->FlowWithAdaptiveStep(
-        trajectory,
-        intrinsic_acceleration,
-        t,
-        Ephemeris<Barycentric>::AdaptiveStepParameters(
-            prolongation_integrator_,
-            prolongation_length_tolerance_,
-            prolongation_speed_tolerance_));
+    bool const reached_final_time =
+        ephemeris_->FlowWithAdaptiveStep(
+            trajectory,
+            intrinsic_acceleration,
+            t,
+            Ephemeris<Barycentric>::AdaptiveStepParameters(
+                prolongation_integrator_,
+                prolongation_max_steps_,
+                prolongation_length_tolerance_,
+                prolongation_speed_tolerance_));
+    CHECK(reached_final_time) << t;
   }
   if (!bubble_->empty()) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =

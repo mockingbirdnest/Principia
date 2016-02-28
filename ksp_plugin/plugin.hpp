@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -407,6 +408,8 @@ class Plugin {
     not_null<IndexToOwnedCelestial*> const celestials);
 
   Time const Δt_ = 10 * Second;
+  std::int64_t const prolongation_max_steps_ =
+      std::numeric_limits<std::int64_t>::max();
   Length const prolongation_length_tolerance_ = 1 * Milli(Metre);
   Speed const prolongation_speed_tolerance_ = 1 * Milli(Metre) / Second;
 
@@ -427,6 +430,7 @@ class Plugin {
   std::set<not_null<Vessel const*>> kept_vessels_;
 
   Time prediction_length_ = 1 * Hour;
+  std::int64_t prediction_max_steps_ = 1000;
   Length prediction_length_tolerance_ = 1 * Metre;
   Speed prediction_speed_tolerance_ = 1 * Metre / Second;
 

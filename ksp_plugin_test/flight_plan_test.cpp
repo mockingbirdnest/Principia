@@ -75,6 +75,7 @@ class FlightPlanTest : public testing::Test {
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+            /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   }
@@ -129,6 +130,7 @@ TEST_F(FlightPlanTest, Singular) {
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/1000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   DiscreteTrajectory<Barycentric>::Iterator begin;
