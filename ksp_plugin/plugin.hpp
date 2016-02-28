@@ -321,9 +321,8 @@ class Plugin {
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
 
-  // This constructor should only be used during deserialization.
-  // |unsynchronized_vessels_| is initialized consistently.  All vessels are
-  // added to |kept_vessels_|  The resulting plugin is not |initializing_|.
+  // This constructor should only be used during deserialization.  All vessels
+  // are added to |kept_vessels_|  The resulting plugin is not |initializing_|.
   Plugin(GUIDToOwnedVessel vessels,
          IndexToOwnedCelestial celestials,
          std::set<not_null<Vessel*>> dirty_vessels,
@@ -347,8 +346,6 @@ class Plugin {
 
   // Returns |!dirty_vessels_.empty()|.
   bool has_dirty_vessels() const;
-  // Returns |!unsynchronized_vessels_.empty()|.
-  bool has_unsynchronized_vessels() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
   bool is_dirty(not_null<Vessel*> const vessel) const;
 
@@ -363,31 +360,19 @@ class Plugin {
   // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
   void CleanUpVessels();
   // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| |is_initialized()|, and that it is not in
-  // |unsynchronized_vessels_| if, and only if, it |is_synchronized()|.
-  // Also checks that its |prolongation().last().time()| is at least
-  // |HistoryTime()|, and that if it |is_synchronized()|, its
-  // |history().last().time()| is exactly |HistoryTime()|.
+  // |Vessel| |is_initialized()|.  Also checks that its
+  // |prolongation().last().time()| is at least |HistoryTime()|.
   void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
-  // Returns the histories of the synchronized vessels.
-  Trajectories SynchronizedHistories() const;
   // Evolves the histories in |histories|. |t| must be large enough that at
   // least one step of size |Δt_| can fit between |current_time_| and |t|.
   void EvolveHistories(Instant const& t,
                        Trajectories const& histories);
-  // Synchronizes the |unsynchronized_vessels_|, clears
-  // |unsynchronized_vessels_|.  Prolongs the histories of the vessels in the
-  // physics bubble by evolving the trajectory of the |current_physics_bubble_|
-  // if there is one, prolongs the histories of the remaining |dirty_vessels_|
-  // using their prolongations, clears |dirty_vessels_|.
-  void SynchronizeNewVesselsAndCleanDirtyVessels();
-  // Called from |SynchronizeNewVesselsAndCleanDirtyVessels()|, prolongs the
-  // histories of the vessels in the physics bubble (the integration must
-  // already have been done).  Any new vessels in the physics bubble are
-  // synchronized and removed from |unsynchronized_vessels_|.
-  void SynchronizeBubbleHistories();
+  // Prolongs the histories of the vessels in the physics bubble by evolving the
+  // trajectory of the |current_physics_bubble_| if there is one, prolongs the
+  // histories of the remaining |dirty_vessels_| using their prolongations,
+  // clears |dirty_vessels_|.
+  void CleanDirtyVessels();
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
-  // All vessels must satisfy |is_synchronized()|.
   void ResetProlongations();
   // Evolves the prolongations of all celestials and vessels up to exactly
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
@@ -415,10 +400,6 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
 
-  // The vessels which have been inserted after |HistoryTime()|.  These are the
-  // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
-  // history.  The pointers are not owning.
-  std::set<not_null<Vessel*>> unsynchronized_vessels_;
   // The vessels that have been added to the physics bubble after
   // |HistoryTime()|.  For these vessels, the prolongation contains information
   // that may not be discarded, and the history will be advanced using the
@@ -457,7 +438,7 @@ class Plugin {
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
-  // The integrator computing the synchronized histories of the vessels.
+  // The integrator computing the histories of the vessels.
   FixedStepSizeIntegrator<NewtonianMotionEquation> const& history_integrator_;
   // The integrator computing the prolongations.
   AdaptiveStepSizeIntegrator<
@@ -472,7 +453,7 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
-  // The common last time of the histories of synchronized vessels.
+  // The common last time of the histories of vessels.
   // TODO(egg): test the serialization of that guy, found out that it wasn't
   // serialized thanks to vessel invariant violation.  Perhaps check that
   // a deserialized plugin still functions normally.

@@ -916,7 +916,8 @@ void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
           << "to   : " << history_time_;
 }
 
-void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
+void Plugin::CleanDirtyVessels() {
+  //TODO(phl):Completely rewrite.
   VLOG(1) << __FUNCTION__;
   Trajectories trajectories;
   Ephemeris<Barycentric>::IntrinsicAccelerations intrinsic_accelerations;
