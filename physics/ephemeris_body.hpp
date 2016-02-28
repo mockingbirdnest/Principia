@@ -708,7 +708,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
 
 template <typename Frame>
 Ephemeris<Frame>::Ephemeris()
-    : parameters_(DummyIntegrator<Frame>::Instance(), Time()) {}
+    : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
