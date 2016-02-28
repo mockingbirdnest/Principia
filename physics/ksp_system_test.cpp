@@ -19,6 +19,7 @@
 
 namespace principia {
 
+using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -225,12 +226,13 @@ class KSPSystemTest : public ::testing::Test {
     HierarchicalSystem<KSP>::BarycentricSystem barycentric_system =
         hierarchical_system.ConsumeBarycentricSystem();
     return make_not_null_unique<Ephemeris<KSP>>(
-        std::move(barycentric_system.bodies),
-        std::move(barycentric_system.degrees_of_freedom),
-        ksp_epoch,
-        integrators::McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-        45 * Minute,
-        1 * Milli(Metre));
+               std::move(barycentric_system.bodies),
+               std::move(barycentric_system.degrees_of_freedom),
+               ksp_epoch,
+               /*fitting_tolerance=*/1 * Milli(Metre),
+               Ephemeris<KSP>::FixedStepParameters(
+                   McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+               /*step=*/45 * Minute));
   }
 
   void FillPositions(Ephemeris<KSP> const& ephemeris,

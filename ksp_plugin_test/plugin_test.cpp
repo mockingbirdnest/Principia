@@ -17,6 +17,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/mock_dynamic_frame.hpp"
@@ -34,6 +35,7 @@ using base::not_null;
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
+using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -69,6 +71,7 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Ref;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -96,12 +99,12 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 ACTION(AppendToDiscreteTrajectories) {
   for (auto const& trajectory : arg0) {
-    trajectory->Append(arg3, {Barycentric::origin, Velocity<Barycentric>()});
+    trajectory->Append(arg2, {Barycentric::origin, Velocity<Barycentric>()});
   }
 }
 
 ACTION(AppendToDiscreteTrajectory) {
-  arg0->Append(arg5, {Barycentric::origin, Velocity<Barycentric>()});
+  arg0->Append(arg2, {Barycentric::origin, Velocity<Barycentric>()});
 }
 
 }  // namespace
@@ -563,10 +566,13 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
+      .WillRepeatedly(
+          ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
   EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
@@ -625,10 +631,13 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   EXPECT_CALL(*mock_ephemeris_, trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::kSun)));
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
+  EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
+      .WillRepeatedly(
+          ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
 
   plugin_->SetPlottingFrame(plugin_->NewBodyCentredNonRotatingNavigationFrame(
       SolarSystemFactory::kSun));
@@ -648,9 +657,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
-  auto const rendered_prediction =
-      plugin_->RenderedPrediction(guid, World::origin);
+    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+    auto const rendered_prediction =
+        plugin_->RenderedPrediction(guid, World::origin);
 }
 
 

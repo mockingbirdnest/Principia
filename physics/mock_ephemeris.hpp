@@ -29,25 +29,21 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
-  MOCK_METHOD6_T(
+  MOCK_METHOD4_T(
       FlowWithAdaptiveStep,
       bool(not_null<DiscreteTrajectory<Frame>*> const trajectory,
            typename Ephemeris<Frame>::IntrinsicAcceleration
                intrinsic_acceleration,
-           Length const& length_integration_tolerance,
-           Speed const& speed_integration_tolerance,
-           AdaptiveStepSizeIntegrator<
-               typename Ephemeris<Frame>::NewtonianMotionEquation> const&
-               integrator,
-           Instant const& t));
+           Instant const& t,
+           AdaptiveStepParameters const& parameters));
   MOCK_METHOD4_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
                trajectories,
            typename Ephemeris<Frame>::IntrinsicAccelerations const&
                intrinsic_accelerations,
-           Time const& step,
-           Instant const& t));
+           Instant const& t,
+           FixedStepParameters const& parameters));
 
   MOCK_CONST_METHOD2_T(
       ComputeGravitationalAccelerationOnMasslessBody,

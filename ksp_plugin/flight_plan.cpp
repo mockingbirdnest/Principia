@@ -1,9 +1,13 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
+
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+
 namespace ksp_plugin {
 
 FlightPlan::FlightPlan(
@@ -12,17 +16,12 @@ FlightPlan::FlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-    AdaptiveStepSizeIntegrator<
-        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance)
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters)
     : initial_time_(initial_time),
       final_time_(final_time),
       initial_mass_(initial_mass),
       ephemeris_(ephemeris),
-      integrator_(integrator),
-      length_integration_tolerance_(length_integration_tolerance),
-      speed_integration_tolerance_(speed_integration_tolerance) {
+      adaptive_parameters_(adaptive_parameters) {
   CHECK(final_time_ >= initial_time_);
   auto it = root->LowerBound(initial_time_);
   if (it.time() != initial_time_) {
@@ -121,11 +120,9 @@ bool FlightPlan::SetFinalTime(Instant const& final_time) {
   }
 }
 
-void FlightPlan::SetTolerances(
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance) {
-  length_integration_tolerance_ = length_integration_tolerance;
-  speed_integration_tolerance_ = speed_integration_tolerance;
+void FlightPlan::SetAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
+  adaptive_parameters_ = adaptive_parameters;
   RecomputeSegments();
 }
 
@@ -148,11 +145,7 @@ void FlightPlan::WriteToMessage(
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   initial_time_.WriteToMessage(message->mutable_initial_time());
   final_time_.WriteToMessage(message->mutable_final_time());
-  length_integration_tolerance_.WriteToMessage(
-      message->mutable_length_integration_tolerance());
-  speed_integration_tolerance_.WriteToMessage(
-      message->mutable_speed_integration_tolerance());
-  integrator_.WriteToMessage(message->mutable_integrator());
+  adaptive_parameters_.WriteToMessage(message);
   for (auto const& segment : segments_) {
     segment->WritePointerToMessage(message->add_segment());
   }
@@ -172,11 +165,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Instant::ReadFromMessage(message.final_time()),
       Mass::ReadFromMessage(message.initial_mass()),
       ephemeris,
-      AdaptiveStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation>::
-          ReadFromMessage(message.integrator()),
-      Length::ReadFromMessage(message.length_integration_tolerance()),
-      Speed::ReadFromMessage(message.speed_integration_tolerance()));
+      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(message));
   // The constructor has forked a segment.  Remove it.
   flight_plan->PopLastSegment();
   for (auto const& segment : message.segment()) {
@@ -196,10 +185,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      integrator_(
-          *testing_utilities::make_not_null<
-              AdaptiveStepSizeIntegrator<
-                  Ephemeris<Barycentric>::NewtonianMotionEquation>*>()) {}
+      adaptive_parameters_(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          Length(), Speed()) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
@@ -239,10 +227,8 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
     bool const reached_final_time =
         ephemeris_->FlowWithAdaptiveStep(segments_.back(),
                                          manœuvre.IntrinsicAcceleration(),
-                                         length_integration_tolerance_,
-                                         speed_integration_tolerance_,
-                                         integrator_,
-                                         manœuvre.final_time());
+                                         manœuvre.final_time(),
+                                         adaptive_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
     }
@@ -257,10 +243,8 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
           ephemeris_->FlowWithAdaptiveStep(
                           segments_.back(),
                           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-                          length_integration_tolerance_,
-                          speed_integration_tolerance_,
-                          integrator_,
-                          final_time);
+                          final_time,
+                          adaptive_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
     }
@@ -315,10 +299,8 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
       ephemeris_->FlowWithAdaptiveStep(
           recomputed_coast,
           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-          length_integration_tolerance_,
-          speed_integration_tolerance_,
-          integrator_,
-          manœuvre.initial_time());
+          manœuvre.initial_time(),
+          adaptive_parameters_);
   if (!reached_manœuvre_initial_time) {
     recomputed_coast->parent()->DeleteFork(&recomputed_coast);
   }

@@ -159,9 +159,10 @@ inline void Vessel::CreateFlightPlan(
                      /*final_time=*/final_time,
                      initial_mass,
                      ephemeris,
-                     integrator,
-                     length_integration_tolerance,
-                     speed_integration_tolerance);
+                     Ephemeris<Barycentric>::AdaptiveStepParameters(
+                         integrator,
+                         length_integration_tolerance,
+                         speed_integration_tolerance));
 }
 
 inline void Vessel::DeleteFlightPlan() {
@@ -187,10 +188,11 @@ inline void Vessel::UpdatePrediction(
   ephemeris->FlowWithAdaptiveStep(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-      prediction_length_tolerance,
-      prediction_speed_tolerance,
-      integrator,
-      last_time);
+      last_time,
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          integrator,
+          prediction_length_tolerance,
+          prediction_speed_tolerance));
 }
 
 inline void Vessel::DeletePrediction() {

@@ -245,9 +245,10 @@ class ResonanceTest : public ::testing::Test {
                std::move(owned_bodies_),
                states,
                game_epoch_,
-               McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-               45 * Minute,
-               5 * Milli(Metre));
+               /*fitting_tolerance=*/5 * Milli(Metre),
+               Ephemeris<KSP>::FixedStepParameters(
+                   McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+               45 * Minute));
   }
 
   // Interpreting the elements as Jacobi coordinates in the Jool system.

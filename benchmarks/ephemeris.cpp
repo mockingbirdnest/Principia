@@ -112,9 +112,10 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
     auto const ephemeris =
         at_спутник_1_launch->MakeEphemeris(
-            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-            45 * Minute,
-            5 * Milli(Metre));
+            /*fitting_tolerance=*/5 * Milli(Metre),
+            Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+                McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+                /*step=*/45 * Minute));
 
     state->ResumeTiming();
     ephemeris->Prolong(final_time);
@@ -145,9 +146,10 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-          45 * Minute,
-          5 * Milli(Metre));
+          /*fitting_tolerance=*/5 * Milli(Metre),
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+              /*step=*/45 * Minute));
 
   ephemeris->Prolong(final_time);
 
@@ -187,10 +189,11 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     ephemeris->FlowWithAdaptiveStep(
         &trajectory,
         Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
-        1 * Metre,
-        1 * Metre / Second,
-        DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-        final_time);
+        final_time,
+        Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+            DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+            1 * Metre,
+            1 * Metre / Second));
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -229,9 +232,10 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-          45 * Minute,
-          5 * Milli(Metre));
+          /*fitting_tolerance=*/5 * Milli(Metre),
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+              /*step=*/45 * Minute));
 
   ephemeris->Prolong(final_time);
 
@@ -262,10 +266,11 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     ephemeris->FlowWithAdaptiveStep(
         &trajectory,
         Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
-        1 * Metre,
-        1 * Metre / Second,
-        DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-        final_time);
+        final_time,
+        Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+            DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+            1 * Metre,
+            1 * Metre / Second));
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(

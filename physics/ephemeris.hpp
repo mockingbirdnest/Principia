@@ -42,15 +42,51 @@ class Ephemeris {
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
 
+  class AdaptiveStepParameters {
+   public:
+    // The |length_| and |speed_integration_tolerance|s are used to compute the
+    // |tolerance_to_error_ratio| for step size control.
+    AdaptiveStepParameters(
+        AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+        Length const& length_integration_tolerance,
+        Speed const& speed_integration_tolerance);
+
+    template<typename T>
+    void WriteToMessage(not_null<T*> const t) const;
+
+    template<typename T>
+    static AdaptiveStepParameters ReadFromMessage(T const& t);
+
+   private:
+    // This will refer to a static object returned by a factory.
+    not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
+        integrator_;
+    Length length_integration_tolerance_;
+    Speed speed_integration_tolerance_;
+    friend class Ephemeris<Frame>;
+  };
+
+  class FixedStepParameters {
+   public:
+    FixedStepParameters(
+        FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+        Time const& step);
+
+   private:
+    // This will refer to a static object returned by a factory.
+    not_null<FixedStepSizeIntegrator<NewtonianMotionEquation> const*>
+        integrator_;
+    Time step_;
+    friend class Ephemeris<Frame>;
+  };
+
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
   Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
-            FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-                planetary_integrator,
-            Time const& step,
-            Length const& fitting_tolerance);
+            Length const& fitting_tolerance,
+            FixedStepParameters const& parameters);
 
   virtual ~Ephemeris() = default;
 
@@ -85,26 +121,21 @@ class Ephemeris {
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // The |length_| and |speed_integration_tolerance|s are used to compute the
-  // |tolerance_to_error_ratio| for step size control.
   // Returns true if and only if |*trajectory| was integrated until |t|.
   virtual bool FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
-      Length const& length_integration_tolerance,
-      Speed const& speed_integration_tolerance,
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-      Instant const& t);
+      Instant const& t,
+      AdaptiveStepParameters const& parameters);
 
   // Integrates, until at most |t|, the |trajectories| followed by massless
-  // bodies in the gravitational potential described by |*this|.  The integrator
-  // passed at construction is used with the given |step|.  If |t > t_max()|,
-  // calls |Prolong(t)| beforehand.
+  // bodies in the gravitational potential described by |*this|.  If
+  // |t > t_max()|, calls |Prolong(t)| beforehand.
   virtual void FlowWithFixedStep(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       IntrinsicAccelerations const& intrinsic_accelerations,
-      Time const& step,
-      Instant const& t);
+      Instant const& t,
+      FixedStepParameters const& parameters);
 
   // Returns the gravitational acceleration on a massless body located at the
   // given |position| at time |t|.
@@ -146,10 +177,8 @@ class Ephemeris {
   static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
       google::protobuf::RepeatedPtrField<
           serialization::Plugin::CelestialAndProperties> const& messages,
-      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-          planetary_integrator,
-      Time const& step,
-      Length const& fitting_tolerance);
+      Length const& fitting_tolerance,
+      typename Ephemeris<Frame>::FixedStepParameters const& fixed_parameters);
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses a dummy
@@ -254,9 +283,7 @@ class Ephemeris {
            not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       bodies_to_trajectories_;
 
-  // This will refer to a static object returned by a factory.
-  FixedStepSizeIntegrator<NewtonianMotionEquation> const& planetary_integrator_;
-  Time const step_;
+  FixedStepParameters const parameters_;
   Length const fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
 

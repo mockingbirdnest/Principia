@@ -12,6 +12,7 @@
 
 namespace principia {
 
+using astronomy::ICRFJ2000Equator;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -24,7 +25,7 @@ namespace physics {
 
 class SolarSystemTest : public ::testing::Test {
  protected:
-  SolarSystem<astronomy::ICRFJ2000Equator> solar_system_;
+  SolarSystem<ICRFJ2000Equator> solar_system_;
 };
 
 TEST_F(SolarSystemTest, RealSolarSystem) {
@@ -73,10 +74,11 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   EXPECT_EQ(32, solar_system_.index("Venus"));
 
   auto const ephemeris = solar_system_.MakeEphemeris(
-                             integrators::McLachlanAtela1992Order4Optimal<
-                                 Position<astronomy::ICRFJ2000Equator>>(),
-                             1 * Second,
-                             1 * Metre);
+      /*fitting_tolerance=*/1 * Metre,
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          integrators::McLachlanAtela1992Order4Optimal<
+              Position<ICRFJ2000Equator>>(),
+          /*step=*/1 * Second));
   auto const earth = solar_system_.massive_body(*ephemeris, "Earth");
   EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth->mass()), 6E-9);
   auto const& earth_trajectory = solar_system_.trajectory(*ephemeris, "Earth");

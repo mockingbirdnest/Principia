@@ -15,6 +15,8 @@
 
 namespace principia {
 
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -46,9 +48,10 @@ class FlightPlanTest : public testing::Test {
         std::move(bodies),
         initial_state,
         /*initial_time=*/t0_ - 2 * π * Second,
-        integrators::McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-        /*step=*/1 * Second,
-        /*fitting_tolerance=*/1 * Milli(Metre));
+        /*fitting_tolerance=*/1 * Milli(Metre),
+        Ephemeris<Barycentric>::FixedStepParameters(
+            McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+            /*step=*/1 * Second));
     navigation_frame_ = std::make_unique<TestNavigationFrame>(
         ephemeris_.get(),
         ephemeris_->bodies().back());
@@ -70,10 +73,10 @@ class FlightPlanTest : public testing::Test {
         /*final_time=*/t0_ + 1.5 * Second,
         /*initial_mass=*/1 * Kilogram,
         ephemeris_.get(),
-        integrators::DormandElMikkawyPrince1986RKN434FM<
-            Position<Barycentric>>(),
-        /*length_integration_tolerance=*/1 * Milli(Metre),
-        /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+        Ephemeris<Barycentric>::AdaptiveStepParameters(
+            DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+            /*length_integration_tolerance=*/1 * Milli(Metre),
+            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   }
 
   Burn MakeTangentBurn(Force const& thrust,
@@ -124,9 +127,10 @@ TEST_F(FlightPlanTest, Singular) {
       /*final_time=*/singularity + 100 * Second,
       /*initial_mass=*/1 * Kilogram,
       ephemeris_.get(),
-      integrators::DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-      /*length_integration_tolerance=*/1 * Milli(Metre),
-      /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*length_integration_tolerance=*/1 * Milli(Metre),
+          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   flight_plan_->GetSegment(0, &begin, &end);

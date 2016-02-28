@@ -131,9 +131,10 @@ void BM_BodyCentredNonRotatingDynamicFrame(
       SOLUTION_DIR / "astronomy" /
           "initial_state_jd_2433282_500000000.proto.txt");
   auto const ephemeris = solar_system.MakeEphemeris(
-      McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-      45 * Minute,
-      5 * Milli(Metre));
+      /*fitting_tolerance=*/5 * Milli(Metre),
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+          /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
   not_null<MassiveBody const*> const earth =
@@ -179,9 +180,10 @@ void BM_BarycentricRotatingDynamicFrame(
       SOLUTION_DIR / "astronomy" /
           "initial_state_jd_2433282_500000000.proto.txt");
   auto const ephemeris = solar_system.MakeEphemeris(
-      McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-      45 * Minute,
-      5 * Milli(Metre));
+      /*fitting_tolerance=*/5 * Milli(Metre),
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+          /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
   not_null<MassiveBody const*> const earth =

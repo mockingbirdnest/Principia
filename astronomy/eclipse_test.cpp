@@ -55,8 +55,10 @@ class EclipseTest : public testing::Test {
         SOLUTION_DIR / "astronomy" /
             "initial_state_jd_2433282_500000000.proto.txt");
     ephemeris_ = solar_system_1950_.MakeEphemeris(
-        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-        45 * Minute, 5 * Milli(Metre));
+        /*fitting_tolerance=*/5 * Milli(Metre),
+        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+            /*step=*/45 * Minute));
     r_sun_ = solar_system_1950_.mean_radius("Sun");
     r_moon_ = solar_system_1950_.mean_radius("Moon");
 
