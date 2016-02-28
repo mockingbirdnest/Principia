@@ -142,7 +142,7 @@ inline void Vessel::CreateFlightPlan(
     not_null<Ephemeris<Barycentric>*> ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
   flight_plan_ = std::make_unique<FlightPlan>(
-                     history_,
+                     history_.get(),
                      /*initial_time=*/history().last().time(),
                      /*final_time=*/final_time,
                      initial_mass,
@@ -194,8 +194,12 @@ inline void Vessel::WriteToMessage(
 inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     serialization::Vessel const& message,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-    not_null<Celestial const*> const parent) {
-  auto vessel = make_not_null_unique<Vessel>(parent);
+    not_null<Celestial const*> const parent,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters) {
+  auto vessel = make_not_null_unique<Vessel>(parent,
+                                             adaptive_parameters,
+                                             fixed_parameters);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   if (message.has_history_and_prolongation()) {

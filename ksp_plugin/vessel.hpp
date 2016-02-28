@@ -124,7 +124,9 @@ class Vessel {
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Ephemeris<Barycentric>*> const ephemeris,
-      not_null<Celestial const*> const parent);
+      not_null<Celestial const*> const parent,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters);
 
  protected:
   // For mocking.
