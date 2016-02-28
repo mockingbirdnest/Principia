@@ -187,8 +187,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      adaptive_parameters_(DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-                           Length(), Speed()) {}
+      adaptive_parameters_(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          Length(), Speed()) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));

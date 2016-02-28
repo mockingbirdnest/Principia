@@ -35,7 +35,7 @@ class MockEphemeris : public Ephemeris<Frame> {
            typename Ephemeris<Frame>::IntrinsicAcceleration
                intrinsic_acceleration,
            Instant const& t,
-           typename Ephemeris<Frame>::AdaptiveStepParameters const& parameters));
+           AdaptiveStepParameters const& parameters));
   MOCK_METHOD4_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
