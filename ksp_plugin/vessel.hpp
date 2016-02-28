@@ -115,21 +115,17 @@ class Vessel {
       Instant const& final_time,
       Mass const& initial_mass,
       not_null<Ephemeris<Barycentric>*> ephemeris,
-      AdaptiveStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
-      Length const& length_integration_tolerance,
-      Speed const& speed_integration_tolerance);
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_parameters);
 
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
   virtual void UpdatePrediction(
       not_null<Ephemeris<Barycentric>*> ephemeris,
-      AdaptiveStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Instant const& last_time,
-      Length const& prediction_length_tolerance,
-      Speed const& prediction_speed_tolerance);
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_parameters);
 
   // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
   virtual void DeletePrediction();

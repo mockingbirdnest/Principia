@@ -146,10 +146,7 @@ inline void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
     not_null<Ephemeris<Barycentric>*> ephemeris,
-    AdaptiveStepSizeIntegrator<
-        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance) {
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
   if (!is_synchronized()) {
     return;
   }
@@ -159,10 +156,7 @@ inline void Vessel::CreateFlightPlan(
                      /*final_time=*/final_time,
                      initial_mass,
                      ephemeris,
-                     Ephemeris<Barycentric>::AdaptiveStepParameters(
-                         integrator,
-                         length_integration_tolerance,
-                         speed_integration_tolerance));
+                     adaptive_parameters);
 }
 
 inline void Vessel::DeleteFlightPlan() {
@@ -171,11 +165,8 @@ inline void Vessel::DeleteFlightPlan() {
 
 inline void Vessel::UpdatePrediction(
     not_null<Ephemeris<Barycentric>*> ephemeris,
-    AdaptiveStepSizeIntegrator<
-        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
     Instant const& last_time,
-    Length const& prediction_length_tolerance,
-    Speed const& prediction_speed_tolerance) {
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
   if (!is_synchronized()) {
     return;
   }
@@ -189,10 +180,7 @@ inline void Vessel::UpdatePrediction(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       last_time,
-      Ephemeris<Barycentric>::AdaptiveStepParameters(
-          integrator,
-          prediction_length_tolerance,
-          prediction_speed_tolerance));
+      adaptive_parameters);
 }
 
 inline void Vessel::DeletePrediction() {

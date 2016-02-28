@@ -63,8 +63,9 @@ namespace physics {
 
 namespace {
 
-Length const kEarthPolarRadius = 6356.8 * Kilo(Metre);
-double const kEarthJ2 = 0.00108262545;
+Length constexpr kEarthPolarRadius = 6356.8 * Kilo(Metre);
+double constexpr kEarthJ2 = 0.00108262545;
+int constexpr kMaxSteps = 1000;
 
 }  // namespace
 
@@ -399,6 +400,7 @@ TEST_F(EphemerisTest, EarthProbe) {
       t0_ + period,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+          kMaxSteps,
           1E-9 * Metre,
           2.6E-15 * Metre / Second));
 
@@ -877,6 +879,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       t0_ + kDuration,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+          kMaxSteps,
           1E-9 * Metre,
           2.6E-15 * Metre / Second));
 

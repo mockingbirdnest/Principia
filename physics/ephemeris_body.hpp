@@ -98,11 +98,17 @@ class DummyIntegrator
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+    int const max_steps,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance)
     : integrator_(integrator),
+      max_steps_(max_steps),
       length_integration_tolerance_(length_integration_tolerance),
-      speed_integration_tolerance_(speed_integration_tolerance) {}
+      speed_integration_tolerance_(speed_integration_tolerance) {
+  CHECK_LT(0, max_steps_);
+  CHECK_LT(Length(), length_integration_tolerance_);
+  CHECK_LT(Speed(), speed_integration_tolerance_);
+}
 
 template <typename Frame>
 void Ephemeris<Frame>::AdaptiveStepParameters::SetTolerances(
@@ -110,17 +116,20 @@ void Ephemeris<Frame>::AdaptiveStepParameters::SetTolerances(
     Speed const& speed_integration_tolerance) {
   length_integration_tolerance_ = length_integration_tolerance;
   speed_integration_tolerance_ = speed_integration_tolerance;
+  CHECK_LT(Length(), length_integration_tolerance_);
+  CHECK_LT(Speed(), speed_integration_tolerance_);
 }
 
 template <typename Frame>
 template <typename T>
 void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
     not_null<T*> const t) const {
+  integrator_.WriteToMessage(t->mutable_integrator());
+  t->set_max_steps(max_steps_);
   length_integration_tolerance_.WriteToMessage(
       t->mutable_length_integration_tolerance());
   speed_integration_tolerance_.WriteToMessage(
       t->mutable_speed_integration_tolerance());
-  integrator_.WriteToMessage(t->mutable_integrator());
 }
 
 template <typename Frame>
@@ -130,6 +139,7 @@ Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(T const& t) {
   return AdaptiveStepParameters(
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
           t.integrator()),
+      t.max_steps(),
       Length::ReadFromMessage(t.length_integration_tolerance()),
       Speed::ReadFromMessage(t.speed_integration_tolerance()));
 }
@@ -139,7 +149,9 @@ Ephemeris<Frame>::FixedStepParameters::FixedStepParameters(
     FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Time const& step)
     : integrator_(integrator),
-      step_(step) {}
+      step_(step) {
+  CHECK_LT(Time(), step);
+}
 
 template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
@@ -358,11 +370,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 std::cref(parameters.length_integration_tolerance_),
                 std::cref(parameters.speed_integration_tolerance_),
                 _1, _2);
-  // TODO(egg): this should not be hard-coded, but we shouldn't keep adding
-  // parameters to this function.  Perhaps the tolerances, integrator, and
-  // max_steps should be part of the state of the ephemeris, we keep using the
-  // same one, or should form a struct of their own.
-  step_size.max_steps = 1000;
+  step_size.max_steps = parameters.max_steps_;
 
   auto const outcome = parameters.integrator_.Solve(problem, step_size);
   // TODO(egg): when we have events in trajectories, we should add a singularity
