@@ -833,7 +833,9 @@ void Plugin::FreeVessels() {
 
 void Plugin::EvolveBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  CHECK(!bubble_->empty());
+  if (bubble_->empty()) {
+    return;
+  }
   auto const& trajectory = bubble_->mutable_centre_of_mass_trajectory();
   VLOG(1) << "Evolving bubble\n"
           << "from : " << trajectory->last().time() << "\n"
