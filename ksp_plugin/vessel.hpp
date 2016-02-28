@@ -39,6 +39,7 @@ class Vessel {
   // ownership.
   Vessel(
       not_null<Celestial const*> const parent,
+      not_null<Ephemeris<Barycentric>*> const ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters);
 
@@ -68,8 +69,11 @@ class Vessel {
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
   virtual bool has_prediction() const;
 
-  //TODO(phl):comment
+  // A vessel that was in the physics since the last time its history advanced
+  // (which with the time when its prolongation was reset).  For such a vessel,
+  // the prolongation, not the history, is authoritative.
   virtual void set_dirty();
+  virtual bool is_dirty() const;
 
   // Creates a |history_| for this vessel and appends a point with the
   // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
@@ -79,14 +83,6 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // Appends a point to the history.
-  virtual void AppendToHistory(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
-
-  //TODO(phl):comment
-  // If the vessel is dirty, checks that the last point of the prolongation is
-  // at |time| and moves the prolongation to the end of the history.  NO!
   // This may clean the vessel.
   virtual void AdvanceTime(Instant const& time);
 
@@ -102,7 +98,6 @@ class Vessel {
   virtual void CreateFlightPlan(
       Instant const& final_time,
       Mass const& initial_mass,
-      not_null<Ephemeris<Barycentric>*> ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_parameters);
 
@@ -110,7 +105,6 @@ class Vessel {
   virtual void DeleteFlightPlan();
 
   virtual void UpdatePrediction(
-      not_null<Ephemeris<Barycentric>*> ephemeris,
       Instant const& last_time,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_parameters);
@@ -135,15 +129,13 @@ class Vessel {
  private:
   void FlowHistory(Instant const& time);
   void FlowProlongation(Instant const& time);
-  // Deletes the |prolongation_| and forks a new one at the end of the
-  // |history_|.
-  void ResetProlongation();
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
+  not_null<Ephemeris<Barycentric>*> const ephemeris_;
   // The past and present trajectory of the body. It ends at |HistoryTime()|
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.  It is advanced with a constant time step.
@@ -156,7 +148,7 @@ class Vessel {
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   std::unique_ptr<FlightPlan> flight_plan_;
-  bool dirty_ = false;
+  bool is_dirty_ = false;
 };
 
 }  // namespace ksp_plugin

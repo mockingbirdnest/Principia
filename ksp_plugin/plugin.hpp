@@ -325,7 +325,6 @@ class Plugin {
   // are added to |kept_vessels_|  The resulting plugin is not |initializing_|.
   Plugin(GUIDToOwnedVessel vessels,
          IndexToOwnedCelestial celestials,
-         std::set<not_null<Vessel*>> dirty_vessels,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
          std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
          AdaptiveStepSizeIntegrator<
@@ -334,7 +333,6 @@ class Plugin {
              NewtonianMotionEquation> const& prediction_integrator,
          Angle planetarium_rotation,
          Instant current_time,
-         Instant history_time,
          Index sun_index);
 
   // We virtualize this function for testing purposes.
@@ -369,11 +367,12 @@ class Plugin {
     google::protobuf::RepeatedPtrField<T> const& celestial_messages,
     not_null<IndexToOwnedCelestial*> const celestials);
 
-  Time const Δt_ = 10 * Second;
-  std::int64_t const prolongation_max_steps_ =
+  static Time constexpr Δt_ = 10 * Second;
+  static std::int64_t constexpr prolongation_max_steps_ =
       std::numeric_limits<std::int64_t>::max();
-  Length const prolongation_length_tolerance_ = 1 * Milli(Metre);
-  Speed const prolongation_speed_tolerance_ = 1 * Milli(Metre) / Second;
+  static Length constexpr prolongation_length_tolerance_ = 1 * Milli(Metre);
+  static Speed constexpr prolongation_speed_tolerance_ =
+      1 * Milli(Metre) / Second;
 
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
@@ -387,7 +386,6 @@ class Plugin {
   Speed prediction_speed_tolerance_ = 1 * Metre / Second;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
-
 
   struct AbsoluteInitializationObjects {
     IndexToMassiveBody bodies;

@@ -21,10 +21,12 @@ namespace ksp_plugin {
 
 inline Vessel::Vessel(
     not_null<Celestial const*> const parent,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters)
     : body_(),
       parent_(parent),
+      ephemeris_(ephemeris),
       adaptive_parameters_(adaptive_parameters),
       fixed_parameters_(fixed_parameters) {}
 
@@ -79,7 +81,11 @@ inline bool Vessel::has_prediction() const {
 }
 
 inline void Vessel::set_dirty() {
-  dirty_ = true;
+  is_dirty_ = true;
+}
+
+inline bool Vessel::is_dirty() const {
+  return is_dirty_;
 }
 
 inline void Vessel::CreateHistoryAndForkProlongation(
@@ -91,23 +97,16 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   prolongation_ = history_->NewForkAtLast();
 }
 
-inline void Vessel::AppendToHistory(
-    Instant const& time,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(is_initialized());
-  history_->Append(time, degrees_of_freedom);
-}
-
 inline void Vessel::AdvanceTime(Instant const& time) {
   Instant const& history_last_time = history_->last().time();
   Time const& Δt = fixed_parameters_.step();
 
   if (history_last_time + Δt <= time) {
-    if (dirty_) {
+    if (is_dirty_) {
       FlowProlongation(history_last_time + Δt);
       history_->Append(history_last_time + Δt,
                        prolongation_->last().degrees_of_freedom());
-      dirty_ = false;
+      is_dirty_ = false;
     } else {
       FlowHistory(time);
     }
@@ -139,14 +138,13 @@ inline Instant Vessel::ForgettableTime() const {
 inline void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
-    not_null<Ephemeris<Barycentric>*> ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
   flight_plan_ = std::make_unique<FlightPlan>(
                      history_.get(),
                      /*initial_time=*/history().last().time(),
                      /*final_time=*/final_time,
                      initial_mass,
-                     ephemeris,
+                     ephemeris_,
                      adaptive_parameters);
 }
 
@@ -155,7 +153,6 @@ inline void Vessel::DeleteFlightPlan() {
 }
 
 inline void Vessel::UpdatePrediction(
-    not_null<Ephemeris<Barycentric>*> ephemeris,
     Instant const& last_time,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
   DeletePrediction();
@@ -164,7 +161,7 @@ inline void Vessel::UpdatePrediction(
     prediction_->Append(prolongation().last().time(),
                         prolongation().last().degrees_of_freedom());
   }
-  ephemeris->FlowWithAdaptiveStep(
+  ephemeris_->FlowWithAdaptiveStep(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       last_time,
@@ -198,6 +195,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters) {
   auto vessel = make_not_null_unique<Vessel>(parent,
+                                             ephemeris,
                                              adaptive_parameters,
                                              fixed_parameters);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
@@ -237,6 +235,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 inline Vessel::Vessel()
     : body_(),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_parameters_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
           /*max_steps=*/1,
@@ -245,6 +244,22 @@ inline Vessel::Vessel()
       fixed_parameters_(
           McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
           /*step=*/1 * Second) {}
+
+inline void Vessel::FlowHistory(Instant const& time) {
+  ephemeris_->FlowWithFixedStep(
+      {history_.get()},
+      Ephemeris<Barycentric>::kNoIntrinsicAccelerations,
+      time,
+      fixed_parameters_);
+}
+
+inline void Vessel::FlowProlongation(Instant const& time) {
+  ephemeris_->FlowWithAdaptiveStep(
+      prolongation_,
+      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+      time,
+      adaptive_parameters_);
+}
 
 }  // namespace ksp_plugin
 }  // namespace principia

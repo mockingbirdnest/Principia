@@ -14,15 +14,31 @@ using quantities::si::Second;
 
 namespace ksp_plugin {
 
+// TODO(egg): We would want to use a real ephemeris to properly exercise the
+// limit cases.
 class VesselTest : public testing::Test {
  protected:
   VesselTest()
       : body_(1 * Kilogram),
         parent_(&body_),
-        vessel_(make_not_null_unique<Vessel>(&parent_)) {}
+        adaptive_parameters_(
+            DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+            /*max_steps=*/1,
+            /*length_integration_tolerance=*/1 * Metre,
+            /*speed_integration_tolerance=*/1 * Metre / Second),
+        fixed_parameters_(
+            McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
+            /*step=*/1 * Second),
+        vessel_(make_not_null_unique<Vessel>(&parent_,
+                                             &ephemeris_,
+                                             adaptive_parameters_,
+                                             fixed_parameters_)) {}
 
   MassiveBody body_;
   Celestial parent_;
+  MockEphemeris<Barycentric> ephemeris_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters_;
   not_null<std::unique_ptr<Vessel>> vessel_;
   DegreesOfFreedom<Barycentric> d1_ =
       {Barycentric::origin +
@@ -38,38 +54,20 @@ class VesselTest : public testing::Test {
                               16 * Metre / Second})};
   Instant const t1_ = kUniversalTimeEpoch;
   Instant const t2_ = kUniversalTimeEpoch + 42 * Second;
-  MockEphemeris<Barycentric> ephemeris_;
 };
 
 using VesselDeathTest = VesselTest;
 
 TEST_F(VesselDeathTest, Uninitialized) {
   EXPECT_DEATH({vessel_->history();}, "is_synchronized");
-  EXPECT_DEATH({vessel_->mutable_history();}, "is_synchronized");
   EXPECT_DEATH({vessel_->prolongation();}, "is_initialized");
   EXPECT_DEATH({vessel_->mutable_prolongation();}, "is_initialized");
 }
 
-TEST_F(VesselDeathTest, Unsynchronized) {
-  EXPECT_DEATH({
-    vessel_->CreateProlongation(t1_, d1_);
-    vessel_->history();
-  }, "is_synchronized");
-  EXPECT_DEATH({
-    vessel_->CreateProlongation(t1_, d1_);
-    vessel_->mutable_history();
-  }, "is_synchronized");
-}
-
 TEST_F(VesselTest, InitializationAndSynchronization) {
   EXPECT_FALSE(vessel_->is_initialized());
-  EXPECT_FALSE(vessel_->is_synchronized());
-  vessel_->CreateProlongation(t1_, d1_);
-  EXPECT_TRUE(vessel_->is_initialized());
-  EXPECT_FALSE(vessel_->is_synchronized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   EXPECT_TRUE(vessel_->is_initialized());
-  EXPECT_TRUE(vessel_->is_synchronized());
 }
 
 TEST_F(VesselDeathTest, SerializationError) {
@@ -79,29 +77,26 @@ TEST_F(VesselDeathTest, SerializationError) {
   }, "is_initialized");
   EXPECT_DEATH({
     serialization::Vessel message;
-    Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
+    Vessel::ReadFromMessage(message,
+                            &ephemeris_,
+                            &parent_,
+                            adaptive_parameters_,
+                            fixed_parameters_);
   }, "message does not represent an initialized Vessel");
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
-  EXPECT_FALSE(message.has_owned_prolongation());
   EXPECT_FALSE(message.has_history_and_prolongation());
-  vessel_->CreateProlongation(t1_, d1_);
-  vessel_->WriteToMessage(&message);
-  EXPECT_TRUE(message.has_owned_prolongation());
-  EXPECT_FALSE(message.has_history_and_prolongation());
-  vessel_ = Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
-  EXPECT_TRUE(vessel_->is_initialized());
-  EXPECT_FALSE(vessel_->is_synchronized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
-  message.Clear();
   vessel_->WriteToMessage(&message);
-  EXPECT_FALSE(message.has_owned_prolongation());
-  EXPECT_TRUE(message.has_history_and_prolongation());
-  vessel_ = Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
+  EXPECT_FALSE(message.has_history_and_prolongation());
+  vessel_ = Vessel::ReadFromMessage(message,
+                                    &ephemeris_,
+                                    &parent_,
+                                    adaptive_parameters_,
+                                    fixed_parameters_);
   EXPECT_TRUE(vessel_->is_initialized());
-  EXPECT_TRUE(vessel_->is_synchronized());
 }
 
 }  // namespace ksp_plugin

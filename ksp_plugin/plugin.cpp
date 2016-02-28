@@ -216,8 +216,19 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto inserted = vessels_.emplace(vessel_guid,
-                                   make_not_null_unique<Vessel>(parent));
+  auto inserted = vessels_.emplace(
+      vessel_guid,
+      make_not_null_unique<Vessel>(
+          parent,
+          ephemeris_.get(),
+          Ephemeris<Barycentric>::AdaptiveStepParameters(
+              prolongation_integrator_,
+              prolongation_max_steps_,
+              prolongation_length_tolerance_,
+              prolongation_speed_tolerance_),
+          Ephemeris<Barycentric>::FixedStepParameters(
+              history_integrator_,
+              Δt_)));
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
@@ -327,7 +338,6 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
-      ephemeris_.get(),
       current_time_ + prediction_length_,
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           prediction_integrator_,
@@ -343,7 +353,6 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
   find_vessel_by_guid_or_die(vessel_guid)->CreateFlightPlan(
       final_time,
       initial_mass,
-      ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           prediction_integrator_,
           prediction_max_steps_,
@@ -611,7 +620,7 @@ void Plugin::WriteToMessage(
     vessel->WriteToMessage(vessel_message->mutable_vessel());
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_dirty(is_dirty(vessel));
+    vessel_message->set_dirty(vessel->is_dirty());
   }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
@@ -659,28 +668,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                &celestials);
   }
 
-  GUIDToOwnedVessel vessels;
-  std::set<not_null<Vessel*>> dirty_vessels;
-  for (auto const& vessel_message : message.vessel()) {
-    not_null<Celestial const*> const parent =
-        FindOrDie(celestials, vessel_message.parent_index()).get();
-    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
-                                                   vessel_message.vessel(),
-                                                   ephemeris.get(),
-                                                   parent);
-    if (vessel_message.dirty()) {
-      dirty_vessels.emplace(vessel.get());
-    }
-    auto const inserted =
-        vessels.emplace(vessel_message.guid(), std::move(vessel));
-    CHECK(inserted.second);
-  }
-  not_null<std::unique_ptr<PhysicsBubble>> bubble =
-      PhysicsBubble::ReadFromMessage(
-          [&vessels](GUID guid) -> not_null<Vessel*> {
-            return FindOrDie(vessels, guid).get();
-          },
-          message.bubble());
   auto const& prolongation_integrator =
       is_pre_bourbaki ?
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
@@ -692,26 +679,49 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
           AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
               message.prediction_integrator());
 
-  Instant const current_time = Instant::ReadFromMessage(message.current_time());
-  Instant history_time = current_time;
-  for (auto const& pair : vessels) {
-    auto const& vessel = pair.second;
-    history_time = vessel->history().last().time();
-    break;
+  GUIDToOwnedVessel vessels;
+  for (auto const& vessel_message : message.vessel()) {
+    not_null<Celestial const*> const parent =
+        FindOrDie(celestials, vessel_message.parent_index()).get();
+    not_null<std::unique_ptr<Vessel>> vessel =
+        Vessel::ReadFromMessage(
+            vessel_message.vessel(),
+            ephemeris.get(),
+            parent,
+            Ephemeris<Barycentric>::AdaptiveStepParameters(
+                    prolongation_integrator,
+                    prolongation_max_steps_,
+                    prolongation_length_tolerance_,
+                    prolongation_speed_tolerance_),
+            Ephemeris<Barycentric>::FixedStepParameters(
+                    McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+                    Δt_));
+    if (vessel_message.dirty()) {
+      vessel->set_dirty();
+    }
+    auto const inserted =
+        vessels.emplace(vessel_message.guid(), std::move(vessel));
+    CHECK(inserted.second);
   }
+  not_null<std::unique_ptr<PhysicsBubble>> bubble =
+      PhysicsBubble::ReadFromMessage(
+          [&vessels](GUID guid) -> not_null<Vessel*> {
+            return FindOrDie(vessels, guid).get();
+          },
+          message.bubble());
+
+  Instant const current_time = Instant::ReadFromMessage(message.current_time());
 
   // Can't use |make_unique| here without implementation-dependent friendships.
   auto plugin = std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
                  std::move(celestials),
-                 std::move(dirty_vessels),
                  std::move(bubble),
                  std::move(ephemeris),
                  prolongation_integrator,
                  prediction_integrator,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  current_time,
-                 history_time,
                  message.sun_index()));
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
@@ -729,7 +739,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
 Plugin::Plugin(GUIDToOwnedVessel vessels,
                IndexToOwnedCelestial celestials,
-               std::set<not_null<Vessel*>> dirty_vessels,
                not_null<std::unique_ptr<PhysicsBubble>> bubble,
                std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
                AdaptiveStepSizeIntegrator<
@@ -738,11 +747,9 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
                    NewtonianMotionEquation> const& prediction_integrator,
                Angle planetarium_rotation,
                Instant current_time,
-               Instant history_time,
                Index sun_index)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
-      dirty_vessels_(std::move(dirty_vessels)),
       bubble_(std::move(bubble)),
       ephemeris_(std::move(ephemeris)),
       history_integrator_(ephemeris_->planetary_integrator()),
@@ -750,7 +757,6 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       prediction_integrator_(prediction_integrator),
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
-      history_time_(history_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
   for (auto const& guid_vessel : vessels_) {
     auto const& vessel = guid_vessel.second;

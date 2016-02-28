@@ -16,6 +16,7 @@
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/body.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -28,6 +29,7 @@ using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Rotation;
+using physics::MockEphemeris;
 using quantities::Acceleration;
 using quantities::Speed;
 using quantities::SIUnit;
@@ -78,8 +80,22 @@ class PhysicsBubbleTest : public testing::Test {
                                                     {99 * SIUnit<Length>(),
                                                      98 * SIUnit<Length>(),
                                                      97 * SIUnit<Length>()})),
-      vessel1_(&celestial_),
-      vessel2_(&celestial_),
+      adaptive_parameters_(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/1,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second),
+      fixed_parameters_(
+          McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
+          /*step=*/1 * Second),
+      vessel1_(&celestial_,
+               &ephemeris_,
+               adaptive_parameters_,
+               fixed_parameters_),
+      vessel2_(&celestial_,
+               &ephemeris_,
+               adaptive_parameters_,
+               fixed_parameters_),
       t1_(Instant() + 1 * SIUnit<Time>()),
       t2_(Instant() + 1.5 * SIUnit<Time>()),
       t3_(Instant() + 2 * SIUnit<Time>()) {
@@ -90,8 +106,8 @@ class PhysicsBubbleTest : public testing::Test {
                                         i * Second * celestial_dof_.velocity(),
                                     celestial_dof_.velocity()});
     }
-    vessel1_.CreateProlongation(t1_, dof1_);
-    vessel2_.CreateProlongation(t1_, dof2_);
+    vessel1_.CreateHistoryAndForkProlongation(t1_, dof1_);
+    vessel2_.CreateHistoryAndForkProlongation(t1_, dof2_);
 
 #if 0
     // Useful for debugging.
@@ -307,6 +323,9 @@ class PhysicsBubbleTest : public testing::Test {
   Celestial celestial_;
   ContinuousTrajectory<Barycentric> celestial_trajectory_;
   Position<World> celestial_world_position_;
+  MockEphemeris<Barycentric> ephemeris_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters_;
   Vessel vessel1_;
   Vessel vessel2_;
   Instant t1_;
