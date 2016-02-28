@@ -100,8 +100,8 @@ inline void Vessel::ForgetBefore(Instant const& time) {
 }
 
 inline Instant Vessel::ForgettableTime() const {
-  Instant forgettable_time =
-      Instant() + std::numeric_limits<double>::infinity() * Second;
+  CHECK(is_initialized());
+  Instant forgettable_time = prolongation_->Fork().time();
   if (flight_plan_ != nullptr) {
     forgettable_time = std::min(forgettable_time,
                                 flight_plan_->initial_time());

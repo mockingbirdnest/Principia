@@ -254,17 +254,15 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
-  CleanUpVessels();
+  FreeVessels();
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
 
+  EvolveBubble(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    if (!bubble_->contains(vessel.get())) {
-      vessel->AdvanceTime(t);
-    }
+    vessel->AdvanceTime(t);
   }
-  EvolveBubble(t);
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
@@ -275,7 +273,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
-  CHECK_LT(t, history_time_);
 
   // Ask each vessel what is an acceptable time for forgetting.
   Instant forgettable_time = t;
@@ -287,10 +284,7 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   ephemeris_->ForgetBefore(forgettable_time);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    // Only forget the synchronized vessels, the others don't have an history.
-    if (unsynchronized_vessels_.count(vessel.get()) == 0) {
-      vessel->ForgetBefore(forgettable_time);
-    }
+    vessel->ForgetBefore(forgettable_time);
   }
 }
 
@@ -807,18 +801,6 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
   VLOG_AND_RETURN(1, FindOrDie(vessels_, vessel_guid));
 }
 
-bool Plugin::has_dirty_vessels() const {
-  return !dirty_vessels_.empty();
-}
-
-bool Plugin::has_unsynchronized_vessels() const {
-  return !unsynchronized_vessels_.empty();
-}
-
-bool Plugin::is_dirty(not_null<Vessel*> const vessel) const {
-  return dirty_vessels_.count(vessel) > 0;
-}
-
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
@@ -827,140 +809,20 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
       Bivector<double, Barycentric>({0, 0, -1}));
 }
 
-void Plugin::CleanUpVessels() {
+void Plugin::FreeVessels() {
   VLOG(1) <<  __FUNCTION__;
   // Remove the vessels which were not updated since last time.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     // While we're going over the vessels, check invariants.
-    CheckVesselInvariants(it);
     not_null<Vessel*> const vessel = it->second.get();
     // Now do the cleanup.
     if (kept_vessels_.erase(vessel)) {
       ++it;
     } else {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
-      // Since we are going to delete the vessel, we must remove it from
-      // |new_vessels| if it's there.
-      if (unsynchronized_vessels_.erase(vessel)) {
-        LOG(INFO) << "Vessel had not been synchronized";
-      }
-      if (dirty_vessels_.erase(vessel)) {
-        LOG(INFO) << "Vessel was dirty";
-      }
-      // |std::map::erase| invalidates its parameter so we post-increment.
-      vessels_.erase(it++);
+      it = vessels_.erase(it);
     }
   }
-}
-
-void Plugin::CheckVesselInvariants(
-    GUIDToOwnedVessel::const_iterator const it) const {
-  not_null<std::unique_ptr<Vessel>> const& vessel = it->second;
-  CHECK(vessel->is_initialized()) << "Vessel with GUID " << it->first
-                                  << " was not given an initial state";
-  // TODO(egg): At the moment, if a vessel is inserted when
-  // |current_time_ == HistoryTime()| (that only happens before the first call
-  // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
-  // test code paths, but it means the invariant is GE, rather than GT.
-  CHECK_GE(vessel->prolongation().last().time(), history_time_);
-  CHECK_EQ(vessel->history().last().time(), history_time_);
-}
-
-Plugin::Trajectories Plugin::SynchronizedHistories() const {
-  Trajectories trajectories;
-  // NOTE(egg): This may be too large, vessels that are not new and in the
-  // physics bubble or dirty will not be added.
-  trajectories.reserve(vessels_.size() - unsynchronized_vessels_.size());
-  for (auto const& pair : vessels_) {
-    not_null<Vessel*> const vessel = pair.second.get();
-    if (!bubble_->contains(vessel) && !is_dirty(vessel)) {
-      trajectories.push_back(vessel->mutable_history());
-    }
-  }
-  return trajectories;
-}
-
-void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  // Integration with a constant step.{
-  VLOG(1) << "Starting the evolution of the histories" << '\n'
-          << "from : " << history_time_;
-  ephemeris_->FlowWithFixedStep(
-      histories,
-      Ephemeris<Barycentric>::kNoIntrinsicAccelerations,
-      t,
-      Ephemeris<Barycentric>::FixedStepParameters(
-          ephemeris_->planetary_integrator(), Δt_));
-  history_time_ = histories.front()->last().time();
-  CHECK_GE(history_time_, current_time_);
-  VLOG(1) << "Evolved the histories" << '\n'
-          << "to   : " << history_time_;
-}
-
-void Plugin::CleanDirtyVessels() {
-  //TODO(phl):Completely rewrite.
-  VLOG(1) << __FUNCTION__;
-  Trajectories trajectories;
-  Ephemeris<Barycentric>::IntrinsicAccelerations intrinsic_accelerations;
-
-  trajectories.reserve(unsynchronized_vessels_.size() + bubble_->count());
-  intrinsic_accelerations.reserve(
-      unsynchronized_vessels_.size() + bubble_->count());
-  for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
-    if (!bubble_->contains(vessel)) {
-      trajectories.push_back(vessel->mutable_prolongation());
-      intrinsic_accelerations.push_back(
-          Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
-    }
-  }
-  for (not_null<Vessel*> const vessel : dirty_vessels_) {
-    if (!bubble_->contains(vessel)) {
-      trajectories.push_back(vessel->mutable_prolongation());
-      intrinsic_accelerations.push_back(
-          Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
-    }
-  }
-  if (!bubble_->empty()) {
-    trajectories.push_back(bubble_->mutable_centre_of_mass_trajectory());
-    intrinsic_accelerations.push_back(
-        bubble_->centre_of_mass_intrinsic_acceleration());
-  }
-  VLOG(1) << "Starting the synchronization of the new vessels"
-          << (bubble_->empty() ? "" : " and of the bubble");
-  for (int i = 0; i < trajectories.size(); ++i) {
-    auto const& trajectory = trajectories[i];
-    auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    bool const reached_final_time =
-        ephemeris_->FlowWithAdaptiveStep(
-            trajectory,
-            intrinsic_acceleration,
-            history_time_,
-            Ephemeris<Barycentric>::AdaptiveStepParameters(
-                prolongation_integrator_,
-                prolongation_max_steps_,
-                prolongation_length_tolerance_,
-                prolongation_speed_tolerance_));
-    CHECK(reached_final_time) << history_time_;
-  }
-  if (!bubble_->empty()) {
-    SynchronizeBubbleHistories();
-  }
-  for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
-    CHECK(!bubble_->contains(vessel));
-    vessel->CreateHistoryAndForkProlongation(
-        history_time_,
-        vessel->prolongation().last().degrees_of_freedom());
-    dirty_vessels_.erase(vessel);
-  }
-  unsynchronized_vessels_.clear();
-  for (not_null<Vessel*> const vessel : dirty_vessels_) {
-    CHECK(!bubble_->contains(vessel));
-    vessel->AppendToHistory(history_time_,
-                            vessel->prolongation().last().degrees_of_freedom());
-  }
-  dirty_vessels_.clear();
-  VLOG(1) << "Synchronized the new vessels"
-          << (bubble_->empty() ? "" : " and the bubble");
 }
 
 void Plugin::EvolveBubble(Instant const& t) {

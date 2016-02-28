@@ -264,7 +264,7 @@ class Plugin {
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
-  // Adds the vessel to |dirty_vessels_|.
+  // Marks the vessel as dirty.
   // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
   // vessel with GUID |vessel_guid| must not already be in
   // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
@@ -344,11 +344,6 @@ class Plugin {
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
 
-  // Returns |!dirty_vessels_.empty()|.
-  bool has_dirty_vessels() const;
-  // Returns |dirty_vessels_.count(vessel) > 0|.
-  bool is_dirty(not_null<Vessel*> const vessel) const;
-
   // The rotation between the |AliceWorld| basis at |current_time_| and the
   // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
@@ -358,19 +353,7 @@ class Plugin {
   // Utilities for |AdvanceTime|.
 
   // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
-  void CleanUpVessels();
-  // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| |is_initialized()|.
-  void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
-  // Evolves the histories in |histories|. |t| must be large enough that at
-  // least one step of size |Δt_| can fit between |current_time_| and |t|.
-  void EvolveHistories(Instant const& t,
-                       Trajectories const& histories);
-  // Prolongs the histories of the vessels in the physics bubble by evolving the
-  // trajectory of the |current_physics_bubble_| if there is one, prolongs the
-  // histories of the remaining |dirty_vessels_| using their prolongations,
-  // clears |dirty_vessels_|.
-  void CleanDirtyVessels();
+  void FreeVessels();
   // Evolves the trajectory of the |current_physics_bubble_|.
   void EvolveBubble(Instant const& t);
 

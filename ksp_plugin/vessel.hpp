@@ -52,7 +52,8 @@ class Vessel {
 
   virtual DiscreteTrajectory<Barycentric> const& history() const;
 
-  // Both accessors require |is_initialized()|.
+  // Both accessors require |is_initialized()|.  |mutable_prolongation| requires
+  // that the vessel be dirty.
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
   virtual not_null<DiscreteTrajectory<Barycentric>*> mutable_prolongation();
 
@@ -81,6 +82,9 @@ class Vessel {
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   //TODO(phl):comment
+  // If the vessel is dirty, checks that the last point of the prolongation is
+  // at |time| and moves the prolongation to the end of the history.  NO!
+  // This may clean the vessel.
   virtual void AdvanceTime(Instant const& time);
 
   // Forgets the history before |time|.  |time| must not be after
