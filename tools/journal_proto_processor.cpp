@@ -240,7 +240,7 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
   // value types.".  We could use a boxed |int|, whose type would be |object|,
   // but we would lose static typing.  We use a custom strongly-typed boxed type
   // instead.
-  field_cs_type_[descriptor] = "Boxed<int>";
+  field_cs_type_[descriptor] = "BoxedInt32";
   field_cs_marshal_[descriptor] =
       "[MarshalAs(UnmanagedType.CustomMarshaler, "
       "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
