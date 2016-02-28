@@ -245,7 +245,7 @@ void Plugin::SetVesselStateOffset(
       PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   ephemeris_->Prolong(current_time_);
-  vessel->CreateProlongation(
+  vessel->CreateHistoryAndForkProlongation(
       current_time_,
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
@@ -384,13 +384,6 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
-  if (!vessel->is_synchronized()) {
-    // TODO(egg): We render neither unsynchronized histories nor prolongations
-    // at the moment.
-    VLOG(1) << "Returning an empty trajectory";
-    return RenderedTrajectory<World>();
-  }
-
   return RenderedTrajectoryFromIterators(vessel->history().Begin(),
                                          vessel->history().End(),
                                          sun_world_position);
@@ -728,10 +721,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   Instant history_time = current_time;
   for (auto const& pair : vessels) {
     auto const& vessel = pair.second;
-    if (vessel->is_synchronized()) {
-      history_time = vessel->history().last().time();
-      break;
-    }
+    history_time = vessel->history().last().time();
+    break;
   }
 
   // Can't use |make_unique| here without implementation-dependent friendships.
@@ -789,9 +780,6 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
   for (auto const& guid_vessel : vessels_) {
     auto const& vessel = guid_vessel.second;
     kept_vessels_.emplace(vessel.get());
-    if (!vessel->is_synchronized()) {
-      unsynchronized_vessels_.emplace(vessel.get());
-    }
   }
   initializing_.Flop();
 }
@@ -894,12 +882,7 @@ void Plugin::CheckVesselInvariants(
   // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
   // test code paths, but it means the invariant is GE, rather than GT.
   CHECK_GE(vessel->prolongation().last().time(), history_time_);
-  if (unsynchronized_vessels_.count(vessel.get()) > 0) {
-    CHECK(!vessel->is_synchronized());
-  } else {
-    CHECK(vessel->is_synchronized());
-    CHECK_EQ(vessel->history().last().time(), history_time_);
-  }
+  CHECK_EQ(vessel->history().last().time(), history_time_);
 }
 
 Plugin::Trajectories Plugin::SynchronizedHistories() const {
@@ -909,9 +892,7 @@ Plugin::Trajectories Plugin::SynchronizedHistories() const {
   trajectories.reserve(vessels_.size() - unsynchronized_vessels_.size());
   for (auto const& pair : vessels_) {
     not_null<Vessel*> const vessel = pair.second.get();
-    if (vessel->is_synchronized() &&
-        !bubble_->contains(vessel) &&
-        !is_dirty(vessel)) {
+    if (!bubble_->contains(vessel) && !is_dirty(vessel)) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
@@ -951,7 +932,7 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
     }
   }
   for (not_null<Vessel*> const vessel : dirty_vessels_) {
-    if (!bubble_->contains(vessel) && vessel->is_synchronized()) {
+    if (!bubble_->contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
       intrinsic_accelerations.push_back(
           Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
@@ -1007,15 +988,8 @@ void Plugin::SynchronizeBubbleHistories() {
   for (not_null<Vessel*> const vessel : bubble_->vessels()) {
     RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
         bubble_->from_centre_of_mass(vessel);
-    if (vessel->is_synchronized()) {
-      vessel->AppendToHistory(history_time_,
-                              centre_of_mass + from_centre_of_mass);
-    } else {
-      vessel->CreateHistoryAndForkProlongation(
-          history_time_,
-          centre_of_mass + from_centre_of_mass);
-      CHECK(unsynchronized_vessels_.erase(vessel));
-    }
+    vessel->AppendToHistory(history_time_,
+                            centre_of_mass + from_centre_of_mass);
     CHECK(dirty_vessels_.erase(vessel));
   }
 }
