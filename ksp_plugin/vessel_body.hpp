@@ -70,6 +70,10 @@ inline bool Vessel::has_prediction() const {
   return prediction_ != nullptr;
 }
 
+inline void Vessel::set_dirty() {
+  LOG(FATAL)<<"NYI";
+}
+
 inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
@@ -86,7 +90,9 @@ inline void Vessel::AppendToHistory(
   history_->Append(time, degrees_of_freedom);
 }
 
-inline void Vessel::AdvanceTime(Instant const& time) {}
+inline void Vessel::AdvanceTime(Instant const& time) {
+  LOG(FATAL)<<"NYI";
+}
 
 inline void Vessel::ForgetBefore(Instant const& time) {
   CHECK(is_initialized());

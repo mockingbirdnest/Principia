@@ -257,31 +257,15 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CleanUpVessels();
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
-  Trajectories synchronized_histories =
-      SynchronizedHistories();
-  bool advanced_history_time = false;
-  if (synchronized_histories.empty()) {
-    // Synchronize everything now, nothing is currently synchronized.
-    history_time_ = t;
-    advanced_history_time = true;
-  } else if (history_time_ + Δt_ <= t) {
-    // The histories are far enough behind that we can advance them at least one
-    // step and reset the prolongations.
-    EvolveHistories(t, synchronized_histories);
-    advanced_history_time = true;
-  }
-  if (advanced_history_time) {
-    // TODO(egg): I think |!bubble_->empty()| => |has_dirty_vessels()|.
-    if (has_unsynchronized_vessels() ||
-        has_dirty_vessels() ||
-        !bubble_->empty()) {
-      SynchronizeNewVesselsAndCleanDirtyVessels();
+
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    if (!bubble_->contains(vessel.get())) {
+      vessel->AdvanceTime(t);
     }
-    ResetProlongations();
   }
-  if (history_time_ < t) {
-    EvolveProlongationsAndBubble(t);
-  }
+  EvolveBubble(t);
+
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
@@ -528,7 +512,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK_LT(0, kept_vessels_.count(vessel.get()));
-  dirty_vessels_.insert(vessel.get());
+  vessel->set_dirty();
   bubble_->AddVesselToNext(vessel.get(), std::move(parts));
 }
 
@@ -979,34 +963,13 @@ void Plugin::CleanDirtyVessels() {
           << (bubble_->empty() ? "" : " and the bubble");
 }
 
-void Plugin::SynchronizeBubbleHistories() {
-  VLOG(1) << __FUNCTION__;
-  DegreesOfFreedom<Barycentric> const& centre_of_mass =
-      bubble_->centre_of_mass_trajectory().last().degrees_of_freedom();
-  for (not_null<Vessel*> const vessel : bubble_->vessels()) {
-    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-        bubble_->from_centre_of_mass(vessel);
-    vessel->AppendToHistory(history_time_,
-                            centre_of_mass + from_centre_of_mass);
-    CHECK(dirty_vessels_.erase(vessel));
-  }
-}
-
-void Plugin::ResetProlongations() {
-  VLOG(1) << __FUNCTION__;
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->ResetProlongation(history_time_);
-  }
-  VLOG(1) << "Prolongations have been reset";
-}
-
 void Plugin::EvolveBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   CHECK(!bubble_->empty());
   auto const& trajectory = bubble_->mutable_centre_of_mass_trajectory();
-  VLOG(1) << "Evolving bubble from: " << trajectory->last().time()
-          << " to: " << t;
+  VLOG(1) << "Evolving bubble\n"
+          << "from : " << trajectory->last().time() << "\n"
+          << "to   : " << t;
   auto const& intrinsic_acceleration =
       bubble_->centre_of_mass_intrinsic_acceleration();
 

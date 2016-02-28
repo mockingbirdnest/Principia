@@ -64,6 +64,9 @@ class Vessel {
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
   virtual bool has_prediction() const;
 
+  //TODO(phl):comment
+  virtual void set_dirty();
+
   // Creates a |history_| for this vessel and appends a point with the
   // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
   // |time|.  Nulls |owned_prolongation_|.  The vessel must not satisfy

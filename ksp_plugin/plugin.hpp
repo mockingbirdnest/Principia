@@ -395,12 +395,6 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
 
-  // The vessels that have been added to the physics bubble after the end of
-  // their history.  For these vessels, the prolongation contains information
-  // that may not be discarded, and the history will be advanced using the
-  // prolongation.  The pointers are not owning.
-  std::set<not_null<Vessel*>> dirty_vessels_;
-
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*>> kept_vessels_;
 
