@@ -371,10 +371,8 @@ class Plugin {
   // histories of the remaining |dirty_vessels_| using their prolongations,
   // clears |dirty_vessels_|.
   void CleanDirtyVessels();
-  // Evolves the prolongations of all celestials and vessels up to exactly
-  // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
-  // if there is one.
-  void EvolveProlongationsAndBubble(Instant const& t);
+  // Evolves the trajectory of the |current_physics_bubble_|.
+  void EvolveBubble(Instant const& t);
 
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,

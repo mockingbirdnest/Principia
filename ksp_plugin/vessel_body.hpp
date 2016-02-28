@@ -86,6 +86,8 @@ inline void Vessel::AppendToHistory(
   history_->Append(time, degrees_of_freedom);
 }
 
+inline void Vessel::AdvanceTime(Instant const& time) {}
+
 inline void Vessel::ForgetBefore(Instant const& time) {
   CHECK(is_initialized());
   history_->ForgetBefore(time);

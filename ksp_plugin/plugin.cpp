@@ -80,8 +80,7 @@ Plugin::Plugin(Instant const& initial_time,
       prediction_integrator_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
-      current_time_(initial_time),
-      history_time_(initial_time) {}
+      current_time_(initial_time) {}
 
 // The three celestial-inserting functions log at the INFO level.  This is not
 // a concern since they are only called at initialization, which should happen
@@ -248,8 +247,6 @@ void Plugin::SetVesselStateOffset(
   vessel->CreateHistoryAndForkProlongation(
       current_time_,
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
-  auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
-  CHECK(inserted.second);
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
@@ -1004,59 +1001,35 @@ void Plugin::ResetProlongations() {
   VLOG(1) << "Prolongations have been reset";
 }
 
-void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
+void Plugin::EvolveBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  Trajectories trajectories;
-  Ephemeris<Barycentric>::IntrinsicAccelerations intrinsic_accelerations;
+  CHECK(!bubble_->empty());
+  auto const& trajectory = bubble_->mutable_centre_of_mass_trajectory();
+  VLOG(1) << "Evolving bubble from: " << trajectory->last().time()
+          << " to: " << t;
+  auto const& intrinsic_acceleration =
+      bubble_->centre_of_mass_intrinsic_acceleration();
 
-  std::size_t const number_of_vessels_not_in_physics_bubble =
-      vessels_.size() - bubble_->number_of_vessels();
-  trajectories.reserve(number_of_vessels_not_in_physics_bubble +
-                       bubble_->count());
-  intrinsic_accelerations.reserve(number_of_vessels_not_in_physics_bubble +
-                                  bubble_->count());
-  for (auto const& pair : vessels_) {
-    not_null<Vessel*> const vessel = pair.second.get();
-    if (!bubble_->contains(vessel)) {
-      trajectories.push_back(vessel->mutable_prolongation());
-      intrinsic_accelerations.push_back(
-          Ephemeris<Barycentric>::kNoIntrinsicAcceleration);
-    }
-  }
-  if (!bubble_->empty()) {
-    trajectories.push_back(bubble_->mutable_centre_of_mass_trajectory());
-    intrinsic_accelerations.push_back(
-        bubble_->centre_of_mass_intrinsic_acceleration());
-  }
-  VLOG(1) << "Evolving prolongations"
-          << (bubble_->empty() ? "" : " and bubble") << '\n'
-          << "from : " << trajectories.front()->last().time() << '\n'
-          << "to   : " << t;
-  for (int i = 0; i < trajectories.size(); ++i) {
-    auto const& trajectory = trajectories[i];
-    auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    bool const reached_final_time =
-        ephemeris_->FlowWithAdaptiveStep(
-            trajectory,
-            intrinsic_acceleration,
-            t,
-            Ephemeris<Barycentric>::AdaptiveStepParameters(
-                prolongation_integrator_,
-                prolongation_max_steps_,
-                prolongation_length_tolerance_,
-                prolongation_speed_tolerance_));
-    CHECK(reached_final_time) << t;
-  }
-  if (!bubble_->empty()) {
-    DegreesOfFreedom<Barycentric> const& centre_of_mass =
-        bubble_->centre_of_mass_trajectory().last().degrees_of_freedom();
-    for (not_null<Vessel*> vessel : bubble_->vessels()) {
-      RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-          bubble_->from_centre_of_mass(vessel);
-      vessel->mutable_prolongation()->Append(
+  bool const reached_final_time =
+      ephemeris_->FlowWithAdaptiveStep(
+          trajectory,
+          intrinsic_acceleration,
           t,
-          centre_of_mass + from_centre_of_mass);
-    }
+          Ephemeris<Barycentric>::AdaptiveStepParameters(
+              prolongation_integrator_,
+              prolongation_max_steps_,
+              prolongation_length_tolerance_,
+              prolongation_speed_tolerance_));
+  CHECK(reached_final_time) << t << " " << trajectory->last().time();
+
+  DegreesOfFreedom<Barycentric> const& centre_of_mass =
+      bubble_->centre_of_mass_trajectory().last().degrees_of_freedom();
+  for (not_null<Vessel*> vessel : bubble_->vessels()) {
+    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
+        bubble_->from_centre_of_mass(vessel);
+    vessel->mutable_prolongation()->Append(
+        t,
+        centre_of_mass + from_centre_of_mass);
   }
 }
 

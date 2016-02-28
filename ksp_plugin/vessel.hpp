@@ -77,6 +77,9 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
+  //TODO(phl):comment
+  virtual void AdvanceTime(Instant const& time);
+
   // Forgets the history before |time|.  |time| must not be after
   // |ForgettableTime|.
   virtual void ForgetBefore(Instant const& time);
