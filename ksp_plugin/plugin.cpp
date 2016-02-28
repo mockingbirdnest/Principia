@@ -967,15 +967,17 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   for (int i = 0; i < trajectories.size(); ++i) {
     auto const& trajectory = trajectories[i];
     auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    ephemeris_->FlowWithAdaptiveStep(
-        trajectory,
-        intrinsic_acceleration,
-        history_time_,
-        Ephemeris<Barycentric>::AdaptiveStepParameters(
-            prolongation_integrator_,
-            prolongation_max_steps_,
-            prolongation_length_tolerance_,
-            prolongation_speed_tolerance_));
+    bool const reached_final_time =
+        ephemeris_->FlowWithAdaptiveStep(
+            trajectory,
+            intrinsic_acceleration,
+            history_time_,
+            Ephemeris<Barycentric>::AdaptiveStepParameters(
+                prolongation_integrator_,
+                prolongation_max_steps_,
+                prolongation_length_tolerance_,
+                prolongation_speed_tolerance_));
+    CHECK(reached_final_time) << history_time_;
   }
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
@@ -1058,15 +1060,17 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   for (int i = 0; i < trajectories.size(); ++i) {
     auto const& trajectory = trajectories[i];
     auto const& intrinsic_acceleration = intrinsic_accelerations[i];
-    ephemeris_->FlowWithAdaptiveStep(
-        trajectory,
-        intrinsic_acceleration,
-        t,
-        Ephemeris<Barycentric>::AdaptiveStepParameters(
-            prolongation_integrator_,
-            prolongation_max_steps_,
-            prolongation_length_tolerance_,
-            prolongation_speed_tolerance_));
+    bool const reached_final_time =
+        ephemeris_->FlowWithAdaptiveStep(
+            trajectory,
+            intrinsic_acceleration,
+            t,
+            Ephemeris<Barycentric>::AdaptiveStepParameters(
+                prolongation_integrator_,
+                prolongation_max_steps_,
+                prolongation_length_tolerance_,
+                prolongation_speed_tolerance_));
+    CHECK(reached_final_time) << t;
   }
   if (!bubble_->empty()) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =

@@ -50,6 +50,7 @@
 // BM_EphemerisLEOProbeAllBodiesAndOblateness_mean      10180320715 10176465233          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
 // BM_EphemerisLEOProbeAllBodiesAndOblateness_stddev        4477703    14707915          0                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
 
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -192,7 +193,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         final_time,
         Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-            /*max_steps=*/std::numeric_limits<int>::max(),
+            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second));
     state->PauseTiming();
@@ -270,7 +271,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         final_time,
         Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-            /*max_steps=*/std::numeric_limits<int>::max(),
+            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second));
     state->PauseTiming();

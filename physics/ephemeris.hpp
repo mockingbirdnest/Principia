@@ -49,7 +49,7 @@ class Ephemeris {
     // limited to |max_steps|.
     AdaptiveStepParameters(
         AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-        int const max_steps,
+        std::int64_t const max_steps,
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
@@ -67,7 +67,7 @@ class Ephemeris {
     // This will refer to a static object returned by a factory.
     not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
         integrator_;
-    int max_steps_;
+    std::int64_t max_steps_;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;

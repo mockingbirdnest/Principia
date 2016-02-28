@@ -98,7 +98,7 @@ class DummyIntegrator
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-    int const max_steps,
+    std::int64_t const max_steps,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance)
     : integrator_(&integrator),
