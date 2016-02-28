@@ -360,8 +360,7 @@ class Plugin {
   // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
   void CleanUpVessels();
   // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| |is_initialized()|.  Also checks that its
-  // |prolongation().last().time()| is at least |HistoryTime()|.
+  // |Vessel| |is_initialized()|.
   void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
   // Evolves the histories in |histories|. |t| must be large enough that at
   // least one step of size |Δt_| can fit between |current_time_| and |t|.
@@ -372,8 +371,6 @@ class Plugin {
   // histories of the remaining |dirty_vessels_| using their prolongations,
   // clears |dirty_vessels_|.
   void CleanDirtyVessels();
-  // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
-  void ResetProlongations();
   // Evolves the prolongations of all celestials and vessels up to exactly
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
@@ -400,8 +397,8 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
 
-  // The vessels that have been added to the physics bubble after
-  // |HistoryTime()|.  For these vessels, the prolongation contains information
+  // The vessels that have been added to the physics bubble after the end of
+  // their history.  For these vessels, the prolongation contains information
   // that may not be discarded, and the history will be advanced using the
   // prolongation.  The pointers are not owning.
   std::set<not_null<Vessel*>> dirty_vessels_;
@@ -453,11 +450,6 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
-  // The common last time of the histories of vessels.
-  // TODO(egg): test the serialization of that guy, found out that it wasn't
-  // serialized thanks to vessel invariant violation.  Perhaps check that
-  // a deserialized plugin still functions normally.
-  Instant history_time_;
 
   Celestial* sun_ = nullptr;  // Not owning, not null after InsertSun is called.
 

@@ -72,10 +72,6 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // Deletes the |prolongation_| and forks a new one at |time|.
-  // The vessel must satisfy |is_initialized()|.
-  virtual void ResetProlongation(Instant const& time);
-
   // Appends a point to the history.
   virtual void AppendToHistory(
       Instant const& time,
@@ -122,6 +118,10 @@ class Vessel {
   Vessel();
 
  private:
+  // Deletes the |prolongation_| and forks a new one at |time|.
+  // The vessel must satisfy |is_initialized()|.
+  void ResetProlongation(Instant const& time);
+
   MasslessBody const body_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;

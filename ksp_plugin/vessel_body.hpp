@@ -79,12 +79,6 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   prolongation_ = history_->NewForkAtLast();
 }
 
-inline void Vessel::ResetProlongation(Instant const& time) {
-  CHECK(is_initialized());
-  history_->DeleteFork(&prolongation_);
-  prolongation_ = history_->NewForkWithCopy(time);
-}
-
 inline void Vessel::AppendToHistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
@@ -208,6 +202,12 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 inline Vessel::Vessel()
     : body_(),
       parent_(testing_utilities::make_not_null<Celestial const*>()) {}
+
+inline void Vessel::ResetProlongation(Instant const& time) {
+  CHECK(is_initialized());
+  history_->DeleteFork(&prolongation_);
+  prolongation_ = history_->NewForkWithCopy(time);
+}
 
 }  // namespace ksp_plugin
 }  // namespace principia
