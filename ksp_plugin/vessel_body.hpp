@@ -183,7 +183,9 @@ inline void Vessel::WriteToMessage(
       message->mutable_history_and_prolongation()->mutable_history());
   prolongation_->WritePointerToMessage(
       message->mutable_history_and_prolongation()->mutable_prolongation());
-  prediction_->WritePointerToMessage(message->mutable_prediction());
+  if (prediction_ != nullptr) {
+    prediction_->WritePointerToMessage(message->mutable_prediction());
+  }
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
