@@ -471,7 +471,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
   plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
   // The absolute world positions don't matter, at least one vessel (indeed all)
-  // are pre-existing. exercise this.
+  // are pre-existing.  Exercise this.
   {
     std::vector<IdAndOwnedPart> parts;
     parts.emplace_back(

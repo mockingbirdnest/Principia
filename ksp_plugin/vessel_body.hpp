@@ -48,6 +48,7 @@ inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 inline DiscreteTrajectory<Barycentric> const& Vessel::history() const {
+  CHECK(is_initialized());
   return *history_;
 }
 
