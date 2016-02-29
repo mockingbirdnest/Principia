@@ -254,6 +254,9 @@ inline void Vessel::FlowHistory(Instant const& time) {
 }
 
 inline void Vessel::FlowProlongation(Instant const& time) {
+  if (time == prolongation_->last().time()) {
+    return;
+  }
   ephemeris_->FlowWithAdaptiveStep(
       prolongation_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,

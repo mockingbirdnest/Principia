@@ -548,17 +548,6 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
-
-TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
-  EXPECT_DEATH({
-    Instant const t = initial_time_ + 100 * Second;
-    InsertAllSolarSystemBodies();
-    plugin_->EndInitialization();
-    plugin_->AdvanceTime(t, Angle());
-    plugin_->ForgetAllHistoriesBefore(t);
-  }, "Check failed: t < history_time_");
-}
-
 TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
   Instant const t = initial_time_ + 100 * Second;
