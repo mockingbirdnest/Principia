@@ -254,7 +254,9 @@ inline void Vessel::FlowHistory(Instant const& time) {
 }
 
 inline void Vessel::FlowProlongation(Instant const& time) {
-  if (time == prolongation_->last().time()) {
+  Instant const& prolongation_last_time = prolongation_->last().time();
+  CHECK_LE(prolongation_last_time, time);
+  if (prolongation_last_time == time) {
     return;
   }
   ephemeris_->FlowWithAdaptiveStep(
