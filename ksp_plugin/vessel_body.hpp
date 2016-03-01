@@ -98,15 +98,15 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   prolongation_ = history_->NewForkAtLast();
 }
 
-inline void Vessel::AdvanceTime(Instant const& time) {
-  AdvanceHistory(time);
+inline void Vessel::AdvanceTimeNotInBubble(Instant const& time) {
+  AdvanceHistoryIfNeeded(time);
   FlowProlongation(time);
 }
 
 inline void Vessel::AdvanceTimeInBubble(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  AdvanceHistory(time);
+  AdvanceHistoryIfNeeded(time);
   prolongation_->Append(time, degrees_of_freedom);
   is_dirty_ = true;
 }
@@ -242,11 +242,11 @@ inline Vessel::Vessel()
           McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
           /*step=*/1 * Second) {}
 
-inline void Vessel::AdvanceHistory(Instant const & time) {
+inline void Vessel::AdvanceHistoryIfNeeded(Instant const & time) {
   Instant const& history_last_time = history_->last().time();
   Time const& Δt = fixed_parameters_.step();
 
-  if (history_last_time + Δt <= time) {
+  if (history_last_time + Δt < time) {
     if (is_dirty_) {
       FlowProlongation(history_last_time + Δt);
       history_->Append(history_last_time + Δt,

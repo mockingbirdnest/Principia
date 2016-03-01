@@ -83,8 +83,11 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // This may clean the vessel.
-  virtual void AdvanceTime(Instant const& time);
+  // Advances time for a vessol not in the physics bubble.  This may clean the
+  // vessel.
+  virtual void AdvanceTimeNotInBubble(Instant const& time);
+
+  // Advances time for a vessel in the physics bubble.  This dirties the vessel.
   virtual void AdvanceTimeInBubble(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
@@ -130,7 +133,7 @@ class Vessel {
   Vessel();
 
  private:
-  void AdvanceHistory(Instant const& time);
+  void AdvanceHistoryIfNeeded(Instant const& time);
   void FlowHistory(Instant const& time);
   void FlowProlongation(Instant const& time);
 

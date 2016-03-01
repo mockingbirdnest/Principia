@@ -272,8 +272,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   EvolveBubble(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    if (!bubble_->contains(vessel)) {
-      vessel->AdvanceTime(t);
+    if (!bubble_->contains(vessel.get())) {
+      vessel->AdvanceTimeNotInBubble(t);
     }
   }
 
