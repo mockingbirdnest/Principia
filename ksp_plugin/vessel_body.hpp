@@ -252,9 +252,8 @@ inline void Vessel::AdvanceHistoryIfNeeded(Instant const & time) {
       history_->Append(history_last_time + Δt,
                        prolongation_->last().degrees_of_freedom());
       is_dirty_ = false;
-    } else {
-      FlowHistory(time);
     }
+    FlowHistory(time);
     history_->DeleteFork(&prolongation_);
     prolongation_ = history_->NewForkAtLast();
   }
