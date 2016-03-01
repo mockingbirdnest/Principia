@@ -272,7 +272,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   EvolveBubble(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->AdvanceTime(t);
+    if (!bubble_->contains(vessel)) {
+      vessel->AdvanceTime(t);
+    }
   }
 
   VLOG(1) << "Time has been advanced" << '\n'
@@ -515,7 +517,6 @@ void Plugin::AddVesselToNextPhysicsBubble(
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK_LT(0, kept_vessels_.count(vessel.get()));
-  vessel->set_dirty();
   bubble_->AddVesselToNext(vessel.get(), std::move(parts));
 }
 
@@ -860,7 +861,7 @@ void Plugin::EvolveBubble(Instant const& t) {
   for (not_null<Vessel*> vessel : bubble_->vessels()) {
     RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
         bubble_->from_centre_of_mass(vessel);
-    vessel->mutable_prolongation()->Append(
+    vessel->AdvanceTimeInBubble(
         t,
         centre_of_mass + from_centre_of_mass);
   }

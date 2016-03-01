@@ -85,6 +85,9 @@ class Vessel {
 
   // This may clean the vessel.
   virtual void AdvanceTime(Instant const& time);
+  virtual void AdvanceTimeInBubble(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Forgets the history before |time|.  |time| must not be after
   // |ForgettableTime|.
@@ -127,6 +130,7 @@ class Vessel {
   Vessel();
 
  private:
+  void AdvanceHistory(Instant const& time);
   void FlowHistory(Instant const& time);
   void FlowProlongation(Instant const& time);
 

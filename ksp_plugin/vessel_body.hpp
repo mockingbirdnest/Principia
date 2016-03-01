@@ -99,22 +99,16 @@ inline void Vessel::CreateHistoryAndForkProlongation(
 }
 
 inline void Vessel::AdvanceTime(Instant const& time) {
-  Instant const& history_last_time = history_->last().time();
-  Time const& Δt = fixed_parameters_.step();
-
-  if (history_last_time + Δt <= time) {
-    if (is_dirty_) {
-      FlowProlongation(history_last_time + Δt);
-      history_->Append(history_last_time + Δt,
-                       prolongation_->last().degrees_of_freedom());
-      is_dirty_ = false;
-    } else {
-      FlowHistory(time);
-    }
-    history_->DeleteFork(&prolongation_);
-    prolongation_ = history_->NewForkAtLast();
-  }
+  AdvanceHistory(time);
   FlowProlongation(time);
+}
+
+inline void Vessel::AdvanceTimeInBubble(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  AdvanceHistory(time);
+  prolongation_->Append(time, degrees_of_freedom);
+  is_dirty_ = true;
 }
 
 inline void Vessel::ForgetBefore(Instant const& time) {
@@ -247,6 +241,24 @@ inline Vessel::Vessel()
       fixed_parameters_(
           McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
           /*step=*/1 * Second) {}
+
+inline void Vessel::AdvanceHistory(Instant const & time) {
+  Instant const& history_last_time = history_->last().time();
+  Time const& Δt = fixed_parameters_.step();
+
+  if (history_last_time + Δt <= time) {
+    if (is_dirty_) {
+      FlowProlongation(history_last_time + Δt);
+      history_->Append(history_last_time + Δt,
+                       prolongation_->last().degrees_of_freedom());
+      is_dirty_ = false;
+    } else {
+      FlowHistory(time);
+    }
+    history_->DeleteFork(&prolongation_);
+    prolongation_ = history_->NewForkAtLast();
+  }
+}
 
 inline void Vessel::FlowHistory(Instant const& time) {
   ephemeris_->FlowWithFixedStep(
