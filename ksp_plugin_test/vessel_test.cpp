@@ -61,7 +61,6 @@ using VesselDeathTest = VesselTest;
 TEST_F(VesselDeathTest, Uninitialized) {
   EXPECT_DEATH({vessel_->history();}, "is_initialized");
   EXPECT_DEATH({vessel_->prolongation();}, "is_initialized");
-  EXPECT_DEATH({vessel_->mutable_prolongation();}, "is_initialized");
 }
 
 TEST_F(VesselTest, InitializationAndSynchronization) {

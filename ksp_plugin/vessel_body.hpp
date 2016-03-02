@@ -57,12 +57,6 @@ inline DiscreteTrajectory<Barycentric> const& Vessel::prolongation() const {
   return *prolongation_;
 }
 
-inline not_null<DiscreteTrajectory<Barycentric>*>
-Vessel::mutable_prolongation() {
-  CHECK(is_initialized());
-  return prolongation_;
-}
-
 inline not_null<FlightPlan*> Vessel::flight_plan() const {
   CHECK(is_initialized());
   return flight_plan_.get();

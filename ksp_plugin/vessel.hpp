@@ -54,12 +54,11 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> const parent);
 
+  // Requires |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
 
-  // Both accessors require |is_initialized()|.  |mutable_prolongation| requires
-  // that the vessel be dirty.
+  // Requires |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
-  virtual not_null<DiscreteTrajectory<Barycentric>*> mutable_prolongation();
 
   // Requires |is_initialized()|.
   virtual not_null<FlightPlan*> flight_plan() const;
