@@ -90,7 +90,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_FALSE(message.has_history_and_prolongation());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   vessel_->WriteToMessage(&message);
-  EXPECT_FALSE(message.has_history_and_prolongation());
+  EXPECT_TRUE(message.has_history_and_prolongation());
   vessel_ = Vessel::ReadFromMessage(message,
                                     &ephemeris_,
                                     &parent_,
