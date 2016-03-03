@@ -93,6 +93,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
 }
 
 inline void Vessel::AdvanceTimeNotInBubble(Instant const& time) {
+  CHECK(is_initialized());
   AdvanceHistoryIfNeeded(time);
   FlowProlongation(time);
 }
@@ -100,6 +101,7 @@ inline void Vessel::AdvanceTimeNotInBubble(Instant const& time) {
 inline void Vessel::AdvanceTimeInBubble(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  CHECK(is_initialized());
   AdvanceHistoryIfNeeded(time);
   prolongation_->Append(time, degrees_of_freedom);
   is_dirty_ = true;
