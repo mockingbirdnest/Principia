@@ -426,7 +426,11 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   parameters.integrator_->Solve(problem, parameters.step_);
 
 #if defined(WE_LOVE_228)
-  AppendMasslessBodiesState(last_state, trajectories);
+  // The |positions| are empty if and only if |append_state| was never called;
+  // in that case there was not enough room to advance the |trajectories|.
+  if (!last_state.positions.empty()) {
+    AppendMasslessBodiesState(last_state, trajectories);
+  }
 #endif
 }
 
