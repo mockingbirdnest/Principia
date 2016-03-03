@@ -232,10 +232,10 @@ class PluginTest : public testing::Test {
     }
   }
 
-  // The time of the |step|th synchronized history step of |plugin_|.
-  // |HistoryTime(0)| is |initial_time_|.
-  Instant HistoryTime(Instant const sync_time, int const step) {
-    return sync_time + step * plugin_->Δt();
+  // The time of the |step|th history step of |plugin_|.  |HistoryTime(0)| is
+  // |initial_time_|.
+  Instant HistoryTime(Instant const time, int const step) {
+    return time + step * plugin_->Δt();
   }
 
   // Keeps the vessel with the given |guid| during the next call to
@@ -344,19 +344,19 @@ TEST_F(PluginTest, Serialization) {
                                    satellite_initial_displacement_,
                                    satellite_initial_velocity_));
 
-  Instant const& sync_time = initial_time_ + 1 * Second;
-  // Sync.
-  plugin->AdvanceTime(sync_time, Angle());
+  Time const shift = 1 * Second;
+  Instant const time = initial_time_ + shift;
+  plugin->AdvanceTime(time, Angle());
 
   // Add a handful of points to the history and then forget some of them.  This
   // is the most convenient way to check that forgetting works as expected.
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
-  plugin->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+  plugin->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
-  plugin->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  plugin->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
+  plugin->AdvanceTime(HistoryTime(time, 6), Angle());
+  plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
 
-  plugin->CreateFlightPlan(satellite, HistoryTime(sync_time, 7), 4 * Kilogram);
+  plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
   plugin->SetPlottingFrame(plugin->NewBodyCentredNonRotatingNavigationFrame(
       SolarSystemFactory::kSun + 1));
 
@@ -375,7 +375,7 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ(message.celestial(0).index(), message.celestial(1).parent_index());
 
   EXPECT_EQ(
-      HistoryTime(sync_time, 3),
+      HistoryTime(time, 2),
       Instant::ReadFromMessage(message.ephemeris().trajectory(0).first_time()));
 
   EXPECT_EQ(1, message.vessel_size());
@@ -386,13 +386,13 @@ TEST_F(PluginTest, Serialization) {
       message.vessel(0).vessel().history_and_prolongation().history();
 #if defined(WE_LOVE_228)
   EXPECT_EQ(2, vessel_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(sync_time, 3) - Instant()) / (1 * Second),
+  EXPECT_EQ((HistoryTime(time, 3) - shift - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
-  EXPECT_EQ((HistoryTime(sync_time, 6) - Instant()) / (1 * Second),
+  EXPECT_EQ((HistoryTime(time, 6) - shift - Instant()) / (1 * Second),
             vessel_0_history.timeline(1).instant().scalar().magnitude());
 #else
   EXPECT_EQ(3, vessel_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(sync_time, 4) - Instant()) / (1 * Second),
+  EXPECT_EQ((HistoryTime(time, 4) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
 #endif
   EXPECT_FALSE(message.bubble().has_current());
@@ -548,17 +548,6 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
-
-TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
-  EXPECT_DEATH({
-    Instant const t = initial_time_ + 100 * Second;
-    InsertAllSolarSystemBodies();
-    plugin_->EndInitialization();
-    plugin_->AdvanceTime(t, Angle());
-    plugin_->ForgetAllHistoriesBefore(t);
-  }, "Check failed: t < history_time_");
-}
-
 TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
   Instant const t = initial_time_ + 100 * Second;
@@ -594,28 +583,28 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
                                     satellite_initial_velocity_));
   auto const satellite = plugin_->GetVessel(guid);
 
-  Instant const& sync_time = initial_time_ + 1 * Second;
-  plugin_->AdvanceTime(sync_time, Angle());
+  Instant const& time = initial_time_ + 1 * Second;
+  plugin_->AdvanceTime(time, Angle());
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
-  plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+  plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
 
-  auto const burn = [this, mock_dynamic_frame, sync_time]() -> Burn {
+  auto const burn = [this, mock_dynamic_frame, time]() -> Burn {
     return {/*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             std::unique_ptr<MockDynamicFrame<Barycentric, Navigation>>(
                 mock_dynamic_frame),
-            /*initial_time=*/HistoryTime(sync_time, 4),
+            /*initial_time=*/HistoryTime(time, 4),
             Velocity<Frenet<Navigation>>(
                 {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
   };
   plugin_->CreateFlightPlan(guid,
-                            /*final_time=*/HistoryTime(sync_time, 8),
+                            /*final_time=*/HistoryTime(time, 8),
                             /*initial_mass=*/1 * Kilogram);
   satellite->flight_plan()->Append(burn());
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
-  plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+  plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   EXPECT_LE(satellite->history().Begin().time(),
             satellite->flight_plan()->initial_time());
   EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
@@ -648,16 +637,16 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                                     satellite_initial_velocity_));
   auto const satellite = plugin_->GetVessel(guid);
 
-  Instant const& sync_time = initial_time_ + 1 * Second;
-  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(sync_time, 3)))
+  Instant const& time = initial_time_ + 1 * Second;
+  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(time, 3)))
       .Times(1);
-  plugin_->AdvanceTime(sync_time, Angle());
+  plugin_->AdvanceTime(time, Angle());
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
-  plugin_->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+  plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
-  plugin_->AdvanceTime(HistoryTime(sync_time, 6), Angle());
-    plugin_->ForgetAllHistoriesBefore(HistoryTime(sync_time, 5));
+  plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
+    plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
     auto const rendered_prediction =
         plugin_->RenderedPrediction(guid, World::origin);
 }

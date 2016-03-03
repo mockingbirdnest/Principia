@@ -79,6 +79,8 @@ class Ephemeris {
         FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
         Time const& step);
 
+    Time const& step() const;
+
    private:
     // This will refer to a static object returned by a factory.
     not_null<FixedStepSizeIntegrator<NewtonianMotionEquation> const*>

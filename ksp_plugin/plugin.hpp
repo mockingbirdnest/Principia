@@ -173,8 +173,7 @@ class Plugin {
   // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
-  // Forgets the histories of the |celestials_| and of the synchronized vessels
-  // before |t|.
+  // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
 
   // Returns the displacement and velocity of the vessel with GUID |vessel_guid|
@@ -265,7 +264,7 @@ class Plugin {
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
-  // Adds the vessel to |dirty_vessels_|.
+  // Marks the vessel as dirty.
   // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
   // vessel with GUID |vessel_guid| must not already be in
   // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
@@ -322,12 +321,10 @@ class Plugin {
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
 
-  // This constructor should only be used during deserialization.
-  // |unsynchronized_vessels_| is initialized consistently.  All vessels are
-  // added to |kept_vessels_|  The resulting plugin is not |initializing_|.
+  // This constructor should only be used during deserialization.  All vessels
+  // are added to |kept_vessels_|  The resulting plugin is not |initializing_|.
   Plugin(GUIDToOwnedVessel vessels,
          IndexToOwnedCelestial celestials,
-         std::set<not_null<Vessel*>> dirty_vessels,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
          std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
          AdaptiveStepSizeIntegrator<
@@ -336,7 +333,6 @@ class Plugin {
              NewtonianMotionEquation> const& prediction_integrator,
          Angle planetarium_rotation,
          Instant current_time,
-         Instant history_time,
          Index sun_index);
 
   // We virtualize this function for testing purposes.
@@ -345,13 +341,6 @@ class Plugin {
 
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
-
-  // Returns |!dirty_vessels_.empty()|.
-  bool has_dirty_vessels() const;
-  // Returns |!unsynchronized_vessels_.empty()|.
-  bool has_unsynchronized_vessels() const;
-  // Returns |dirty_vessels_.count(vessel) > 0|.
-  bool is_dirty(not_null<Vessel*> const vessel) const;
 
   // The rotation between the |AliceWorld| basis at |current_time_| and the
   // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
@@ -362,38 +351,9 @@ class Plugin {
   // Utilities for |AdvanceTime|.
 
   // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
-  void CleanUpVessels();
-  // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| |is_initialized()|, and that it is not in
-  // |unsynchronized_vessels_| if, and only if, it |is_synchronized()|.
-  // Also checks that its |prolongation().last().time()| is at least
-  // |HistoryTime()|, and that if it |is_synchronized()|, its
-  // |history().last().time()| is exactly |HistoryTime()|.
-  void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
-  // Returns the histories of the synchronized vessels.
-  Trajectories SynchronizedHistories() const;
-  // Evolves the histories in |histories|. |t| must be large enough that at
-  // least one step of size |Δt_| can fit between |current_time_| and |t|.
-  void EvolveHistories(Instant const& t,
-                       Trajectories const& histories);
-  // Synchronizes the |unsynchronized_vessels_|, clears
-  // |unsynchronized_vessels_|.  Prolongs the histories of the vessels in the
-  // physics bubble by evolving the trajectory of the |current_physics_bubble_|
-  // if there is one, prolongs the histories of the remaining |dirty_vessels_|
-  // using their prolongations, clears |dirty_vessels_|.
-  void SynchronizeNewVesselsAndCleanDirtyVessels();
-  // Called from |SynchronizeNewVesselsAndCleanDirtyVessels()|, prolongs the
-  // histories of the vessels in the physics bubble (the integration must
-  // already have been done).  Any new vessels in the physics bubble are
-  // synchronized and removed from |unsynchronized_vessels_|.
-  void SynchronizeBubbleHistories();
-  // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
-  // All vessels must satisfy |is_synchronized()|.
-  void ResetProlongations();
-  // Evolves the prolongations of all celestials and vessels up to exactly
-  // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
-  // if there is one.
-  void EvolveProlongationsAndBubble(Instant const& t);
+  void FreeVessels();
+  // Evolves the trajectory of the |current_physics_bubble_|.
+  void EvolveBubble(Instant const& t);
 
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
@@ -407,24 +367,15 @@ class Plugin {
     google::protobuf::RepeatedPtrField<T> const& celestial_messages,
     not_null<IndexToOwnedCelestial*> const celestials);
 
-  Time const Δt_ = 10 * Second;
-  std::int64_t const prolongation_max_steps_ =
+  static Time constexpr Δt_ = 10 * Second;
+  static std::int64_t constexpr prolongation_max_steps_ =
       std::numeric_limits<std::int64_t>::max();
-  Length const prolongation_length_tolerance_ = 1 * Milli(Metre);
-  Speed const prolongation_speed_tolerance_ = 1 * Milli(Metre) / Second;
+  static Length constexpr prolongation_length_tolerance_ = 1 * Milli(Metre);
+  static Speed constexpr prolongation_speed_tolerance_ =
+      1 * Milli(Metre) / Second;
 
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
-
-  // The vessels which have been inserted after |HistoryTime()|.  These are the
-  // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
-  // history.  The pointers are not owning.
-  std::set<not_null<Vessel*>> unsynchronized_vessels_;
-  // The vessels that have been added to the physics bubble after
-  // |HistoryTime()|.  For these vessels, the prolongation contains information
-  // that may not be discarded, and the history will be advanced using the
-  // prolongation.  The pointers are not owning.
-  std::set<not_null<Vessel*>> dirty_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*>> kept_vessels_;
@@ -435,7 +386,6 @@ class Plugin {
   Speed prediction_speed_tolerance_ = 1 * Metre / Second;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
-
 
   struct AbsoluteInitializationObjects {
     IndexToMassiveBody bodies;
@@ -458,7 +408,7 @@ class Plugin {
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
-  // The integrator computing the synchronized histories of the vessels.
+  // The integrator computing the histories of the vessels.
   FixedStepSizeIntegrator<NewtonianMotionEquation> const& history_integrator_;
   // The integrator computing the prolongations.
   AdaptiveStepSizeIntegrator<
@@ -473,11 +423,6 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
-  // The common last time of the histories of synchronized vessels.
-  // TODO(egg): test the serialization of that guy, found out that it wasn't
-  // serialized thanks to vessel invariant violation.  Perhaps check that
-  // a deserialized plugin still functions normally.
-  Instant history_time_;
 
   Celestial* sun_ = nullptr;  // Not owning, not null after InsertSun is called.
 

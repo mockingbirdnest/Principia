@@ -471,7 +471,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
   plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
   // The absolute world positions don't matter, at least one vessel (indeed all)
-  // are pre-existing. exercise this.
+  // are pre-existing.  Exercise this.
   {
     std::vector<IdAndOwnedPart> parts;
     parts.emplace_back(
@@ -610,7 +610,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(satellite,
                                 World::origin);
-  EXPECT_EQ(14, rendered_prediction.size());
+  EXPECT_EQ(15, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
     auto const& segment = rendered_prediction[i];
     EXPECT_THAT(
