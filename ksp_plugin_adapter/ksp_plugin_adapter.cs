@@ -168,7 +168,8 @@ public partial class PrincipiaPluginAdapter
                                  Path.GetFullPath(Interface.kDllPath) +
                                  "\" was not found.";
       }
-      bad_installation_popup_ = "The Principia DLL failed to load.\n" + additional_information;
+      bad_installation_popup_ =
+          "The Principia DLL failed to load.\n" + additional_information;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
   }
