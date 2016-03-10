@@ -158,11 +158,11 @@ public partial class PrincipiaPluginAdapter
       string additional_information;
       
       if (File.Exists(Interface.kDllPath)) {
-        additional_information = "Please check that you downloaded the " +
-                                 "correct version of principia for your " +
-                                 "operating system, and that the right " +
-                                 "C++ ABI is installed in its appropriate " +
-                                 "version.";
+        additional_information =
+            "Please check that you downloaded the correct version of " +
+            "Principia for your operating system, and that the right C++ " +
+            "libraries are installed, see the FAQ on the wiki of the GitHub " +
+            "repository (https://github.com/mockingbirdnest/Principia/wiki).";
       } else {
         additional_information = "The file \"" +
                                  Path.GetFullPath(Interface.kDllPath) +
