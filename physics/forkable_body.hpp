@@ -321,7 +321,7 @@ void Forkable<Tr4jectory, It3rator>::CheckNoForksBefore(Instant const& time) {
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message,
-    std::vector<not_null<Tr4jectory const*>>& forks) const {
+    std::vector<not_null<Tr4jectory*>>& forks) const {
   std::experimental::optional<Instant> last_instant;
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
@@ -343,7 +343,7 @@ void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child->WriteSubTreeToMessage(litter->add_trajectories());
+    child->WriteSubTreeToMessage(litter->add_trajectories(), forks);
   }
 }
 
@@ -357,10 +357,10 @@ void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
   for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
     for (serialization::Trajectory const& child : litter.trajectories()) {
-      not_null<Tr4jectory const*> fork =
-          NewFork(timeline_find(fork_time))->FillSubTreeFromMessage(child);
+      not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
+      fork->FillSubTreeFromMessage(child, forks);
       if (has_fork_position) {
-        std::int32_t fork_position = message.fork_position(index);
+        std::int32_t const fork_position = message.fork_position(index);
         forks[fork_position] = fork;
       }
     }

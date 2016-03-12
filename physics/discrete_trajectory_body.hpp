@@ -148,16 +148,16 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::Trajectory*> const message,
-    std::vector<not_null<DiscreteTrajectory<Frame> const*>> const& forks)
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& forks)
     const {
   LOG(INFO) << __FUNCTION__;
   CHECK(this->is_root());
   auto mutable_forks = forks;
-  WriteSubTreeToMessage(message);
+  WriteSubTreeToMessage(message, mutable_forks);
   CHECK(std::all_of(mutable_forks.begin(),
                     mutable_forks.end(),
-                    [](not_null<DiscreteTrajectory<Frame> const*> const fork) {
-                      fork == nullptr;
+                    [](not_null<DiscreteTrajectory<Frame>*> const fork) {
+                      return fork == nullptr;
                     }));
   LOG(INFO) << NAMED(this);
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -217,7 +217,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message,
-    std::vector<not_null<DiscreteTrajectory<Frame> const*>>& forks) const {
+    std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;

@@ -118,7 +118,7 @@ class DiscreteTrajectory
   // They must be descended from this trajectory.
   void WriteToMessage(
       not_null<serialization::Trajectory*> const message,
-      std::vector<not_null<DiscreteTrajectory<Frame> const*>> const& forks)
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& forks)
       const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
@@ -144,7 +144,7 @@ class DiscreteTrajectory
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message,
-      std::vector<not_null<DiscreteTrajectory<Frame> const*>>& forks) const;
+      std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks) const;
 
   void FillSubTreeFromMessage(
       serialization::Trajectory const& message,

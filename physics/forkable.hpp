@@ -185,7 +185,7 @@ class Forkable {
   // traversal their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message,
-      std::vector<not_null<Tr4jectory const*>>& forks) const;
+      std::vector<not_null<Tr4jectory*>>& forks) const;
 
   void FillSubTreeFromMessage(serialization::Trajectory const& message,
                               std::vector<not_null<Tr4jectory*>>& forks);
