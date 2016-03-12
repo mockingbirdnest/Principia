@@ -141,9 +141,6 @@ class Forkable {
   // |depth|).
   int Size() const;
 
-  void WritePointerToMessage(
-      not_null<serialization::Trajectory::Pointer*> const message) const;
-
   // |trajectory| must be a root.
   static not_null<Tr4jectory*> ReadPointerFromMessage(
       serialization::Trajectory::Pointer const& message,
@@ -184,11 +181,14 @@ class Forkable {
   // This trajectory must be a root.
   void CheckNoForksBefore(Instant const& time);
 
-  // This trajectory need not be a root.
+  // This trajectory need not be a root.  As forks are encountered during tree
+  // traversal their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message) const;
+      not_null<serialization::Trajectory*> const message,
+      std::vector<not_null<Tr4jectory const*>>& forks) const;
 
-  void FillSubTreeFromMessage(serialization::Trajectory const& message);
+  void FillSubTreeFromMessage(serialization::Trajectory const& message,
+                              std::vector<not_null<Tr4jectory*>>& forks);
 
  private:
   // Constructs an Iterator by wrapping the timeline iterator

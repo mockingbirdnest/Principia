@@ -1,4 +1,4 @@
-syntax = "proto2";
+﻿syntax = "proto2";
 
 import "serialization/geometry.proto";
 import "serialization/integrators.proto";
@@ -101,7 +101,7 @@ message Trajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  message Pointer {
+  message Pointer {  // Pre-Буняко́вский
     message Fork {
       required int32 children_distance = 1;
       required int32 timeline_distance = 2;
@@ -114,4 +114,5 @@ message Trajectory {
   }
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
+  repeated int32 fork_position = 3;  // Буняко́вский.
 }
