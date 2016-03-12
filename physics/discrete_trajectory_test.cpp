@@ -34,7 +34,6 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::NotNull;
 using ::testing::Ref;
 
 // Note that we cannot have a |using ::testing::Pair| here as it would conflict
@@ -599,7 +598,6 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
       deserialized_trajectory =
           DiscreteTrajectory<World>::ReadFromMessage(message, forks);
-  EXPECT_THAT(forks, ElementsAre(NotNull(), NotNull(), NotNull()));
   EXPECT_EQ(t2_, forks[0]->Fork().time());
   EXPECT_EQ(t3_, forks[1]->Fork().time());
   EXPECT_EQ(t2_, forks[2]->Fork().time());

@@ -123,7 +123,8 @@ class DiscreteTrajectory
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
-  // deserialization.
+  // deserialization.  All pointers in |forks| must be null at entry; they are
+  // not null at exit.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::Trajectory const& message,
       std::vector<DiscreteTrajectory<Frame>*>& forks);
@@ -149,6 +150,11 @@ class DiscreteTrajectory
   void FillSubTreeFromMessage(
       serialization::Trajectory const& message,
       std::vector<DiscreteTrajectory<Frame>*>& forks);
+
+  static void CheckAllNull(
+      std::vector<DiscreteTrajectory<Frame>*> const& forks);
+  static void CheckAllNotNull(
+      std::vector<DiscreteTrajectory<Frame>*> const& forks);
 
   Timeline timeline_;
 

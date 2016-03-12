@@ -158,11 +158,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
   std::vector<DiscreteTrajectory<Frame>*> mutable_forks;
   std::copy(forks.begin(), forks.end(), std::back_inserter(mutable_forks));
   WriteSubTreeToMessage(message, mutable_forks);
-  CHECK(std::all_of(mutable_forks.begin(),
-                    mutable_forks.end(),
-                    [](DiscreteTrajectory<Frame>* const fork) {
-                      return fork == nullptr;
-                    }));
+  CheckAllNull(mutable_forks);
 
   LOG(INFO) << NAMED(this);
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -175,7 +171,9 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
+  CheckAllNull(forks);
   trajectory->FillSubTreeFromMessage(message, forks);
+  CheckAllNotNull(forks);
   return trajectory;
 }
 
@@ -247,6 +245,27 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
                                                                  forks);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::CheckAllNull(
+    std::vector<DiscreteTrajectory<Frame>*> const& forks) {
+  CHECK(std::all_of(forks.begin(),
+                    forks.end(),
+                    [](DiscreteTrajectory<Frame>* const fork) {
+                      return fork == nullptr;
+                    }));
+
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::CheckAllNotNull(
+    std::vector<DiscreteTrajectory<Frame>*> const& forks) {
+  CHECK(std::all_of(forks.begin(),
+                    forks.end(),
+                    [](DiscreteTrajectory<Frame>* const fork) {
+                      return fork != nullptr;
+                    }));
 }
 
 }  // namespace physics
