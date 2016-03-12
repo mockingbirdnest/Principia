@@ -148,15 +148,12 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::Trajectory*> const message,
-    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& forks)
+    std::vector<DiscreteTrajectory<Frame>*> const& forks)
     const {
   LOG(INFO) << __FUNCTION__;
   CHECK(this->is_root());
 
-  // Make a mutable, nullable copy of |forks| to check that everything gets
-  // consumed.
-  std::vector<DiscreteTrajectory<Frame>*> mutable_forks;
-  std::copy(forks.begin(), forks.end(), std::back_inserter(mutable_forks));
+  std::vector<DiscreteTrajectory<Frame>*> mutable_forks = forks;
   WriteSubTreeToMessage(message, mutable_forks);
   CheckAllNull(mutable_forks);
 
@@ -173,7 +170,6 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   CheckAllNull(forks);
   trajectory->FillSubTreeFromMessage(message, forks);
-  CheckAllNotNull(forks);
   return trajectory;
 }
 
@@ -256,16 +252,6 @@ void DiscreteTrajectory<Frame>::CheckAllNull(
                       return fork == nullptr;
                     }));
 
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::CheckAllNotNull(
-    std::vector<DiscreteTrajectory<Frame>*> const& forks) {
-  CHECK(std::all_of(forks.begin(),
-                    forks.end(),
-                    [](DiscreteTrajectory<Frame>* const fork) {
-                      return fork != nullptr;
-                    }));
 }
 
 }  // namespace physics

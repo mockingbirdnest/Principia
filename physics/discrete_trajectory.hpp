@@ -115,16 +115,17 @@ class DiscreteTrajectory
   void ForgetBefore(Instant const& time);
 
   // This trajectory must be a root.  Only the given |forks| are serialized.
-  // They must be descended from this trajectory.
+  // They must be descended from this trajectory.  The pointers in |forks| may
+  // be null at entry.
   void WriteToMessage(
       not_null<serialization::Trajectory*> const message,
-      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& forks)
+      std::vector<DiscreteTrajectory<Frame>*> const& forks)
       const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
-  // deserialization.  All pointers in |forks| must be null at entry; they are
-  // not null at exit.
+  // deserialization.  All pointers in |forks| must be null at entry; they may
+  // be null at exit.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::Trajectory const& message,
       std::vector<DiscreteTrajectory<Frame>*>& forks);
@@ -152,8 +153,6 @@ class DiscreteTrajectory
       std::vector<DiscreteTrajectory<Frame>*>& forks);
 
   static void CheckAllNull(
-      std::vector<DiscreteTrajectory<Frame>*> const& forks);
-  static void CheckAllNotNull(
       std::vector<DiscreteTrajectory<Frame>*> const& forks);
 
   Timeline timeline_;
