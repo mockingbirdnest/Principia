@@ -36,7 +36,7 @@ public partial class PrincipiaPluginAdapter
   // the evaluation of the cubic).
   private const int kMaxVectorLinePoints = 32766;
 
-  private ApplicationLauncherButton toolbar_button_;
+  private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
 
   // "Persistant" is a KSP typo.
@@ -53,10 +53,10 @@ public partial class PrincipiaPluginAdapter
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
-  private VectorLine rendered_prediction_;
-  private VectorLine rendered_trajectory_;
-  private VectorLine[] rendered_flight_plan_;
-  private VectorLine[] rendered_frenet_trihedra_;
+  private Vectrosity.VectorLine rendered_prediction_;
+  private Vectrosity.VectorLine rendered_trajectory_;
+  private Vectrosity.VectorLine[] rendered_flight_plan_;
+  private Vectrosity.VectorLine[] rendered_frenet_trihedra_;
 
   [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
@@ -412,8 +412,8 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out barycentric_navball_texture_,
                      "navball_barycentric.png");
 
-    rendered_flight_plan_ = new VectorLine[0];
-    rendered_frenet_trihedra_ = new VectorLine[0];
+    rendered_flight_plan_ = new Vectrosity.VectorLine[0];
+    rendered_frenet_trihedra_ = new Vectrosity.VectorLine[0];
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -516,18 +516,19 @@ public partial class PrincipiaPluginAdapter
       bad_installation_popup_ = null;
       return;
     }
-    if (ApplicationLauncher.Ready && toolbar_button_ == null) {
+    if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
       LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
       toolbar_button_ =
-          ApplicationLauncher.Instance.AddModApplication(
+          KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(
               onTrue          : ShowMainWindow,
               onFalse         : HideMainWindow,
               onHover         : null,
               onHoverOut      : null,
               onEnable        : null,
               onDisable       : null,
-              visibleInScenes : ApplicationLauncher.AppScenes.ALWAYS,
+              visibleInScenes : KSP.UI.Screens.ApplicationLauncher.AppScenes.
+                                    ALWAYS,
               texture         : toolbar_button_texture);
     }
     // Make sure the state of the toolbar button remains consistent with the
@@ -737,7 +738,7 @@ public partial class PrincipiaPluginAdapter
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
     if (toolbar_button_ != null) {
-      ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
+      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
     }
     Cleanup();
   }
@@ -843,7 +844,7 @@ public partial class PrincipiaPluginAdapter
                     MapView.MapCamera.camera.WorldToScreenPoint(
                         ScaledSpace.LocalToScaledSpace(world_position));
             Action<int, XYZ> set_vector = (arrow_index, world_direction) => {
-              VectorLine line =
+              Vectrosity.VectorLine line =
                   rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
               line.points2[0] = world_to_screen(position_at_ignition);
               line.points2[1] = world_to_screen(
@@ -853,8 +854,7 @@ public partial class PrincipiaPluginAdapter
             set_vector(1, manoeuvre.normal);
             set_vector(2, manoeuvre.binormal);
             for (int j = 0; j < 3; ++j) {
-              Vector.DrawLine(
-                  rendered_frenet_trihedra_[3 * manoeuvre_index + j]);
+              rendered_frenet_trihedra_[3 * manoeuvre_index + j].Draw();
             }
           }
         }
@@ -868,14 +868,14 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
-                                         VectorLine vector_line) {
+                                         Vectrosity.VectorLine vector_line) {
     int new_min_draw_index = 0;
     try {
       XYZSegment segment;
-      int index_in_line_points = vector_line.points3.Length -
+      int index_in_line_points = vector_line.points3.Count -
           2 * trajectory_iterator.NumberOfSegments();
       // If the |VectorLine| is too big, make sure we're not keeping garbage.
-      for (int i = vector_line.minDrawIndex; i < index_in_line_points; ++i) {
+      for (int i = vector_line.drawStart; i < index_in_line_points; ++i) {
         vector_line.points3[i] = UnityEngine.Vector3.zero;
       }
       while (index_in_line_points < 0) {
@@ -883,8 +883,8 @@ public partial class PrincipiaPluginAdapter
         index_in_line_points += 2;
       }
       new_min_draw_index = index_in_line_points;
-      vector_line.minDrawIndex = Math.Min(vector_line.minDrawIndex,
-                                          new_min_draw_index);
+      vector_line.drawStart =
+          Math.Min(vector_line.drawStart, new_min_draw_index);
       while (!trajectory_iterator.AtEnd()) {
         segment = trajectory_iterator.FetchAndIncrement();
         // TODO(egg): should we do the |LocalToScaledSpace| conversion in
@@ -902,11 +902,11 @@ public partial class PrincipiaPluginAdapter
       Interface.DeleteLineAndIterator(ref trajectory_iterator);
     }
     if (MapView.Draw3DLines && !force_2d_trajectories_) {
-      Vector.DrawLine3D(vector_line);
+      vector_line.Draw3D();
     } else {
-      Vector.DrawLine(vector_line);
+      vector_line.Draw();
     }
-    vector_line.minDrawIndex = new_min_draw_index;
+    vector_line.drawStart = new_min_draw_index;
   }
 
   private void ResetRenderedTrajectory() {
@@ -917,12 +917,12 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetRenderedFlightPlan(int segments) {
     DestroyRenderedFlightPlan();
-    rendered_flight_plan_ = new VectorLine[segments];
+    rendered_flight_plan_ = new Vectrosity.VectorLine[segments];
     for (int i = 0; i < segments; ++i) {
       rendered_flight_plan_[i] = NewRenderedTrajectory(
           (i % 2 == 0) ? XKCDColors.RoyalBlue : XKCDColors.OrangeRed);
     }
-    rendered_frenet_trihedra_ = new VectorLine[3 * (segments / 2)];
+    rendered_frenet_trihedra_ = new Vectrosity.VectorLine[3 * (segments / 2)];
     for (int i = 0; i < segments / 2; ++i) {
       rendered_frenet_trihedra_[3 * i] = NewUILine(XKCDColors.NeonYellow);
       rendered_frenet_trihedra_[3 * i + 1] = NewUILine(XKCDColors.AquaBlue);
@@ -930,51 +930,49 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
-    var result = new VectorLine(
-        lineName     : "RenderedTrajectory",
-        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : colour,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    result.vectorObject.transform.parent = ScaledSpace.Instance.transform;
-    result.vectorObject.renderer.castShadows = false;
-    result.vectorObject.renderer.receiveShadows = false;
+  private Vectrosity.VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
+    var result = new Vectrosity.VectorLine(
+        name     : "RenderedTrajectory",
+        points   : new List<UnityEngine.Vector3>(kMaxVectorLinePoints),
+        width    : 5,
+        lineType : Vectrosity.LineType.Discrete);
+    result.material = MapView.OrbitLinesMaterial;
+    result.color = colour;
+    result.drawTransform.parent = ScaledSpace.Instance.transform;
     result.layer = 31;
     return result;
   }
 
-  private VectorLine NewUILine(UnityEngine.Color colour) {
-    UnityEngine.Vector2[] line_points = new UnityEngine.Vector2[2];
-    var result = new VectorLine(
-        lineName     : "UILine",
-        linePoints   : line_points,
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : colour,
-        width        : 5,
-        lineType     : LineType.Discrete);
+  private Vectrosity.VectorLine NewUILine(UnityEngine.Color colour) {
+    var line_points = new List<UnityEngine.Vector2>(2);
+    var result = new Vectrosity.VectorLine(
+        name     : "UILine",
+        points   : new List<UnityEngine.Vector3>(kMaxVectorLinePoints),
+        width    : 5,
+        lineType : Vectrosity.LineType.Discrete);
+    result.material = MapView.OrbitLinesMaterial;
+    result.color = colour;
     return result;
   }
 
   private void DestroyRenderedTrajectory() {
     if (rendered_trajectory_ != null) {
-      Vector.DestroyLine(ref rendered_trajectory_);
+      Vectrosity.VectorLine.Destroy(ref rendered_trajectory_);
     }
     if (rendered_prediction_ != null) {
-      Vector.DestroyLine(ref rendered_prediction_);
+      Vectrosity.VectorLine.Destroy(ref rendered_prediction_);
     }
   }
 
   private void DestroyRenderedFlightPlan() {
     for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
-      Vector.DestroyLine(ref rendered_flight_plan_[i]);
+      Vectrosity.VectorLine.Destroy(ref rendered_flight_plan_[i]);
     }
     for (int i = 0; i < rendered_frenet_trihedra_.Length; ++i) {
-      Vector.DestroyLine(ref rendered_frenet_trihedra_[i]);
+      Vectrosity.VectorLine.Destroy(ref rendered_frenet_trihedra_[i]);
     }
-    rendered_frenet_trihedra_ = new VectorLine[0];
-    rendered_flight_plan_ = new VectorLine[0];
+    rendered_frenet_trihedra_ = new Vectrosity.VectorLine[0];
+    rendered_flight_plan_ = new Vectrosity.VectorLine[0];
   }
 
   private void Cleanup() {
@@ -1075,7 +1073,9 @@ public partial class PrincipiaPluginAdapter
 #endif
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+        position : new UnityEngine.Rect(x      : 0f,
+                                        y      : 0f,
+                                        width  : 10000f,
                                         height : 10000f));
   }
 
