@@ -114,5 +114,5 @@ message Trajectory {
   }
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
-  repeated int32 fork_position = 3;  // Буняко́вский.
+  repeated int32 fork_position = 3;
 }

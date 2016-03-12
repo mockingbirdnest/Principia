@@ -110,6 +110,6 @@ message Vessel {
   optional Trajectory.Pointer prediction = 5;
   oneof trajectory_bundle {
     HistoryAndProlongation history_and_prolongation = 2;
-    Trajectory owned_prolongation = 3;
+    Trajectory owned_prolongation = 3;  // Pre-Буняко́вский.
   }
 }
