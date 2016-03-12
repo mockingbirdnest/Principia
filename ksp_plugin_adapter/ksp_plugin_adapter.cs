@@ -507,12 +507,17 @@ public partial class PrincipiaPluginAdapter
   private void OnGUI() {
     if (bad_installation_popup_ != null) {
       UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
+      // No-one seems to understand what |anchorMin| and |anchorMax| do at this
+      // time.
       PopupDialog.SpawnPopupDialog(
+          anchorMin           : default(UnityEngine.Vector2),
+          anchorMax           : default(UnityEngine.Vector2),
           title               : "Principia",
           message             : bad_installation_popup_,
           buttonMessage       : "OK",
           persistAcrossScenes : true,
-          skin                : null);
+          skin                : null,
+          isModal             : true);
       bad_installation_popup_ = null;
       return;
     }
@@ -570,9 +575,10 @@ public partial class PrincipiaPluginAdapter
       if (navball_ == null) {
         navball_ = (NavBall)FindObjectOfType(typeof(NavBall));
       }
+      var navball_material =
+          navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
       if (compass_navball_texture_ == null) {
-        compass_navball_texture_ =
-            navball_.navBall.renderer.material.mainTexture;
+        compass_navball_texture_ = navball_material.mainTexture;
       }
 
       if (navball_changed_) {
@@ -581,15 +587,12 @@ public partial class PrincipiaPluginAdapter
         // TODO(egg): switch over all frame types and have more navball textures
         // when more frames are available.
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
-          navball_.navBall.renderer.material.mainTexture =
-              compass_navball_texture_;
+          navball_material.mainTexture = compass_navball_texture_;
         } else if (plotting_frame_selector_.get().frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
-          navball_.navBall.renderer.material.mainTexture =
-              inertial_navball_texture_;
+          navball_material.mainTexture = inertial_navball_texture_;
         } else {
-          navball_.navBall.renderer.material.mainTexture =
-              barycentric_navball_texture_;
+          navball_material.mainTexture = barycentric_navball_texture_;
         }
       }
 
@@ -841,8 +844,9 @@ public partial class PrincipiaPluginAdapter
                             position_at_ignition).magnitude * 0.015;
             Func<Vector3d, UnityEngine.Vector2> world_to_screen =
                 (world_position) =>
-                    MapView.MapCamera.camera.WorldToScreenPoint(
-                        ScaledSpace.LocalToScaledSpace(world_position));
+                    MapView.MapCamera.GetComponent<UnityEngine.Camera>().
+                        WorldToScreenPoint(
+                            ScaledSpace.LocalToScaledSpace(world_position));
             Action<int, XYZ> set_vector = (arrow_index, world_direction) => {
               Vectrosity.VectorLine line =
                   rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
