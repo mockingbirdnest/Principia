@@ -126,7 +126,7 @@ class DiscreteTrajectory
   // deserialization.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::Trajectory const& message,
-      std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks);
+      std::vector<DiscreteTrajectory<Frame>*>& forks);
 
  protected:
   // The API inherited from Forkable.
@@ -144,11 +144,11 @@ class DiscreteTrajectory
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message,
-      std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks) const;
+      std::vector<DiscreteTrajectory<Frame>*>& forks) const;
 
   void FillSubTreeFromMessage(
       serialization::Trajectory const& message,
-      std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks);
+      std::vector<DiscreteTrajectory<Frame>*>& forks);
 
   Timeline timeline_;
 

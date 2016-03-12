@@ -185,10 +185,10 @@ class Forkable {
   // traversal their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message,
-      std::vector<not_null<Tr4jectory*>>& forks) const;
+      std::vector<Tr4jectory*>& forks) const;
 
   void FillSubTreeFromMessage(serialization::Trajectory const& message,
-                              std::vector<not_null<Tr4jectory*>>& forks);
+                              std::vector<Tr4jectory*>& forks);
 
  private:
   // Constructs an Iterator by wrapping the timeline iterator

@@ -595,7 +595,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->WriteToMessage(&reference_message,
                                       {fork1, fork3, fork2});
 
-  std::vector<not_null<DiscreteTrajectory<World>*>> forks(3, nullptr);
+  std::vector<DiscreteTrajectory<World>*> forks(3, nullptr);
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
       deserialized_trajectory =
           DiscreteTrajectory<World>::ReadFromMessage(message, forks);
@@ -604,7 +604,8 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   EXPECT_EQ(t3_, forks[1]->Fork().time());
   EXPECT_EQ(t2_, forks[2]->Fork().time());
   message.Clear();
-  deserialized_trajectory->WriteToMessage(&message, forks);
+  deserialized_trajectory->WriteToMessage(&message,
+                                          {forks[0], forks[1], forks[2]});
   EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.timeline_size(), Eq(3));

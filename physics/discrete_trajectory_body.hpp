@@ -152,13 +152,18 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     const {
   LOG(INFO) << __FUNCTION__;
   CHECK(this->is_root());
-  auto mutable_forks = forks;
+
+  // Make a mutable, nullable copy of |forks| to check that everything gets
+  // consumed.
+  std::vector<DiscreteTrajectory<Frame>*> mutable_forks;
+  std::copy(forks.begin(), forks.end(), std::back_inserter(mutable_forks));
   WriteSubTreeToMessage(message, mutable_forks);
   CHECK(std::all_of(mutable_forks.begin(),
                     mutable_forks.end(),
-                    [](not_null<DiscreteTrajectory<Frame>*> const fork) {
+                    [](DiscreteTrajectory<Frame>* const fork) {
                       return fork == nullptr;
                     }));
+
   LOG(INFO) << NAMED(this);
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
@@ -168,7 +173,7 @@ template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message,
-    std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks) {
+    std::vector<DiscreteTrajectory<Frame>*>& forks) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   trajectory->FillSubTreeFromMessage(message, forks);
   return trajectory;
@@ -217,7 +222,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message,
-    std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks) const {
+    std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;
@@ -232,7 +237,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message,
-    std::vector<not_null<DiscreteTrajectory<Frame>*>>& forks) {
+    std::vector<DiscreteTrajectory<Frame>*>& forks) {
   for (auto timeline_it = message.timeline().begin();
        timeline_it != message.timeline().end();
        ++timeline_it) {

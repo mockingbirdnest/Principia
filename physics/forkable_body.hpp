@@ -321,7 +321,7 @@ void Forkable<Tr4jectory, It3rator>::CheckNoForksBefore(Instant const& time) {
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message,
-    std::vector<not_null<Tr4jectory*>>& forks) const {
+    std::vector<Tr4jectory*>& forks) const {
   std::experimental::optional<Instant> last_instant;
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
@@ -330,6 +330,7 @@ void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
 
     // Determine if this |child| needs to be serialized.  If so, record its
     // position in |fork_positions| and null out its pointer in |forks|.
+    // Apologies for the O(N) search.
     auto const it = std::find(forks.begin(), forks.end(), child.get());
     if (it == forks.end()) {
       continue;
@@ -350,7 +351,7 @@ void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
     serialization::Trajectory const& message,
-    std::vector<not_null<Tr4jectory*>>& forks) {
+    std::vector<Tr4jectory*>& forks) {
   // There were no fork positions prior to Буняко́вский.
   bool const has_fork_position = message.fork_position_size() > 0;
   std::int32_t index = 0;
@@ -363,6 +364,7 @@ void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
         std::int32_t const fork_position = message.fork_position(index);
         forks[fork_position] = fork;
       }
+      ++index;
     }
   }
 }
