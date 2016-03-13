@@ -1,6 +1,7 @@
 ﻿
 #include <experimental/filesystem>
 #include <fstream>
+#include <map>
 #include <string>
 
 #include "base/array.hpp"
@@ -36,6 +37,8 @@ class TestablePlugin : public Plugin {
  public:
   void KeepAllVessels();
 
+  std::map<GUID, not_null<Vessel const*>> vessels() const;
+
   static not_null<std::unique_ptr<TestablePlugin>> ReadFromMessage(
     serialization::Plugin const& message);
 };
@@ -45,6 +48,16 @@ void TestablePlugin::KeepAllVessels() {
     auto const& vessel = pair.second;
     kept_vessels_.insert(vessel.get());
   }
+}
+
+std::map<GUID, not_null<Vessel const*>> TestablePlugin::vessels() const {
+  std::map<GUID, not_null<Vessel const*>> result;
+  for (auto const& pair : vessels_) {
+    auto const& guid = pair.first;
+    Vessel const* const vessel = pair.second.get();
+    result.insert(std::make_pair(guid, vessel));
+  }
+  return result;
 }
 
 not_null<std::unique_ptr<TestablePlugin>> TestablePlugin::ReadFromMessage(
@@ -128,6 +141,7 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
   // Do some operations on the plugin.
   plugin->KeepAllVessels();
   plugin->AdvanceTime(plugin->CurrentTime() + 1 * Second, 2 * Radian);
+  plugin->KeepAllVessels();
   plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
 
   // Serialize and deserialize it in the new format.
@@ -145,7 +159,31 @@ TEST_F(PluginCompatibilityTest, PreБуняко́вский) {
   // Do some operations on the plugin.
   plugin->KeepAllVessels();
   plugin->AdvanceTime(plugin->CurrentTime() + 1 * Second, 2 * Radian);
+  plugin->KeepAllVessels();
   plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
+
+  for (auto const& pair : plugin->vessels()) {
+    auto const& guid = pair.first;
+    Vessel const* const vessel = pair.second;
+    if (vessel->has_flight_plan()) {
+      // In this file, only one vessel has a flight plan.
+      auto const flight_plan = vessel->flight_plan();
+      EXPECT_EQ(2, flight_plan->number_of_manœuvres());
+      EXPECT_EQ(5, flight_plan->number_of_segments());
+
+      // Check that the times are in ascending order.
+      std::experimental::optional<Instant> last_time;
+      for (int i = 0; i < flight_plan->number_of_segments(); ++i) {
+        DiscreteTrajectory<Barycentric>::Iterator begin;
+        DiscreteTrajectory<Barycentric>::Iterator end;
+        flight_plan->GetSegment(i, &begin, &end);
+        if (last_time) {
+          CHECK_LE(*last_time, begin.time());
+        }
+        last_time = begin.time();
+      }
+    }
+  }
 
   // Serialize and deserialize it in the new format.
   serialization::Plugin post_буняко́вский_serialized_plugin;
