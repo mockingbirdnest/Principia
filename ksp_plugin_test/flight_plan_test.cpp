@@ -347,20 +347,20 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_TRUE(message.has_speed_integration_tolerance());
   EXPECT_EQ(2, message.manoeuvre_size());
 
-  //// We need a copy of |root_| otherwise both flight plans have segments that
-  //// point into |root_| and both want to destroy the forks.  Might as well do
-  //// the copy using serialization, since it's how it works in real life.
-  //serialization::Trajectory serialized_trajectory;
-  //root_.WriteToMessage(&serialized_trajectory);
-  //auto const root_read =
-  //    DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory);
+  // We need a copy of |root_| otherwise both flight plans have segments that
+  // point into |root_| and both want to destroy the forks.  Might as well do
+  // the copy using serialization, since it's how it works in real life.
+  serialization::Trajectory serialized_trajectory;
+  root_.WriteToMessage(&serialized_trajectory, {});
+  auto const root_read =
+    DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory, {});
 
-  //std::unique_ptr<FlightPlan> flight_plan_read =
-  //    FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());
-  //EXPECT_EQ(t0_ - 2 * π * Second, flight_plan_read->initial_time());
-  //EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->final_time());
-  //EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
-  //EXPECT_EQ(5, flight_plan_read->number_of_segments());
+  std::unique_ptr<FlightPlan> flight_plan_read =
+      FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());
+  EXPECT_EQ(t0_ - 2 * π * Second, flight_plan_read->initial_time());
+  EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->final_time());
+  EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
+  EXPECT_EQ(5, flight_plan_read->number_of_segments());
 }
 
 }  // namespace ksp_plugin

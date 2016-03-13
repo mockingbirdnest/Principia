@@ -12,6 +12,7 @@ message Celestial {
   required HistoryAndProlongation history_and_prolongation = 2;
 }
 
+// Pre-Буняко́вский.
 message HistoryAndProlongation {
   required Trajectory history = 1;
   required Trajectory.Pointer prolongation = 2;
@@ -107,9 +108,12 @@ message Plugin {
 message Vessel {
   required MasslessBody body = 1;
   optional FlightPlan flight_plan = 4;
-  optional Trajectory.Pointer prediction = 5;  // Pre-Буняко́вский.
+  optional Trajectory history = 6;  // required
+
+  // Pre-Буняко́вский.
+  optional Trajectory.Pointer prediction = 5;
   oneof trajectory_bundle {
     HistoryAndProlongation history_and_prolongation = 2;
-    Trajectory owned_prolongation = 3;  // Pre-Буняко́вский.
+    Trajectory owned_prolongation = 3;
   }
 }
