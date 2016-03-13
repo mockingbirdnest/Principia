@@ -123,7 +123,7 @@ public partial class PrincipiaPluginAdapter
   private PluginSource plugin_source_;
 
   private Krakensbane krakensbane_;
-  private NavBall navball_;
+  private KSP.UI.Screens.Flight.NavBall navball_;
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
@@ -573,13 +573,18 @@ public partial class PrincipiaPluginAdapter
     if (active_vessel != null &&
         !FlightGlobals.ActiveVessel.isEVA) {
       if (navball_ == null) {
-        navball_ = (NavBall)FindObjectOfType(typeof(NavBall));
+        navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
+                       typeof(KSP.UI.Screens.Flight.NavBall));
       }
       var navball_material =
           navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
+
       if (compass_navball_texture_ == null) {
-        compass_navball_texture_ = navball_material.mainTexture;
+        compass_navball_texture_ = navball_material.GetTexture("_MainTexture");
       }
+
+      Action<UnityEngine.Texture> set_navball_texture = (texture) =>
+          navball_material.SetTexture("_MainTexture", texture);
 
       if (navball_changed_) {
         // Texture the ball.
@@ -587,12 +592,12 @@ public partial class PrincipiaPluginAdapter
         // TODO(egg): switch over all frame types and have more navball textures
         // when more frames are available.
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
-          navball_material.mainTexture = compass_navball_texture_;
+          set_navball_texture(compass_navball_texture_);
         } else if (plotting_frame_selector_.get().frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
-          navball_material.mainTexture = inertial_navball_texture_;
+          set_navball_texture(inertial_navball_texture_);
         } else {
-          navball_material.mainTexture = barycentric_navball_texture_;
+          set_navball_texture(barycentric_navball_texture_);
         }
       }
 
@@ -934,7 +939,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private Vectrosity.VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
+  private Vectrosity.VectorLine NewRenderedTrajectory(
+      UnityEngine.Color colour) {
     var result = new Vectrosity.VectorLine(
         name     : "RenderedTrajectory",
         points   : new List<UnityEngine.Vector3>(kMaxVectorLinePoints),
@@ -942,7 +948,7 @@ public partial class PrincipiaPluginAdapter
         lineType : Vectrosity.LineType.Discrete);
     result.material = MapView.OrbitLinesMaterial;
     result.color = colour;
-    result.drawTransform.parent = ScaledSpace.Instance.transform;
+    result.drawTransform = ScaledSpace.Instance.transform;
     result.layer = 31;
     return result;
   }

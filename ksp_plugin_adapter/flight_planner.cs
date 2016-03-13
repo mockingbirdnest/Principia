@@ -153,7 +153,9 @@ class FlightPlanner : WindowRenderer {
     UnityEngine.GUILayout.EndVertical();
 
     UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+        position : new UnityEngine.Rect(x      : 0f,
+                                        y      : 0f,
+                                        width  : 10000f,
                                         height : 10000f));
 
     UnityEngine.GUI.skin = old_skin;
@@ -201,8 +203,9 @@ class FlightPlanner : WindowRenderer {
                                  stock_displacement_from_parent_at_node_time));
           guidance_node_.OnGizmoUpdated(
               ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-                  (Vector3d)(stock_frenet_frame_to_world.Inverse() *
-                             (Vector3d)manoeuvre.inertial_direction),
+                  (Vector3d)(UnityEngine.Quaternion.Inverse(
+                                 stock_frenet_frame_to_world) *
+                      (Vector3d)manoeuvre.inertial_direction),
               manoeuvre.burn.initial_time);
           should_clear_guidance = false;
         }
