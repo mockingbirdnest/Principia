@@ -194,8 +194,13 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history_and_prolongation().history(),
             {&vessel->prolongation_, &vessel->prediction_});
-    if (vessel->prolongation_ == nullptr) {
-      // Pre-Буняко́вский compatibility.
+    if (message.has_flight_plan()) {
+      vessel->flight_plan_ = FlightPlan::ReadFromMessage(
+          message.flight_plan(), vessel->history_.get(), ephemeris);
+    }
+
+    bool const is_pre_буняко́вский = vessel->prolongation_ == nullptr;
+    if (is_pre_буняко́вский) {
       vessel->prolongation_ =
           DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
               message.history_and_prolongation().prolongation(),
@@ -206,21 +211,20 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                 message.prediction(),
                 vessel->history_.get());
       }
-      if (message.has_flight_plan()) {
-        vessel->flight_plan_ = FlightPlan::ReadFromMessage(
-            message.flight_plan(), vessel->history_.get(), ephemeris);
-      }
     }
-  } else if (message.has_owned_prolongation()) {
-    // Pre-Буняко́вский compatibility.
-    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                           message.owned_prolongation(), {});
-    vessel->prolongation_ = vessel->history_->NewForkAtLast();
-    CHECK(!message.has_prediction());
-    CHECK(!message.has_flight_plan());
   } else {
-    LOG(FATAL) << "message does not represent an initialized Vessel";
-    base::noreturn();
+    bool const is_pre_буняко́вский = message.has_owned_prolongation();
+    if (is_pre_буняко́вский) {
+      vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                             message.owned_prolongation(), {});
+      vessel->prolongation_ = vessel->history_->NewForkAtLast();
+      CHECK(!message.has_prediction());
+      CHECK(!message.has_flight_plan());
+    } else {
+      LOG(FATAL) << "Message does not represent an initialized Vessel\n:"
+                 << message.DebugString();
+      base::noreturn();
+    }
   }
   return vessel;
 }

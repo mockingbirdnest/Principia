@@ -155,7 +155,11 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 
   std::vector<DiscreteTrajectory<Frame>*> mutable_forks = forks;
   WriteSubTreeToMessage(message, mutable_forks);
-  CheckAllNull(mutable_forks);
+  CHECK(std::all_of(mutable_forks.begin(),
+                    mutable_forks.end(),
+                    [](DiscreteTrajectory<Frame>* const fork) {
+                      return fork == nullptr;
+                    }));
 
   LOG(INFO) << NAMED(this);
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -166,9 +170,13 @@ template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>*>& forks) {
+    std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
-  CheckAllNull(forks);
+  CHECK(std::all_of(forks.begin(),
+                    forks.end(),
+                    [](DiscreteTrajectory<Frame>** const fork) {
+                      return fork != nullptr && *fork == nullptr;
+                    }));
   trajectory->FillSubTreeFromMessage(message, forks);
   return trajectory;
 }
@@ -231,7 +239,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message,
-    std::vector<DiscreteTrajectory<Frame>*>& forks) {
+    std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   for (auto timeline_it = message.timeline().begin();
        timeline_it != message.timeline().end();
        ++timeline_it) {
@@ -241,17 +249,6 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
                                                                  forks);
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::CheckAllNull(
-    std::vector<DiscreteTrajectory<Frame>*> const& forks) {
-  CHECK(std::all_of(forks.begin(),
-                    forks.end(),
-                    [](DiscreteTrajectory<Frame>* const fork) {
-                      return fork == nullptr;
-                    }));
-
 }
 
 }  // namespace physics

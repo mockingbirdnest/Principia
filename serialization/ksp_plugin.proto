@@ -42,7 +42,7 @@ message FlightPlan {
   optional int64 max_steps = 10 [default = 1000];
   required Quantity length_integration_tolerance = 4;
   required Quantity speed_integration_tolerance = 5;
-  repeated Trajectory.Pointer segment = 7;
+  repeated Trajectory.Pointer segment = 7;  // Pre-Буняко́вский.
   repeated Manoeuvre manoeuvre = 8;
   // NOTE(egg): |anomalous_segments| will no longer need to be serialized when
   // we stop serializing recomputable data.
@@ -107,7 +107,7 @@ message Plugin {
 message Vessel {
   required MasslessBody body = 1;
   optional FlightPlan flight_plan = 4;
-  optional Trajectory.Pointer prediction = 5;
+  optional Trajectory.Pointer prediction = 5;  // Pre-Буняко́вский.
   oneof trajectory_bundle {
     HistoryAndProlongation history_and_prolongation = 2;
     Trajectory owned_prolongation = 3;  // Pre-Буняко́вский.

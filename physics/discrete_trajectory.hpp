@@ -124,11 +124,11 @@ class DiscreteTrajectory
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
-  // deserialization.  All pointers in |forks| must be null at entry; they may
-  // be null at exit.
+  // deserialization.  All pointers designated by the pointers in |forks| must
+  // be null at entry; they may be null at exit.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
       serialization::Trajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>*>& forks);
+      std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
  protected:
   // The API inherited from Forkable.
@@ -150,10 +150,7 @@ class DiscreteTrajectory
 
   void FillSubTreeFromMessage(
       serialization::Trajectory const& message,
-      std::vector<DiscreteTrajectory<Frame>*>& forks);
-
-  static void CheckAllNull(
-      std::vector<DiscreteTrajectory<Frame>*> const& forks);
+      std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   Timeline timeline_;
 
