@@ -249,7 +249,7 @@ void PhysicsBubble::WriteToMessage(
     current_->centre_of_mass->WriteToMessage(
         full_state->mutable_centre_of_mass());
     current_->centre_of_mass_trajectory->WriteToMessage(
-        full_state->mutable_centre_of_mass_trajectory());
+        full_state->mutable_centre_of_mass_trajectory(), {});
     for (auto const& pair : *current_->from_centre_of_mass) {
       not_null<Vessel const*> vessel = pair.first;
       RelativeDegreesOfFreedom<Barycentric> const& degrees_of_freedom =
@@ -304,7 +304,7 @@ not_null<std::unique_ptr<PhysicsBubble>> PhysicsBubble::ReadFromMessage(
         DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
     current->centre_of_mass_trajectory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
-            full_state.centre_of_mass_trajectory());
+            full_state.centre_of_mass_trajectory(), {});
     current->from_centre_of_mass.emplace();
     for (auto const& guid_and_degrees_of_freedom :
              full_state.from_centre_of_mass()) {

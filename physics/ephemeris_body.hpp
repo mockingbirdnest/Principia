@@ -635,7 +635,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     serialization::Celestial const& celestial = message.celestial();
     bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
     histories.emplace_back(DiscreteTrajectory<Frame>::ReadFromMessage(
-        celestial.history_and_prolongation().history()));
+        celestial.history_and_prolongation().history(), {}));
     auto const prolongation =
         DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),
