@@ -110,10 +110,10 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
   CHECK_LT(Speed(), speed_integration_tolerance_);
 }
 
-template <typename Frame>
-template <typename T>
+template<typename Frame>
 void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
-    not_null<T*> const t) const {
+    not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
+    const {
   integrator_->WriteToMessage(t->mutable_integrator());
   t->set_max_steps(max_steps_);
   length_integration_tolerance_.WriteToMessage(
@@ -122,8 +122,20 @@ void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
       t->mutable_speed_integration_tolerance());
 }
 
-template <typename Frame>
-template <typename T>
+template<typename Frame>
+typename Ephemeris<Frame>::AdaptiveStepParameters
+Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(
+    serialization::Ephemeris::AdaptiveStepParameters const& message) {
+  return AdaptiveStepParameters(
+      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          message.integrator()),
+      message.max_steps(),
+      Length::ReadFromMessage(message.length_integration_tolerance()),
+      Speed::ReadFromMessage(message.speed_integration_tolerance()));
+}
+
+template<typename Frame>
+template<typename T>
 typename Ephemeris<Frame>::AdaptiveStepParameters
 Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(T const& t) {
   return AdaptiveStepParameters(
@@ -149,14 +161,31 @@ inline Time const& Ephemeris<Frame>::FixedStepParameters::step() const {
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::FixedStepParameters::WriteToMessage(
+    not_null<serialization::Ephemeris::FixedStepParameters*> const message)
+    const {
+  integrator_->WriteToMessage(message->mutable_integrator());
+  step_.WriteToMessage(message->mutable_step());
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::FixedStepParameters
+Ephemeris<Frame>::FixedStepParameters::ReadFromMessage(
+    serialization::Ephemeris::FixedStepParameters const& message) {
+  return FixedStepParameters(
+      FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          message.integrator()),
+      Time::ReadFromMessage(message.step()));
+}
+
+template <typename Frame>
 Ephemeris<Frame>::Ephemeris(
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     Length const& fitting_tolerance,
     FixedStepParameters const& parameters)
-    : fitting_tolerance_(fitting_tolerance),
-      parameters_(parameters) {
+    : fitting_tolerance_(fitting_tolerance), parameters_(parameters) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -564,9 +593,7 @@ void Ephemeris<Frame>::WriteToMessage(
   for (auto const& trajectory : trajectories_) {
     trajectory->WriteToMessage(message->add_trajectory());
   }
-  parameters_.integrator_->WriteToMessage(
-      message->mutable_planetary_integrator());
-  parameters_.step_.WriteToMessage(message->mutable_step());
+  parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
   last_state_.WriteToMessage(message->mutable_last_state());
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -580,12 +607,23 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
   }
-  auto const& planetary_integrator =
-      FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.planetary_integrator());
-  auto const step = Time::ReadFromMessage(message.step());
   auto const fitting_tolerance =
       Length::ReadFromMessage(message.fitting_tolerance());
+
+  std::unique_ptr<FixedStepParameters> parameters;
+  bool const is_pre_буняковский = message.has_planetary_integrator();
+  if (is_pre_буняковский) {
+    auto const& planetary_integrator =
+        FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+            message.planetary_integrator());
+    CHECK(message.has_step());
+    auto const step = Time::ReadFromMessage(message.step());
+    parameters =
+        std::make_unique<FixedStepParameters>(planetary_integrator, step);
+  } else {
+    parameters.reset(new FixedStepParameters(
+        FixedStepParameters::ReadFromMessage(message.fixed_step_parameters())));
+  }
 
   // Dummy initial state and time.  We'll overwrite them later.
   std::vector<DegreesOfFreedom<Frame>> const initial_state(
@@ -597,8 +635,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        initial_state,
                        initial_time,
                        fitting_tolerance,
-                       typename Ephemeris<Frame>::FixedStepParameters(
-                           planetary_integrator, step));
+                       *parameters);
   ephemeris->last_state_ =
       NewtonianMotionEquation::SystemState::ReadFromMessage(
           message.last_state());
