@@ -69,8 +69,8 @@ message Ephemeris {
   optional FixedStepParameters fixed_step_parameters = 7;  // required
 
   // Pre-Буняко́вский.
-  required FixedStepSizeIntegrator planetary_integrator = 3;
-  required Quantity step = 4;
+  optional FixedStepSizeIntegrator planetary_integrator = 3;
+  optional Quantity step = 4;
 }
 
 message MassiveBody {
