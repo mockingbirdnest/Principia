@@ -146,9 +146,6 @@ void FlightPlan::WriteToMessage(
   initial_time_.WriteToMessage(message->mutable_initial_time());
   final_time_.WriteToMessage(message->mutable_final_time());
   adaptive_parameters_.WriteToMessage(message);
-  for (auto const& segment : segments_) {
-    segment->WritePointerToMessage(message->add_segment());
-  }
   for (auto const& manœuvre : manœuvres_) {
     manœuvre.WriteToMessage(message->add_manoeuvre());
   }
@@ -166,19 +163,32 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       Mass::ReadFromMessage(message.initial_mass()),
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(message));
-  // The constructor has forked a segment.  Remove it.
-  flight_plan->PopLastSegment();
-  for (auto const& segment : message.segment()) {
-    flight_plan->segments_.emplace_back(
-        DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
+
+  bool const is_pre_буняковский = message.segment_size() > 0;
+  if (is_pre_буняковский) {
+    // The constructor has forked a segment.  Remove it.
+    flight_plan->PopLastSegment();
+    for (auto const& segment : message.segment()) {
+      flight_plan->segments_.emplace_back(
+          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
+              segment, root));
+    }
+    for (int i = 0; i < message.manoeuvre_size(); ++i) {
+      auto const& manoeuvre = message.manoeuvre(i);
+      flight_plan->manœuvres_.push_back(
+          NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
+      flight_plan->manœuvres_[i].set_coasting_trajectory(
+          flight_plan->segments_[2 * i]);
+    }
+  } else {
+    for (int i = 0; i < message.manoeuvre_size(); ++i) {
+      auto const& manoeuvre = message.manoeuvre(i);
+      flight_plan->manœuvres_.push_back(
+          NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
+    }
+    flight_plan->RecomputeSegments();
   }
-  for (int i = 0; i < message.manoeuvre_size(); ++i) {
-    auto const& manoeuvre = message.manoeuvre(i);
-    flight_plan->manœuvres_.push_back(
-        NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
-    flight_plan->manœuvres_[i].set_coasting_trajectory(
-        flight_plan->segments_[2 * i]);
-  }
+
   flight_plan->anomalous_segments_ = message.anomalous_segments();
   return std::move(flight_plan);
 }

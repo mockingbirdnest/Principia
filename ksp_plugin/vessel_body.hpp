@@ -169,13 +169,8 @@ inline void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   CHECK(is_initialized());
   body_.WriteToMessage(message->mutable_body());
-  history_->WriteToMessage(
-      message->mutable_history_and_prolongation()->mutable_history());
-  prolongation_->WritePointerToMessage(
-      message->mutable_history_and_prolongation()->mutable_prolongation());
-  if (prediction_ != nullptr) {
-    prediction_->WritePointerToMessage(message->mutable_prediction());
-  }
+  history_->WriteToMessage(message->mutable_history(),
+                           {prolongation_, prediction_});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -193,33 +188,47 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                              fixed_parameters);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
-  if (message.has_history_and_prolongation()) {
+  bool const is_pre_буняковский = message.has_history_and_prolongation() ||
+                                  message.has_owned_prolongation();
+
+  if (is_pre_буняковский) {
+    if (message.has_history_and_prolongation()) {
+      vessel->history_ =
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(
+              message.history_and_prolongation().history(), /*forks=*/{});
+      vessel->prolongation_ =
+          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
+              message.history_and_prolongation().prolongation(),
+              vessel->history_.get());
+      if (message.has_prediction()) {
+        vessel->prediction_ =
+            DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
+                message.prediction(),
+                vessel->history_.get());
+      }
+      if (message.has_flight_plan()) {
+        vessel->flight_plan_ = FlightPlan::ReadFromMessage(
+            message.flight_plan(), vessel->history_.get(), ephemeris);
+      }
+    } else {
+      vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                             message.owned_prolongation(), /*forks=*/{});
+      vessel->prolongation_ = vessel->history_->NewForkAtLast();
+      CHECK(!message.has_prediction());
+      CHECK(!message.has_flight_plan());
+    }
+  } else if (message.has_history()) {
     vessel->history_ =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
-            message.history_and_prolongation().history());
-    vessel->prolongation_ =
-        DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
-            message.history_and_prolongation().prolongation(),
-            vessel->history_.get());
-    if (message.has_prediction()) {
-      vessel->prediction_ =
-          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
-              message.prediction(),
-              vessel->history_.get());
-    }
+            message.history(),
+            {&vessel->prolongation_, &vessel->prediction_});
     if (message.has_flight_plan()) {
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
           message.flight_plan(), vessel->history_.get(), ephemeris);
     }
-  } else if (message.has_owned_prolongation()) {
-    // Pre-Буняко́вский compatibility.
-    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                           message.owned_prolongation());
-    vessel->prolongation_ = vessel->history_->NewForkAtLast();
-    CHECK(!message.has_prediction());
-    CHECK(!message.has_flight_plan());
   } else {
-    LOG(FATAL) << "message does not represent an initialized Vessel";
+    LOG(FATAL) << "Message does not represent an initialized Vessel:\n"
+                << message.DebugString();
     base::noreturn();
   }
   return vessel;
