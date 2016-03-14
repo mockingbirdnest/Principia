@@ -101,7 +101,7 @@ message Trajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  message Pointer {  // Pre-Буняко́вский
+  message Pointer {  // Pre-Буняковский
     message Fork {
       required int32 children_distance = 1;
       required int32 timeline_distance = 2;

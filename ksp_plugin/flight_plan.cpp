@@ -164,8 +164,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(message));
 
-  bool const is_pre_буняко́вский = message.segment_size() > 0;
-  if (is_pre_буняко́вский) {
+  bool const is_pre_буняковский = message.segment_size() > 0;
+  if (is_pre_буняковский) {
     // The constructor has forked a segment.  Remove it.
     flight_plan->PopLastSegment();
     for (auto const& segment : message.segment()) {

@@ -188,10 +188,10 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                              fixed_parameters);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
-  bool const is_pre_буняко́вский = message.has_history_and_prolongation() ||
+  bool const is_pre_буняковский = message.has_history_and_prolongation() ||
                                   message.has_owned_prolongation();
 
-  if (is_pre_буняко́вский) {
+  if (is_pre_буняковский) {
     if (message.has_history_and_prolongation()) {
       vessel->history_ =
           DiscreteTrajectory<Barycentric>::ReadFromMessage(

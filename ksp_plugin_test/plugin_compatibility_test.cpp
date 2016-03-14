@@ -150,11 +150,11 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
   plugin = TestablePlugin::ReadFromMessage(post_bourbaki_serialized_plugin);
 }
 
-TEST_F(PluginCompatibilityTest, PreБуняко́вский) {
-  serialization::Plugin pre_буняко́вский_serialized_plugin =
+TEST_F(PluginCompatibilityTest, PreБуняковский) {
+  serialization::Plugin pre_буняковский_serialized_plugin =
       ReadFromFile("brouwer.proto.hex");
   auto plugin = TestablePlugin::ReadFromMessage(
-                    pre_буняко́вский_serialized_plugin);
+                    pre_буняковский_serialized_plugin);
 
   // Do some operations on the plugin.
   plugin->KeepAllVessels();
@@ -186,9 +186,9 @@ TEST_F(PluginCompatibilityTest, PreБуняко́вский) {
   }
 
   // Serialize and deserialize it in the new format.
-  serialization::Plugin post_буняко́вский_serialized_plugin;
-  plugin->WriteToMessage(&post_буняко́вский_serialized_plugin);
-  plugin = TestablePlugin::ReadFromMessage(post_буняко́вский_serialized_plugin);
+  serialization::Plugin post_буняковский_serialized_plugin;
+  plugin->WriteToMessage(&post_буняковский_serialized_plugin);
+  plugin = TestablePlugin::ReadFromMessage(post_буняковский_serialized_plugin);
 }
 
 }  // namespace ksp_plugin

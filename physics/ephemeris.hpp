@@ -55,7 +55,7 @@ class Ephemeris {
 
     // These functions can serialize to/from any message having the right
     // fields.  It would be nicer if this was a separate message or a part of
-    // the Ephemeris message, but that would break pre-Буняко́вский
+    // the Ephemeris message, but that would break pre-Буняковский
     // compatibility.
     // TODO(phl): Restructure this after Cantor.
     template<typename T>

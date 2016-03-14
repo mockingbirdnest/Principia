@@ -354,7 +354,7 @@ template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
     serialization::Trajectory const& message,
     std::vector<Tr4jectory**> const& forks) {
-  // There were no fork positions prior to Буняко́вский.
+  // There were no fork positions prior to Буняковский.
   bool const has_fork_position = message.fork_position_size() > 0;
   std::int32_t index = 0;
   for (serialization::Trajectory::Litter const& litter : message.children()) {
