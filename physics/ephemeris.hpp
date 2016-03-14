@@ -60,12 +60,6 @@ class Ephemeris {
     static AdaptiveStepParameters ReadFromMessage(
         serialization::Ephemeris::AdaptiveStepParameters const& message);
 
-    // Theis function can deserialize from any message having the right fields.
-    // It is necessary for pre-Буняковский compatibility.
-    //TODO(phl):Remove?
-    template<typename T>
-    static AdaptiveStepParameters ReadFromMessage(T const& t);
-
    private:
     // This will refer to a static object returned by a factory.
     not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>

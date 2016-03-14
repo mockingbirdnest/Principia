@@ -114,12 +114,12 @@ template<typename Frame>
 void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
     not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
     const {
-  integrator_->WriteToMessage(t->mutable_integrator());
-  t->set_max_steps(max_steps_);
+  integrator_->WriteToMessage(message->mutable_integrator());
+  message->set_max_steps(max_steps_);
   length_integration_tolerance_.WriteToMessage(
-      t->mutable_length_integration_tolerance());
+      message->mutable_length_integration_tolerance());
   speed_integration_tolerance_.WriteToMessage(
-      t->mutable_speed_integration_tolerance());
+      message->mutable_speed_integration_tolerance());
 }
 
 template<typename Frame>
@@ -132,18 +132,6 @@ Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(
       message.max_steps(),
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
-}
-
-template<typename Frame>
-template<typename T>
-typename Ephemeris<Frame>::AdaptiveStepParameters
-Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(T const& t) {
-  return AdaptiveStepParameters(
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          t.integrator()),
-      t.max_steps(),
-      Length::ReadFromMessage(t.length_integration_tolerance()),
-      Speed::ReadFromMessage(t.speed_integration_tolerance()));
 }
 
 template<typename Frame>
