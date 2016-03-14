@@ -170,7 +170,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     flight_plan->PopLastSegment();
     for (auto const& segment : message.segment()) {
       flight_plan->segments_.emplace_back(
-          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(segment, root));
+          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
+              segment, root));
     }
     for (int i = 0; i < message.manoeuvre_size(); ++i) {
       auto const& manoeuvre = message.manoeuvre(i);

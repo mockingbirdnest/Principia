@@ -5,6 +5,7 @@
 #include <experimental/optional>  // NOLINT
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"

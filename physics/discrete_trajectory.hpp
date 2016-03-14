@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"

@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <vector>
+
 #include "physics/forkable.hpp"
 
 namespace principia {

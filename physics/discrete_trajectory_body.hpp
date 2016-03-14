@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
