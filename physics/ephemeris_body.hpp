@@ -185,7 +185,8 @@ Ephemeris<Frame>::Ephemeris(
     Instant const& initial_time,
     Length const& fitting_tolerance,
     FixedStepParameters const& parameters)
-    : fitting_tolerance_(fitting_tolerance), parameters_(parameters) {
+    : fitting_tolerance_(fitting_tolerance),
+      parameters_(parameters) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -672,7 +673,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     serialization::Celestial const& celestial = message.celestial();
     bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
     histories.emplace_back(DiscreteTrajectory<Frame>::ReadFromMessage(
-        celestial.history_and_prolongation().history()));
+        celestial.history_and_prolongation().history(), /*forks=*/{}));
     auto const prolongation =
         DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),

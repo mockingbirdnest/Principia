@@ -143,13 +143,35 @@ public partial class PrincipiaPluginAdapter
 
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
+  private String bad_installation_popup_;
+
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
-    Log.InitGoogleLogging();
+    try {
+      Log.InitGoogleLogging();
+    } catch (DllNotFoundException e) {
+      UnityEngine.Debug.LogException(e);
+      string additional_information;
+      
+      if (File.Exists(Interface.kDllPath)) {
+        additional_information =
+            "Please check that you downloaded the correct version of " +
+            "Principia for your operating system, and that the right C++ " +
+            "libraries are installed, see the FAQ on the wiki of the GitHub " +
+            "repository (https://github.com/mockingbirdnest/Principia/wiki).";
+      } else {
+        additional_information = "The file \"" +
+                                 Path.GetFullPath(Interface.kDllPath) +
+                                 "\" was not found.";
+      }
+      bad_installation_popup_ =
+          "The Principia DLL failed to load.\n" + additional_information;
+      UnityEngine.Debug.LogError(bad_installation_popup_);
+    }
   }
 
   ~PrincipiaPluginAdapter() {
@@ -379,6 +401,9 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnAwake() {
     base.OnAwake();
+    if (bad_installation_popup_ != null) {
+      return;
+    }
     // While we're here, we might as well log.
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnAwake()");
 
@@ -480,6 +505,17 @@ public partial class PrincipiaPluginAdapter
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
+    if (bad_installation_popup_ != null) {
+      UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
+      PopupDialog.SpawnPopupDialog(
+          title               : "Principia",
+          message             : bad_installation_popup_,
+          buttonMessage       : "OK",
+          persistAcrossScenes : true,
+          skin                : null);
+      bad_installation_popup_ = null;
+      return;
+    }
     if (ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
       LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
@@ -696,6 +732,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OnDisable() {
+    if (bad_installation_popup_ != null) {
+      return;
+    }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
     if (toolbar_button_ != null) {
       ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);

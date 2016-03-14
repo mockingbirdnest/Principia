@@ -351,9 +351,10 @@ TEST_F(FlightPlanTest, Serialization) {
   // point into |root_| and both want to destroy the forks.  Might as well do
   // the copy using serialization, since it's how it works in real life.
   serialization::Trajectory serialized_trajectory;
-  root_.WriteToMessage(&serialized_trajectory);
+  root_.WriteToMessage(&serialized_trajectory, /*forks=*/{});
   auto const root_read =
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory);
+    DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory,
+                                                     /*forks=*/{});
 
   std::unique_ptr<FlightPlan> flight_plan_read =
       FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());

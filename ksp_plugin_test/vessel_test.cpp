@@ -81,15 +81,15 @@ TEST_F(VesselDeathTest, SerializationError) {
                             &parent_,
                             adaptive_parameters_,
                             fixed_parameters_);
-  }, "message does not represent an initialized Vessel");
+  }, "Message does not represent an initialized Vessel");
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
-  EXPECT_FALSE(message.has_history_and_prolongation());
+  EXPECT_FALSE(message.has_history());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   vessel_->WriteToMessage(&message);
-  EXPECT_TRUE(message.has_history_and_prolongation());
+  EXPECT_TRUE(message.has_history());
   vessel_ = Vessel::ReadFromMessage(message,
                                     &ephemeris_,
                                     &parent_,

@@ -381,9 +381,8 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystemFactory::kEarth, message.vessel(0).parent_index());
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
-  EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
-  auto const& vessel_0_history =
-      message.vessel(0).vessel().history_and_prolongation().history();
+  EXPECT_TRUE(message.vessel(0).vessel().has_history());
+  auto const& vessel_0_history = message.vessel(0).vessel().history();
 #if defined(WE_LOVE_228)
   EXPECT_EQ(2, vessel_0_history.timeline_size());
   EXPECT_EQ((HistoryTime(time, 3) - shift - Instant()) / (1 * Second),

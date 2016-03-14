@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -114,11 +115,21 @@ class DiscreteTrajectory
   // |time|.  This trajectory must be a root.
   void ForgetBefore(Instant const& time);
 
-  // This trajectory must be a root.
-  void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
+  // This trajectory must be a root.  Only the given |forks| are serialized.
+  // They must be descended from this trajectory.  The pointers in |forks| may
+  // be null at entry.
+  void WriteToMessage(
+      not_null<serialization::Trajectory*> const message,
+      std::vector<DiscreteTrajectory<Frame>*> const& forks)
+      const;
 
+  // |forks| must have a size appropriate for the |message| being deserialized
+  // and the orders of the |forks| must be consistent during serialization and
+  // deserialization.  All pointers designated by the pointers in |forks| must
+  // be null at entry; they may be null at exit.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
-      serialization::Trajectory const& message);
+      serialization::Trajectory const& message,
+      std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
  protected:
   // The API inherited from Forkable.
@@ -135,9 +146,12 @@ class DiscreteTrajectory
  private:
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message) const;
+      not_null<serialization::Trajectory*> const message,
+      std::vector<DiscreteTrajectory<Frame>*>& forks) const;
 
-  void FillSubTreeFromMessage(serialization::Trajectory const& message);
+  void FillSubTreeFromMessage(
+      serialization::Trajectory const& message,
+      std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   Timeline timeline_;
 

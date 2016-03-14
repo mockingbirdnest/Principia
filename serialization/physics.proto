@@ -1,4 +1,4 @@
-﻿syntax = "proto2";
+syntax = "proto2";
 
 import "serialization/geometry.proto";
 import "serialization/integrators.proto";
@@ -68,7 +68,7 @@ message Ephemeris {
   required SystemState last_state = 6;
   optional FixedStepParameters fixed_step_parameters = 7;  // required
 
-  // Pre-Буняко́вский.
+  // Pre-Буняковский.
   optional FixedStepSizeIntegrator planetary_integrator = 3;
   optional Quantity step = 4;
 }
@@ -114,7 +114,7 @@ message Trajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  message Pointer {
+  message Pointer {  // Pre-Буняковский
     message Fork {
       required int32 children_distance = 1;
       required int32 timeline_distance = 2;
@@ -127,4 +127,5 @@ message Trajectory {
   }
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
+  repeated int32 fork_position = 3;
 }
