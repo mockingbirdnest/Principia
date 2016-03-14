@@ -60,10 +60,6 @@
       <HintPath>..\..\KSP Assemblies\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Vectrosity">
-      <HintPath>..\..\KSP Assemblies\Vectrosity.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="boxed.cs" />
