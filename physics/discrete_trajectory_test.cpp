@@ -565,7 +565,7 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
     serialization::Trajectory message;
-    fork->WriteToMessage(&message, {});
+    fork->WriteToMessage(&message, /*forks=*/{});
   }, "is_root");
 }
 

@@ -195,7 +195,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.has_history_and_prolongation()) {
       vessel->history_ =
           DiscreteTrajectory<Barycentric>::ReadFromMessage(
-              message.history_and_prolongation().history(), {});
+              message.history_and_prolongation().history(), /*forks=*/{});
       vessel->prolongation_ =
           DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
               message.history_and_prolongation().prolongation(),
@@ -212,7 +212,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       }
     } else {
       vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                             message.owned_prolongation(), {});
+                             message.owned_prolongation(), /*forks=*/{});
       vessel->prolongation_ = vessel->history_->NewForkAtLast();
       CHECK(!message.has_prediction());
       CHECK(!message.has_flight_plan());
