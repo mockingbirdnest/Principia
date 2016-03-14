@@ -45,7 +45,7 @@ message FlightPlan {
   // Pre-Буняковский.
   optional Quantity length_integration_tolerance = 4;
   optional Quantity speed_integration_tolerance = 5;
-  required AdaptiveStepSizeIntegrator integrator = 6;
+  optional AdaptiveStepSizeIntegrator integrator = 6;
   repeated Trajectory.Pointer segment = 7;
   optional int32 anomalous_segments = 9 [default = 0];
   reserved 10;
