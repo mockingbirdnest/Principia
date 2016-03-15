@@ -47,9 +47,8 @@ message FlightPlan {
   optional Quantity speed_integration_tolerance = 5;
   optional AdaptiveStepSizeIntegrator integrator = 6;
   repeated Trajectory.Pointer segment = 7;
-  optional int32 anomalous_segments = 9 [default = 0];
-  reserved 10;
-  reserved "max_steps";
+  reserved 9, 10;
+  reserved "anomalous_segments", "max_steps";
 }
 
 message PhysicsBubble {

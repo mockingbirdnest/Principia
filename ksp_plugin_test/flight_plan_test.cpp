@@ -357,8 +357,8 @@ TEST_F(FlightPlanTest, Serialization) {
   serialization::Trajectory serialized_trajectory;
   root_.WriteToMessage(&serialized_trajectory, /*forks=*/{});
   auto const root_read =
-    DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory,
-                                                     /*forks=*/{});
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory,
+                                                       /*forks=*/{});
 
   std::unique_ptr<FlightPlan> flight_plan_read =
       FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());
