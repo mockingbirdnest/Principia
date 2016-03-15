@@ -27,7 +27,7 @@ class VesselTest : public testing::Test {
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second),
         fixed_parameters_(
-            McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
+            McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
             /*step=*/1 * Second),
         vessel_(make_not_null_unique<Vessel>(&parent_,
                                              &ephemeris_,
@@ -76,11 +76,7 @@ TEST_F(VesselDeathTest, SerializationError) {
   }, "is_initialized");
   EXPECT_DEATH({
     serialization::Vessel message;
-    Vessel::ReadFromMessage(message,
-                            &ephemeris_,
-                            &parent_,
-                            adaptive_parameters_,
-                            fixed_parameters_);
+    Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
   }, "Message does not represent an initialized Vessel");
 }
 
@@ -90,11 +86,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_history());
-  vessel_ = Vessel::ReadFromMessage(message,
-                                    &ephemeris_,
-                                    &parent_,
-                                    adaptive_parameters_,
-                                    fixed_parameters_);
+  vessel_ = Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
   EXPECT_TRUE(vessel_->is_initialized());
 }
 

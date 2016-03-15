@@ -86,7 +86,7 @@ class PhysicsBubbleTest : public testing::Test {
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
       fixed_parameters_(
-          McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/1 * Second),
       vessel1_(&celestial_,
                &ephemeris_,

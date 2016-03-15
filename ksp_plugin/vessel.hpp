@@ -37,11 +37,12 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
-  Vessel(
-      not_null<Celestial const*> const parent,
-      not_null<Ephemeris<Barycentric>*> const ephemeris,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters);
+  Vessel(not_null<Celestial const*> const parent,
+         not_null<Ephemeris<Barycentric>*> const ephemeris,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             adaptive_step_parameters,
+         Ephemeris<Barycentric>::FixedStepParameters const&
+             fixed_step_parameters);
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
@@ -104,7 +105,7 @@ class Vessel {
       Instant const& final_time,
       Mass const& initial_mass,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_parameters);
+          adaptive_step_parameters);
 
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
@@ -112,7 +113,7 @@ class Vessel {
   virtual void UpdatePrediction(
       Instant const& last_time,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_parameters);
+          adaptive_step_parameters);
 
   // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
   virtual void DeletePrediction();
@@ -123,9 +124,7 @@ class Vessel {
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Ephemeris<Barycentric>*> const ephemeris,
-      not_null<Celestial const*> const parent,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_parameters);
+      not_null<Celestial const*> const parent);
 
  protected:
   // For mocking.
@@ -137,21 +136,28 @@ class Vessel {
   void FlowProlongation(Instant const& time);
 
   MasslessBody const body_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters_;
-  Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters const
+      adaptive_step_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters const fixed_step_parameters_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
+
   // The past and present trajectory of the body. It ends at |HistoryTime()|
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.  It is advanced with a constant time step.
   std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
+
   // A child trajectory of |*history_|. It is forked at |history_->last_time()|
   // and continues until |current_time_|. It is computed with a non-constant
   // timestep, which breaks symplecticity.
   DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
+
   // Child trajectory of |history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  std::experimental::optional<Instant> prediction_last_time_;
+  std::experimental::optional<Ephemeris<Barycentric>::AdaptiveStepParameters>
+      prediction_adaptive_step_parameters_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;

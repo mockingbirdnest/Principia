@@ -625,11 +625,6 @@ void Plugin::WriteToMessage(
   }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
-  prolongation_integrator_.WriteToMessage(
-      message->mutable_prolongation_integrator());
-  prediction_integrator_.WriteToMessage(
-      message->mutable_prediction_integrator());
-
   bubble_->WriteToMessage(
       [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
         return FindOrDie(vessel_to_guid, vessel);
@@ -669,34 +664,14 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                &celestials);
   }
 
-  auto const& prolongation_integrator =
-      is_pre_bourbaki ?
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
-          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-              message.prolongation_integrator());
-  auto const& prediction_integrator =
-      is_pre_bourbaki ?
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
-          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-              message.prediction_integrator());
-
   GUIDToOwnedVessel vessels;
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(celestials, vessel_message.parent_index()).get();
-    not_null<std::unique_ptr<Vessel>> vessel =
-        Vessel::ReadFromMessage(
-            vessel_message.vessel(),
-            ephemeris.get(),
-            parent,
-            Ephemeris<Barycentric>::AdaptiveStepParameters(
-                    prolongation_integrator,
-                    prolongation_max_steps_,
-                    prolongation_length_tolerance_,
-                    prolongation_speed_tolerance_),
-            Ephemeris<Barycentric>::FixedStepParameters(
-                    McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-                    Δt_));
+    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
+                                                   vessel_message.vessel(),
+                                                   ephemeris.get(),
+                                                   parent);
     if (vessel_message.dirty()) {
       vessel->set_dirty();
     }
@@ -719,8 +694,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  std::move(celestials),
                  std::move(bubble),
                  std::move(ephemeris),
-                 prolongation_integrator,
-                 prediction_integrator,
+                 /*prolongation_integrator=*/DormandElMikkawyPrince1986RKN434FM<
+                     Position<Barycentric>>(),
+                 /*prediction_integrator=*/DormandElMikkawyPrince1986RKN434FM<
+                     Position<Barycentric>>(),
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  current_time,
                  message.sun_index()));
