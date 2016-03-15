@@ -77,7 +77,7 @@ TEST_F(VesselDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Vessel message;
     Vessel::ReadFromMessage(message, &ephemeris_, &parent_);
-  }, "Message does not represent an initialized Vessel");
+  }, "message.has_history");
 }
 
 TEST_F(VesselTest, SerializationSuccess) {

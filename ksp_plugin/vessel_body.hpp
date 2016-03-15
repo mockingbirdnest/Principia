@@ -262,6 +262,20 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             {&vessel->prolongation_, &vessel->prediction_});
+    if (message.has_prediction_last_time()) {
+      vessel->prediction_last_time_ =
+          Instant::ReadFromMessage(message.prediction_last_time());
+    }
+    if (message.has_prediction_adaptive_step_parameters()) {
+      vessel->prediction_adaptive_step_parameters_ =
+          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.prediction_adaptive_step_parameters());
+    }
+    if (vessel->prediction_last_time_ &&
+        vessel->prediction_adaptive_step_parameters_) {
+      vessel->UpdatePrediction(*vessel->prediction_last_time_,
+                               *vessel->prediction_adaptive_step_parameters_);
+    }
     if (message.has_flight_plan()) {
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
           message.flight_plan(), vessel->history_.get(), ephemeris);
