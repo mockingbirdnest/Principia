@@ -16,6 +16,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "serialization/ksp_plugin.pb.h"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -53,15 +54,11 @@ class Ephemeris {
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
-    // These functions can serialize to/from any message having the right
-    // fields.  It would be nicer if this was a separate message or a part of
-    // the Ephemeris message, but that would break pre-Буняковский
-    // compatibility.
-    // TODO(phl): Restructure this after Cantor.
-    template<typename T>
-    void WriteToMessage(not_null<T*> const t) const;
-    template<typename T>
-    static AdaptiveStepParameters ReadFromMessage(T const& t);
+    void WriteToMessage(
+        not_null<serialization::Ephemeris::AdaptiveStepParameters*> const
+            message) const;
+    static AdaptiveStepParameters ReadFromMessage(
+        serialization::Ephemeris::AdaptiveStepParameters const& message);
 
    private:
     // This will refer to a static object returned by a factory.
@@ -80,6 +77,12 @@ class Ephemeris {
         Time const& step);
 
     Time const& step() const;
+
+    void WriteToMessage(
+        not_null<serialization::Ephemeris::FixedStepParameters*> const message)
+        const;
+    static FixedStepParameters ReadFromMessage(
+        serialization::Ephemeris::FixedStepParameters const& message);
 
    private:
     // This will refer to a static object returned by a factory.

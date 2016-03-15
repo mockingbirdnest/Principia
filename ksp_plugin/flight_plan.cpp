@@ -145,26 +145,46 @@ void FlightPlan::WriteToMessage(
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   initial_time_.WriteToMessage(message->mutable_initial_time());
   final_time_.WriteToMessage(message->mutable_final_time());
-  adaptive_parameters_.WriteToMessage(message);
+  adaptive_parameters_.WriteToMessage(
+      message->mutable_adaptive_step_parameters());
   for (auto const& manœuvre : manœuvres_) {
     manœuvre.WriteToMessage(message->add_manoeuvre());
   }
-  message->set_anomalous_segments(anomalous_segments_);
 }
 
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
     not_null<DiscreteTrajectory<Barycentric>*> const root,
     not_null<Ephemeris<Barycentric>*> const ephemeris) {
+  bool const is_pre_буняковский = message.segment_size() > 0;
+
+  std::unique_ptr<Ephemeris<Barycentric>::AdaptiveStepParameters>
+      adaptive_step_parameters;
+  if (is_pre_буняковский) {
+    adaptive_step_parameters =
+        std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
+            AdaptiveStepSizeIntegrator<
+                Ephemeris<Barycentric>::NewtonianMotionEquation>::
+                    ReadFromMessage(message.integrator()),
+            /*max_steps=*/1000,
+            Length::ReadFromMessage(message.length_integration_tolerance()),
+            Speed::ReadFromMessage(message.speed_integration_tolerance()));
+  } else {
+    CHECK(message.has_adaptive_step_parameters());
+    adaptive_step_parameters =
+        std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
+            Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+                message.adaptive_step_parameters()));
+  }
+
   auto flight_plan = std::make_unique<FlightPlan>(
       root,
       Instant::ReadFromMessage(message.initial_time()),
       Instant::ReadFromMessage(message.final_time()),
       Mass::ReadFromMessage(message.initial_mass()),
       ephemeris,
-      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(message));
+      *adaptive_step_parameters);
 
-  bool const is_pre_буняковский = message.segment_size() > 0;
   if (is_pre_буняковский) {
     // The constructor has forked a segment.  Remove it.
     flight_plan->PopLastSegment();
@@ -189,7 +209,6 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     flight_plan->RecomputeSegments();
   }
 
-  flight_plan->anomalous_segments_ = message.anomalous_segments();
   return std::move(flight_plan);
 }
 

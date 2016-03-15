@@ -38,16 +38,17 @@ message FlightPlan {
   required Quantity initial_mass = 1;
   required Point initial_time = 2;
   required Point final_time = 3;
-  required AdaptiveStepSizeIntegrator integrator = 6;
-  // The default is for pre-Буняковский compatibility.
-  optional int64 max_steps = 10 [default = 1000];
-  required Quantity length_integration_tolerance = 4;
-  required Quantity speed_integration_tolerance = 5;
-  repeated Trajectory.Pointer segment = 7;  // Pre-Буняковский.
   repeated Manoeuvre manoeuvre = 8;
-  // NOTE(egg): |anomalous_segments| will no longer need to be serialized when
-  // we stop serializing recomputable data.
-  optional int32 anomalous_segments = 9 [default = 0];
+  optional Ephemeris.AdaptiveStepParameters
+      adaptive_step_parameters = 11;  // required
+
+  // Pre-Буняковский.
+  optional Quantity length_integration_tolerance = 4;
+  optional Quantity speed_integration_tolerance = 5;
+  optional AdaptiveStepSizeIntegrator integrator = 6;
+  repeated Trajectory.Pointer segment = 7;
+  reserved 9, 10;
+  reserved "anomalous_segments", "max_steps";
 }
 
 message PhysicsBubble {

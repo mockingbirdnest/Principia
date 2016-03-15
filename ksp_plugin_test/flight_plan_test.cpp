@@ -343,18 +343,22 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_TRUE(message.has_initial_mass());
   EXPECT_TRUE(message.has_initial_time());
   EXPECT_TRUE(message.has_final_time());
-  EXPECT_TRUE(message.has_length_integration_tolerance());
-  EXPECT_TRUE(message.has_speed_integration_tolerance());
+  EXPECT_TRUE(message.has_adaptive_step_parameters());
+  EXPECT_TRUE(message.adaptive_step_parameters().has_integrator());
+  EXPECT_TRUE(message.adaptive_step_parameters().has_max_steps());
+  EXPECT_TRUE(
+      message.adaptive_step_parameters().has_length_integration_tolerance());
+  EXPECT_TRUE(
+      message.adaptive_step_parameters().has_speed_integration_tolerance());
   EXPECT_EQ(2, message.manoeuvre_size());
 
-  // We need a copy of |root_| otherwise both flight plans have segments that
-  // point into |root_| and both want to destroy the forks.  Might as well do
-  // the copy using serialization, since it's how it works in real life.
+  // We need a copy of |root_|.  Might as well do the copy using serialization,
+  // since it's how it works in real life.
   serialization::Trajectory serialized_trajectory;
   root_.WriteToMessage(&serialized_trajectory, /*forks=*/{});
   auto const root_read =
-    DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory,
-                                                     /*forks=*/{});
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory,
+                                                       /*forks=*/{});
 
   std::unique_ptr<FlightPlan> flight_plan_read =
       FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());
