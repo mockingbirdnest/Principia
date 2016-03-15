@@ -42,8 +42,6 @@ public partial class PrincipiaPluginAdapter
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
-  [KSPField(isPersistant = true)]
-  private bool force_2d_trajectories_ = false;
 
   private readonly double[] prediction_length_tolerances_ =
       {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
@@ -126,6 +124,7 @@ public partial class PrincipiaPluginAdapter
   private String bad_installation_popup_;
 
   private static bool rendering_lines_ = false;
+  private static CelestialBody[] hiding_bodies_;
   private static UnityEngine.Material line_material_;
   private static UnityEngine.Material line_material {
     get {
@@ -834,7 +833,8 @@ public partial class PrincipiaPluginAdapter
                 UnityEngine.GL.Color(colour);
                 AddSegment(
                     position_at_ignition,
-                    position_at_ignition + scale * (Vector3d)world_direction);
+                    position_at_ignition + scale * (Vector3d)world_direction,
+                    false);
               };
               add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
               add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
@@ -852,12 +852,17 @@ public partial class PrincipiaPluginAdapter
   }
 
   private static void AddSegment(XYZSegment segment) {
-    AddSegment((Vector3d)segment.begin, (Vector3d)segment.end);
+    AddSegment((Vector3d)segment.begin, (Vector3d)segment.end, true);
   }
 
-  private static void AddSegment(Vector3d world_begin, Vector3d world_end) {
+  private static void AddSegment(Vector3d world_begin,
+                                 Vector3d world_end,
+                                 bool hide_behind_bodies) {
     if (!rendering_lines_) {
       Log.Fatal("|AddSegment| outside of |DrawLines|");
+    }
+    if (hide_behind_bodies && IsHidden(world_begin) || IsHidden(world_end)) {
+      return;
     }
     var begin = WorldToMapScreen(world_begin);
     var end = WorldToMapScreen(world_end);
@@ -865,6 +870,32 @@ public partial class PrincipiaPluginAdapter
       UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
       UnityEngine.GL.Vertex3(end.x, end.y, 0);
     }
+  }
+
+  private static bool IsHidden(Vector3d point) {
+    Vector3d camera = ScaledSpace.ScaledToLocalSpace(
+        PlanetariumCamera.Camera.transform.position);
+    foreach (CelestialBody body in hiding_bodies_) {
+      Vector3d camera_to_point = point - camera;
+      Vector3d camera_to_body = body.position - camera;
+      double inner_product = Vector3d.Dot(camera_to_point, camera_to_body);
+      // The projections on the camera-body axis of |point| and of the horizon
+      // have lengths |inner_product| / d and d - r^2/d, where d is the distance
+      // between the camera and the body and r is the body's radius, thus if
+      // |inner_product| < d^2 - r^2, |point| is above the plane passing
+      // through the horizon.
+      // Otherwise, we check whether |point| is within the cone hidden from the
+      // camera, by comparing the squared cosines multiplied by
+      // d^2|camera_to_point|^2.
+      double d_squared_minus_r_squared =
+          camera_to_body.sqrMagnitude - body.Radius * body.Radius;
+      if (inner_product > d_squared_minus_r_squared &&
+          inner_product * inner_product >
+              camera_to_point.sqrMagnitude * d_squared_minus_r_squared) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void DrawLines(Action line_vertices) {
@@ -875,7 +906,23 @@ public partial class PrincipiaPluginAdapter
       UnityEngine.GL.Begin(UnityEngine.GL.LINES);
       rendering_lines_ = true;
 
+      Vector3d camera = ScaledSpace.ScaledToLocalSpace(
+          PlanetariumCamera.Camera.transform.position);
+      // Only consider bodies with an angular radius greater than arcsin 1e-3.
+      // From the Earth, this would consider the Moon and the Sun, but ignore
+      // Jupiter.  The map view camera is wide-angle, so this is probably
+      // overkill.
+      // In any case we just want to do that in native code reasonably soon, so
+      // this does the trick for now.
+      hiding_bodies_ =
+        (from body in FlightGlobals.Bodies
+         where body.Radius * body.Radius >
+               (body.position - camera).sqrMagnitude * 1e-6
+         select body).ToArray();
+
       line_vertices();
+
+      hiding_bodies_ = null;
 
       rendering_lines_ = false;
       UnityEngine.GL.End();
@@ -971,9 +1018,6 @@ public partial class PrincipiaPluginAdapter
              "Max history length",
              ref changed_history_length,
              "{0:0.00e00} s");
-    force_2d_trajectories_ =
-        UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
-                                     "Force 2D trajectories");
     ReferenceFrameSelection();
     if (PluginRunning()) {
       flight_planner_.get().RenderButton();
