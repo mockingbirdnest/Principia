@@ -616,15 +616,20 @@ public partial class PrincipiaPluginAdapter
           Vector3d normal =
               (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
 
+          double ball_radius =
+              navball_.progradeVector.transform.localPosition.magnitude;
+
+          // TODO(egg): deal with the transparency and disappearance of the
+          // markers too, not just their position.
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  prograde * 0.05;
+                  prograde * ball_radius;
           navball_.radialInVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  radial * 0.05;
+                  radial * ball_radius;
           navball_.normalVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  normal * 0.05;
+                  normal * ball_radius;
           navball_.retrogradeVector.transform.localPosition =
               -navball_.progradeVector.transform.localPosition;
           navball_.radialOutVector.transform.localPosition =
