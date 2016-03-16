@@ -98,18 +98,31 @@ message Plugin {
   repeated CelestialParenthood celestial = 10;
   required PhysicsBubble bubble = 3;
   optional Ephemeris ephemeris = 7;  // required
-  optional AdaptiveStepSizeIntegrator prolongation_integrator = 8;  // required
-  optional AdaptiveStepSizeIntegrator prediction_integrator = 9;  // required
   required Quantity planetarium_rotation = 4;
   required Point current_time = 5;
   required int32 sun_index = 6;
   optional DynamicFrame plotting_frame = 11;  // required
+  optional Ephemeris.FixedStepParameters history_parameters = 12;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      prolongation_parameters = 13;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      prediction_parameters = 14;  // required
+
+  // Pre-Буняковский.
+  reserved 8, 9;
+  reserved "prolongation_integrator", "prediction_integrator";
 }
 
 message Vessel {
   required MasslessBody body = 1;
   optional FlightPlan flight_plan = 4;
   optional Trajectory history = 6;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      adaptive_step_parameters = 7;  // required
+  optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;  // required
+  optional Point prediction_last_time = 9;
+  optional Ephemeris.AdaptiveStepParameters
+      prediction_adaptive_step_parameters = 10;
 
   // Pre-Буняковский.
   optional Trajectory.Pointer prediction = 5;

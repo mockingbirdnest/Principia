@@ -11,6 +11,7 @@
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -30,6 +31,10 @@ using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using ::testing::AllOf;
+using ::testing::AnyOf;
+using ::testing::Gt;
+using ::testing::Lt;
 
 namespace ksp_plugin {
 
@@ -162,10 +167,13 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
   plugin->KeepAllVessels();
   plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
 
+  int number_of_flight_plans = 0;
+  int number_of_predictions = 0;
   for (auto const& pair : plugin->vessels()) {
     auto const& guid = pair.first;
     Vessel const* const vessel = pair.second;
     if (vessel->has_flight_plan()) {
+      ++number_of_flight_plans;
       // In this file, only one vessel has a flight plan.
       auto const flight_plan = vessel->flight_plan();
       EXPECT_EQ(2, flight_plan->number_of_manœuvres());
@@ -183,7 +191,18 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
         last_time = begin.time();
       }
     }
+    if (vessel->has_prediction()) {
+      ++number_of_predictions;
+      Time const last_time_from_current = vessel->prediction().last().time() -
+                                          plugin->CurrentTime();
+      EXPECT_THAT(last_time_from_current, AnyOf(AllOf(Gt(4000 * Second),
+                                                      Lt(5000 * Second)),
+                                                AllOf(Gt(-7000 * Second),
+                                                      Lt(-6000 * Second))));
+    }
   }
+  EXPECT_EQ(1, number_of_flight_plans);
+  EXPECT_EQ(2, number_of_predictions);
 
   // Serialize and deserialize it in the new format.
   serialization::Plugin post_буняковский_serialized_plugin;

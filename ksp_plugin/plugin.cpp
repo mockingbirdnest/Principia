@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -68,17 +69,36 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 Time const kStep = 45 * Minute;
 Length const kFittingTolerance = 1 * Milli(Metre);
 
+Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
+  return Ephemeris<Barycentric>::FixedStepParameters(
+             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+             /*step=*/10 * Second);
+}
+
+Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters() {
+  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+             /*length_integration_tolerance=*/1 * Milli(Metre),
+             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+}
+
+Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
+  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+             /*max_steps=*/1000,
+             /*length_integration_tolerance=*/1 * Metre,
+             /*speed_integration_tolerance=*/1 * Metre / Second);
+}
+
 }  // namespace
 
 Plugin::Plugin(Instant const& initial_time,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
-      history_integrator_(
-          McLachlanAtela1992Order5Optimal<Position<Barycentric>>()),
-      prolongation_integrator_(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
-      prediction_integrator_(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
+      history_parameters_(DefaultHistoryParameters()),
+      prolongation_parameters_(DefaultProlongationParameters()),
+      prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {}
 
@@ -216,19 +236,12 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto inserted = vessels_.emplace(
-      vessel_guid,
-      make_not_null_unique<Vessel>(
-          parent,
-          ephemeris_.get(),
-          Ephemeris<Barycentric>::AdaptiveStepParameters(
-              prolongation_integrator_,
-              prolongation_max_steps_,
-              prolongation_length_tolerance_,
-              prolongation_speed_tolerance_),
-          Ephemeris<Barycentric>::FixedStepParameters(
-              history_integrator_,
-              Δt_)));
+  auto inserted =
+      vessels_.emplace(vessel_guid,
+                       make_not_null_unique<Vessel>(parent,
+                                                    ephemeris_.get(),
+                                                    prolongation_parameters_,
+                                                    history_parameters_));
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
@@ -341,11 +354,7 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
       current_time_ + prediction_length_,
-      Ephemeris<Barycentric>::AdaptiveStepParameters(
-          prediction_integrator_,
-          prediction_max_steps_,
-          prediction_length_tolerance_,
-          prediction_speed_tolerance_));
+      prediction_parameters_);
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -355,11 +364,7 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
   find_vessel_by_guid_or_die(vessel_guid)->CreateFlightPlan(
       final_time,
       initial_mass,
-      Ephemeris<Barycentric>::AdaptiveStepParameters(
-          prediction_integrator_,
-          prediction_max_steps_,
-          prediction_length_tolerance_,
-          prediction_speed_tolerance_));
+      prediction_parameters_);
 }
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
@@ -439,11 +444,11 @@ void Plugin::SetPredictionLength(Time const& t) {
 }
 
 void Plugin::SetPredictionLengthTolerance(Length const& l) {
-  prediction_length_tolerance_ = l;
+  prediction_parameters_.set_length_integration_tolerance(l);
 }
 
 void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
-  prediction_speed_tolerance_ = v;
+  prediction_parameters_.set_speed_integration_tolerance(v);
 }
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
@@ -625,10 +630,12 @@ void Plugin::WriteToMessage(
   }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
-  prolongation_integrator_.WriteToMessage(
-      message->mutable_prolongation_integrator());
-  prediction_integrator_.WriteToMessage(
-      message->mutable_prediction_integrator());
+
+  history_parameters_.WriteToMessage(message->mutable_history_parameters());
+  prolongation_parameters_.WriteToMessage(
+      message->mutable_prolongation_parameters());
+  prediction_parameters_.WriteToMessage(
+      message->mutable_prediction_parameters());
 
   bubble_->WriteToMessage(
       [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
@@ -669,34 +676,14 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                &celestials);
   }
 
-  auto const& prolongation_integrator =
-      is_pre_bourbaki ?
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
-          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-              message.prolongation_integrator());
-  auto const& prediction_integrator =
-      is_pre_bourbaki ?
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
-          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-              message.prediction_integrator());
-
   GUIDToOwnedVessel vessels;
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(celestials, vessel_message.parent_index()).get();
-    not_null<std::unique_ptr<Vessel>> vessel =
-        Vessel::ReadFromMessage(
-            vessel_message.vessel(),
-            ephemeris.get(),
-            parent,
-            Ephemeris<Barycentric>::AdaptiveStepParameters(
-                    prolongation_integrator,
-                    prolongation_max_steps_,
-                    prolongation_length_tolerance_,
-                    prolongation_speed_tolerance_),
-            Ephemeris<Barycentric>::FixedStepParameters(
-                    McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-                    Δt_));
+    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
+                                                   vessel_message.vessel(),
+                                                   ephemeris.get(),
+                                                   parent);
     if (vessel_message.dirty()) {
       vessel->set_dirty();
     }
@@ -713,14 +700,34 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
   Instant const current_time = Instant::ReadFromMessage(message.current_time());
 
+  bool const is_pre_буняковский = !(message.has_history_parameters() &&
+                                    message.has_prolongation_parameters() &&
+                                    message.has_prediction_parameters());
+  auto const history_parameters =
+    is_pre_буняковский
+        ? DefaultHistoryParameters()
+        : Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+              message.history_parameters());
+  auto const prolongation_parameters =
+    is_pre_буняковский
+        ? DefaultProlongationParameters()
+        : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.prolongation_parameters());
+  auto const prediction_parameters =
+    is_pre_буняковский
+        ? DefaultPredictionParameters()
+        : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.prediction_parameters());
+
   // Can't use |make_unique| here without implementation-dependent friendships.
   auto plugin = std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
                  std::move(celestials),
                  std::move(bubble),
                  std::move(ephemeris),
-                 prolongation_integrator,
-                 prediction_integrator,
+                 history_parameters,
+                 prolongation_parameters,
+                 prediction_parameters,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  current_time,
                  message.sun_index()));
@@ -742,10 +749,12 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
                IndexToOwnedCelestial celestials,
                not_null<std::unique_ptr<PhysicsBubble>> bubble,
                std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-               AdaptiveStepSizeIntegrator<
-                   NewtonianMotionEquation> const& prolongation_integrator,
-               AdaptiveStepSizeIntegrator<
-                   NewtonianMotionEquation> const& prediction_integrator,
+               Ephemeris<Barycentric>::FixedStepParameters const&
+                   history_parameters,
+               Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                   prolongation_parameters,
+               Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                   prediction_parameters,
                Angle planetarium_rotation,
                Instant current_time,
                Index sun_index)
@@ -753,9 +762,9 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       celestials_(std::move(celestials)),
       bubble_(std::move(bubble)),
       ephemeris_(std::move(ephemeris)),
-      history_integrator_(ephemeris_->planetary_integrator()),
-      prolongation_integrator_(prolongation_integrator),
-      prediction_integrator_(prediction_integrator),
+      history_parameters_(history_parameters),
+      prolongation_parameters_(prolongation_parameters),
+      prediction_parameters_(prediction_parameters),
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
@@ -778,14 +787,11 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
     initial_state.emplace_back(state.second);
   }
   absolute_initialization_ = std::experimental::nullopt;
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
-      std::move(bodies),
-      initial_state,
-      current_time_,
-      kFittingTolerance,
-      Ephemeris<Barycentric>::FixedStepParameters(
-          history_integrator_,
-          kStep));
+  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
+                                                        initial_state,
+                                                        current_time_,
+                                                        kFittingTolerance,
+                                                        history_parameters_);
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
     celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
@@ -844,16 +850,11 @@ void Plugin::EvolveBubble(Instant const& t) {
   auto const& intrinsic_acceleration =
       bubble_->centre_of_mass_intrinsic_acceleration();
 
-  bool const reached_final_time =
-      ephemeris_->FlowWithAdaptiveStep(
-          trajectory,
-          intrinsic_acceleration,
-          t,
-          Ephemeris<Barycentric>::AdaptiveStepParameters(
-              prolongation_integrator_,
-              prolongation_max_steps_,
-              prolongation_length_tolerance_,
-              prolongation_speed_tolerance_));
+  bool const reached_final_time = ephemeris_->FlowWithAdaptiveStep(
+                                                  trajectory,
+                                                  intrinsic_acceleration,
+                                                  t,
+                                                  prolongation_parameters_);
   CHECK(reached_final_time) << t << " " << trajectory->last().time();
 
   DegreesOfFreedom<Barycentric> const& centre_of_mass =

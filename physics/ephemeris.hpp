@@ -54,6 +54,11 @@ class Ephemeris {
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
+    void set_length_integration_tolerance(
+        Length const& length_integration_tolerance);
+    void set_speed_integration_tolerance(
+        Speed const& speed_integration_tolerance);
+
     void WriteToMessage(
         not_null<serialization::Ephemeris::AdaptiveStepParameters*> const
             message) const;
