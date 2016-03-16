@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -703,20 +704,20 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                     message.has_prolongation_parameters() &&
                                     message.has_prediction_parameters());
   auto const history_parameters =
-    is_pre_буняковский ?
-        DefaultHistoryParameters() : 
-        Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-            message.history_parameters());
+    is_pre_буняковский
+        ? DefaultHistoryParameters()
+        : Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+              message.history_parameters());
   auto const prolongation_parameters =
-    is_pre_буняковский ?
-        DefaultProlongationParameters() :
-        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-            message.prolongation_parameters());
+    is_pre_буняковский
+        ? DefaultProlongationParameters()
+        : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.prolongation_parameters());
   auto const prediction_parameters =
-    is_pre_буняковский ?
-        DefaultPredictionParameters() :
-        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-            message.prediction_parameters());
+    is_pre_буняковский
+        ? DefaultPredictionParameters()
+        : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.prediction_parameters());
 
   // Can't use |make_unique| here without implementation-dependent friendships.
   auto plugin = std::unique_ptr<Plugin>(
