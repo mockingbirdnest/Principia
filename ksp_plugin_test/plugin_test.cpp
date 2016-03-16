@@ -124,7 +124,7 @@ class TestablePlugin : public Plugin {
             std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
 
   Time const& Δt() const {
-    return Δt_;
+    return history_parameters_.step();
   }
 
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {

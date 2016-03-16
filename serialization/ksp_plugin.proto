@@ -102,6 +102,11 @@ message Plugin {
   required Point current_time = 5;
   required int32 sun_index = 6;
   optional DynamicFrame plotting_frame = 11;  // required
+  optional Ephemeris.FixedStepParameters history_parameters = 12;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      prolongation_parameters = 13;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      prediction_parameters = 14;  // required
 
   // Pre-Буняковский.
   reserved 8, 9;

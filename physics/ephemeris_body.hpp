@@ -111,6 +111,18 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::AdaptiveStepParameters::set_length_integration_tolerance(
+    Length const& length_integration_tolerance) {
+  length_integration_tolerance_ = length_integration_tolerance;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::AdaptiveStepParameters::set_speed_integration_tolerance(
+    Speed const& speed_integration_tolerance) {
+  speed_integration_tolerance_ = speed_integration_tolerance;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
     not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
     const {
