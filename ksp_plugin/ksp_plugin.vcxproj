@@ -369,12 +369,12 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)$(Configuration)\tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(OutDir)tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(OutDir)tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">"$(OutDir)tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">"$(OutDir)tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(OutDir)tools.exe" generate_profiles</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(OutDir)tools.exe" generate_profiles</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C#/C++ files for %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Generating C#/C++ files for %(FullPath)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C#/C++ files for %(FullPath)</Message>
