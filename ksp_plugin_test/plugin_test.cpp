@@ -769,11 +769,11 @@ TEST_F(PluginTest, Navball) {
   Vector<double, World> z({0, 0, 1});
   auto navball = plugin.Navball(World::origin);
   EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(x)),
-              Lt(2 * std::numeric_limits<double>::epsilon()));
+              Lt(3 * std::numeric_limits<double>::epsilon()));
   EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
               Lt(std::numeric_limits<double>::epsilon()));
   EXPECT_THAT(AbsoluteError(x, navball(World::origin)(z)),
-              Lt(2 * std::numeric_limits<double>::epsilon()));
+              Lt(3 * std::numeric_limits<double>::epsilon()));
 }
 
 TEST_F(PluginTest, Frenet) {
