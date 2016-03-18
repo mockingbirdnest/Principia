@@ -6,17 +6,6 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Loader {
-  [DllImport("kernel32", SetLastError=true, CharSet = CharSet.Ansi)]
-  static extern IntPtr LoadLibrary(
-      [MarshalAs(UnmanagedType.LPStr)]string lpFileName);
-
-  const int RTLD_NOW = 2;
-  [DllImport("dl")]
-  static extern IntPtr dlopen(
-      [MarshalAs(UnmanagedType.LPTStr)] string filename,
-      int flags = RTLD_NOW);
-
-
   // TODO(egg): return a string detailing the error.
   public static bool LoadPrincipiaDll() {
     if (loaded_principia_dll_) {
@@ -52,6 +41,16 @@ internal static class Loader {
     loaded_principia_dll_ = true;
     return true;
   }
+
+  [DllImport("kernel32", SetLastError=true, CharSet = CharSet.Ansi)]
+  private static extern IntPtr LoadLibrary(
+      [MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+
+  private const int RTLD_NOW = 2;
+  [DllImport("dl")]
+  private static extern IntPtr dlopen(
+      [MarshalAs(UnmanagedType.LPTStr)] string filename,
+      int flags = RTLD_NOW);
 
   private static bool loaded_principia_dll_ = false;
 }
