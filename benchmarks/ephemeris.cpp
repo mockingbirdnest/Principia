@@ -1,5 +1,5 @@
 ﻿
-// .\Release\benchmarks.exe  --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe  --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/06/14-18:27:09
 // Benchmark                                              Time(ns)    CPU(ns) Iterations                                                                // NOLINT(whitespace/line_length)
