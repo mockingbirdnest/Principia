@@ -75,7 +75,7 @@ TEST_F(RotationTest, AppliedToVector) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 -3.0 * Metre,
-                                                2.0 * Metre)), 1));
+                                                2.0 * Metre)), 1, 2));
   EXPECT_THAT(rotation_c_(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 + sqrt(3.0)) * Metre,
@@ -93,7 +93,7 @@ TEST_F(RotationTest, AppliedToBivector) {
               AlmostEquals(Bivector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 -3.0 * Metre,
-                                                2.0 * Metre)), 1));
+                                                2.0 * Metre)), 1, 2));
   EXPECT_THAT(rotation_c_(bivector_),
               AlmostEquals(Bivector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 + sqrt(3.0)) * Metre,
@@ -129,7 +129,7 @@ TEST_F(RotationTest, Inverse) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
-                                                -2.0 * Metre)), 1));
+                                                -2.0 * Metre)), 1, 2));
   EXPECT_THAT(rotation_c_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 - sqrt(3.0)) * Metre,
@@ -143,7 +143,7 @@ TEST_F(RotationTest, Composition) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
-                                                -3.0 * Metre)), 4));
+                                                -3.0 * Metre)), 4, 6));
 }
 
 TEST_F(RotationTest, Forget) {
