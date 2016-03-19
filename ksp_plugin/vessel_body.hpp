@@ -192,6 +192,7 @@ inline void Vessel::WriteToMessage(
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
+  message->set_is_dirty(is_dirty_);
 }
 
 inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
@@ -280,6 +281,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
           message.flight_plan(), vessel->history_.get(), ephemeris);
     }
+    vessel->is_dirty_ = message.is_dirty();
   }
   return std::move(vessel);
 }
