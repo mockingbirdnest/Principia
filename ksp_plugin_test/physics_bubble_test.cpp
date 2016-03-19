@@ -86,7 +86,7 @@ class PhysicsBubbleTest : public testing::Test {
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
       fixed_parameters_(
-          McLachlanAtela1992Order4Optimal<Position<Barycentric>>(),
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/1 * Second),
       vessel1_(&celestial_,
                &ephemeris_,
@@ -217,7 +217,7 @@ class PhysicsBubbleTest : public testing::Test {
                       Displacement<World>({-25 * SIUnit<Length>(),
                                            191 * SIUnit<Length>(),
                                            193 * SIUnit<Length>()}),
-                      8));;
+                      0, 8));
     } else if (mutable_trajectory->last().time() == t2_) {
       EXPECT_THAT(bubble_.DisplacementCorrection(
                       rotation_, celestial_, celestial_world_position_),
@@ -225,7 +225,7 @@ class PhysicsBubbleTest : public testing::Test {
                       Displacement<World>({-27.5 * SIUnit<Length>(),
                                            193 * SIUnit<Length>(),
                                            196 * SIUnit<Length>()}),
-                      8));
+                      8, 16));
     } else {
       ADD_FAILURE() << "unexpected last time";
     }
@@ -233,7 +233,7 @@ class PhysicsBubbleTest : public testing::Test {
                 AlmostEquals(Velocity<World>(
                     {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
                      (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
-                     (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 16));
+                     (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 0, 16));
   }
 
   void CheckTwoVesselsDegreesOfFreedom(PhysicsBubble const& bubble) {
@@ -253,14 +253,14 @@ class PhysicsBubbleTest : public testing::Test {
                          -14 * SIUnit<Length>() +
                             cdm_position.coordinates().x,
                          16 * SIUnit<Length>() -
-                            cdm_position.coordinates().z}), 1),
+                            cdm_position.coordinates().z}), 1, 4),
                     AlmostEquals(Velocity<Barycentric>(
                         {2765.0 / 23.0 * SIUnit<Speed>() -
                             cdm_velocity.coordinates().y,
                          -2742.0 / 23.0 * SIUnit<Speed>() +
                             cdm_velocity.coordinates().x,
                          2788.0 / 23.0 * SIUnit<Speed>() -
-                            cdm_velocity.coordinates().z}), 1)));
+                            cdm_velocity.coordinates().z}), 1, 2)));
     EXPECT_THAT(bubble.from_centre_of_mass(&vessel2_),
                 Componentwise(
                     AlmostEquals(Displacement<Barycentric>(
@@ -292,12 +292,13 @@ class PhysicsBubbleTest : public testing::Test {
                 AlmostEquals(Displacement<World>(
                     {-7579.0 / 89.0 * SIUnit<Length>(),
                      24934.0 / 89.0 * SIUnit<Length>(),
-                     25201 / 89.0  * SIUnit<Length>()}) - cdm_position, 5));
+                     25201 / 89.0  * SIUnit<Length>()}) - cdm_position, 5, 7));
     EXPECT_THAT(bubble.VelocityCorrection(rotation_, celestial_),
                 AlmostEquals(Velocity<World>(
                     {-16390.0 / 89.0 * SIUnit<Speed>(),
                      16212.0 / 89.0 * SIUnit<Speed>(),
-                     16568.0 / 89.0 * SIUnit<Speed>()}) - cdm_velocity, 32));
+                     16568.0 / 89.0 * SIUnit<Speed>()}) - cdm_velocity,
+                    16, 32));
   }
 
   std::list<Instant> Times(
@@ -428,7 +429,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
                                {(-2203.0 / 23.0) * SIUnit<Acceleration>(),
                                 (-7802.0 / 23.0) * SIUnit<Acceleration>(),
                                 (-2364.0 / 23.0) * SIUnit<Acceleration>()}),
-                           3));
+                           3, 9));
 
   // All the other assertions remain as in |OneVesselOneStep| since we didn't
   // restart or shift the bubble.
@@ -487,12 +488,13 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
                   rotation_, celestial_, celestial_world_position_),
               AlmostEquals(Displacement<World>({-27.5 * SIUnit<Length>(),
                                                 193 * SIUnit<Length>(),
-                                                196 * SIUnit<Length>()}), 8));
+                                                196 * SIUnit<Length>()}),
+                           8, 16));
   EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
               AlmostEquals(Velocity<World>(
                   {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
                    (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
-                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 8));
+                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 0, 8));
 }
 
 TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
@@ -539,18 +541,19 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
               AlmostEquals(Vector<Acceleration, Barycentric>(
                                {-91 * SIUnit<Acceleration>(),
                                 -344 * SIUnit<Acceleration>(),
-                                -98 * SIUnit<Acceleration>()}), 1));
+                                -98 * SIUnit<Acceleration>()}), 0, 1));
 
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),
               AlmostEquals(Displacement<World>({-27.5 * SIUnit<Length>(),
                                                 193 * SIUnit<Length>(),
-                                                196 * SIUnit<Length>()}), 8));
+                                                196 * SIUnit<Length>()}),
+                           8, 16));
   EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
               AlmostEquals(Velocity<World>(
                   {-234 * SIUnit<Speed>(),
                    -17 * SIUnit<Speed>(),
-                   -14 * SIUnit<Speed>()}), 8));
+                   -14 * SIUnit<Speed>()}), 4, 8));
 }
 
 TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
@@ -647,7 +650,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
                                    17546.0 / 89.0 * SIUnit<Acceleration>(),
                                -acceleration_correction.coordinates().z -
                                    17724.0 / 89.0 * SIUnit<Acceleration>()}),
-                         2));
+                         2, 8));
 
   // All the rest is identical since we didn't restart the bubble.
   CheckTwoVesselsDegreesOfFreedom(bubble_);

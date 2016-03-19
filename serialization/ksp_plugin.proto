@@ -12,6 +12,7 @@ message Celestial {
   required HistoryAndProlongation history_and_prolongation = 2;
 }
 
+// Pre-Буняковский.
 message HistoryAndProlongation {
   required Trajectory history = 1;
   required Trajectory.Pointer prolongation = 2;
@@ -37,16 +38,17 @@ message FlightPlan {
   required Quantity initial_mass = 1;
   required Point initial_time = 2;
   required Point final_time = 3;
-  required AdaptiveStepSizeIntegrator integrator = 6;
-  // The default is for pre-Буняко́вский compatibility.
-  optional int64 max_steps = 10 [default = 1000];
-  required Quantity length_integration_tolerance = 4;
-  required Quantity speed_integration_tolerance = 5;
-  repeated Trajectory.Pointer segment = 7;
   repeated Manoeuvre manoeuvre = 8;
-  // NOTE(egg): |anomalous_segments| will no longer need to be serialized when
-  // we stop serializing recomputable data.
-  optional int32 anomalous_segments = 9 [default = 0];
+  optional Ephemeris.AdaptiveStepParameters
+      adaptive_step_parameters = 11;  // required
+
+  // Pre-Буняковский.
+  optional Quantity length_integration_tolerance = 4;
+  optional Quantity speed_integration_tolerance = 5;
+  optional AdaptiveStepSizeIntegrator integrator = 6;
+  repeated Trajectory.Pointer segment = 7;
+  reserved 9, 10;
+  reserved "anomalous_segments", "max_steps";
 }
 
 message PhysicsBubble {
@@ -96,17 +98,33 @@ message Plugin {
   repeated CelestialParenthood celestial = 10;
   required PhysicsBubble bubble = 3;
   optional Ephemeris ephemeris = 7;  // required
-  optional AdaptiveStepSizeIntegrator prolongation_integrator = 8;  // required
-  optional AdaptiveStepSizeIntegrator prediction_integrator = 9;  // required
   required Quantity planetarium_rotation = 4;
   required Point current_time = 5;
   required int32 sun_index = 6;
   optional DynamicFrame plotting_frame = 11;  // required
+  optional Ephemeris.FixedStepParameters history_parameters = 12;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      prolongation_parameters = 13;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      prediction_parameters = 14;  // required
+
+  // Pre-Буняковский.
+  reserved 8, 9;
+  reserved "prolongation_integrator", "prediction_integrator";
 }
 
 message Vessel {
   required MasslessBody body = 1;
   optional FlightPlan flight_plan = 4;
+  optional Trajectory history = 6;  // required
+  optional Ephemeris.AdaptiveStepParameters
+      adaptive_step_parameters = 7;  // required
+  optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;  // required
+  optional Point prediction_last_time = 9;
+  optional Ephemeris.AdaptiveStepParameters
+      prediction_adaptive_step_parameters = 10;
+
+  // Pre-Буняковский.
   optional Trajectory.Pointer prediction = 5;
   oneof trajectory_bundle {
     HistoryAndProlongation history_and_prolongation = 2;

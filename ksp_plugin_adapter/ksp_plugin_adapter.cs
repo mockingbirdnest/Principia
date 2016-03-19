@@ -143,6 +143,11 @@ public partial class PrincipiaPluginAdapter
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     try {
+      if (!Loader.LoadPrincipiaDll()) {
+        // TODO(egg): return a string from LoadPrincipiaDll and use it.
+        bad_installation_popup_ = "something happened";
+        return;
+      }
       Log.InitGoogleLogging();
     } catch (DllNotFoundException e) {
       UnityEngine.Debug.LogException(e);

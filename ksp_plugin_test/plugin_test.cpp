@@ -124,7 +124,7 @@ class TestablePlugin : public Plugin {
             std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
 
   Time const& Δt() const {
-    return Δt_;
+    return history_parameters_.step();
   }
 
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {
@@ -381,9 +381,8 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystemFactory::kEarth, message.vessel(0).parent_index());
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
-  EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
-  auto const& vessel_0_history =
-      message.vessel(0).vessel().history_and_prolongation().history();
+  EXPECT_TRUE(message.vessel(0).vessel().has_history());
+  auto const& vessel_0_history = message.vessel(0).vessel().history();
 #if defined(WE_LOVE_228)
   EXPECT_EQ(2, vessel_0_history.timeline_size());
   EXPECT_EQ((HistoryTime(time, 3) - shift - Instant()) / (1 * Second),
@@ -770,11 +769,11 @@ TEST_F(PluginTest, Navball) {
   Vector<double, World> z({0, 0, 1});
   auto navball = plugin.Navball(World::origin);
   EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(x)),
-              Lt(2 * std::numeric_limits<double>::epsilon()));
+              Lt(3 * std::numeric_limits<double>::epsilon()));
   EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
               Lt(std::numeric_limits<double>::epsilon()));
   EXPECT_THAT(AbsoluteError(x, navball(World::origin)(z)),
-              Lt(2 * std::numeric_limits<double>::epsilon()));
+              Lt(3 * std::numeric_limits<double>::epsilon()));
 }
 
 TEST_F(PluginTest, Frenet) {

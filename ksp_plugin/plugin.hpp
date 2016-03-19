@@ -327,10 +327,12 @@ class Plugin {
          IndexToOwnedCelestial celestials,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
          std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-         AdaptiveStepSizeIntegrator<
-             NewtonianMotionEquation> const& prolongation_integrator,
-         AdaptiveStepSizeIntegrator<
-             NewtonianMotionEquation> const& prediction_integrator,
+         Ephemeris<Barycentric>::FixedStepParameters const&
+             history_parameters,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             prolongation_parameters,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             prediction_parameters,
          Angle planetarium_rotation,
          Instant current_time,
          Index sun_index);
@@ -367,23 +369,11 @@ class Plugin {
     google::protobuf::RepeatedPtrField<T> const& celestial_messages,
     not_null<IndexToOwnedCelestial*> const celestials);
 
-  static Time constexpr Δt_ = 10 * Second;
-  static std::int64_t constexpr prolongation_max_steps_ =
-      std::numeric_limits<std::int64_t>::max();
-  static Length constexpr prolongation_length_tolerance_ = 1 * Milli(Metre);
-  static Speed constexpr prolongation_speed_tolerance_ =
-      1 * Milli(Metre) / Second;
-
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*>> kept_vessels_;
-
-  Time prediction_length_ = 1 * Hour;
-  std::int64_t prediction_max_steps_ = 1000;
-  Length prediction_length_tolerance_ = 1 * Metre;
-  Speed prediction_speed_tolerance_ = 1 * Metre / Second;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
@@ -408,14 +398,12 @@ class Plugin {
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
-  // The integrator computing the histories of the vessels.
-  FixedStepSizeIntegrator<NewtonianMotionEquation> const& history_integrator_;
-  // The integrator computing the prolongations.
-  AdaptiveStepSizeIntegrator<
-      NewtonianMotionEquation> const& prolongation_integrator_;
-  // The integrator computing the predictions.
-  AdaptiveStepSizeIntegrator<
-      NewtonianMotionEquation> const& prediction_integrator_;
+
+  // The parameters for computing the various trajectories.
+  Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
+  Time prediction_length_ = 1 * Hour;
 
   // Whether initialization is ongoing.
   base::Monostable initializing_;

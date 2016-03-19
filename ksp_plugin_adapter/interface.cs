@@ -24,11 +24,7 @@ internal partial struct WXYZ {
 }
 
 internal static partial class Interface {
-#if __MonoCS__
-  internal const string kDllPath = "GameData/Principia/principia.so";
-#else
-  internal const string kDllPath = "GameData/Principia/principia.dll";
-#endif
+  internal const string kDllPath = "principia";
 
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__ActivateRecorder",

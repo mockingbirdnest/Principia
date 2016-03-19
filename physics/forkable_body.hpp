@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <vector>
+
 #include "physics/forkable.hpp"
 
 namespace principia {
@@ -253,27 +255,6 @@ int Forkable<Tr4jectory, It3rator>::Size() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
-void Forkable<Tr4jectory, It3rator>::WritePointerToMessage(
-    not_null<serialization::Trajectory::Pointer*> const message) const {
-  not_null<Tr4jectory const*> ancestor = that();
-  // A child appears before its parent in the message below.
-  while (ancestor->parent_ != nullptr) {
-    auto const position_in_parent_children =
-        ancestor->position_in_parent_children_;
-    auto const position_in_parent_timeline =
-        ancestor->position_in_parent_timeline_;
-    ancestor = ancestor->parent_;
-    int const children_distance = std::distance(ancestor->children_.begin(),
-                                                *position_in_parent_children);
-    int const timeline_distance = std::distance(ancestor->timeline_begin(),
-                                                *position_in_parent_timeline);
-    auto* const fork_message = message->add_fork();
-    fork_message->set_children_distance(children_distance);
-    fork_message->set_timeline_distance(timeline_distance);
-  }
-}
-
-template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
     serialization::Trajectory::Pointer const& message,
     not_null<Tr4jectory*> const trajectory) {
@@ -341,28 +322,51 @@ void Forkable<Tr4jectory, It3rator>::CheckNoForksBefore(Instant const& time) {
 
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message) const {
+    not_null<serialization::Trajectory*> const message,
+    std::vector<Tr4jectory*>& forks) const {
   std::experimental::optional<Instant> last_instant;
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     std::unique_ptr<Tr4jectory> const& child = pair.second;
+
+    // Determine if this |child| needs to be serialized.  If so, record its
+    // position in |fork_positions| and null out its pointer in |forks|.
+    // Apologies for the O(N) search.
+    auto const it = std::find(forks.begin(), forks.end(), child.get());
+    if (it == forks.end()) {
+      continue;
+    } else {
+      message->add_fork_position(it - forks.begin());
+      *it = nullptr;
+    }
+
     if (!last_instant || fork_time != last_instant) {
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child->WriteSubTreeToMessage(litter->add_trajectories());
+    child->WriteSubTreeToMessage(litter->add_trajectories(), forks);
   }
 }
 
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
-    serialization::Trajectory const& message) {
+    serialization::Trajectory const& message,
+    std::vector<Tr4jectory**> const& forks) {
+  // There were no fork positions prior to Буняковский.
+  bool const has_fork_position = message.fork_position_size() > 0;
+  std::int32_t index = 0;
   for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
     for (serialization::Trajectory const& child : litter.trajectories()) {
-      NewFork(timeline_find(fork_time))->FillSubTreeFromMessage(child);
+      not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
+      fork->FillSubTreeFromMessage(child, forks);
+      if (has_fork_position) {
+        std::int32_t const fork_position = message.fork_position(index);
+        *forks[fork_position] = fork;
+      }
+      ++index;
     }
   }
 }

@@ -10,7 +10,7 @@ namespace principia {
 namespace benchmark_automation {
 
 class BenchmarkAutomation {
-  private const String benchmark_executable = @".\Release\benchmarks.exe";
+  private const String benchmark_executable = @".\Release\x64\benchmarks.exe";
 
   private static void Main(string[] args) {
     DirectoryInfo benchmark_directory = new DirectoryInfo(args[0]);
