@@ -226,8 +226,8 @@ class Ephemeris {
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
-  // |hints|, |bodies_| and |trajectories_| arrays) on massless bodies at the
-  // given |positions|.  The template parameter specifies what we know about the
+  // |bodies_| and |trajectories_| arrays) on massless bodies at the given
+  // |positions|.  The template parameter specifies what we know about the
   // massive body, and therefore what forces apply.
   template<bool body1_is_oblate>
   void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
@@ -236,8 +236,7 @@ class Ephemeris {
       size_t const b1,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
-      not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-          const hints) const;
+      not_null<typename ContinuousTrajectory<Frame>::Hint*> const hint1) const;
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
   void ComputeMassiveBodiesGravitationalAccelerations(
@@ -252,7 +251,6 @@ class Ephemeris {
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
   void ComputeMasslessBodiesGravitationalAccelerations(
-      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
@@ -262,7 +260,6 @@ class Ephemeris {
   // Same as above, but the massless bodies have intrinsic accelerations.
   // |intrinsic_accelerations| may be empty.
   void ComputeMasslessBodiesTotalAccelerations(
-      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
