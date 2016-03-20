@@ -15,18 +15,18 @@ internal static class Loader {
     String dll = null;
     Func<String, IntPtr> load;
     Func<bool> is_cxx_installed;
-    string required_cxx_pacakges;
+    string required_cxx_packages;
     switch (Environment.OSVersion.Platform) {
       case PlatformID.Win32NT:
         load = LoadLibrary;
         is_cxx_installed = () => IsVCRedistInstalled(is_32_bit);
         if (is_32_bit) {
-          required_cxx_pacakges =
+          required_cxx_packages =
               "the Visual C++ Redistributable Packages for Visual Studio " +
               "2015 on x86";
           dll = @"GameData\Principia\Win32\principia.dll";
         } else {
-          required_cxx_pacakges =
+          required_cxx_packages =
               "the Visual C++ Redistributable Packages for Visual Studio " +
               "2015 on x64";
           dll = @"GameData\Principia\x64\principia.dll";
@@ -41,7 +41,7 @@ internal static class Loader {
           // TODO(egg): figure out how to check whether the right versions of
           // libc++ and libc++abi are installed.
           is_cxx_installed = () => false;
-          required_cxx_pacakges = "libc++ and libc++abi 3.5-2";
+          required_cxx_packages = "libc++ and libc++abi 3.5-2";
         }
         break;
       default:
@@ -59,10 +59,10 @@ internal static class Loader {
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);
       if (!is_cxx_installed()) {
-        return "Dependencies, namely " + required_cxx_pacakges +
+        return "Dependencies, namely " + required_cxx_packages +
                ", were not found.";
       } else {
-        return "An unknown error occured; detected OS " +
+        return "An unknown error occurred; detected OS " +
                Environment.OSVersion + " " + (is_32_bit ? "32" : "64") +
                "-bit; tried loading dll at '" + dll + "'.";
       }
