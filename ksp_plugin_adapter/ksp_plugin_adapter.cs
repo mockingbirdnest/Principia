@@ -151,30 +151,10 @@ public partial class PrincipiaPluginAdapter
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
-    try {
-      if (!Loader.LoadPrincipiaDll()) {
-        // TODO(egg): return a string from LoadPrincipiaDll and use it.
-        bad_installation_popup_ = "something happened";
-        return;
-      }
-      Log.InitGoogleLogging();
-    } catch (DllNotFoundException e) {
-      UnityEngine.Debug.LogException(e);
-      string additional_information;
-      
-      if (File.Exists(Interface.kDllPath)) {
-        additional_information =
-            "Please check that you downloaded the correct version of " +
-            "Principia for your operating system, and that the right C++ " +
-            "libraries are installed, see the FAQ on the wiki of the GitHub " +
-            "repository (https://github.com/mockingbirdnest/Principia/wiki).";
-      } else {
-        additional_information = "The file \"" +
-                                 Path.GetFullPath(Interface.kDllPath) +
-                                 "\" was not found.";
-      }
+    string load_error = Loader.LoadPrincipiaDllAndInitGoogleLogging();
+    if (load_error != null) {
       bad_installation_popup_ =
-          "The Principia DLL failed to load.\n" + additional_information;
+          "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
   }
