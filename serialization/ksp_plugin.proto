@@ -123,6 +123,7 @@ message Vessel {
   optional Point prediction_last_time = 9;
   optional Ephemeris.AdaptiveStepParameters
       prediction_adaptive_step_parameters = 10;
+  optional bool is_dirty = 11 [default = false];  // required
 
   // Pre-Буняковский.
   optional Trajectory.Pointer prediction = 5;

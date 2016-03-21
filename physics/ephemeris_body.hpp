@@ -368,8 +368,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   massless_body_equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
-                std::cref(trajectories), std::cref(intrinsic_accelerations),
-                _1, _2, _3, &hints);
+                std::cref(intrinsic_accelerations), _1, _2, _3, &hints);
 
   typename NewtonianMotionEquation::SystemState initial_state;
   auto const trajectory_last = trajectory->last();
@@ -422,8 +421,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   massless_body_equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
-                std::cref(trajectories), std::cref(intrinsic_accelerations),
-                _1, _2, _3, &hints);
+                std::cref(intrinsic_accelerations), _1, _2, _3, &hints);
 
   typename NewtonianMotionEquation::SystemState initial_state;
   for (auto const& trajectory : trajectories) {
@@ -469,13 +467,9 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::
 ComputeGravitationalAccelerationOnMasslessBody(
     Position<Frame> const& position,
     Instant const& t) const {
-  // To avoid intrinsic accelerations.
-  DiscreteTrajectory<Frame> empty_trajectory;
-
   std::vector<Vector<Acceleration, Frame>> accelerations(1);
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   ComputeMasslessBodiesGravitationalAccelerations(
-      {&empty_trajectory},
       t,
       {position},
       &accelerations,
@@ -879,13 +873,13 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     size_t const b1,
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
-    not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
-        const hints) const {
+    not_null<typename ContinuousTrajectory<Frame>::Hint*> const hint1) const {
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
+  Position<Frame> const position1 =
+      trajectories_[b1]->EvaluatePosition(t, hint1);
 
   for (size_t b2 = 0; b2 < positions.size(); ++b2) {
-    Displacement<Frame> const Δq =
-        trajectories_[b1]->EvaluatePosition(t, &(*hints)[b1]) - positions[b2];
+    Displacement<Frame> const Δq = position1 - positions[b2];
 
     Exponentiation<Length, 2> const Δq_squared = InnerProduct(Δq, Δq);
     // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
@@ -962,14 +956,12 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
 
 template<typename Frame>
 void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
-      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
           const hints) const {
-  CHECK_EQ(trajectories.size(), positions.size());
-  CHECK_EQ(trajectories.size(), accelerations->size());
+  CHECK_EQ(positions.size(), accelerations->size());
   accelerations->assign(accelerations->size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
@@ -980,7 +972,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
         body1, b1,
         positions,
         accelerations,
-        hints);
+        &(*hints)[b1]);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
        b1 < number_of_oblate_bodies_ +
@@ -994,13 +986,12 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
         body1, b1,
         positions,
         accelerations,
-        hints);
+        &(*hints)[b1]);
   }
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::ComputeMasslessBodiesTotalAccelerations(
-    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
@@ -1010,11 +1001,10 @@ void Ephemeris<Frame>::ComputeMasslessBodiesTotalAccelerations(
   // First, the acceleration due to the gravitational field of the
   // massive bodies.
   ComputeMasslessBodiesGravitationalAccelerations(
-      trajectories, t, positions, accelerations, hints);
+      t, positions, accelerations, hints);
 
   // Then, the intrinsic accelerations, if any.
   if (!intrinsic_accelerations.empty()) {
-    CHECK_EQ(trajectories.size(), intrinsic_accelerations.size());
     for (int i = 0; i < intrinsic_accelerations.size(); ++i) {
       auto const intrinsic_acceleration = intrinsic_accelerations[i];
       if (intrinsic_acceleration != nullptr) {
