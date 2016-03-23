@@ -145,9 +145,9 @@ class ReferenceFrameSelector : WindowRenderer {
       CelestialBody parent = selected_celestial_.orbit.referenceBody;
       TypeSelector(FrameType.BARYCENTRIC_ROTATING,
                    "Reference frame fixing the barycentre of " +
-                       selected_celestial_.theName + ", the plane in which" +
-                       " they move about the barycentre, and " +
-                       parent.theName + " and the line between them");
+                   selected_celestial_.theName + " and " + parent.theName +
+                   ", the plane in which they move about the barycentre, and " +
+                   "the line between them");
 #if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
       TypeSelector(FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT,
                    "Reference frame fixing the centre of " +
@@ -209,7 +209,7 @@ class ReferenceFrameSelector : WindowRenderer {
    if (UnityEngine.GUILayout.Toggle(frame_type == value,
                                     text,
                                     UnityEngine.GUILayout.Width(150),
-                                    UnityEngine.GUILayout.Height(75))) {
+                                    UnityEngine.GUILayout.Height(120))) {
       if (frame_type != value) {
         frame_type = value;
         on_change_(FrameParameters());
