@@ -1,5 +1,12 @@
 initial_state {
-  frame : ICRF_J2000_EQUATOR
+  frame {
+    # SolarSystemTag
+    tag_type_fingerprint : 3869656371
+    # ICRF_J2000_EQUATOR
+    tag                  : 2
+    is_inertial          : true
+  }
+
   # The time of the initial state, as a TDB Julian date.
   # This is 1950-Apr-02 23:17:53.1853 TDB.
   epoch : 2433374.47075446

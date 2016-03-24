@@ -1,5 +1,11 @@
 gravity_model {
-  frame : ICRF_J2000_EQUATOR
+  frame {
+    # SolarSystemTag
+    tag_type_fingerprint : 3869656371
+    # ICRF_J2000_EQUATOR
+    tag                  : 2
+    is_inertial          : true
+  }
 
   # Unless otherwise mentioned, axis directions and mean radii are from "Report
   # of the IAU Working Group on Cartographic Coordinates and Rotational

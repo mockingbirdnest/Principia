@@ -63,8 +63,8 @@ void SolarSystem<Frame>::Initialize(
 
   // We don't support using a different frame that the one specified by the
   // instance.
-  CHECK_EQ(Frame::tag, initial_state_.initial_state().frame());
-  CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
+  Frame::ReadFromMessage(initial_state_.initial_state().frame());
+  Frame::ReadFromMessage(gravity_model_.gravity_model().frame());
 
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {

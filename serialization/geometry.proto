@@ -146,6 +146,7 @@ message Frame {
   }
 
   // The frame tags used in the solar system simulation.
+  // tag_type_fingerprint = 3869656371
   enum SolarSystemTag {
     ICRF_J2000_ECLIPTIC = 1;
     ICRF_J2000_EQUATOR = 2;
@@ -163,6 +164,8 @@ message Frame {
   }
 
   required fixed32 tag_type_fingerprint = 1;
+  // TODO(phl): It would be good to have a more friendly representation for text
+  // protos.
   required int32 tag = 2;
   required bool is_inertial = 3;
 }
