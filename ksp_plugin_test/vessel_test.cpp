@@ -10,6 +10,7 @@ namespace principia {
 
 using physics::Ephemeris;
 using physics::SolarSystem;
+using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
@@ -33,18 +34,19 @@ class VesselTest : public testing::Test {
             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
             /*step=*/1 * Second) {
     solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433282_500000000.proto.txt");
-    t0_ = solar_system_.epoch();
+        SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
+        SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
     ephemeris_ = solar_system_.MakeEphemeris(
-        /*fitting_tolerance=*/1 * Milli(Metre), ephemeris_fixed_parameters_);
+        /*fitting_tolerance=*/1 * Metre, ephemeris_fixed_parameters_);
     earth_ = std::make_unique<Celestial>(
         solar_system_.massive_body(*ephemeris_, "Earth"));
     vessel_ = std::make_unique<Vessel>(earth_.get(),
                                        ephemeris_.get(),
                                        adaptive_parameters_,
                                        history_fixed_parameters_);
+    t0_ = solar_system_.epoch();
+    t1_ = t0_ + 11.1 * Second;
+    t2_ = t1_ + 22.2 * Second;
   }
 
   SolarSystem<Barycentric> solar_system_;
@@ -56,17 +58,21 @@ class VesselTest : public testing::Test {
   std::unique_ptr<Vessel> vessel_;
   DegreesOfFreedom<Barycentric> d1_ = {
       Barycentric::origin +
-          Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
-      Velocity<Barycentric>(
-          {4 * Metre / Second, 5 * Metre / Second, 6 * Metre / Second})};
+          Displacement<Barycentric>(
+              {1 * Kilo(Metre), 2 * Kilo(Metre), 3 * Kilo(Metre)}),
+      Velocity<Barycentric>({4 * Kilo(Metre) / Second,
+                             5 * Kilo(Metre) / Second,
+                             6 * Kilo(Metre) / Second})};
   DegreesOfFreedom<Barycentric> d2_ = {
       Barycentric::origin +
-          Displacement<Barycentric>({11 * Metre, 12 * Metre, 13 * Metre}),
-      Velocity<Barycentric>(
-          {14 * Metre / Second, 15 * Metre / Second, 16 * Metre / Second})};
+          Displacement<Barycentric>(
+              {11 * Kilo(Metre), 12 * Kilo(Metre), 13 * Kilo(Metre)}),
+      Velocity<Barycentric>({14 * Kilo(Metre) / Second,
+                             15 * Kilo(Metre) / Second,
+                             16 * Kilo(Metre) / Second})};
   Instant t0_;
-  Instant const t1_ = kUniversalTimeEpoch;
-  Instant const t2_ = kUniversalTimeEpoch + 42.3 * Second;
+  Instant t1_;
+  Instant t2_;
 };
 
 using VesselDeathTest = VesselTest;
@@ -108,8 +114,7 @@ TEST_F(VesselTest, Parent) {
 TEST_F(VesselTest, AdvanceTime) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
   vessel_->AdvanceTimeNotInBubble(t2_);
-  EXPECT_EQ(kUniversalTimeEpoch + 42 * Second,
-            vessel_->history().last().time());
+  EXPECT_EQ(t2_ - 0.2 * Second, vessel_->history().last().time());
   EXPECT_EQ(t2_, vessel_->prolongation().last().time());
 }
 
