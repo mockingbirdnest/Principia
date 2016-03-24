@@ -50,6 +50,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   // 2     1     1     2
   //   |<   7/3 m   >|
 
+  bodies.reserve(4);  // We'll call new_body 4 times.
   HierarchicalSystem<Frame> system(new_body(2 * Kilogram));
   elements.semimajor_axis = 7.0 / 3.0 * Metre;
   system.Add(new_body(2 * Kilogram), /*parent=*/bodies[0], elements);
@@ -102,6 +103,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   // .     .     .
   //    |<1.5 m >|
 
+  bodies.reserve(3);  // We'll call new_body 3 times.
   HierarchicalSystem<Frame> system(new_body());
   elements.mean_motion = Sqrt(3 / Pow<3>(1.5)) * Radian / Second;
   system.Add(new_body(), /*parent=*/bodies[0], elements);
