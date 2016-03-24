@@ -133,14 +133,14 @@ inline void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
+        flight_plan_adaptive_step_parameters) {
   flight_plan_ = std::make_unique<FlightPlan>(
                      history_.get(),
                      /*initial_time=*/history().last().time(),
                      /*final_time=*/final_time,
                      initial_mass,
                      ephemeris_,
-                     adaptive_step_parameters);
+                     flight_plan_adaptive_step_parameters);
 }
 
 inline void Vessel::DeleteFlightPlan() {
@@ -301,7 +301,7 @@ inline Vessel::Vessel()
           McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/1 * Second) {}
 
-inline void Vessel::AdvanceHistoryIfNeeded(Instant const & time) {
+inline void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
   Instant const& history_last_time = history_->last().time();
   Time const& Δt = history_fixed_step_parameters_.step();
 

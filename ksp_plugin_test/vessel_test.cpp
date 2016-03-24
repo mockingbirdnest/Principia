@@ -71,6 +71,13 @@ class VesselTest : public testing::Test {
       Velocity<Barycentric>({14 * Kilo(Metre) / Second,
                              15 * Kilo(Metre) / Second,
                              16 * Kilo(Metre) / Second})};
+  DegreesOfFreedom<Barycentric> d3_ = {
+      Barycentric::origin +
+          Displacement<Barycentric>(
+              {21 * Kilo(Metre), 22 * Kilo(Metre), 23 * Kilo(Metre)}),
+      Velocity<Barycentric>({24 * Kilo(Metre) / Second,
+                             25 * Kilo(Metre) / Second,
+                             26 * Kilo(Metre) / Second})};
   Instant t0_;
   Instant t1_;
   Instant t2_;
@@ -120,6 +127,8 @@ TEST_F(VesselTest, AdvanceTimeInBubble) {
   EXPECT_EQ(t2_, vessel_->prolongation().last().time());
   EXPECT_EQ(d2_, vessel_->prolongation().last().degrees_of_freedom());
   EXPECT_TRUE(vessel_->is_dirty());
+  vessel_->AdvanceTimeInBubble(t3_, d3_);
+  EXPECT_TRUE(vessel_->is_dirty());
 }
 
 TEST_F(VesselTest, AdvanceTimeNotInBubble) {
@@ -142,6 +151,18 @@ TEST_F(VesselTest, Prediction) {
   EXPECT_FALSE(vessel_->has_prediction());
 }
 
+TEST_F(VesselTest, FlightPlan) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  EXPECT_FALSE(vessel_->has_flight_plan());
+  vessel_->CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
+  EXPECT_TRUE(vessel_->has_flight_plan());
+  EXPECT_EQ(0, vessel_->flight_plan().number_of_manœuvres());
+  EXPECT_EQ(1, vessel_->flight_plan().number_of_segments());
+  vessel_->DeleteFlightPlan();
+  EXPECT_FALSE(vessel_->has_flight_plan());
+}
+
 TEST_F(VesselDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Vessel message;
@@ -155,17 +176,19 @@ TEST_F(VesselDeathTest, SerializationError) {
 
 TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
-  EXPECT_FALSE(message.has_history());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   vessel_->AdvanceTimeNotInBubble(t2_);
-  EXPECT_FALSE(vessel_->has_prediction());
   vessel_->UpdatePrediction(t3_, adaptive_parameters_);
+  vessel_->CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
 
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_history());
   EXPECT_TRUE(message.has_prediction_last_time());
+  EXPECT_TRUE(message.has_flight_plan());
   vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
   EXPECT_TRUE(vessel_->is_initialized());
+  EXPECT_TRUE(vessel_->has_prediction());
+  EXPECT_TRUE(vessel_->has_flight_plan());
 }
 
 }  // namespace ksp_plugin
