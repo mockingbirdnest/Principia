@@ -40,9 +40,9 @@ class Vessel {
   Vessel(not_null<Celestial const*> const parent,
          not_null<Ephemeris<Barycentric>*> const ephemeris,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             adaptive_step_parameters,
+             prolongation_adaptive_step_parameters,
          Ephemeris<Barycentric>::FixedStepParameters const&
-             fixed_step_parameters);
+             history_fixed_step_parameters);
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
@@ -113,7 +113,7 @@ class Vessel {
   virtual void UpdatePrediction(
       Instant const& last_time,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters);
+          prediction_adaptive_step_parameters);
 
   // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
   virtual void DeletePrediction();
@@ -137,8 +137,9 @@ class Vessel {
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters const
-      adaptive_step_parameters_;
-  Ephemeris<Barycentric>::FixedStepParameters const fixed_step_parameters_;
+      prolongation_adaptive_step_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters const
+      history_fixed_step_parameters_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;

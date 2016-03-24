@@ -24,7 +24,7 @@ class VesselTest : public testing::Test {
   VesselTest()
       : adaptive_parameters_(
             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-            /*max_steps=*/1,
+            /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second),
         ephemeris_fixed_parameters_(
@@ -47,6 +47,7 @@ class VesselTest : public testing::Test {
     t0_ = solar_system_.epoch();
     t1_ = t0_ + 11.1 * Second;
     t2_ = t1_ + 22.2 * Second;
+    t3_ = t2_ + 33.3 * Second;
   }
 
   SolarSystem<Barycentric> solar_system_;
@@ -73,6 +74,7 @@ class VesselTest : public testing::Test {
   Instant t0_;
   Instant t1_;
   Instant t2_;
+  Instant t3_;
 };
 
 using VesselDeathTest = VesselTest;
@@ -111,11 +113,33 @@ TEST_F(VesselTest, Parent) {
   EXPECT_EQ(&celestial, vessel_->parent());
 }
 
-TEST_F(VesselTest, AdvanceTime) {
+TEST_F(VesselTest, AdvanceTimeInBubble) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeInBubble(t2_, d2_);
+  EXPECT_EQ(t2_ - 0.2 * Second, vessel_->history().last().time());
+  EXPECT_EQ(t2_, vessel_->prolongation().last().time());
+  EXPECT_EQ(d2_, vessel_->prolongation().last().degrees_of_freedom());
+  EXPECT_TRUE(vessel_->is_dirty());
+}
+
+TEST_F(VesselTest, AdvanceTimeNotInBubble) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
   vessel_->AdvanceTimeNotInBubble(t2_);
   EXPECT_EQ(t2_ - 0.2 * Second, vessel_->history().last().time());
   EXPECT_EQ(t2_, vessel_->prolongation().last().time());
+  EXPECT_NE(d2_, vessel_->prolongation().last().degrees_of_freedom());
+  EXPECT_FALSE(vessel_->is_dirty());
+}
+
+TEST_F(VesselTest, Prediction) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  EXPECT_FALSE(vessel_->has_prediction());
+  vessel_->UpdatePrediction(t3_, adaptive_parameters_);
+  EXPECT_TRUE(vessel_->has_prediction());
+  EXPECT_LE(t3_, vessel_->prediction().last().time());
+  vessel_->DeletePrediction();
+  EXPECT_FALSE(vessel_->has_prediction());
 }
 
 TEST_F(VesselDeathTest, SerializationError) {
@@ -133,8 +157,13 @@ TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
   EXPECT_FALSE(message.has_history());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  EXPECT_FALSE(vessel_->has_prediction());
+  vessel_->UpdatePrediction(t3_, adaptive_parameters_);
+
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_history());
+  EXPECT_TRUE(message.has_prediction_last_time());
   vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
   EXPECT_TRUE(vessel_->is_initialized());
 }
