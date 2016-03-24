@@ -61,10 +61,15 @@ void SolarSystem<Frame>::Initialize(
                                             &initial_state_));
   CHECK(initial_state_.has_initial_state());
 
-  // We don't support using a different frame that the one specified by the
-  // instance.
-  CHECK_EQ(Frame::tag, initial_state_.initial_state().frame());
-  CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
+  // If a frame is specified in the files it must match the frame of this
+  // instance.  Otherwise the frame of the instance is used.  This is convenient
+  // for tests.
+  if (initial_state_.initial_state().has_frame()) {
+    CHECK_EQ(Frame::tag, initial_state_.initial_state().frame());
+  }
+  if (gravity_model_.gravity_model().has_frame()) {
+    CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
+  }
 
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {
