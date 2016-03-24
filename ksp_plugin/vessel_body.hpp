@@ -59,9 +59,9 @@ inline DiscreteTrajectory<Barycentric> const& Vessel::prolongation() const {
   return *prolongation_;
 }
 
-inline not_null<FlightPlan*> Vessel::flight_plan() const {
-  CHECK(is_initialized());
-  return flight_plan_.get();
+inline FlightPlan& Vessel::flight_plan() const {
+  CHECK(has_flight_plan());
+  return *flight_plan_;
 }
 
 inline bool Vessel::has_flight_plan() const {

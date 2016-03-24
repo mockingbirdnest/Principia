@@ -62,7 +62,7 @@ class Vessel {
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
 
   // Requires |is_initialized()|.
-  virtual not_null<FlightPlan*> flight_plan() const;
+  virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
 
   // Requires |has_prediction()|.
@@ -83,7 +83,7 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // Advances time for a vessol not in the physics bubble.  This may clean the
+  // Advances time for a vessel not in the physics bubble.  This may clean the
   // vessel.
   virtual void AdvanceTimeNotInBubble(Instant const& time);
 

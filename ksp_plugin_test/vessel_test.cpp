@@ -53,20 +53,53 @@ class VesselTest : public testing::Test {
                               15 * Metre / Second,
                               16 * Metre / Second})};
   Instant const t1_ = kUniversalTimeEpoch;
-  Instant const t2_ = kUniversalTimeEpoch + 42 * Second;
+  Instant const t2_ = kUniversalTimeEpoch + 42.3 * Second;
 };
 
 using VesselDeathTest = VesselTest;
 
 TEST_F(VesselDeathTest, Uninitialized) {
-  EXPECT_DEATH({vessel_->history();}, "is_initialized");
-  EXPECT_DEATH({vessel_->prolongation();}, "is_initialized");
+  EXPECT_DEATH({
+    vessel_->history();
+  }, "is_initialized");
+  EXPECT_DEATH({
+    vessel_->prolongation();
+  }, "is_initialized");
 }
 
-TEST_F(VesselTest, InitializationAndSynchronization) {
+TEST_F(VesselTest, Initialization) {
   EXPECT_FALSE(vessel_->is_initialized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   EXPECT_TRUE(vessel_->is_initialized());
+  auto const& prolongation = vessel_->prolongation();
+  EXPECT_EQ(t2_, prolongation.last().time());
+  auto const& history = vessel_->history();
+  EXPECT_EQ(t2_, history.last().time());
+  EXPECT_FALSE(vessel_->has_flight_plan());
+  EXPECT_FALSE(vessel_->has_prediction());
+}
+
+TEST_F(VesselTest, Dirty) {
+  EXPECT_FALSE(vessel_->is_dirty());
+  vessel_->set_dirty();
+  EXPECT_TRUE(vessel_->is_dirty());
+}
+
+TEST_F(VesselTest, Parent) {
+  MassiveBody body(2 * Kilogram);
+  Celestial celestial(&body);
+
+  EXPECT_EQ(&parent_, vessel_->parent());
+  vessel_->set_parent(&celestial);
+  EXPECT_EQ(&celestial, vessel_->parent());
+}
+
+TEST_F(VesselTest, AdvanceTime) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  EXPECT_EQ(kUniversalTimeEpoch + 42 * Second,
+            vessel_->history().last().time());
+  EXPECT_EQ(t2_, vessel_->prolongation().last().time());
 }
 
 TEST_F(VesselDeathTest, SerializationError) {
