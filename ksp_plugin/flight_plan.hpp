@@ -45,7 +45,7 @@ class FlightPlan {
       Mass const& initial_mass,
       not_null<Ephemeris<Barycentric>*> const ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_parameters);
+          adaptive_step_parameters);
   virtual ~FlightPlan();
 
   virtual Instant initial_time() const;
@@ -70,12 +70,15 @@ class FlightPlan {
   // last manœuvre or before |initial_time_|.
   virtual bool SetFinalTime(Instant const& final_time);
 
+  virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  adaptive_step_parameters() const;
+
   // Sets the parameters used to compute the trajectories.  The trajectories are
   // recomputed.  Returns false (and doesn't change this object) if the
   // parameters would make it impossible to recompute the trajectories.
   virtual bool SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_parameters);
+          adaptive_step_parameters);
 
   // Returns the number of trajectory segments in this object.
   virtual int number_of_segments() const;
@@ -152,7 +155,7 @@ class FlightPlan {
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
   // either end prematurely or follow an anomalous segment; in the latter case
   // they are empty.

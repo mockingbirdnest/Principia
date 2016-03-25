@@ -4,11 +4,13 @@
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 
@@ -16,12 +18,14 @@ namespace principia {
 
 using base::not_null;
 using geometry::Instant;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
 using ksp_plugin::WorldSun;
+using physics::Ephemeris;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -34,9 +38,28 @@ namespace interface {
 
 namespace {
 
+Ephemeris<Barycentric>::AdaptiveStepParameters
+FromInterfaceAdaptiveStepParameters(
+    AdaptiveStepParameters const& adaptive_step_parameters) {
+  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      adaptive_step_parameters.max_steps,
+      adaptive_step_parameters.length_integration_tolerance * Metre,
+      adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
+}
+
+ksp_plugin::Burn FromInterfaceBurn(Plugin const* const plugin,
+                                   Burn const& burn) {
+  return {burn.thrust_in_kilonewtons * Kilo(Newton),
+          burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
+          NewNavigationFrame(plugin, burn.frame),
+          Instant() + burn.initial_time * Second,
+          Velocity<Frenet<Navigation>>(
+              ToR3Element(burn.delta_v) * (Metre / Second))};
+}
+
 not_null<Vessel*> GetVessel(Plugin const* const plugin,
                             char const* const vessel_guid) {
-  // TODO(phl): Should this check if the vessel is synchronized/initialized?
   CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
   return plugin->GetVessel(vessel_guid);
 }
@@ -91,17 +114,18 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
           ToXYZ(Δv.coordinates() / (Metre / Second))};
 }
 
-ksp_plugin::Burn ToBurn(Plugin const* const plugin, Burn const& burn) {
-  return {burn.thrust_in_kilonewtons * Kilo(Newton),
-          burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
-          NewNavigationFrame(plugin, burn.frame),
-          Instant() + burn.initial_time * Second,
-          Velocity<Frenet<Navigation>>(
-              ToR3Element(burn.delta_v) * (Metre / Second))};
+AdaptiveStepParameters ToInterfaceAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters) {
+  return {adaptive_step_parameters.max_steps(),
+          adaptive_step_parameters.length_integration_tolerance() / Metre,
+          adaptive_step_parameters.speed_integration_tolerance() /
+              (Metre / Second)};
 }
 
-NavigationManoeuvre ToNavigationManoeuvre(Plugin const* const plugin,
-                                          NavigationManœuvre const& manœuvre) {
+NavigationManoeuvre ToInterfaceNavigationManoeuvre(
+    Plugin const* const plugin,
+    NavigationManœuvre const& manœuvre) {
   OrthogonalMap<Barycentric, World> const barycentric_to_world =
       OrthogonalMap<WorldSun, World>::Identity() *
       plugin->BarycentricToWorldSun();
@@ -153,7 +177,7 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
                                  Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      Append(ToBurn(plugin, burn)));
+                      Append(FromInterfaceBurn(plugin, burn)));
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
@@ -184,6 +208,15 @@ bool principia__FlightPlanExists(
   return m.Return(GetVessel(plugin, vessel_guid)->has_flight_plan());
 }
 
+AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetAdaptiveStepParameters> m(
+      {plugin, vessel_guid});
+  return m.Return(ToInterfaceAdaptiveStepParameters(
+      GetFlightPlan(plugin, vessel_guid).adaptive_step_parameters()));
+}
+
 double principia__FlightPlanGetFinalTime(Plugin const* const plugin,
                                          char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetFinalTime> m({plugin, vessel_guid});
@@ -205,7 +238,7 @@ NavigationManoeuvre principia__FlightPlanGetManoeuvre(
   journal::Method<journal::FlightPlanGetManoeuvre> m({plugin,
                                                       vessel_guid,
                                                       index});
-  return m.Return(ToNavigationManoeuvre(
+  return m.Return(ToInterfaceNavigationManoeuvre(
                       plugin,
                       GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
 }
@@ -294,7 +327,19 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
                                                      vessel_guid,
                                                      burn});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      ReplaceLast(ToBurn(plugin, burn)));
+                      ReplaceLast(FromInterfaceBurn(plugin, burn)));
+}
+
+bool principia__FlightPlanSetAdaptiveStepParameters(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    AdaptiveStepParameters const adaptive_step_parameters) {
+  journal::Method<journal::FlightPlanSetAdaptiveStepParameters> m(
+      {plugin, vessel_guid, adaptive_step_parameters});
+  return m.Return(
+      GetFlightPlan(plugin, vessel_guid).
+          SetAdaptiveStepParameters(
+              FromInterfaceAdaptiveStepParameters(adaptive_step_parameters)));
 }
 
 bool principia__FlightPlanSetFinalTime(Plugin const* const plugin,

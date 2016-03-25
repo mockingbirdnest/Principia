@@ -376,6 +376,12 @@ void JournalProtoProcessor::ProcessRequiredInt32Field(
   field_cxx_type_[descriptor] = "int";
 }
 
+void JournalProtoProcessor::ProcessRequiredInt64Field(
+    FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "Int64";
+  field_cxx_type_[descriptor] = "std::int64_t";
+}
+
 void JournalProtoProcessor::ProcessRequiredUint32Field(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "uint";
@@ -466,6 +472,9 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_INT32:
       ProcessRequiredInt32Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_INT64:
+      ProcessRequiredInt64Field(descriptor);
       break;
     case FieldDescriptor::TYPE_MESSAGE:
       ProcessRequiredMessageField(descriptor);

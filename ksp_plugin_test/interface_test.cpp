@@ -918,6 +918,40 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(Return(Instant() + 4 * Second));
   EXPECT_EQ(4, principia__FlightPlanGetFinalTime(plugin_.get(), kVesselGUID));
 
+  EXPECT_CALL(
+      flight_plan,
+      SetAdaptiveStepParameters(AllOf(
+          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
+                   11),
+          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
+                       length_integration_tolerance,
+                   22 * Metre),
+          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
+                       speed_integration_tolerance,
+                   33 * Metre / Second))))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
+                  plugin_.get(),
+                  kVesselGUID,
+                  {/*max_step=*/11,
+                   /*length_integration_tolerance=*/22,
+                   /*speed_integration_tolerance=*/33}));
+
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
+      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      /*max_steps=*/111,
+      /*length_integration_tolerance=*/222 * Metre,
+      /*speed_integration_tolerance=*/333 * Metre / Second);
+  EXPECT_CALL(flight_plan, adaptive_step_parameters())
+      .WillOnce(ReturnRef(adaptive_step_parameters));
+  AdaptiveStepParameters expected_adaptive_step_parameters = {
+      /*max_step=*/111,
+      /*length_integration_tolerance=*/222,
+      /*speed_integration_tolerance=*/333};
+  EXPECT_EQ(expected_adaptive_step_parameters,
+            principia__FlightPlanGetAdaptiveStepParameters(
+                plugin_.get(), kVesselGUID));
+
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(
