@@ -851,7 +851,7 @@ public partial class PrincipiaPluginAdapter
     if (!rendering_lines_) {
       Log.Fatal("|AddSegment| outside of |DrawLines|");
     }
-    if (hide_behind_bodies && IsHidden(world_begin) || IsHidden(world_end)) {
+    if (hide_behind_bodies && (IsHidden(world_begin) || IsHidden(world_end))) {
       return;
     }
     var begin = WorldToMapScreen(world_begin);
