@@ -111,6 +111,23 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
 }
 
 template<typename Frame>
+std::int64_t Ephemeris<Frame>::AdaptiveStepParameters::max_steps() const {
+  return max_steps_;
+}
+
+template<typename Frame>
+Length Ephemeris<Frame>::AdaptiveStepParameters::length_integration_tolerance()
+    const {
+  return length_integration_tolerance_;
+}
+
+template<typename Frame>
+Speed Ephemeris<Frame>::AdaptiveStepParameters::speed_integration_tolerance()
+    const {
+  return speed_integration_tolerance_;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::AdaptiveStepParameters::set_length_integration_tolerance(
     Length const& length_integration_tolerance) {
   length_integration_tolerance_ = length_integration_tolerance;

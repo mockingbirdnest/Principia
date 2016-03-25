@@ -12,6 +12,15 @@ inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
 
+inline bool operator==(AdaptiveStepParameters const& left,
+                       AdaptiveStepParameters const& right) {
+  return left.max_steps == right.max_steps &&
+         NaNIndependentEq(left.length_integration_tolerance,
+                          right.length_integration_tolerance) &&
+         NaNIndependentEq(left.speed_integration_tolerance,
+                          right.speed_integration_tolerance);
+}
+
 inline bool operator==(Burn const& left, Burn const& right) {
   return NaNIndependentEq(left.thrust_in_kilonewtons,
                           right.thrust_in_kilonewtons) &&

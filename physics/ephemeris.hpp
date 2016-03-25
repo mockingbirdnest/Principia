@@ -54,6 +54,10 @@ class Ephemeris {
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
+    std::int64_t max_steps() const;
+    Length length_integration_tolerance() const;
+    Speed speed_integration_tolerance() const;
+
     void set_length_integration_tolerance(
         Length const& length_integration_tolerance);
     void set_speed_integration_tolerance(
