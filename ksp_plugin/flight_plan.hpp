@@ -71,8 +71,9 @@ class FlightPlan {
   virtual bool SetFinalTime(Instant const& final_time);
 
   // Sets the parameters used to compute the trajectories.  The trajectories are
-  // recomputed.
-  virtual void SetAdaptiveStepParameters(
+  // recomputed.  Returns false (and doesn't change this object) if the
+  // parameters would make it impossible to recompute the trajectories.
+  virtual bool SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_parameters);
 
@@ -102,8 +103,9 @@ class FlightPlan {
   // the last coast segment must end at |manœuvre.initial_time()|.
   void Append(NavigationManœuvre manœuvre);
 
-  // Recomputes all trajectories in |segments_|.
-  void RecomputeSegments();
+  // Recomputes all trajectories in |segments_|.  Returns false if the
+  // recomputation resulted in more than 2 anomalous segments.
+  bool RecomputeSegments();
 
   // Flows the last segment for the duration of |manœuvre| using its intrinsic
   // acceleration.

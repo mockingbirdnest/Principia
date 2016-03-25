@@ -120,10 +120,18 @@ bool FlightPlan::SetFinalTime(Instant const& final_time) {
   }
 }
 
-void FlightPlan::SetAdaptiveStepParameters(
+bool FlightPlan::SetAdaptiveStepParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
+  auto const original_adaptive_parameters = adaptive_parameters_;
   adaptive_parameters_ = adaptive_parameters;
-  RecomputeSegments();
+  if (RecomputeSegments()) {
+    return true;
+  } else {
+    // If the recomputation fails, leave this place as clean as we found it.
+    adaptive_parameters_ = original_adaptive_parameters;
+    CHECK(RecomputeSegments());
+    return false;
+  }
 }
 
 int FlightPlan::number_of_segments() const {
@@ -206,7 +214,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       flight_plan->manœuvres_.push_back(
           NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
     }
-    flight_plan->RecomputeSegments();
+    CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
   }
 
   return std::move(flight_plan);
@@ -234,7 +242,7 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
   }
 }
 
-void FlightPlan::RecomputeSegments() {
+bool FlightPlan::RecomputeSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
   // order of the forks.
   while (segments_.size() > 1) {
@@ -249,6 +257,7 @@ void FlightPlan::RecomputeSegments() {
     AddSegment();
   }
   CoastLastSegment(final_time_);
+  return anomalous_segments_ <= 2;
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
@@ -261,8 +270,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
                                          manœuvre.final_time(),
                                          adaptive_parameters_);
     if (!reached_final_time) {
-      ++anomalous_segments_;
-      CHECK_GE(2, anomalous_segments_);
+      anomalous_segments_ = 1;
     }
   }
 }
@@ -278,8 +286,7 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
                           final_time,
                           adaptive_parameters_);
     if (!reached_final_time) {
-      ++anomalous_segments_;
-      CHECK_GE(2, anomalous_segments_);
+      anomalous_segments_ = 1;
     }
   }
 }
@@ -299,7 +306,6 @@ void FlightPlan::AddSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
-    CHECK_GE(2, anomalous_segments_);
   }
 }
 
