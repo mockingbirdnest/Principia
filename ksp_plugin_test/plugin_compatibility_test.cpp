@@ -201,7 +201,9 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
                                                       Lt(-6000 * Second))));
     }
   }
-  EXPECT_EQ(1, number_of_flight_plans);
+  // There is one flight plan in the message but it is anomalous so we dropped
+  // it.
+  EXPECT_EQ(0, number_of_flight_plans);
   EXPECT_EQ(2, number_of_predictions);
 
   // Serialize and deserialize it in the new format.

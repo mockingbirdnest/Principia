@@ -174,7 +174,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
             AdaptiveStepSizeIntegrator<
                 Ephemeris<Barycentric>::NewtonianMotionEquation>::
                     ReadFromMessage(message.integrator()),
-            /*max_steps=*/1000,
+            /*max_steps=*/10000,
             Length::ReadFromMessage(message.length_integration_tolerance()),
             Speed::ReadFromMessage(message.speed_integration_tolerance()));
   } else {
@@ -207,6 +207,12 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
           NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
       flight_plan->manœuvres_[i].set_coasting_trajectory(
           flight_plan->segments_[2 * i]);
+    }
+
+    // We may end up here with a flight plan that has too many anomalous
+    // segments because of past bugs.  The best we can do is to ignore it.
+    if (!flight_plan->RecomputeSegments()) {
+      flight_plan.reset();
     }
   } else {
     for (int i = 0; i < message.manoeuvre_size(); ++i) {
