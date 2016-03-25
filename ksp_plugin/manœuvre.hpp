@@ -66,6 +66,9 @@ class Manœuvre {
   Speed Δv() const;
   void set_Δv(Speed const& Δv);
 
+  // Intensity must have been set.  Returns true if Δv is NaN or infinite.
+  bool IsSingular() const;
+
   // Equivalent characterizations of timing.  Only one of the mutators may be
   // called, and only once.
   Instant initial_time() const;
