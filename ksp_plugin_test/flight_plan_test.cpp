@@ -288,13 +288,30 @@ TEST_F(FlightPlanTest, Segments) {
 }
 
 TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
-  // Reduce |max_steps|.
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+  flight_plan_->GetSegment(4, &begin, &end);
+  --end;
+  EXPECT_EQ(t0_ + 42 * Second, end.time());
+
+  // Reduce |max_steps|.  This causes many segments to become truncated so the
+  // call to |SetAdaptiveStepParameters| returns false and the flight plan is
+  // unaffected.
   Ephemeris<Barycentric>::AdaptiveStepParameters parameters(
       DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-      /*max_steps=*/10,
+      /*max_steps=*/1,
       /*length_integration_tolerance=*/1 * Milli(Metre),
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
   flight_plan_->SetAdaptiveStepParameters(parameters);
+
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+  flight_plan_->GetSegment(4, &begin, &end);
+  --end;
+  EXPECT_EQ(t0_ + 42 * Second, end.time());
 }
 
 TEST_F(FlightPlanTest, Serialization) {

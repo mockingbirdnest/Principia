@@ -262,6 +262,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
                                          adaptive_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
+      CHECK_GE(2, anomalous_segments_);
     }
   }
 }
@@ -278,6 +279,7 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
                           adaptive_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
+      CHECK_GE(2, anomalous_segments_);
     }
   }
 }
@@ -297,6 +299,7 @@ void FlightPlan::AddSegment() {
   segments_.emplace_back(segments_.back()->NewForkAtLast());
   if (anomalous_segments_ > 0) {
     ++anomalous_segments_;
+    CHECK_GE(2, anomalous_segments_);
   }
 }
 
