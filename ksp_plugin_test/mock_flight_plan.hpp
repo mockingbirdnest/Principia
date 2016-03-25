@@ -27,6 +27,12 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_METHOD1(SetFinalTime, bool(Instant const& final_time));
 
+  MOCK_CONST_METHOD0(adaptive_step_parameters,
+                     Ephemeris<Barycentric>::AdaptiveStepParameters const&());
+  MOCK_METHOD1(SetAdaptiveStepParameters,
+               bool(Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                        adaptive_step_parameters));
+
   MOCK_METHOD2(SetTolerances,
                void(Length const& length_integration_tolerance,
                     Speed const& speed_integration_tolerance));

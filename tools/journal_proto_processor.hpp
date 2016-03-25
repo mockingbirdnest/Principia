@@ -48,6 +48,7 @@ class JournalProtoProcessor {
   void ProcessRequiredBoolField(FieldDescriptor const* descriptor);
   void ProcessRequiredDoubleField(FieldDescriptor const* descriptor);
   void ProcessRequiredInt32Field(FieldDescriptor const* descriptor);
+  void ProcessRequiredInt64Field(FieldDescriptor const* descriptor);
   void ProcessRequiredUint32Field(FieldDescriptor const* descriptor);
 
   void ProcessSingleStringField(FieldDescriptor const* descriptor);

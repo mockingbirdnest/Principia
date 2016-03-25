@@ -20,7 +20,7 @@ message XYZ {
 }
 
 message AdaptiveStepParameters {
-  required int32 max_steps = 1;
+  required int64 max_steps = 1;
   required double length_integration_tolerance = 2;
   required double speed_integration_tolerance = 3;
 }
