@@ -121,9 +121,9 @@ message Vessel {
       prolongation_adaptive_step_parameters = 7;  // required
   optional Ephemeris.FixedStepParameters
       history_fixed_step_parameters = 8;  // required
-  optional Point prediction_last_time = 9;
+  optional Point prediction_last_time = 9;  // required
   optional Ephemeris.AdaptiveStepParameters
-      prediction_adaptive_step_parameters = 10;
+      prediction_adaptive_step_parameters = 10;  // required
   optional bool is_dirty = 11 [default = false];  // required
 
   // Pre-Буняковский.

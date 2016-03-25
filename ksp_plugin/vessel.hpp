@@ -40,6 +40,8 @@ class Vessel {
   Vessel(not_null<Celestial const*> const parent,
          not_null<Ephemeris<Barycentric>*> const ephemeris,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             prediction_adaptive_step_parameters,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prolongation_adaptive_step_parameters,
          Ephemeris<Barycentric>::FixedStepParameters const&
              history_fixed_step_parameters);
@@ -136,6 +138,8 @@ class Vessel {
   void FlowProlongation(Instant const& time);
 
   MasslessBody const body_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters
+      prediction_adaptive_step_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters const
       prolongation_adaptive_step_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters const
@@ -156,9 +160,7 @@ class Vessel {
 
   // Child trajectory of |history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
-  std::experimental::optional<Instant> prediction_last_time_;
-  std::experimental::optional<Ephemeris<Barycentric>::AdaptiveStepParameters>
-      prediction_adaptive_step_parameters_;
+  Instant prediction_last_time_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;

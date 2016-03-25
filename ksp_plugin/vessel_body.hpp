@@ -23,12 +23,15 @@ namespace ksp_plugin {
 inline Vessel::Vessel(not_null<Celestial const*> const parent,
                       not_null<Ephemeris<Barycentric>*> const ephemeris,
                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                          prediction_adaptive_step_parameters,
+                      Ephemeris<Barycentric>::AdaptiveStepParameters const&
                           prolongation_adaptive_step_parameters,
                       Ephemeris<Barycentric>::FixedStepParameters const&
                           history_fixed_step_parameters)
     : body_(),
       parent_(parent),
       ephemeris_(ephemeris),
+      prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
       prolongation_adaptive_step_parameters_(
           prolongation_adaptive_step_parameters),
       history_fixed_step_parameters_(history_fixed_step_parameters) {}
@@ -182,14 +185,9 @@ inline void Vessel::WriteToMessage(
       message->mutable_history_fixed_step_parameters());
   history_->WriteToMessage(message->mutable_history(),
                            {prolongation_, prediction_});
-  if (prediction_last_time_) {
-    prediction_last_time_->WriteToMessage(
-        message->mutable_prediction_last_time());
-  }
-  if (prediction_adaptive_step_parameters_) {
-    prediction_adaptive_step_parameters_->WriteToMessage(
-        message->mutable_prediction_adaptive_step_parameters());
-  }
+  prediction_last_time_.WriteToMessage(message->mutable_prediction_last_time());
+  prediction_adaptive_step_parameters_.WriteToMessage(
+      message->mutable_prediction_adaptive_step_parameters());
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -208,21 +206,21 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
   if (is_pre_буняковский) {
     // For the prolongation.
-    Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-        /*integrator=*/DormandElMikkawyPrince1986RKN434FM<
-            Position<Barycentric>>(),
-        /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-        /*ength_tolerance=*/1 * Milli(Metre),
-        /*speed_tolerance=*/1 * Milli(Metre) / Second);
+    Ephemeris<Barycentric>::AdaptiveStepParameters
+        prolongation_adaptive_step_parameters(
+            /*integrator=*/DormandElMikkawyPrince1986RKN434FM<
+                Position<Barycentric>>(),
+            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+            /*ength_tolerance=*/1 * Milli(Metre),
+            /*speed_tolerance=*/1 * Milli(Metre) / Second);
     // For the history.
-    Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters(
+    Ephemeris<Barycentric>::FixedStepParameters history_fixed_step_parameters(
         McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
         /*step=*/10 * Second);
-    vessel = make_not_null_unique<Vessel>(
-        parent,
-        ephemeris,
-        adaptive_step_parameters,
-        fixed_step_parameters);
+    vessel = make_not_null_unique<Vessel>(parent,
+                                          ephemeris,
+                                          prolongation_adaptive_step_parameters,
+                                          history_fixed_step_parameters);
 
     if (message.has_history_and_prolongation()) {
       vessel->history_ =
@@ -252,7 +250,9 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   } else {
     CHECK(message.has_history() &&
           message.has_history_fixed_step_parameters() &&
-          message.has_prolongation_adaptive_step_parameters())
+          message.has_prolongation_adaptive_step_parameters() &&
+          message.has_prediction_last_time() &&
+          message.has_prediction_adaptive_step_parameters())
         << message.DebugString();
     vessel = make_not_null_unique<Vessel>(
         parent,
@@ -265,20 +265,13 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             {&vessel->prolongation_, &vessel->prediction_});
-    if (message.has_prediction_last_time()) {
-      vessel->prediction_last_time_ =
-          Instant::ReadFromMessage(message.prediction_last_time());
-    }
-    if (message.has_prediction_adaptive_step_parameters()) {
-      vessel->prediction_adaptive_step_parameters_ =
-          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-              message.prediction_adaptive_step_parameters());
-    }
-    if (vessel->prediction_last_time_ &&
-        vessel->prediction_adaptive_step_parameters_) {
-      vessel->UpdatePrediction(*vessel->prediction_last_time_,
-                               *vessel->prediction_adaptive_step_parameters_);
-    }
+    vessel->prediction_last_time_ =
+        Instant::ReadFromMessage(message.prediction_last_time());
+    vessel->prediction_adaptive_step_parameters_ =
+        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+            message.prediction_adaptive_step_parameters());
+    vessel->UpdatePrediction(vessel->prediction_last_time_,
+                             vessel->prediction_adaptive_step_parameters_);
     if (message.has_flight_plan()) {
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
           message.flight_plan(), vessel->history_.get(), ephemeris);
