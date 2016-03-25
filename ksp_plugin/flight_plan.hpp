@@ -74,8 +74,9 @@ class FlightPlan {
   adaptive_step_parameters() const;
 
   // Sets the parameters used to compute the trajectories.  The trajectories are
-  // recomputed.
-  virtual void SetAdaptiveStepParameters(
+  // recomputed.  Returns false (and doesn't change this object) if the
+  // parameters would make it impossible to recompute the trajectories.
+  virtual bool SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters);
 
@@ -90,6 +91,9 @@ class FlightPlan {
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
 
   void WriteToMessage(not_null<serialization::FlightPlan*> const message) const;
+
+  // This may return a null pointer if the flight plan contained in the
+  // |message| is anomalous.
   static std::unique_ptr<FlightPlan> ReadFromMessage(
       serialization::FlightPlan const& message,
       not_null<DiscreteTrajectory<Barycentric>*> const root,
@@ -105,8 +109,9 @@ class FlightPlan {
   // the last coast segment must end at |manœuvre.initial_time()|.
   void Append(NavigationManœuvre manœuvre);
 
-  // Recomputes all trajectories in |segments_|.
-  void RecomputeSegments();
+  // Recomputes all trajectories in |segments_|.  Returns false if the
+  // recomputation resulted in more than 2 anomalous segments.
+  bool RecomputeSegments();
 
   // Flows the last segment for the duration of |manœuvre| using its intrinsic
   // acceleration.

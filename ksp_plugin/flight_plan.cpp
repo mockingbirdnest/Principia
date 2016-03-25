@@ -11,10 +11,10 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 namespace ksp_plugin {
 
 FlightPlan::FlightPlan(not_null<DiscreteTrajectory<Barycentric>*> const root,
-                       Instant const& initial_time,
-                       Instant const& final_time,
-                       Mass const& initial_mass,
-                       not_null<Ephemeris<Barycentric>*> const ephemeris,
+    Instant const& initial_time,
+    Instant const& final_time,
+    Mass const& initial_mass,
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
                        Ephemeris<Barycentric>::AdaptiveStepParameters const&
                            adaptive_step_parameters)
     : initial_time_(initial_time),
@@ -125,11 +125,19 @@ FlightPlan::adaptive_step_parameters() const {
   return adaptive_step_parameters_;
 }
 
-void FlightPlan::SetAdaptiveStepParameters(
+bool FlightPlan::SetAdaptiveStepParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
+  auto const original_adaptive_step_parameters = adaptive_step_parameters_;
   adaptive_step_parameters_ = adaptive_step_parameters;
-  RecomputeSegments();
+  if (RecomputeSegments()) {
+    return true;
+  } else {
+    // If the recomputation fails, leave this place as clean as we found it.
+    adaptive_step_parameters_ = original_adaptive_step_parameters;
+    CHECK(RecomputeSegments());
+    return false;
+  }
 }
 
 int FlightPlan::number_of_segments() const {
@@ -206,13 +214,19 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       flight_plan->manœuvres_[i].set_coasting_trajectory(
           flight_plan->segments_[2 * i]);
     }
+
+    // We may end up here with a flight plan that has too many anomalous
+    // segments because of past bugs.  The best we can do is to ignore it.
+    if (!flight_plan->RecomputeSegments()) {
+      flight_plan.reset();
+    }
   } else {
     for (int i = 0; i < message.manoeuvre_size(); ++i) {
       auto const& manoeuvre = message.manoeuvre(i);
       flight_plan->manœuvres_.push_back(
           NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
     }
-    flight_plan->RecomputeSegments();
+    CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
   }
 
   return std::move(flight_plan);
@@ -240,7 +254,7 @@ void FlightPlan::Append(NavigationManœuvre manœuvre) {
   }
 }
 
-void FlightPlan::RecomputeSegments() {
+bool FlightPlan::RecomputeSegments() {
   // It is important that the segments be destroyed in (reverse chronological)
   // order of the forks.
   while (segments_.size() > 1) {
@@ -255,6 +269,7 @@ void FlightPlan::RecomputeSegments() {
     AddSegment();
   }
   CoastLastSegment(final_time_);
+  return anomalous_segments_ <= 2;
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
@@ -267,7 +282,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
                                          manœuvre.final_time(),
                                          adaptive_step_parameters_);
     if (!reached_final_time) {
-      ++anomalous_segments_;
+      anomalous_segments_ = 1;
     }
   }
 }
@@ -283,7 +298,7 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
                           final_time,
                           adaptive_step_parameters_);
     if (!reached_final_time) {
-      ++anomalous_segments_;
+      anomalous_segments_ = 1;
     }
   }
 }
