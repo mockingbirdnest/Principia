@@ -69,7 +69,8 @@ bool FlightPlan::Append(Burn burn) {
       MakeNavigationManœuvre(
           std::move(burn),
           manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
-  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_)) {
+  if (manœuvre.FitsBetween(start_of_last_coast(), final_time_) &&
+      !manœuvre.IsSingular()) {
     DiscreteTrajectory<Barycentric>* recomputed_last_coast =
         CoastIfReachesManœuvreInitialTime(last_coast(), manœuvre);
     if (recomputed_last_coast != nullptr) {
@@ -94,7 +95,8 @@ bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
   auto manœuvre =
       MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
-  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_)) {
+  if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_) &&
+      !manœuvre.IsSingular()) {
     DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
         CoastIfReachesManœuvreInitialTime(penultimate_coast(), manœuvre);
     if (recomputed_penultimate_coast != nullptr) {
