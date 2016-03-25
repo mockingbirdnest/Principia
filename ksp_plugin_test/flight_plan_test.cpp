@@ -99,19 +99,19 @@ class FlightPlanTest : public testing::Test {
             /*initial_time=*/t0_ + 1 * Second,
             Velocity<Frenet<Navigation>>(
                 {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  };
+  }
 
   Burn MakeSecondBurn() {
     auto burn = MakeFirstBurn();
     burn.initial_time += 1 * Second;
     return burn;
-  };
+  }
 
   Burn MakeThirdBurn() {
     auto burn = MakeFirstBurn();
     burn.Δv *= 10;
     return burn;
-  };
+  }
 
   Instant const t0_;
   std::unique_ptr<TestNavigationFrame> navigation_frame_;

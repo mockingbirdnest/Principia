@@ -174,7 +174,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
             AdaptiveStepSizeIntegrator<
                 Ephemeris<Barycentric>::NewtonianMotionEquation>::
                     ReadFromMessage(message.integrator()),
-            /*max_steps=*/10000,
+            /*max_steps=*/1000,
             Length::ReadFromMessage(message.length_integration_tolerance()),
             Speed::ReadFromMessage(message.speed_integration_tolerance()));
   } else {
