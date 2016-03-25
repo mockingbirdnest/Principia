@@ -21,7 +21,7 @@ class MockVessel : public Vessel {
   MOCK_METHOD0(mutable_prolongation,
                not_null<DiscreteTrajectory<Barycentric>*>());
 
-  MOCK_CONST_METHOD0(flight_plan, not_null<FlightPlan*>());
+  MOCK_CONST_METHOD0(flight_plan, FlightPlan&());
   MOCK_CONST_METHOD0(has_flight_plan, bool());
 
   MOCK_CONST_METHOD0(prediction, DiscreteTrajectory<Barycentric> const&());

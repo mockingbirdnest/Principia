@@ -88,6 +88,9 @@ class FlightPlan {
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
 
   void WriteToMessage(not_null<serialization::FlightPlan*> const message) const;
+
+  // This may return a null pointer if the flight plan contained in the
+  // |message| is anomalous.
   static std::unique_ptr<FlightPlan> ReadFromMessage(
       serialization::FlightPlan const& message,
       not_null<DiscreteTrajectory<Barycentric>*> const root,

@@ -118,8 +118,9 @@ message Vessel {
   optional FlightPlan flight_plan = 4;
   optional Trajectory history = 6;  // required
   optional Ephemeris.AdaptiveStepParameters
-      adaptive_step_parameters = 7;  // required
-  optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;  // required
+      prolongation_adaptive_step_parameters = 7;  // required
+  optional Ephemeris.FixedStepParameters
+      history_fixed_step_parameters = 8;  // required
   optional Point prediction_last_time = 9;
   optional Ephemeris.AdaptiveStepParameters
       prediction_adaptive_step_parameters = 10;
