@@ -92,6 +92,27 @@ class FlightPlanTest : public testing::Test {
                 {Δv, 0 * Metre / Second, 0 * Metre / Second})};
   }
 
+  Burn MakeFirstBurn() {
+    return {/*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            /*initial_time=*/t0_ + 1 * Second,
+            Velocity<Frenet<Navigation>>(
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  }
+
+  Burn MakeSecondBurn() {
+    auto burn = MakeFirstBurn();
+    burn.initial_time += 1 * Second;
+    return burn;
+  }
+
+  Burn MakeThirdBurn() {
+    auto burn = MakeFirstBurn();
+    burn.Δv *= 10;
+    return burn;
+  }
+
   Instant const t0_;
   std::unique_ptr<TestNavigationFrame> navigation_frame_;
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
@@ -194,85 +215,46 @@ TEST_F(FlightPlanTest, Singular) {
 }
 
 TEST_F(FlightPlanTest, Append) {
-  auto const first_burn = [this]() -> Burn {
-    return {/*thrust=*/1 * Newton,
-            /*specific_impulse=*/1 * Newton * Second / Kilogram,
-            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            /*initial_time=*/t0_ + 1 * Second,
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  };
-  auto const second_burn = [this, first_burn]() -> Burn {
-    auto burn = first_burn();
-    burn.initial_time += 1 * Second;
-    return burn;
-  };
   // Burn ends after final time.
-  EXPECT_FALSE(flight_plan_->Append(first_burn()));
+  EXPECT_FALSE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
-  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_FALSE(flight_plan_->Append(first_burn()));
+  EXPECT_FALSE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_TRUE(flight_plan_->Append(second_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
 }
 
 TEST_F(FlightPlanTest, Remove) {
-  auto const first_burn = [this]() -> Burn {
-    return {/*thrust=*/1 * Newton,
-            /*specific_impulse=*/1 * Newton * Second / Kilogram,
-            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            /*initial_time=*/t0_ + 1 * Second,
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  };
-  auto const second_burn = [this, first_burn]() -> Burn {
-    auto burn = first_burn();
-    burn.initial_time += 1 * Second;
-    return burn;
-  };
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
-  EXPECT_TRUE(flight_plan_->Append(first_burn()));
-  EXPECT_TRUE(flight_plan_->Append(second_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
   flight_plan_->RemoveLast();
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   flight_plan_->RemoveLast();
   EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
   // Check that appending still works.
-  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
 TEST_F(FlightPlanTest, Replace) {
-  auto const first_burn = [this]() -> Burn {
-    return {/*thrust=*/1 * Newton,
-            /*specific_impulse=*/1 * Newton * Second / Kilogram,
-            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            /*initial_time=*/t0_ + 1 * Second,
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  };
-  auto const second_burn = [this, first_burn]() -> Burn {
-    auto burn = first_burn();
-    burn.Δv *= 10;
-    return burn;
-  };
   flight_plan_->SetFinalTime(t0_ + 1.7 * Second);
-  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   Mass const old_final_mass =
       flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
           final_mass();
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  EXPECT_FALSE(flight_plan_->ReplaceLast(second_burn()));
+  EXPECT_FALSE(flight_plan_->ReplaceLast(MakeThirdBurn()));
   EXPECT_EQ(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
-  EXPECT_TRUE(flight_plan_->ReplaceLast(second_burn()));
+  EXPECT_TRUE(flight_plan_->ReplaceLast(MakeThirdBurn()));
   EXPECT_GT(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
@@ -280,24 +262,10 @@ TEST_F(FlightPlanTest, Replace) {
 }
 
 TEST_F(FlightPlanTest, Segments) {
-  auto const first_burn = [this]() -> Burn {
-    return {/*thrust=*/1 * Newton,
-            /*specific_impulse=*/1 * Newton * Second / Kilogram,
-            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            /*initial_time=*/t0_ + 1 * Second,
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  };
-  auto const second_burn = [this, first_burn]() -> Burn {
-    auto burn = first_burn();
-    burn.initial_time += 1 * Second;
-    return burn;
-  };
-
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
-  EXPECT_TRUE(flight_plan_->Append(first_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(3, flight_plan_->number_of_segments());
-  EXPECT_TRUE(flight_plan_->Append(second_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(5, flight_plan_->number_of_segments());
 
   std::vector<Instant> times;
@@ -319,24 +287,50 @@ TEST_F(FlightPlanTest, Segments) {
   }
 }
 
-TEST_F(FlightPlanTest, Serialization) {
-  auto const first_burn = [this]() -> Burn {
-    return {/*thrust=*/1 * Newton,
-            /*specific_impulse=*/1 * Newton * Second / Kilogram,
-            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
-            /*initial_time=*/t0_ + 1 * Second,
-            Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  };
-  auto const second_burn = [this, first_burn]() -> Burn {
-    auto burn = first_burn();
-    burn.initial_time += 1 * Second;
-    return burn;
-  };
-
+TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
-  EXPECT_TRUE(flight_plan_->Append(first_burn()));
-  EXPECT_TRUE(flight_plan_->Append(second_burn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+  flight_plan_->GetSegment(4, &begin, &end);
+  --end;
+  EXPECT_EQ(t0_ + 42 * Second, end.time());
+
+  // Reduce |max_steps|.  This causes many segments to become truncated so the
+  // call to |SetAdaptiveStepParameters| returns false and the flight plan is
+  // unaffected.
+  EXPECT_FALSE(flight_plan_->SetAdaptiveStepParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/1,
+          /*length_integration_tolerance=*/1 * Milli(Metre),
+          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
+
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+  flight_plan_->GetSegment(4, &begin, &end);
+  --end;
+  EXPECT_EQ(t0_ + 42 * Second, end.time());
+
+  // Increase |max_steps|.  It works.
+  EXPECT_TRUE(flight_plan_->SetAdaptiveStepParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/10000,
+          /*length_integration_tolerance=*/1 * Milli(Metre),
+          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
+
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+  flight_plan_->GetSegment(4, &begin, &end);
+  --end;
+  EXPECT_EQ(t0_ + 42 * Second, end.time());
+}
+
+TEST_F(FlightPlanTest, Serialization) {
+  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
 
   serialization::FlightPlan message;
   flight_plan_->WriteToMessage(&message);

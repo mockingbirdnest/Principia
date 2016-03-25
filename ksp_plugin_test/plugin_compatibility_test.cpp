@@ -175,16 +175,16 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
     if (vessel->has_flight_plan()) {
       ++number_of_flight_plans;
       // In this file, only one vessel has a flight plan.
-      auto const flight_plan = vessel->flight_plan();
-      EXPECT_EQ(2, flight_plan->number_of_manœuvres());
-      EXPECT_EQ(5, flight_plan->number_of_segments());
+      auto const& flight_plan = vessel->flight_plan();
+      EXPECT_EQ(2, flight_plan.number_of_manœuvres());
+      EXPECT_EQ(5, flight_plan.number_of_segments());
 
       // Check that the times are in ascending order.
       std::experimental::optional<Instant> last_time;
-      for (int i = 0; i < flight_plan->number_of_segments(); ++i) {
+      for (int i = 0; i < flight_plan.number_of_segments(); ++i) {
         DiscreteTrajectory<Barycentric>::Iterator begin;
         DiscreteTrajectory<Barycentric>::Iterator end;
-        flight_plan->GetSegment(i, &begin, &end);
+        flight_plan.GetSegment(i, &begin, &end);
         if (last_time) {
           CHECK_LE(*last_time, begin.time());
         }
@@ -201,7 +201,9 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
                                                       Lt(-6000 * Second))));
     }
   }
-  EXPECT_EQ(1, number_of_flight_plans);
+  // There is one flight plan in the message but it is anomalous so we dropped
+  // it.
+  EXPECT_EQ(0, number_of_flight_plans);
   EXPECT_EQ(2, number_of_predictions);
 
   // Serialize and deserialize it in the new format.

@@ -45,7 +45,7 @@ FlightPlan& GetFlightPlan(Plugin const* const plugin,
                           char const* const vessel_guid) {
   Vessel const& vessel = *GetVessel(plugin, vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
-  return *vessel.flight_plan();
+  return vessel.flight_plan();
 }
 
 Burn GetBurn(NavigationManœuvre const& manœuvre) {

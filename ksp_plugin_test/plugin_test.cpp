@@ -599,14 +599,14 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   plugin_->CreateFlightPlan(guid,
                             /*final_time=*/HistoryTime(time, 8),
                             /*initial_mass=*/1 * Kilogram);
-  satellite->flight_plan()->Append(burn());
+  satellite->flight_plan().Append(burn());
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   EXPECT_LE(satellite->history().Begin().time(),
-            satellite->flight_plan()->initial_time());
-  EXPECT_EQ(1 * Newton, satellite->flight_plan()->GetManœuvre(0).thrust());
+            satellite->flight_plan().initial_time());
+  EXPECT_EQ(1 * Newton, satellite->flight_plan().GetManœuvre(0).thrust());
 }
 
 TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {

@@ -136,6 +136,11 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
   return begin < initial_time() && final_time() < end;
 }
 
+template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
+  return !std::isfinite(Δv() / (Metre / Second));
+}
+
 template <typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
     not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory) {
