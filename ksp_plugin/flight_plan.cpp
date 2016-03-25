@@ -10,18 +10,18 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 
 namespace ksp_plugin {
 
-FlightPlan::FlightPlan(
-    not_null<DiscreteTrajectory<Barycentric>*> const root,
-    Instant const& initial_time,
-    Instant const& final_time,
-    Mass const& initial_mass,
-    not_null<Ephemeris<Barycentric>*> const ephemeris,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters)
+FlightPlan::FlightPlan(not_null<DiscreteTrajectory<Barycentric>*> const root,
+                       Instant const& initial_time,
+                       Instant const& final_time,
+                       Mass const& initial_mass,
+                       not_null<Ephemeris<Barycentric>*> const ephemeris,
+                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                           adaptive_step_parameters)
     : initial_time_(initial_time),
       final_time_(final_time),
       initial_mass_(initial_mass),
       ephemeris_(ephemeris),
-      adaptive_parameters_(adaptive_parameters) {
+      adaptive_step_parameters_(adaptive_step_parameters) {
   CHECK(final_time_ >= initial_time_);
   auto it = root->LowerBound(initial_time_);
   if (it.time() != initial_time_) {
@@ -120,9 +120,15 @@ bool FlightPlan::SetFinalTime(Instant const& final_time) {
   }
 }
 
+Ephemeris<Barycentric>::AdaptiveStepParameters const&
+FlightPlan::adaptive_step_parameters() const {
+  return adaptive_step_parameters_;
+}
+
 void FlightPlan::SetAdaptiveStepParameters(
-    Ephemeris<Barycentric>::AdaptiveStepParameters const& adaptive_parameters) {
-  adaptive_parameters_ = adaptive_parameters;
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters) {
+  adaptive_step_parameters_ = adaptive_step_parameters;
   RecomputeSegments();
 }
 
@@ -145,7 +151,7 @@ void FlightPlan::WriteToMessage(
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   initial_time_.WriteToMessage(message->mutable_initial_time());
   final_time_.WriteToMessage(message->mutable_final_time());
-  adaptive_parameters_.WriteToMessage(
+  adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
   for (auto const& manœuvre : manœuvres_) {
     manœuvre.WriteToMessage(message->add_manoeuvre());
@@ -214,7 +220,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      adaptive_parameters_(
+      adaptive_step_parameters_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
@@ -259,7 +265,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
         ephemeris_->FlowWithAdaptiveStep(segments_.back(),
                                          manœuvre.IntrinsicAcceleration(),
                                          manœuvre.final_time(),
-                                         adaptive_parameters_);
+                                         adaptive_step_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
     }
@@ -275,7 +281,7 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
                           segments_.back(),
                           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
                           final_time,
-                          adaptive_parameters_);
+                          adaptive_step_parameters_);
     if (!reached_final_time) {
       ++anomalous_segments_;
     }
@@ -331,7 +337,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
           recomputed_coast,
           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
           manœuvre.initial_time(),
-          adaptive_parameters_);
+          adaptive_step_parameters_);
   if (!reached_manœuvre_initial_time) {
     recomputed_coast->parent()->DeleteFork(&recomputed_coast);
   }
