@@ -404,7 +404,9 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
   step_size.first_time_step = problem.t_final - initial_state.time.value;
-  CHECK_GT(step_size.first_time_step, 0 * Second) << "Flow back to the future";
+  CHECK_GT(step_size.first_time_step, 0 * Second)
+      << "Flow back to the future: " << problem.t_final
+      << " <= " << initial_state.time.value;
   step_size.safety_factor = 0.9;
   step_size.tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,

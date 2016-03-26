@@ -17,8 +17,6 @@ using quantities::si::Second;
 
 namespace ksp_plugin {
 
-// TODO(egg): We would want to use a real ephemeris to properly exercise the
-// limit cases.
 class VesselTest : public testing::Test {
  protected:
   VesselTest()
@@ -42,8 +40,9 @@ class VesselTest : public testing::Test {
         solar_system_.massive_body(*ephemeris_, "Earth"));
     vessel_ = std::make_unique<Vessel>(earth_.get(),
                                        ephemeris_.get(),
+                                       history_fixed_parameters_,
                                        adaptive_parameters_,
-                                       history_fixed_parameters_);
+                                       adaptive_parameters_);
     t0_ = solar_system_.epoch();
     t1_ = t0_ + 11.1 * Second;
     t2_ = t1_ + 22.2 * Second;
@@ -99,12 +98,13 @@ TEST_F(VesselTest, Initialization) {
   EXPECT_FALSE(vessel_->is_initialized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   EXPECT_TRUE(vessel_->is_initialized());
-  auto const& prolongation = vessel_->prolongation();
-  EXPECT_EQ(t2_, prolongation.last().time());
   auto const& history = vessel_->history();
   EXPECT_EQ(t2_, history.last().time());
+  auto const& prolongation = vessel_->prolongation();
+  EXPECT_EQ(t2_, prolongation.last().time());
+  auto const& prediction = vessel_->prediction();
+  EXPECT_EQ(t2_, prediction.last().time());
   EXPECT_FALSE(vessel_->has_flight_plan());
-  EXPECT_FALSE(vessel_->has_prediction());
 }
 
 TEST_F(VesselTest, Dirty) {
@@ -143,12 +143,8 @@ TEST_F(VesselTest, AdvanceTimeNotInBubble) {
 TEST_F(VesselTest, Prediction) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
   vessel_->AdvanceTimeNotInBubble(t2_);
-  EXPECT_FALSE(vessel_->has_prediction());
-  vessel_->UpdatePrediction(t3_, adaptive_parameters_);
-  EXPECT_TRUE(vessel_->has_prediction());
+  vessel_->UpdatePrediction(t3_);
   EXPECT_LE(t3_, vessel_->prediction().last().time());
-  vessel_->DeletePrediction();
-  EXPECT_FALSE(vessel_->has_prediction());
 }
 
 TEST_F(VesselTest, FlightPlan) {
@@ -178,16 +174,16 @@ TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   vessel_->AdvanceTimeNotInBubble(t2_);
-  vessel_->UpdatePrediction(t3_, adaptive_parameters_);
+  vessel_->UpdatePrediction(t3_);
   vessel_->CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
 
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_history());
+  EXPECT_TRUE(message.has_prediction_fork_time());
   EXPECT_TRUE(message.has_prediction_last_time());
   EXPECT_TRUE(message.has_flight_plan());
   vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
   EXPECT_TRUE(vessel_->is_initialized());
-  EXPECT_TRUE(vessel_->has_prediction());
   EXPECT_TRUE(vessel_->has_flight_plan());
 }
 

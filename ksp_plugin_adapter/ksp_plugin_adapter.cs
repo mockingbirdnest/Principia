@@ -790,13 +790,11 @@ public partial class PrincipiaPluginAdapter
                                 sun_world_position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
-      if (plugin_.HasPrediction(active_vessel_guid)) {
-        trajectory_iterator = plugin_.RenderedPrediction(
-                                  active_vessel_guid,
-                                  sun_world_position);
-        RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                  rendered_prediction_);
-      }
+      trajectory_iterator = plugin_.RenderedPrediction(
+                                active_vessel_guid,
+                                sun_world_position);
+      RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                rendered_prediction_);
       if (plugin_.FlightPlanExists(active_vessel_guid)) {
         int number_of_segments =
             plugin_.FlightPlanNumberOfSegments(active_vessel_guid);

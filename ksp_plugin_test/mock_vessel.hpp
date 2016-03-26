@@ -17,15 +17,12 @@ class MockVessel : public Vessel {
   MOCK_CONST_METHOD0(parent, not_null<Celestial const*>());
   MOCK_METHOD1(set_parent, void(not_null<Celestial const*> const parent));
 
+  MOCK_CONST_METHOD0(history, DiscreteTrajectory<Barycentric> const&());
   MOCK_CONST_METHOD0(prolongation, DiscreteTrajectory<Barycentric> const&());
-  MOCK_METHOD0(mutable_prolongation,
-               not_null<DiscreteTrajectory<Barycentric>*>());
+  MOCK_CONST_METHOD0(prediction, DiscreteTrajectory<Barycentric> const&());
 
   MOCK_CONST_METHOD0(flight_plan, FlightPlan&());
   MOCK_CONST_METHOD0(has_flight_plan, bool());
-
-  MOCK_CONST_METHOD0(prediction, DiscreteTrajectory<Barycentric> const&());
-  MOCK_CONST_METHOD0(has_prediction, bool());
 
   MOCK_METHOD0(set_dirty, void());
   MOCK_CONST_METHOD0(is_dirty, bool());
@@ -33,8 +30,6 @@ class MockVessel : public Vessel {
   MOCK_METHOD2(CreateHistoryAndForkProlongation,
                void(Instant const& time,
                     DegreesOfFreedom<Barycentric> const& degrees_of_freedom));
-
-  MOCK_METHOD1(AdvanceTime, void(Instant const& time));
 
   MOCK_METHOD1(ForgetBefore, void(Instant const& time));
 
@@ -48,12 +43,7 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD0(DeleteFlightPlan, void());
 
-  MOCK_METHOD2(UpdatePrediction,
-               void(Instant const& last_time,
-                    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                        adaptive_parameters));
-
-  MOCK_METHOD0(DeletePrediction, void());
+  MOCK_METHOD1(UpdatePrediction, void(Instant const& last_time));
 
   MOCK_CONST_METHOD1(WriteToMessage, void(
       not_null<serialization::Vessel*> const message));

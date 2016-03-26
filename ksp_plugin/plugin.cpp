@@ -69,28 +69,6 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 Time const kStep = 45 * Minute;
 Length const kFittingTolerance = 1 * Milli(Metre);
 
-Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
-  return Ephemeris<Barycentric>::FixedStepParameters(
-             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-             /*step=*/10 * Second);
-}
-
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters() {
-  return Ephemeris<Barycentric>::AdaptiveStepParameters(
-             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-             /*length_integration_tolerance=*/1 * Milli(Metre),
-             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
-}
-
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
-  return Ephemeris<Barycentric>::AdaptiveStepParameters(
-             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-             /*max_steps=*/1000,
-             /*length_integration_tolerance=*/1 * Metre,
-             /*speed_integration_tolerance=*/1 * Metre / Second);
-}
-
 }  // namespace
 
 Plugin::Plugin(Instant const& initial_time,
@@ -240,8 +218,9 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(parent,
                                                     ephemeris_.get(),
+                                                    history_parameters_,
                                                     prolongation_parameters_,
-                                                    history_parameters_));
+                                                    prediction_parameters_));
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
@@ -353,8 +332,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
-      current_time_ + prediction_length_,
-      prediction_parameters_);
+      current_time_ + prediction_length_);
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -378,10 +356,6 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   return RenderedTrajectoryFromIterators(vessel->history().Begin(),
                                          vessel->history().End(),
                                          sun_world_position);
-}
-
-bool Plugin::HasPrediction(GUID const& vessel_guid) const {
-  return find_vessel_by_guid_or_die(vessel_guid)->has_prediction();
 }
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
@@ -445,10 +419,18 @@ void Plugin::SetPredictionLength(Time const& t) {
 
 void Plugin::SetPredictionLengthTolerance(Length const& l) {
   prediction_parameters_.set_length_integration_tolerance(l);
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);
+  }
 }
 
 void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
   prediction_parameters_.set_speed_integration_tolerance(v);
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);
+  }
 }
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {

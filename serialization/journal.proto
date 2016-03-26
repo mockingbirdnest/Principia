@@ -618,22 +618,6 @@ message GetVersion {
   required Out out = 2;
 }
 
-message HasPrediction {
-  extend Method {
-    optional HasPrediction extension = 5028;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required bool result = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
-}
-
 message HasVessel {
   extend Method {
     optional HasVessel extension = 5039;
