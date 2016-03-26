@@ -136,7 +136,8 @@ class FlightPlanner : WindowRenderer {
         }
         UnityEngine.GUILayout.EndHorizontal();
 
-        if (UnityEngine.GUILayout.Button("Delete flight plan")) {
+        if (burn_editors_.Count == 0 && 
+            UnityEngine.GUILayout.Button("Delete flight plan")) {
           plugin_.FlightPlanDelete(vessel_guid);
           Reset();
         } else {
