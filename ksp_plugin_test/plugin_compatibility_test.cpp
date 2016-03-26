@@ -168,7 +168,9 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
   plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
 
   int number_of_flight_plans = 0;
-  int number_of_predictions = 0;
+  int number_of_predictions_bucket1 = 0;
+  int number_of_predictions_bucket2 = 0;
+  int number_of_predictions_bucket3 = 0;
   for (auto const& pair : plugin->vessels()) {
     auto const& guid = pair.first;
     Vessel const* const vessel = pair.second;
@@ -191,20 +193,26 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
         last_time = begin.time();
       }
     }
-    if (vessel->has_prediction()) {
-      ++number_of_predictions;
-      Time const last_time_from_current = vessel->prediction().last().time() -
-                                          plugin->CurrentTime();
-      EXPECT_THAT(last_time_from_current, AnyOf(AllOf(Gt(4000 * Second),
-                                                      Lt(5000 * Second)),
-                                                AllOf(Gt(-7000 * Second),
-                                                      Lt(-6000 * Second))));
+
+    Time const last_time_from_current = vessel->prediction().last().time() -
+                                        plugin->CurrentTime();
+    if (last_time_from_current > 4000 * Second &&
+        last_time_from_current < 5000 * Second) {
+      ++number_of_predictions_bucket1;
+    } else if (last_time_from_current > -7000 * Second &&
+               last_time_from_current < -6000 * Second) {
+      ++number_of_predictions_bucket2;
+    } else if (last_time_from_current > -4000 * Second &&
+               last_time_from_current < -3000 * Second) {
+      ++number_of_predictions_bucket3;
     }
   }
   // There is one flight plan in the message but it is anomalous so we dropped
   // it.
   EXPECT_EQ(0, number_of_flight_plans);
-  EXPECT_EQ(2, number_of_predictions);
+  EXPECT_EQ(1, number_of_predictions_bucket1);
+  EXPECT_EQ(1, number_of_predictions_bucket2);
+  EXPECT_EQ(15, number_of_predictions_bucket3);
 
   // Serialize and deserialize it in the new format.
   serialization::Plugin post_буняковский_serialized_plugin;

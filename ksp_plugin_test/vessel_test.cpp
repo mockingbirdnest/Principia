@@ -98,12 +98,13 @@ TEST_F(VesselTest, Initialization) {
   EXPECT_FALSE(vessel_->is_initialized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   EXPECT_TRUE(vessel_->is_initialized());
-  auto const& prolongation = vessel_->prolongation();
-  EXPECT_EQ(t2_, prolongation.last().time());
   auto const& history = vessel_->history();
   EXPECT_EQ(t2_, history.last().time());
+  auto const& prolongation = vessel_->prolongation();
+  EXPECT_EQ(t2_, prolongation.last().time());
+  auto const& prediction = vessel_->prediction();
+  EXPECT_EQ(t2_, prediction.last().time());
   EXPECT_FALSE(vessel_->has_flight_plan());
-  EXPECT_FALSE(vessel_->has_prediction());
 }
 
 TEST_F(VesselTest, Dirty) {
@@ -142,12 +143,8 @@ TEST_F(VesselTest, AdvanceTimeNotInBubble) {
 TEST_F(VesselTest, Prediction) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
   vessel_->AdvanceTimeNotInBubble(t2_);
-  EXPECT_FALSE(vessel_->has_prediction());
   vessel_->UpdatePrediction(t3_);
-  EXPECT_TRUE(vessel_->has_prediction());
   EXPECT_LE(t3_, vessel_->prediction().last().time());
-  vessel_->DeletePrediction();
-  EXPECT_FALSE(vessel_->has_prediction());
 }
 
 TEST_F(VesselTest, FlightPlan) {

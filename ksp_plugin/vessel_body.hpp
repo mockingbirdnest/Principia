@@ -43,6 +43,9 @@ inline not_null<MasslessBody const*> Vessel::body() const {
 
 inline bool Vessel::is_initialized() const {
   CHECK_EQ(history_ == nullptr, prolongation_ == nullptr);
+  CHECK_EQ(history_ == nullptr, prediction_ == nullptr);
+  CHECK_EQ(history_ == nullptr,
+           prediction_last_time_ == std::experimental::nullopt);
   return history_ != nullptr;
 }
 
@@ -108,6 +111,8 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->NewForkAtLast();
+  prediction_ = history_->NewForkAtLast();
+  prediction_last_time_ = time;
 }
 
 inline void Vessel::AdvanceTimeNotInBubble(Instant const& time) {
@@ -133,13 +138,11 @@ inline void Vessel::ForgetBefore(Instant const& time) {
 inline Instant Vessel::ForgettableTime() const {
   CHECK(is_initialized());
   Instant forgettable_time = prolongation_->Fork().time();
+  forgettable_time = std::min(forgettable_time,
+                              prediction_->Fork().time());
   if (flight_plan_ != nullptr) {
     forgettable_time = std::min(forgettable_time,
                                 flight_plan_->initial_time());
-  }
-  if (prediction_ != nullptr) {
-    forgettable_time = std::min(forgettable_time,
-                                prediction_->Fork().time());
   }
   return forgettable_time;
 }
@@ -163,23 +166,23 @@ inline void Vessel::DeleteFlightPlan() {
 }
 
 inline void Vessel::UpdatePrediction(Instant const& last_time) {
-  DeletePrediction();
+  CHECK(is_initialized());
+  history_->DeleteFork(&prediction_);
   prediction_ = history_->NewForkAtLast();
-  if (history().last().time() != prolongation().last().time()) {
-    prediction_->Append(prolongation().last().time(),
-                        prolongation().last().degrees_of_freedom());
+  auto const prolongation_last = prolongation_->last();
+  if (history_->last().time() != prolongation_last.time()) {
+    prediction_->Append(prolongation_last.time(),
+                        prolongation_last.degrees_of_freedom());
   }
-  ephemeris_->FlowWithAdaptiveStep(
-      prediction_,
-      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-      last_time,
-      prediction_adaptive_step_parameters_);
-  prediction_last_time_ = last_time;
-}
-
-inline void Vessel::DeletePrediction() {
-  if (has_prediction()) {
-    history_->DeleteFork(&prediction_);
+  if (last_time > prediction_->last().time()) {
+    ephemeris_->FlowWithAdaptiveStep(
+        prediction_,
+        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        last_time,
+        prediction_adaptive_step_parameters_);
+    prediction_last_time_ = last_time;
+  } else {
+    prediction_last_time_ = prediction_->last().time();
   }
 }
 
@@ -191,9 +194,11 @@ inline void Vessel::WriteToMessage(
       message->mutable_prolongation_adaptive_step_parameters());
   history_fixed_step_parameters_.WriteToMessage(
       message->mutable_history_fixed_step_parameters());
-  history_->WriteToMessage(message->mutable_history(),
-                           {prolongation_, prediction_});
-  prediction_last_time_.WriteToMessage(message->mutable_prediction_last_time());
+  history_->WriteToMessage(message->mutable_history(), {prolongation_});
+  if (prediction_last_time_) {
+    prediction_last_time_->WriteToMessage(
+        message->mutable_prediction_last_time());
+  }
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
   if (flight_plan_ != nullptr) {
@@ -232,6 +237,7 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
                 message.prediction(),
                 vessel->history_.get());
+        vessel->prediction_last_time_ = vessel->prediction_->last().time();
       }
       if (message.has_flight_plan()) {
         vessel->flight_plan_ = FlightPlan::ReadFromMessage(
@@ -243,6 +249,10 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->prolongation_ = vessel->history_->NewForkAtLast();
       CHECK(!message.has_prediction());
       CHECK(!message.has_flight_plan());
+    }
+    if (vessel->prediction_ == nullptr) {
+      vessel->prediction_ = vessel->history_->NewForkAtLast();
+      vessel->prediction_last_time_ = vessel->prediction_->last().time();
     }
   } else {
     CHECK(message.has_history() &&
@@ -260,10 +270,10 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             message.prolongation_adaptive_step_parameters()),
         Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
             message.prediction_adaptive_step_parameters()));
-    vessel->history_ =
-        DiscreteTrajectory<Barycentric>::ReadFromMessage(
-            message.history(),
-            {&vessel->prolongation_, &vessel->prediction_});
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(), {&vessel->prolongation_});
+    vessel->prediction_ = vessel->history_->NewForkAtLast();
+    vessel->prediction_last_time_ = vessel->prediction_->last().time();
     vessel->UpdatePrediction(
         Instant::ReadFromMessage(message.prediction_last_time()));
     if (message.has_flight_plan()) {

@@ -118,9 +118,6 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
-  virtual void DeletePrediction();
-
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(
       not_null<serialization::Vessel*> const message) const;
@@ -159,9 +156,9 @@ class Vessel {
   // timestep, which breaks symplecticity.
   DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
 
-  // Child trajectory of |history_|.
+  // Child trajectory of |*history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
-  Instant prediction_last_time_;
+  std::experimental::optional<Instant> prediction_last_time_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
