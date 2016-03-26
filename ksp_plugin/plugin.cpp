@@ -423,10 +423,18 @@ void Plugin::SetPredictionLength(Time const& t) {
 
 void Plugin::SetPredictionLengthTolerance(Length const& l) {
   prediction_parameters_.set_length_integration_tolerance(l);
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);
+  }
 }
 
 void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
   prediction_parameters_.set_speed_integration_tolerance(v);
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);
+  }
 }
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {

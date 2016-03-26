@@ -134,6 +134,7 @@ class Vessel {
   void AdvanceHistoryIfNeeded(Instant const& time);
   void FlowHistory(Instant const& time);
   void FlowProlongation(Instant const& time);
+  void FlowPrediction(Instant const& time);
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::FixedStepParameters const
@@ -158,7 +159,6 @@ class Vessel {
 
   // Child trajectory of |*history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
-  std::experimental::optional<Instant> prediction_last_time_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
