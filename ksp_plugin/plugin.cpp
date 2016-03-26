@@ -358,10 +358,6 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
                                          sun_world_position);
 }
 
-bool Plugin::HasPrediction(GUID const& vessel_guid) const {
-  return find_vessel_by_guid_or_die(vessel_guid)->has_prediction();
-}
-
 RenderedTrajectory<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {

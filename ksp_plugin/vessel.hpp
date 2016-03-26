@@ -60,14 +60,11 @@ class Vessel {
   // Require |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
+  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
   // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
-
-  // Requires |has_prediction()|.
-  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
-  virtual bool has_prediction() const;
 
   // A vessel that was in the physics since the last time its history advanced
   // (which with the time when its prolongation was reset).  For such a vessel,

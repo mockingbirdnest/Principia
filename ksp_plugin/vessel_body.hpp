@@ -65,6 +65,11 @@ inline DiscreteTrajectory<Barycentric> const& Vessel::prolongation() const {
   return *prolongation_;
 }
 
+inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
+  CHECK(is_initialized());
+  return *prediction_;
+}
+
 inline FlightPlan& Vessel::flight_plan() const {
   CHECK(has_flight_plan());
   return *flight_plan_;
@@ -72,15 +77,6 @@ inline FlightPlan& Vessel::flight_plan() const {
 
 inline bool Vessel::has_flight_plan() const {
   return flight_plan_ != nullptr;
-}
-
-inline DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
-  CHECK(has_prediction());
-  return *prediction_;
-}
-
-inline bool Vessel::has_prediction() const {
-  return prediction_ != nullptr;
 }
 
 inline void Vessel::set_dirty() {

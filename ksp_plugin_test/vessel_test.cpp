@@ -179,11 +179,11 @@ TEST_F(VesselTest, SerializationSuccess) {
 
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_history());
+  EXPECT_TRUE(message.has_prediction_fork_time());
   EXPECT_TRUE(message.has_prediction_last_time());
   EXPECT_TRUE(message.has_flight_plan());
   vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
   EXPECT_TRUE(vessel_->is_initialized());
-  EXPECT_TRUE(vessel_->has_prediction());
   EXPECT_TRUE(vessel_->has_flight_plan());
 }
 
