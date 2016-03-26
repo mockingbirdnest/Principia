@@ -57,7 +57,7 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> const parent);
 
-  // Require |is_initialized()|.
+  // These three functions require |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
