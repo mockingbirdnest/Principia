@@ -22,19 +22,20 @@ namespace ksp_plugin {
 
 inline Vessel::Vessel(not_null<Celestial const*> const parent,
                       not_null<Ephemeris<Barycentric>*> const ephemeris,
-                      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                          prediction_adaptive_step_parameters,
+                      Ephemeris<Barycentric>::FixedStepParameters const&
+                          history_fixed_step_parameters,
                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
                           prolongation_adaptive_step_parameters,
-                      Ephemeris<Barycentric>::FixedStepParameters const&
-                          history_fixed_step_parameters)
+                      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                          prediction_adaptive_step_parameters)
     : body_(),
       parent_(parent),
       ephemeris_(ephemeris),
-      prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
+      history_fixed_step_parameters_(history_fixed_step_parameters),
       prolongation_adaptive_step_parameters_(
           prolongation_adaptive_step_parameters),
-      history_fixed_step_parameters_(history_fixed_step_parameters) {}
+      prediction_adaptive_step_parameters_(
+          prediction_adaptive_step_parameters) {}
 
 inline not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
@@ -87,6 +88,17 @@ inline void Vessel::set_dirty() {
 
 inline bool Vessel::is_dirty() const {
   return is_dirty_;
+}
+
+inline void Vessel::set_prediction_adaptive_step_parameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prediction_adaptive_step_parameters) {
+  prediction_adaptive_step_parameters_ = prediction_adaptive_step_parameters;
+}
+
+inline Ephemeris<Barycentric>::AdaptiveStepParameters const&
+Vessel::prediction_adaptive_step_parameters() const {
+  return prediction_adaptive_step_parameters_;
 }
 
 inline void Vessel::CreateHistoryAndForkProlongation(
@@ -150,10 +162,7 @@ inline void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
-inline void Vessel::UpdatePrediction(
-    Instant const& last_time,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
+inline void Vessel::UpdatePrediction(Instant const& last_time) {
   DeletePrediction();
   prediction_ = history_->NewForkAtLast();
   if (history().last().time() != prolongation().last().time()) {
@@ -164,9 +173,8 @@ inline void Vessel::UpdatePrediction(
       prediction_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       last_time,
-      adaptive_step_parameters);
+      prediction_adaptive_step_parameters_);
   prediction_last_time_ = last_time;
-  prediction_adaptive_step_parameters_ = adaptive_step_parameters;
 }
 
 inline void Vessel::DeletePrediction() {
@@ -205,22 +213,11 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                   message.has_owned_prolongation();
 
   if (is_pre_буняковский) {
-    // For the prolongation.
-    Ephemeris<Barycentric>::AdaptiveStepParameters
-        prolongation_adaptive_step_parameters(
-            /*integrator=*/DormandElMikkawyPrince1986RKN434FM<
-                Position<Barycentric>>(),
-            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*ength_tolerance=*/1 * Milli(Metre),
-            /*speed_tolerance=*/1 * Milli(Metre) / Second);
-    // For the history.
-    Ephemeris<Barycentric>::FixedStepParameters history_fixed_step_parameters(
-        McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-        /*step=*/10 * Second);
     vessel = make_not_null_unique<Vessel>(parent,
                                           ephemeris,
-                                          prolongation_adaptive_step_parameters,
-                                          history_fixed_step_parameters);
+                                          DefaultHistoryParameters(),
+                                          DefaultProlongationParameters(),
+                                          DefaultPredictionParameters());
 
     if (message.has_history_and_prolongation()) {
       vessel->history_ =
@@ -257,21 +254,18 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel = make_not_null_unique<Vessel>(
         parent,
         ephemeris,
+        Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+            message.history_fixed_step_parameters()),
         Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
             message.prolongation_adaptive_step_parameters()),
-        Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-            message.history_fixed_step_parameters()));
+        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+            message.prediction_adaptive_step_parameters()));
     vessel->history_ =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(
             message.history(),
             {&vessel->prolongation_, &vessel->prediction_});
-    vessel->prediction_last_time_ =
-        Instant::ReadFromMessage(message.prediction_last_time());
-    vessel->prediction_adaptive_step_parameters_ =
-        Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-            message.prediction_adaptive_step_parameters());
-    vessel->UpdatePrediction(vessel->prediction_last_time_,
-                             vessel->prediction_adaptive_step_parameters_);
+    vessel->UpdatePrediction(
+        Instant::ReadFromMessage(message.prediction_last_time()));
     if (message.has_flight_plan()) {
       vessel->flight_plan_ = FlightPlan::ReadFromMessage(
           message.flight_plan(), vessel->history_.get(), ephemeris);
@@ -285,14 +279,9 @@ inline Vessel::Vessel()
     : body_(),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      prolongation_adaptive_step_parameters_(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-          /*max_steps=*/1,
-          /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second),
-      history_fixed_step_parameters_(
-          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-          /*step=*/1 * Second) {}
+      history_fixed_step_parameters_(DefaultHistoryParameters()),
+      prolongation_adaptive_step_parameters_(DefaultProlongationParameters()),
+      prediction_adaptive_step_parameters_(DefaultPredictionParameters()) {}
 
 inline void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
   Instant const& history_last_time = history_->last().time();
@@ -330,6 +319,30 @@ inline void Vessel::FlowProlongation(Instant const& time) {
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       time,
       prolongation_adaptive_step_parameters_);
+}
+
+inline Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
+  return Ephemeris<Barycentric>::FixedStepParameters(
+             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+             /*step=*/10 * Second);
+}
+
+inline Ephemeris<Barycentric>::AdaptiveStepParameters
+DefaultProlongationParameters() {
+  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+             /*length_integration_tolerance=*/1 * Milli(Metre),
+             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+}
+
+inline Ephemeris<Barycentric>::AdaptiveStepParameters
+DefaultPredictionParameters() {
+  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+             /*max_steps=*/1000,
+             /*length_integration_tolerance=*/1 * Metre,
+             /*speed_integration_tolerance=*/1 * Metre / Second);
 }
 
 }  // namespace ksp_plugin
