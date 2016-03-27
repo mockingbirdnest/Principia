@@ -865,6 +865,7 @@ public partial class PrincipiaPluginAdapter
       Vector3d camera_to_point = point - camera;
       Vector3d camera_to_body = body.position - camera;
       double inner_product = Vector3d.Dot(camera_to_point, camera_to_body);
+      double r_squared = body.Radius * body.Radius;
       // The projections on the camera-body axis of |point| and of the horizon
       // have lengths |inner_product| / d and d - r^2/d, where d is the distance
       // between the camera and the body and r is the body's radius, thus if
@@ -873,11 +874,15 @@ public partial class PrincipiaPluginAdapter
       // Otherwise, we check whether |point| is within the cone hidden from the
       // camera, by comparing the squared cosines multiplied by
       // d^2|camera_to_point|^2.
+      // In addition, we check whether we're inside the body (this covers the
+      // cap above the horizon plane and below the surface of the body, which
+      // would otherwise be displayed.
       double d_squared_minus_r_squared =
-          camera_to_body.sqrMagnitude - body.Radius * body.Radius;
-      if (inner_product > d_squared_minus_r_squared &&
-          inner_product * inner_product >
-              camera_to_point.sqrMagnitude * d_squared_minus_r_squared) {
+          camera_to_body.sqrMagnitude - r_squared;
+      if ((body.position - point).sqrMagnitude < r_squared ||
+          (inner_product > d_squared_minus_r_squared &&
+           inner_product * inner_product >
+               camera_to_point.sqrMagnitude * d_squared_minus_r_squared)) {
         return true;
       }
     }
