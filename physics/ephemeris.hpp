@@ -142,12 +142,15 @@ class Ephemeris {
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
+  // Prolongs the ephemeris by at most |max_ephemeris_steps|.
   // Returns true if and only if |*trajectory| was integrated until |t|.
   virtual bool FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters const& parameters);
+      AdaptiveStepParameters const& parameters,
+      std::int64_t const max_ephemeris_steps =
+          std::numeric_limits<std::int64_t>::max());
 
   // Integrates, until at most |t|, the |trajectories| followed by massless
   // bodies in the gravitational potential described by |*this|.  If
