@@ -639,6 +639,22 @@ DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
           Time,
           Product<Exponentiation<Length, 2>, Exponentiation<Time, 2>>>(
           a2, a1, a0);
+      bool anomalous_solution = true;
+      if (solutions.size() == 1) {
+        Instant const apsis_time = *solutions.begin() + *previous_time;
+        if (apsis_time >= *previous_time && apsis_time <= time) {
+          anomalous_solution = false;
+          apsides.Append(apsis_time);
+        }
+      }
+      if (anomalous_solution) {
+        // Something went wrong when finding the zeroes of the derivative.  Use
+        // a linear approximation instead.
+        Instant const apsis_time =
+            Barycentre<Instant, Variation<Exponentiation<Length, 2>>>(
+                {time, *previous_time}, {r1, -r4});
+        apsides.Append(apsis_time);
+      }
     }
 
     previous_time = time;
