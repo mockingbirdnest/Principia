@@ -46,30 +46,36 @@ Argument Bisect(Function f,
   }
 }
 
-template<typename Argument>
-std::set<Argument> SolveQuadraticEquation(Argument const& a2,
-                                          Argument const& a1,
-                                          Argument const& a0) {
+template<typename Argument, typename Result>
+std::set<Argument> SolveQuadraticEquation(
+    Quotient<Result, Exponentiation<Argument, 2>> const& a2,
+    Quotient<Result, Argument> const& a1,
+    Result const& a0) {
   std::set<Argument> solutions;
 
   // This algorithm is after section 1.8 of Accuracy and Stability of Numerical
   // Algorithms, Second Edition, Higham, ISBN 0-89871-521-0.
 
+  using Discriminant = Exponentiation<Quotient<Result, Argument>, 2>;
+  static Discriminant const zero{};
+  static Difference<Discriminant> const dzero{};
+
   // Use compensated summation for the discriminant because there can be
   // cancellations.
-  DoublePrecision<Argument> discriminant(a1 * a1);
+  DoublePrecision<Discriminant> discriminant(a1 * a1);
   discriminant.Increment(-4.0 * a0 * a2);
 
-  if (discriminant.value == 0.0 && discriminant.error == 0.0) {
+  if (discriminant.value == zero && discriminant.error == dzero) {
     // One solution.
     solutions.insert(-0.5 * a1 / a2);
-  } else if (discriminant.value < 0.0 ||
-             (discriminant.value == 0.0 && discriminant.error < 0.0)) {
+  } else if (discriminant.value < zero ||
+             (discriminant.value == zero && discriminant.error < dzero)) {
     // No solution.
   } else {
     // Two solutions.  Compute the numerator of the larger one.
-    Argument numerator;
-    if (a1 > 0.0) {
+    Quotient<Result, Argument> numerator;
+    static Quotient<Result, Argument> zero{};
+    if (a1 > zero) {
       numerator = -a1 - Sqrt(discriminant.value + discriminant.error);
     } else {
       numerator = -a1 + Sqrt(discriminant.value + discriminant.error);

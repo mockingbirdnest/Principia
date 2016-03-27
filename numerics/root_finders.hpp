@@ -3,7 +3,13 @@
 
 #include <set>
 
+#include "quantities/quantities.hpp"
+
 namespace principia {
+
+using quantities::Exponentiation;
+using quantities::Quotient;
+
 namespace numerics {
 
 // Approximates a root of |f| between |lower_bound| and |upper_bound| by
@@ -18,10 +24,11 @@ Argument Bisect(Function f,
 // Returns the solutions of a quadratic equation.  The result may have 0, 1 or 2
 // values.  |a2| is the coefficient of the 2nd degree term and similarly for the
 // others.
-template <typename Argument>
-std::set<Argument> SolveQuadraticEquation(Argument const& a2,
-                                          Argument const& a1,
-                                          Argument const& a0);
+template <typename Argument, typename Result>
+std::set<Argument> SolveQuadraticEquation(
+    Quotient<Result, Exponentiation<Argument, 2>> const& a2,
+    Quotient<Result, Argument> const& a1,
+    Result const& a0);
 
 }  // namespace numerics
 }  // namespace principia
