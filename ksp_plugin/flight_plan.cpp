@@ -228,6 +228,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       flight_plan->manœuvres_.push_back(
           NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
     }
+    // We need to forcefully prolong, otherwise we might exceed the ephemeris
+    // step limit while recomputing the segments and fail the check.
+    flight_plan->ephemeris_->Prolong(flight_plan->start_of_last_coast());
     CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
   }
 

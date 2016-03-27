@@ -379,7 +379,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   std::vector<IntrinsicAcceleration> const intrinsic_accelerations =
       {std::move(intrinsic_acceleration)};
   Instant const t_final =
-      std::max(t_max() + max_ephemeris_steps * parameters_.step(), t);
+      std::min(t_max() + max_ephemeris_steps * parameters_.step(), t);
   if (empty() || t_final > t_max()) {
     Prolong(t_final);
   }
