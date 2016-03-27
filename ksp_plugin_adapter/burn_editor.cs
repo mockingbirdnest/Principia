@@ -105,12 +105,23 @@ class BurnEditor {
     changed |= Δv_binormal_.Render(enabled);
     changed |= initial_time_.Render(enabled);
     changed |= changed_reference_frame_;
-    UnityEngine.GUILayout.Label("Burn duration : " + duration_.ToString("0.0") +
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(
+        "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
+        UnityEngine.GUILayout.Width(200));
+    UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
                                 " s");
+    UnityEngine.GUILayout.EndHorizontal();
     changed_reference_frame_ = false;
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
+  }
+
+  public double Δv() {
+    return new Vector3d{x = Δv_tangent_.value,
+                        y = Δv_normal_.value,
+                        z = Δv_binormal_.value}.magnitude;
   }
 
   public void Reset(NavigationManoeuvre manoeuvre) {

@@ -136,6 +136,11 @@ class FlightPlanner : WindowRenderer {
         }
         UnityEngine.GUILayout.EndHorizontal();
 
+        double Δv = (from burn_editor in burn_editors_
+                     select burn_editor.Δv()).Sum();
+        UnityEngine.GUILayout.Label(
+            "Total Δv : " + Δv.ToString("0.000") + " m/s");
+
         if (burn_editors_.Count == 0 && 
             UnityEngine.GUILayout.Button("Delete flight plan")) {
           plugin_.FlightPlanDelete(vessel_guid);
