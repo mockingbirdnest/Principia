@@ -282,7 +282,8 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
         ephemeris_->FlowWithAdaptiveStep(segments_.back(),
                                          manœuvre.IntrinsicAcceleration(),
                                          manœuvre.final_time(),
-                                         adaptive_step_parameters_);
+                                         adaptive_step_parameters_,
+                                         MaxEphemerisStepsPerFrame);
     if (!reached_final_time) {
       anomalous_segments_ = 1;
     }
@@ -298,7 +299,8 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
                           segments_.back(),
                           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
                           final_time,
-                          adaptive_step_parameters_);
+                          adaptive_step_parameters_,
+                          MaxEphemerisStepsPerFrame);
     if (!reached_final_time) {
       anomalous_segments_ = 1;
     }
@@ -354,7 +356,8 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
           recomputed_coast,
           Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
           manœuvre.initial_time(),
-          adaptive_step_parameters_);
+          adaptive_step_parameters_,
+          MaxEphemerisStepsPerFrame);
   if (!reached_manœuvre_initial_time) {
     recomputed_coast->parent()->DeleteFork(&recomputed_coast);
   }

@@ -322,7 +322,8 @@ inline void Vessel::FlowPrediction(Instant const& time) {
         prediction_,
         Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
         time,
-        prediction_adaptive_step_parameters_);
+        prediction_adaptive_step_parameters_,
+        MaxEphemerisStepsPerFrame);
   }
 }
 
