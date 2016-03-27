@@ -18,7 +18,9 @@ using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
+using ::testing::ElementsAre;
 using ::testing::Ge;
+using ::testing::IsEmpty;
 using ::testing::Le;
 
 namespace numerics {
@@ -44,6 +46,29 @@ TEST_F(RootFindersTest, SquareRoots) {
       EXPECT_THAT(evaluations, AllOf(Ge(49), Le(58)));
     }
   }
+}
+
+TEST_F(RootFindersTest, QuadraticEquations) {
+  // Golden ratio.
+  auto const s1 = SolveQuadraticEquation(1.0, -1.0, -1.0);
+  EXPECT_THAT(s1,
+              ElementsAre(AlmostEquals((1 - sqrt(5)) / 2, 1),
+                          AlmostEquals((1 + sqrt(5)) / 2, 0)));
+
+  // No solutions.
+  auto const s2 = SolveQuadraticEquation(1.0, 0.0, 1.0);
+  EXPECT_THAT(s2, IsEmpty());
+
+  // One solution.
+  auto const s3 = SolveQuadraticEquation(1.0, 2.0, 1.0);
+  EXPECT_THAT(s3, ElementsAre(-1.0));
+
+  // An ill-conditioned system.  I fart in its general direction.
+  auto const s4 =
+      SolveQuadraticEquation(1.0000001E15, 2.0000003E20, 1.0000001E25);
+  EXPECT_THAT(s4,
+              ElementsAre(AlmostEquals(-100031.62777541532972762902, 66),
+                          AlmostEquals(-99968.38222458367027247098, 65)));
 }
 
 }  // namespace numerics

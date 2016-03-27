@@ -6,6 +6,7 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
+#include "numerics/double_precision.hpp"
 
 namespace principia {
 
@@ -43,6 +44,40 @@ Argument Bisect(Function f,
       lower = middle;
     }
   }
+}
+
+template<typename Argument>
+std::set<Argument> SolveQuadraticEquation(Argument const& a2,
+                                          Argument const& a1,
+                                          Argument const& a0) {
+  std::set<Argument> solutions;
+
+  // This algorithm is after section 1.8 of Accuracy and Stability of Numerical
+  // Algorithms, Second Edition, Higham, ISBN 0-89871-521-0.
+
+  // Use compensated summation for the discriminant because there can be
+  // cancellations.
+  DoublePrecision<Argument> discriminant(a1 * a1);
+  discriminant.Increment(-4.0 * a0 * a2);
+
+  if (discriminant.value == 0.0 && discriminant.error == 0.0) {
+    // One solution.
+    solutions.insert(-0.5 * a1 / a2);
+  } else if (discriminant.value < 0.0 ||
+             (discriminant.value == 0.0 && discriminant.error < 0.0)) {
+    // No solution.
+  } else {
+    // Two solutions.  Compute the numerator of the larger one.
+    Argument numerator;
+    if (a1 > 0.0) {
+      numerator = -a1 - Sqrt(discriminant.value + discriminant.error);
+    } else {
+      numerator = -a1 + Sqrt(discriminant.value + discriminant.error);
+    }
+    solutions.insert(numerator / (2.0 * a2));
+    solutions.insert((2.0 * a0) / numerator);
+  }
+  return solutions;
 }
 
 }  // namespace numerics

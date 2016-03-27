@@ -582,6 +582,52 @@ ComputeGravitationalAccelerationOnMassiveBody(
 }
 
 template<typename Frame>
+DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
+    not_null<MassiveBody const*> const body,
+    typename DiscreteTrajectory<Frame>::Iterator const begin,
+    typename DiscreteTrajectory<Frame>::Iterator const end) {
+  not_null<ContinuousTrajectory<Frame> const*> const body_trajectory =
+      trajectory(body);
+  typename ContinuousTrajectory<Frame>::Hint hint;
+  DiscreteTrajectory<Frame> apsides;
+
+  std::experimental::optional<Exponentiation<Length, 2>>
+      previous_squared_distance;
+  std::experimental::optional<Variation<Exponentiation<Length, 2>>>
+      previous_squared_distance_variation;
+
+  for (auto it = begin; it != end; ++it) {
+    Instant const time = it.time();
+    DegreesOfFreedom<Frame> const degrees_of_freedom = it.degrees_of_freedom();
+    DegreesOfFreedom<Frame> const body_degrees_of_freedom =
+        body_trajectory->EvaluateDegreesOfFreedom(time, &hint);
+    RelativeDegreesOfFreedom<Frame> const relative =
+        degrees_of_freedom - body_degrees_of_freedom;
+    Exponentiation<Length, 2> const squared_distance =
+        InnerProduct(relative.displacement(), relative.displacement());
+    // This is the derivative of |squared_distance| up to a constant factor.
+    Variation<Exponentiation<Length, 2>> const squared_distance_variation =
+        InnerProduct(relative.displacement(), relative.velocity());
+
+    if (previous_squared_distance_variation &&
+        Sign(squared_distance_variation) !=
+            Sign(previous_squared_distance_variation)) {
+      // The derivative of |squared_distance| changed sign.  Construct a Hermite
+      // interpolation.  This uses the notation from equation 11.21 of
+      // Computer Graphics : Principles and Practice, Second Edition,
+      // Foley et al., ISBN 0-201-12110-7.
+      auto const& p1 = *previous_squared_distance;
+      auto const& p4 = squared_distance;
+      auto const& r1 = *previous_squared_distance_variation;
+      auto const& r4 = squared_distance_variation;
+    }
+
+    previous_squared_distance = squared_distance;
+    previous_squared_distance_variation = squared_distance_variation;
+  }
+}
+
+template<typename Frame>
 int Ephemeris<Frame>::serialization_index_for_body(
     not_null<MassiveBody const*> const body) const {
   return FindOrDie(unowned_bodies_indices_, body);
