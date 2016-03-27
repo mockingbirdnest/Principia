@@ -14,6 +14,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "numerics/root_finders.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -28,6 +29,7 @@ using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
+using numerics::SolveQuadraticEquation;
 using quantities::Abs;
 using quantities::Exponentiation;
 using quantities::Quotient;
@@ -591,6 +593,7 @@ DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
   typename ContinuousTrajectory<Frame>::Hint hint;
   DiscreteTrajectory<Frame> apsides;
 
+  std::experimental::optional<Instant> previous_time;
   std::experimental::optional<Exponentiation<Length, 2>>
       previous_squared_distance;
   std::experimental::optional<Variation<Exponentiation<Length, 2>>>
@@ -614,14 +617,31 @@ DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
             Sign(previous_squared_distance_variation)) {
       // The derivative of |squared_distance| changed sign.  Construct a Hermite
       // interpolation.  This uses the notation from equation 11.21 of
-      // Computer Graphics : Principles and Practice, Second Edition,
+      // Computer Graphics: Principles and Practice, Second Edition,
       // Foley et al., ISBN 0-201-12110-7.
+      Time const Δt = time - *previous_time;
+      auto const Δt_squared = Δt * Δt;
+      auto const Δt_cubed = Δt * Δt_squared;
+
       auto const& p1 = *previous_squared_distance;
       auto const& p4 = squared_distance;
       auto const& r1 = *previous_squared_distance_variation;
       auto const& r4 = squared_distance_variation;
+      auto const six_times_p1_minus_p4 = 6.0 * (p1 - p4);
+
+      // The coefficients of the derivative of the Hermite cubic.
+      auto const a0 = r1 * Δt_cubed;
+      auto const a1 = -six_times_p1_minus_p4 * Δt -
+                      2.0 * (2.0 * r1 + r4) * Δt_squared;
+      auto const a2 = six_times_p1_minus_p4 + 3.0 * (r1 + r4) * Δt;
+
+      std::set<Time> solutions = SolveQuadraticEquation<
+          Time,
+          Product<Exponentiation<Length, 2>, Exponentiation<Time, 2>>>(
+          a2, a1, a0);
     }
 
+    previous_time = time;
     previous_squared_distance = squared_distance;
     previous_squared_distance_variation = squared_distance_variation;
   }
