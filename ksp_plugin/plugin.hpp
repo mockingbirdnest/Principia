@@ -211,8 +211,6 @@ class Plugin {
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
-  bool HasPrediction(GUID const& vessel_guid) const;
-
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |CurrentTime()| to
   // |CurrentTime() + prediction_length_| in the current |plotting_frame_|.

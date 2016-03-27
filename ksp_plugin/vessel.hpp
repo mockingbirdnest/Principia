@@ -39,10 +39,12 @@ class Vessel {
   // ownership.
   Vessel(not_null<Celestial const*> const parent,
          not_null<Ephemeris<Barycentric>*> const ephemeris,
+         Ephemeris<Barycentric>::FixedStepParameters const&
+             history_fixed_step_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prolongation_adaptive_step_parameters,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             history_fixed_step_parameters);
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             prediction_adaptive_step_parameters);
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
@@ -55,25 +57,26 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> const parent);
 
-  // Requires |is_initialized()|.
+  // These three functions require |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
-
-  // Requires |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
+  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
-  // Requires |is_initialized()|.
+  // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
-
-  // Requires |has_prediction()|.
-  virtual DiscreteTrajectory<Barycentric> const& prediction() const;
-  virtual bool has_prediction() const;
 
   // A vessel that was in the physics since the last time its history advanced
   // (which with the time when its prolongation was reset).  For such a vessel,
   // the prolongation, not the history, is authoritative.
   virtual void set_dirty();
   virtual bool is_dirty() const;
+
+  virtual void set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters);
+  virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
+      prediction_adaptive_step_parameters() const;
 
   // Creates a |history_| for this vessel and appends a point with the
   // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
@@ -110,13 +113,7 @@ class Vessel {
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
-  virtual void UpdatePrediction(
-      Instant const& last_time,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          prediction_adaptive_step_parameters);
-
-  // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
-  virtual void DeletePrediction();
+  virtual void UpdatePrediction(Instant const& last_time);
 
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(
@@ -134,12 +131,15 @@ class Vessel {
   void AdvanceHistoryIfNeeded(Instant const& time);
   void FlowHistory(Instant const& time);
   void FlowProlongation(Instant const& time);
+  void FlowPrediction(Instant const& time);
 
   MasslessBody const body_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters const
-      prolongation_adaptive_step_parameters_;
   Ephemeris<Barycentric>::FixedStepParameters const
       history_fixed_step_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters const
+      prolongation_adaptive_step_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters
+      prediction_adaptive_step_parameters_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
@@ -154,15 +154,17 @@ class Vessel {
   // timestep, which breaks symplecticity.
   DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
 
-  // Child trajectory of |history_|.
+  // Child trajectory of |*history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
-  std::experimental::optional<Instant> prediction_last_time_;
-  std::experimental::optional<Ephemeris<Barycentric>::AdaptiveStepParameters>
-      prediction_adaptive_step_parameters_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
 };
+
+// Factories for use by the clients and the compatibility code.
+Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
+Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters();
+Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
 
 }  // namespace ksp_plugin
 }  // namespace principia

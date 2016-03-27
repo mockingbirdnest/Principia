@@ -354,6 +354,7 @@ TEST_F(PluginTest, Serialization) {
   plugin->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
   plugin->AdvanceTime(HistoryTime(time, 6), Angle());
+  plugin->UpdatePrediction(satellite);
   plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
 
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);

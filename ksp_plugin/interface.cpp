@@ -608,12 +608,6 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   return m.Return(result.release());
 }
 
-bool principia__HasPrediction(Plugin const* const plugin,
-                              char const* const vessel_guid) {
-  journal::Method<journal::HasPrediction> m({plugin, vessel_guid});
-  return m.Return(CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid));
-}
-
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
     char const* const vessel_guid,

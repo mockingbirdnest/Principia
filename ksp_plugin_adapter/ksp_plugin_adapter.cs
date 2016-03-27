@@ -788,13 +788,9 @@ public partial class PrincipiaPluginAdapter
             plugin_.RenderedVesselTrajectory(active_vessel_guid,
                                              sun_world_position),
             XKCDColors.AcidGreen);
-
-        if (plugin_.HasPrediction(active_vessel_guid)) {
-          RenderAndDeleteTrajectory(
-              plugin_.RenderedPrediction(active_vessel_guid,
-                                         sun_world_position),
-              XKCDColors.Fuchsia);
-        }
+        RenderAndDeleteTrajectory(
+            plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
+            XKCDColors.Fuchsia);
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
           int number_of_segments =
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
