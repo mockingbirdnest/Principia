@@ -7,6 +7,7 @@
 
 namespace principia {
 
+using quantities::Difference;
 using quantities::Exponentiation;
 using quantities::Quotient;
 
@@ -21,14 +22,15 @@ Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
-// Returns the solutions of a quadratic equation.  The result may have 0, 1 or 2
-// values.  |a2| is the coefficient of the 2nd degree term and similarly for the
-// others.
-template <typename Argument, typename Result>
+// Returns the solutions of the quadratic equation:
+//   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
+// The result may have 0, 1 or 2 values.
+template <typename Argument, typename Value>
 std::set<Argument> SolveQuadraticEquation(
-    Quotient<Result, Exponentiation<Argument, 2>> const& a2,
-    Quotient<Result, Argument> const& a1,
-    Result const& a0);
+    Argument const& origin,
+    Value const& a0,
+    Quotient<Value, Difference<Argument>> const& a1,
+    Quotient<Value, Exponentiation<Difference<Argument>, 2>> const& a2);
 
 }  // namespace numerics
 }  // namespace principia

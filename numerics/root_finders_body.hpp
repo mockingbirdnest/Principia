@@ -46,42 +46,46 @@ Argument Bisect(Function f,
   }
 }
 
-template<typename Argument, typename Result>
+template<typename Argument, typename Value>
 std::set<Argument> SolveQuadraticEquation(
-    Quotient<Result, Exponentiation<Argument, 2>> const& a2,
-    Quotient<Result, Argument> const& a1,
-    Result const& a0) {
+    Argument const& origin,
+    Value const& a0,
+    Quotient<Value, Difference<Argument>> const& a1,
+    Quotient<Value, Exponentiation<Difference<Argument>, 2>> const& a2) {
+  using Derivative = Quotient<Value, Difference<Argument>>;
+  using Discriminant = Exponentiation<Derivative, 2>;
+
   std::set<Argument> solutions;
 
   // This algorithm is after section 1.8 of Accuracy and Stability of Numerical
   // Algorithms, Second Edition, Higham, ISBN 0-89871-521-0.
 
-  using Discriminant = Exponentiation<Quotient<Result, Argument>, 2>;
-  static Discriminant const zero{};
-  static Difference<Discriminant> const dzero{};
+  static Discriminant const discriminant_zero{};
 
   // Use compensated summation for the discriminant because there can be
   // cancellations.
   DoublePrecision<Discriminant> discriminant(a1 * a1);
   discriminant.Increment(-4.0 * a0 * a2);
 
-  if (discriminant.value == zero && discriminant.error == dzero) {
+  if (discriminant.value == discriminant_zero &&
+      discriminant.error == discriminant_zero) {
     // One solution.
-    solutions.insert(-0.5 * a1 / a2);
-  } else if (discriminant.value < zero ||
-             (discriminant.value == zero && discriminant.error < dzero)) {
+    solutions.insert(origin - 0.5 * a1 / a2);
+  } else if (discriminant.value < discriminant_zero ||
+             (discriminant.value == discriminant_zero &&
+              discriminant.error < discriminant_zero)) {
     // No solution.
   } else {
     // Two solutions.  Compute the numerator of the larger one.
-    Quotient<Result, Argument> numerator;
-    static Quotient<Result, Argument> zero{};
-    if (a1 > zero) {
+    Derivative numerator;
+    static Derivative derivative_zero{};
+    if (a1 > derivative_zero) {
       numerator = -a1 - Sqrt(discriminant.value + discriminant.error);
     } else {
       numerator = -a1 + Sqrt(discriminant.value + discriminant.error);
     }
-    solutions.insert(numerator / (2.0 * a2));
-    solutions.insert((2.0 * a0) / numerator);
+    solutions.insert(origin + numerator / (2.0 * a2));
+    solutions.insert(origin + (2.0 * a0) / numerator);
   }
   return solutions;
 }

@@ -53,31 +53,33 @@ TEST_F(RootFindersTest, SquareRoots) {
 
 TEST_F(RootFindersTest, QuadraticEquations) {
   // Golden ratio.
-  auto const s1 = SolveQuadraticEquation<double, double>(1.0, -1.0, -1.0);
+  auto const s1 = SolveQuadraticEquation(0.0, -1.0, -1.0, 1.0);
   EXPECT_THAT(s1,
               ElementsAre(AlmostEquals((1 - sqrt(5)) / 2, 1),
                           AlmostEquals((1 + sqrt(5)) / 2, 0)));
 
   // No solutions.
-  auto const s2 = SolveQuadraticEquation<double, double>(1.0, 0.0, 1.0);
+  auto const s2 = SolveQuadraticEquation(0.0, 1.0, 0.0, 1.0);
   EXPECT_THAT(s2, IsEmpty());
 
   // One solution.
-  auto const s3 = SolveQuadraticEquation<double, double>(1.0, 2.0, 1.0);
+  auto const s3 = SolveQuadraticEquation(0.0, 1.0, 2.0, 1.0);
   EXPECT_THAT(s3, ElementsAre(-1.0));
 
   // An ill-conditioned system.  I fart in its general direction.
-  auto const s4 = SolveQuadraticEquation<double, double>(1.0000001E15,
-                                                         2.0000003E20,
-                                                         1.0000001E25);
+  auto const s4 = SolveQuadraticEquation(0.0,
+                                         1.0000001E25,
+                                         2.0000003E20,
+                                         1.0000001E15);
   EXPECT_THAT(s4,
               ElementsAre(AlmostEquals(-100031.62777541532972762902, 66),
                           AlmostEquals(-99968.38222458367027247098, 65)));
 
   // A typed system.
-  std::set<Time> s5 = SolveQuadraticEquation<Time, Length>(
-      1.0 * Metre / Second / Second, 2.0 * Metre / Second, 1.0 * Metre);
-  EXPECT_THAT(s5, ElementsAre(-1.0 * Second));
+  Instant const t0;
+  std::set<Instant> s5 = SolveQuadraticEquation(
+      t0, 1.0 * Metre, 2.0 * Metre / Second, 1.0 * Metre / Second / Second);
+  EXPECT_THAT(s5, ElementsAre(t0 - 1.0 * Second));
 }
 
 }  // namespace numerics

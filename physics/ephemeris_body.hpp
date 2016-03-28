@@ -640,7 +640,7 @@ DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
           Product<Exponentiation<Length, 2>, Exponentiation<Time, 2>>>(
           a2, a1, a0);
       bool anomalous_solution = true;
-      if (solutions.size() == 1) {
+      if (solutions.size() == 1) {//NOPE
         Instant const apsis_time = *solutions.begin() + *previous_time;
         if (apsis_time >= *previous_time && apsis_time <= time) {
           anomalous_solution = false;
