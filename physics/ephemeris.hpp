@@ -39,7 +39,7 @@ class Ephemeris {
   static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
   static IntrinsicAccelerations const kNoIntrinsicAccelerations;
-  static std::int64_t constexpr no_ephemeris_step_limit =
+  static std::int64_t constexpr unlimited_max_ephemeris_steps =
       std::numeric_limits<std::int64_t>::max();
 
   // The equation describing the motion of the |bodies_|.

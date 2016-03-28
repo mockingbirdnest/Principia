@@ -41,6 +41,12 @@
     <ClInclude Include="newhall.mathematica.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hermite3.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hermite3_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -50,6 +56,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="root_finders_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hermite3_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

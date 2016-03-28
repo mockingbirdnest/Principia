@@ -837,7 +837,7 @@ void Plugin::EvolveBubble(Instant const& t) {
       intrinsic_acceleration,
       t,
       prolongation_parameters_,
-      Ephemeris<Barycentric>::no_ephemeris_step_limit);
+      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
   CHECK(reached_final_time) << t << " " << trajectory->last().time();
 
   DegreesOfFreedom<Barycentric> const& centre_of_mass =
