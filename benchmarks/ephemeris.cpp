@@ -195,8 +195,8 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
             DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second,
-            Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit));
+            /*speed_integration_tolerance=*/1 * Metre / Second),
+        Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit);
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -274,8 +274,8 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
             DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second,,
-            Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit));
+            /*speed_integration_tolerance=*/1 * Metre / Second),
+        Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit);
     state->PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
