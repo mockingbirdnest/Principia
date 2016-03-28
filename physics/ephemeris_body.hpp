@@ -14,6 +14,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -29,7 +30,7 @@ using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
-using numerics::SolveQuadraticEquation;
+using numerics::Hermite3;
 using quantities::Abs;
 using quantities::Exponentiation;
 using quantities::Quotient;
@@ -594,10 +595,12 @@ DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
   DiscreteTrajectory<Frame> apsides;
 
   std::experimental::optional<Instant> previous_time;
+  std::experimental::optional<DegreesOfFreedom<Frame>>
+      previous_degrees_of_freedom;
   std::experimental::optional<Exponentiation<Length, 2>>
       previous_squared_distance;
   std::experimental::optional<Variation<Exponentiation<Length, 2>>>
-      previous_squared_distance_variation;
+      previous_squared_distance_derivative;
 
   for (auto it = begin; it != end; ++it) {
     Instant const time = it.time();
@@ -608,58 +611,63 @@ DiscreteTrajectory<Frame> Ephemeris<Frame>::ComputeApsides(
         degrees_of_freedom - body_degrees_of_freedom;
     Exponentiation<Length, 2> const squared_distance =
         InnerProduct(relative.displacement(), relative.displacement());
-    // This is the derivative of |squared_distance| up to a constant factor.
-    Variation<Exponentiation<Length, 2>> const squared_distance_variation =
-        InnerProduct(relative.displacement(), relative.velocity());
+    // This is the derivative of |squared_distance|.
+    Variation<Exponentiation<Length, 2>> const squared_distance_derivative =
+        2.0 * InnerProduct(relative.displacement(), relative.velocity());
 
-    if (previous_squared_distance_variation &&
-        Sign(squared_distance_variation) !=
-            Sign(previous_squared_distance_variation)) {
+    if (previous_squared_distance_derivative &&
+        Sign(squared_distance_derivative) !=
+            Sign(previous_squared_distance_derivative)) {
       // The derivative of |squared_distance| changed sign.  Construct a Hermite
-      // interpolation.  This uses the notation from equation 11.21 of
-      // Computer Graphics: Principles and Practice, Second Edition,
-      // Foley et al., ISBN 0-201-12110-7.
-      Time const Δt = time - *previous_time;
-      auto const Δt_squared = Δt * Δt;
-      auto const Δt_cubed = Δt * Δt_squared;
+      // approximation of |squared_distance| and find its extrema.
+      Hermite3<Instant, Exponentiation<Length, 2>> const
+          squared_distance_approximation(
+              {*previous_time, time},
+              {*previous_squared_distance, squared_distance},
+              {*previous_squared_distance_derivative,
+               squared_distance_derivative});
+      std::set<Instant> const extrema =
+          squared_distance_approximation.FindExtrema();
 
-      auto const& p1 = *previous_squared_distance;
-      auto const& p4 = squared_distance;
-      auto const& r1 = *previous_squared_distance_variation;
-      auto const& r4 = squared_distance_variation;
-      auto const six_times_p1_minus_p4 = 6.0 * (p1 - p4);
-
-      // The coefficients of the derivative of the Hermite cubic.
-      auto const a0 = r1 * Δt_cubed;
-      auto const a1 = -six_times_p1_minus_p4 * Δt -
-                      2.0 * (2.0 * r1 + r4) * Δt_squared;
-      auto const a2 = six_times_p1_minus_p4 + 3.0 * (r1 + r4) * Δt;
-
-      std::set<Time> solutions = SolveQuadraticEquation<
-          Time,
-          Product<Exponentiation<Length, 2>, Exponentiation<Time, 2>>>(
-          a2, a1, a0);
-      bool anomalous_solution = true;
-      if (solutions.size() == 1) {//NOPE
-        Instant const apsis_time = *solutions.begin() + *previous_time;
-        if (apsis_time >= *previous_time && apsis_time <= time) {
-          anomalous_solution = false;
-          apsides.Append(apsis_time);
+      // Now look at the extrema and check that exactly once is in the required
+      // time interval.  This is normally the case, but it can fail due to
+      // ill-conditioning.
+      Instant apsis_time;
+      int valid_extrema = 0;
+      for (auto const& extremum : extrema) {
+        if (extremum >= *previous_time && extremum <= time) {
+          apsis_time = extremum;
+          ++valid_extrema;
         }
       }
-      if (anomalous_solution) {
-        // Something went wrong when finding the zeroes of the derivative.  Use
-        // a linear approximation instead.
-        Instant const apsis_time =
-            Barycentre<Instant, Variation<Exponentiation<Length, 2>>>(
-                {time, *previous_time}, {r1, -r4});
-        apsides.Append(apsis_time);
+      if (valid_extrema != 1) {
+        // Something went wrong when finding the extrema of
+        // |squared_distance_approximation|. Use a linear interpolation of
+        // |squared_distance_derivative| instead.
+        apsis_time = Barycentre<Instant, Variation<Exponentiation<Length, 2>>>(
+            {time, *previous_time},
+            {*previous_squared_distance_derivative,
+             -squared_distance_derivative});
       }
+
+      // Now that we know the time of the apsis, compute the position and
+      // velocity.
+      Hermite3<Instant, Position<Frame>> position_approximation(
+          {*previous_time, time},
+          {previous_degrees_of_freedom->position(),
+           degrees_of_freedom.position()},
+          {previous_degrees_of_freedom->velocity(),
+           degrees_of_freedom.velocity()});
+      apsides.Append(
+          apsis_time,
+          DegreesOfFreedom<Frame>(
+              position_approximation.Evaluate(apsis_time),
+              position_approximation.EvaluateDerivative(apsis_time)));
     }
 
     previous_time = time;
     previous_squared_distance = squared_distance;
-    previous_squared_distance_variation = squared_distance_variation;
+    previous_squared_distance_derivative = squared_distance_derivative;
   }
 }
 
