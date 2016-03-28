@@ -1108,7 +1108,8 @@ TEST_F(EphemerisTest, ComputeApsides) {
           DormandElMikkawyPrince1986RKN434FM<Position<World>>(),
           std::numeric_limits<std::int64_t>::max(),
           1E-3 * Metre,
-          1E-3 * Metre / Second));
+          1E-3 * Metre / Second),
+      Ephemeris<World>::unlimited_max_ephemeris_steps);
 
   auto const apsides =
       ephemeris.ComputeApsides(b, trajectory.Begin(), trajectory.End());
