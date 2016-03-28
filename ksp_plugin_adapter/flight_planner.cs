@@ -97,7 +97,7 @@ class FlightPlanner : WindowRenderer {
         AdaptiveStepParameters parameters =
             plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
         UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.Label("Maximal step count",
+        UnityEngine.GUILayout.Label("Maximal step count per segment",
                                     UnityEngine.GUILayout.Width(150));
         if (parameters.max_steps <= 100) {
           UnityEngine.GUILayout.Button("min");
