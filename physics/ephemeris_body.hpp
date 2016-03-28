@@ -618,7 +618,11 @@ Ephemeris<Frame>::ComputeApsides(
 
     if (previous_squared_distance_derivative &&
         Sign(squared_distance_derivative) !=
-            Sign(previous_squared_distance_derivative)) {
+            Sign(*previous_squared_distance_derivative)) {
+      CHECK(previous_time &&
+            previous_degrees_of_freedom &&
+            previous_squared_distance);
+
       // The derivative of |squared_distance| changed sign.  Construct a Hermite
       // approximation of |squared_distance| and find its extrema.
       Hermite3<Instant, Square<Length>> const

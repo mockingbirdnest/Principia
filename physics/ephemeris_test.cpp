@@ -39,6 +39,7 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Pow;
 using quantities::Sqrt;
+using quantities::astronomy::JulianYear;
 using quantities::astronomy::LunarDistance;
 using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
@@ -1044,6 +1045,72 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration3,
               AlmostEquals(expected_acceleration3, 0, 4));
+}
+
+TEST_F(EphemerisTest, ComputeApsides) {
+  Instant const t0;
+  GravitationalParameter const μ = GravitationalConstant * SolarMass;
+  auto const b = new MassiveBody(μ);
+
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<World>> initial_state;
+  bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
+  initial_state.emplace_back(World::origin, Velocity<World>());
+
+  Ephemeris<World>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0,
+          5 * Milli(Metre),
+          Ephemeris<World>::FixedStepParameters(
+              McLachlanAtela1992Order5Optimal<Position<World>>(),
+              1 * Hour));
+
+  Displacement<World> r(
+      {1 * AstronomicalUnit, 2 * AstronomicalUnit, 3 * AstronomicalUnit});
+  Length const r_norm = r.Norm();
+  Velocity<World> v({4 * Kilo(Metre) / Second,
+                     5 * Kilo(Metre) / Second,
+                     6 * Kilo(Metre) / Second});
+  Speed const v_norm = v.Norm();
+
+  Time const T = 2 * π * Sqrt(-(Pow<3>(r_norm) * Pow<2>(μ) /
+                                Pow<3>(r_norm * Pow<2>(v_norm) - 2 * μ)));
+  Length const a = -r_norm * μ / (r_norm * Pow<2>(v_norm) - 2 * μ);
+
+  DiscreteTrajectory<World> trajectory;
+  trajectory.Append(t0, DegreesOfFreedom<World>(World::origin + r, v));
+
+  ephemeris.FlowWithAdaptiveStep(
+      &trajectory,
+      Ephemeris<World>::kNoIntrinsicAcceleration,
+      t0 + 10 * JulianYear,
+      Ephemeris<World>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<World>>(),
+          std::numeric_limits<std::int64_t>::max(),
+          1E-3 * Metre,
+          1E-3 * Metre / Second));
+
+  auto const apsides =
+      ephemeris.ComputeApsides(b, trajectory.Begin(), trajectory.End());
+  std::experimental::optional<Instant> previous_time;
+  std::experimental::optional<Position<World>> previous_position;
+  int apsides_count = 0;
+  for (auto it = apsides->Begin(); it != apsides->End(); ++it) {
+    Instant const time = it.time();
+    Position<World> const position = it.degrees_of_freedom().position();
+    if (previous_time) {
+      EXPECT_THAT(time - *previous_time,
+                  AlmostEquals(0.5 * T, 103, 2143));
+      EXPECT_THAT((position - *previous_position).Norm(),
+                  AlmostEquals(2.0 * a, 0, 176));
+    }
+    previous_time = time;
+    previous_position = position;
+    ++apsides_count;
+  }
+  EXPECT_EQ(6, apsides_count);
 }
 
 }  // namespace physics
