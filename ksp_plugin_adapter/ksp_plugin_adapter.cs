@@ -736,21 +736,30 @@ public partial class PrincipiaPluginAdapter
     vessel.patchedConicRenderer.relativityMode =
         PatchRendering.RelativityMode.RELATIVE;
     if (display_patched_conics_) {
-      vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.TRACK_Phys) {
+        Log.Info("Restoring patched conic rendering for the active vessel");
+        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+        // The call to |Update| with a non-|IDLE| |orbitDriver| allows things to
+        // get initialized properly for this frame, preventing mysterious
+        // exceptions.
+        vessel.patchedConicSolver.Update();
+      }
       if (!vessel.patchedConicRenderer.enabled) {
         vessel.patchedConicRenderer.enabled = true;
+        vessel.orbitTargeter.enabled = true;
       }
     } else {
       if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
           vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
           vessel.orbitDriver.Renderer.drawIcons !=
               OrbitRenderer.DrawIcons.OBJ) {
-        Log.Info("Removing orbit rendering for the active vessel");
+        Log.Info("Removing patched conic rendering for the active vessel");
         vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
         vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
         vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
       }
       vessel.patchedConicRenderer.enabled = false;
+      vessel.orbitTargeter.enabled = false;
       foreach (PatchRendering patch_rendering in
                vessel.patchedConicRenderer.patchRenders) {
         patch_rendering.DestroyUINodes();
@@ -760,6 +769,13 @@ public partial class PrincipiaPluginAdapter
                vessel.patchedConicRenderer.flightPlanRenders) {
         patch_rendering.DestroyUINodes();
         patch_rendering.DestroyVector();
+      }
+      foreach (ManeuverNode node in vessel.patchedConicSolver.maneuverNodes) {
+        node.DetachGizmo();
+        if (node.scaledSpaceTarget) {
+          MapView.MapCamera.RemoveTarget(node.scaledSpaceTarget);
+          node.scaledSpaceTarget.Terminate();
+        }
       }
     }
   }

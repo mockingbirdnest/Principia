@@ -236,6 +236,12 @@ class FlightPlanner : WindowRenderer {
                           manoeuvre.inertial_direction.y +
                           manoeuvre.inertial_direction.z)) {
           if (guidance_node_ == null) {
+            // The call to |Update| with a non-|IDLE| |orbitDriver| allows the
+            // patched conics solver to get initialized properly, preventing
+            // exception spam.
+            vessel_.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+            vessel_.patchedConicSolver.Update();
+
             guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
                 manoeuvre.burn.initial_time);
           }
@@ -262,7 +268,7 @@ class FlightPlanner : WindowRenderer {
       }
     }
     if (should_clear_guidance && guidance_node_ != null) {
-      vessel_.patchedConicSolver.RemoveManeuverNode(guidance_node_);
+      guidance_node_.RemoveSelf();
       guidance_node_ = null;
     }
   }
