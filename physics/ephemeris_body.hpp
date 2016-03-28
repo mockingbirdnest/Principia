@@ -380,14 +380,14 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
       {std::move(intrinsic_acceleration)};
   // The |min| is here to prevent us from spending too much time computing the
   // ephemeris.  The |max| is here to ensure that we always try to integrate
-  // forward.
+  // forward.  We use |last_state_.time.value| because this is always finite,
+  // contrary to |t_max()|, which is -∞ when |empty()|.
   Instant const t_final =
-      std::min(std::max(t_max() + max_ephemeris_steps * parameters_.step(),
+      std::min(std::max(last_state_.time.value +
+                            max_ephemeris_steps * parameters_.step(),
                         trajectory->last().time() + parameters_.step()),
                t);
-  if (empty() || t_final > t_max()) {
-    Prolong(t_final);
-  }
+  Prolong(t_final);
 
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   NewtonianMotionEquation massless_body_equation;
