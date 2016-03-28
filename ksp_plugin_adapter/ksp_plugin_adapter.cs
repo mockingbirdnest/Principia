@@ -735,35 +735,31 @@ public partial class PrincipiaPluginAdapter
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
     vessel.patchedConicRenderer.relativityMode =
         PatchRendering.RelativityMode.RELATIVE;
-    if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
-        vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
-        vessel.orbitDriver.Renderer.drawIcons != OrbitRenderer.DrawIcons.OBJ) {
-      Log.Info("Removing orbit rendering for the active vessel");
-      vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
-      vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
-      vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
-    }
     if (display_patched_conics_) {
-      foreach (PatchRendering patch_rendering in
-               vessel.patchedConicRenderer.patchRenders) {
-        patch_rendering.visible = true;
-      }
-      // For reasons that are unlikely to become clear again at this time,
-      // I think the first element of |flightPlanRenders| should not be
-      // visible.
-      for (int i = 1;
-           i < vessel.patchedConicRenderer.flightPlanRenders.Count;
-           ++i) {
-        vessel.patchedConicRenderer.flightPlanRenders[i].visible = true;
+      vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+      if (!vessel.patchedConicRenderer.enabled) {
+        vessel.patchedConicRenderer.enabled = true;
       }
     } else {
+      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
+          vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
+          vessel.orbitDriver.Renderer.drawIcons !=
+              OrbitRenderer.DrawIcons.OBJ) {
+        Log.Info("Removing orbit rendering for the active vessel");
+        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
+        vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
+        vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
+      }
+      vessel.patchedConicRenderer.enabled = false;
       foreach (PatchRendering patch_rendering in
                vessel.patchedConicRenderer.patchRenders) {
-        patch_rendering.visible = false;
+        patch_rendering.DestroyUINodes();
+        patch_rendering.DestroyVector();
       }
       foreach (PatchRendering patch_rendering in
                vessel.patchedConicRenderer.flightPlanRenders) {
-        patch_rendering.visible = false;
+        patch_rendering.DestroyUINodes();
+        patch_rendering.DestroyVector();
       }
     }
   }
