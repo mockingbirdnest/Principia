@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
 #include <vector>
@@ -38,6 +39,8 @@ class Ephemeris {
   static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
   static IntrinsicAccelerations const kNoIntrinsicAccelerations;
+  static std::int64_t constexpr unlimited_max_ephemeris_steps =
+      std::numeric_limits<std::int64_t>::max();
 
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
@@ -142,12 +145,14 @@ class Ephemeris {
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
+  // Prolongs the ephemeris by at most |max_ephemeris_steps|.
   // Returns true if and only if |*trajectory| was integrated until |t|.
   virtual bool FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> const trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters const& parameters);
+      AdaptiveStepParameters const& parameters,
+      std::int64_t const max_ephemeris_steps);
 
   // Integrates, until at most |t|, the |trajectories| followed by massless
   // bodies in the gravitational potential described by |*this|.  If

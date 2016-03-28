@@ -99,6 +99,8 @@ class FlightPlan {
       not_null<DiscreteTrajectory<Barycentric>*> const root,
       not_null<Ephemeris<Barycentric>*> const ephemeris);
 
+  static std::int64_t constexpr max_ephemeris_steps_per_frame = 1000;
+
  protected:
   // For mocking.
   FlightPlan();
