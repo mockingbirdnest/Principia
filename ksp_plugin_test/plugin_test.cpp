@@ -554,6 +554,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
+  EXPECT_CALL(*mock_ephemeris_, t_max()).WillRepeatedly(Return(Instant()));
+  EXPECT_CALL(*mock_ephemeris_, empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
@@ -617,6 +619,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
 
+  EXPECT_CALL(*mock_ephemeris_, t_max()).WillRepeatedly(Return(Instant()));
+  EXPECT_CALL(*mock_ephemeris_, empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_ephemeris_, trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::kSun)));
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
