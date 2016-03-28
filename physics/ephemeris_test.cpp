@@ -1121,7 +1121,7 @@ TEST_F(EphemerisTest, ComputeApsides) {
     Position<World> const position = it.degrees_of_freedom().position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
-                  AlmostEquals(0.5 * T, 103, 2143));
+                  AlmostEquals(0.5 * T, 103, 2779));
       EXPECT_THAT((position - *previous_position).Norm(),
                   AlmostEquals(2.0 * a, 0, 176));
     }
