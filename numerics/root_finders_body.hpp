@@ -3,6 +3,8 @@
 
 #include "root_finders.hpp"
 
+#include <set>
+
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
@@ -12,6 +14,7 @@ namespace principia {
 
 using geometry::Barycentre;
 using geometry::Sign;
+using quantities::Square;
 
 namespace numerics {
 
@@ -50,10 +53,10 @@ template<typename Argument, typename Value>
 std::set<Argument> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,
-    Quotient<Value, Difference<Argument>> const& a1,
-    Quotient<Value, Square<Difference<Argument>>> const& a2) {
-  using Derivative = Quotient<Value, Difference<Argument>>;
-  using Discriminant = Square<Derivative>;
+    Derivative<Value, Argument> const& a1,
+    Derivative<Derivative<Value, Argument>, Argument> const& a2) {
+  using Derivative1 = Derivative<Value, Argument>;
+  using Discriminant = Square<Derivative1>;
 
   std::set<Argument> solutions;
 
@@ -77,8 +80,8 @@ std::set<Argument> SolveQuadraticEquation(
     // No solution.
   } else {
     // Two solutions.  Compute the numerator of the larger one.
-    Derivative numerator;
-    static Derivative derivative_zero{};
+    Derivative1 numerator;
+    static Derivative1 derivative_zero{};
     if (a1 > derivative_zero) {
       numerator = -a1 - Sqrt(discriminant.value + discriminant.error);
     } else {

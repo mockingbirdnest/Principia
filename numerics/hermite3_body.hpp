@@ -3,16 +3,22 @@
 
 #include "numerics/hermite3.hpp"
 
+#include <set>
+#include <utility>
+
 #include "numerics/root_finders.hpp"
 
 namespace principia {
+
+using quantities::Difference;
+
 namespace numerics {
 
 template<typename Argument, typename Value>
 Hermite3<Argument, Value>::Hermite3(
     std::pair<Argument, Argument> const& arguments,
     std::pair<Value, Value> const& values,
-    std::pair<Derivative, Derivative> const& derivatives)
+    std::pair<Derivative1, Derivative1> const& derivatives)
     : arguments_(arguments) {
   a0_ = values.first;
   a1_ = derivatives.first;
@@ -37,7 +43,7 @@ Value Hermite3<Argument, Value>::Evaluate(Argument const& argument) const {
 }
 
 template<typename Argument, typename Value>
-typename Hermite3<Argument, Value>::Derivative
+typename Hermite3<Argument, Value>::Derivative1
 Hermite3<Argument, Value>::EvaluateDerivative(Argument const& argument) const {
   Difference<Argument> const Δargument = argument - arguments_.first;
   return ((3.0 * a3_ * Δargument + 2.0 * a2_) * Δargument) + a1_;
@@ -45,7 +51,7 @@ Hermite3<Argument, Value>::EvaluateDerivative(Argument const& argument) const {
 
 template<typename Argument, typename Value>
 std::set<Argument> Hermite3<Argument, Value>::FindExtrema() const {
-  return SolveQuadraticEquation<Argument, Derivative>(
+  return SolveQuadraticEquation<Argument, Derivative1>(
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
 }
 
