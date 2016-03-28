@@ -14,6 +14,8 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "numerics/hermite3.hpp"
+#include "numerics/root_finders.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -28,9 +30,11 @@ using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
+using numerics::Hermite3;
 using quantities::Abs;
 using quantities::Exponentiation;
 using quantities::Quotient;
+using quantities::Square;
 using quantities::Time;
 using quantities::si::Day;
 using ::std::placeholders::_1;
@@ -582,6 +586,102 @@ ComputeGravitationalAccelerationOnMassiveBody(
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
+Ephemeris<Frame>::ComputeApsides(
+    not_null<MassiveBody const*> const body,
+    typename DiscreteTrajectory<Frame>::Iterator const begin,
+    typename DiscreteTrajectory<Frame>::Iterator const end) {
+  not_null<ContinuousTrajectory<Frame> const*> const body_trajectory =
+      trajectory(body);
+  typename ContinuousTrajectory<Frame>::Hint hint;
+  auto apsides = make_not_null_unique<DiscreteTrajectory<Frame>>();
+
+  std::experimental::optional<Instant> previous_time;
+  std::experimental::optional<DegreesOfFreedom<Frame>>
+      previous_degrees_of_freedom;
+  std::experimental::optional<Square<Length>> previous_squared_distance;
+  std::experimental::optional<Variation<Square<Length>>>
+      previous_squared_distance_derivative;
+
+  for (auto it = begin; it != end; ++it) {
+    Instant const time = it.time();
+    DegreesOfFreedom<Frame> const degrees_of_freedom = it.degrees_of_freedom();
+    DegreesOfFreedom<Frame> const body_degrees_of_freedom =
+        body_trajectory->EvaluateDegreesOfFreedom(time, &hint);
+    RelativeDegreesOfFreedom<Frame> const relative =
+        degrees_of_freedom - body_degrees_of_freedom;
+    Square<Length> const squared_distance =
+        InnerProduct(relative.displacement(), relative.displacement());
+    // This is the derivative of |squared_distance|.
+    Variation<Square<Length>> const squared_distance_derivative =
+        2.0 * InnerProduct(relative.displacement(), relative.velocity());
+
+    if (previous_squared_distance_derivative &&
+        Sign(squared_distance_derivative) !=
+            Sign(previous_squared_distance_derivative)) {
+      // The derivative of |squared_distance| changed sign.  Construct a Hermite
+      // approximation of |squared_distance| and find its extrema.
+      Hermite3<Instant, Square<Length>> const
+          squared_distance_approximation(
+              {*previous_time, time},
+              {*previous_squared_distance, squared_distance},
+              {*previous_squared_distance_derivative,
+               squared_distance_derivative});
+      std::set<Instant> const extrema =
+          squared_distance_approximation.FindExtrema();
+
+      // Now look at the extrema and check that exactly one is in the required
+      // time interval.  This is normally the case, but it can fail due to
+      // ill-conditioning.
+      Instant apsis_time;
+      int valid_extrema = 0;
+      for (auto const& extremum : extrema) {
+        if (extremum >= *previous_time && extremum <= time) {
+          apsis_time = extremum;
+          ++valid_extrema;
+        }
+      }
+      if (valid_extrema != 1) {
+        // Something went wrong when finding the extrema of
+        // |squared_distance_approximation|. Use a linear interpolation of
+        // |squared_distance_derivative| instead.
+        apsis_time = Barycentre<Instant, Variation<Square<Length>>>(
+            {time, *previous_time},
+            {*previous_squared_distance_derivative,
+             -squared_distance_derivative});
+      }
+
+      // Now that we know the time of the apsis, construct a Hermite
+      // approximation of the position of the body, and use it to derive its
+      // degrees of freedom.  Note that an extremum of
+      // |squared_distance_approximation| is in general not an extremum for
+      // |position_approximation|: the distance computed using the latter is a
+      // 6th-degree polynomial.  However, approximating this polynomial using a
+      // 3rd-degree polynomial would yield |squared_distance_approximation|, so
+      // we shouldn't be far from the truth.
+      Hermite3<Instant, Position<Frame>> position_approximation(
+          {*previous_time, time},
+          {previous_degrees_of_freedom->position(),
+           degrees_of_freedom.position()},
+          {previous_degrees_of_freedom->velocity(),
+           degrees_of_freedom.velocity()});
+      apsides->Append(
+          apsis_time,
+          DegreesOfFreedom<Frame>(
+              position_approximation.Evaluate(apsis_time),
+              position_approximation.EvaluateDerivative(apsis_time)));
+    }
+
+    previous_time = time;
+    previous_degrees_of_freedom = degrees_of_freedom;
+    previous_squared_distance = squared_distance;
+    previous_squared_distance_derivative = squared_distance_derivative;
+  }
+
+  return apsides;
+}
+
+template<typename Frame>
 int Ephemeris<Frame>::serialization_index_for_body(
     not_null<MassiveBody const*> const body) const {
   return FindOrDie(unowned_bodies_indices_, body);
@@ -824,7 +924,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
 
     Displacement<Frame> const Δq = positions[b1] - positions[b2];
 
-    Exponentiation<Length, 2> const Δq_squared = InnerProduct(Δq, Δq);
+    Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
     // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
     // non-oblate path slower.
     Exponentiation<Length, -3> const one_over_Δq_cubed =
@@ -900,7 +1000,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   for (size_t b2 = 0; b2 < positions.size(); ++b2) {
     Displacement<Frame> const Δq = position1 - positions[b2];
 
-    Exponentiation<Length, 2> const Δq_squared = InnerProduct(Δq, Δq);
+    Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
     // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
     // non-oblate path slower.
     Exponentiation<Length, -3> const one_over_Δq_cubed =
