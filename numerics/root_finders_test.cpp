@@ -1,9 +1,13 @@
 ﻿
 #include "numerics/root_finders.hpp"
 
+#include <set>
+
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -14,11 +18,14 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::SIUnit;
 using quantities::Sqrt;
+using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
+using ::testing::ElementsAre;
 using ::testing::Ge;
+using ::testing::IsEmpty;
 using ::testing::Le;
 
 namespace numerics {
@@ -44,6 +51,38 @@ TEST_F(RootFindersTest, SquareRoots) {
       EXPECT_THAT(evaluations, AllOf(Ge(49), Le(58)));
     }
   }
+}
+
+TEST_F(RootFindersTest, QuadraticEquations) {
+  // Golden ratio.
+  auto const s1 = SolveQuadraticEquation(0.0, -1.0, -1.0, 1.0);
+  EXPECT_THAT(s1,
+              ElementsAre(AlmostEquals((1 - sqrt(5)) / 2, 1),
+                          AlmostEquals((1 + sqrt(5)) / 2, 0)));
+
+  // No solutions.
+  auto const s2 = SolveQuadraticEquation(0.0, 1.0, 0.0, 1.0);
+  EXPECT_THAT(s2, IsEmpty());
+
+  // One solution.
+  auto const s3 = SolveQuadraticEquation(0.0, 1.0, 2.0, 1.0);
+  EXPECT_THAT(s3, ElementsAre(-1.0));
+
+  // An ill-conditioned system.  I fart in its general direction.  If done
+  // naively, this yields {-100032., -99968.4} according to Mathematica.
+  auto const s4 = SolveQuadraticEquation(0.0,
+                                         1.0000001E25,
+                                         2.0000003E20,
+                                         1.0000001E15);
+  EXPECT_THAT(s4,
+              ElementsAre(AlmostEquals(-100031.62777541532972762902, 66),
+                          AlmostEquals(-99968.38222458367027247098, 65)));
+
+  // A typed system.
+  Instant const t0;
+  std::set<Instant> s5 = SolveQuadraticEquation(
+      t0, 1.0 * Metre, 2.0 * Metre / Second, 1.0 * Metre / Second / Second);
+  EXPECT_THAT(s5, ElementsAre(t0 - 1.0 * Second));
 }
 
 }  // namespace numerics
