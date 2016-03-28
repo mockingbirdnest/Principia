@@ -735,9 +735,11 @@ public partial class PrincipiaPluginAdapter
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
     vessel.patchedConicRenderer.relativityMode =
         PatchRendering.RelativityMode.RELATIVE;
-    if (vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
+    if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
+        vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
         vessel.orbitDriver.Renderer.drawIcons != OrbitRenderer.DrawIcons.OBJ) {
       Log.Info("Removing orbit rendering for the active vessel");
+      vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
       vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
       vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
     }
