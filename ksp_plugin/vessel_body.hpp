@@ -314,7 +314,7 @@ inline void Vessel::FlowProlongation(Instant const& time) {
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       time,
       prolongation_adaptive_step_parameters_,
-      Ephemeris<Barycentric>::no_ephemeris_step_limit);
+      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
 }
 
 inline void Vessel::FlowPrediction(Instant const& time) {

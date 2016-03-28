@@ -372,8 +372,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     AdaptiveStepParameters const& parameters,
-    std::int64_t const max_ephemeris_steps =
-        std::numeric_limits<std::int64_t>::max()) {
+    std::int64_t const max_ephemeris_steps) {
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
   std::vector<IntrinsicAcceleration> const intrinsic_accelerations =

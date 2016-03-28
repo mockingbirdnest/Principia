@@ -403,7 +403,7 @@ TEST_F(EphemerisTest, EarthProbe) {
           kMaxSteps,
           1E-9 * Metre,
           2.6E-15 * Metre / Second),
-          Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit);
+          Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
 
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -452,6 +452,22 @@ TEST_F(EphemerisTest, EarthProbe) {
               AlmostEquals(1.00 * period * v_probe, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
+
+  Instant const old_t_max = ephemeris.t_max();
+  EXPECT_THAT(trajectory.last().time(), Lt(old_t_max));
+  EXPECT_FALSE(
+      ephemeris.FlowWithAdaptiveStep(
+          &trajectory,
+          intrinsic_acceleration,
+          t0_ + std::numeric_limits<double>::infinity() * Second,
+          Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+              DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+              kMaxSteps,
+              1E-9 * Metre,
+              2.6E-15 * Metre / Second),
+          /*max_ephemeris_steps=*/0));
+  EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
+  EXPECT_THAT(trajectory.last().time(), Eq(old_t_max));
 }
 
 // The Earth and two massless probes, similar to the previous test but flowing
@@ -883,7 +899,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           kMaxSteps,
           1E-9 * Metre,
           2.6E-15 * Metre / Second),
-          Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit);
+          Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
 
   Speed const v_elephant_x =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
