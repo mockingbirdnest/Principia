@@ -402,7 +402,8 @@ TEST_F(EphemerisTest, EarthProbe) {
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
           kMaxSteps,
           1E-9 * Metre,
-          2.6E-15 * Metre / Second));
+          2.6E-15 * Metre / Second),
+          Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit);
 
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -881,7 +882,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
           kMaxSteps,
           1E-9 * Metre,
-          2.6E-15 * Metre / Second));
+          2.6E-15 * Metre / Second),
+          Ephemeris<ICRFJ2000Equator>::no_ephemeris_step_limit);
 
   Speed const v_elephant_x =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
