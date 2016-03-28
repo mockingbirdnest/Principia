@@ -313,7 +313,8 @@ inline void Vessel::FlowProlongation(Instant const& time) {
       prolongation_,
       Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
       time,
-      prolongation_adaptive_step_parameters_);
+      prolongation_adaptive_step_parameters_,
+      Ephemeris<Barycentric>::no_ephemeris_step_limit);
 }
 
 inline void Vessel::FlowPrediction(Instant const& time) {
@@ -323,7 +324,7 @@ inline void Vessel::FlowPrediction(Instant const& time) {
         Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
         time,
         prediction_adaptive_step_parameters_,
-        MaxEphemerisStepsPerFrame);
+        FlightPlan::max_ephemeris_steps_per_frame);
   }
 }
 

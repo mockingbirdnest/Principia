@@ -378,8 +378,13 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
       {trajectory};
   std::vector<IntrinsicAcceleration> const intrinsic_accelerations =
       {std::move(intrinsic_acceleration)};
+  // The |min| is here to prevent us from spending too much time computing the
+  // ephemeris.  The |max| is here to ensure that we always try to integrate
+  // forward.
   Instant const t_final =
-      std::min(t_max() + max_ephemeris_steps * parameters_.step(), t);
+      std::min(std::max(t_max() + max_ephemeris_steps * parameters_.step(),
+                        trajectory->last().time() + parameters_.step()),
+               t);
   if (empty() || t_final > t_max()) {
     Prolong(t_final);
   }

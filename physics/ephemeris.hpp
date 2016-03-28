@@ -39,6 +39,8 @@ class Ephemeris {
   static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
   static IntrinsicAccelerations const kNoIntrinsicAccelerations;
+  static std::int64_t constexpr no_ephemeris_step_limit =
+      std::numeric_limits<std::int64_t>::max();
 
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
@@ -150,8 +152,7 @@ class Ephemeris {
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
-      std::int64_t const max_ephemeris_steps =
-          std::numeric_limits<std::int64_t>::max());
+      std::int64_t const max_ephemeris_steps);
 
   // Integrates, until at most |t|, the |trajectories| followed by massless
   // bodies in the gravitational potential described by |*this|.  If

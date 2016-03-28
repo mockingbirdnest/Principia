@@ -28,8 +28,6 @@ using quantities::Speed;
 
 namespace ksp_plugin {
 
-std::int64_t constexpr MaxEphemerisStepsPerFrame = 1000;
-
 // A stack of |Burn|s that manages a chain of trajectories obtained by executing
 // the corresponding |NavigationManœuvre|s.
 class FlightPlan {
@@ -100,6 +98,8 @@ class FlightPlan {
       serialization::FlightPlan const& message,
       not_null<DiscreteTrajectory<Barycentric>*> const root,
       not_null<Ephemeris<Barycentric>*> const ephemeris);
+
+  static std::int64_t constexpr max_ephemeris_steps_per_frame = 1000;
 
  protected:
   // For mocking.

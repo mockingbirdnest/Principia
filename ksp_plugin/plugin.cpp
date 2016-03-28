@@ -833,10 +833,11 @@ void Plugin::EvolveBubble(Instant const& t) {
       bubble_->centre_of_mass_intrinsic_acceleration();
 
   bool const reached_final_time = ephemeris_->FlowWithAdaptiveStep(
-                                                  trajectory,
-                                                  intrinsic_acceleration,
-                                                  t,
-                                                  prolongation_parameters_);
+      trajectory,
+      intrinsic_acceleration,
+      t,
+      prolongation_parameters_,
+      Ephemeris<Barycentric>::no_ephemeris_step_limit);
   CHECK(reached_final_time) << t << " " << trajectory->last().time();
 
   DegreesOfFreedom<Barycentric> const& centre_of_mass =
