@@ -374,14 +374,22 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
-    AdaptiveStepParameters const& parameters) {
+    AdaptiveStepParameters const& parameters,
+    std::int64_t const max_ephemeris_steps) {
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
   std::vector<IntrinsicAcceleration> const intrinsic_accelerations =
       {std::move(intrinsic_acceleration)};
-  if (empty() || t > t_max()) {
-    Prolong(t);
-  }
+  // The |min| is here to prevent us from spending too much time computing the
+  // ephemeris.  The |max| is here to ensure that we always try to integrate
+  // forward.  We use |last_state_.time.value| because this is always finite,
+  // contrary to |t_max()|, which is -∞ when |empty()|.
+  Instant const t_final =
+      std::min(std::max(last_state_.time.value +
+                            max_ephemeris_steps * parameters_.step(),
+                        trajectory->last().time() + parameters_.step()),
+               t);
+  Prolong(t_final);
 
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   NewtonianMotionEquation massless_body_equation;
@@ -402,7 +410,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   problem.append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState,
                 _1, std::cref(trajectories));
-  problem.t_final = t;
+  problem.t_final = t_final;
   problem.initial_state = &initial_state;
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
@@ -424,7 +432,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
-  return outcome == integrators::TerminationCondition::Done;
+  return outcome == integrators::TerminationCondition::Done && t_final == t;
 }
 
 template<typename Frame>
