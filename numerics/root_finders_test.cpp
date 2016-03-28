@@ -1,6 +1,8 @@
 ﻿
 #include "numerics/root_finders.hpp"
 
+#include <set>
+
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -66,7 +68,8 @@ TEST_F(RootFindersTest, QuadraticEquations) {
   auto const s3 = SolveQuadraticEquation(0.0, 1.0, 2.0, 1.0);
   EXPECT_THAT(s3, ElementsAre(-1.0));
 
-  // An ill-conditioned system.  I fart in its general direction.
+  // An ill-conditioned system.  I fart in its general direction.  If done
+  // naively, this yields {-100032., -99968.4} according to Mathematica.
   auto const s4 = SolveQuadraticEquation(0.0,
                                          1.0000001E25,
                                          2.0000003E20,

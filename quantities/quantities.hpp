@@ -67,6 +67,11 @@ using Product = decltype(std::declval<Left>() * std::declval<Right>());
 template<typename Left, typename Right>
 using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
 
+// The result type of the derivative of a |Value|-valued function with respect
+// to its |Argument|-valued argument.
+template<typename Value, typename Argument>
+using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
+
 // |Exponentiation<T, n>| is an alias for the following, where t is a value of
 // type |T|:
 //   The type of ( ... (t * t) * ... * t), with n factors, if n >= 1;

@@ -7,9 +7,7 @@
 
 namespace principia {
 
-using quantities::Difference;
-using quantities::Quotient;
-using quantities::Square;
+using quantities::Derivative;
 
 namespace numerics {
 
@@ -29,8 +27,8 @@ template <typename Argument, typename Value>
 std::set<Argument> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,
-    Quotient<Value, Difference<Argument>> const& a1,
-    Quotient<Value, Square<Difference<Argument>>> const& a2);
+    Derivative<Value, Argument> const& a1,
+    Derivative<Derivative<Value, Argument>, Argument> const& a2);
 
 }  // namespace numerics
 }  // namespace principia

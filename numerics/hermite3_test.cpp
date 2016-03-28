@@ -58,6 +58,9 @@ TEST_F(Hermite3Test, Typed) {
   Hermite3<Instant, Position<World>> h({t0_ + 1 * Second, t0_ + 2 * Second},
                                        {World::origin, World::origin},
                                        {Velocity<World>(), Velocity<World>()});
+
+  EXPECT_EQ(World::origin, h.Evaluate(t0_ + 1.3 * Second));
+  EXPECT_EQ(Velocity<World>(), h.EvaluateDerivative(t0_ + 1.7 * Second));
 }
 
 }  // namespace numerics
