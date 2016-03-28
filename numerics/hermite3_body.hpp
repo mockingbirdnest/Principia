@@ -22,7 +22,7 @@ Hermite3<Argument, Value>::Hermite3(
       one_over_Δargument * one_over_Δargument;
   auto const one_over_Δargument_cubed =
       one_over_Δargument * one_over_Δargument_squared;
-  Value const Δvalue = values.second - values.first;
+  Difference<Value> const Δvalue = values.second - values.first;
   a2_ = 3.0 * Δvalue * one_over_Δargument_squared -
             (2.0 * derivatives.first + derivatives.second) * one_over_Δargument;
   a3_ = -2.0 * Δvalue * one_over_Δargument_cubed +

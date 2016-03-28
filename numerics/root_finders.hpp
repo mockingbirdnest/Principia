@@ -8,8 +8,8 @@
 namespace principia {
 
 using quantities::Difference;
-using quantities::Exponentiation;
 using quantities::Quotient;
+using quantities::Square;
 
 namespace numerics {
 
@@ -30,7 +30,7 @@ std::set<Argument> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,
     Quotient<Value, Difference<Argument>> const& a1,
-    Quotient<Value, Exponentiation<Difference<Argument>, 2>> const& a2);
+    Quotient<Value, Square<Difference<Argument>>> const& a2);
 
 }  // namespace numerics
 }  // namespace principia

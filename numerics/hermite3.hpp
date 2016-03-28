@@ -18,7 +18,7 @@ namespace numerics {
 template<typename Argument, typename Value>
 class Hermite3 {
  public:
-  using Derivative = Quotient<Value, Difference<Argument>>;
+  using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
 
   Hermite3(std::pair<Argument, Argument> const& arguments,
            std::pair<Value, Value> const& values,

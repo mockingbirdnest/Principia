@@ -75,6 +75,10 @@ using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
 template<typename T, int exponent>
 using Exponentiation =
     typename internal::ExponentiationGenerator<T, exponent>::Type;
+template<typename Q>
+using Square = Exponentiation<Q, 2>;
+template<typename Q>
+using Cube = Exponentiation<Q, 3>;
 
 // |SquareRoot<T>| is only defined if |T| is an instance of |Quantity| with only
 // even dimensions.  In that case, it is the unique instance |S| of |Quantity|

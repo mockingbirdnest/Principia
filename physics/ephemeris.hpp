@@ -183,7 +183,7 @@ class Ephemeris {
   // Computes the apsides with respect to |body| for the discrete trajectory
   // segment given by |begin| and |end|.  Returns them as a (root) trajectory
   // with one point for each apsis.
-  virtual DiscreteTrajectory<Frame> ComputeApsides(
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> ComputeApsides(
       not_null<MassiveBody const*> const body,
       typename DiscreteTrajectory<Frame>::Iterator const begin,
       typename DiscreteTrajectory<Frame>::Iterator const end);
