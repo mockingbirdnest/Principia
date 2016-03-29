@@ -66,8 +66,13 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
-Time const kStep = 45 * Minute;
 Length const kFittingTolerance = 1 * Milli(Metre);
+
+Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
+  return Ephemeris<Barycentric>::FixedStepParameters(
+             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+             /*step=*/45 * Minute);
+}
 
 }  // namespace
 
@@ -645,9 +650,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
         message.pre_bourbaki_celestial(),
         kFittingTolerance,
-        Ephemeris<Barycentric>::FixedStepParameters(
-            McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-            kStep));
+        DefaultEphemerisParameters());
     ReadCelestialsFromMessages(*ephemeris,
                                message.pre_bourbaki_celestial(),
                                &celestials);
@@ -769,11 +772,12 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
     initial_state.emplace_back(state.second);
   }
   absolute_initialization_ = std::experimental::nullopt;
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
-                                                        initial_state,
-                                                        current_time_,
-                                                        kFittingTolerance,
-                                                        history_parameters_);
+  ephemeris_ =
+      std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
+                                               initial_state,
+                                               current_time_,
+                                               kFittingTolerance,
+                                               DefaultEphemerisParameters());
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
     celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
