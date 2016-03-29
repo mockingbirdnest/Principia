@@ -1125,7 +1125,7 @@ TEST_F(EphemerisTest, ComputeApsides) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 1398));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 1665));
     }
     previous_time = time;
   }
@@ -1135,7 +1135,7 @@ TEST_F(EphemerisTest, ComputeApsides) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 157, 257));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 143, 257));
     }
     previous_time = time;
   }
