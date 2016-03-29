@@ -168,7 +168,7 @@ class Ephemeris {
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMasslessBody(
       Position<Frame> const& position,
-      Instant const & t) const;
+      Instant const& t) const;
 
   // Returns the gravitational acceleration on the massless body having the
   // given |trajectory| at time |t|.  |t| must be one of the times of the
@@ -184,6 +184,14 @@ class Ephemeris {
   ComputeGravitationalAccelerationOnMassiveBody(
       not_null<MassiveBody const*> const body,
       Instant const& t) const;
+
+  // Computes the apsides with respect to |body| for the discrete trajectory
+  // segment given by |begin| and |end|.  Returns them as a (root) trajectory
+  // with one point for each apsis.
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> ComputeApsides(
+      not_null<MassiveBody const*> const body,
+      typename DiscreteTrajectory<Frame>::Iterator const begin,
+      typename DiscreteTrajectory<Frame>::Iterator const end);
 
   // Returns the index of the given body in the serialization produced by
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
