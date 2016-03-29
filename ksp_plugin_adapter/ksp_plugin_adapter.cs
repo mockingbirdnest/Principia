@@ -36,9 +36,18 @@ public partial class PrincipiaPluginAdapter
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
   private Controlled<FlightPlanner> flight_planner_;
 
+  private struct MapNodeProperties {
+    public MapObject.ObjectType object_type;
+    public Vector3d world_position;
+    public CelestialBody celestial;
+  }
+
+  private List<KSP.UI.Screens.Mapview.MapNode> map_node_pool;
+  private Dictionary<KSP.UI.Screens.Mapview.MapNode,
+                     MapNodeProperties> map_node_properties;
+
   private IntPtr plugin_ = IntPtr.Zero;
 
-  [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
@@ -148,6 +157,10 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
+    
+    map_node_pool = new List<KSP.UI.Screens.Mapview.MapNode>();
+    map_node_properties =
+        new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
   }
 
   ~PrincipiaPluginAdapter() {
@@ -725,7 +738,8 @@ public partial class PrincipiaPluginAdapter
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
     if (toolbar_button_ != null) {
-      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
+      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
+          toolbar_button_);
     }
     Cleanup();
   }
@@ -780,8 +794,6 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-static Vector3d foopos;
-
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
@@ -808,44 +820,8 @@ static Vector3d foopos;
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia);
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
-          foreach (CelestialBody celestial in
-                   plotting_frame_selector_.get().Bodies()) {
-            IntPtr apsis_iterator =
-                plugin_.FlightPlanRenderedApsides(active_vessel_guid,
-                                                  celestial.flightGlobalsIndex,
-                                                  sun_world_position);
-            while (!apsis_iterator.AtEnd()) {
-              Vector3d apsis =
-                  (Vector3d)apsis_iterator.FetchAndIncrement().begin;
-              foopos = apsis;
-              if (foo != null) {
-                foo.NodeUpdate();
-                break;
-              }
-              UnityEngine.Debug.LogWarning("Creating foo");
-              foo = KSP.UI.Screens.Mapview.MapNode.Create("apsis",
-                                                              XKCDColors.RoyalBlue,//celestial.orbitDriver.orbitColor,
-                                                              pixelSize:32,
-                                                              hoverable:true,
-                                                              pinnable:true,
-                                                              blocksInput:true);
-              // TODO(egg): distinguish Apoapsis and Periapsis.
-              foo.OnUpdateVisible += (KSP.UI.Screens.Mapview.MapNode n, KSP.UI.Screens.Mapview.MapNode.IconData d) => d.visible = true;
-              foo.OnUpdateType += (KSP.UI.Screens.Mapview.MapNode n,
-                   KSP.UI.Screens.Mapview.MapNode.TypeData data) => data.oType = MapObject.ObjectType.Apoapsis;
-              foo.OnUpdateCaption +=
-                  (KSP.UI.Screens.Mapview.MapNode n,
-                   KSP.UI.Screens.Mapview.MapNode.CaptionData data) =>
-                  data.Header =
-                      celestial.name + " Apsis : <color=" +
-                      XKCDColors.HexFormat.Chartreuse + ">" +
-                      celestial.GetAltitude(foopos).ToString("N0") +
-                      "m</color>";
-              foo.OnUpdatePosition += (KSP.UI.Screens.Mapview.MapNode n) =>
-                                      ScaledSpace.LocalToScaledSpace(foopos);
-            }
-            Interface.DeleteLineAndIterator(ref apsis_iterator);
-          }
+          RenderFlightPlanApsides(active_vessel_guid, sun_world_position);
+
           int number_of_segments =
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
@@ -883,14 +859,58 @@ static Vector3d foopos;
           }
         }
       });
+      foreach (var map_node in map_node_pool) {
+        map_node.NodeUpdate();
+      }
+    } else {
+      ClearMapNodePool();
     }
   }
 
-      private Vector3d Foo_OnUpdatePosition(KSP.UI.Screens.Mapview.MapNode arg) {
-        throw new NotImplementedException();
-      }
+  private void RenderFlightPlanApsides(String vessel_guid,
+                                       XYZ sun_world_position) {
+    int pool_index = 0;
+    foreach (CelestialBody celestial in
+             plotting_frame_selector_.get().Bodies()) {
+      IntPtr apsis_iterator =
+          plugin_.FlightPlanRenderedApsides(vessel_guid,
+                                            celestial.flightGlobalsIndex,
+                                            sun_world_position);
+      Vector3d? end = null;
+      MapNodeProperties node_properties;
+      // TODO(egg): distinguish.
+      node_properties.object_type = MapObject.ObjectType.Apoapsis;
+      node_properties.celestial = celestial;
+      while (!apsis_iterator.AtEnd()) {
+        var segment = apsis_iterator.FetchAndIncrement();
+        Vector3d apsis = (Vector3d)segment.begin;
+        end = (Vector3d)segment.end;
 
-      private static KSP.UI.Screens.Mapview.MapNode foo;
+        node_properties.world_position = apsis;
+
+        if (pool_index == map_node_pool.Count) {
+          UnityEngine.Debug.LogWarning("Adding node to pool");
+          AddMapNodeToPool();
+        }
+        map_node_properties[map_node_pool[pool_index++]] = node_properties;
+      }
+      if (end.HasValue) {
+        if (pool_index == map_node_pool.Count) {
+          UnityEngine.Debug.LogWarning("Adding node to pool");
+          AddMapNodeToPool();
+        }
+        node_properties.world_position = end.Value;
+        map_node_properties[map_node_pool[pool_index++]] = node_properties;
+      }
+      Interface.DeleteLineAndIterator(ref apsis_iterator);
+    }
+    for (int i = pool_index; i < map_node_pool.Count; ++i) {
+      UnityEngine.Debug.LogWarning("Removing node from pool");
+      map_node_pool[i].Terminate();
+    }
+    map_node_pool.RemoveRange(index : pool_index,
+                              count : map_node_pool.Count - pool_index);
+  }
 
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     return PlanetariumCamera.Camera.WorldToScreenPoint(
@@ -1001,11 +1021,83 @@ static Vector3d foopos;
 
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
+    ClearMapNodePool();
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
     flight_planner_.reset();
     navball_changed_ = true;
+  }
+
+  private void AddMapNodeToPool() {
+    var new_node = KSP.UI.Screens.Mapview.MapNode.Create(
+        "apsis",
+        // If we see this colour, something has gone wrong.
+        XKCDColors.Pale,
+        pixelSize : 32,
+        hoverable : true,
+        pinnable : true,
+        blocksInput : true);
+    new_node.OnUpdateVisible +=
+        (KSP.UI.Screens.Mapview.MapNode node,
+         KSP.UI.Screens.Mapview.MapNode.IconData icon) => {
+          CelestialBody celestial = map_node_properties[node].celestial;
+          UnityEngine.Color colour =
+              celestial.orbit == null
+                  ? XKCDColors.SunshineYellow
+                  : celestial.orbitDriver.Renderer.nodeColor;
+          colour.a = 1;
+          icon.visible = true;
+          if (map_node_properties[node].celestial.GetAltitude(
+              map_node_properties[node].world_position) < 0) {
+            // Make sure we see impacts.
+            colour = XKCDColors.Orange;
+          }
+          icon.color = colour;
+        };
+    new_node.OnUpdateType +=
+        (KSP.UI.Screens.Mapview.MapNode node,
+         KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
+          if (map_node_properties[node].celestial.GetAltitude(
+              map_node_properties[node].world_position) < 0) {
+            type.oType = MapObject.ObjectType.PatchTransition;
+            type.pType =
+                KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
+          } else {
+            type.oType = map_node_properties[node].object_type;
+          }
+        };
+    new_node.OnUpdateCaption +=
+        (KSP.UI.Screens.Mapview.MapNode node,
+         KSP.UI.Screens.Mapview.MapNode.CaptionData caption) => {
+          caption.Header =
+              map_node_properties[node].celestial.name + " Apsis : <color=" +
+              XKCDColors.HexFormat.Chartreuse + ">" +
+              // TODO(egg): culture.
+              map_node_properties[node].celestial.GetAltitude(
+                  map_node_properties[node].world_position).ToString("N0") +
+              "m</color>";
+          if (map_node_properties[node].celestial.GetAltitude(
+              map_node_properties[node].world_position) < 0) {
+          caption.Header =
+              map_node_properties[node].celestial.name + " Impact<color=" +
+              XKCDColors.HexFormat.Chartreuse + "></color>";
+          }
+        };
+    new_node.OnUpdatePosition +=
+        (KSP.UI.Screens.Mapview.MapNode node) =>
+        ScaledSpace.LocalToScaledSpace(
+            map_node_properties[node].world_position);
+    map_node_pool.Add(new_node);
+  }
+
+  private void ClearMapNodePool() {
+    foreach (var node in map_node_pool) {
+      node.Terminate();
+    }
+    map_node_pool = new List<KSP.UI.Screens.Mapview.MapNode>();
+    map_node_properties =
+        new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
   }
 
   private void ShowGUI() {
