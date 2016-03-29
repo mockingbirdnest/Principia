@@ -413,6 +413,16 @@ RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
   return result;
 }
 
+not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+Plugin::ComputeApsides(
+    Index const celestial_index,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
+  return ephemeris_->ComputeApsides(
+                         FindOrDie(celestials_, celestial_index)->body(),
+                         begin, end);
+}
+
 void Plugin::SetPredictionLength(Time const& t) {
   prediction_length_ = t;
 }

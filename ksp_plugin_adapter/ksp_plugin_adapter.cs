@@ -780,6 +780,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+static Vector3d foopos;
+
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
@@ -806,6 +808,44 @@ public partial class PrincipiaPluginAdapter
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia);
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
+          foreach (CelestialBody celestial in
+                   plotting_frame_selector_.get().Bodies()) {
+            IntPtr apsis_iterator =
+                plugin_.FlightPlanRenderedApsides(active_vessel_guid,
+                                                  celestial.flightGlobalsIndex,
+                                                  sun_world_position);
+            while (!apsis_iterator.AtEnd()) {
+              Vector3d apsis =
+                  (Vector3d)apsis_iterator.FetchAndIncrement().begin;
+              foopos = apsis;
+              if (foo != null) {
+                foo.NodeUpdate();
+                break;
+              }
+              UnityEngine.Debug.LogWarning("Creating foo");
+              foo = KSP.UI.Screens.Mapview.MapNode.Create("apsis",
+                                                              XKCDColors.RoyalBlue,//celestial.orbitDriver.orbitColor,
+                                                              pixelSize:32,
+                                                              hoverable:true,
+                                                              pinnable:true,
+                                                              blocksInput:true);
+              // TODO(egg): distinguish Apoapsis and Periapsis.
+              foo.OnUpdateVisible += (KSP.UI.Screens.Mapview.MapNode n, KSP.UI.Screens.Mapview.MapNode.IconData d) => d.visible = true;
+              foo.OnUpdateType += (KSP.UI.Screens.Mapview.MapNode n,
+                   KSP.UI.Screens.Mapview.MapNode.TypeData data) => data.oType = MapObject.ObjectType.Apoapsis;
+              foo.OnUpdateCaption +=
+                  (KSP.UI.Screens.Mapview.MapNode n,
+                   KSP.UI.Screens.Mapview.MapNode.CaptionData data) =>
+                  data.Header =
+                      celestial.name + " Apsis : <color=" +
+                      XKCDColors.HexFormat.Chartreuse + ">" +
+                      celestial.GetAltitude(foopos).ToString("N0") +
+                      "m</color>";
+              foo.OnUpdatePosition += (KSP.UI.Screens.Mapview.MapNode n) =>
+                                      ScaledSpace.LocalToScaledSpace(foopos);
+            }
+            Interface.DeleteLineAndIterator(ref apsis_iterator);
+          }
           int number_of_segments =
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
@@ -845,6 +885,12 @@ public partial class PrincipiaPluginAdapter
       });
     }
   }
+
+      private Vector3d Foo_OnUpdatePosition(KSP.UI.Screens.Mapview.MapNode arg) {
+        throw new NotImplementedException();
+      }
+
+      private static KSP.UI.Screens.Mapview.MapNode foo;
 
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     return PlanetariumCamera.Camera.WorldToScreenPoint(
