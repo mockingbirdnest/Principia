@@ -1160,9 +1160,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void KSPFeatures() {
-    display_patched_conics_ =
-        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
-                                     text  : "Display patched conics");
+     display_patched_conics_ = UnityEngine.GUILayout.Toggle(
+         value : display_patched_conics_,
+         text  : "Display patched conics (do not use for flight planning!)");
     Sun.Instance.sunFlare.enabled =
         UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
                                      text  : "Enable Sun lens flare");
