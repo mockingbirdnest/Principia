@@ -418,14 +418,17 @@ RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
   return result;
 }
 
-not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
-Plugin::ComputeApsides(
+void Plugin::ComputeApsides(
     Index const celestial_index,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    DiscreteTrajectory<Barycentric>& apoapsides,
+    DiscreteTrajectory<Barycentric>& periapsides) const {
   return ephemeris_->ComputeApsides(
                          FindOrDie(celestials_, celestial_index)->body(),
-                         begin, end);
+                         begin, end,
+                         apoapsides,
+                         periapsides);
 }
 
 void Plugin::SetPredictionLength(Time const& t) {

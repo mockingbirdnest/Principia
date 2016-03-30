@@ -17,6 +17,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Quaternion;
 using geometry::R3Element;
+using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
 using ksp_plugin::RenderedTrajectory;
@@ -52,6 +53,11 @@ bool operator==(XYZSegment const& left, XYZSegment const& right);
 R3Element<double> ToR3Element(XYZ const& xyz);
 WXYZ ToWXYZ(Quaternion const& quaternion);
 XYZ ToXYZ(R3Element<double> const& r3_element);
+
+not_null<std::unique_ptr<LineAndIterator>> RenderApsides(
+    not_null<Plugin const*> plugin,
+    DiscreteTrajectory<Barycentric>& apsides,
+    XYZ const& sun_world_position);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

@@ -750,25 +750,25 @@ public partial class PrincipiaPluginAdapter
     vessel.patchedConicRenderer.relativityMode =
         PatchRendering.RelativityMode.RELATIVE;
     if (display_patched_conics_) {
-      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.TRACK_Phys) {
+      /*if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.TRACK_Phys) {
         Log.Info("Restoring patched conic rendering for the active vessel");
         vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
         // The call to |Update| with a non-|IDLE| |orbitDriver| allows things to
         // get initialized properly for this frame, preventing mysterious
         // exceptions.
         vessel.patchedConicSolver.Update();
-      }
+      }*/
       if (!vessel.patchedConicRenderer.enabled) {
         vessel.patchedConicRenderer.enabled = true;
         vessel.orbitTargeter.enabled = true;
       }
     } else {
-      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
+      if (//vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
           vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
           vessel.orbitDriver.Renderer.drawIcons !=
               OrbitRenderer.DrawIcons.OBJ) {
         Log.Info("Removing patched conic rendering for the active vessel");
-        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
+        //vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
         vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
         vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
       }
@@ -872,37 +872,21 @@ public partial class PrincipiaPluginAdapter
     int pool_index = 0;
     foreach (CelestialBody celestial in
              plotting_frame_selector_.get().Bodies()) {
-      IntPtr apsis_iterator =
-          plugin_.FlightPlanRenderedApsides(vessel_guid,
-                                            celestial.flightGlobalsIndex,
-                                            sun_world_position);
-      Vector3d? end = null;
-      MapNodeProperties node_properties;
-      // TODO(egg): distinguish.
-      node_properties.object_type = MapObject.ObjectType.Apoapsis;
-      node_properties.celestial = celestial;
-      while (!apsis_iterator.AtEnd()) {
-        var segment = apsis_iterator.FetchAndIncrement();
-        Vector3d apsis = (Vector3d)segment.begin;
-        end = (Vector3d)segment.end;
-
-        node_properties.world_position = apsis;
-
-        if (pool_index == map_node_pool.Count) {
-          UnityEngine.Debug.LogWarning("Adding node to pool");
-          AddMapNodeToPool();
-        }
-        map_node_properties[map_node_pool[pool_index++]] = node_properties;
-      }
-      if (end.HasValue) {
-        if (pool_index == map_node_pool.Count) {
-          UnityEngine.Debug.LogWarning("Adding node to pool");
-          AddMapNodeToPool();
-        }
-        node_properties.world_position = end.Value;
-        map_node_properties[map_node_pool[pool_index++]] = node_properties;
-      }
-      Interface.DeleteLineAndIterator(ref apsis_iterator);
+      IntPtr apoapsis_iterator;
+      IntPtr periapsis_iterator;
+      plugin_.FlightPlanRenderedApsides(vessel_guid,
+                                        celestial.flightGlobalsIndex,
+                                        sun_world_position,
+                                        out apoapsis_iterator,
+                                        out periapsis_iterator);
+      RenderAndDeleteApsides(apoapsis_iterator,
+                             celestial,
+                             MapObject.ObjectType.Apoapsis,
+                             ref pool_index);
+      RenderAndDeleteApsides(periapsis_iterator,
+                             celestial,
+                             MapObject.ObjectType.Periapsis,
+                             ref pool_index);
     }
     for (int i = pool_index; i < map_node_pool.Count; ++i) {
       UnityEngine.Debug.LogWarning("Removing node from pool");
@@ -1017,6 +1001,27 @@ public partial class PrincipiaPluginAdapter
     } finally {
       Interface.DeleteLineAndIterator(ref trajectory_iterator);
     }
+  }
+
+  private void RenderAndDeleteApsides(IntPtr apsis_iterator,
+                                      CelestialBody celestial,
+                                      MapObject.ObjectType type,
+                                      ref int pool_index) {
+    while (!apsis_iterator.AtEnd()) {
+      var segment = apsis_iterator.FetchAndIncrement();
+      Vector3d apsis = (Vector3d)segment.begin;
+      MapNodeProperties node_properties;
+      node_properties.object_type = type;
+      node_properties.celestial = celestial;
+      node_properties.world_position = apsis;
+
+      if (pool_index == map_node_pool.Count) {
+        UnityEngine.Debug.LogWarning("Adding node to pool");
+        AddMapNodeToPool();
+      }
+      map_node_properties[map_node_pool[pool_index++]] = node_properties;
+    }
+    Interface.DeleteLineAndIterator(ref apsis_iterator);
   }
 
   private void Cleanup() {

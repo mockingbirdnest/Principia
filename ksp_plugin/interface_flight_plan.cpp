@@ -263,34 +263,32 @@ void principia__FlightPlanRemoveLast(Plugin const* const plugin,
   return m.Return();
 }
 
-LineAndIterator* principia__FlightPlanRenderedApsides(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const celestial_index,
-    XYZ const sun_world_position) {
-  journal::Method<journal::FlightPlanRenderedApsides> m({plugin,
-                                                         vessel_guid,
-                                                         celestial_index,
-                                                         sun_world_position});
+void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
+                                          char const* const vessel_guid,
+                                          int const celestial_index,
+                                          XYZ const sun_world_position,
+                                          LineAndIterator** const apoapsides,
+                                          LineAndIterator** const periapsides) {
+  journal::Method<journal::FlightPlanRenderedApsides> m(
+      {plugin, vessel_guid, celestial_index, sun_world_position},
+      {apoapsides, periapsides});
   DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator ignore;
   DiscreteTrajectory<Barycentric>::Iterator end;
   CHECK_NOTNULL(plugin);
-  FlightPlan const& flight_plan = GetFlightPlan(plugin, vessel_guid);
-  //flight_plan.GetSegment(0, &begin, &ignore);
-  flight_plan.GetSegment(flight_plan.number_of_segments() - 1, &begin, &end);
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> const apsides =
-      plugin->ComputeApsides(celestial_index, begin, end);
-  RenderedTrajectory<World> rendered_trajectory =
-      CHECK_NOTNULL(plugin)->RenderedTrajectoryFromIterators(
-          apsides->Begin(),
-          apsides->End(),
-          World::origin +
-              Displacement<World>(ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return m.Return(result.release());
+  plugin->GetVessel(vessel_guid)->flight_plan().GetAllSegments(&begin, &end);
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  plugin->ComputeApsides(celestial_index,
+                         begin, end,
+                         apoapsides_trajectory,
+                         periapsides_trajectory);
+  *apoapsides = RenderApsides(plugin,
+                              apoapsides_trajectory,
+                              sun_world_position).release();
+  *periapsides = RenderApsides(plugin,
+                               periapsides_trajectory,
+                               sun_world_position).release();
+  return m.Return();
 }
 
 LineAndIterator* principia__FlightPlanRenderedSegment(

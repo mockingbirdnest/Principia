@@ -95,6 +95,39 @@ inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+inline not_null<std::unique_ptr<LineAndIterator>> RenderApsides(
+    not_null<Plugin const*> plugin,
+    DiscreteTrajectory<Barycentric>& apsides,
+    XYZ const& sun_world_position) {
+  // NOTE(egg): this guarantees a bijection between segment |begin|s and
+  // apsides.  We will eventually switch to a saner API.  We cannot even put
+  // the extra point at infinity because it will be rendered with respect to
+  // the ephemeris (actually this method may result in horrible edge cases).
+  if (apsides.Size() > 0) {
+    apsides.Append(
+        apsides.last().time() + 1e-3 * Second,
+        {Barycentric::origin +
+             Displacement<Barycentric>(
+                 {std::numeric_limits<double>::quiet_NaN() * Metre,
+                  std::numeric_limits<double>::quiet_NaN() * Metre,
+                  std::numeric_limits<double>::quiet_NaN() * Metre}),
+         Velocity<Barycentric>(
+             {std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
+              std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
+              std::numeric_limits<double>::quiet_NaN() * (Metre / Second)})});
+  }
+  RenderedTrajectory<World> rendered_trajectory =
+      plugin->RenderedTrajectoryFromIterators(
+          apsides.Begin(),
+          apsides.End(),
+          World::origin +
+              Displacement<World>(ToR3Element(sun_world_position) * Metre));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return result;
+}
+
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     Plugin const* const plugin,
     NavigationFrameParameters const& parameters) {

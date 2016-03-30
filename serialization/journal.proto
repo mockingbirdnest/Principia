@@ -452,12 +452,14 @@ message FlightPlanRenderedApsides {
     required int32 celestial_index = 3;
     required XYZ sun_world_position = 4;
   }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
-                                 (is_produced) = true];
+  message Out {
+    required fixed64 apoapsides = 1 [(pointer_to) = "LineAndIterator",
+                                     (is_produced) = true];
+    required fixed64 periapsides = 2 [(pointer_to) = "LineAndIterator",
+                                      (is_produced) = true];
   }
   required In in = 1;
-  required Return return = 3;
+  required Out out = 2;
 }
 
 message FlightPlanRenderedSegment {
@@ -918,12 +920,14 @@ message RenderedPredictionApsides {
     required int32 celestial_index = 3;
     required XYZ sun_world_position = 4;
   }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
-                                 (is_produced) = true];
+  message Out {
+    required fixed64 apoapsides = 1 [(pointer_to) = "LineAndIterator",
+                                     (is_produced) = true];
+    required fixed64 periapsides = 2 [(pointer_to) = "LineAndIterator",
+                                      (is_produced) = true];
   }
   required In in = 1;
-  required Return return = 3;
+  required Out out = 2;
 }
 
 message RenderedVesselTrajectory {

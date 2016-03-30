@@ -234,10 +234,12 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
 
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
-  ComputeApsides(Index const celestial_index,
-                 DiscreteTrajectory<Barycentric>::Iterator const& begin,
-                 DiscreteTrajectory<Barycentric>::Iterator const& end) const;
+  virtual void ComputeApsides(
+      Index const celestial_index,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      DiscreteTrajectory<Barycentric>& apoapsides,
+      DiscreteTrajectory<Barycentric>& periapsides) const;
 
   virtual void SetPredictionLength(Time const& t);
 

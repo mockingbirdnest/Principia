@@ -626,34 +626,30 @@ LineAndIterator* principia__RenderedPrediction(
   return m.Return(result.release());
 }
 
-LineAndIterator* principia__RenderedPredictionApsides(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const celestial_index,
-    XYZ const sun_world_position) {
-  journal::Method<journal::RenderedPredictionApsides> m({plugin,
-                                                         vessel_guid,
-                                                         celestial_index,
-                                                         sun_world_position});
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator ignore;
-  DiscreteTrajectory<Barycentric>::Iterator end;
+void principia__RenderedPredictionApsides(Plugin const* const plugin,
+                                          char const* const vessel_guid,
+                                          int const celestial_index,
+                                          XYZ const sun_world_position,
+                                          LineAndIterator** const apoapsides,
+                                          LineAndIterator** const periapsides) {
+  journal::Method<journal::RenderedPredictionApsides> m(
+      {plugin, vessel_guid, celestial_index, sun_world_position},
+      {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> const apsides =
-      plugin->ComputeApsides(celestial_index,
-                             prediction.Fork(),
-                             prediction.End());
-  RenderedTrajectory<World> rendered_trajectory =
-      CHECK_NOTNULL(plugin)->RenderedTrajectoryFromIterators(
-          apsides->Begin(),
-          apsides->End(),
-          World::origin +
-              Displacement<World>(ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return m.Return(result.release());
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  plugin->ComputeApsides(celestial_index,
+                         prediction.Fork(), prediction.End(),
+                         apoapsides_trajectory,
+                         periapsides_trajectory);
+  *apoapsides = RenderApsides(plugin,
+                              apoapsides_trajectory,
+                              sun_world_position).release();
+  *periapsides = RenderApsides(plugin,
+                               periapsides_trajectory,
+                               sun_world_position).release();
+  return m.Return();
 }
 
 
