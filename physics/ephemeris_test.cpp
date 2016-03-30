@@ -1111,14 +1111,42 @@ TEST_F(EphemerisTest, ComputeApsides) {
           1E-3 * Metre / Second),
       Ephemeris<World>::unlimited_max_ephemeris_steps);
 
-  auto const apsides =
-      ephemeris.ComputeApsides(b, trajectory.Begin(), trajectory.End());
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ephemeris.ComputeApsides(b,
+                           trajectory.Begin(),
+                           trajectory.End(),
+                           apoapsides,
+                           periapsides);
+
   std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<Position<World>> previous_position;
-  int apsides_count = 0;
-  for (auto it = apsides->Begin(); it != apsides->End(); ++it) {
+  std::map<Instant, DegreesOfFreedom<World>> all_apsides;
+  for (auto it = apoapsides.Begin(); it != apoapsides.End(); ++it) {
     Instant const time = it.time();
-    Position<World> const position = it.degrees_of_freedom().position();
+    all_apsides.emplace(time, it.degrees_of_freedom());
+    if (previous_time) {
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 1665));
+    }
+    previous_time = time;
+  }
+
+  previous_time = std::experimental::nullopt;
+  for (auto it = periapsides.Begin(); it != periapsides.End(); ++it) {
+    Instant const time = it.time();
+    all_apsides.emplace(time, it.degrees_of_freedom());
+    if (previous_time) {
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 143, 257));
+    }
+    previous_time = time;
+  }
+
+  EXPECT_EQ(6, all_apsides.size());
+
+  previous_time = std::experimental::nullopt;
+  std::experimental::optional<Position<World>> previous_position;
+  for (auto const pair : all_apsides) {
+    Instant const time = pair.first;
+    Position<World> const position = pair.second.position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
                   AlmostEquals(0.5 * T, 103, 2779));
@@ -1127,9 +1155,7 @@ TEST_F(EphemerisTest, ComputeApsides) {
     }
     previous_time = time;
     previous_position = position;
-    ++apsides_count;
   }
-  EXPECT_EQ(6, apsides_count);
 }
 
 }  // namespace physics

@@ -593,15 +593,15 @@ ComputeGravitationalAccelerationOnMassiveBody(
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
-Ephemeris<Frame>::ComputeApsides(
+void Ephemeris<Frame>::ComputeApsides(
     not_null<MassiveBody const*> const body,
     typename DiscreteTrajectory<Frame>::Iterator const begin,
-    typename DiscreteTrajectory<Frame>::Iterator const end) {
+    typename DiscreteTrajectory<Frame>::Iterator const end,
+    DiscreteTrajectory<Frame>& apoapsides,
+    DiscreteTrajectory<Frame>& periapsides) {
   not_null<ContinuousTrajectory<Frame> const*> const body_trajectory =
       trajectory(body);
   typename ContinuousTrajectory<Frame>::Hint hint;
-  auto apsides = make_not_null_unique<DiscreteTrajectory<Frame>>();
 
   std::experimental::optional<Instant> previous_time;
   std::experimental::optional<DegreesOfFreedom<Frame>>
@@ -676,11 +676,14 @@ Ephemeris<Frame>::ComputeApsides(
            degrees_of_freedom.position()},
           {previous_degrees_of_freedom->velocity(),
            degrees_of_freedom.velocity()});
-      apsides->Append(
-          apsis_time,
-          DegreesOfFreedom<Frame>(
-              position_approximation.Evaluate(apsis_time),
-              position_approximation.EvaluateDerivative(apsis_time)));
+      DegreesOfFreedom<Frame> const apsis_degrees_of_freedom(
+          position_approximation.Evaluate(apsis_time),
+          position_approximation.EvaluateDerivative(apsis_time));
+      if (Sign(squared_distance_derivative).Negative()) {
+        apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
+      } else {
+        periapsides.Append(apsis_time, apsis_degrees_of_freedom);
+      }
     }
 
     previous_time = time;
@@ -688,8 +691,6 @@ Ephemeris<Frame>::ComputeApsides(
     previous_squared_distance = squared_distance;
     previous_squared_distance_derivative = squared_distance_derivative;
   }
-
-  return apsides;
 }
 
 template<typename Frame>
