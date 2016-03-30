@@ -194,6 +194,9 @@ class ReferenceFrameSelector : WindowRenderer {
                                      celestial.name)) {
       if (selected_celestial_ != celestial) {
         selected_celestial_ = celestial;
+        if (celestial.is_root()) {
+          frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+        }
         on_change_(FrameParameters());
       }
     }
