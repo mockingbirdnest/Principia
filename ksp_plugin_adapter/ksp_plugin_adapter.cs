@@ -724,7 +724,8 @@ public partial class PrincipiaPluginAdapter
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
     if (toolbar_button_ != null) {
-      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
+      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
+          toolbar_button_);
     }
     Cleanup();
   }
