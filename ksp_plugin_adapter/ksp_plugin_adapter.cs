@@ -834,7 +834,7 @@ public partial class PrincipiaPluginAdapter
                 AddSegment(
                     position_at_ignition,
                     position_at_ignition + scale * (Vector3d)world_direction,
-                    false);
+                    hide_behind_bodies : false);
               };
               add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
               add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
@@ -852,7 +852,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private static void AddSegment(XYZSegment segment) {
-    AddSegment((Vector3d)segment.begin, (Vector3d)segment.end, true);
+    AddSegment((Vector3d)segment.begin,
+               (Vector3d)segment.end,
+               hide_behind_bodies : true);
   }
 
   private static void AddSegment(Vector3d world_begin,
@@ -890,7 +892,7 @@ public partial class PrincipiaPluginAdapter
       // d^2|camera_to_point|^2.
       // In addition, we check whether we're inside the body (this covers the
       // cap above the horizon plane and below the surface of the body, which
-      // would otherwise be displayed.
+      // would otherwise be displayed).
       double d_squared_minus_r_squared =
           camera_to_body.sqrMagnitude - r_squared;
       if ((body.position - point).sqrMagnitude < r_squared ||
@@ -1160,9 +1162,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void KSPFeatures() {
-     display_patched_conics_ = UnityEngine.GUILayout.Toggle(
-         value : display_patched_conics_,
-         text  : "Display patched conics (do not use for flight planning!)");
+    display_patched_conics_ = UnityEngine.GUILayout.Toggle(
+        value : display_patched_conics_,
+        text  : "Display patched conics (do not use for flight planning!)");
     Sun.Instance.sunFlare.enabled =
         UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
                                      text  : "Enable Sun lens flare");
