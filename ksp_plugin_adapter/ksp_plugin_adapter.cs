@@ -38,7 +38,6 @@ public partial class PrincipiaPluginAdapter
 
   private IntPtr plugin_ = IntPtr.Zero;
 
-  [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
