@@ -97,7 +97,7 @@ class FlightPlanner : WindowRenderer {
         AdaptiveStepParameters parameters =
             plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
         UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.Label("Maximal step count",
+        UnityEngine.GUILayout.Label("Maximal step count per segment",
                                     UnityEngine.GUILayout.Width(150));
         if (parameters.max_steps <= 100) {
           UnityEngine.GUILayout.Button("min");
@@ -202,7 +202,9 @@ class FlightPlanner : WindowRenderer {
     UnityEngine.GUILayout.EndVertical();
 
     UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+        position : new UnityEngine.Rect(x      : 0f,
+                                        y      : 0f,
+                                        width  : 10000f,
                                         height : 10000f));
 
     UnityEngine.GUI.skin = old_skin;
@@ -233,9 +235,29 @@ class FlightPlanner : WindowRenderer {
             !double.IsNaN(manoeuvre.inertial_direction.x +
                           manoeuvre.inertial_direction.y +
                           manoeuvre.inertial_direction.z)) {
-          if (guidance_node_ == null) {
+          var previous_update_mode = vessel_.orbitDriver.updateMode;
+          if (guidance_node_ == null ||
+              !vessel_.patchedConicSolver.maneuverNodes.Contains(
+                  guidance_node_)) {
+            vessel_.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+            vessel_.patchedConicSolver.Update();
+            while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
+              vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+            }
             guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
                 manoeuvre.burn.initial_time);
+            // Somehow when creating the node a whole non-idle frame helps with
+            // exceptions.
+            previous_update_mode = OrbitDriver.UpdateMode.TRACK_Phys;
+          } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
+            while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
+              if (vessel_.patchedConicSolver.maneuverNodes.First() ==
+                  guidance_node_) {
+                vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+              } else {
+                vessel_.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+              }
+            }
           }
           Vector3d stock_velocity_at_node_time =
               vessel_.orbit.getOrbitalVelocityAtUT(
@@ -250,16 +272,23 @@ class FlightPlanner : WindowRenderer {
                                  stock_displacement_from_parent_at_node_time));
           guidance_node_.OnGizmoUpdated(
               ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-                  (Vector3d)(stock_frenet_frame_to_world.Inverse() *
-                             (Vector3d)manoeuvre.inertial_direction),
+                  (Vector3d)(UnityEngine.Quaternion.Inverse(
+                                 stock_frenet_frame_to_world) *
+                      (Vector3d)manoeuvre.inertial_direction),
               manoeuvre.burn.initial_time);
+          // The call to |Update| with a non-|IDLE| |orbitDriver| allows the
+          // patched conics solver to get initialized properly; several
+          // functions of the node rely on the solver being updated.
+          vessel_.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+          vessel_.patchedConicSolver.Update();
+          vessel_.orbitDriver.updateMode = previous_update_mode;
           should_clear_guidance = false;
         }
         break;
       }
     }
     if (should_clear_guidance && guidance_node_ != null) {
-      vessel_.patchedConicSolver.RemoveManeuverNode(guidance_node_);
+      guidance_node_.RemoveSelf();
       guidance_node_ = null;
     }
   }

@@ -160,7 +160,9 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUILayout.EndHorizontal();
 
     UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+        position : new UnityEngine.Rect(x      : 0f,
+                                        y      : 0f,
+                                        width  : 10000f,
                                         height : 10000f));
 
     UnityEngine.GUI.skin = old_skin;
@@ -192,6 +194,9 @@ class ReferenceFrameSelector : WindowRenderer {
                                      celestial.name)) {
       if (selected_celestial_ != celestial) {
         selected_celestial_ = celestial;
+        if (celestial.is_root()) {
+          frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+        }
         on_change_(FrameParameters());
       }
     }

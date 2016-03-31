@@ -21,22 +21,7 @@ public partial class PrincipiaPluginAdapter
   private const String kPrincipiaGravityModel = "principia_gravity_model";
   private const double kΔt = 10;
 
-  // The number of points in a |VectorLine| can be at most 32766, since
-  // Vectrosity imposes a maximum of 65534 vertices, where there are 2 vertices
-  // per point on discrete lines.
-  // TODO(egg): At the moment we store points in the history every
-  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
-  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
-  // We should store *all* points of the history, then decimate for rendering.
-  // This means splines are not needed, since 10 s is small enough to give the
-  // illusion of continuity on the scales we are dealing with, and cubics are
-  // rendered by Vectrosity as line segments, so that a cubic rendered as
-  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
-  // render as 10 segments from the actual data, with extra overhead for
-  // the evaluation of the cubic).
-  private const int kMaxVectorLinePoints = 32766;
-
-  private ApplicationLauncherButton toolbar_button_;
+  private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
 
   // "Persistant" is a KSP typo.
@@ -52,18 +37,10 @@ public partial class PrincipiaPluginAdapter
   private Controlled<FlightPlanner> flight_planner_;
 
   private IntPtr plugin_ = IntPtr.Zero;
-  // TODO(egg): rendering only one trajectory at the moment.
-  private VectorLine rendered_prediction_;
-  private VectorLine rendered_trajectory_;
-  private VectorLine[] rendered_flight_plan_;
-  private VectorLine[] rendered_frenet_trihedra_;
 
-  [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
-  [KSPField(isPersistant = true)]
-  private bool force_2d_trajectories_ = false;
 
   private readonly double[] prediction_length_tolerances_ =
       {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
@@ -123,7 +100,7 @@ public partial class PrincipiaPluginAdapter
   private PluginSource plugin_source_;
 
   private Krakensbane krakensbane_;
-  private NavBall navball_;
+  private KSP.UI.Screens.Flight.NavBall navball_;
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
@@ -144,6 +121,19 @@ public partial class PrincipiaPluginAdapter
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
   private String bad_installation_popup_;
+
+  private static bool rendering_lines_ = false;
+  private static CelestialBody[] hiding_bodies_;
+  private static UnityEngine.Material line_material_;
+  private static UnityEngine.Material line_material {
+    get {
+      if (line_material_ == null) {
+        line_material_ = new UnityEngine.Material(
+            UnityEngine.Shader.Find("Particles/Additive"));
+      }
+      return line_material_;
+    }
+  }
 
   public event Action render_windows;
 
@@ -397,9 +387,6 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out barycentric_navball_texture_,
                      "navball_barycentric.png");
 
-    rendered_flight_plan_ = new VectorLine[0];
-    rendered_frenet_trihedra_ = new VectorLine[0];
-
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
       foreach (CelestialBody celestial in
@@ -492,27 +479,33 @@ public partial class PrincipiaPluginAdapter
   private void OnGUI() {
     if (bad_installation_popup_ != null) {
       UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
+      // No-one seems to understand what |anchorMin| and |anchorMax| do at this
+      // time.
       PopupDialog.SpawnPopupDialog(
+          anchorMin           : default(UnityEngine.Vector2),
+          anchorMax           : default(UnityEngine.Vector2),
           title               : "Principia",
           message             : bad_installation_popup_,
           buttonMessage       : "OK",
           persistAcrossScenes : true,
-          skin                : null);
+          skin                : null,
+          isModal             : true);
       bad_installation_popup_ = null;
       return;
     }
-    if (ApplicationLauncher.Ready && toolbar_button_ == null) {
+    if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
       LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
       toolbar_button_ =
-          ApplicationLauncher.Instance.AddModApplication(
+          KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(
               onTrue          : ShowMainWindow,
               onFalse         : HideMainWindow,
               onHover         : null,
               onHoverOut      : null,
               onEnable        : null,
               onDisable       : null,
-              visibleInScenes : ApplicationLauncher.AppScenes.ALWAYS,
+              visibleInScenes : KSP.UI.Screens.ApplicationLauncher.AppScenes.
+                                    ALWAYS,
               texture         : toolbar_button_texture);
     }
     // Make sure the state of the toolbar button remains consistent with the
@@ -544,20 +537,27 @@ public partial class PrincipiaPluginAdapter
 
   private void Update() {
     if (MapView.MapIsEnabled && map_renderer_ == null) {
-      map_renderer_ = MapView.MapCamera.gameObject.AddComponent<MapRenderer>();
-      map_renderer_.render_on_pre_cull = RenderTrajectories;
+      map_renderer_ =
+          PlanetariumCamera.Camera.gameObject.AddComponent<MapRenderer>();
+      map_renderer_.post_render = RenderTrajectories;
     }
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null &&
         !FlightGlobals.ActiveVessel.isEVA) {
       if (navball_ == null) {
-        navball_ = (NavBall)FindObjectOfType(typeof(NavBall));
+        navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
+                       typeof(KSP.UI.Screens.Flight.NavBall));
       }
+      var navball_material =
+          navball_.navBall.GetComponent<UnityEngine.Renderer>().material;
+
       if (compass_navball_texture_ == null) {
-        compass_navball_texture_ =
-            navball_.navBall.renderer.material.mainTexture;
+        compass_navball_texture_ = navball_material.GetTexture("_MainTexture");
       }
+
+      Action<UnityEngine.Texture> set_navball_texture = (texture) =>
+          navball_material.SetTexture("_MainTexture", texture);
 
       if (navball_changed_) {
         // Texture the ball.
@@ -565,15 +565,12 @@ public partial class PrincipiaPluginAdapter
         // TODO(egg): switch over all frame types and have more navball textures
         // when more frames are available.
         if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
-          navball_.navBall.renderer.material.mainTexture =
-              compass_navball_texture_;
+          set_navball_texture(compass_navball_texture_);
         } else if (plotting_frame_selector_.get().frame_type ==
                    ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
-          navball_.navBall.renderer.material.mainTexture =
-              inertial_navball_texture_;
+          set_navball_texture(inertial_navball_texture_);
         } else {
-          navball_.navBall.renderer.material.mainTexture =
-              barycentric_navball_texture_;
+          set_navball_texture(barycentric_navball_texture_);
         }
       }
 
@@ -603,15 +600,20 @@ public partial class PrincipiaPluginAdapter
           Vector3d normal =
               (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
 
+          double ball_radius =
+              navball_.progradeVector.transform.localPosition.magnitude;
+
+          // TODO(egg): deal with the transparency and disappearance of the
+          // markers too, not just their position.
           navball_.progradeVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  prograde * 0.05;
+                  prograde * ball_radius;
           navball_.radialInVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  radial * 0.05;
+                  radial * ball_radius;
           navball_.normalVector.transform.localPosition =
               (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  normal * 0.05;
+                  normal * ball_radius;
           navball_.retrogradeVector.transform.localPosition =
               -navball_.progradeVector.transform.localPosition;
           navball_.radialOutVector.transform.localPosition =
@@ -722,12 +724,61 @@ public partial class PrincipiaPluginAdapter
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
     if (toolbar_button_ != null) {
-      ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
+      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
+          toolbar_button_);
     }
     Cleanup();
   }
 
   #endregion
+
+  private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
+    vessel.patchedConicRenderer.relativityMode =
+        PatchRendering.RelativityMode.RELATIVE;
+    if (display_patched_conics_) {
+      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.TRACK_Phys) {
+        Log.Info("Restoring patched conic rendering for the active vessel");
+        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
+        // The call to |Update| with a non-|IDLE| |orbitDriver| allows things to
+        // get initialized properly for this frame, preventing mysterious
+        // exceptions.
+        vessel.patchedConicSolver.Update();
+      }
+      if (!vessel.patchedConicRenderer.enabled) {
+        vessel.patchedConicRenderer.enabled = true;
+        vessel.orbitTargeter.enabled = true;
+      }
+    } else {
+      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
+          vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
+          vessel.orbitDriver.Renderer.drawIcons !=
+              OrbitRenderer.DrawIcons.OBJ) {
+        Log.Info("Removing patched conic rendering for the active vessel");
+        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
+        vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
+        vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
+      }
+      vessel.patchedConicRenderer.enabled = false;
+      vessel.orbitTargeter.enabled = false;
+      foreach (PatchRendering patch_rendering in
+               vessel.patchedConicRenderer.patchRenders) {
+        patch_rendering.DestroyUINodes();
+        patch_rendering.DestroyVector();
+      }
+      foreach (PatchRendering patch_rendering in
+               vessel.patchedConicRenderer.flightPlanRenders) {
+        patch_rendering.DestroyUINodes();
+        patch_rendering.DestroyVector();
+      }
+      foreach (ManeuverNode node in vessel.patchedConicSolver.maneuverNodes) {
+        node.DetachGizmo();
+        if (node.scaledSpaceTarget) {
+          MapView.MapCamera.RemoveTarget(node.scaledSpaceTarget);
+          node.scaledSpaceTarget.Terminate();
+        }
+      }
+    }
+  }
 
   private void RenderTrajectories() {
     if (!PluginRunning()) {
@@ -742,222 +793,166 @@ public partial class PrincipiaPluginAdapter
         draw_active_vessel_trajectory() &&
         plugin_.HasVessel(active_vessel_guid); 
     if (ready_to_draw_active_vessel_trajectory) {
-      active_vessel.patchedConicRenderer.relativityMode =
-          PatchRendering.RelativityMode.RELATIVE;
-      if (active_vessel.orbitDriver.Renderer.drawMode !=
-              OrbitRenderer.DrawMode.OFF ||
-          active_vessel.orbitDriver.Renderer.drawIcons !=
-              OrbitRenderer.DrawIcons.OBJ) {
-        Log.Info("Removing orbit rendering for the active vessel");
-        active_vessel.orbitDriver.Renderer.drawMode =
-            OrbitRenderer.DrawMode.OFF;
-        active_vessel.orbitDriver.Renderer.drawIcons =
-            OrbitRenderer.DrawIcons.OBJ;
-      }
-      if (display_patched_conics_) {
-        foreach (PatchRendering patch_rendering in
-                  active_vessel.patchedConicRenderer.patchRenders) {
-          patch_rendering.visible = true;
-        }
-        // For reasons that are unlikely to become clear again at this time,
-        // I think the first element of |flightPlanRenders| should not be
-        // visible.
-        for (int i = 1;
-              i < active_vessel.patchedConicRenderer.flightPlanRenders.Count;
-              ++i) {
-          active_vessel.patchedConicRenderer.flightPlanRenders[i].visible =
-              true;
-        }
-      } else {
-        foreach (PatchRendering patch_rendering in
-                  active_vessel.patchedConicRenderer.patchRenders) {
-          patch_rendering.visible = false;
-        }
-        foreach (PatchRendering patch_rendering in
-                  active_vessel.patchedConicRenderer.flightPlanRenders) {
-          patch_rendering.visible = false;
-        }
-      }
-      if (rendered_trajectory_ == null || rendered_prediction_ == null) {
-        ResetRenderedTrajectory();
-      }
+      RemoveStockTrajectoriesIfNeeded(active_vessel);
 
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
 
-      IntPtr trajectory_iterator = IntPtr.Zero;
-      trajectory_iterator = plugin_.RenderedVesselTrajectory(
+      DrawLines(() => {
+        RenderAndDeleteTrajectory(
+            plugin_.RenderedVesselTrajectory(active_vessel_guid,
+                                             sun_world_position),
+            XKCDColors.AcidGreen);
+        RenderAndDeleteTrajectory(
+            plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
+            XKCDColors.Fuchsia);
+        if (plugin_.FlightPlanExists(active_vessel_guid)) {
+          int number_of_segments =
+              plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
+          for (int i = 0; i < number_of_segments; ++i) {
+            bool is_burn = i % 2 == 1;
+            RenderAndDeleteTrajectory(
+                plugin_.FlightPlanRenderedSegment(active_vessel_guid,
+                                                  sun_world_position,
+                                                  i),
+                is_burn ? XKCDColors.OrangeRed : XKCDColors.RoyalBlue);
+            if (is_burn) {
+              Vector3d position_at_ignition =
+                  (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
                                 active_vessel_guid,
-                                sun_world_position);
-      RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                rendered_trajectory_);
-      trajectory_iterator = plugin_.RenderedPrediction(
-                                active_vessel_guid,
-                                sun_world_position);
-      RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                rendered_prediction_);
-      if (plugin_.FlightPlanExists(active_vessel_guid)) {
-        int number_of_segments =
-            plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
-        if (number_of_segments != rendered_flight_plan_.Length) {
-          ResetRenderedFlightPlan(number_of_segments);
-        }
-        for (int i = 0; i < number_of_segments; ++i) {
-          trajectory_iterator =
-              plugin_.FlightPlanRenderedSegment(active_vessel_guid,
-                                                sun_world_position,
-                                                i);
-          RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                    rendered_flight_plan_[i]);
-          if (i % 2 == 1) {
-            Vector3d position_at_ignition =
-                (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
-                              active_vessel_guid,
-                              sun_world_position,
-                              i).begin;
-            int manoeuvre_index = i / 2;
-            NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
-                                                active_vessel_guid,
-                                                manoeuvre_index);
-            double scale = (ScaledSpace.ScaledToLocalSpace(
-                                MapView.MapCamera.transform.position) -
-                            position_at_ignition).magnitude * 0.015;
-            Func<Vector3d, UnityEngine.Vector2> world_to_screen =
-                (world_position) =>
-                    MapView.MapCamera.camera.WorldToScreenPoint(
-                        ScaledSpace.LocalToScaledSpace(world_position));
-            Action<int, XYZ> set_vector = (arrow_index, world_direction) => {
-              VectorLine line =
-                  rendered_frenet_trihedra_[3 * manoeuvre_index + arrow_index];
-              line.points2[0] = world_to_screen(position_at_ignition);
-              line.points2[1] = world_to_screen(
-                  position_at_ignition + scale * (Vector3d)world_direction);
-            };
-            set_vector(0, manoeuvre.tangent);
-            set_vector(1, manoeuvre.normal);
-            set_vector(2, manoeuvre.binormal);
-            for (int j = 0; j < 3; ++j) {
-              Vector.DrawLine(
-                  rendered_frenet_trihedra_[3 * manoeuvre_index + j]);
+                                sun_world_position,
+                                i).begin;
+              int manoeuvre_index = i / 2;
+              NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
+                                                  active_vessel_guid,
+                                                  manoeuvre_index);
+              double scale = (ScaledSpace.ScaledToLocalSpace(
+                                  MapView.MapCamera.transform.position) -
+                              position_at_ignition).magnitude * 0.015;
+              Action<XYZ, UnityEngine.Color> add_vector =
+                  (world_direction, colour) => {
+                UnityEngine.GL.Color(colour);
+                AddSegment(
+                    position_at_ignition,
+                    position_at_ignition + scale * (Vector3d)world_direction,
+                    hide_behind_bodies : false);
+              };
+              add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
+              add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
+              add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
             }
           }
         }
-      } else {
-        DestroyRenderedFlightPlan();
-      }
-    } else {
-      DestroyRenderedTrajectory();
-      DestroyRenderedFlightPlan();
+      });
     }
   }
 
-  private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
-                                         VectorLine vector_line) {
-    int new_min_draw_index = 0;
+  private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
+    return PlanetariumCamera.Camera.WorldToScreenPoint(
+               ScaledSpace.LocalToScaledSpace(world));
+  }
+
+  private static void AddSegment(XYZSegment segment) {
+    AddSegment((Vector3d)segment.begin,
+               (Vector3d)segment.end,
+               hide_behind_bodies : true);
+  }
+
+  private static void AddSegment(Vector3d world_begin,
+                                 Vector3d world_end,
+                                 bool hide_behind_bodies) {
+    if (!rendering_lines_) {
+      Log.Fatal("|AddSegment| outside of |DrawLines|");
+    }
+    if (hide_behind_bodies && (IsHidden(world_begin) || IsHidden(world_end))) {
+      return;
+    }
+    var begin = WorldToMapScreen(world_begin);
+    var end = WorldToMapScreen(world_end);
+    if (begin.z > 0 && end.z > 0) {
+      UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
+      UnityEngine.GL.Vertex3(end.x, end.y, 0);
+    }
+  }
+
+  private static bool IsHidden(Vector3d point) {
+    Vector3d camera = ScaledSpace.ScaledToLocalSpace(
+        PlanetariumCamera.Camera.transform.position);
+    foreach (CelestialBody body in hiding_bodies_) {
+      Vector3d camera_to_point = point - camera;
+      Vector3d camera_to_body = body.position - camera;
+      double inner_product = Vector3d.Dot(camera_to_point, camera_to_body);
+      double r_squared = body.Radius * body.Radius;
+      // The projections on the camera-body axis of |point| and of the horizon
+      // have lengths |inner_product| / d and d - r^2/d, where d is the distance
+      // between the camera and the body and r is the body's radius, thus if
+      // |inner_product| < d^2 - r^2, |point| is above the plane passing
+      // through the horizon.
+      // Otherwise, we check whether |point| is within the cone hidden from the
+      // camera, by comparing the squared cosines multiplied by
+      // d^2|camera_to_point|^2.
+      // In addition, we check whether we're inside the body (this covers the
+      // cap above the horizon plane and below the surface of the body, which
+      // would otherwise be displayed).
+      double d_squared_minus_r_squared =
+          camera_to_body.sqrMagnitude - r_squared;
+      if ((body.position - point).sqrMagnitude < r_squared ||
+          (inner_product > d_squared_minus_r_squared &&
+           inner_product * inner_product >
+               camera_to_point.sqrMagnitude * d_squared_minus_r_squared)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static void DrawLines(Action line_vertices) {
+    try {
+      UnityEngine.GL.PushMatrix();
+      line_material.SetPass(0);
+      UnityEngine.GL.LoadPixelMatrix();
+      UnityEngine.GL.Begin(UnityEngine.GL.LINES);
+      rendering_lines_ = true;
+
+      Vector3d camera = ScaledSpace.ScaledToLocalSpace(
+          PlanetariumCamera.Camera.transform.position);
+      // Only consider bodies with an angular radius greater than arcsin 1e-3.
+      // From the Earth, this would consider the Moon and the Sun, but ignore
+      // Jupiter.  The map view camera is wide-angle, so this is probably
+      // overkill.
+      // In any case we just want to do that in native code reasonably soon, so
+      // this does the trick for now.
+      hiding_bodies_ =
+        (from body in FlightGlobals.Bodies
+         where body.Radius * body.Radius >
+               (body.position - camera).sqrMagnitude * 1e-6
+         select body).ToArray();
+
+      line_vertices();
+
+      hiding_bodies_ = null;
+
+      rendering_lines_ = false;
+      UnityEngine.GL.End();
+      UnityEngine.GL.PopMatrix();
+    } catch (Exception e) {
+      Log.Fatal("Exception while drawing lines: " + e.ToString());
+    }
+  }
+
+  private void RenderAndDeleteTrajectory(IntPtr trajectory_iterator,
+                                         UnityEngine.Color colour) {
     try {
       XYZSegment segment;
-      int index_in_line_points = vector_line.points3.Length -
-          2 * trajectory_iterator.NumberOfSegments();
-      // If the |VectorLine| is too big, make sure we're not keeping garbage.
-      for (int i = vector_line.minDrawIndex; i < index_in_line_points; ++i) {
-        vector_line.points3[i] = UnityEngine.Vector3.zero;
-      }
-      while (index_in_line_points < 0) {
-        trajectory_iterator.FetchAndIncrement();
-        index_in_line_points += 2;
-      }
-      new_min_draw_index = index_in_line_points;
-      vector_line.minDrawIndex = Math.Min(vector_line.minDrawIndex,
-                                          new_min_draw_index);
+
+      UnityEngine.GL.Color(colour);
+
       while (!trajectory_iterator.AtEnd()) {
         segment = trajectory_iterator.FetchAndIncrement();
-        // TODO(egg): should we do the |LocalToScaledSpace| conversion in
-        // native code?
-        // TODO(egg): could we directly assign to
-        // |vector_line.points3| from C++ using unsafe code and
-        // something like the following?
-        // |fixed (UnityEngine.Vector3* pts = vector_line.points3)|
-        vector_line.points3[index_in_line_points++] =
-            ScaledSpace.LocalToScaledSpace((Vector3d)segment.begin);
-        vector_line.points3[index_in_line_points++] =
-            ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
+        AddSegment(segment);
       }
     } finally {
       Interface.DeleteLineAndIterator(ref trajectory_iterator);
     }
-    if (MapView.Draw3DLines && !force_2d_trajectories_) {
-      Vector.DrawLine3D(vector_line);
-    } else {
-      Vector.DrawLine(vector_line);
-    }
-    vector_line.minDrawIndex = new_min_draw_index;
-  }
-
-  private void ResetRenderedTrajectory() {
-    DestroyRenderedTrajectory();
-    rendered_trajectory_ = NewRenderedTrajectory(XKCDColors.AcidGreen);
-    rendered_prediction_ = NewRenderedTrajectory(XKCDColors.Fuchsia);
-  }
-
-  private void ResetRenderedFlightPlan(int segments) {
-    DestroyRenderedFlightPlan();
-    rendered_flight_plan_ = new VectorLine[segments];
-    for (int i = 0; i < segments; ++i) {
-      rendered_flight_plan_[i] = NewRenderedTrajectory(
-          (i % 2 == 0) ? XKCDColors.RoyalBlue : XKCDColors.OrangeRed);
-    }
-    rendered_frenet_trihedra_ = new VectorLine[3 * (segments / 2)];
-    for (int i = 0; i < segments / 2; ++i) {
-      rendered_frenet_trihedra_[3 * i] = NewUILine(XKCDColors.NeonYellow);
-      rendered_frenet_trihedra_[3 * i + 1] = NewUILine(XKCDColors.AquaBlue);
-      rendered_frenet_trihedra_[3 * i + 2] = NewUILine(XKCDColors.PurplePink);
-    }
-  }
-
-  private VectorLine NewRenderedTrajectory(UnityEngine.Color colour) {
-    var result = new VectorLine(
-        lineName     : "RenderedTrajectory",
-        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : colour,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    result.vectorObject.transform.parent = ScaledSpace.Instance.transform;
-    result.vectorObject.renderer.castShadows = false;
-    result.vectorObject.renderer.receiveShadows = false;
-    result.layer = 31;
-    return result;
-  }
-
-  private VectorLine NewUILine(UnityEngine.Color colour) {
-    UnityEngine.Vector2[] line_points = new UnityEngine.Vector2[2];
-    var result = new VectorLine(
-        lineName     : "UILine",
-        linePoints   : line_points,
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : colour,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    return result;
-  }
-
-  private void DestroyRenderedTrajectory() {
-    if (rendered_trajectory_ != null) {
-      Vector.DestroyLine(ref rendered_trajectory_);
-    }
-    if (rendered_prediction_ != null) {
-      Vector.DestroyLine(ref rendered_prediction_);
-    }
-  }
-
-  private void DestroyRenderedFlightPlan() {
-    for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
-      Vector.DestroyLine(ref rendered_flight_plan_[i]);
-    }
-    for (int i = 0; i < rendered_frenet_trihedra_.Length; ++i) {
-      Vector.DestroyLine(ref rendered_frenet_trihedra_[i]);
-    }
-    rendered_frenet_trihedra_ = new VectorLine[0];
-    rendered_flight_plan_ = new VectorLine[0];
   }
 
   private void Cleanup() {
@@ -966,8 +961,6 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
     flight_planner_.reset();
-    DestroyRenderedTrajectory();
-    DestroyRenderedFlightPlan();
     navball_changed_ = true;
   }
 
@@ -1032,9 +1025,6 @@ public partial class PrincipiaPluginAdapter
              "Max history length",
              ref changed_history_length,
              "{0:0.00e00} s");
-    force_2d_trajectories_ =
-        UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
-                                     "Force 2D trajectories");
     ReferenceFrameSelection();
     if (PluginRunning()) {
       flight_planner_.get().RenderButton();
@@ -1058,7 +1048,9 @@ public partial class PrincipiaPluginAdapter
 #endif
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+        position : new UnityEngine.Rect(x      : 0f,
+                                        y      : 0f,
+                                        width  : 10000f,
                                         height : 10000f));
   }
 
@@ -1170,9 +1162,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void KSPFeatures() {
-    display_patched_conics_ =
-        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
-                                     text  : "Display patched conics");
+    display_patched_conics_ = UnityEngine.GUILayout.Toggle(
+        value : display_patched_conics_,
+        text  : "Display patched conics (do not use for flight planning!)");
     Sun.Instance.sunFlare.enabled =
         UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
                                      text  : "Enable Sun lens flare");
@@ -1304,7 +1296,6 @@ public partial class PrincipiaPluginAdapter
     Cleanup();
     SetRotatingFrameThresholds();
     RemoveBuggyTidalLocking();
-    ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
     if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
