@@ -67,6 +67,7 @@
     <Compile Include="culture.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="flight_planner.cs" />
+    <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
