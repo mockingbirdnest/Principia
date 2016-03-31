@@ -19,10 +19,8 @@ internal class DifferentialSlider {
                       UnityEngine.Color? text_colour = null) {
     label_ = label;
     unit_ = unit;
-    culture_= new CultureInfo("");
-    culture_.NumberFormat.NumberGroupSeparator = "'";
     if (formatter == null) {
-      format_ = v => v.ToString("#,0.000", culture_);
+      format_ = v => v.ToString("#,0.000", Culture.culture);
     } else {
       format_ = formatter;
     }
@@ -103,7 +101,6 @@ internal class DifferentialSlider {
 
   private readonly string label_;
   private readonly string unit_;
-  private readonly CultureInfo culture_;
 
   private readonly double log10_lower_rate_ = -3;
   private readonly double log10_upper_rate_ = 3.5;
