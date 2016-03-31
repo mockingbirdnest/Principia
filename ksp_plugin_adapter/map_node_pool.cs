@@ -76,7 +76,7 @@ internal class MapNodePool {
           colour.a = 1;
           icon.visible = true;
           if (properties_[node].celestial.GetAltitude(
-              properties_[node].world_position) < 0) {
+                  properties_[node].world_position) < 0) {
             // Make sure we see impacts.
             colour = XKCDColors.Orange;
           }
@@ -86,7 +86,7 @@ internal class MapNodePool {
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
           if (properties_[node].celestial.GetAltitude(
-              properties_[node].world_position) < 0) {
+                  properties_[node].world_position) < 0) {
             type.oType = MapObject.ObjectType.PatchTransition;
             type.pType =
                 KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;

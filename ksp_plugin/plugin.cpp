@@ -418,6 +418,38 @@ RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
   return result;
 }
 
+not_null<std::unique_ptr<LineAndIterator>> Plugin::RenderApsides(
+      DiscreteTrajectory<Barycentric>& apsides,
+      XYZ const& sun_world_position) const {
+  // NOTE(egg): this guarantees a bijection between segment |begin|s and
+  // apsides.  We will eventually switch to a saner API.  We cannot even put
+  // the extra point at infinity because it will be rendered with respect to
+  // the ephemeris (actually this method may result in horrible edge cases).
+  if (apsides.Size() > 0) {
+    apsides.Append(
+        apsides.last().time() + 1e-3 * Second,
+        {Barycentric::origin +
+             Displacement<Barycentric>(
+                 {std::numeric_limits<double>::quiet_NaN() * Metre,
+                  std::numeric_limits<double>::quiet_NaN() * Metre,
+                  std::numeric_limits<double>::quiet_NaN() * Metre}),
+         Velocity<Barycentric>(
+             {std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
+              std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
+              std::numeric_limits<double>::quiet_NaN() * (Metre / Second)})});
+  }
+  RenderedTrajectory<World> rendered_trajectory =
+      plugin->RenderedTrajectoryFromIterators(
+          apsides.Begin(),
+          apsides.End(),
+          World::origin +
+              Displacement<World>(ToR3Element(sun_world_position) * Metre));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return result;
+}
+
 void Plugin::ComputeApsides(
     Index const celestial_index,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,

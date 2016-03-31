@@ -643,12 +643,10 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                          prediction.Fork(), prediction.End(),
                          apoapsides_trajectory,
                          periapsides_trajectory);
-  *apoapsides = RenderApsides(plugin,
-                              apoapsides_trajectory,
-                              sun_world_position).release();
-  *periapsides = RenderApsides(plugin,
-                               periapsides_trajectory,
-                               sun_world_position).release();
+  *apoapsides = plugin->RenderApsides(apoapsides_trajectory,
+                                      sun_world_position).release();
+  *periapsides = plugin->RenderApsides(periapsides_trajectory,
+                                       sun_world_position).release();
   return m.Return();
 }
 

@@ -234,6 +234,10 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
 
+  virtual not_null<std::unique_ptr<LineAndIterator>> RenderApsides(
+      DiscreteTrajectory<Barycentric>& apsides,
+      XYZ const& sun_world_position) const;
+
   virtual void ComputeApsides(
       Index const celestial_index,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,

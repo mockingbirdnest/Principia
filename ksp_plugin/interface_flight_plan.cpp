@@ -275,19 +275,17 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   CHECK_NOTNULL(plugin);
-  plugin->GetVessel(vessel_guid)->flight_plan().GetAllSegments(&begin, &end);
+  GetFlightPlan(plugin, vessel_guid).GetAllSegments(&begin, &end);
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   plugin->ComputeApsides(celestial_index,
                          begin, end,
                          apoapsides_trajectory,
                          periapsides_trajectory);
-  *apoapsides = RenderApsides(plugin,
-                              apoapsides_trajectory,
-                              sun_world_position).release();
-  *periapsides = RenderApsides(plugin,
-                               periapsides_trajectory,
-                               sun_world_position).release();
+  *apoapsides = plugin->RenderApsides(apoapsides_trajectory,
+                                      sun_world_position).release();
+  *periapsides = plugin->RenderApsides(periapsides_trajectory,
+                                       sun_world_position).release();
   return m.Return();
 }
 
