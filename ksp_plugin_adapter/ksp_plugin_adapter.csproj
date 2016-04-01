@@ -64,13 +64,16 @@
   <ItemGroup>
     <Compile Include="boxed.cs" />
     <Compile Include="burn_editor.cs" />
+    <Compile Include="culture.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="flight_planner.cs" />
+    <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
     <Compile Include="loader.cs" />
     <Compile Include="logging.cs" />
+    <Compile Include="map_node_pool.cs" />
     <Compile Include="map_renderer.cs" />
     <Compile Include="optional_marshaler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

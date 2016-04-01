@@ -89,6 +89,9 @@ class FlightPlan {
       int const index,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
+  virtual void GetAllSegments(
+      not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
+      not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
 
   void WriteToMessage(not_null<serialization::FlightPlan*> const message) const;
 

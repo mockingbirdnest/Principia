@@ -4,6 +4,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <cmath>
+#include <limits>
 
 namespace principia {
 namespace interface {

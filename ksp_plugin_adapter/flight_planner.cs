@@ -235,20 +235,14 @@ class FlightPlanner : WindowRenderer {
             !double.IsNaN(manoeuvre.inertial_direction.x +
                           manoeuvre.inertial_direction.y +
                           manoeuvre.inertial_direction.z)) {
-          var previous_update_mode = vessel_.orbitDriver.updateMode;
           if (guidance_node_ == null ||
               !vessel_.patchedConicSolver.maneuverNodes.Contains(
                   guidance_node_)) {
-            vessel_.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
-            vessel_.patchedConicSolver.Update();
             while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
               vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
             }
             guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
                 manoeuvre.burn.initial_time);
-            // Somehow when creating the node a whole non-idle frame helps with
-            // exceptions.
-            previous_update_mode = OrbitDriver.UpdateMode.TRACK_Phys;
           } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
             while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
               if (vessel_.patchedConicSolver.maneuverNodes.First() ==
@@ -276,12 +270,6 @@ class FlightPlanner : WindowRenderer {
                                  stock_frenet_frame_to_world) *
                       (Vector3d)manoeuvre.inertial_direction),
               manoeuvre.burn.initial_time);
-          // The call to |Update| with a non-|IDLE| |orbitDriver| allows the
-          // patched conics solver to get initialized properly; several
-          // functions of the node rely on the solver being updated.
-          vessel_.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
-          vessel_.patchedConicSolver.Update();
-          vessel_.orbitDriver.updateMode = previous_update_mode;
           should_clear_guidance = false;
         }
         break;

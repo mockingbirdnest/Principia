@@ -35,6 +35,7 @@ public partial class PrincipiaPluginAdapter
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
   private Controlled<FlightPlanner> flight_planner_;
+  private MapNodePool map_node_pool_;
 
   private IntPtr plugin_ = IntPtr.Zero;
 
@@ -122,19 +123,6 @@ public partial class PrincipiaPluginAdapter
 
   private String bad_installation_popup_;
 
-  private static bool rendering_lines_ = false;
-  private static CelestialBody[] hiding_bodies_;
-  private static UnityEngine.Material line_material_;
-  private static UnityEngine.Material line_material {
-    get {
-      if (line_material_ == null) {
-        line_material_ = new UnityEngine.Material(
-            UnityEngine.Shader.Find("Particles/Additive"));
-      }
-      return line_material_;
-    }
-  }
-
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -147,6 +135,7 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
+    map_node_pool_ = new MapNodePool();
   }
 
   ~PrincipiaPluginAdapter() {
@@ -736,25 +725,15 @@ public partial class PrincipiaPluginAdapter
     vessel.patchedConicRenderer.relativityMode =
         PatchRendering.RelativityMode.RELATIVE;
     if (display_patched_conics_) {
-      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.TRACK_Phys) {
-        Log.Info("Restoring patched conic rendering for the active vessel");
-        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.TRACK_Phys;
-        // The call to |Update| with a non-|IDLE| |orbitDriver| allows things to
-        // get initialized properly for this frame, preventing mysterious
-        // exceptions.
-        vessel.patchedConicSolver.Update();
-      }
       if (!vessel.patchedConicRenderer.enabled) {
         vessel.patchedConicRenderer.enabled = true;
         vessel.orbitTargeter.enabled = true;
       }
     } else {
-      if (vessel.orbitDriver.updateMode != OrbitDriver.UpdateMode.IDLE ||
-          vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
+      if (vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
           vessel.orbitDriver.Renderer.drawIcons !=
               OrbitRenderer.DrawIcons.OBJ) {
         Log.Info("Removing patched conic rendering for the active vessel");
-        vessel.orbitDriver.updateMode = OrbitDriver.UpdateMode.IDLE;
         vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
         vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
       }
@@ -797,20 +776,22 @@ public partial class PrincipiaPluginAdapter
 
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
 
-      DrawLines(() => {
-        RenderAndDeleteTrajectory(
+      GLLines.Draw(() => {
+        GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedVesselTrajectory(active_vessel_guid,
                                              sun_world_position),
             XKCDColors.AcidGreen);
-        RenderAndDeleteTrajectory(
+        GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia);
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
+          RenderFlightPlanApsides(active_vessel_guid, sun_world_position);
+
           int number_of_segments =
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
-            RenderAndDeleteTrajectory(
+            GLLines.RenderAndDeleteTrajectory(
                 plugin_.FlightPlanRenderedSegment(active_vessel_guid,
                                                   sun_world_position,
                                                   i),
@@ -831,7 +812,7 @@ public partial class PrincipiaPluginAdapter
               Action<XYZ, UnityEngine.Color> add_vector =
                   (world_direction, colour) => {
                 UnityEngine.GL.Color(colour);
-                AddSegment(
+                GLLines.AddSegment(
                     position_at_ignition,
                     position_at_ignition + scale * (Vector3d)world_direction,
                     hide_behind_bodies : false);
@@ -843,120 +824,35 @@ public partial class PrincipiaPluginAdapter
           }
         }
       });
+      map_node_pool_.Update();
+    } else {
+      map_node_pool_.Clear();
     }
   }
 
-  private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
-    return PlanetariumCamera.Camera.WorldToScreenPoint(
-               ScaledSpace.LocalToScaledSpace(world));
-  }
-
-  private static void AddSegment(XYZSegment segment) {
-    AddSegment((Vector3d)segment.begin,
-               (Vector3d)segment.end,
-               hide_behind_bodies : true);
-  }
-
-  private static void AddSegment(Vector3d world_begin,
-                                 Vector3d world_end,
-                                 bool hide_behind_bodies) {
-    if (!rendering_lines_) {
-      Log.Fatal("|AddSegment| outside of |DrawLines|");
-    }
-    if (hide_behind_bodies && (IsHidden(world_begin) || IsHidden(world_end))) {
-      return;
-    }
-    var begin = WorldToMapScreen(world_begin);
-    var end = WorldToMapScreen(world_end);
-    if (begin.z > 0 && end.z > 0) {
-      UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
-      UnityEngine.GL.Vertex3(end.x, end.y, 0);
-    }
-  }
-
-  private static bool IsHidden(Vector3d point) {
-    Vector3d camera = ScaledSpace.ScaledToLocalSpace(
-        PlanetariumCamera.Camera.transform.position);
-    foreach (CelestialBody body in hiding_bodies_) {
-      Vector3d camera_to_point = point - camera;
-      Vector3d camera_to_body = body.position - camera;
-      double inner_product = Vector3d.Dot(camera_to_point, camera_to_body);
-      double r_squared = body.Radius * body.Radius;
-      // The projections on the camera-body axis of |point| and of the horizon
-      // have lengths |inner_product| / d and d - r^2/d, where d is the distance
-      // between the camera and the body and r is the body's radius, thus if
-      // |inner_product| < d^2 - r^2, |point| is above the plane passing
-      // through the horizon.
-      // Otherwise, we check whether |point| is within the cone hidden from the
-      // camera, by comparing the squared cosines multiplied by
-      // d^2|camera_to_point|^2.
-      // In addition, we check whether we're inside the body (this covers the
-      // cap above the horizon plane and below the surface of the body, which
-      // would otherwise be displayed).
-      double d_squared_minus_r_squared =
-          camera_to_body.sqrMagnitude - r_squared;
-      if ((body.position - point).sqrMagnitude < r_squared ||
-          (inner_product > d_squared_minus_r_squared &&
-           inner_product * inner_product >
-               camera_to_point.sqrMagnitude * d_squared_minus_r_squared)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private static void DrawLines(Action line_vertices) {
-    try {
-      UnityEngine.GL.PushMatrix();
-      line_material.SetPass(0);
-      UnityEngine.GL.LoadPixelMatrix();
-      UnityEngine.GL.Begin(UnityEngine.GL.LINES);
-      rendering_lines_ = true;
-
-      Vector3d camera = ScaledSpace.ScaledToLocalSpace(
-          PlanetariumCamera.Camera.transform.position);
-      // Only consider bodies with an angular radius greater than arcsin 1e-3.
-      // From the Earth, this would consider the Moon and the Sun, but ignore
-      // Jupiter.  The map view camera is wide-angle, so this is probably
-      // overkill.
-      // In any case we just want to do that in native code reasonably soon, so
-      // this does the trick for now.
-      hiding_bodies_ =
-        (from body in FlightGlobals.Bodies
-         where body.Radius * body.Radius >
-               (body.position - camera).sqrMagnitude * 1e-6
-         select body).ToArray();
-
-      line_vertices();
-
-      hiding_bodies_ = null;
-
-      rendering_lines_ = false;
-      UnityEngine.GL.End();
-      UnityEngine.GL.PopMatrix();
-    } catch (Exception e) {
-      Log.Fatal("Exception while drawing lines: " + e.ToString());
-    }
-  }
-
-  private void RenderAndDeleteTrajectory(IntPtr trajectory_iterator,
-                                         UnityEngine.Color colour) {
-    try {
-      XYZSegment segment;
-
-      UnityEngine.GL.Color(colour);
-
-      while (!trajectory_iterator.AtEnd()) {
-        segment = trajectory_iterator.FetchAndIncrement();
-        AddSegment(segment);
-      }
-    } finally {
-      Interface.DeleteLineAndIterator(ref trajectory_iterator);
+  private void RenderFlightPlanApsides(String vessel_guid,
+                                       XYZ sun_world_position) {
+    foreach (CelestialBody celestial in
+             plotting_frame_selector_.get().Bodies()) {
+      IntPtr apoapsis_iterator;
+      IntPtr periapsis_iterator;
+      plugin_.FlightPlanRenderedApsides(vessel_guid,
+                                        celestial.flightGlobalsIndex,
+                                        sun_world_position,
+                                        out apoapsis_iterator,
+                                        out periapsis_iterator);
+      map_node_pool_.RenderAndDeleteApsides(apoapsis_iterator,
+                                            celestial,
+                                            MapObject.ObjectType.Apoapsis);
+      map_node_pool_.RenderAndDeleteApsides(periapsis_iterator,
+                                            celestial,
+                                            MapObject.ObjectType.Periapsis);
     }
   }
 
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
+    map_node_pool_.Clear();
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
@@ -1125,13 +1021,8 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUI.skin.textArea.alignment;
     UnityEngine.GUI.skin.textArea.alignment =
         UnityEngine.TextAnchor.MiddleRight;
-    // Unity/Mono is screwing with the current culture, let's get unambiguous
-    // conventions from a copy of the invariant culture.
-    CultureInfo culture = new CultureInfo("");
-    culture.NumberFormat.NumberGroupSeparator = "'";
-    culture.NumberFormat.PositiveInfinitySymbol = "+∞";
     UnityEngine.GUILayout.TextArea(
-        text    : String.Format(culture, format, array[index]),
+        text    : String.Format(Culture.culture, format, array[index]),
         options : UnityEngine.GUILayout.Width(75));
     UnityEngine.GUI.skin.textArea.alignment = old_alignment;
     if (UnityEngine.GUILayout.Button(
@@ -1143,9 +1034,6 @@ public partial class PrincipiaPluginAdapter
     }
     UnityEngine.GUILayout.EndHorizontal();
   }
-
-  // NOTE(egg): Dummy UI elements for testing purposes, rendered in an
-  // irrelevant part of the UI.
 
   private void PredictionSettings() {
     bool changed_settings = false;

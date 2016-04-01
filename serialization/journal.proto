@@ -76,7 +76,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5080.
+  extensions 5000 to 5999;  // Last used: 5082.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -439,6 +439,27 @@ message FlightPlanRemoveLast {
     required string vessel_guid = 2;
   }
   required In in = 1;
+}
+
+message FlightPlanRenderedApsides {
+  extend Method {
+    optional FlightPlanRenderedApsides extension = 5081;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 celestial_index = 3;
+    required XYZ sun_world_position = 4;
+  }
+  message Out {
+    required fixed64 apoapsides = 1 [(pointer_to) = "LineAndIterator",
+                                     (is_produced) = true];
+    required fixed64 periapsides = 2 [(pointer_to) = "LineAndIterator",
+                                      (is_produced) = true];
+  }
+  required In in = 1;
+  required Out out = 2;
 }
 
 message FlightPlanRenderedSegment {
@@ -886,6 +907,27 @@ message RenderedPrediction {
   }
   required In in = 1;
   required Return return = 3;
+}
+
+message RenderedPredictionApsides {
+  extend Method {
+    optional RenderedPredictionApsides extension = 5082;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 celestial_index = 3;
+    required XYZ sun_world_position = 4;
+  }
+  message Out {
+    required fixed64 apoapsides = 1 [(pointer_to) = "LineAndIterator",
+                                     (is_produced) = true];
+    required fixed64 periapsides = 2 [(pointer_to) = "LineAndIterator",
+                                      (is_produced) = true];
+  }
+  required In in = 1;
+  required Out out = 2;
 }
 
 message RenderedVesselTrajectory {

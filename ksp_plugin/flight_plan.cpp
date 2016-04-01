@@ -156,6 +156,14 @@ void FlightPlan::GetSegment(
   *end = segments_[index]->End();
 }
 
+void FlightPlan::GetAllSegments(
+    not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
+    not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
+  *begin = segments_.back()->Find(segments_.front()->Fork().time());
+  *end = segments_.back()->End();
+  CHECK(*begin != *end);
+}
+
 void FlightPlan::WriteToMessage(
     not_null<serialization::FlightPlan*> const message) const {
   initial_mass_.WriteToMessage(message->mutable_initial_mass());

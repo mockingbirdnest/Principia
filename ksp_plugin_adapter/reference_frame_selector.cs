@@ -65,6 +65,18 @@ class ReferenceFrameSelector : WindowRenderer {
 
   public FrameType frame_type { get; private set; }
 
+  public CelestialBody[] Bodies() {
+    switch (frame_type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        return new CelestialBody[]{selected_celestial_};
+      case FrameType.BARYCENTRIC_ROTATING:
+        return new CelestialBody[]{selected_celestial_,
+                                   selected_celestial_.referenceBody};
+      default:
+        throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
+    }
+  }
+
   public NavigationFrameParameters FrameParameters() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:

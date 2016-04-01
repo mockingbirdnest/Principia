@@ -626,6 +626,40 @@ LineAndIterator* principia__RenderedPrediction(
   return m.Return(result.release());
 }
 
+void principia__RenderedPredictionApsides(Plugin const* const plugin,
+                                          char const* const vessel_guid,
+                                          int const celestial_index,
+                                          XYZ const sun_world_position,
+                                          LineAndIterator** const apoapsides,
+                                          LineAndIterator** const periapsides) {
+  journal::Method<journal::RenderedPredictionApsides> m(
+      {plugin, vessel_guid, celestial_index, sun_world_position},
+      {apoapsides, periapsides});
+  CHECK_NOTNULL(plugin);
+  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+  RenderedTrajectory<World> rendered_apoapsides;
+  RenderedTrajectory<World> rendered_periapsides;
+  plugin->ComputeAndRenderApsides(celestial_index,
+                                  prediction.Fork(),
+                                  prediction.End(),
+                                  q_sun,
+                                  rendered_apoapsides,
+                                  rendered_periapsides);
+  not_null<std::unique_ptr<LineAndIterator>> owned_apoapsides =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_apoapsides));
+  owned_apoapsides->it = owned_apoapsides->rendered_trajectory.begin();
+  *apoapsides = owned_apoapsides.release();
+  not_null<std::unique_ptr<LineAndIterator>> owned_periapsides =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_periapsides));
+  owned_periapsides->it = owned_periapsides->rendered_trajectory.begin();
+  *periapsides = owned_periapsides.release();
+  return m.Return();
+}
+
+
 void principia__SetPredictionLength(Plugin* const plugin,
                                     double const t) {
   journal::Method<journal::SetPredictionLength> m({plugin, t});

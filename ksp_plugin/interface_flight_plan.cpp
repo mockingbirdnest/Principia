@@ -263,6 +263,40 @@ void principia__FlightPlanRemoveLast(Plugin const* const plugin,
   return m.Return();
 }
 
+void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
+                                          char const* const vessel_guid,
+                                          int const celestial_index,
+                                          XYZ const sun_world_position,
+                                          LineAndIterator** const apoapsides,
+                                          LineAndIterator** const periapsides) {
+  journal::Method<journal::FlightPlanRenderedApsides> m(
+      {plugin, vessel_guid, celestial_index, sun_world_position},
+      {apoapsides, periapsides});
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  CHECK_NOTNULL(plugin);
+  GetFlightPlan(plugin, vessel_guid).GetAllSegments(&begin, &end);
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+  RenderedTrajectory<World> rendered_apoapsides;
+  RenderedTrajectory<World> rendered_periapsides;
+  plugin->ComputeAndRenderApsides(celestial_index,
+                                  begin, end,
+                                  q_sun,
+                                  rendered_apoapsides,
+                                  rendered_periapsides);
+  not_null<std::unique_ptr<LineAndIterator>> owned_apoapsides =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_apoapsides));
+  owned_apoapsides->it = owned_apoapsides->rendered_trajectory.begin();
+  *apoapsides = owned_apoapsides.release();
+  not_null<std::unique_ptr<LineAndIterator>> owned_periapsides =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_periapsides));
+  owned_periapsides->it = owned_periapsides->rendered_trajectory.begin();
+  *periapsides = owned_periapsides.release();
+  return m.Return();
+}
+
 LineAndIterator* principia__FlightPlanRenderedSegment(
     Plugin const* const plugin,
     char const* const vessel_guid,
