@@ -418,9 +418,9 @@ RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
   return result;
 }
 
-not_null<std::unique_ptr<LineAndIterator>> Plugin::RenderApsides(
-      DiscreteTrajectory<Barycentric>& apsides,
-      XYZ const& sun_world_position) const {
+RenderedTrajectory<World> Plugin::RenderApsides(
+      Position<World> const& sun_world_position,
+      DiscreteTrajectory<Barycentric>& apsides) const {
   // NOTE(egg): this guarantees a bijection between segment |begin|s and
   // apsides.  We will eventually switch to a saner API.  We cannot even put
   // the extra point at infinity because it will be rendered with respect to
@@ -438,29 +438,25 @@ not_null<std::unique_ptr<LineAndIterator>> Plugin::RenderApsides(
               std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
               std::numeric_limits<double>::quiet_NaN() * (Metre / Second)})});
   }
-  RenderedTrajectory<World> rendered_trajectory =
-      plugin->RenderedTrajectoryFromIterators(
-          apsides.Begin(),
-          apsides.End(),
-          World::origin +
-              Displacement<World>(ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return result;
+  return RenderedTrajectoryFromIterators(
+      apsides.Begin(), apsides.End(), sun_world_position);
 }
 
-void Plugin::ComputeApsides(
+void Plugin::ComputeAndRenderApsides(
     Index const celestial_index,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    DiscreteTrajectory<Barycentric>& apoapsides,
-    DiscreteTrajectory<Barycentric>& periapsides) const {
-  return ephemeris_->ComputeApsides(
-                         FindOrDie(celestials_, celestial_index)->body(),
-                         begin, end,
-                         apoapsides,
-                         periapsides);
+    Position<World> const& sun_world_position,
+    RenderedTrajectory<World>& apoapsides,
+    RenderedTrajectory<World>& periapsides) const {
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  ephemeris_->ComputeApsides(FindOrDie(celestials_, celestial_index)->body(),
+                             begin, end,
+                             apoapsides_trajectory,
+                             periapsides_trajectory);
+  apoapsides = RenderApsides(sun_world_position, apoapsides_trajectory);
+  periapsides = RenderApsides(sun_world_position, periapsides_trajectory);
 }
 
 void Plugin::SetPredictionLength(Time const& t) {

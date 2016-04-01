@@ -637,16 +637,25 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  plugin->ComputeApsides(celestial_index,
-                         prediction.Fork(), prediction.End(),
-                         apoapsides_trajectory,
-                         periapsides_trajectory);
-  *apoapsides = plugin->RenderApsides(apoapsides_trajectory,
-                                      sun_world_position).release();
-  *periapsides = plugin->RenderApsides(periapsides_trajectory,
-                                       sun_world_position).release();
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+  RenderedTrajectory<World> rendered_apoapsides;
+  RenderedTrajectory<World> rendered_periapsides;
+  plugin->ComputeAndRenderApsides(celestial_index,
+                                  prediction.Fork(),
+                                  prediction.End(),
+                                  q_sun,
+                                  rendered_apoapsides,
+                                  rendered_periapsides);
+  not_null<std::unique_ptr<LineAndIterator>> owned_apoapsides =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_apoapsides));
+  owned_apoapsides->it = owned_apoapsides->rendered_trajectory.begin();
+  *apoapsides = owned_apoapsides.release();
+  not_null<std::unique_ptr<LineAndIterator>> owned_periapsides =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_periapsides));
+  owned_periapsides->it = owned_periapsides->rendered_trajectory.begin();
+  *periapsides = owned_periapsides.release();
   return m.Return();
 }
 
