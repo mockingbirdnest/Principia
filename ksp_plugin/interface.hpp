@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <typeindex>
 #include <type_traits>
 
 #include "base/macros.hpp"
@@ -24,6 +25,35 @@ using ksp_plugin::RenderedTrajectory;
 using ksp_plugin::World;
 
 namespace interface {
+
+class IteratorBase {
+ public:
+  explicit IteratorBase(std::type_info const& type_info);
+  virtual ~IteratorBase() = default;
+
+  virtual bool AtEnd() const = 0;
+  virtual void Increment() = 0;
+
+ protected:
+  void Check(std::type_info const& type_info);
+
+ private:
+  std::type_index type_index_;
+};
+
+template <typename T, template <typename T> Container>
+class Iterator {
+ public:
+  explicit Iterator(Container<T> container);
+
+  bool AtEnd() const;
+  T const Get() const;
+  void Increment();
+
+ private:
+  Container<T> container_;
+  typename Container<T>::const_iterator iterator_;
+};
 
 struct LineAndIterator {
   explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
