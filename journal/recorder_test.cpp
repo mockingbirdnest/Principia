@@ -56,7 +56,7 @@ TEST_F(JournalDeathTest, Return) {
   EXPECT_DEATH({
     Method<NewPlugin> m({1, 2});
     m.Return(plugin_.get());
-    m.Return();
+    m.Return(plugin_.get());
   },
   "!returned_");
   EXPECT_DEATH({

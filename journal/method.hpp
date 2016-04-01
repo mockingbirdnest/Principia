@@ -29,31 +29,57 @@ namespace journal {
 //                    not_null<Player::PointerMap*> const pointer_map);
 //  };
 
+template<typename T>
+using specialize = void;
+
+template<typename P, typename = void>
+struct has_in : std::false_type {};
+template<typename P>
+struct has_in<P, specialize<typename P::In>> : std::true_type {};
+
+template<typename P, typename = void>
+struct has_out : std::false_type {};
+template<typename P>
+struct has_out<P, specialize<typename P::Out>> : std::true_type {};
+
+template<typename P, typename = void>
+struct has_return : std::false_type {};
+template<typename P>
+struct has_return<P, specialize<typename P::Return>> : std::true_type {};
+
 template<typename Profile>
 class Method {
  public:
   Method();
 
-  // Only declare this constructor if the profile has an |In| type.
-  template<typename P = Profile, typename = typename P::In>
+  // Only declare this constructor if the profile has an |In| type and no |Out|
+  // type.
+  template<typename P = Profile,
+           typename = std::enable_if_t<has_in<P>::value && !has_out<P>::value>>
   explicit Method(typename P::In const& in);
 
-  // Only declare this constructor if the profile has an |Out| type.
-  template<typename P = Profile, typename = typename P::Out>
+  // Only declare this constructor if the profile has an |Out| type and no |In|
+  // type.
+  template<typename P = Profile,
+           typename = std::enable_if_t<has_out<P>::value && !has_in<P>::value>>
   explicit Method(typename P::Out const& out);
 
   // Only declare this constructor if the profile has an |In| and an |Out|
   // type.
   template<typename P = Profile,
-            typename = typename P::In, typename = typename P::Out>
+           typename = std::enable_if_t<has_in<P>::value && has_out<P>::value>>
   Method(typename P::In const& in, typename P::Out const& out);
 
   ~Method();
 
+  // Only declare this method if the profile has no |Return| type.
+  template<typename P = Profile,
+           typename = std::enable_if_t<!has_return<P>::value>>
   void Return();
 
   // Only declare this method if the profile has a |Return| type.
-  template<typename P = Profile, typename = typename P::Return>
+  template<typename P = Profile,
+           typename = std::enable_if_t<has_return<P>::value>>
   typename P::Return Return(typename P::Return const& result);
 
  private:
