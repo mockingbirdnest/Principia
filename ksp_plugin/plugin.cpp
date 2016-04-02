@@ -396,21 +396,19 @@ Positions<World> Plugin::RenderedTrajectoryFromIterators(
   }
 
   // Render the trajectory at current time in |World|.
-  ;
   DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
       intermediate_trajectory.End();
   auto from_navigation_frame_to_world_at_current_time =
       to_world *
           plotting_frame_->
               FromThisFrameAtTime(current_time_).rigid_transformation();
-  for (DiscreteTrajectory<Navigation>::Iterator intermediate_it =
-           intermediate_trajectory.Begin();
+  for (auto intermediate_it = intermediate_trajectory.Begin();
        intermediate_it != intermediate_end;
        ++intermediate_it) {
     result.emplace_back(from_navigation_frame_to_world_at_current_time(
         intermediate_it.degrees_of_freedom().position()));
   }
-  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  VLOG(1) << "Returning a " << result.size() << "-point trajectory";
   return result;
 }
 
