@@ -595,7 +595,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   Positions<World> rendered_prediction =
       plugin.RenderedPrediction(satellite,
                                 World::origin);
-  EXPECT_EQ(15, rendered_prediction.size());
+  EXPECT_EQ(16, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
     auto const& position = rendered_prediction[i];
     EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
