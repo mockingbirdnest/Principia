@@ -39,8 +39,9 @@ internal class MapNodePool {
   public void RenderAndDeleteApsides(IntPtr apsis_iterator,
                                      CelestialBody celestial,
                                      MapObject.ObjectType type) {
-    while (!apsis_iterator.AtEnd()) {
-      var segment = apsis_iterator.FetchAndIncrement();
+    for (; !apsis_iterator.IteratorAtEnd();
+         apsis_iterator.IteratorIncrement()) {
+      XYZSegment segment = apsis_iterator.IteratorGetXYZSegment();
       Vector3d apsis = (Vector3d)segment.begin;
       MapNodeProperties node_properties;
       node_properties.object_type = type;
@@ -53,7 +54,7 @@ internal class MapNodePool {
       }
       properties_[nodes_[pool_index_++]] = node_properties;
     }
-    Interface.DeleteLineAndIterator(ref apsis_iterator);
+    Interface.IteratorDelete(ref apsis_iterator);
   }
 
   private void AddMapNodeToPool() {

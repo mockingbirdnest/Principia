@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <typeindex>
 #include <type_traits>
 
 #include "base/macros.hpp"
@@ -25,12 +26,45 @@ using ksp_plugin::World;
 
 namespace interface {
 
-struct LineAndIterator {
-  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
-      : rendered_trajectory(rendered_trajectory) {}
-  RenderedTrajectory<World> const rendered_trajectory;
-  RenderedTrajectory<World>::const_iterator it;
+// A wrapper for a container and an iterator into that container.
+class Iterator {
+ public:
+  virtual ~Iterator() = default;
+
+  virtual bool AtEnd() const = 0;
+  virtual void Increment() = 0;
+  virtual int Size() const = 0;
 };
+
+// A concrete, typed subclass of |Iterator| which holds a |Container|.
+template<typename Container>
+class TypedIterator : public Iterator {
+ public:
+  explicit TypedIterator(Container container);
+
+  // Obtains the element denoted by this iterator and converts it to some
+  // |Interchange| type using |convert|.
+  template <typename Interchange>
+  Interchange Get(
+      std::function<Interchange(typename Container::value_type const&)> const&
+          convert) const;
+
+  bool AtEnd() const override;
+  void Increment() override;
+  int Size() const override;
+
+ private:
+  Container container_;
+  typename Container::const_iterator iterator_;
+};
+
+// Takes ownership of |**pointer| and returns it to the caller.  Nulls
+// |*pointer|.  |pointer| must not be null.  No transfer of ownership of
+// |*pointer|.
+template<typename T>
+std::unique_ptr<T> TakeOwnership(T** const pointer);
+template<typename T>
+std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer);
 
 #include "ksp_plugin/interface.generated.h"
 

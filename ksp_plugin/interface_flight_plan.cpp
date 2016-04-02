@@ -21,6 +21,7 @@ using geometry::Instant;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
+using ksp_plugin::LineSegment;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
@@ -267,8 +268,8 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
                                           char const* const vessel_guid,
                                           int const celestial_index,
                                           XYZ const sun_world_position,
-                                          LineAndIterator** const apoapsides,
-                                          LineAndIterator** const periapsides) {
+                                          Iterator** const apoapsides,
+                                          Iterator** const periapsides) {
   journal::Method<journal::FlightPlanRenderedApsides> m(
       {plugin, vessel_guid, celestial_index, sun_world_position},
       {apoapsides, periapsides});
@@ -286,18 +287,14 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  not_null<std::unique_ptr<LineAndIterator>> owned_apoapsides =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_apoapsides));
-  owned_apoapsides->it = owned_apoapsides->rendered_trajectory.begin();
-  *apoapsides = owned_apoapsides.release();
-  not_null<std::unique_ptr<LineAndIterator>> owned_periapsides =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_periapsides));
-  owned_periapsides->it = owned_periapsides->rendered_trajectory.begin();
-  *periapsides = owned_periapsides.release();
+  *apoapsides = new TypedIterator<RenderedTrajectory<World>>(
+      std::move(rendered_apoapsides));
+  *periapsides = new TypedIterator<RenderedTrajectory<World>>(
+      std::move(rendered_periapsides));
   return m.Return();
 }
 
-LineAndIterator* principia__FlightPlanRenderedSegment(
+Iterator* principia__FlightPlanRenderedSegment(
     Plugin const* const plugin,
     char const* const vessel_guid,
     XYZ const sun_world_position,
@@ -314,10 +311,8 @@ LineAndIterator* principia__FlightPlanRenderedSegment(
           begin, end,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return m.Return(result.release());
+  return m.Return(new TypedIterator<RenderedTrajectory<World>>(
+      std::move(rendered_trajectory)));
 }
 
 XYZSegment principia__FlightPlanRenderedSegmentEndpoints(

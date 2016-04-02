@@ -9,8 +9,57 @@
 namespace principia {
 namespace interface {
 
+namespace {
+
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
+}
+
+}  // namespace
+
+template<typename Container>
+TypedIterator<Container>::TypedIterator(Container container)
+    : container_(std::move(container)),
+      iterator_(container_.begin()) {}
+
+template <typename Container>
+template <typename Interchange>
+Interchange TypedIterator<Container>::Get(
+    std::function<Interchange(typename Container::value_type const&)> const&
+        convert) const {
+  CHECK(iterator_ != container_.end());
+  return convert(*iterator_);
+}
+
+template<typename Container>
+bool TypedIterator<Container>::AtEnd() const {
+  return iterator_ == container_.end();
+}
+
+template<typename Container>
+void TypedIterator<Container>::Increment() {
+  ++iterator_;
+}
+
+template<typename Container>
+int TypedIterator<Container>::Size() const {
+  return container_.size();
+}
+
+template<typename T>
+std::unique_ptr<T> TakeOwnership(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T> owned_pointer(*pointer);
+  *pointer = nullptr;
+  return owned_pointer;
+}
+
+template<typename T>
+std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T[]> owned_pointer(*pointer);
+  *pointer = nullptr;
+  return owned_pointer;
 }
 
 inline bool operator==(AdaptiveStepParameters const& left,

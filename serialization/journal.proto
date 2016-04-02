@@ -76,7 +76,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5082.
+  extensions 5000 to 5999;  // Last used: 5087.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -101,21 +101,6 @@ message AdvanceTime {
     required double planetarium_rotation = 3;
   }
   required In in = 1;
-}
-
-message AtEnd {
-  extend Method {
-    optional AtEnd extension = 5035;
-  }
-  message In {
-    required fixed64 line_and_iterator = 1
-        [(pointer_to) = "LineAndIterator const", (is_subject) = true];
-  }
-  message Return {
-    required bool result = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
 }
 
 message BubbleDisplacementCorrection {
@@ -181,21 +166,6 @@ message CurrentTime {
   required Return return = 3;
 }
 
-message DeleteLineAndIterator {
-  extend Method {
-    optional DeleteLineAndIterator extension = 5036;
-  }
-  message In {
-    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator",
-                                            (is_consumed) = true];
-  }
-  message Out {
-    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator"];
-  }
-  required In in = 1;
-  required Out out = 2;
-}
-
 message DeletePlugin {
   extend Method {
     optional DeletePlugin extension = 5000;
@@ -256,21 +226,6 @@ message EndInitialization {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   required In in = 1;
-}
-
-message FetchAndIncrement {
-  extend Method {
-    optional FetchAndIncrement extension = 5037;
-  }
-  message In {
-    required fixed64 line_and_iterator = 1 [(pointer_to) = "LineAndIterator",
-                                            (is_subject) = true];
-  }
-  message Return {
-    required XYZSegment result = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
 }
 
 message FlightPlanAppend {
@@ -453,9 +408,9 @@ message FlightPlanRenderedApsides {
     required XYZ sun_world_position = 4;
   }
   message Out {
-    required fixed64 apoapsides = 1 [(pointer_to) = "LineAndIterator",
+    required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
                                      (is_produced) = true];
-    required fixed64 periapsides = 2 [(pointer_to) = "LineAndIterator",
+    required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
                                       (is_produced) = true];
   }
   required In in = 1;
@@ -474,7 +429,7 @@ message FlightPlanRenderedSegment {
     required int32 index = 4;
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
                                  (is_produced) = true];
   }
   required In in = 1;
@@ -737,6 +692,77 @@ message InsertSun {
   required In in = 1;
 }
 
+message IteratorAtEnd {
+  extend Method {
+    optional IteratorAtEnd extension = 5083;
+  }
+  message In {
+    required fixed64 iterator = 1
+        [(pointer_to) = "Iterator const", (is_subject) = true];
+  }
+  message Return {
+    required bool result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message IteratorDelete {
+  extend Method {
+    optional IteratorDelete extension = 5084;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator"];
+  }
+  required In in = 1;
+  required Out out = 2;
+}
+
+message IteratorGetXYZSegment {
+  extend Method {
+    optional IteratorGetXYZSegment extension = 5085;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required XYZSegment result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message IteratorIncrement {
+  extend Method {
+    optional IteratorIncrement extension = 5086;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (is_subject) = true];
+  }
+  required In in = 1;
+}
+
+message IteratorSize {
+  extend Method {
+    optional IteratorSize extension = 5087;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
 message LogError {
   extend Method {
     optional LogError extension = 5010;
@@ -862,21 +888,6 @@ message NewPlugin {
   required Return return = 3;
 }
 
-message NumberOfSegments {
-  extend Method {
-    optional NumberOfSegments extension = 5040;
-  }
-  message In {
-    required fixed64 line_and_iterator = 1
-        [(pointer_to) = "LineAndIterator const", (is_subject) = true];
-  }
-  message Return {
-    required int32 result = 1;
-  }
-  required In in = 1;
-  required Return return = 3;
-}
-
 message PhysicsBubbleIsEmpty {
   extend Method {
     optional PhysicsBubbleIsEmpty extension = 5052;
@@ -902,7 +913,7 @@ message RenderedPrediction {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
                                  (is_produced) = true];
   }
   required In in = 1;
@@ -921,9 +932,9 @@ message RenderedPredictionApsides {
     required XYZ sun_world_position = 4;
   }
   message Out {
-    required fixed64 apoapsides = 1 [(pointer_to) = "LineAndIterator",
+    required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
                                      (is_produced) = true];
-    required fixed64 periapsides = 2 [(pointer_to) = "LineAndIterator",
+    required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
                                       (is_produced) = true];
   }
   required In in = 1;
@@ -941,7 +952,7 @@ message RenderedVesselTrajectory {
     required XYZ sun_world_position = 4;
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "LineAndIterator",
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
                                  (is_produced) = true];
   }
   required In in = 1;

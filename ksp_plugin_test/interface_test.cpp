@@ -555,33 +555,33 @@ TEST_F(InterfaceTest, RenderedPrediction) {
                                        kParentPosition.y * SIUnit<Length>(),
                                        kParentPosition.z * SIUnit<Length>()})))
       .WillOnce(Return(rendered_trajectory));
-  LineAndIterator* line_and_iterator =
+  Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     kVesselGUID,
                                     kParentPosition);
-  EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
-  EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
+  EXPECT_EQ(kTrajectorySize, principia__IteratorSize(iterator));
 
   // Traverse it and check that we get the right data.
   for (int i = 0; i < kTrajectorySize; ++i) {
-    EXPECT_FALSE(principia__AtEnd(line_and_iterator));
-    XYZSegment const segment = principia__FetchAndIncrement(line_and_iterator);
+    EXPECT_FALSE(principia__IteratorAtEnd(iterator));
+    XYZSegment const segment = principia__IteratorGetXYZSegment(iterator);
     EXPECT_EQ(1 + 10 * i, segment.begin.x);
     EXPECT_EQ(2 + 20 * i, segment.begin.y);
     EXPECT_EQ(3 + 30 * i, segment.begin.z);
     EXPECT_EQ(11 + 10 * i, segment.end.x);
     EXPECT_EQ(22 + 20 * i, segment.end.y);
     EXPECT_EQ(33 + 30 * i, segment.end.z);
+    principia__IteratorIncrement(iterator);
   }
-  EXPECT_TRUE(principia__AtEnd(line_and_iterator));
+  EXPECT_TRUE(principia__IteratorAtEnd(iterator));
 
   // Delete it.
-  EXPECT_THAT(line_and_iterator, Not(IsNull()));
-  principia__DeleteLineAndIterator(&line_and_iterator);
-  EXPECT_THAT(line_and_iterator, IsNull());
+  EXPECT_THAT(iterator, Not(IsNull()));
+  principia__IteratorDelete(&iterator);
+  EXPECT_THAT(iterator, IsNull());
 }
 
-TEST_F(InterfaceTest, LineAndIterator) {
+TEST_F(InterfaceTest, Iterator) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
@@ -626,30 +626,30 @@ TEST_F(InterfaceTest, LineAndIterator) {
                                        kParentPosition.y * SIUnit<Length>(),
                                        kParentPosition.z * SIUnit<Length>()})))
       .WillOnce(Return(rendered_trajectory));
-  LineAndIterator* line_and_iterator =
+  Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
                                           kParentPosition);
-  EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
-  EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
+  EXPECT_EQ(kTrajectorySize, principia__IteratorSize(iterator));
 
   // Traverse it and check that we get the right data.
   for (int i = 0; i < kTrajectorySize; ++i) {
-    EXPECT_FALSE(principia__AtEnd(line_and_iterator));
-    XYZSegment const segment = principia__FetchAndIncrement(line_and_iterator);
+    EXPECT_FALSE(principia__IteratorAtEnd(iterator));
+    XYZSegment const segment = principia__IteratorGetXYZSegment(iterator);
     EXPECT_EQ(1 + 10 * i, segment.begin.x);
     EXPECT_EQ(2 + 20 * i, segment.begin.y);
     EXPECT_EQ(3 + 30 * i, segment.begin.z);
     EXPECT_EQ(11 + 10 * i, segment.end.x);
     EXPECT_EQ(22 + 20 * i, segment.end.y);
     EXPECT_EQ(33 + 30 * i, segment.end.z);
+    principia__IteratorIncrement(iterator);
   }
-  EXPECT_TRUE(principia__AtEnd(line_and_iterator));
+  EXPECT_TRUE(principia__IteratorAtEnd(iterator));
 
   // Delete it.
-  EXPECT_THAT(line_and_iterator, Not(IsNull()));
-  principia__DeleteLineAndIterator(&line_and_iterator);
-  EXPECT_THAT(line_and_iterator, IsNull());
+  EXPECT_THAT(iterator, Not(IsNull()));
+  principia__IteratorDelete(&iterator);
+  EXPECT_THAT(iterator, IsNull());
 }
 
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
@@ -1045,15 +1045,16 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(flight_plan, GetSegment(3, _, _));
   EXPECT_CALL(*plugin_, RenderedTrajectoryFromIterators(_, _, _))
       .WillOnce(Return(rendered_trajectory));
-  auto* const line_and_iterator =
+  auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
                                            kVesselGUID,
                                            {0, 1, 2},
                                            3);
   EXPECT_EQ(XYZSegment({{0, 0, 0}, {0, 1, 2}}),
-            principia__FetchAndIncrement(line_and_iterator));
+            principia__IteratorGetXYZSegment(iterator));
+  principia__IteratorIncrement(iterator);
   EXPECT_EQ(XYZSegment({{0, 1, 2}, {0, 2, 4}}),
-            principia__FetchAndIncrement(line_and_iterator));
+            principia__IteratorGetXYZSegment(iterator));
 
   Position<World> q1 =
       World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre});
