@@ -33,7 +33,6 @@ using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
-using ksp_plugin::LineSegment;
 using ksp_plugin::MakeNavigationManœuvre;
 using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockManœuvre;
@@ -42,7 +41,8 @@ using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
-using ksp_plugin::RenderedTrajectory;
+using ksp_plugin::Positions;
+using ksp_plugin::World;
 using ksp_plugin::WorldSun;
 using physics::Frenet;
 using physics::MockDynamicFrame;
@@ -532,19 +532,17 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  RenderedTrajectory<World> rendered_trajectory;
+  Positions<World> rendered_trajectory;
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
                                            3 * SIUnit<Length>()});
-  for (int i = 0; i < kTrajectorySize; ++i) {
-    Position<World> next_position =
-        position + Displacement<World>({10 * SIUnit<Length>(),
-                                        20 * SIUnit<Length>(),
-                                        30 * SIUnit<Length>()});
-    LineSegment<World> line_segment(position, next_position);
-    rendered_trajectory.push_back(line_segment);
-    position = next_position;
+  rendered_trajectory.push_back(position);
+  for (int i = 1; i < kTrajectorySize; ++i) {
+    position += Displacement<World>({10 * SIUnit<Length>(),
+                                     20 * SIUnit<Length>(),
+                                     30 * SIUnit<Length>()});
+    rendered_trajectory.push_back(position);
   }
 
   EXPECT_CALL(*plugin_,
@@ -564,13 +562,10 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   // Traverse it and check that we get the right data.
   for (int i = 0; i < kTrajectorySize; ++i) {
     EXPECT_FALSE(principia__IteratorAtEnd(iterator));
-    XYZSegment const segment = principia__IteratorGetXYZSegment(iterator);
-    EXPECT_EQ(1 + 10 * i, segment.begin.x);
-    EXPECT_EQ(2 + 20 * i, segment.begin.y);
-    EXPECT_EQ(3 + 30 * i, segment.begin.z);
-    EXPECT_EQ(11 + 10 * i, segment.end.x);
-    EXPECT_EQ(22 + 20 * i, segment.end.y);
-    EXPECT_EQ(33 + 30 * i, segment.end.z);
+    XYZ const xyz = principia__IteratorGetXYZ(iterator);
+    EXPECT_EQ(1 + 10 * i, xyz.x);
+    EXPECT_EQ(2 + 20 * i, xyz.y);
+    EXPECT_EQ(3 + 30 * i, xyz.z);
     principia__IteratorIncrement(iterator);
   }
   EXPECT_TRUE(principia__IteratorAtEnd(iterator));
@@ -601,20 +596,17 @@ TEST_F(InterfaceTest, Iterator) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  RenderedTrajectory<World> rendered_trajectory;
+  Positions<World> rendered_trajectory;
   Position<World> position =
-      World::origin + Displacement<World>(
-                          {1 * SIUnit<Length>(),
-                           2 * SIUnit<Length>(),
-                           3 * SIUnit<Length>()});
-  for (int i = 0; i < kTrajectorySize; ++i) {
-    Position<World> next_position =
-        position + Displacement<World>({10 * SIUnit<Length>(),
-                                        20 * SIUnit<Length>(),
-                                        30 * SIUnit<Length>()});
-    LineSegment<World> line_segment(position, next_position);
-    rendered_trajectory.push_back(line_segment);
-    position = next_position;
+      World::origin + Displacement<World>({1 * SIUnit<Length>(),
+                                           2 * SIUnit<Length>(),
+                                           3 * SIUnit<Length>()});
+  rendered_trajectory.push_back(position);
+  for (int i = 1; i < kTrajectorySize; ++i) {
+    position += Displacement<World>({10 * SIUnit<Length>(),
+                                     20 * SIUnit<Length>(),
+                                     30 * SIUnit<Length>()});
+    rendered_trajectory.push_back(position);
   }
 
   // Construct a LineAndIterator.
@@ -635,13 +627,10 @@ TEST_F(InterfaceTest, Iterator) {
   // Traverse it and check that we get the right data.
   for (int i = 0; i < kTrajectorySize; ++i) {
     EXPECT_FALSE(principia__IteratorAtEnd(iterator));
-    XYZSegment const segment = principia__IteratorGetXYZSegment(iterator);
-    EXPECT_EQ(1 + 10 * i, segment.begin.x);
-    EXPECT_EQ(2 + 20 * i, segment.begin.y);
-    EXPECT_EQ(3 + 30 * i, segment.begin.z);
-    EXPECT_EQ(11 + 10 * i, segment.end.x);
-    EXPECT_EQ(22 + 20 * i, segment.end.y);
-    EXPECT_EQ(33 + 30 * i, segment.end.z);
+    XYZ const xyz = principia__IteratorGetXYZ(iterator);
+    EXPECT_EQ(1 + 10 * i, xyz.x);
+    EXPECT_EQ(2 + 20 * i, xyz.y);
+    EXPECT_EQ(3 + 30 * i, xyz.z);
     principia__IteratorIncrement(iterator);
   }
   EXPECT_TRUE(principia__IteratorAtEnd(iterator));
@@ -1028,20 +1017,10 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       kVesselGUID));
 
-  RenderedTrajectory<World> const rendered_trajectory =
-      {LineSegment<World>(World::origin,
-                          World::origin +
-                            Displacement<World>({0 * Metre,
-                                                 1 * Metre,
-                                                 2 * Metre})),
-       LineSegment<World>(World::origin +
-                          Displacement<World>({0 * Metre,
-                                               1 * Metre,
-                                               2 * Metre}),
-                          World::origin +
-                          Displacement<World>({0 * Metre,
-                                               2 * Metre,
-                                               4 * Metre}))};
+  Positions<World> const rendered_trajectory = {
+      World::origin,
+      World::origin + Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
+      World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre})};
   EXPECT_CALL(flight_plan, GetSegment(3, _, _));
   EXPECT_CALL(*plugin_, RenderedTrajectoryFromIterators(_, _, _))
       .WillOnce(Return(rendered_trajectory));
@@ -1050,11 +1029,11 @@ TEST_F(InterfaceTest, FlightPlan) {
                                            kVesselGUID,
                                            {0, 1, 2},
                                            3);
-  EXPECT_EQ(XYZSegment({{0, 0, 0}, {0, 1, 2}}),
-            principia__IteratorGetXYZSegment(iterator));
+  EXPECT_EQ(XYZ({0, 0, 0}), principia__IteratorGetXYZ(iterator));
   principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZSegment({{0, 1, 2}, {0, 2, 4}}),
-            principia__IteratorGetXYZSegment(iterator));
+  EXPECT_EQ(XYZ({0, 1, 2}), principia__IteratorGetXYZ(iterator));
+  principia__IteratorIncrement(iterator);
+  EXPECT_EQ(XYZ({0, 2, 4}), principia__IteratorGetXYZ(iterator));
 
   Position<World> q1 =
       World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre});

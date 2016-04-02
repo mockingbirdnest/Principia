@@ -64,22 +64,9 @@ using GUID = std::string;
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
 
-// Represents the line segment {(1-s) |begin| + s |end| | s ∈ [0, 1]}.
-// It is immediate that ∀ s ∈ [0, 1], (1-s) |begin| + s |end| is a convex
-// combination of |begin| and |end|, so that this is well-defined for |begin|
-// and |end| in an affine space.
-template<typename Frame>
-struct LineSegment {
-  LineSegment(Position<Frame> const& begin, Position<Frame> const& end)
-      : begin(begin),
-        end(end) {}
-  Position<Frame> const begin;
-  Position<Frame> const end;
-};
-
 // We render trajectories as polygons.
 template<typename Frame>
-using RenderedTrajectory = std::vector<LineSegment<Frame>>;
+using Positions = std::vector<Position<Frame>>;
 
 class Plugin {
  public:
@@ -207,7 +194,7 @@ class Plugin {
   // |sun_world_position| is the current position of the sun in |World| space as
   // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
   // relation between |WorldSun| and |World|.  No transfer of ownership.
-  virtual RenderedTrajectory<World> RenderedVesselTrajectory(
+  virtual Positions<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
@@ -220,21 +207,21 @@ class Plugin {
   // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
   // called after |predicted_vessel_| was set.
-  virtual RenderedTrajectory<World> RenderedPrediction(
+  virtual Positions<World> RenderedPrediction(
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
-  // returns a |RenderedTrajectory| corresponding to the trajectory defined by
+  // returns a |Positions| object corresponding to the trajectory defined by
   // |begin| and |end|, as seen in the current |plotting_frame_|.
   // TODO(phl): Use this directly in the interface and remove the other
   // |Rendered...|.
-  virtual RenderedTrajectory<World> RenderedTrajectoryFromIterators(
+  virtual Positions<World> RenderedTrajectoryFromIterators(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
 
-  virtual RenderedTrajectory<World> RenderApsides(
+  virtual Positions<World> RenderApsides(
       Position<World> const& sun_world_position,
       DiscreteTrajectory<Barycentric>& apsides) const;
 
@@ -243,8 +230,8 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
-      RenderedTrajectory<World>& apoapsides,
-      RenderedTrajectory<World>& periapsides) const;
+      Positions<World>& apoapsides,
+      Positions<World>& periapsides) const;
 
   virtual void SetPredictionLength(Time const& t);
 

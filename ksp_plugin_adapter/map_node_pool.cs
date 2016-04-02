@@ -41,8 +41,7 @@ internal class MapNodePool {
                                      MapObject.ObjectType type) {
     for (; !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
-      XYZSegment segment = apsis_iterator.IteratorGetXYZSegment();
-      Vector3d apsis = (Vector3d)segment.begin;
+      Vector3d apsis = (Vector3d)apsis_iterator.IteratorGetXYZ();
       MapNodeProperties node_properties;
       node_properties.object_type = type;
       node_properties.celestial = celestial;

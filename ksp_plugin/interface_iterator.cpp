@@ -8,7 +8,8 @@
 
 namespace principia {
 
-using ksp_plugin::LineSegment;
+using ksp_plugin::Positions;
+using ksp_plugin::World;
 
 namespace interface {
 
@@ -29,15 +30,14 @@ void principia__IteratorIncrement(Iterator* const iterator) {
   return m.Return();
 }
 
-XYZSegment principia__IteratorGetXYZSegment(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetXYZSegment> m({iterator});
+XYZ principia__IteratorGetXYZ(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetXYZ> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<RenderedTrajectory<World>> const*>(iterator));
-  return m.Return(typed_iterator->Get<XYZSegment>(
-      [](LineSegment<World> const& line_segment) -> XYZSegment {
-    return {ToXYZ((line_segment.begin - World::origin).coordinates() / Metre),
-            ToXYZ((line_segment.end - World::origin).coordinates() / Metre)};
+      dynamic_cast<TypedIterator<Positions<World>> const*>(iterator));
+  return m.Return(typed_iterator->Get<XYZ>(
+      [](Position<World> const& position) -> XYZ {
+    return ToXYZ((position - World::origin).coordinates() / Metre);
   }));
 }
 

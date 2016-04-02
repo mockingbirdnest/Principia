@@ -72,12 +72,6 @@ internal static class GLLines {
     return false;
   }
 
-  public static void AddSegment(XYZSegment segment) {
-    AddSegment((Vector3d)segment.begin,
-               (Vector3d)segment.end,
-               hide_behind_bodies : true);
-  }
-
   public static void AddSegment(Vector3d world_begin,
                                 Vector3d world_end,
                                 bool hide_behind_bodies) {
@@ -98,11 +92,19 @@ internal static class GLLines {
   public static void RenderAndDeleteTrajectory(IntPtr trajectory_iterator,
                                                UnityEngine.Color colour) {
     try {
+      Vector3d? previous_point = null;
+
       UnityEngine.GL.Color(colour);
 
       for (; !trajectory_iterator.IteratorAtEnd();
            trajectory_iterator.IteratorIncrement()) {
-        AddSegment(trajectory_iterator.IteratorGetXYZSegment());
+        Vector3d current_point = (Vector3d)trajectory_iterator.IteratorGetXYZ();
+        if (previous_point.HasValue) {
+          AddSegment(previous_point.Value,
+                     current_point,
+                     hide_behind_bodies : true);
+        }
+        previous_point = current_point;
       }
     } finally {
       Interface.IteratorDelete(ref trajectory_iterator);

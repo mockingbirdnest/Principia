@@ -21,8 +21,6 @@ using geometry::R3Element;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
-using ksp_plugin::RenderedTrajectory;
-using ksp_plugin::World;
 
 namespace interface {
 
