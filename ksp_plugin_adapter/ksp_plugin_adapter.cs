@@ -831,7 +831,7 @@ public partial class PrincipiaPluginAdapter
   private void RenderFlightPlanApsides(String vessel_guid,
                                        XYZ sun_world_position) {
     foreach (CelestialBody celestial in
-             plotting_frame_selector_.get().Bodies()) {
+             plotting_frame_selector_.get().FixedBodies()) {
       IntPtr apoapsis_iterator;
       IntPtr periapsis_iterator;
       plugin_.FlightPlanRenderedApsides(vessel_guid,
