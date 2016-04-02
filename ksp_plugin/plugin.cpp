@@ -350,7 +350,7 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
       prediction_parameters_);
 }
 
-RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
+Positions<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
@@ -363,23 +363,23 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
                                          sun_world_position);
 }
 
-RenderedTrajectory<World> Plugin::RenderedPrediction(
+Positions<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  RenderedTrajectory<World> result =
+  Positions<World> result =
       RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
                                       vessel.prediction().End(),
                                       sun_world_position);
   return result;
 }
 
-RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
+Positions<World> Plugin::RenderedTrajectoryFromIterators(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  RenderedTrajectory<World> result;
+  Positions<World> result;
   auto const to_world =
       AffineMap<Barycentric, World, Length, OrthogonalMap>(
           sun_->current_position(current_time_),
@@ -396,29 +396,23 @@ RenderedTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
   }
 
   // Render the trajectory at current time in |World|.
-  DiscreteTrajectory<Navigation>::Iterator initial_it =
-      intermediate_trajectory.Begin();
   DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
       intermediate_trajectory.End();
   auto from_navigation_frame_to_world_at_current_time =
       to_world *
           plotting_frame_->
               FromThisFrameAtTime(current_time_).rigid_transformation();
-  if (initial_it != intermediate_end) {
-    for (auto final_it = initial_it;
-         ++final_it, final_it != intermediate_end;
-         initial_it = final_it) {
-      result.emplace_back(from_navigation_frame_to_world_at_current_time(
-                              initial_it.degrees_of_freedom().position()),
-                          from_navigation_frame_to_world_at_current_time(
-                              final_it.degrees_of_freedom().position()));
-    }
+  for (auto intermediate_it = intermediate_trajectory.Begin();
+       intermediate_it != intermediate_end;
+       ++intermediate_it) {
+    result.emplace_back(from_navigation_frame_to_world_at_current_time(
+        intermediate_it.degrees_of_freedom().position()));
   }
-  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  VLOG(1) << "Returning a " << result.size() << "-point trajectory";
   return result;
 }
 
-RenderedTrajectory<World> Plugin::RenderApsides(
+Positions<World> Plugin::RenderApsides(
       Position<World> const& sun_world_position,
       DiscreteTrajectory<Barycentric>& apsides) const {
   // NOTE(egg): this guarantees a bijection between segment |begin|s and
@@ -447,8 +441,8 @@ void Plugin::ComputeAndRenderApsides(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
-    RenderedTrajectory<World>& apoapsides,
-    RenderedTrajectory<World>& periapsides) const {
+    Positions<World>& apoapsides,
+    Positions<World>& periapsides) const {
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ephemeris_->ComputeApsides(FindOrDie(celestials_, celestial_index)->body(),

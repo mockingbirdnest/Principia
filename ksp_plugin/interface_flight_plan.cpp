@@ -21,10 +21,11 @@ using geometry::Instant;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
-using ksp_plugin::LineSegment;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
+using ksp_plugin::Positions;
 using ksp_plugin::Vessel;
+using ksp_plugin::World;
 using ksp_plugin::WorldSun;
 using physics::Ephemeris;
 using quantities::constants::StandardGravity;
@@ -280,16 +281,16 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   Position<World> q_sun =
       World::origin +
       Displacement<World>(ToR3Element(sun_world_position) * Metre);
-  RenderedTrajectory<World> rendered_apoapsides;
-  RenderedTrajectory<World> rendered_periapsides;
+  Positions<World> rendered_apoapsides;
+  Positions<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   begin, end,
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<RenderedTrajectory<World>>(
+  *apoapsides = new TypedIterator<Positions<World>>(
       std::move(rendered_apoapsides));
-  *periapsides = new TypedIterator<RenderedTrajectory<World>>(
+  *periapsides = new TypedIterator<Positions<World>>(
       std::move(rendered_periapsides));
   return m.Return();
 }
@@ -306,12 +307,12 @@ Iterator* principia__FlightPlanRenderedSegment(
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
-  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+  Positions<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedTrajectoryFromIterators(
           begin, end,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<RenderedTrajectory<World>>(
+  return m.Return(new TypedIterator<Positions<World>>(
       std::move(rendered_trajectory)));
 }
 

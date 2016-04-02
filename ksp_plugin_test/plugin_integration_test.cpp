@@ -204,26 +204,16 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
-    RenderedTrajectory<World> const rendered_trajectory =
+    Positions<World> const rendered_trajectory =
         plugin_->RenderedVesselTrajectory(satellite,
                                           sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::kEarth).displacement());
-    for (auto const segment : rendered_trajectory) {
-      Length const l_min =
-          std::min((segment.begin - earth_world_position).Norm(),
-                   (segment.end - earth_world_position).Norm());
-      Length const l_max =
-          std::max((segment.begin - earth_world_position).Norm(),
-                   (segment.end - earth_world_position).Norm());
-      perigee = std::min(perigee, l_min);
-      apogee = std::max(apogee, l_max);
-    }
-    // Check continuity.
-    for (std::size_t i = 0; i + 1 < rendered_trajectory.size(); ++i) {
-      EXPECT_THAT(rendered_trajectory[i].end,
-                  Eq(rendered_trajectory[i + 1].begin));
+    for (auto const position : rendered_trajectory) {
+      Length const distance = (position - earth_world_position).Norm();
+      perigee = std::min(perigee, distance);
+      apogee = std::max(apogee, distance);
     }
     EXPECT_THAT(Abs(apogee - perigee), Lt(3 * Metre));
   }
@@ -287,7 +277,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
-  RenderedTrajectory<World> const rendered_trajectory =
+  Positions<World> const rendered_trajectory =
       plugin_->RenderedVesselTrajectory(satellite,
                                         sun_world_position);
   Position<World> const earth_world_position =
@@ -297,29 +287,24 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       earth_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::kMoon).displacement());
   Length const earth_moon = (moon_world_position - earth_world_position).Norm();
-  for (auto const segment : rendered_trajectory) {
+  for (auto const position : rendered_trajectory) {
     Length const satellite_earth =
-        (segment.begin - earth_world_position).Norm();
-    Length const satellite_moon = (segment.begin - moon_world_position).Norm();
+        (position - earth_world_position).Norm();
+    Length const satellite_moon = (position - moon_world_position).Norm();
     EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
     EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
     EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
-  }
-  // Check continuity.
-  for (std::size_t i = 0; i + 1 < rendered_trajectory.size(); ++i) {
-    EXPECT_THAT(rendered_trajectory[i].end,
-                Eq(rendered_trajectory[i + 1].begin));
   }
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
   for (std::size_t i = 0; i + 2 < rendered_trajectory.size(); ++i) {
     EXPECT_THAT(
-        (rendered_trajectory[i].begin - rendered_trajectory[i + 1].end).Norm(),
-        Gt(((rendered_trajectory[i].begin -
-                 rendered_trajectory[i + 1].begin).Norm() +
-            (rendered_trajectory[i].end -
-                 rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
+        (rendered_trajectory[i] - rendered_trajectory[i + 2]).Norm(),
+        Gt(((rendered_trajectory[i] - rendered_trajectory[i + 1]).Norm() +
+            (rendered_trajectory[i + 1] - rendered_trajectory[i + 2]).Norm()) /
+           1.5))
+        << i;
   }
 }
 
@@ -607,28 +592,21 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.SetPredictionSpeedTolerance(1 * Milli(Metre) / Second);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
-  RenderedTrajectory<World> rendered_prediction =
+  Positions<World> rendered_prediction =
       plugin.RenderedPrediction(satellite,
                                 World::origin);
-  EXPECT_EQ(15, rendered_prediction.size());
+  EXPECT_EQ(16, rendered_prediction.size());
   for (int i = 0; i < rendered_prediction.size(); ++i) {
-    auto const& segment = rendered_prediction[i];
-    EXPECT_THAT(
-        AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
-        Lt(0.5 * Milli(Metre)));
-    EXPECT_THAT(AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+    auto const& position = rendered_prediction[i];
+    EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
                 Lt(0.5 * Milli(Metre)));
     if (i >= 5) {
-      EXPECT_THAT(
-          AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
-          Gt(0.1 * Milli(Metre)));
-      EXPECT_THAT(
-          AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
-          Gt(0.1 * Milli(Metre)));
+      EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
+                  Gt(0.1 * Milli(Metre)));
     }
   }
   EXPECT_THAT(
-      AbsoluteError(rendered_prediction.back().end,
+      AbsoluteError(rendered_prediction.back(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));

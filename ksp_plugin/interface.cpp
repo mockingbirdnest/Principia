@@ -42,8 +42,9 @@ using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
-using ksp_plugin::LineSegment;
 using ksp_plugin::Part;
+using ksp_plugin::Positions;
+using ksp_plugin::World;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::OblateBody;
@@ -577,12 +578,12 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
   journal::Method<journal::RenderedVesselTrajectory> m({plugin,
                                                         vessel_guid,
                                                         sun_world_position});
-  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+  Positions<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<RenderedTrajectory<World>>(
+  return m.Return(new TypedIterator<Positions<World>>(
       std::move(rendered_trajectory)));
 }
 
@@ -592,12 +593,12 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
   journal::Method<journal::RenderedPrediction> m({plugin,
                                                   vessel_guid,
                                                   sun_world_position});
-  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+  Positions<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<RenderedTrajectory<World>>(
+  return m.Return(new TypedIterator<Positions<World>>(
       std::move(rendered_trajectory)));
 }
 
@@ -615,17 +616,17 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   Position<World> q_sun =
       World::origin +
       Displacement<World>(ToR3Element(sun_world_position) * Metre);
-  RenderedTrajectory<World> rendered_apoapsides;
-  RenderedTrajectory<World> rendered_periapsides;
+  Positions<World> rendered_apoapsides;
+  Positions<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   prediction.Fork(),
                                   prediction.End(),
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<RenderedTrajectory<World>>(
+  *apoapsides = new TypedIterator<Positions<World>>(
       std::move(rendered_apoapsides));
-  *periapsides = new TypedIterator<RenderedTrajectory<World>>(
+  *periapsides = new TypedIterator<Positions<World>>(
       std::move(rendered_periapsides));
   return m.Return();
 }

@@ -722,16 +722,16 @@ message IteratorDelete {
   required Out out = 2;
 }
 
-message IteratorGetXYZSegment {
+message IteratorGetXYZ {
   extend Method {
-    optional IteratorGetXYZSegment extension = 5085;
+    optional IteratorGetXYZ extension = 5085;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
                                    (is_subject) = true];
   }
   message Return {
-    required XYZSegment result = 1;
+    required XYZ result = 1;
   }
   required In in = 1;
   required Return return = 3;
