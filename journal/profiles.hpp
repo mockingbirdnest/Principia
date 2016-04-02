@@ -12,8 +12,8 @@ namespace principia {
 using base::not_null;
 using interface::AdaptiveStepParameters;
 using interface::Burn;
+using interface::Iterator;
 using interface::KSPPart;
-using interface::LineAndIterator;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;
 using interface::QP;

@@ -17,24 +17,46 @@ inline bool NaNIndependentEq(double const left, double const right) {
 
 }  // namespace
 
-template<typename T, template<typename T> class Container>
+template<typename T, template<typename...> class Container>
 TypedIterator<T, Container>::TypedIterator(Container<T> container)
     : container_(std::move(container)),
       iterator_(container_.begin()) {}
 
-template<typename T, template<typename T> class Container>
+template<typename T, template<typename...> class Container>
 T const& TypedIterator<T, Container>::Get() const {
+  CHECK(iterator_ != container_.end());
   return *iterator_;
 }
 
-template<typename T, template<typename T> class Container>
+template<typename T, template<typename...> class Container>
 bool TypedIterator<T, Container>::AtEnd() const {
   return iterator_ == container_.end();
 }
 
-template<typename T, template<typename T> class Container>
+template<typename T, template<typename...> class Container>
 void TypedIterator<T, Container>::Increment() {
   ++iterator_;
+}
+
+template<typename T, template<typename...> class Container>
+int TypedIterator<T, Container>::Size() const {
+  return container_.size();
+}
+
+template<typename T>
+std::unique_ptr<T> TakeOwnership(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T> owned_pointer(*pointer);
+  *pointer = nullptr;
+  return owned_pointer;
+}
+
+template<typename T>
+std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T[]> owned_pointer(*pointer);
+  *pointer = nullptr;
+  return owned_pointer;
 }
 
 inline bool operator==(AdaptiveStepParameters const& left,

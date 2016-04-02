@@ -32,9 +32,10 @@ class Iterator {
 
   virtual bool AtEnd() const = 0;
   virtual void Increment() = 0;
+  virtual int Size() const = 0;
 };
 
-template<typename T, template<typename T> class Container>
+template<typename T, template<typename...> class Container>
 class TypedIterator : public Iterator {
  public:
   explicit TypedIterator(Container<T> container);
@@ -43,11 +44,20 @@ class TypedIterator : public Iterator {
 
   bool AtEnd() const override;
   void Increment() override;
+  int Size() const override;
 
  private:
   Container<T> container_;
   typename Container<T>::const_iterator iterator_;
 };
+
+// Takes ownership of |**pointer| and returns it to the caller.  Nulls
+// |*pointer|.  |pointer| must not be null.  No transfer of ownership of
+// |*pointer|.
+template<typename T>
+std::unique_ptr<T> TakeOwnership(T** const pointer);
+template<typename T>
+std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer);
 
 #include "ksp_plugin/interface.generated.h"
 

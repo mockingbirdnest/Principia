@@ -67,25 +67,6 @@ namespace {
 int const kChunkSize = 64 << 10;
 int const kNumberOfChunks = 8;
 
-// Takes ownership of |**pointer| and returns it to the caller.  Nulls
-// |*pointer|.  |pointer| must not be null.  No transfer of ownership of
-// |*pointer|.
-template<typename T>
-std::unique_ptr<T> TakeOwnership(T** const pointer) {
-  CHECK_NOTNULL(pointer);
-  std::unique_ptr<T> owned_pointer(*pointer);
-  *pointer = nullptr;
-  return owned_pointer;
-}
-
-template<typename T>
-std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
-  CHECK_NOTNULL(pointer);
-  std::unique_ptr<T[]> owned_pointer(*pointer);
-  *pointer = nullptr;
-  return owned_pointer;
-}
-
 base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
     char const* const gravitational_parameter,
     char const* const mean_radius,
@@ -109,6 +90,13 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
     gravity_model.set_reference_radius(reference_radius);
   }
   return SolarSystem<Barycentric>::MakeMassiveBody(gravity_model);
+}
+
+TypedIterator<XYZSegment, std::vector> RenderedTrajectoryToXYZSegmentIterator(
+    RenderedTrajectory<World> const& rendered_trajectory) {
+  std::vector<XYZSegment> container;
+  for (auto const& line_segment : RenderedTrajectory<World>) {
+  }
 }
 
 }  // namespace
@@ -590,10 +578,9 @@ void principia__UpdatePrediction(Plugin const* const plugin,
 // |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
 // gets ownership of the result.  |frame| must not be null.  No transfer of
 // ownership of |frame|.
-LineAndIterator* principia__RenderedVesselTrajectory(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    XYZ const sun_world_position) {
+Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
+                                              char const* const vessel_guid,
+                                              XYZ const sun_world_position) {
   journal::Method<journal::RenderedVesselTrajectory> m({plugin,
                                                         vessel_guid,
                                                         sun_world_position});
@@ -602,16 +589,15 @@ LineAndIterator* principia__RenderedVesselTrajectory(
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
+  not_null<std::unique_ptr<Iterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
   return m.Return(result.release());
 }
 
-LineAndIterator* principia__RenderedPrediction(
-    Plugin* const plugin,
-    char const* const vessel_guid,
-    XYZ const sun_world_position) {
+Iterator* principia__RenderedPrediction(Plugin* const plugin,
+                                        char const* const vessel_guid,
+                                        XYZ const sun_world_position) {
   journal::Method<journal::RenderedPrediction> m({plugin,
                                                   vessel_guid,
                                                   sun_world_position});
@@ -620,7 +606,7 @@ LineAndIterator* principia__RenderedPrediction(
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<LineAndIterator>> result =
+  not_null<std::unique_ptr<Iterator>> result =
       make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
   return m.Return(result.release());
@@ -630,8 +616,8 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                           char const* const vessel_guid,
                                           int const celestial_index,
                                           XYZ const sun_world_position,
-                                          LineAndIterator** const apoapsides,
-                                          LineAndIterator** const periapsides) {
+                                          Iterator** const apoapsides,
+                                          Iterator** const periapsides) {
   journal::Method<journal::RenderedPredictionApsides> m(
       {plugin, vessel_guid, celestial_index, sun_world_position},
       {apoapsides, periapsides});
@@ -648,11 +634,11 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  not_null<std::unique_ptr<LineAndIterator>> owned_apoapsides =
+  not_null<std::unique_ptr<Iterator>> owned_apoapsides =
       make_not_null_unique<LineAndIterator>(std::move(rendered_apoapsides));
   owned_apoapsides->it = owned_apoapsides->rendered_trajectory.begin();
   *apoapsides = owned_apoapsides.release();
-  not_null<std::unique_ptr<LineAndIterator>> owned_periapsides =
+  not_null<std::unique_ptr<Iterator>> owned_periapsides =
       make_not_null_unique<LineAndIterator>(std::move(rendered_periapsides));
   owned_periapsides->it = owned_periapsides->rendered_trajectory.begin();
   *periapsides = owned_periapsides.release();
@@ -685,51 +671,6 @@ bool principia__HasVessel(Plugin* const plugin,
                           char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   return m.Return(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid));
-}
-
-// Returns |line_and_iterator->rendered_trajectory.size()|.
-// |line_and_iterator| must not be null.  No transfer of ownership.
-int principia__NumberOfSegments(
-    LineAndIterator const* const line_and_iterator) {
-  journal::Method<journal::NumberOfSegments> m({line_and_iterator});
-  return m.Return(CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size());
-}
-
-// Returns the |XYZSegment| corresponding to the |LineSegment|
-// |*line_and_iterator->it|, then increments |line_and_iterator->it|.
-// |line_and_iterator| must not be null.  |line_and_iterator->it| must not be
-// the end of |line_and_iterator->rendered_trajectory|.  No transfer of
-// ownership.
-XYZSegment principia__FetchAndIncrement(
-    LineAndIterator* const line_and_iterator) {
-  journal::Method<journal::FetchAndIncrement> m({line_and_iterator});
-  CHECK_NOTNULL(line_and_iterator);
-  CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
-  LineSegment<World> const result = *line_and_iterator->it;
-  ++line_and_iterator->it;
-  return m.Return({ToXYZ((result.begin - World::origin).coordinates() / Metre),
-                   ToXYZ((result.end - World::origin).coordinates() / Metre)});
-}
-
-// Returns |true| if and only if |line_and_iterator->it| is the end of
-// |line_and_iterator->rendered_trajectory|.
-// |line_and_iterator| must not be null.  No transfer of ownership.
-bool principia__AtEnd(LineAndIterator const* const line_and_iterator) {
-  journal::Method<journal::AtEnd> m({line_and_iterator});
-  CHECK_NOTNULL(line_and_iterator);
-  return m.Return(line_and_iterator->it ==
-                  line_and_iterator->rendered_trajectory.end());
-}
-
-// Deletes and nulls |*line_and_iterator|.
-// |line_and_iterator| must not be null.  No transfer of ownership of
-// |*line_and_iterator|, takes ownership of |**line_and_iterator|.
-void principia__DeleteLineAndIterator(
-    LineAndIterator** const line_and_iterator) {
-  journal::Method<journal::DeleteLineAndIterator> m({line_and_iterator},
-                                                    {line_and_iterator});
-  TakeOwnership(line_and_iterator);
-  return m.Return();
 }
 
 void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
