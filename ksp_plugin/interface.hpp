@@ -36,8 +36,7 @@ class Iterator {
   virtual int Size() const = 0;
 };
 
-// A concrete, typed subclass of |Iterator|.  It holds a |Container| of elements
-// of type |Internal|.
+// A concrete, typed subclass of |Iterator| which holds a |Container|.
 template<typename Container>
 class TypedIterator : public Iterator {
  public:
