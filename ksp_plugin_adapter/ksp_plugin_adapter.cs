@@ -727,7 +727,6 @@ public partial class PrincipiaPluginAdapter
     if (display_patched_conics_) {
       if (!vessel.patchedConicRenderer.enabled) {
         vessel.patchedConicRenderer.enabled = true;
-        vessel.orbitTargeter.enabled = true;
       }
     } else {
       if (vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
@@ -738,7 +737,6 @@ public partial class PrincipiaPluginAdapter
         vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
       }
       vessel.patchedConicRenderer.enabled = false;
-      vessel.orbitTargeter.enabled = false;
       foreach (PatchRendering patch_rendering in
                vessel.patchedConicRenderer.patchRenders) {
         patch_rendering.DestroyUINodes();
