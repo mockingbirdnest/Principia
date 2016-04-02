@@ -26,40 +26,27 @@ using ksp_plugin::World;
 
 namespace interface {
 
-class IteratorBase {
+class Iterator {
  public:
-  explicit IteratorBase(std::type_info const& type_info);
-  virtual ~IteratorBase() = default;
+  virtual ~Iterator() = default;
 
   virtual bool AtEnd() const = 0;
   virtual void Increment() = 0;
-
- protected:
-  void Check(std::type_info const& type_info);
-
- private:
-  std::type_index type_index_;
 };
 
-template <typename T, template <typename T> Container>
-class Iterator {
+template<typename T, template<typename T> class Container>
+class TypedIterator : public Iterator {
  public:
-  explicit Iterator(Container<T> container);
+  explicit TypedIterator(Container<T> container);
 
-  bool AtEnd() const;
-  T const Get() const;
-  void Increment();
+  T const& Get() const;
+
+  bool AtEnd() const override;
+  void Increment() override;
 
  private:
   Container<T> container_;
   typename Container<T>::const_iterator iterator_;
-};
-
-struct LineAndIterator {
-  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
-      : rendered_trajectory(rendered_trajectory) {}
-  RenderedTrajectory<World> const rendered_trajectory;
-  RenderedTrajectory<World>::const_iterator it;
 };
 
 #include "ksp_plugin/interface.generated.h"

@@ -9,8 +9,32 @@
 namespace principia {
 namespace interface {
 
+namespace {
+
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
+}
+
+}  // namespace
+
+template<typename T, template<typename T> class Container>
+TypedIterator<T, Container>::TypedIterator(Container<T> container)
+    : container_(std::move(container)),
+      iterator_(container_.begin()) {}
+
+template<typename T, template<typename T> class Container>
+T const& TypedIterator<T, Container>::Get() const {
+  return *iterator_;
+}
+
+template<typename T, template<typename T> class Container>
+bool TypedIterator<T, Container>::AtEnd() const {
+  return iterator_ == container_.end();
+}
+
+template<typename T, template<typename T> class Container>
+void TypedIterator<T, Container>::Increment() {
+  ++iterator_;
 }
 
 inline bool operator==(AdaptiveStepParameters const& left,
