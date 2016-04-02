@@ -40,7 +40,7 @@ Method<Profile>::Method(typename P::Out const& out) {
 }
 
 template<typename Profile>
-template<typename P, typename, typename>
+template<typename P, typename>
 Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
   if (Recorder::active_recorder_ != nullptr) {
     message_ = std::make_unique<typename Profile::Message>();
@@ -65,6 +65,7 @@ Method<Profile>::~Method() {
 }
 
 template<typename Profile>
+template<typename P, typename>
 void Method<Profile>::Return() {
   CHECK(!returned_);
   returned_ = true;
