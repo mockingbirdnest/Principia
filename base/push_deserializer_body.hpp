@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "glog/logging.h"
+#include "google/protobuf/io/coded_stream_inl.h"
 
 namespace principia {
 
@@ -99,8 +100,14 @@ inline void PushDeserializer::Start(
     std::function<void(google::protobuf::Message const&)> done) {
   CHECK(thread_ == nullptr);
   message_ = std::move(message);
-  thread_ = std::make_unique<std::thread>([this, done](){
-    CHECK(message_->ParseFromZeroCopyStream(&stream_));
+  thread_ = std::make_unique<std::thread>([this, done]() {
+    // It is a well-known annoyance that, in order to set the total byte limit,
+    // we have to copy code from MessageLite::ParseFromZeroCopyStream.  Blame
+    // Kenton.
+    google::protobuf::io::CodedInputStream decoder(&stream_);
+    decoder.SetTotalBytesLimit(1 << 29, 1<< 29);
+    CHECK(message_->ParseFromCodedStream(&decoder));
+    CHECK(decoder.ConsumedEntireMessage());
 
     // Run any remainining chunk callback.
     std::unique_lock<std::mutex> l(lock_);
