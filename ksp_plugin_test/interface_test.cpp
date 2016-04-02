@@ -581,7 +581,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(iterator, IsNull());
 }
 
-TEST_F(InterfaceTest, LineAndIterator) {
+TEST_F(InterfaceTest, Iterator) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;

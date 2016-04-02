@@ -582,7 +582,7 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<LineSegment<World>, std::vector>(
+  return m.Return(new TypedIterator<RenderedTrajectory<World>>(
       std::move(rendered_trajectory)));
 }
 
@@ -597,7 +597,7 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<LineSegment<World>, std::vector>(
+  return m.Return(new TypedIterator<RenderedTrajectory<World>>(
       std::move(rendered_trajectory)));
 }
 
@@ -623,9 +623,9 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<LineSegment<World>, std::vector>(
+  *apoapsides = new TypedIterator<RenderedTrajectory<World>>(
       std::move(rendered_apoapsides));
-  *periapsides = new TypedIterator<LineSegment<World>, std::vector>(
+  *periapsides = new TypedIterator<RenderedTrajectory<World>>(
       std::move(rendered_periapsides));
   return m.Return();
 }

@@ -38,23 +38,25 @@ class Iterator {
 
 // A concrete, typed subclass of |Iterator|.  It holds a |Container| of elements
 // of type |Internal|.
-template<typename Internal, template<typename...> class Container>
+template<typename Container>
 class TypedIterator : public Iterator {
  public:
-  explicit TypedIterator(Container<Internal> container);
+  explicit TypedIterator(Container container);
 
   // Obtains the element denoted by this iterator and converts it to some
-  // |External| type using |convert|.
-  template<typename External>
-  External Get(std::function<External(Internal const&)> const& convert) const;
+  // |Interchange| type using |convert|.
+  template <typename Interchange>
+  Interchange Get(
+      std::function<Interchange(typename Container::value_type const&)> const&
+          convert) const;
 
   bool AtEnd() const override;
   void Increment() override;
   int Size() const override;
 
  private:
-  Container<Internal> container_;
-  typename Container<Internal>::const_iterator iterator_;
+  Container container_;
+  typename Container::const_iterator iterator_;
 };
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls

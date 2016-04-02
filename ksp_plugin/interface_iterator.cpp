@@ -32,9 +32,8 @@ void principia__IteratorIncrement(Iterator* const iterator) {
 XYZSegment principia__IteratorGetXYZSegment(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetXYZSegment> m({iterator});
   CHECK_NOTNULL(iterator);
-  auto const* typed_iterator =
-      dynamic_cast<TypedIterator<LineSegment<World>, std::vector> const*>(
-          iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<RenderedTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<XYZSegment>(
       [](LineSegment<World> const& line_segment) -> XYZSegment {
     return {ToXYZ((line_segment.begin - World::origin).coordinates() / Metre),

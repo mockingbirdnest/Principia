@@ -17,31 +17,32 @@ inline bool NaNIndependentEq(double const left, double const right) {
 
 }  // namespace
 
-template<typename Internal, template<typename...> class Container>
-TypedIterator<Internal, Container>::TypedIterator(Container<Internal> container)
+template<typename Container>
+TypedIterator<Container>::TypedIterator(Container container)
     : container_(std::move(container)),
       iterator_(container_.begin()) {}
 
-template<typename Internal, template<typename...> class Container>
-template<typename External>
-External TypedIterator<Internal, Container>::Get(
-    std::function<External(Internal const&)> const& convert) const {
+template <typename Container>
+template <typename Interchange>
+Interchange TypedIterator<Container>::Get(
+    std::function<Interchange(typename Container::value_type const&)> const&
+        convert) const {
   CHECK(iterator_ != container_.end());
   return convert(*iterator_);
 }
 
-template<typename Internal, template<typename...> class Container>
-bool TypedIterator<Internal, Container>::AtEnd() const {
+template<typename Container>
+bool TypedIterator<Container>::AtEnd() const {
   return iterator_ == container_.end();
 }
 
-template<typename Internal, template<typename...> class Container>
-void TypedIterator<Internal, Container>::Increment() {
+template<typename Container>
+void TypedIterator<Container>::Increment() {
   ++iterator_;
 }
 
-template<typename Internal, template<typename...> class Container>
-int TypedIterator<Internal, Container>::Size() const {
+template<typename Container>
+int TypedIterator<Container>::Size() const {
   return container_.size();
 }
 
