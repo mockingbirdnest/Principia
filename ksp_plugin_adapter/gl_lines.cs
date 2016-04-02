@@ -98,16 +98,14 @@ internal static class GLLines {
   public static void RenderAndDeleteTrajectory(IntPtr trajectory_iterator,
                                                UnityEngine.Color colour) {
     try {
-      XYZSegment segment;
-
       UnityEngine.GL.Color(colour);
 
-      while (!trajectory_iterator.AtEnd()) {
-        segment = trajectory_iterator.FetchAndIncrement();
-        AddSegment(segment);
+      for (; !trajectory_iterator.IteratorAtEnd();
+           trajectory_iterator.IteratorIncrement()) {
+        AddSegment(trajectory_iterator.IteratorGetXYZSegment());
       }
     } finally {
-      Interface.DeleteLineAndIterator(ref trajectory_iterator);
+      Interface.IteratorDelete(ref trajectory_iterator);
     }
   }
 

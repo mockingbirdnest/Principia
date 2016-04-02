@@ -4,8 +4,12 @@
 
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
+#include "ksp_plugin/plugin.hpp"
 
 namespace principia {
+
+using ksp_plugin::LineSegment;
+
 namespace interface {
 
 bool principia__IteratorAtEnd(Iterator const* const iterator) {
@@ -25,16 +29,20 @@ void principia__IteratorIncrement(Iterator* const iterator) {
   return m.Return();
 }
 
-XYZSegment CDECL
-principia__IteratorGetXYZSegment(Iterator const* const iterator) {
+XYZSegment principia__IteratorGetXYZSegment(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetXYZSegment> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const* typed_iterator =
-      dynamic_cast<TypedIterator<XYZSegment, std::vector> const*>(iterator);
-  return m.Return(typed_iterator->Get());
+      dynamic_cast<TypedIterator<LineSegment<World>, std::vector> const*>(
+          iterator);
+  return m.Return(typed_iterator->Get<XYZSegment>(
+      [](LineSegment<World> const& line_segment) -> XYZSegment {
+    return {ToXYZ((line_segment.begin - World::origin).coordinates() / Metre),
+            ToXYZ((line_segment.end - World::origin).coordinates() / Metre)};
+  }));
 }
 
-int principia__IteratorSize(Iterator* const iterator) {
+int principia__IteratorSize(Iterator const* const iterator) {
   journal::Method<journal::IteratorSize> m({iterator});
   return m.Return(CHECK_NOTNULL(iterator)->Size());
 }

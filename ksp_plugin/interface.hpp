@@ -26,6 +26,7 @@ using ksp_plugin::World;
 
 namespace interface {
 
+// A wrapper for a container and an iterator into that container.
 class Iterator {
  public:
   virtual ~Iterator() = default;
@@ -35,20 +36,25 @@ class Iterator {
   virtual int Size() const = 0;
 };
 
-template<typename T, template<typename...> class Container>
+// A concrete, typed subclass of |Iterator|.  It holds a |Container| of elements
+// of type |Internal|.
+template<typename Internal, template<typename...> class Container>
 class TypedIterator : public Iterator {
  public:
-  explicit TypedIterator(Container<T> container);
+  explicit TypedIterator(Container<Internal> container);
 
-  T const& Get() const;
+  // Obtains the element denoted by this iterator and converts it to some
+  // |External| type using |convert|.
+  template<typename External>
+  External Get(std::function<External(Internal const&)> const& convert) const;
 
   bool AtEnd() const override;
   void Increment() override;
   int Size() const override;
 
  private:
-  Container<T> container_;
-  typename Container<T>::const_iterator iterator_;
+  Container<Internal> container_;
+  typename Container<Internal>::const_iterator iterator_;
 };
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls

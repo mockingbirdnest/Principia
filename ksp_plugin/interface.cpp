@@ -92,13 +92,6 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
   return SolarSystem<Barycentric>::MakeMassiveBody(gravity_model);
 }
 
-TypedIterator<XYZSegment, std::vector> RenderedTrajectoryToXYZSegmentIterator(
-    RenderedTrajectory<World> const& rendered_trajectory) {
-  std::vector<XYZSegment> container;
-  for (auto const& line_segment : RenderedTrajectory<World>) {
-  }
-}
-
 }  // namespace
 
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
@@ -589,10 +582,8 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<Iterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return m.Return(result.release());
+  return m.Return(new TypedIterator<LineSegment<World>, std::vector>(
+      std::move(rendered_trajectory)));
 }
 
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
@@ -606,10 +597,8 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
           vessel_guid,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  not_null<std::unique_ptr<Iterator>> result =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
-  result->it = result->rendered_trajectory.begin();
-  return m.Return(result.release());
+  return m.Return(new TypedIterator<LineSegment<World>, std::vector>(
+      std::move(rendered_trajectory)));
 }
 
 void principia__RenderedPredictionApsides(Plugin const* const plugin,
@@ -634,14 +623,10 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  not_null<std::unique_ptr<Iterator>> owned_apoapsides =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_apoapsides));
-  owned_apoapsides->it = owned_apoapsides->rendered_trajectory.begin();
-  *apoapsides = owned_apoapsides.release();
-  not_null<std::unique_ptr<Iterator>> owned_periapsides =
-      make_not_null_unique<LineAndIterator>(std::move(rendered_periapsides));
-  owned_periapsides->it = owned_periapsides->rendered_trajectory.begin();
-  *periapsides = owned_periapsides.release();
+  *apoapsides = new TypedIterator<LineSegment<World>, std::vector>(
+      std::move(rendered_apoapsides));
+  *periapsides = new TypedIterator<LineSegment<World>, std::vector>(
+      std::move(rendered_periapsides));
   return m.Return();
 }
 
