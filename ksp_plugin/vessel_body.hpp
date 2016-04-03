@@ -255,10 +255,8 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
             message.prediction_adaptive_step_parameters()));
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(), {&vessel->prolongation_});
-    // TODO(phl): NewForkWithoutCopy.
-    vessel->prediction_ = vessel->history_->NewForkWithCopy(
+    vessel->prediction_ = vessel->history_->NewForkWithoutCopy(
         Instant::ReadFromMessage(message.prediction_fork_time()));
-    vessel->prediction_->ForgetAfter(vessel->prediction_->Fork().time());
     vessel->FlowPrediction(
         Instant::ReadFromMessage(message.prediction_last_time()));
     if (message.has_flight_plan()) {

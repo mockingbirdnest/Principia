@@ -97,6 +97,10 @@ class DiscreteTrajectory
   // of this trajectory, and must be at or after the fork time, if any.
   not_null<DiscreteTrajectory<Frame>*> NewForkWithCopy(Instant const& time);
 
+  // Same as above, except that the parent trajectory after the fork point is
+  // not copied.
+  not_null<DiscreteTrajectory<Frame>*> NewForkWithoutCopy(Instant const& time);
+
   // Same as above, except that the fork is created at the last point of the
   // trajectory.
   not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
