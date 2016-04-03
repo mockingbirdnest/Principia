@@ -286,41 +286,38 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
     time = internal::ForkableTraits<Tr4jectory>::time(timeline_it);
   }
   auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
-  typename Children::const_iterator const_child_it = child_it;
 
   // Now set the members of the child object.
-  std::unique_ptr<Tr4jectory> const& child_forkable = const_child_it->second;
+  std::unique_ptr<Tr4jectory> const& child_forkable = child_it->second;
   child_forkable->parent_ = that();
-  child_forkable->position_in_parent_children_ = const_child_it;
+  child_forkable->position_in_parent_children_ = child_it;
   child_forkable->position_in_parent_timeline_ = timeline_it;
 
   return child_forkable.get();
 }
 
 template <typename Tr4jectory, typename It3rator>
-typename Forkable<Tr4jectory, It3rator>::TimelineConstIterator
-Forkable<Tr4jectory, It3rator>::
-    DetachForkAndReturningPositionInParentTimeline() {
+void Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   CHECK(!is_root());
 
-  // Find the ancestor timeline that determines the fork time.
-  not_null<Tr4jectory const*> ancestor = that();
-  TimelineConstIterator position_in_ancestor_timeline;
-  do {
-    position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
-    ancestor = ancestor->parent_;
-  } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
-           ancestor->parent_ != nullptr);
-  CHECK(position_in_ancestor_timeline != ancestor->timeline_end());
+  // The children whose |position_in_parent_timeline_| was at |end()| are those
+  // whose fork time was not in this object's timeline.  The caller must have
+  // ensured that now it is, so point them to the beginning of this timeline.
+  for (auto const& pair : children_) {
+    std::unique_ptr<Tr4jectory> const& child = pair.second;
+    if (child->position_in_parent_timeline_ == timeline_end()) {
+      child->position_in_parent_timeline_ = timeline_begin();
+    }
+  }
 
   // Remove this trajectory from the children of its parent.
+  (*position_in_parent_children_)->second.release();
   parent_->children_.erase(*position_in_parent_children_);
 
   // Clear all the pointers to the parent.
   parent_ = nullptr;
   position_in_parent_children_ = std::experimental::nullopt;
   position_in_parent_timeline_ = std::experimental::nullopt;
-  return position_in_ancestor_timeline;
 }
 
 template<typename Tr4jectory, typename It3rator>

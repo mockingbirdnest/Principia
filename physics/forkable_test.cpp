@@ -46,9 +46,11 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
   FakeTrajectory() = default;
 
+  void push_front(Instant const& time);
   void push_back(Instant const& time);
 
   using Forkable<FakeTrajectory, Iterator>::NewFork;
+  using Forkable<FakeTrajectory, Iterator>::DetachForkWithCopiedBegin;
   using Forkable<FakeTrajectory, Iterator>::DeleteAllForksAfter;
   using Forkable<FakeTrajectory, Iterator>::CheckNoForksBefore;
 
@@ -89,6 +91,10 @@ not_null<FakeTrajectoryIterator const*> FakeTrajectoryIterator::that() const {
 }
 
 }  // namespace internal
+
+void FakeTrajectory::push_front(Instant const& time) {
+  timeline_.push_front(time);
+}
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
@@ -280,6 +286,46 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork1);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
+}
+
+TEST_F(ForkableDeathTest, DetachForkWithCopiedBeginError) {
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    trajectory_.DetachForkWithCopiedBegin();
+  }, "!is_root");
+}
+
+TEST_F(ForkableTest, DetachForkWithCopiedBeginSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  not_null<FakeTrajectory*> const fork1 =
+      trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  FakeTrajectory* fork3 = fork1->NewFork(fork1->timeline_find(t2_));
+  fork1->push_back(t4_);
+  
+  fork1->push_front(t2_);
+  fork1->DetachForkWithCopiedBegin();
+  EXPECT_TRUE(fork1->is_root());
+  auto times = Times(fork1);
+  EXPECT_THAT(times, ElementsAre(t2_, t4_));
+  times = Times(fork2);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_));
+  times = Times(fork3);
+  EXPECT_THAT(times, ElementsAre(t2_));
+
+  fork2->push_front(t2_);
+  fork2->DetachForkWithCopiedBegin();
+  EXPECT_TRUE(fork2->is_root());
+  times = Times(fork2);
+  EXPECT_THAT(times, ElementsAre(t2_));
+
+  fork3->push_front(t2_);
+  fork3->DetachForkWithCopiedBegin();
+  EXPECT_TRUE(fork3->is_root());
+  times = Times(fork3);
+  EXPECT_THAT(times, ElementsAre(t2_));
 }
 
 TEST_F(ForkableDeathTest, DeleteAllForksAfterError) {

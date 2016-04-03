@@ -119,11 +119,18 @@ DiscreteTrajectory<Frame>::NewForkAtLast() {
 template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::DetachFork() {
-  auto const parent_timeline_it =
-      DetachForkAndReturningPositionInParentTimeline();
-  auto const it = timeline_.emplace_hint(timeline_.begin(),
-                                         *parent_timeline_it);
-  return make_not_null_unique<DiscreteTrajectory<Frame>>(this);
+  CHECK(!this->is_root());
+
+  // Insert a new point in the timeline for the fork time.  It should go at the
+  // beginning of the timeline.
+  auto const fork_it = this->Fork();
+  auto const begin_it = timeline_.emplace_hint(
+      timeline_.begin(), fork_it.time(), fork_it.degrees_of_freedom());
+  CHECK(begin_it == timeline_.begin());
+
+  // Detach this trajectory and tell the caller that it owns the pieces.
+  this->DetachForkWithCopiedBegin();
+  return std::unique_ptr<DiscreteTrajectory<Frame>>(this);
 }
 
 template<typename Frame>

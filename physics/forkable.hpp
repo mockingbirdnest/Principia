@@ -175,9 +175,11 @@ class Forkable {
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
   // This object must not be a root.  It is detached from its parent and becomes
-  // a root.  An iterator to the point where it was attached in its ancestor's
-  // timeline is returned.  That iterator is never at |end()|.
-  TimelineConstIterator DetachForkAndReturningPositionInParentTimeline();
+  // a root.  All the children which were fork at this object's fork time are
+  // changed to be forked at the beginning of this object's timeline.  This
+  // requires the caller to ensure that this object's timeline is not empty and
+  // that its beginning properly represents the fork time.
+  void DetachForkWithCopiedBegin();
 
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.
@@ -215,7 +217,7 @@ class Forkable {
   Tr4jectory* parent_ = nullptr;
 
   // This iterator is never at |end()|.
-  std::experimental::optional<typename Children::const_iterator>
+  std::experimental::optional<typename Children::iterator>
       position_in_parent_children_;
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
