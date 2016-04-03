@@ -14,8 +14,8 @@ message Celestial {
 
 // Pre-Буняковский.
 message HistoryAndProlongation {
-  required Trajectory history = 1;
-  required Trajectory.Pointer prolongation = 2;
+  required DiscreteTrajectory history = 1;
+  required DiscreteTrajectory.Pointer prolongation = 2;
 }
 
 message Part {
@@ -46,7 +46,7 @@ message FlightPlan {
   optional Quantity length_integration_tolerance = 4;
   optional Quantity speed_integration_tolerance = 5;
   optional AdaptiveStepSizeIntegrator integrator = 6;
-  repeated Trajectory.Pointer segment = 7;
+  repeated DiscreteTrajectory.Pointer segment = 7;
   reserved 9, 10;
   reserved "anomalous_segments", "max_steps";
 }
@@ -68,7 +68,7 @@ message PhysicsBubble {
     repeated PartIdAndPart part = 1;
     repeated GuidAndPartIds vessel = 2;
     required Pair centre_of_mass = 3;
-    required Trajectory centre_of_mass_trajectory = 4;
+    required DiscreteTrajectory centre_of_mass_trajectory = 4;
     repeated GuidAndDegreesOfFreedom from_centre_of_mass = 5;
     required Multivector displacement_correction = 6;
     required Multivector velocity_correction = 7;
@@ -116,7 +116,7 @@ message Plugin {
 message Vessel {
   required MasslessBody body = 1;
   optional FlightPlan flight_plan = 4;
-  optional Trajectory history = 6;  // required
+  optional DiscreteTrajectory history = 6;  // required
   optional Ephemeris.AdaptiveStepParameters
       prolongation_adaptive_step_parameters = 7;  // required
   optional Ephemeris.FixedStepParameters
@@ -128,9 +128,9 @@ message Vessel {
   optional bool is_dirty = 11 [default = false];  // required
 
   // Pre-Буняковский.
-  optional Trajectory.Pointer prediction = 5;
+  optional DiscreteTrajectory.Pointer prediction = 5;
   oneof trajectory_bundle {
     HistoryAndProlongation history_and_prolongation = 2;
-    Trajectory owned_prolongation = 3;
+    DiscreteTrajectory owned_prolongation = 3;
   }
 }

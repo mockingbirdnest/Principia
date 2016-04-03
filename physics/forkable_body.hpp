@@ -256,7 +256,7 @@ int Forkable<Tr4jectory, It3rator>::Size() const {
 
 template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
-    serialization::Trajectory::Pointer const& message,
+    serialization::DiscreteTrajectory::Pointer const& message,
     not_null<Tr4jectory*> const trajectory) {
   CHECK(trajectory->is_root());
   not_null<Tr4jectory*> descendant = trajectory;
@@ -348,10 +348,10 @@ void Forkable<Tr4jectory, It3rator>::CheckNoForksBefore(Instant const& time) {
 
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message,
+    not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<Tr4jectory*>& forks) const {
   std::experimental::optional<Instant> last_instant;
-  serialization::Trajectory::Litter* litter = nullptr;
+  serialization::DiscreteTrajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     std::unique_ptr<Tr4jectory> const& child = pair.second;
@@ -378,14 +378,16 @@ void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
 
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
-    serialization::Trajectory const& message,
+    serialization::DiscreteTrajectory const& message,
     std::vector<Tr4jectory**> const& forks) {
   // There were no fork positions prior to Буняковский.
   bool const has_fork_position = message.fork_position_size() > 0;
   std::int32_t index = 0;
-  for (serialization::Trajectory::Litter const& litter : message.children()) {
+  for (serialization::DiscreteTrajectory::Litter const& litter :
+           message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
-    for (serialization::Trajectory const& child : litter.trajectories()) {
+    for (serialization::DiscreteTrajectory const& child :
+             litter.trajectories()) {
       not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
       fork->FillSubTreeFromMessage(child, forks);
       if (has_fork_position) {

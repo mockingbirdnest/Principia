@@ -564,7 +564,7 @@ TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
     massive_trajectory_->Append(t1_, d1_);
     not_null<DiscreteTrajectory<World>*> const fork =
         massive_trajectory_->NewForkWithCopy(t1_);
-    serialization::Trajectory message;
+    serialization::DiscreteTrajectory message;
     fork->WriteToMessage(&message, /*forks=*/{});
   }, "is_root");
 }
@@ -586,8 +586,8 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   fork3->Append(t4_, d4_);
   not_null<DiscreteTrajectory<World>*> const fork4 =
       fork0->NewForkWithCopy(t4_);
-  serialization::Trajectory message;
-  serialization::Trajectory reference_message;
+  serialization::DiscreteTrajectory message;
+  serialization::DiscreteTrajectory reference_message;
 
   // Don't serialize |fork0| and |fork4|.
   massive_trajectory_->WriteToMessage(&message, {fork1, fork3, fork2});

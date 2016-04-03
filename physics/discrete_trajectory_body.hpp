@@ -170,7 +170,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    not_null<serialization::Trajectory*> const message,
+    not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*> const& forks)
     const {
   LOG(INFO) << __FUNCTION__;
@@ -192,7 +192,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
-    serialization::Trajectory const& message,
+    serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   CHECK(std::all_of(forks.begin(),
@@ -246,7 +246,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message,
+    not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
   for (auto const& pair : timeline_) {
@@ -261,7 +261,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
-    serialization::Trajectory const& message,
+    serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   for (auto timeline_it = message.timeline().begin();
        timeline_it != message.timeline().end();

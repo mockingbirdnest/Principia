@@ -128,7 +128,7 @@ class DiscreteTrajectory
   // They must be descended from this trajectory.  The pointers in |forks| may
   // be null at entry.
   void WriteToMessage(
-      not_null<serialization::Trajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> const message,
       std::vector<DiscreteTrajectory<Frame>*> const& forks)
       const;
 
@@ -137,7 +137,7 @@ class DiscreteTrajectory
   // deserialization.  All pointers designated by the pointers in |forks| must
   // be null at entry; they may be null at exit.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
-      serialization::Trajectory const& message,
+      serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
  protected:
@@ -155,11 +155,11 @@ class DiscreteTrajectory
  private:
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> const message,
       std::vector<DiscreteTrajectory<Frame>*>& forks) const;
 
   void FillSubTreeFromMessage(
-      serialization::Trajectory const& message,
+      serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   Timeline timeline_;

@@ -348,7 +348,7 @@ TEST_F(FlightPlanTest, Serialization) {
 
   // We need a copy of |root_|.  Might as well do the copy using serialization,
   // since it's how it works in real life.
-  serialization::Trajectory serialized_trajectory;
+  serialization::DiscreteTrajectory serialized_trajectory;
   root_.WriteToMessage(&serialized_trajectory, /*forks=*/{});
   auto const root_read =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(serialized_trajectory,

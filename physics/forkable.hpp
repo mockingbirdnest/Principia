@@ -144,7 +144,7 @@ class Forkable {
 
   // |trajectory| must be a root.
   static not_null<Tr4jectory*> ReadPointerFromMessage(
-      serialization::Trajectory::Pointer const& message,
+      serialization::DiscreteTrajectory::Pointer const& message,
       not_null<Tr4jectory*> const trajectory);
 
  protected:
@@ -190,10 +190,10 @@ class Forkable {
   // This trajectory need not be a root.  As forks are encountered during tree
   // traversal their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> const message,
       std::vector<Tr4jectory*>& forks) const;
 
-  void FillSubTreeFromMessage(serialization::Trajectory const& message,
+  void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
                               std::vector<Tr4jectory**> const& forks);
 
  private:

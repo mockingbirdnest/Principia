@@ -11,10 +11,10 @@
 
 namespace principia {
 
+using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
-using serialization::Trajectory;
 using ::std::placeholders::_1;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
@@ -36,12 +36,13 @@ class PullSerializerTest : public ::testing::Test {
         stream_(Bytes(data_, kSmallChunkSize),
                 std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {}
 
-  static not_null<std::unique_ptr<Trajectory const>> BuildTrajectory() {
-    not_null<std::unique_ptr<Trajectory>> result =
-        make_not_null_unique<Trajectory>();
+  static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
+    not_null<std::unique_ptr<DiscreteTrajectory>> result =
+        make_not_null_unique<DiscreteTrajectory>();
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
-      Trajectory::InstantaneousDegreesOfFreedom* idof = result->add_timeline();
+      DiscreteTrajectory::InstantaneousDegreesOfFreedom* idof =
+          result->add_timeline();
       Point* instant = idof->mutable_instant();
       Quantity* scalar = instant->mutable_scalar();
       scalar->set_dimensions(3);
@@ -117,7 +118,7 @@ TEST_F(PullSerializerTest, SerializationSizes) {
 }
 
 TEST_F(PullSerializerTest, SerializationThreading) {
-  Trajectory read_trajectory;
+  DiscreteTrajectory read_trajectory;
   auto const trajectory = BuildTrajectory();
   int const byte_size = trajectory->ByteSize();
   auto expected_serialized_trajectory =
