@@ -97,9 +97,18 @@ class DiscreteTrajectory
   // of this trajectory, and must be at or after the fork time, if any.
   not_null<DiscreteTrajectory<Frame>*> NewForkWithCopy(Instant const& time);
 
+  // Same as above, except that the parent trajectory after the fork point is
+  // not copied.
+  not_null<DiscreteTrajectory<Frame>*> NewForkWithoutCopy(Instant const& time);
+
   // Same as above, except that the fork is created at the last point of the
   // trajectory.
   not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
+
+  // This object must not be a root.  It is detached from its parent and becomes
+  // a root.  A point corresponding to the fork point is prepended to this
+  // object (so it's never empty) and an owning pointer to it is returned.
+  not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> DetachFork();
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -119,7 +128,7 @@ class DiscreteTrajectory
   // They must be descended from this trajectory.  The pointers in |forks| may
   // be null at entry.
   void WriteToMessage(
-      not_null<serialization::Trajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> const message,
       std::vector<DiscreteTrajectory<Frame>*> const& forks)
       const;
 
@@ -128,7 +137,7 @@ class DiscreteTrajectory
   // deserialization.  All pointers designated by the pointers in |forks| must
   // be null at entry; they may be null at exit.
   static not_null<std::unique_ptr<DiscreteTrajectory>> ReadFromMessage(
-      serialization::Trajectory const& message,
+      serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
  protected:
@@ -146,11 +155,11 @@ class DiscreteTrajectory
  private:
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> const message,
       std::vector<DiscreteTrajectory<Frame>*>& forks) const;
 
   void FillSubTreeFromMessage(
-      serialization::Trajectory const& message,
+      serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   Timeline timeline_;

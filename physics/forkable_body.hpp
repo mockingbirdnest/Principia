@@ -241,7 +241,7 @@ It3rator Forkable<Tr4jectory, It3rator>::Fork() const {
     position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
     ancestor = ancestor->parent_;
   } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
-            ancestor->parent_ != nullptr);
+           ancestor->parent_ != nullptr);
   return Wrap(ancestor, position_in_ancestor_timeline);
 }
 
@@ -256,7 +256,7 @@ int Forkable<Tr4jectory, It3rator>::Size() const {
 
 template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
-    serialization::Trajectory::Pointer const& message,
+    serialization::DiscreteTrajectory::Pointer const& message,
     not_null<Tr4jectory*> const trajectory) {
   CHECK(trajectory->is_root());
   not_null<Tr4jectory*> descendant = trajectory;
@@ -277,7 +277,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
 template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
     TimelineConstIterator const& timeline_it) {
-  // First create a child in the multimap.  To do th
+  // First create a child in the multimap.
   Instant time;
   if (timeline_it == timeline_end()) {
     CHECK(!is_root());
@@ -286,15 +286,41 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
     time = internal::ForkableTraits<Tr4jectory>::time(timeline_it);
   }
   auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
-  typename Children::const_iterator const_child_it = child_it;
 
   // Now set the members of the child object.
-  std::unique_ptr<Tr4jectory> const& child_forkable = const_child_it->second;
+  std::unique_ptr<Tr4jectory> const& child_forkable = child_it->second;
   child_forkable->parent_ = that();
-  child_forkable->position_in_parent_children_ = const_child_it;
+  child_forkable->position_in_parent_children_ = child_it;
   child_forkable->position_in_parent_timeline_ = timeline_it;
 
   return child_forkable.get();
+}
+
+template <typename Tr4jectory, typename It3rator>
+not_null<std::unique_ptr<Tr4jectory>>
+Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
+  CHECK(!is_root());
+
+  // The children whose |position_in_parent_timeline_| was at |end()| are those
+  // whose fork time was not in this object's timeline.  The caller must have
+  // ensured that now it is, so point them to the beginning of this timeline.
+  for (auto const& pair : children_) {
+    std::unique_ptr<Tr4jectory> const& child = pair.second;
+    if (child->position_in_parent_timeline_ == timeline_end()) {
+      child->position_in_parent_timeline_ = timeline_begin();
+    }
+  }
+
+  // Remove this trajectory from the children of its parent.
+  auto owned_this = std::move((*position_in_parent_children_)->second);
+  parent_->children_.erase(*position_in_parent_children_);
+
+  // Clear all the pointers to the parent.
+  parent_ = nullptr;
+  position_in_parent_children_ = std::experimental::nullopt;
+  position_in_parent_timeline_ = std::experimental::nullopt;
+
+  return std::move(owned_this);
 }
 
 template<typename Tr4jectory, typename It3rator>
@@ -322,10 +348,10 @@ void Forkable<Tr4jectory, It3rator>::CheckNoForksBefore(Instant const& time) {
 
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message,
+    not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<Tr4jectory*>& forks) const {
   std::experimental::optional<Instant> last_instant;
-  serialization::Trajectory::Litter* litter = nullptr;
+  serialization::DiscreteTrajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     std::unique_ptr<Tr4jectory> const& child = pair.second;
@@ -352,14 +378,16 @@ void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
 
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::FillSubTreeFromMessage(
-    serialization::Trajectory const& message,
+    serialization::DiscreteTrajectory const& message,
     std::vector<Tr4jectory**> const& forks) {
   // There were no fork positions prior to Буняковский.
   bool const has_fork_position = message.fork_position_size() > 0;
   std::int32_t index = 0;
-  for (serialization::Trajectory::Litter const& litter : message.children()) {
+  for (serialization::DiscreteTrajectory::Litter const& litter :
+           message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
-    for (serialization::Trajectory const& child : litter.trajectories()) {
+    for (serialization::DiscreteTrajectory const& child :
+             litter.trajectories()) {
       not_null<Tr4jectory*> fork = NewFork(timeline_find(fork_time));
       fork->FillSubTreeFromMessage(child, forks);
       if (has_fork_position) {

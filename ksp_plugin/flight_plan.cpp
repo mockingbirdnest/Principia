@@ -30,9 +30,7 @@ FlightPlan::FlightPlan(not_null<DiscreteTrajectory<Barycentric>*> const root,
   }
 
   // Create a fork for the first coasting trajectory.
-  segments_.emplace_back(root->NewForkWithCopy(it.time()));
-
-  ResetLastSegment();  // TODO(phl): A NewForkWithoutCopy would be nicer.
+  segments_.emplace_back(root->NewForkWithoutCopy(it.time()));
   CoastLastSegment(final_time_);
 }
 
@@ -359,9 +357,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
     DiscreteTrajectory<Barycentric>& coast,
     NavigationManœuvre const& manœuvre) {
   DiscreteTrajectory<Barycentric>* recomputed_coast =
-      coast.parent()->NewForkWithCopy(coast.Fork().time());
-  // TODO(phl): NewForkWithoutCopy.
-  recomputed_coast->ForgetAfter(coast.Fork().time());
+      coast.parent()->NewForkWithoutCopy(coast.Fork().time());
   bool const reached_manœuvre_initial_time =
       ephemeris_->FlowWithAdaptiveStep(
           recomputed_coast,

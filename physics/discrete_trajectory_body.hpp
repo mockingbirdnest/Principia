@@ -82,7 +82,7 @@ DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
   auto timeline_it = timeline_.find(time);
   CHECK(timeline_it != timeline_end() ||
         (!this->is_root() && time == this->Fork().time()))
-      << "NewFork at nonexistent time " << time;
+      << "NewForkWithCopy at nonexistent time " << time;
 
   auto const fork = this->NewFork(timeline_it);
 
@@ -95,6 +95,18 @@ DiscreteTrajectory<Frame>::NewForkWithCopy(Instant const& time) {
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
+DiscreteTrajectory<Frame>::NewForkWithoutCopy(Instant const& time) {
+  // May be at |timeline_end()| if |time| is the fork time of this object.
+  auto timeline_it = timeline_.find(time);
+  CHECK(timeline_it != timeline_end() ||
+        (!this->is_root() && time == this->Fork().time()))
+      << "NewForkWithoutCopy at nonexistent time " << time;
+
+  return this->NewFork(timeline_it);
+}
+
+template<typename Frame>
+not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::NewForkAtLast() {
   auto end = timeline_.end();
   if (timeline_.empty()) {
@@ -102,6 +114,22 @@ DiscreteTrajectory<Frame>::NewForkAtLast() {
   } else {
     return this->NewFork(--end);
   }
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
+DiscreteTrajectory<Frame>::DetachFork() {
+  CHECK(!this->is_root());
+
+  // Insert a new point in the timeline for the fork time.  It should go at the
+  // beginning of the timeline.
+  auto const fork_it = this->Fork();
+  auto const begin_it = timeline_.emplace_hint(
+      timeline_.begin(), fork_it.time(), fork_it.degrees_of_freedom());
+  CHECK(begin_it == timeline_.begin());
+
+  // Detach this trajectory and tell the caller that it owns the pieces.
+  return this->DetachForkWithCopiedBegin();
 }
 
 template<typename Frame>
@@ -148,7 +176,7 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    not_null<serialization::Trajectory*> const message,
+    not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*> const& forks)
     const {
   LOG(INFO) << __FUNCTION__;
@@ -170,7 +198,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 template<typename Frame>
 not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
-    serialization::Trajectory const& message,
+    serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   auto trajectory = make_not_null_unique<DiscreteTrajectory>();
   CHECK(std::all_of(forks.begin(),
@@ -224,7 +252,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message,
+    not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {
   Forkable<DiscreteTrajectory, Iterator>::WriteSubTreeToMessage(message, forks);
   for (auto const& pair : timeline_) {
@@ -239,7 +267,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
-    serialization::Trajectory const& message,
+    serialization::DiscreteTrajectory const& message,
     std::vector<DiscreteTrajectory<Frame>**> const& forks) {
   for (auto timeline_it = message.timeline().begin();
        timeline_it != message.timeline().end();

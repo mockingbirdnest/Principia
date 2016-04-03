@@ -144,7 +144,7 @@ class Forkable {
 
   // |trajectory| must be a root.
   static not_null<Tr4jectory*> ReadPointerFromMessage(
-      serialization::Trajectory::Pointer const& message,
+      serialization::DiscreteTrajectory::Pointer const& message,
       not_null<Tr4jectory*> const trajectory);
 
  protected:
@@ -174,6 +174,14 @@ class Forkable {
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
+  // This object must not be a root.  It is detached from its parent and becomes
+  // a root.  All the children which were fork at this object's fork time are
+  // changed to be forked at the beginning of this object's timeline.  This
+  // requires the caller to ensure that this object's timeline is not empty and
+  // that its beginning properly represents the fork time.  Returns an owning
+  // pointer to this object.
+  not_null<std::unique_ptr<Tr4jectory>> DetachForkWithCopiedBegin();
+
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.
   void DeleteAllForksAfter(Instant const& time);
@@ -185,10 +193,10 @@ class Forkable {
   // This trajectory need not be a root.  As forks are encountered during tree
   // traversal their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> const message,
       std::vector<Tr4jectory*>& forks) const;
 
-  void FillSubTreeFromMessage(serialization::Trajectory const& message,
+  void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
                               std::vector<Tr4jectory**> const& forks);
 
  private:
@@ -210,7 +218,7 @@ class Forkable {
   Tr4jectory* parent_ = nullptr;
 
   // This iterator is never at |end()|.
-  std::experimental::optional<typename Children::const_iterator>
+  std::experimental::optional<typename Children::iterator>
       position_in_parent_children_;
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
