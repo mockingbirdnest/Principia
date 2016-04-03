@@ -297,7 +297,8 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
 }
 
 template <typename Tr4jectory, typename It3rator>
-void Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
+not_null<std::unique_ptr<Tr4jectory>>
+Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   CHECK(!is_root());
 
   // The children whose |position_in_parent_timeline_| was at |end()| are those
@@ -311,13 +312,15 @@ void Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   }
 
   // Remove this trajectory from the children of its parent.
-  (*position_in_parent_children_)->second.release();
+  auto owned_this = std::move((*position_in_parent_children_)->second);
   parent_->children_.erase(*position_in_parent_children_);
 
   // Clear all the pointers to the parent.
   parent_ = nullptr;
   position_in_parent_children_ = std::experimental::nullopt;
   position_in_parent_timeline_ = std::experimental::nullopt;
+
+  return std::move(owned_this);
 }
 
 template<typename Tr4jectory, typename It3rator>

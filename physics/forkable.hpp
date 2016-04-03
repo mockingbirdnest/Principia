@@ -178,8 +178,9 @@ class Forkable {
   // a root.  All the children which were fork at this object's fork time are
   // changed to be forked at the beginning of this object's timeline.  This
   // requires the caller to ensure that this object's timeline is not empty and
-  // that its beginning properly represents the fork time.
-  void DetachForkWithCopiedBegin();
+  // that its beginning properly represents the fork time.  Returns an owning
+  // pointer to this object.
+  not_null<std::unique_ptr<Tr4jectory>> DetachForkWithCopiedBegin();
 
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.

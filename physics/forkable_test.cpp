@@ -304,11 +304,11 @@ TEST_F(ForkableTest, DetachForkWithCopiedBeginSuccess) {
   FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
   FakeTrajectory* fork3 = fork1->NewFork(fork1->timeline_find(t2_));
   fork1->push_back(t4_);
-  
+
   fork1->push_front(t2_);
-  fork1->DetachForkWithCopiedBegin();
-  EXPECT_TRUE(fork1->is_root());
-  auto times = Times(fork1);
+  auto const detached1 = fork1->DetachForkWithCopiedBegin();
+  EXPECT_TRUE(detached1->is_root());
+  auto times = Times(detached1.get());
   EXPECT_THAT(times, ElementsAre(t2_, t4_));
   times = Times(fork2);
   EXPECT_THAT(times, ElementsAre(t1_, t2_));
@@ -316,15 +316,15 @@ TEST_F(ForkableTest, DetachForkWithCopiedBeginSuccess) {
   EXPECT_THAT(times, ElementsAre(t2_));
 
   fork2->push_front(t2_);
-  fork2->DetachForkWithCopiedBegin();
-  EXPECT_TRUE(fork2->is_root());
-  times = Times(fork2);
+  auto const detached2 = fork2->DetachForkWithCopiedBegin();
+  EXPECT_TRUE(detached2->is_root());
+  times = Times(detached2.get());
   EXPECT_THAT(times, ElementsAre(t2_));
 
   fork3->push_front(t2_);
-  fork3->DetachForkWithCopiedBegin();
-  EXPECT_TRUE(fork3->is_root());
-  times = Times(fork3);
+  auto const detached3 = fork3->DetachForkWithCopiedBegin();
+  EXPECT_TRUE(detached3->is_root());
+  times = Times(detached3.get());
   EXPECT_THAT(times, ElementsAre(t2_));
 }
 
