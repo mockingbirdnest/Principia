@@ -277,7 +277,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
 template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
     TimelineConstIterator const& timeline_it) {
-  // First create a child in the multimap.  To do th
+  // First create a child in the multimap.
   Instant time;
   if (timeline_it == timeline_end()) {
     CHECK(!is_root());
@@ -295,6 +295,21 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
   child_forkable->position_in_parent_timeline_ = timeline_it;
 
   return child_forkable.get();
+}
+
+template <typename Tr4jectory, typename It3rator>
+typename Forkable<Tr4jectory, It3rator>::TimelineConstIterator
+Forkable<Tr4jectory, It3rator>::
+    DetachForkAndReturningPositionInParentTimeline() {
+  CHECK(!is_root());
+  TimelineConstIterator result = * position_in_parent_timeline_;
+  // Remove this trajectory from the children of its parent.
+  parent_->children_.erase(*position_in_parent_children_);
+  // Clear all the pointers to the parent.
+  parent_ = nullptr;
+  position_in_parent_children_ = std::experimental::nullopt;
+  position_in_parent_timeline_ = std::experimental::nullopt;
+  return result;
 }
 
 template<typename Tr4jectory, typename It3rator>

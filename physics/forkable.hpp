@@ -174,6 +174,11 @@ class Forkable {
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
+  // This object must not be a root.  It is detached from its parent and becomes
+  // a root.  An iterator to the point where it was attached in its parent's
+  // timeline is returned.
+  TimelineConstIterator DetachForkAndReturningPositionInParentTimeline();
+
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be
   // at or after the fork time of this trajectory, if any.
   void DeleteAllForksAfter(Instant const& time);
