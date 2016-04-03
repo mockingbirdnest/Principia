@@ -175,8 +175,8 @@ class Forkable {
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
   // This object must not be a root.  It is detached from its parent and becomes
-  // a root.  An iterator to the point where it was attached in its parent's
-  // timeline is returned.
+  // a root.  An iterator to the point where it was attached in its ancestor's
+  // timeline is returned.  That iterator is never at |end()|.
   TimelineConstIterator DetachForkAndReturningPositionInParentTimeline();
 
   // Deletes all forks for times (strictly) greater than |time|.  |time| must be

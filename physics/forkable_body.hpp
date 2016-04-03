@@ -241,7 +241,7 @@ It3rator Forkable<Tr4jectory, It3rator>::Fork() const {
     position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
     ancestor = ancestor->parent_;
   } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
-            ancestor->parent_ != nullptr);
+           ancestor->parent_ != nullptr);
   return Wrap(ancestor, position_in_ancestor_timeline);
 }
 
@@ -302,14 +302,25 @@ typename Forkable<Tr4jectory, It3rator>::TimelineConstIterator
 Forkable<Tr4jectory, It3rator>::
     DetachForkAndReturningPositionInParentTimeline() {
   CHECK(!is_root());
-  TimelineConstIterator result = * position_in_parent_timeline_;
+
+  // Find the ancestor timeline that determines the fork time.
+  not_null<Tr4jectory const*> ancestor = that();
+  TimelineConstIterator position_in_ancestor_timeline;
+  do {
+    position_in_ancestor_timeline = *ancestor->position_in_parent_timeline_;
+    ancestor = ancestor->parent_;
+  } while (position_in_ancestor_timeline == ancestor->timeline_end() &&
+           ancestor->parent_ != nullptr);
+  CHECK(position_in_ancestor_timeline != ancestor->timeline_end());
+
   // Remove this trajectory from the children of its parent.
   parent_->children_.erase(*position_in_parent_children_);
+
   // Clear all the pointers to the parent.
   parent_ = nullptr;
   position_in_parent_children_ = std::experimental::nullopt;
   position_in_parent_timeline_ = std::experimental::nullopt;
-  return result;
+  return position_in_ancestor_timeline;
 }
 
 template<typename Tr4jectory, typename It3rator>

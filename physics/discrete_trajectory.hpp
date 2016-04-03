@@ -101,6 +101,11 @@ class DiscreteTrajectory
   // trajectory.
   not_null<DiscreteTrajectory<Frame>*> NewForkAtLast();
 
+  // This object must not be a root.  It is detached from its parent and becomes
+  // a root.  A point corresponding to the fork point is prepended to this
+  // object (so it's never empty) and an owning pointer to it is returned.
+  not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> DetachFork();
+
   // Appends one point to the trajectory.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);

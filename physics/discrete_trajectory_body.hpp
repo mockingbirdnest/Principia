@@ -105,6 +105,16 @@ DiscreteTrajectory<Frame>::NewForkAtLast() {
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<DiscreteTrajectory<Frame>>>
+DiscreteTrajectory<Frame>::DetachFork() {
+  auto const parent_timeline_it =
+      DetachForkAndReturningPositionInParentTimeline();
+  auto const it = timeline_.emplace_hint(timeline_.begin(),
+                                         *parent_timeline_it);
+  return make_not_null_unique<DiscreteTrajectory<Frame>>(this);
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
