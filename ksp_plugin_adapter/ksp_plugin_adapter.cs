@@ -778,10 +778,12 @@ public partial class PrincipiaPluginAdapter
         GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedVesselTrajectory(active_vessel_guid,
                                              sun_world_position),
-            XKCDColors.AcidGreen);
+            XKCDColors.AcidGreen,
+            GLLines.Style.FADED);
         GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
-            XKCDColors.Fuchsia);
+            XKCDColors.Fuchsia,
+            GLLines.Style.SOLID);
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
           RenderFlightPlanApsides(active_vessel_guid, sun_world_position);
 
@@ -793,7 +795,8 @@ public partial class PrincipiaPluginAdapter
                 plugin_.FlightPlanRenderedSegment(active_vessel_guid,
                                                   sun_world_position,
                                                   i),
-                is_burn ? XKCDColors.OrangeRed : XKCDColors.RoyalBlue);
+                is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
+                GLLines.Style.DASHED);
             if (is_burn) {
               Vector3d position_at_ignition =
                   (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(

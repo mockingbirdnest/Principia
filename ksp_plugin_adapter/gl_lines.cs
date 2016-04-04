@@ -7,6 +7,12 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class GLLines {
+  public enum Style {
+    SOLID,
+    DASHED,
+    FADED,
+  }
+
   public static void Draw(Action line_vertices) {
     try {
       UnityEngine.GL.PushMatrix();
@@ -90,19 +96,28 @@ internal static class GLLines {
   }
 
   public static void RenderAndDeleteTrajectory(IntPtr trajectory_iterator,
-                                               UnityEngine.Color colour) {
+                                               UnityEngine.Color colour,
+                                               Style style) {
     try {
       Vector3d? previous_point = null;
 
       UnityEngine.GL.Color(colour);
+      int size = trajectory_iterator.IteratorSize();
 
-      for (; !trajectory_iterator.IteratorAtEnd();
-           trajectory_iterator.IteratorIncrement()) {
+      for (int i = 0;
+           !trajectory_iterator.IteratorAtEnd();
+           trajectory_iterator.IteratorIncrement(), ++i) {
         Vector3d current_point = (Vector3d)trajectory_iterator.IteratorGetXYZ();
         if (previous_point.HasValue) {
-          AddSegment(previous_point.Value,
-                     current_point,
-                     hide_behind_bodies : true);
+          if (style == Style.FADED) {
+            colour.a = (float)i / (float)size;
+            UnityEngine.GL.Color(colour);
+          }
+          if (style != Style.DASHED || i % 2 == 0) {
+            AddSegment(previous_point.Value,
+                       current_point,
+                       hide_behind_bodies : true);
+          }
         }
         previous_point = current_point;
       }
