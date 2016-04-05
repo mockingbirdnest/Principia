@@ -45,7 +45,6 @@ class FlightPlan {
              not_null<Ephemeris<Barycentric>*> const ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters const&
                  adaptive_step_parameters);
-  virtual ~FlightPlan();
 
   virtual Instant initial_time() const;
   virtual Instant final_time() const;
@@ -167,7 +166,7 @@ class FlightPlan {
   // alternate.  This simulates a stack.  Each segment is a fork of the previous
   // one.
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> segments_;
-  std::vector<not_null<std::unique_ptr<NavigationManœuvre>>> manœuvres_;
+  std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
