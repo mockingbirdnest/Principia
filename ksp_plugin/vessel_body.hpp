@@ -125,19 +125,12 @@ inline void Vessel::AdvanceTimeInBubble(
 
 inline void Vessel::ForgetBefore(Instant const& time) {
   CHECK(is_initialized());
-  history_->ForgetBefore(time);
-}
-
-inline Instant Vessel::ForgettableTime() const {
-  CHECK(is_initialized());
-  Instant forgettable_time = prolongation_->Fork().time();
-  forgettable_time = std::min(forgettable_time,
-                              prediction_->Fork().time());
+  history_->DeleteFork(&prediction_);
+  prediction_ = history_->NewForkAtLast();
   if (flight_plan_ != nullptr) {
-    forgettable_time = std::min(forgettable_time,
-                                flight_plan_->initial_time());
+    flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
   }
-  return forgettable_time;
+  history_->ForgetBefore(time);
 }
 
 inline void Vessel::CreateFlightPlan(
@@ -145,13 +138,14 @@ inline void Vessel::CreateFlightPlan(
     Mass const& initial_mass,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         flight_plan_adaptive_step_parameters) {
+  auto const history_last = history().last();
   flight_plan_ = std::make_unique<FlightPlan>(
-                     history_.get(),
-                     /*initial_time=*/history().last().time(),
-                     /*final_time=*/final_time,
-                     initial_mass,
-                     ephemeris_,
-                     flight_plan_adaptive_step_parameters);
+      initial_mass,
+      /*initial_time=*/history_last.time(),
+      /*initial_degrees_of_freedom=*/history_last.degrees_of_freedom(),
+      final_time,
+      ephemeris_,
+      flight_plan_adaptive_step_parameters);
 }
 
 inline void Vessel::DeleteFlightPlan() {

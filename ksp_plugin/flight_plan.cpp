@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
+#include <experimental/optional>
+
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
@@ -10,27 +12,25 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 
 namespace ksp_plugin {
 
-FlightPlan::FlightPlan(not_null<DiscreteTrajectory<Barycentric>*> const root,
-    Instant const& initial_time,
-    Instant const& final_time,
+FlightPlan::FlightPlan(
     Mass const& initial_mass,
+    Instant const& initial_time,
+    DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
+    Instant const& final_time,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                           adaptive_step_parameters)
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters)
     : initial_time_(initial_time),
       final_time_(final_time),
       initial_mass_(initial_mass),
+      root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters) {
   CHECK(final_time_ >= initial_time_);
-  auto it = root->LowerBound(initial_time_);
-  if (it.time() != initial_time_) {
-    --it;
-    initial_time_ = it.time();
-  }
 
-  // Create a fork for the first coasting trajectory.
-  segments_.emplace_back(root->NewForkWithoutCopy(it.time()));
+  // Fill the first coasting trajectory.
+  root_->Append(initial_time, initial_degrees_of_freedom);
+  segments_.emplace_back(root_.get());
   CoastLastSegment(final_time_);
 }
 
@@ -59,14 +59,14 @@ int FlightPlan::number_of_manœuvres() const {
 NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
-  return manœuvres_[index];
+  return *manœuvres_[index];
 }
 
 bool FlightPlan::Append(Burn burn) {
   auto manœuvre =
       MakeNavigationManœuvre(
           std::move(burn),
-          manœuvres_.empty() ? initial_mass_ : manœuvres_.back().final_mass());
+          manœuvres_.empty() ? initial_mass_ : manœuvres_.back()->final_mass());
   if (manœuvre.FitsBetween(start_of_last_coast(), final_time_) &&
       !manœuvre.IsSingular()) {
     DiscreteTrajectory<Barycentric>* recomputed_last_coast =
@@ -80,6 +80,37 @@ bool FlightPlan::Append(Burn burn) {
   return false;
 }
 
+void FlightPlan::ForgetBefore(Instant const& time,
+                              std::function<void()> const& on_empty) {
+  if (segments_.back()->last().time() < time) {
+    on_empty();
+  } else {
+    // Find the first segment to keep.  Note that incrementing by 2 ensures that
+    // we only look at coasts.
+    std::experimental::optional<int> first_to_keep;
+    for (int i = 0; i < segments_.size(); i += 2) {
+      if (time <= segments_[i]->last().time()) {
+        first_to_keep = i;
+        break;
+      }
+    }
+
+    // Remove from the vectors the trajectories and manœuvres that we don't want
+    // to keep.
+    if (first_to_keep) {
+      root_ = segments_[*first_to_keep]->DetachFork();
+      segments_.erase(segments_.cbegin(),
+                      segments_.cbegin() + *first_to_keep);
+      manœuvres_.erase(manœuvres_.cbegin(),
+                       manœuvres_.cbegin() + *first_to_keep / 2);
+    }
+
+    // Cut the part of the first coast that we don't want to keep.
+    root_->ForgetBefore(time);
+    initial_time_ = root_->Begin().time();
+  }
+}
+
 void FlightPlan::RemoveLast() {
   CHECK(!manœuvres_.empty());
   manœuvres_.pop_back();
@@ -91,8 +122,8 @@ void FlightPlan::RemoveLast() {
 
 bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
-  auto manœuvre =
-      MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
+  auto manœuvre = MakeNavigationManœuvre(std::move(burn),
+                                         manœuvres_.back()->initial_mass());
   if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_) &&
       !manœuvre.IsSingular()) {
     DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
@@ -170,10 +201,11 @@ void FlightPlan::WriteToMessage(
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
   for (auto const& manœuvre : manœuvres_) {
-    manœuvre.WriteToMessage(message->add_manoeuvre());
+    manœuvre->WriteToMessage(message->add_manoeuvre());
   }
 }
 
+//TODO(phl):KOMPATIBILITI
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
     not_null<DiscreteTrajectory<Barycentric>*> const root,
@@ -182,6 +214,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
   std::unique_ptr<Ephemeris<Barycentric>::AdaptiveStepParameters>
       adaptive_step_parameters;
+  Instant initial_time = Instant::ReadFromMessage(message.initial_time());
+  std::unique_ptr<DegreesOfFreedom<Barycentric>> initial_degrees_of_freedom;
   if (is_pre_буняковский) {
     adaptive_step_parameters =
         std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
@@ -191,19 +225,31 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
             /*max_steps=*/1000,
             Length::ReadFromMessage(message.length_integration_tolerance()),
             Speed::ReadFromMessage(message.speed_integration_tolerance()));
+    auto it = root->LowerBound(initial_time);
+    if (it.time() != initial_time) {
+      --it;
+      initial_time = it.time();
+    };
+    initial_degrees_of_freedom =
+        std::make_unique<DegreesOfFreedom<Barycentric>>(
+            it.degrees_of_freedom());
   } else {
     CHECK(message.has_adaptive_step_parameters());
     adaptive_step_parameters =
         std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
             Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
                 message.adaptive_step_parameters()));
+    initial_degrees_of_freedom =
+        std::make_unique<DegreesOfFreedom<Barycentric>>(
+            DegreesOfFreedom<Barycentric>::ReadFromMessage(
+                message.initial_degrees_of_freedom()));
   }
 
   auto flight_plan = std::make_unique<FlightPlan>(
-      root,
-      Instant::ReadFromMessage(message.initial_time()),
-      Instant::ReadFromMessage(message.final_time()),
       Mass::ReadFromMessage(message.initial_mass()),
+      initial_time,
+      *initial_degrees_of_freedom,
+      Instant::ReadFromMessage(message.final_time()),
       ephemeris,
       *adaptive_step_parameters);
 
@@ -218,8 +264,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     for (int i = 0; i < message.manoeuvre_size(); ++i) {
       auto const& manoeuvre = message.manoeuvre(i);
       flight_plan->manœuvres_.push_back(
-          NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
-      flight_plan->manœuvres_[i].set_coasting_trajectory(
+          make_not_null_unique<NavigationManœuvre>(
+              NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris)));
+      flight_plan->manœuvres_[i]->set_coasting_trajectory(
           flight_plan->segments_[2 * i]);
     }
 
@@ -232,7 +279,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     for (int i = 0; i < message.manoeuvre_size(); ++i) {
       auto const& manoeuvre = message.manoeuvre(i);
       flight_plan->manœuvres_.push_back(
-          NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
+          make_not_null_unique<NavigationManœuvre>(
+              NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris)));
     }
     // We need to forcefully prolong, otherwise we might exceed the ephemeris
     // step limit while recomputing the segments and fail the check.
@@ -244,7 +292,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 }
 
 FlightPlan::FlightPlan()
-    : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+    : root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
           /*max_steps=*/1,
@@ -252,10 +301,11 @@ FlightPlan::FlightPlan()
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
-  manœuvres_.emplace_back(std::move(manœuvre));
+  manœuvres_.emplace_back(
+      make_not_null_unique<NavigationManœuvre>(std::move(manœuvre)));
   {
     // Hide the moved-from |manœuvre|.
-    NavigationManœuvre& manœuvre = manœuvres_.back();
+    NavigationManœuvre& manœuvre = *manœuvres_.back();
     CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
     manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
@@ -273,10 +323,10 @@ bool FlightPlan::RecomputeSegments() {
   }
   ResetLastSegment();
   for (auto& manœuvre : manœuvres_) {
-    CoastLastSegment(manœuvre.initial_time());
-    manœuvre.set_coasting_trajectory(segments_.back());
+    CoastLastSegment(manœuvre->initial_time());
+    manœuvre->set_coasting_trajectory(segments_.back());
     AddSegment();
-    BurnLastSegment(manœuvre);
+    BurnLastSegment(*manœuvre);
     AddSegment();
   }
   CoastLastSegment(final_time_);
@@ -372,13 +422,13 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
 }
 
 Instant FlightPlan::start_of_last_coast() const {
-  return manœuvres_.empty() ? initial_time_ : manœuvres_.back().final_time();
+  return manœuvres_.empty() ? initial_time_ : manœuvres_.back()->final_time();
 }
 
 Instant FlightPlan::start_of_penultimate_coast() const {
   return manœuvres_.size() == 1
              ? initial_time_
-             : manœuvres_[manœuvres_.size() - 2].final_time();
+             : manœuvres_[manœuvres_.size() - 2]->final_time();
 }
 
 DiscreteTrajectory<Barycentric>& FlightPlan::last_coast() {

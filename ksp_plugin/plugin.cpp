@@ -283,18 +283,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
-
-  // Ask each vessel what is an acceptable time for forgetting.
-  Instant forgettable_time = t;
+  CHECK_LT(t, current_time_);
+  ephemeris_->ForgetBefore(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    forgettable_time = std::min(forgettable_time, vessel->ForgettableTime());
-  }
-
-  ephemeris_->ForgetBefore(forgettable_time);
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->ForgetBefore(forgettable_time);
+    vessel->ForgetBefore(t);
   }
 }
 

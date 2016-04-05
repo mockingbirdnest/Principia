@@ -68,10 +68,10 @@ class FlightPlanTest : public testing::Test {
                                          1 * Metre / Second,
                                          0 * Metre / Second})});
     flight_plan_ = std::make_unique<FlightPlan>(
-        &root_,
-        /*initial_time=*/t0_,
-        /*final_time=*/t0_ + 1.5 * Second,
         /*initial_mass=*/1 * Kilogram,
+        /*initial_time=*/root_.Begin().time(),
+        /*initial_degrees_of_freedom=*/root_.Begin().degrees_of_freedom(),
+        /*final_time=*/t0_ + 1.5 * Second,
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
@@ -144,10 +144,10 @@ TEST_F(FlightPlanTest, Singular) {
                          0 * Metre}),
                 Velocity<Barycentric>()});
   flight_plan_ = std::make_unique<FlightPlan>(
-      &root_,
-      /*initial_time=*/t0_,
-      /*final_time=*/singularity + 100 * Second,
       /*initial_mass=*/1 * Kilogram,
+      /*initial_time=*/root_.Begin().time(),
+      /*initial_degrees_of_freedom=*/root_.Begin().degrees_of_freedom(),
+      /*final_time=*/singularity + 100 * Second,
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),

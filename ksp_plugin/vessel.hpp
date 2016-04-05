@@ -95,12 +95,9 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // Forgets the history before |time|.  |time| must not be after
-  // |ForgettableTime|.
+  // Forgets the trajectories and flight plan before |time|.  This may delete
+  // the flight plan.
   virtual void ForgetBefore(Instant const& time);
-
-  // Returns the largest time for which |ForgetBefore| may be called.
-  virtual Instant ForgettableTime() const;
 
   // Creates a |flight_plan_| at the end of history using the given parameters.
   // Deletes any pre-existing predictions.
