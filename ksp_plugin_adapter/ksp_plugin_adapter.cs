@@ -780,6 +780,7 @@ public partial class PrincipiaPluginAdapter
                                              sun_world_position),
             XKCDColors.AcidGreen,
             GLLines.Style.FADED);
+        RenderPredictionApsides(active_vessel_guid, sun_world_position);
         GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia,
@@ -796,7 +797,7 @@ public partial class PrincipiaPluginAdapter
                                                   sun_world_position,
                                                   i),
                 is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
-                GLLines.Style.DASHED);
+                is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
             if (is_burn) {
               Vector3d position_at_ignition =
                   (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
@@ -831,6 +832,28 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void RenderPredictionApsides(String vessel_guid,
+                                       XYZ sun_world_position) {
+    foreach (CelestialBody celestial in
+             plotting_frame_selector_.get().FixedBodies()) {
+      IntPtr apoapsis_iterator;
+      IntPtr periapsis_iterator;
+      plugin_.RenderedPredictionApsides(vessel_guid,
+                                        celestial.flightGlobalsIndex,
+                                        sun_world_position,
+                                        out apoapsis_iterator,
+                                        out periapsis_iterator);
+      map_node_pool_.RenderAndDeleteApsides(apoapsis_iterator,
+                                            celestial,
+                                            MapObject.ObjectType.Apoapsis,
+                                            MapNodePool.NodeSource.PREDICTION);
+      map_node_pool_.RenderAndDeleteApsides(periapsis_iterator,
+                                            celestial,
+                                            MapObject.ObjectType.Periapsis,
+                                            MapNodePool.NodeSource.PREDICTION);
+    }
+  }
+
   private void RenderFlightPlanApsides(String vessel_guid,
                                        XYZ sun_world_position) {
     foreach (CelestialBody celestial in
@@ -844,10 +867,12 @@ public partial class PrincipiaPluginAdapter
                                         out periapsis_iterator);
       map_node_pool_.RenderAndDeleteApsides(apoapsis_iterator,
                                             celestial,
-                                            MapObject.ObjectType.Apoapsis);
+                                            MapObject.ObjectType.Apoapsis,
+                                            MapNodePool.NodeSource.FLIGHT_PLAN);
       map_node_pool_.RenderAndDeleteApsides(periapsis_iterator,
                                             celestial,
-                                            MapObject.ObjectType.Periapsis);
+                                            MapObject.ObjectType.Periapsis,
+                                            MapNodePool.NodeSource.FLIGHT_PLAN);
     }
   }
 
