@@ -110,7 +110,7 @@ internal static class GLLines {
         Vector3d current_point = (Vector3d)trajectory_iterator.IteratorGetXYZ();
         if (previous_point.HasValue) {
           if (style == Style.FADED) {
-            colour.a = (float)i / (float)size;
+            colour.a = (float)(4 * i + size) / (float)(5 * size);
             UnityEngine.GL.Color(colour);
           }
           if (style != Style.DASHED || i % 2 == 0) {
