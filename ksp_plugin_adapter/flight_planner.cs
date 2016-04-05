@@ -233,7 +233,7 @@ class FlightPlanner : WindowRenderer {
         show_guidance_ =
             UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
         if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-          TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 30);
+          TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
         }
         UnityEngine.GUILayout.EndHorizontal();
         if (show_guidance_ &&
