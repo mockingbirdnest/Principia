@@ -229,8 +229,13 @@ class FlightPlanner : WindowRenderer {
               "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
                               current_time - manoeuvre.final_time)));
         }
+        UnityEngine.GUILayout.BeginHorizontal();
         show_guidance_ =
             UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
+        if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
+          TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+        }
+        UnityEngine.GUILayout.EndHorizontal();
         if (show_guidance_ &&
             !double.IsNaN(manoeuvre.inertial_direction.x +
                           manoeuvre.inertial_direction.y +

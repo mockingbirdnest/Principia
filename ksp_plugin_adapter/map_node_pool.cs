@@ -8,6 +8,11 @@ namespace ksp_plugin_adapter {
 
 internal class MapNodePool {
 
+  public enum NodeSource {
+    PREDICTION,
+    FLIGHT_PLAN,
+  }
+
   public MapNodePool() {
     nodes_ = new List<KSP.UI.Screens.Mapview.MapNode>();
     properties_ =
@@ -38,7 +43,8 @@ internal class MapNodePool {
 
   public void RenderAndDeleteApsides(IntPtr apsis_iterator,
                                      CelestialBody celestial,
-                                     MapObject.ObjectType type) {
+                                     MapObject.ObjectType type,
+                                     NodeSource source) {
     for (; !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
       Vector3d apsis = (Vector3d)apsis_iterator.IteratorGetXYZ();
@@ -46,6 +52,7 @@ internal class MapNodePool {
       node_properties.object_type = type;
       node_properties.celestial = celestial;
       node_properties.world_position = apsis;
+      node_properties.source = source;
 
       if (pool_index_ == nodes_.Count) {
         UnityEngine.Debug.LogWarning("Adding node to pool");
@@ -114,6 +121,17 @@ internal class MapNodePool {
               properties_[node].celestial.name + " Impact<color=" +
               XKCDColors.HexFormat.Chartreuse + "></color>";
           }
+          switch (properties_[node].source) {
+            case NodeSource.FLIGHT_PLAN:
+              caption.Header = "Planned " + caption.Header;
+              break;
+            case NodeSource.PREDICTION:
+              caption.Header = "Predicted " + caption.Header;
+              break;
+            default:
+              throw Log.Fatal("Unexpected node source " +
+                              properties_[node].source);
+          }
         };
     new_node.OnUpdatePosition +=
         (KSP.UI.Screens.Mapview.MapNode node) =>
@@ -126,6 +144,7 @@ internal class MapNodePool {
     public MapObject.ObjectType object_type;
     public Vector3d world_position;
     public CelestialBody celestial;
+    public NodeSource source;
   }
 
   private List<KSP.UI.Screens.Mapview.MapNode> nodes_;

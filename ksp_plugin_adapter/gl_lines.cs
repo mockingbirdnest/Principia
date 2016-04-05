@@ -113,7 +113,7 @@ internal static class GLLines {
             colour.a = (float)(4 * i + size) / (float)(5 * size);
             UnityEngine.GL.Color(colour);
           }
-          if (style != Style.DASHED || i % 2 == 0) {
+          if (style != Style.DASHED || i % 2 == 1) {
             AddSegment(previous_point.Value,
                        current_point,
                        hide_behind_bodies : true);
