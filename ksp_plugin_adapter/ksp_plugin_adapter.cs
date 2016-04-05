@@ -589,26 +589,12 @@ public partial class PrincipiaPluginAdapter
           Vector3d normal =
               (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
 
-          double ball_radius =
-              navball_.progradeVector.transform.localPosition.magnitude;
-
-          // TODO(egg): deal with the transparency and disappearance of the
-          // markers too, not just their position.
-          navball_.progradeVector.transform.localPosition =
-              (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  prograde * ball_radius;
-          navball_.radialInVector.transform.localPosition =
-              (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  radial * ball_radius;
-          navball_.normalVector.transform.localPosition =
-              (UnityEngine.QuaternionD)navball_.attitudeGymbal *
-                  normal * ball_radius;
-          navball_.retrogradeVector.transform.localPosition =
-              -navball_.progradeVector.transform.localPosition;
-          navball_.radialOutVector.transform.localPosition =
-              -navball_.radialInVector.transform.localPosition;
-          navball_.antiNormalVector.transform.localPosition =
-              -navball_.normalVector.transform.localPosition;
+          SetNavballVector(navball_.progradeVector, prograde);
+          SetNavballVector(navball_.radialInVector, radial);
+          SetNavballVector(navball_.normalVector, normal);
+          SetNavballVector(navball_.retrogradeVector, -prograde);
+          SetNavballVector(navball_.radialOutVector, -radial);
+          SetNavballVector(navball_.antiNormalVector, -normal);
           // Make the autopilot target our Frenet trihedron.
           if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
               (Delegate)(FlightInputCallback)OverrideRSASTarget) {
@@ -720,6 +706,19 @@ public partial class PrincipiaPluginAdapter
   }
 
   #endregion
+
+  private void SetNavballVector(UnityEngine.Transform vector,
+                                Vector3d direction) {
+     vector.localPosition = (UnityEngine.QuaternionD)navball_.attitudeGymbal *
+                            direction * navball_.VectorUnitScale;
+     vector.gameObject.SetActive(vector.localPosition.z >
+                                 navball_.VectorUnitCutoff);
+     vector.GetComponent<UnityEngine.MeshRenderer>().materials[0].SetFloat(
+         "_Opacity",
+         UnityEngine.Mathf.Clamp01(UnityEngine.Vector3.Dot(
+             vector.localPosition.normalized,
+             UnityEngine.Vector3.forward)));
+  }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
     vessel.patchedConicRenderer.relativityMode =
