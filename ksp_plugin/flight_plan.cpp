@@ -12,6 +12,19 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 
 namespace ksp_plugin {
 
+namespace {
+
+DiscreteTrajectory<Barycentric>::Iterator BeginOrFork(
+    DiscreteTrajectory<Barycentric> const& trajectory) {
+  if (trajectory.is_root()) {
+    return trajectory.Begin();
+  } else {
+    return trajectory.Fork();
+  }
+}
+
+}  // namespace
+
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
     Instant const& initial_time,
@@ -176,18 +189,14 @@ void FlightPlan::GetSegment(
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  if (index == 0) {
-    *begin = segments_[0]->Begin();
-  } else {
-    *begin = segments_[index]->Fork();
-  }
+  *begin = BeginOrFork(*segments_[index]);
   *end = segments_[index]->End();
 }
 
 void FlightPlan::GetAllSegments(
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
-  *begin = segments_.back()->Find(segments_.front()->Fork().time());
+  *begin = segments_.back()->Find(segments_.front()->Begin().time());
   *end = segments_.back()->End();
   CHECK(*begin != *end);
 }
@@ -350,12 +359,12 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
     return;
   } else {
     bool const reached_final_time =
-          ephemeris_->FlowWithAdaptiveStep(
-                          segments_.back(),
-                          Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-                          final_time,
-                          adaptive_step_parameters_,
-                          max_ephemeris_steps_per_frame);
+        ephemeris_->FlowWithAdaptiveStep(
+                        segments_.back(),
+                        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+                        final_time,
+                        adaptive_step_parameters_,
+                        max_ephemeris_steps_per_frame);
     if (!reached_final_time) {
       anomalous_segments_ = 1;
     }
@@ -365,7 +374,10 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
 void FlightPlan::ReplaceLastSegment(
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   CHECK_EQ(segment->parent(), segments_.back()->parent());
-  CHECK_EQ(segment->Fork().time(), segments_.back()->Fork().time());
+  CHECK_EQ(BeginOrFork(*segment).time(),
+           BeginOrFork(*segments_.back()).time());
+  CHECK_EQ(BeginOrFork(*segment).degrees_of_freedom(),
+           BeginOrFork(*segments_.back()).degrees_of_freedom());
   PopLastSegment();
   // |segment| must not be anomalous, so it cannot not follow an anomalous
   // segment.
@@ -381,7 +393,8 @@ void FlightPlan::AddSegment() {
 }
 
 void FlightPlan::ResetLastSegment() {
-  segments_.back()->ForgetAfter(segments_.back()->Fork().time());
+  //TODO(phl): Seems wrong for the first trajectory.
+  segments_.back()->ForgetAfter(BeginOrFork(*segments_.back()).time());
   if (anomalous_segments_ == 1) {
     // If there was one anomalous segment, it was the last one, which was
     // anomalous because it ended early.  It is no longer anomalous.
