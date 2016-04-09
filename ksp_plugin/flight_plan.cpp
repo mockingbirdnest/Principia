@@ -74,38 +74,42 @@ bool FlightPlan::Append(Burn burn) {
 
 void FlightPlan::ForgetBefore(Instant const& time,
                               std::function<void()> const& on_empty) {
-  if (segments_.back()->last().time() < time) {
-    on_empty();
-  } else {
-    // Find the first segment to keep.  Note that incrementing by 2 ensures that
-    // we only look at coasts.
-    std::experimental::optional<int> first_to_keep;
-    for (int i = 0; i < segments_.size(); i += 2) {
-      if (time <= segments_[i]->last().time()) {
-        first_to_keep = i;
-        break;
-      }
+  // Find the first segment to keep.  Note that incrementing by 2 ensures that
+  // we only look at coasts.
+  std::experimental::optional<int> first_to_keep;
+  for (int i = 0; i < segments_.size(); i += 2) {
+    if (time <= segments_[i]->last().time()) {
+      first_to_keep = i;
+      break;
     }
-
-    // Remove from the vectors the trajectories and manœuvres that we don't want
-    // to keep.
-    if (first_to_keep) {
-      root_ = segments_[*first_to_keep]->DetachFork();
-      segments_.erase(segments_.cbegin(),
-                      segments_.cbegin() + *first_to_keep);
-      // For some reason manœuvres_.erase() doesn't work because it wants to
-      // copy, hence this dance.
-      std::vector<NavigationManœuvre> m;
-      std::move(manœuvres_.begin() + *first_to_keep / 2,
-                manœuvres_.end(),
-                std::back_inserter(m));
-      manœuvres_.swap(m);
-    }
-
-    // Cut the part of the first coast that we don't want to keep.
-    root_->ForgetBefore(time);
-    initial_time_ = root_->Begin().time();
   }
+  if (!first_to_keep) {
+    // The entire flight plan needs to go away.
+    on_empty();
+    return;
+  }
+
+  // Detach the first coast to keep, truncate its beginning, and reattach it
+  // to a new root.
+  std::unique_ptr<DiscreteTrajectory<Barycentric>> new_first_coast =
+      segments_[*first_to_keep]->DetachFork();
+  new_first_coast->ForgetBefore(time);
+  root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+  root_->AttachFork(std::move(new_first_coast));
+
+  // Remove from the vectors the trajectories and manœuvres that we don't want
+  // to keep.
+  segments_.erase(segments_.cbegin(),
+                  segments_.cbegin() + *first_to_keep);
+  // For some reason manœuvres_.erase() doesn't work because it wants to
+  // copy, hence this dance.
+  std::vector<NavigationManœuvre> m;
+  std::move(manœuvres_.begin() + *first_to_keep / 2,
+            manœuvres_.end(),
+            std::back_inserter(m));
+  manœuvres_.swap(m);
+
+  initial_time_ = root_->Begin().time();
 }
 
 void FlightPlan::RemoveLast() {
