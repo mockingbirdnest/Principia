@@ -174,6 +174,12 @@ class Forkable {
   // |timeline_it| may be at end if it denotes the fork time of this object.
   not_null<Tr4jectory*> NewFork(TimelineConstIterator const& timeline_it);
 
+  // |fork| must be a non-empty root and its first point must have been appended
+  // to this object by the caller.  |fork| is attached to this object as a child
+  // at the end of the timeline.  The caller must then delete the first point of
+  // |fork|'s timeline.
+  void AttachForkToCopiedBegin(not_null<std::unique_ptr<Tr4jectory>> fork);
+
   // This object must not be a root.  It is detached from its parent and becomes
   // a root.  All the children which were fork at this object's fork time are
   // changed to be forked at the beginning of this object's timeline.  This

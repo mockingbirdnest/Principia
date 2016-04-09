@@ -297,6 +297,36 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
 }
 
 template <typename Tr4jectory, typename It3rator>
+void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
+    not_null<std::unique_ptr<Tr4jectory>> fork) {
+  CHECK(fork->is_root());
+  CHECK(!fork->timeline_empty());
+  auto const timeline_begin = fork->timeline_begin();
+
+  // The children of |fork| whose |position_in_parent_timeline_| was at
+  // |begin()| are referencing a point that will soon be removed from the
+  // timeline.  They must now point at |end()| to indicate that their fork time
+  // is not in |fork|'s timeline.
+  for (auto const& pair : fork->children_) {
+    std::unique_ptr<Tr4jectory> const& child = pair.second;
+    if (child->position_in_parent_timeline_ == timeline_begin) {
+      child->position_in_parent_timeline_ = timeline_end();
+    }
+  }
+
+  // Insert |fork| in the |children_| of this object.
+  auto const child_it = children_.emplace_hint(
+      children_.end(),
+      internal::ForkableTraits<Tr4jectory>::time(timeline_begin),
+      std::move(fork));
+
+  // Set the pointer into this object.  Note that |fork| is no longer usable.
+  child_it->second->parent_ = that();
+  child_it->second->position_in_parent_children_ = child_it;
+  child_it->second->position_in_parent_timeline_ = --timeline_end();
+}
+
+template <typename Tr4jectory, typename It3rator>
 not_null<std::unique_ptr<Tr4jectory>>
 Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   CHECK(!is_root());
