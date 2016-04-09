@@ -160,7 +160,8 @@ class FlightPlan {
   Mass const initial_mass_;
   Instant initial_time_;
   Instant final_time_;
-  // The root of the flight plan.  Identical to the first segment.
+  // The root of the flight plan.  Contains a single point, not part of
+  // |segments_|.  Owns all the |segments_|.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> root_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Each segment is a fork of the previous

@@ -12,19 +12,6 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 
 namespace ksp_plugin {
 
-namespace {
-
-DiscreteTrajectory<Barycentric>::Iterator BeginOrFork(
-    DiscreteTrajectory<Barycentric> const& trajectory) {
-  if (trajectory.is_root()) {
-    return trajectory.Begin();
-  } else {
-    return trajectory.Fork();
-  }
-}
-
-}  // namespace
-
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
     Instant const& initial_time,
@@ -41,9 +28,11 @@ FlightPlan::FlightPlan(
       adaptive_step_parameters_(adaptive_step_parameters) {
   CHECK(final_time_ >= initial_time_);
 
-  // Fill the first coasting trajectory.
-  root_->Append(initial_time, initial_degrees_of_freedom);
-  segments_.emplace_back(root_.get());
+  // Set the (single) point of the root.
+  root_->Append(initial_time_, initial_degrees_of_freedom);
+
+  // Create a fork for the first coasting trajectory.
+  segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
   CoastLastSegment(final_time_);
 }
 
@@ -189,14 +178,14 @@ void FlightPlan::GetSegment(
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  *begin = BeginOrFork(*segments_[index]);
+  *begin = segments_[index]->Fork();
   *end = segments_[index]->End();
 }
 
 void FlightPlan::GetAllSegments(
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
     not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
-  *begin = segments_.back()->Find(segments_.front()->Begin().time());
+  *begin = segments_.back()->Find(segments_.front()->Fork().time());
   *end = segments_.back()->End();
   CHECK(*begin != *end);
 }
@@ -374,10 +363,7 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
 void FlightPlan::ReplaceLastSegment(
     not_null<DiscreteTrajectory<Barycentric>*> const segment) {
   CHECK_EQ(segment->parent(), segments_.back()->parent());
-  CHECK_EQ(BeginOrFork(*segment).time(),
-           BeginOrFork(*segments_.back()).time());
-  CHECK_EQ(BeginOrFork(*segment).degrees_of_freedom(),
-           BeginOrFork(*segments_.back()).degrees_of_freedom());
+  CHECK_EQ(segment->Fork().time(), segments_.back()->Fork().time());
   PopLastSegment();
   // |segment| must not be anomalous, so it cannot not follow an anomalous
   // segment.
@@ -393,8 +379,7 @@ void FlightPlan::AddSegment() {
 }
 
 void FlightPlan::ResetLastSegment() {
-  //TODO(phl): Seems wrong for the first trajectory.
-  segments_.back()->ForgetAfter(BeginOrFork(*segments_.back()).time());
+  segments_.back()->ForgetAfter(segments_.back()->Fork().time());
   if (anomalous_segments_ == 1) {
     // If there was one anomalous segment, it was the last one, which was
     // anomalous because it ended early.  It is no longer anomalous.
