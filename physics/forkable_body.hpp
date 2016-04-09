@@ -299,6 +299,8 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
 template <typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
     not_null<std::unique_ptr<Tr4jectory>> fork) {
+  CHECK(fork->is_root());
+  CHECK(!fork->timeline_empty());
   auto const timeline_begin = fork->timeline_begin();
 
   // The children of |fork| whose |position_in_parent_timeline_| was at
@@ -312,14 +314,16 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
     }
   }
 
-  // Insert |fork| in the children of this object.
-  auto const child_it =
-      children_->insert(timeline_begin->first, std::move(fork));
+  // Insert |fork| in the |children_| of this object.
+  auto const child_it = children_.emplace_hint(
+      children_.end(),
+      internal::ForkableTraits<Tr4jectory>::time(timeline_begin),
+      std::move(fork));
 
   // Set the pointer into this object.  Note that |fork| is no longer usable.
-  child_it->second->parent_ = this;
-  child_it->position_in_parent_children_ = child_it;
-  child_it->position_in_parent_timeline_ = --timeline_end();
+  child_it->second->parent_ = that();
+  child_it->second->position_in_parent_children_ = child_it;
+  child_it->second->position_in_parent_timeline_ = --timeline_end();
 }
 
 template <typename Tr4jectory, typename It3rator>
