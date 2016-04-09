@@ -11,6 +11,7 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
 using geometry::Instant;
 using quantities::si::Second;
 using ::testing::ElementsAre;
@@ -46,10 +47,12 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
   FakeTrajectory() = default;
 
+  void pop_front();
   void push_front(Instant const& time);
   void push_back(Instant const& time);
 
   using Forkable<FakeTrajectory, Iterator>::NewFork;
+  using Forkable<FakeTrajectory, Iterator>::AttachForkToCopiedBegin;
   using Forkable<FakeTrajectory, Iterator>::DetachForkWithCopiedBegin;
   using Forkable<FakeTrajectory, Iterator>::DeleteAllForksAfter;
   using Forkable<FakeTrajectory, Iterator>::CheckNoForksBefore;
@@ -91,6 +94,10 @@ not_null<FakeTrajectoryIterator const*> FakeTrajectoryIterator::that() const {
 }
 
 }  // namespace internal
+
+void FakeTrajectory::pop_front() {
+  timeline_.pop_front();
+}
 
 void FakeTrajectory::push_front(Instant const& time) {
   timeline_.push_front(time);
@@ -286,6 +293,47 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork1);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
+}
+
+TEST_F(ForkableDeathTest, AttachForkWithCopiedBeginError) {
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    not_null<FakeTrajectory*> const fork =
+        trajectory_.NewFork(trajectory_.timeline_find(t1_));
+    trajectory_.AttachForkToCopiedBegin(std::unique_ptr<FakeTrajectory>(fork));
+  }, "is_root");
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    not_null<std::unique_ptr<FakeTrajectory>> fork =
+        make_not_null_unique<FakeTrajectory>();
+    trajectory_.AttachForkToCopiedBegin(std::move(fork));
+  }, "timeline_empty");
+}
+
+TEST_F(ForkableTest, AttachForkWithCopiedBeginSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+
+  not_null<std::unique_ptr<FakeTrajectory>> fork1 =
+      make_not_null_unique<FakeTrajectory>();
+  fork1->push_back(t3_);
+  not_null<FakeTrajectory*> const fork2 =
+      fork1->NewFork(fork1->timeline_find(t3_));
+  fork2->push_back(t4_);
+  auto times = Times(fork1.get());
+  EXPECT_THAT(times, ElementsAre(t3_));
+  times = Times(fork2);
+  EXPECT_THAT(times, ElementsAre(t3_, t4_));
+
+  auto const unowned_fork1 = fork1.get();
+  trajectory_.AttachForkToCopiedBegin(std::move(fork1));
+  unowned_fork1->pop_front();
+
+  times = Times(unowned_fork1);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  times = Times(fork2);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
 }
 
 TEST_F(ForkableDeathTest, DetachForkWithCopiedBeginError) {
