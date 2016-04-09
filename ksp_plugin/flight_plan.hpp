@@ -159,6 +159,7 @@ class FlightPlan {
 
   Mass const initial_mass_;
   Instant initial_time_;
+  DegreesOfFreedom<Barycentric> initial_degrees_of_freedom_;
   Instant final_time_;
   // The root of the flight plan.  Contains a single point, not part of
   // |segments_|.  Owns all the |segments_|.

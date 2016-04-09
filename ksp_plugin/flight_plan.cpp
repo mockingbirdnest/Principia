@@ -20,16 +20,17 @@ FlightPlan::FlightPlan(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters)
-    : initial_time_(initial_time),
+    : initial_mass_(initial_mass),
+      initial_time_(initial_time),
+      initial_degrees_of_freedom_(initial_degrees_of_freedom),
       final_time_(final_time),
-      initial_mass_(initial_mass),
       root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters) {
   CHECK(final_time_ >= initial_time_);
 
   // Set the (single) point of the root.
-  root_->Append(initial_time_, initial_degrees_of_freedom);
+  root_->Append(initial_time_, initial_degrees_of_freedom_);
 
   // Create a fork for the first coasting trajectory.
   segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
@@ -109,7 +110,9 @@ void FlightPlan::ForgetBefore(Instant const& time,
             std::back_inserter(m));
   manœuvres_.swap(m);
 
-  initial_time_ = root_->Begin().time();
+  auto const root_begin = root_->Begin();
+  initial_time_ = root_begin.time();
+  initial_degrees_of_freedom_ = root_begin.degrees_of_freedom();
 }
 
 void FlightPlan::RemoveLast() {
@@ -198,6 +201,8 @@ void FlightPlan::WriteToMessage(
     not_null<serialization::FlightPlan*> const message) const {
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   initial_time_.WriteToMessage(message->mutable_initial_time());
+  initial_degrees_of_freedom_.WriteToMessage(
+      message->mutable_initial_degrees_of_freedom());
   final_time_.WriteToMessage(message->mutable_final_time());
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -291,7 +296,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 }
 
 FlightPlan::FlightPlan()
-    : root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+    : initial_degrees_of_freedom_(Barycentric::origin, Velocity<Barycentric>()),
+      root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
