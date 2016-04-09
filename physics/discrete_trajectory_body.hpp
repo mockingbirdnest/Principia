@@ -121,9 +121,18 @@ void DiscreteTrajectory<Frame>::AttachFork(
     not_null<std::unique_ptr<DiscreteTrajectory<Frame>>> fork) {
   CHECK(fork->is_root());
   CHECK(!fork->timeline_.empty());
-  auto it = fork->timeline_.begin();
-  Append(it->first, it->second);
-  fork->timeline_.erase(it);
+
+  // Append to this trajectory a copy of the first point of |fork|.
+  auto& fork_timeline = fork->timeline_;
+  auto fork_begin = fork_timeline.begin();
+  Append(fork_begin->first, fork_begin->second);
+
+  // Attach |fork| to this trajectory.
+  AttachForkToCopiedBegin(fork);
+
+  // Remove the first point of |fork| now that it properly attached to its
+  // parent.
+  fork_timeline.erase(fork_begin);
 }
 
 template<typename Frame>
