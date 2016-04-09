@@ -461,6 +461,58 @@ TEST_F(DiscreteTrajectoryTest, NewForkAtLast) {
   EXPECT_THAT(after, ElementsAre(t2_, t3_, t4_));
 }
 
+TEST_F(DiscreteTrajectoryTest, AttachFork) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> fork1 =
+      make_not_null_unique<DiscreteTrajectory<World>>();
+  fork1->Append(t3_, d3_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      fork1->NewForkWithoutCopy(t3_);
+  fork2->Append(t4_, d4_);
+
+  auto const unowned_fork1 = fork1.get();
+  massive_trajectory_->AttachFork(std::move(fork1));
+
+  std::map<Instant, Position<World>> positions =
+      Positions(*massive_trajectory_);
+  std::map<Instant, Velocity<World>> velocities =
+      Velocities(*massive_trajectory_);
+  std::list<Instant> times = Times(*massive_trajectory_);
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  positions = Positions(*unowned_fork1);
+  velocities = Velocities(*unowned_fork1);
+  times = Times(*unowned_fork1);
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  positions = Positions(*fork2);
+  velocities = Velocities(*fork2);
+  times = Times(*fork2);
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_),
+                                     testing::Pair(t4_, q4_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_),
+                                      testing::Pair(t4_, p4_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+}
+
 TEST_F(DiscreteTrajectoryTest, DetachFork) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
