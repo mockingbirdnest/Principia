@@ -219,9 +219,10 @@ AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
       GetFlightPlan(plugin, vessel_guid).adaptive_step_parameters()));
 }
 
-double principia__FlightPlanGetFinalTime(Plugin const* const plugin,
-                                         char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanGetFinalTime> m({plugin, vessel_guid});
+double principia__FlightPlanGetDesiredFinalTime(Plugin const* const plugin,
+                                                char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetDesiredFinalTime> m(
+      {plugin, vessel_guid});
   return m.Return(
       (GetFlightPlan(plugin, vessel_guid).desired_final_time() - Instant()) /
       Second);
@@ -373,12 +374,12 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
               FromInterfaceAdaptiveStepParameters(adaptive_step_parameters)));
 }
 
-bool principia__FlightPlanSetFinalTime(Plugin const* const plugin,
-                                       char const* const vessel_guid,
-                                       double const final_time) {
-  journal::Method<journal::FlightPlanSetFinalTime> m({plugin,
-                                                      vessel_guid,
-                                                      final_time});
+bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
+                                              char const* const vessel_guid,
+                                              double const final_time) {
+  journal::Method<journal::FlightPlanSetDesiredFinalTime> m({plugin,
+                                                             vessel_guid,
+                                                             final_time});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
                       SetDesiredFinalTime(Instant() + final_time * Second));
 }

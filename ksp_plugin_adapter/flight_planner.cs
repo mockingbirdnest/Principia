@@ -72,7 +72,8 @@ class FlightPlanner : WindowRenderer {
                  i < plugin_.FlightPlanNumberOfManoeuvres(vessel_guid);
                  ++i) {
               // Dummy initial time, we call |Reset| immediately afterwards.
-              final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
+              final_time_.value =
+                  plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
               burn_editors_.Add(
                   new BurnEditor(adapter_, plugin_, vessel_, initial_time : 0));
               burn_editors_.Last().Reset(
@@ -83,15 +84,17 @@ class FlightPlanner : WindowRenderer {
               plugin_.FlightPlanCreate(vessel_guid,
                                        plugin_.CurrentTime() + 1000,
                                        vessel_.GetTotalMass());
-              final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
+              final_time_.value =
+                  plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
               Shrink();
             }
           }
         }
       } else {
         if (final_time_.Render(enabled: true)) {
-          plugin_.FlightPlanSetFinalTime(vessel_guid, final_time_.value);
-          final_time_.value = plugin_.FlightPlanGetFinalTime(vessel_guid);
+          plugin_.FlightPlanSetDesiredFinalTime(vessel_guid, final_time_.value);
+          final_time_.value =
+              plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
         }
 
         AdaptiveStepParameters parameters =

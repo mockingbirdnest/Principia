@@ -895,9 +895,9 @@ TEST_F(InterfaceTest, FlightPlan) {
 
   EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
       .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanSetFinalTime(plugin_.get(),
-                                                kVesselGUID,
-                                                60));
+  EXPECT_TRUE(principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
+                                                       kVesselGUID,
+                                                       60));
 
   EXPECT_CALL(flight_plan, initial_time())
       .WillOnce(Return(Instant() + 3 * Second));
@@ -905,7 +905,8 @@ TEST_F(InterfaceTest, FlightPlan) {
 
   EXPECT_CALL(flight_plan, desired_final_time())
       .WillOnce(Return(Instant() + 4 * Second));
-  EXPECT_EQ(4, principia__FlightPlanGetFinalTime(plugin_.get(), kVesselGUID));
+  EXPECT_EQ(4, principia__FlightPlanGetDesiredFinalTime(plugin_.get(),
+                                                        kVesselGUID));
 
   EXPECT_CALL(
       flight_plan,

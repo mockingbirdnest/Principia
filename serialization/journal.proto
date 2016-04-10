@@ -303,9 +303,9 @@ message FlightPlanGetAdaptiveStepParameters {
   required Return return = 3;
 }
 
-message FlightPlanGetFinalTime {
+message FlightPlanGetDesiredFinalTime {
   extend Method {
-    optional FlightPlanGetFinalTime extension = 5076;
+    optional FlightPlanGetDesiredFinalTime extension = 5076;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -488,9 +488,9 @@ message FlightPlanSetAdaptiveStepParameters {
   required Return return = 3;
 }
 
-message FlightPlanSetFinalTime {
+message FlightPlanSetDesiredFinalTime {
   extend Method {
-    optional FlightPlanSetFinalTime extension = 5067;
+    optional FlightPlanSetDesiredFinalTime extension = 5067;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
