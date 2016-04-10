@@ -96,11 +96,22 @@ class FlightPlanner : WindowRenderer {
           final_time_.value =
               plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
         }
+        double actual_final_time =
+            plugin_.FlightPlanGetActualFinalTime(vessel_guid);
+        UnityEngine.GUILayout.TextField(
+            (final_time_.value == actual_final_time)
+                ? ""
+                : "Timed out after " +
+                      FormatPositiveTimeSpan(TimeSpan.FromSeconds(
+                          actual_final_time -
+                          plugin_.FlightPlanGetInitialTime(vessel_guid))));
 
         AdaptiveStepParameters parameters =
             plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
+
         UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.Label("Maximal step count per segment",
+        UnityEngine.GUILayout.BeginHorizontal();
+        UnityEngine.GUILayout.Label("Max. steps per segment:",
                                     UnityEngine.GUILayout.Width(150));
         if (parameters.max_steps <= 100) {
           UnityEngine.GUILayout.Button("min");
@@ -109,7 +120,7 @@ class FlightPlanner : WindowRenderer {
           plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
         }
         UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
-                                       UnityEngine.GUILayout.Width(150));
+                                       UnityEngine.GUILayout.Width(75));
         if (parameters.max_steps >= Int64.MaxValue / 10) {
           UnityEngine.GUILayout.Button("max");
         } else if (UnityEngine.GUILayout.Button("+")) {
@@ -118,8 +129,8 @@ class FlightPlanner : WindowRenderer {
         }
         UnityEngine.GUILayout.EndHorizontal();
         UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.Label("Tolerance",
-                                    UnityEngine.GUILayout.Width(150));
+        UnityEngine.GUILayout.Label("Tolerance:",
+                                    UnityEngine.GUILayout.Width(75));
         if (parameters.length_integration_tolerance <= 1e-6) {
           UnityEngine.GUILayout.Button("min");
         } else if (UnityEngine.GUILayout.Button("-")) {
@@ -129,7 +140,7 @@ class FlightPlanner : WindowRenderer {
         }
         UnityEngine.GUILayout.TextArea(
             parameters.length_integration_tolerance.ToString("0.0e0") + " m",
-            UnityEngine.GUILayout.Width(150));
+            UnityEngine.GUILayout.Width(75));
         if (parameters.length_integration_tolerance >= 1e6) {
           UnityEngine.GUILayout.Button("max");
         } else if (UnityEngine.GUILayout.Button("+")) {
@@ -137,6 +148,7 @@ class FlightPlanner : WindowRenderer {
           parameters.speed_integration_tolerance *= 2;
           plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
         }
+        UnityEngine.GUILayout.EndHorizontal();
         UnityEngine.GUILayout.EndHorizontal();
 
         double Δv = (from burn_editor in burn_editors_
