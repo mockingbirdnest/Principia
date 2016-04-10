@@ -211,7 +211,6 @@ void FlightPlan::WriteToMessage(
   }
 }
 
-//TODO(phl):KOMPATIBILITI
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
     not_null<DiscreteTrajectory<Barycentric>*> const root,
