@@ -219,7 +219,7 @@ TEST_F(FlightPlanTest, Append) {
   // Burn ends after final time.
   EXPECT_FALSE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(0, flight_plan_->number_of_manœuvres());
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_FALSE(flight_plan_->Append(MakeFirstBurn()));
@@ -229,7 +229,7 @@ TEST_F(FlightPlanTest, Append) {
 }
 
 TEST_F(FlightPlanTest, ForgetBefore) {
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
@@ -300,7 +300,7 @@ TEST_F(FlightPlanTest, ForgetBefore) {
 }
 
 TEST_F(FlightPlanTest, RemoveLast) {
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
@@ -314,7 +314,7 @@ TEST_F(FlightPlanTest, RemoveLast) {
 }
 
 TEST_F(FlightPlanTest, ReplaceLast) {
-  flight_plan_->SetFinalTime(t0_ + 1.7 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 1.7 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   Mass const old_final_mass =
       flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
@@ -325,7 +325,7 @@ TEST_F(FlightPlanTest, ReplaceLast) {
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
                 final_mass());
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->ReplaceLast(MakeThirdBurn()));
   EXPECT_GT(old_final_mass,
             flight_plan_->GetManœuvre(flight_plan_->number_of_manœuvres() - 1).
@@ -334,7 +334,7 @@ TEST_F(FlightPlanTest, ReplaceLast) {
 }
 
 TEST_F(FlightPlanTest, Segments) {
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_EQ(3, flight_plan_->number_of_segments());
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
@@ -362,7 +362,7 @@ TEST_F(FlightPlanTest, Segments) {
 TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(5, flight_plan_->number_of_segments());
@@ -400,7 +400,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
 }
 
 TEST_F(FlightPlanTest, Serialization) {
-  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
 
@@ -408,7 +408,7 @@ TEST_F(FlightPlanTest, Serialization) {
   flight_plan_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_initial_mass());
   EXPECT_TRUE(message.has_initial_time());
-  EXPECT_TRUE(message.has_final_time());
+  EXPECT_TRUE(message.has_desired_final_time());
   EXPECT_TRUE(message.has_adaptive_step_parameters());
   EXPECT_TRUE(message.adaptive_step_parameters().has_integrator());
   EXPECT_TRUE(message.adaptive_step_parameters().has_max_steps());
@@ -429,7 +429,7 @@ TEST_F(FlightPlanTest, Serialization) {
   std::unique_ptr<FlightPlan> flight_plan_read =
       FlightPlan::ReadFromMessage(message, root_read.get(), ephemeris_.get());
   EXPECT_EQ(t0_ - 2 * π * Second, flight_plan_read->initial_time());
-  EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->final_time());
+  EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->desired_final_time());
   EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
   EXPECT_EQ(5, flight_plan_read->number_of_segments());
 }

@@ -41,13 +41,14 @@ class FlightPlan {
   FlightPlan(Mass const& initial_mass,
              Instant const& initial_time,
              DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
-             Instant const& final_time,
+             Instant const& desired_final_time,
              not_null<Ephemeris<Barycentric>*> const ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters const&
                  adaptive_step_parameters);
 
   virtual Instant initial_time() const;
-  virtual Instant final_time() const;
+  virtual Instant actual_final_time() const;
+  virtual Instant desired_final_time() const;
 
   virtual int number_of_manœuvres() const;
   // |index| must be in [0, number_of_manœuvres()[.
@@ -55,8 +56,8 @@ class FlightPlan {
 
   // The following two functions return false and have no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
-  // burn, or end after |final_time_|, or if the integration of the coasting
-  // phase times out or is singular before the burn.
+  // burn, or end after |desired_final_time_|, or if the integration of the
+  // coasting phase times out or is singular before the burn.
   virtual bool Append(Burn burn);
 
   // Forgets the flight plan at least before |time|.  The actual cutoff time
@@ -72,9 +73,9 @@ class FlightPlan {
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(Burn burn);
 
-  // Returns false and has no effect if |final_time| is before the end of the
-  // last manœuvre or before |initial_time_|.
-  virtual bool SetFinalTime(Instant const& final_time);
+  // Returns false and has no effect if |desired_final_time| is before the end
+  // of the last manœuvre or before |initial_time_|.
+  virtual bool SetDesiredFinalTime(Instant const& desired_final_time);
 
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   adaptive_step_parameters() const;
@@ -116,8 +117,9 @@ class FlightPlan {
 
  private:
   // Appends |manœuvre| to |manœuvres_|, adds a burn and a coast segment.
-  // |manœuvre| must fit between |start_of_last_coast()| and |final_time_|,
-  // the last coast segment must end at |manœuvre.initial_time()|.
+  // |manœuvre| must fit between |start_of_last_coast()| and
+  // |desired_final_time_|, the last coast segment must end at
+  // |manœuvre.initial_time()|.
   void Append(NavigationManœuvre manœuvre);
 
   // Recomputes all trajectories in |segments_|.  Returns false if the
@@ -127,8 +129,9 @@ class FlightPlan {
   // Flows the last segment for the duration of |manœuvre| using its intrinsic
   // acceleration.
   void BurnLastSegment(NavigationManœuvre const& manœuvre);
-  // Flows the last segment until |final_time| with no intrinsic acceleration.
-  void CoastLastSegment(Instant const& final_time);
+  // Flows the last segment until |desired_final_time| with no intrinsic
+  // acceleration.
+  void CoastLastSegment(Instant const& desired_final_time);
 
   // Replaces the last segment with |segment|.  |segment| must be forked from
   // the same trajectory as the last segment, and at the same time.  |segment|
@@ -160,7 +163,7 @@ class FlightPlan {
   Mass const initial_mass_;
   Instant initial_time_;
   DegreesOfFreedom<Barycentric> initial_degrees_of_freedom_;
-  Instant final_time_;
+  Instant desired_final_time_;
   // The root of the flight plan.  Contains a single point, not part of
   // |segments_|.  Owns all the |segments_|.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> root_;
