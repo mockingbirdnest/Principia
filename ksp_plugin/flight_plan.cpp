@@ -2,6 +2,7 @@
 #include "ksp_plugin/flight_plan.hpp"
 
 #include <experimental/optional>
+#include <vector>
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -234,7 +235,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     if (it.time() != initial_time) {
       --it;
       initial_time = it.time();
-    };
+    }
     initial_degrees_of_freedom =
         std::make_unique<DegreesOfFreedom<Barycentric>>(
             it.degrees_of_freedom());
