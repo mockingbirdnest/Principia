@@ -219,6 +219,15 @@ AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
       GetFlightPlan(plugin, vessel_guid).adaptive_step_parameters()));
 }
 
+double principia__FlightPlanGetActualFinalTime(Plugin const* const plugin,
+                                               char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetActualFinalTime> m(
+      {plugin, vessel_guid});
+  return m.Return(
+      (GetFlightPlan(plugin, vessel_guid).actual_final_time() - Instant()) /
+      Second);
+}
+
 double principia__FlightPlanGetDesiredFinalTime(Plugin const* const plugin,
                                                 char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetDesiredFinalTime> m(

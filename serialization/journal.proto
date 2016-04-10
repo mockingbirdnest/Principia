@@ -76,7 +76,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5087.
+  extensions 5000 to 5999;  // Last used: 5088.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -298,6 +298,22 @@ message FlightPlanGetAdaptiveStepParameters {
   }
   message Return {
     required AdaptiveStepParameters result = 1;
+  }
+  required In in = 1;
+  required Return return = 3;
+}
+
+message FlightPlanGetActualFinalTime {
+  extend Method {
+    optional FlightPlanGetActualFinalTime extension = 5088;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required double result = 1;
   }
   required In in = 1;
   required Return return = 3;

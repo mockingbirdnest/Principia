@@ -42,6 +42,10 @@ Instant FlightPlan::initial_time() const {
   return initial_time_;
 }
 
+Instant FlightPlan::actual_final_time() const {
+  return segments_.back()->last().time();
+}
+
 Instant FlightPlan::desired_final_time() const {
   return desired_final_time_;
 }

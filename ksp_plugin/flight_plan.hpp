@@ -47,6 +47,7 @@ class FlightPlan {
                  adaptive_step_parameters);
 
   virtual Instant initial_time() const;
+  virtual Instant actual_final_time() const;
   virtual Instant desired_final_time() const;
 
   virtual int number_of_manœuvres() const;
