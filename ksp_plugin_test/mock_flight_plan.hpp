@@ -12,7 +12,7 @@ class MockFlightPlan : public FlightPlan {
   MockFlightPlan() : FlightPlan() {}
 
   MOCK_CONST_METHOD0(initial_time, Instant());
-  MOCK_CONST_METHOD0(final_time, Instant());
+  MOCK_CONST_METHOD0(desired_final_time, Instant());
 
   MOCK_CONST_METHOD0(number_of_manœuvres, int());
   MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int const index));
@@ -25,7 +25,7 @@ class MockFlightPlan : public FlightPlan {
   bool Append(Burn burn);
   bool ReplaceLast(Burn burn);
 
-  MOCK_METHOD1(SetFinalTime, bool(Instant const& final_time));
+  MOCK_METHOD1(SetDesiredFinalTime, bool(Instant const& final_time));
 
   MOCK_CONST_METHOD0(adaptive_step_parameters,
                      Ephemeris<Barycentric>::AdaptiveStepParameters const&());

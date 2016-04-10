@@ -223,7 +223,8 @@ double principia__FlightPlanGetFinalTime(Plugin const* const plugin,
                                          char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetFinalTime> m({plugin, vessel_guid});
   return m.Return(
-      (GetFlightPlan(plugin, vessel_guid).final_time() - Instant()) / Second);
+      (GetFlightPlan(plugin, vessel_guid).desired_final_time() - Instant()) /
+      Second);
 }
 
 double principia__FlightPlanGetInitialTime(Plugin const* const plugin,
@@ -379,7 +380,7 @@ bool principia__FlightPlanSetFinalTime(Plugin const* const plugin,
                                                       vessel_guid,
                                                       final_time});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      SetFinalTime(Instant() + final_time * Second));
+                      SetDesiredFinalTime(Instant() + final_time * Second));
 }
 
 }  // namespace interface
