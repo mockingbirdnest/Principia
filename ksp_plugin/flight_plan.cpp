@@ -1,6 +1,9 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
+#include <experimental/optional>
+#include <vector>
+
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
@@ -10,38 +13,29 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 
 namespace ksp_plugin {
 
-FlightPlan::FlightPlan(not_null<DiscreteTrajectory<Barycentric>*> const root,
-    Instant const& initial_time,
-    Instant const& final_time,
+FlightPlan::FlightPlan(
     Mass const& initial_mass,
+    Instant const& initial_time,
+    DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
+    Instant const& final_time,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                           adaptive_step_parameters)
-    : initial_time_(initial_time),
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters)
+    : initial_mass_(initial_mass),
+      initial_time_(initial_time),
+      initial_degrees_of_freedom_(initial_degrees_of_freedom),
       final_time_(final_time),
-      initial_mass_(initial_mass),
+      root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters) {
   CHECK(final_time_ >= initial_time_);
-  auto it = root->LowerBound(initial_time_);
-  if (it.time() != initial_time_) {
-    --it;
-    initial_time_ = it.time();
-  }
+
+  // Set the (single) point of the root.
+  root_->Append(initial_time_, initial_degrees_of_freedom_);
 
   // Create a fork for the first coasting trajectory.
-  segments_.emplace_back(root->NewForkWithoutCopy(it.time()));
+  segments_.emplace_back(root_->NewForkWithoutCopy(initial_time_));
   CoastLastSegment(final_time_);
-}
-
-FlightPlan::~FlightPlan() {
-  // |segments_| is empty for a mock object.
-  if (!segments_.empty()) {
-    // Deleting the first fork deletes everything.
-    DiscreteTrajectory<Barycentric>* trajectory = segments_.front();
-    CHECK(!trajectory->is_root());
-    trajectory->parent()->DeleteFork(&trajectory);
-  }
 }
 
 Instant FlightPlan::initial_time() const {
@@ -80,6 +74,48 @@ bool FlightPlan::Append(Burn burn) {
   return false;
 }
 
+void FlightPlan::ForgetBefore(Instant const& time,
+                              std::function<void()> const& on_empty) {
+  // Find the first segment to keep.  Note that incrementing by 2 ensures that
+  // we only look at coasts.
+  std::experimental::optional<int> first_to_keep;
+  for (int i = 0; i < segments_.size(); i += 2) {
+    if (time <= segments_[i]->last().time()) {
+      first_to_keep = i;
+      break;
+    }
+  }
+  if (!first_to_keep) {
+    // The entire flight plan needs to go away.
+    on_empty();
+    return;
+  }
+
+  // Detach the first coast to keep, truncate its beginning, and reattach it
+  // to a new root.
+  std::unique_ptr<DiscreteTrajectory<Barycentric>> new_first_coast =
+      segments_[*first_to_keep]->DetachFork();
+  new_first_coast->ForgetBefore(time);
+  root_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+  root_->AttachFork(std::move(new_first_coast));
+
+  // Remove from the vectors the trajectories and manœuvres that we don't want
+  // to keep.
+  segments_.erase(segments_.cbegin(),
+                  segments_.cbegin() + *first_to_keep);
+  // For some reason manœuvres_.erase() doesn't work because it wants to
+  // copy, hence this dance.
+  std::vector<NavigationManœuvre> m;
+  std::move(manœuvres_.begin() + *first_to_keep / 2,
+            manœuvres_.end(),
+            std::back_inserter(m));
+  manœuvres_.swap(m);
+
+  auto const root_begin = root_->Begin();
+  initial_time_ = root_begin.time();
+  initial_degrees_of_freedom_ = root_begin.degrees_of_freedom();
+}
+
 void FlightPlan::RemoveLast() {
   CHECK(!manœuvres_.empty());
   manœuvres_.pop_back();
@@ -91,8 +127,8 @@ void FlightPlan::RemoveLast() {
 
 bool FlightPlan::ReplaceLast(Burn burn) {
   CHECK(!manœuvres_.empty());
-  auto manœuvre =
-      MakeNavigationManœuvre(std::move(burn), manœuvres_.back().initial_mass());
+  auto manœuvre = MakeNavigationManœuvre(std::move(burn),
+                                         manœuvres_.back().initial_mass());
   if (manœuvre.FitsBetween(start_of_penultimate_coast(), final_time_) &&
       !manœuvre.IsSingular()) {
     DiscreteTrajectory<Barycentric>* recomputed_penultimate_coast =
@@ -166,6 +202,8 @@ void FlightPlan::WriteToMessage(
     not_null<serialization::FlightPlan*> const message) const {
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   initial_time_.WriteToMessage(message->mutable_initial_time());
+  initial_degrees_of_freedom_.WriteToMessage(
+      message->mutable_initial_degrees_of_freedom());
   final_time_.WriteToMessage(message->mutable_final_time());
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
@@ -182,6 +220,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
   std::unique_ptr<Ephemeris<Barycentric>::AdaptiveStepParameters>
       adaptive_step_parameters;
+  Instant initial_time = Instant::ReadFromMessage(message.initial_time());
+  std::unique_ptr<DegreesOfFreedom<Barycentric>> initial_degrees_of_freedom;
   if (is_pre_буняковский) {
     adaptive_step_parameters =
         std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
@@ -191,19 +231,31 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
             /*max_steps=*/1000,
             Length::ReadFromMessage(message.length_integration_tolerance()),
             Speed::ReadFromMessage(message.speed_integration_tolerance()));
+    auto it = root->LowerBound(initial_time);
+    if (it.time() != initial_time) {
+      --it;
+      initial_time = it.time();
+    }
+    initial_degrees_of_freedom =
+        std::make_unique<DegreesOfFreedom<Barycentric>>(
+            it.degrees_of_freedom());
   } else {
     CHECK(message.has_adaptive_step_parameters());
     adaptive_step_parameters =
         std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
             Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
                 message.adaptive_step_parameters()));
+    initial_degrees_of_freedom =
+        std::make_unique<DegreesOfFreedom<Barycentric>>(
+            DegreesOfFreedom<Barycentric>::ReadFromMessage(
+                message.initial_degrees_of_freedom()));
   }
 
   auto flight_plan = std::make_unique<FlightPlan>(
-      root,
-      Instant::ReadFromMessage(message.initial_time()),
-      Instant::ReadFromMessage(message.final_time()),
       Mass::ReadFromMessage(message.initial_mass()),
+      initial_time,
+      *initial_degrees_of_freedom,
+      Instant::ReadFromMessage(message.final_time()),
       ephemeris,
       *adaptive_step_parameters);
 
@@ -244,7 +296,9 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 }
 
 FlightPlan::FlightPlan()
-    : ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+    : initial_degrees_of_freedom_(Barycentric::origin, Velocity<Barycentric>()),
+      root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
           /*max_steps=*/1,
@@ -304,12 +358,12 @@ void FlightPlan::CoastLastSegment(Instant const& final_time) {
     return;
   } else {
     bool const reached_final_time =
-          ephemeris_->FlowWithAdaptiveStep(
-                          segments_.back(),
-                          Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
-                          final_time,
-                          adaptive_step_parameters_,
-                          max_ephemeris_steps_per_frame);
+        ephemeris_->FlowWithAdaptiveStep(
+                        segments_.back(),
+                        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+                        final_time,
+                        adaptive_step_parameters_,
+                        max_ephemeris_steps_per_frame);
     if (!reached_final_time) {
       anomalous_segments_ = 1;
     }

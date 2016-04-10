@@ -564,7 +564,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
-  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(1);
+  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(2);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
@@ -606,10 +606,15 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
-  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
-  EXPECT_LE(satellite->history().Begin().time(),
-            satellite->flight_plan().initial_time());
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 3));
+  EXPECT_LE(HistoryTime(time, 3), satellite->flight_plan().initial_time());
+  EXPECT_LE(HistoryTime(time, 3), satellite->history().Begin().time());
+  EXPECT_EQ(1, satellite->flight_plan().number_of_manœuvres());
   EXPECT_EQ(1 * Newton, satellite->flight_plan().GetManœuvre(0).thrust());
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
+  EXPECT_LE(HistoryTime(time, 5), satellite->flight_plan().initial_time());
+  EXPECT_LE(HistoryTime(time, 5), satellite->history().Begin().time());
+  EXPECT_EQ(0, satellite->flight_plan().number_of_manœuvres());
 }
 
 TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
@@ -642,7 +647,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   auto const satellite = plugin_->GetVessel(guid);
 
   Instant const& time = initial_time_ + 1 * Second;
-  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(time, 3)))
+  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(time, 5)))
       .Times(1);
   plugin_->AdvanceTime(time, Angle());
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
@@ -650,11 +655,10 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
-    plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
-    auto const rendered_prediction =
-        plugin_->RenderedPrediction(guid, World::origin);
+  plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
+  auto const rendered_prediction =
+      plugin_->RenderedPrediction(guid, World::origin);
 }
-
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";

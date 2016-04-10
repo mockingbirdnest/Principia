@@ -30,6 +30,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::MockFunction;
 
 namespace ksp_plugin {
 
@@ -68,10 +69,10 @@ class FlightPlanTest : public testing::Test {
                                          1 * Metre / Second,
                                          0 * Metre / Second})});
     flight_plan_ = std::make_unique<FlightPlan>(
-        &root_,
-        /*initial_time=*/t0_,
-        /*final_time=*/t0_ + 1.5 * Second,
         /*initial_mass=*/1 * Kilogram,
+        /*initial_time=*/root_.Begin().time(),
+        /*initial_degrees_of_freedom=*/root_.Begin().degrees_of_freedom(),
+        /*final_time=*/t0_ + 1.5 * Second,
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
@@ -144,10 +145,10 @@ TEST_F(FlightPlanTest, Singular) {
                          0 * Metre}),
                 Velocity<Barycentric>()});
   flight_plan_ = std::make_unique<FlightPlan>(
-      &root_,
-      /*initial_time=*/t0_,
-      /*final_time=*/singularity + 100 * Second,
       /*initial_mass=*/1 * Kilogram,
+      /*initial_time=*/root_.last().time(),
+      /*initial_degrees_of_freedom=*/root_.last().degrees_of_freedom(),
+      /*final_time=*/singularity + 100 * Second,
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
@@ -227,7 +228,78 @@ TEST_F(FlightPlanTest, Append) {
   EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
 }
 
-TEST_F(FlightPlanTest, Remove) {
+TEST_F(FlightPlanTest, ForgetBefore) {
+  flight_plan_->SetFinalTime(t0_ + 42 * Second);
+  EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
+  EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
+  EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
+  EXPECT_EQ(2, flight_plan_->number_of_manœuvres());
+  EXPECT_EQ(5, flight_plan_->number_of_segments());
+
+  // Find the extremities of each segment.
+  std::vector<Instant> begin_times;
+  std::vector<Instant> last_times;
+  for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
+    DiscreteTrajectory<Barycentric>::Iterator begin;
+    DiscreteTrajectory<Barycentric>::Iterator end;
+    flight_plan_->GetSegment(i, &begin, &end);
+    --end;
+    begin_times.push_back(begin.time());
+    last_times.push_back(end.time());
+  }
+
+  // Do the forgetting.
+  MockFunction<void()> non_empty;
+  for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
+    flight_plan_->ForgetBefore(begin_times[i], non_empty.AsStdFunction());
+    EXPECT_EQ(begin_times[i], flight_plan_->initial_time());
+    if (i % 2 == 0) {
+      // A coast.
+      EXPECT_EQ(5 - i, flight_plan_->number_of_segments());
+      EXPECT_EQ((5 - i) / 2, flight_plan_->number_of_manœuvres());
+    } else {
+      // A burn.
+      EXPECT_EQ(6 - i, flight_plan_->number_of_segments());
+      EXPECT_EQ((6 - i) / 2, flight_plan_->number_of_manœuvres());
+    }
+
+    Instant const mid_time =
+        Barycentre<Instant, double>({begin_times[i], last_times[i]}, {1, 1});
+    flight_plan_->ForgetBefore(mid_time, non_empty.AsStdFunction());
+    if (i % 2 == 0) {
+      // A coast.
+      EXPECT_LE(mid_time, flight_plan_->initial_time());
+      EXPECT_EQ(5 - i, flight_plan_->number_of_segments());
+      EXPECT_EQ((5 - i) / 2, flight_plan_->number_of_manœuvres());
+    } else {
+      // A burn.
+      EXPECT_EQ(begin_times[i + 1], flight_plan_->initial_time());
+      EXPECT_EQ(4 - i, flight_plan_->number_of_segments());
+      EXPECT_EQ((4 - i) / 2, flight_plan_->number_of_manœuvres());
+    }
+
+    flight_plan_->ForgetBefore(last_times[i], non_empty.AsStdFunction());
+    if (i % 2 == 0) {
+      // A coast.
+      EXPECT_EQ(last_times[i], flight_plan_->initial_time());
+      EXPECT_EQ(5 - i, flight_plan_->number_of_segments());
+      EXPECT_EQ((5 - i) / 2, flight_plan_->number_of_manœuvres());
+    } else {
+      // A burn.
+      EXPECT_EQ(begin_times[i + 1], flight_plan_->initial_time());
+      EXPECT_EQ(4 - i, flight_plan_->number_of_segments());
+      EXPECT_EQ((4 - i) / 2, flight_plan_->number_of_manœuvres());
+    }
+  }
+
+  // Forget after the end.
+  MockFunction<void()> empty;
+  EXPECT_CALL(empty, Call()).Times(1);
+  flight_plan_->ForgetBefore(last_times.back() + 1 * Second,
+                             empty.AsStdFunction());
+}
+
+TEST_F(FlightPlanTest, RemoveLast) {
   flight_plan_->SetFinalTime(t0_ + 42 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
@@ -241,7 +313,7 @@ TEST_F(FlightPlanTest, Remove) {
   EXPECT_EQ(1, flight_plan_->number_of_manœuvres());
 }
 
-TEST_F(FlightPlanTest, Replace) {
+TEST_F(FlightPlanTest, ReplaceLast) {
   flight_plan_->SetFinalTime(t0_ + 1.7 * Second);
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   Mass const old_final_mass =

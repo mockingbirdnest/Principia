@@ -37,6 +37,7 @@ message Manoeuvre {
 message FlightPlan {
   required Quantity initial_mass = 1;
   required Point initial_time = 2;
+  optional Pair initial_degrees_of_freedom = 12;  // required.
   required Point final_time = 3;
   repeated Manoeuvre manoeuvre = 8;
   optional Ephemeris.AdaptiveStepParameters

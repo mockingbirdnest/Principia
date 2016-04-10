@@ -9,6 +9,7 @@
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
@@ -20,6 +21,7 @@ namespace principia {
 using base::not_null;
 using geometry::Instant;
 using integrators::AdaptiveStepSizeIntegrator;
+using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using quantities::Length;
@@ -32,21 +34,17 @@ namespace ksp_plugin {
 // the corresponding |NavigationManœuvre|s.
 class FlightPlan {
  public:
-  // Creates a |FlightPlan| with no burns whose chain of trajectories is forked
-  // from |root| at the latest time prior to |initial_time|, and which starts
-  // with the given |initial_mass|.  The trajectories are computed using the
-  // given |integrator| in the given |ephemeris|.
-  // The given |final_time| and tolerances are used, and may be modified by
-  // the mutators |SetFinalTime| and |SetTolerances|.
-  FlightPlan(
-      not_null<DiscreteTrajectory<Barycentric>*> const root,
-      Instant const& initial_time,
-      Instant const& final_time,
-      Mass const& initial_mass,
-      not_null<Ephemeris<Barycentric>*> const ephemeris,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters);
-  virtual ~FlightPlan();
+  // Creates a |FlightPlan| with no burns starting at |initial_time| with
+  // |initial_degrees_of_freedom| and with the given |initial_mass|.  The
+  // trajectories are computed using the given |integrator| in the given
+  // |ephemeris|.
+  FlightPlan(Mass const& initial_mass,
+             Instant const& initial_time,
+             DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
+             Instant const& final_time,
+             not_null<Ephemeris<Barycentric>*> const ephemeris,
+             Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                 adaptive_step_parameters);
 
   virtual Instant initial_time() const;
   virtual Instant final_time() const;
@@ -55,14 +53,22 @@ class FlightPlan {
   // |index| must be in [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int const index) const;
 
-  // |size()| must be greater than 0.
-  virtual void RemoveLast();
-
   // The following two functions return false and have no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
   // burn, or end after |final_time_|, or if the integration of the coasting
   // phase times out or is singular before the burn.
   virtual bool Append(Burn burn);
+
+  // Forgets the flight plan at least before |time|.  The actual cutoff time
+  // will be in a coast trajectory and may be after |time|.  |on_empty| is run
+  // if the flight plan would become empty (it is not modified before running
+  // |on_empty|).
+  virtual void ForgetBefore(Instant const& time,
+                            std::function<void()> const& on_empty);
+
+
+  // |size()| must be greater than 0.
+  virtual void RemoveLast();
   // |size()| must be greater than 0.
   virtual bool ReplaceLast(Burn burn);
 
@@ -153,7 +159,11 @@ class FlightPlan {
 
   Mass const initial_mass_;
   Instant initial_time_;
+  DegreesOfFreedom<Barycentric> initial_degrees_of_freedom_;
   Instant final_time_;
+  // The root of the flight plan.  Contains a single point, not part of
+  // |segments_|.  Owns all the |segments_|.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> root_;
   // Never empty; Starts and ends with a coasting segment; coasting and burning
   // alternate.  This simulates a stack.  Each segment is a fork of the previous
   // one.
