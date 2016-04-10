@@ -60,7 +60,7 @@ class FlightPlan {
   virtual bool Append(Burn burn);
 
   // Forgets the flight plan at least before |time|.  The actual cutoff time
-  // will be in a coast trajectory and maybe after |time|.  |on_empty| is run
+  // will be in a coast trajectory and may be after |time|.  |on_empty| is run
   // if the flight plan would become empty (it is not modified before running
   // |on_empty|).
   virtual void ForgetBefore(Instant const& time,
