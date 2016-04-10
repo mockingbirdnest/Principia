@@ -12,7 +12,7 @@ $generateversionheader = {
           + "`n"                                      `
           + "char const kBuildDate[] = `"{0:O}`";`n"  `
           + "char const kVersion[] =`n"               `
-          + "    `"{1}`";`n"                          `
+          + "    u8`"{1}`";`n"                        `
           + "`n"                                      `
           + "}}  // namespace base`n"                 `
           + "}}  // namespace principia`n",           `
@@ -26,7 +26,7 @@ $generateversionheader = {
 
 if (test-path -path $headerpath) {
   if ([system.io.file]::readalltext($headerpath) `
-          -match '(?m)^\s+"([^"]+)";$.*') {
+          -match '(?m)^\s+u8"([^"]+)";$.*') {
     $oldversion = $matches[1]
   }
   if ($oldversion.equals($newversion)) {
