@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace principia {
@@ -12,59 +13,57 @@ internal static class Loader {
       return null;
     }
     bool is_32_bit = IntPtr.Size == 4;
-    String dll = null;
-    Func<String, IntPtr> load;
+    String[] possible_dll_paths = null;
+    bool can_determine_cxx_installed;
     Func<bool> is_cxx_installed;
     string required_cxx_packages;
+    if (is_32_bit) {
+      return "This build does not target KSP 32-bit.";
+    }
     switch (Environment.OSVersion.Platform) {
       case PlatformID.Win32NT:
-        load = LoadLibrary;
+        can_determine_cxx_installed = true;
         is_cxx_installed = () => IsVCRedistInstalled(is_32_bit);
-        if (is_32_bit) {
-          required_cxx_packages =
-              "the Visual C++ Redistributable Packages for Visual Studio " +
-              "2015 on x86";
-          dll = @"GameData\Principia\Win32\principia.dll";
-        } else {
-          required_cxx_packages =
-              "the Visual C++ Redistributable Packages for Visual Studio " +
-              "2015 on x64";
-          dll = @"GameData\Principia\x64\principia.dll";
-        }
+        required_cxx_packages =
+            "the Visual C++ Redistributable Packages for Visual Studio 2015 " +
+            "on x64";
+        possible_dll_paths =
+            new String[] {@"GameData\Principia\principia.dll"};
         break;
+      // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
+      // (we probably don't actually encounter |PlatformID.MacOSX|.
       case PlatformID.Unix:
-        load = (name) => dlopen(name);
-        if (is_32_bit) {
-          return "Linux 32-bit is not supported at this time.";
-        } else {
-          dll = @"GameData/Principia/Linux64/principia.so";
-          // TODO(egg): figure out how to check whether the right versions of
-          // libc++ and libc++abi are installed.
-          is_cxx_installed = () => false;
-          required_cxx_packages = "libc++ and libc++abi 3.5-2";
-        }
+      case PlatformID.MacOSX:
+        possible_dll_paths = new String[] {
+            @"GameData/Principia/principia.so",
+            @"GameData/Principia/principia.dylib"};
+        can_determine_cxx_installed = false;
+        is_cxx_installed = null;
+        required_cxx_packages = "libc++ and libc++abi 3.5-2";
         break;
       default:
         return "The operating system " + Environment.OSVersion +
                " is not supported at this time.";
     }
-    if (!File.Exists(dll)) {
-      return "The principia DLL was not found at '" + dll + "'.";
+    if (!possible_dll_paths.Any(File.Exists)) {
+      return "The principia DLL was not found at '" +
+             String.Join("', '", possible_dll_paths) + "'.";
     }
     try {
-      load(dll);
       loaded_principia_dll_ = true;
       Log.InitGoogleLogging();
       return null;
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);
-      if (!is_cxx_installed()) {
+      if (can_determine_cxx_installed && !is_cxx_installed()) {
         return "Dependencies, namely " + required_cxx_packages +
                ", were not found.";
       } else {
         return "An unknown error occurred; detected OS " +
                Environment.OSVersion + " " + (is_32_bit ? "32" : "64") +
-               "-bit; tried loading dll at '" + dll + "'.";
+               "-bit; tried loading dll at '" +
+               String.Join("', '", possible_dll_paths) + "'. Note that " +
+               required_cxx_packages + " are required.";
       }
     }
   }
