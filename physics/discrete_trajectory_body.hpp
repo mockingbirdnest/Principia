@@ -128,7 +128,7 @@ void DiscreteTrajectory<Frame>::AttachFork(
   Append(fork_begin->first, fork_begin->second);
 
   // Attach |fork| to this trajectory.
-  AttachForkToCopiedBegin(std::move(fork));
+  this->AttachForkToCopiedBegin(std::move(fork));
 
   // Remove the first point of |fork| now that it properly attached to its
   // parent.
