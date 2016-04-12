@@ -17,26 +17,27 @@ internal static class Loader {
     bool can_determine_cxx_installed;
     Func<bool> is_cxx_installed;
     string required_cxx_packages;
-    if (is_32_bit) {
-      return "This build does not target KSP 32-bit.";
-    }
     switch (Environment.OSVersion.Platform) {
       case PlatformID.Win32NT:
         can_determine_cxx_installed = true;
         is_cxx_installed = () => IsVCRedistInstalled(is_32_bit);
         required_cxx_packages =
-            "the Visual C++ Redistributable Packages for Visual Studio 2015 " +
-            "on x64";
+            "the Visual C++ Redistributable Packages for Visual Studio " +
+            "2015 on " + (is_32_bit ? "x86" : "x64");
         possible_dll_paths =
-            new String[] {@"GameData\Principia\principia.dll"};
+            new String[] {@"GameData\Principia\" +
+                          (is_32_bit ? "Win32" : "x64") + @"\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
       // (we probably don't actually encounter |PlatformID.MacOSX|.
       case PlatformID.Unix:
       case PlatformID.MacOSX:
+        if (is_32_bit) {
+          return "Linux and Mac OS X 32-bit are not supported at this time.";
+        }
         possible_dll_paths = new String[] {
-            @"GameData/Principia/principia.so",
-            @"GameData/Principia/principia.dylib"};
+            @"GameData/Principia/Linux64/principia.so",
+            @"GameData/Principia/MacOS64/principia.so"};
         can_determine_cxx_installed = false;
         is_cxx_installed = null;
         required_cxx_packages = "libc++ and libc++abi 3.5-2";
