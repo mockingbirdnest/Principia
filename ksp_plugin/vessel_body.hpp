@@ -125,8 +125,8 @@ inline void Vessel::AdvanceTimeInBubble(
 
 inline void Vessel::ForgetBefore(Instant const& time) {
   CHECK(is_initialized());
-  history_->DeleteFork(&prediction_);
   if (prediction_->Fork().time() < time) {
+    history_->DeleteFork(&prediction_);
     prediction_ = history_->NewForkAtLast();
   }
   if (flight_plan_ != nullptr) {
