@@ -29,7 +29,7 @@ ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 TOOLS_DIR := tools/
 TOOLS_BIN := tools/tools
 
-LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia
+LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
 LIB := $(LIB_DIR)/principia.so
 
 DEP_DIR := deps
