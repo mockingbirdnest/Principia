@@ -90,14 +90,14 @@ TEST_F(PlayerTest, Benchmarks) {
   }
 }
 
-#if 0
+#if 1
 // This test is only run if the --gtest_filter flag names it explicitly.
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
     // An example of how journalling may be used for debugging.  You must set
     // |path| and fill the |m| protocol buffer.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\JOURNAL.20160220-134018)";  // NOLINT
+        R"(P:\Public Mockingbird\Principia\JOURNAL.20160414-164613)";  // NOLINT
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -108,13 +108,13 @@ TEST_F(PlayerTest, Debug) {
     LOG(ERROR) << count << " journal entries in total, last one is:\n"
                << player.last_method().DebugString();
 
-    serialization::Method m;
-    auto* extension = m.MutableExtension(
-        serialization::SerializePlugin::extension);
-    auto* in = extension->mutable_in();
-    in->set_plugin(216768776);
-    in->set_serializer(0);
-    RunIfAppropriate<SerializePlugin>(m, player);
+    //serialization::Method m;
+    //auto* extension = m.MutableExtension(
+    //    serialization::SerializePlugin::extension);
+    //auto* in = extension->mutable_in();
+    //in->set_plugin(216768776);
+    //in->set_serializer(0);
+    //RunIfAppropriate<SerializePlugin>(m, player);
   }
 }
 #endif
