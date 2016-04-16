@@ -176,7 +176,8 @@ std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
   for (auto const& pair : cxx_play_statement_) {
     result.push_back(pair.second);
   }
-  result.push_back("  CHECK(ran) << method->DebugString();\n}\n");
+  result.push_back("  CHECK(ran) << method_in->DebugString() << \"\\n\"\n"
+                   "             << method_out_return->DebugString();\n}\n");
   return result;
 }
 
@@ -948,7 +949,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
 
   cxx_play_statement_[descriptor] =
-      "  ran |= RunIfAppropriate<" + name + ">(*method);\n";
+      "  ran |= RunIfAppropriate<" + name + ">(\n"
+      "             *method_in, *method_out_return);\n";
 }
 
 }  // namespace tools

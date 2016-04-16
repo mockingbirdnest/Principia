@@ -5,7 +5,6 @@
 
 #include <list>
 
-#include "glog/logging.h"
 #include "journal/recorder.hpp"
 
 namespace principia {
@@ -14,8 +13,10 @@ namespace journal {
 template<typename Profile>
 Method<Profile>::Method() {
   if (Recorder::active_recorder_ != nullptr) {
-    message_ = std::make_unique<typename Profile::Message>();
-    LogMethodIfDebug();
+    serialization::Method method;
+    auto* const message_in =
+        method.MutableExtension(Profile::Message::extension);
+    Recorder::active_recorder_->Write(method);
   }
 }
 
@@ -23,9 +24,11 @@ template<typename Profile>
 template<typename P, typename>
 Method<Profile>::Method(typename P::In const& in) {
   if (Recorder::active_recorder_ != nullptr) {
-    message_ = std::make_unique<typename Profile::Message>();
-    Profile::Fill(in, message_.get());
-    LogMethodIfDebug();
+    serialization::Method method;
+    auto* const message_in =
+        method.MutableExtension(Profile::Message::extension);
+    Profile::Fill(in, message_in);
+    Recorder::active_recorder_->Write(method);
   }
 }
 
@@ -33,9 +36,14 @@ template<typename Profile>
 template<typename P, typename>
 Method<Profile>::Method(typename P::Out const& out) {
   if (Recorder::active_recorder_ != nullptr) {
-    message_ = std::make_unique<typename Profile::Message>();
-    out_filler_ = [this, out]() { Profile::Fill(out, message_.get()); };
-    LogMethodIfDebug();
+    serialization::Method method;
+    auto* const message_in =
+        method.MutableExtension(Profile::Message::extension);
+    Recorder::active_recorder_->Write(method);
+    out_filler_ = [this, out](
+        not_null<typename Profile::Message*> const message) {
+      Profile::Fill(out, message);
+    };
   }
 }
 
@@ -43,10 +51,15 @@ template<typename Profile>
 template<typename P, typename>
 Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
   if (Recorder::active_recorder_ != nullptr) {
-    message_ = std::make_unique<typename Profile::Message>();
-    out_filler_ = [this, out]() { Profile::Fill(out, message_.get()); };
-    Profile::Fill(in, message_.get());
-    LogMethodIfDebug();
+    serialization::Method method;
+    auto* const message_in =
+        method.MutableExtension(Profile::Message::extension);
+    Profile::Fill(in, message_in);
+    Recorder::active_recorder_->Write(method);
+    out_filler_ = [this, out](
+        not_null<typename Profile::Message*> const message) {
+      Profile::Fill(out, message);
+    };
   }
 }
 
@@ -54,12 +67,13 @@ template<typename Profile>
 Method<Profile>::~Method() {
   CHECK(returned_);
   if (Recorder::active_recorder_ != nullptr) {
-    if (out_filler_ != nullptr) {
-      out_filler_();
-    }
     serialization::Method method;
-    method.SetAllocatedExtension(
-        Profile::Message::extension, message_.release());
+    if (out_filler_ != nullptr) {
+      out_filler_(method.MutableExtension(Profile::Message::extension));
+    }
+    if (return_filler_ != nullptr) {
+      return_filler_(method.MutableExtension(Profile::Message::extension));
+    }
     Recorder::active_recorder_->Write(method);
   }
 }
@@ -78,18 +92,12 @@ typename P::Return Method<Profile>::Return(
   CHECK(!returned_);
   returned_ = true;
   if (Recorder::active_recorder_ != nullptr) {
-    Profile::Fill(result, message_.get());
+    return_filler_ =
+        [this, result](not_null<typename Profile::Message*> const message) {
+          Profile::Fill(result, message);
+        };
   }
   return result;
-}
-
-template<typename Profile>
-void Method<Profile>::LogMethodIfDebug() {
-  if (Recorder::active_recorder_->verbose_) {
-    LOG(INFO) << message_->GetDescriptor()->name() << "\n"
-              << message_->DebugString();
-    google::FlushLogFiles(google::INFO);
-  }
 }
 
 }  // namespace journal

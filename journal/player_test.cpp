@@ -90,7 +90,7 @@ TEST_F(PlayerTest, Benchmarks) {
   }
 }
 
-#if 1
+#if 0
 // This test is only run if the --gtest_filter flag names it explicitly.
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
@@ -108,13 +108,13 @@ TEST_F(PlayerTest, Debug) {
     LOG(ERROR) << count << " journal entries in total, last one is:\n"
                << player.last_method().DebugString();
 
-    //serialization::Method m;
-    //auto* extension = m.MutableExtension(
-    //    serialization::SerializePlugin::extension);
-    //auto* in = extension->mutable_in();
-    //in->set_plugin(216768776);
-    //in->set_serializer(0);
-    //RunIfAppropriate<SerializePlugin>(m, player);
+    serialization::Method m;
+    auto* extension = m.MutableExtension(
+        serialization::SerializePlugin::extension);
+    auto* in = extension->mutable_in();
+    in->set_plugin(216768776);
+    in->set_serializer(0);
+    RunIfAppropriate<SerializePlugin>(m, player);
   }
 }
 #endif

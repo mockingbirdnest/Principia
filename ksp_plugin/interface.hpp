@@ -70,6 +70,9 @@ extern "C" PRINCIPIA_DLL
 void CDECL principia__ActivateRecorder(bool const activate,
                                        bool const verbose);
 
+extern "C" PRINCIPIA_DLL
+void CDECL principia__InitGoogleLogging();
+
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);

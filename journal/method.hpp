@@ -4,7 +4,12 @@
 #include <functional>
 #include <memory>
 
+#include "base/not_null.hpp"
+
 namespace principia {
+
+using base::not_null;
+
 namespace journal {
 
 // The parameter |Profile| is expected to have the following structure:
@@ -90,10 +95,10 @@ class Method {
   typename P::Return Return(typename P::Return const& result);
 
  private:
-  void LogMethodIfDebug();
-
-  std::unique_ptr<typename Profile::Message> message_;
-  std::function<void()> out_filler_;
+  std::function<void(not_null<typename Profile::Message*> const message)>
+      out_filler_;
+  std::function<void(not_null<typename Profile::Message*> const message)>
+      return_filler_;
   bool returned_ = false;
 };
 
