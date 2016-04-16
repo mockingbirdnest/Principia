@@ -68,11 +68,13 @@ Method<Profile>::~Method() {
   CHECK(returned_);
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
+    auto* const extension =
+        method.MutableExtension(Profile::Message::extension);
     if (out_filler_ != nullptr) {
-      out_filler_(method.MutableExtension(Profile::Message::extension));
+      out_filler_(extension);
     }
     if (return_filler_ != nullptr) {
-      return_filler_(method.MutableExtension(Profile::Message::extension));
+      return_filler_(extension);
     }
     Recorder::active_recorder_->Write(method);
   }
