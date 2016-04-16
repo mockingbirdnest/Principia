@@ -23,24 +23,19 @@ Player::Player(std::experimental::filesystem::path const& path)
 }
 
 bool Player::Play() {
-  std::unique_ptr<serialization::Method> method = Read();
-  if (method == nullptr) {
+  std::unique_ptr<serialization::Method> method_in = Read();
+  if (method_in == nullptr) {
+    // End of input file.
     return false;
   }
-  // TODO(phl): We don't want to run this method, it directs the output to
-  // stderr.log.  Remove it from the protocol buffer at some point.  This
-  // will be incompatible with existing journals.
-  if (method->HasExtension(serialization::InitGoogleLogging::extension)) {
-    return true;
+  std::unique_ptr<serialization::Method> method_out_return = Read();
+  if (method_out_return == nullptr) {
+    LOG(ERROR) << "Unpaired method:\n" << method_in->DebugString();
+    return false;
   }
 
 #include "journal/player.generated.cc"
-  last_method_ = std::move(method);
   return true;
-}
-
-serialization::Method const & Player::last_method() const {
-  return *last_method_;
 }
 
 std::unique_ptr<serialization::Method> Player::Read() {

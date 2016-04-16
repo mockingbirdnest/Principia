@@ -38,8 +38,7 @@ class PlayerTest : public ::testing::Test {
         test_case_name_(test_info_->test_case_name()),
         test_name_(test_info_->name()),
         plugin_(interface::principia__NewPlugin(1, 2)),
-        recorder_(new Recorder(test_name_ + ".journal.hex",
-                               /*verbose=*/false)) {
+        recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }
 
@@ -97,7 +96,7 @@ TEST_F(PlayerTest, Debug) {
     // An example of how journalling may be used for debugging.  You must set
     // |path| and fill the |m| protocol buffer.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\JOURNAL.20160220-134018)";  // NOLINT
+        R"(P:\Public Mockingbird\Principia\JOURNAL.20160414-164613)";  // NOLINT
     Player player(path);
     int count = 0;
     while (player.Play()) {

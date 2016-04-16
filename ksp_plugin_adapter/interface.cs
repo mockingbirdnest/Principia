@@ -29,7 +29,12 @@ internal static partial class Interface {
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__ActivateRecorder",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ActivateRecorder(bool activate, bool verbose);
+  internal static extern void ActivateRecorder(bool activate);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__InitGoogleLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void InitGoogleLogging();
 }
 
 }  // namespace ksp_plugin_adapter
