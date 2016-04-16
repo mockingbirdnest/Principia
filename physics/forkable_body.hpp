@@ -301,7 +301,8 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
     not_null<std::unique_ptr<Tr4jectory>> fork) {
   CHECK(fork->is_root());
   CHECK(!fork->timeline_empty());
-  auto const timeline_begin = fork->timeline_begin();
+  auto const fork_timeline_begin = fork->timeline_begin();
+  auto const fork_timeline_end = fork->timeline_end();
 
   // The children of |fork| whose |position_in_parent_timeline_| was at
   // |begin()| are referencing a point that will soon be removed from the
@@ -309,15 +310,15 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
   // is not in |fork|'s timeline.
   for (auto const& pair : fork->children_) {
     std::unique_ptr<Tr4jectory> const& child = pair.second;
-    if (child->position_in_parent_timeline_ == timeline_begin) {
-      child->position_in_parent_timeline_ = timeline_end();
+    if (child->position_in_parent_timeline_ == fork_timeline_begin) {
+      child->position_in_parent_timeline_ = fork_timeline_end;
     }
   }
 
   // Insert |fork| in the |children_| of this object.
   auto const child_it = children_.emplace_hint(
       children_.end(),
-      internal::ForkableTraits<Tr4jectory>::time(timeline_begin),
+      internal::ForkableTraits<Tr4jectory>::time(fork_timeline_begin),
       std::move(fork));
 
   // Set the pointer into this object.  Note that |fork| is no longer usable.
