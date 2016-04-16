@@ -55,7 +55,6 @@ internal class MapNodePool {
       node_properties.source = source;
 
       if (pool_index_ == nodes_.Count) {
-        UnityEngine.Debug.LogWarning("Adding node to pool");
         AddMapNodeToPool();
       }
       properties_[nodes_[pool_index_++]] = node_properties;
