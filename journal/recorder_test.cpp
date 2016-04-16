@@ -23,8 +23,7 @@ class RecorderTest : public testing::Test {
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
         plugin_(interface::principia__NewPlugin(1, 2)),
-        recorder_(new Recorder(test_name_ + ".journal.hex",
-                               /*verbose=*/false)) {
+        recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }
 
@@ -85,7 +84,7 @@ TEST_F(RecorderTest, Recording) {
 
   std::vector<serialization::Method> const methods =
       ReadAll(test_name_ + ".journal.hex");
-  EXPECT_EQ(2, methods.size());
+  EXPECT_EQ(4, methods.size());
   auto it = methods.begin();
   {
     EXPECT_TRUE(it->HasExtension(serialization::DeletePlugin::extension));
@@ -93,9 +92,16 @@ TEST_F(RecorderTest, Recording) {
         it->GetExtension(serialization::DeletePlugin::extension);
     EXPECT_TRUE(extension.has_in());
     EXPECT_NE(0, extension.in().plugin());
+    EXPECT_FALSE(extension.has_out());
+  }
+  ++it;
+  {
+    EXPECT_TRUE(it->HasExtension(serialization::DeletePlugin::extension));
+    auto const& extension =
+        it->GetExtension(serialization::DeletePlugin::extension);
+    EXPECT_FALSE(extension.has_in());
     EXPECT_TRUE(extension.has_out());
     EXPECT_NE(0, extension.out().plugin());
-    EXPECT_EQ(extension.in().plugin(), extension.out().plugin());
   }
   ++it;
   {
@@ -105,6 +111,14 @@ TEST_F(RecorderTest, Recording) {
     EXPECT_TRUE(extension.has_in());
     EXPECT_EQ(1, extension.in().initial_time());
     EXPECT_EQ(2, extension.in().planetarium_rotation_in_degrees());
+    EXPECT_FALSE(extension.has_return_());
+  }
+  ++it;
+  {
+    EXPECT_TRUE(it->HasExtension(serialization::NewPlugin::extension));
+    auto const& extension =
+        it->GetExtension(serialization::NewPlugin::extension);
+    EXPECT_FALSE(extension.has_in());
     EXPECT_TRUE(extension.has_return_());
     EXPECT_NE(0, extension.return_().result());
   }
