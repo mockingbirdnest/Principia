@@ -67,8 +67,7 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer);
 #include "ksp_plugin/interface.generated.h"
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__ActivateRecorder(bool const activate,
-                                       bool const verbose);
+void CDECL principia__ActivateRecorder(bool const activate);
 
 extern "C" PRINCIPIA_DLL
 void CDECL principia__InitGoogleLogging();

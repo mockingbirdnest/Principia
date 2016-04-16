@@ -80,8 +80,6 @@ public partial class PrincipiaPluginAdapter
 
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
-  [KSPField(isPersistant = true)]
-  private bool must_record_verbose_journal_ = false;
 #if CRASH_BUTTON
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
@@ -420,7 +418,7 @@ public partial class PrincipiaPluginAdapter
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
     if (must_record_journal_) {
-      Log.ActivateRecorder(true, must_record_verbose_journal_);
+      Log.ActivateRecorder(true);
     }
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
