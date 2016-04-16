@@ -60,6 +60,7 @@
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
@@ -75,6 +76,7 @@
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
@@ -90,6 +92,7 @@
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
@@ -106,6 +109,7 @@
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
