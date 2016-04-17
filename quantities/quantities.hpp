@@ -219,14 +219,9 @@ class Quantity {
   template<typename ArgumentDimensions>
   friend CubeRoot<Quantity<ArgumentDimensions>> Cbrt(
       Quantity<ArgumentDimensions> const& x);
-  template<typename ArgumentDimensions>
-  friend Angle ArcTan<Quantity<ArgumentDimensions>>(
-      Quantity<ArgumentDimensions> const& y,
-      Quantity<ArgumentDimensions> const& x);
 
-  template<typename ArgumentDimensions>
-  friend bool IsFinite(Quantity<ArgumentDimensions> const& x);
-
+  friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
+  friend bool IsFinite<>(Quantity<D> const& x);
   friend std::string DebugString<>(Quantity<D> const&, int const);
 };
 
