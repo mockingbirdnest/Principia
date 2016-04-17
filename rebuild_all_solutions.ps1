@@ -18,5 +18,5 @@ function build_solutions($solutions) {
   }
 }
 
-#build_solutions($dependencies)
+build_solutions($dependencies)
 build_solutions(".\Principia\Principia.sln")
