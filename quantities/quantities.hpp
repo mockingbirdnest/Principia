@@ -123,9 +123,6 @@ constexpr double Pow(double x);
 template<int exponent, typename D>
 constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
-template<typename D>
-std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
-
 // Equivalent to |std::abs(x)|.
 double Abs(double const x);
 template<typename D>
@@ -137,6 +134,9 @@ SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
+template<typename D>
+bool IsFinite(Quantity<D> const& x);
+
 std::string DebugString(
     double const number,
     int const precision = std::numeric_limits<double>::max_digits10);
@@ -144,6 +144,9 @@ template<typename D>
 std::string DebugString(
     Quantity<D> const& quantity,
     int const precision = std::numeric_limits<double>::max_digits10);
+
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
 class Quantity {
@@ -216,7 +219,13 @@ class Quantity {
   template<typename ArgumentDimensions>
   friend CubeRoot<Quantity<ArgumentDimensions>> Cbrt(
       Quantity<ArgumentDimensions> const& x);
-  friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
+  template<typename ArgumentDimensions>
+  friend Angle ArcTan<Quantity<ArgumentDimensions>>(
+      Quantity<ArgumentDimensions> const& y,
+      Quantity<ArgumentDimensions> const& x);
+
+  template<typename ArgumentDimensions>
+  friend bool IsFinite(Quantity<ArgumentDimensions> const& x);
 
   friend std::string DebugString<>(Quantity<D> const&, int const);
 };

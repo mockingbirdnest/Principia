@@ -222,6 +222,18 @@ TEST_F(QuantitiesTest, ExpLogAndRoots) {
   EXPECT_EQ(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, Cbrt(Gallon));
 }
 
+TEST_F(QuantitiesTest, IsFinite) {
+  Length l = 0 * Foot;
+  // The serialization is to defeat the optimizer which tries to prevent us from
+  // dividing by 0.
+  serialization::Quantity message;
+  l.WriteToMessage(&message);
+  l = Length::ReadFromMessage(message);
+  EXPECT_TRUE(IsFinite(2 * Gallon));
+  EXPECT_FALSE(IsFinite((2 * Gallon) / l));
+  EXPECT_FALSE(IsFinite((0 * Gallon) / l));
+}
+
 TEST_F(QuantitiesDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Quantity message;

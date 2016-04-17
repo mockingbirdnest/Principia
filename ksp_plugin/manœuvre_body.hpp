@@ -138,7 +138,7 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
 
 template<typename InertialFrame, typename Frame>
 bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
-  return !std::isfinite(Δv() / (Metre / Second));
+  return !IsFinite(Δv());
 }
 
 template <typename InertialFrame, typename Frame>
