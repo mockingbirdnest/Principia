@@ -130,7 +130,17 @@ inline bool operator==(XYZSegment const& left, XYZSegment const& right) {
   return left.begin == right.begin && left.end == right.end;
 }
 
-inline R3Element<double> ToR3Element(XYZ const& xyz) {
+inline Ephemeris<Barycentric>::AdaptiveStepParameters
+FromAdaptiveStepParameters(
+    AdaptiveStepParameters const& adaptive_step_parameters) {
+  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      adaptive_step_parameters.max_steps,
+      adaptive_step_parameters.length_integration_tolerance * Metre,
+      adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
+}
+
+inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
 

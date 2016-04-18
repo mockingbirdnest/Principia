@@ -11,6 +11,7 @@
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "physics/ephemeris.hpp"
 
 namespace principia {
 
@@ -21,6 +22,7 @@ using geometry::R3Element;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
+using physics::Ephemeris;
 
 namespace interface {
 
@@ -84,7 +86,10 @@ bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 bool operator==(XYZSegment const& left, XYZSegment const& right);
 
-R3Element<double> ToR3Element(XYZ const& xyz);
+Ephemeris<Barycentric>::AdaptiveStepParameters FromAdaptiveStepParameters(
+    AdaptiveStepParameters const& adaptive_step_parameters);
+R3Element<double> FromXYZ(XYZ const& xyz);
+
 WXYZ ToWXYZ(Quaternion const& quaternion);
 XYZ ToXYZ(R3Element<double> const& r3_element);
 

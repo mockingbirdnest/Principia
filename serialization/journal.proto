@@ -76,7 +76,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5088.
+  extensions 5000 to 5999;  // Last used: 5089.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -1052,24 +1052,13 @@ message SetPredictionLength {
   optional In in = 1;
 }
 
-message SetPredictionLengthTolerance {
+message SetPredictionAdaptiveStepParameters {
   extend Method {
-    optional SetPredictionLengthTolerance extension = 5043;
+    optional SetPredictionAdaptiveStepParameters extension = 5089;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required double l = 2;
-  }
-  optional In in = 1;
-}
-
-message SetPredictionSpeedTolerance {
-  extend Method {
-    optional SetPredictionSpeedTolerance extension = 5044;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required double v = 2;
+    required AdaptiveStepParameters adaptive_step_parameters = 2;
   }
   optional In in = 1;
 }

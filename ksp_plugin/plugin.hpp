@@ -235,8 +235,9 @@ class Plugin {
 
   virtual void SetPredictionLength(Time const& t);
 
-  virtual void SetPredictionLengthTolerance(Length const& l);
-  virtual void SetPredictionSpeedTolerance(Speed const& v);
+  virtual void SetPredictionAdaptiveStepParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters);
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;
