@@ -382,6 +382,10 @@ FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
   return Quantity<D>(std::abs(quantity.magnitude_));
 }
 
+template<typename D>
+bool IsFinite(Quantity<D> const& x) {
+  return std::isfinite(x.magnitude_);
+}
 
 template<typename Q>
 constexpr Q SIUnit() {
