@@ -450,16 +450,10 @@ void Plugin::SetPredictionLength(Time const& t) {
   prediction_length_ = t;
 }
 
-void Plugin::SetPredictionLengthTolerance(Length const& l) {
-  prediction_parameters_.set_length_integration_tolerance(l);
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);
-  }
-}
-
-void Plugin::SetPredictionSpeedTolerance(Speed const& v) {
-  prediction_parameters_.set_speed_integration_tolerance(v);
+void Plugin::SetPredictionAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prediction_adaptive_step_parameters) {
+  prediction_parameters_ = prediction_adaptive_step_parameters;
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);

@@ -657,12 +657,19 @@ public partial class PrincipiaPluginAdapter
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
           plugin_.HasVessel(active_vessel.id.ToString());
+      
       if (ready_to_draw_active_vessel_trajectory) {
-        plugin_.SetPredictionLengthTolerance(
-            prediction_length_tolerances_[prediction_length_tolerance_index_]);
-        // TODO(egg): make the speed tolerance independent.
-        plugin_.SetPredictionSpeedTolerance(
-            prediction_length_tolerances_[prediction_length_tolerance_index_]);
+        // TODO(egg): make the speed tolerance independent.  Also max_steps.
+        AdaptiveStepParameters adaptive_step_parameters =
+            new AdaptiveStepParameters {
+              max_steps = 1000,
+              length_integration_tolerance =
+                  prediction_length_tolerances_[
+                      prediction_length_tolerance_index_],
+              speed_integration_tolerance =
+                  prediction_length_tolerances_[
+                      prediction_length_tolerance_index_]};
+        plugin_.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
         plugin_.SetPredictionLength(
             prediction_lengths_[prediction_length_index_]);
       }

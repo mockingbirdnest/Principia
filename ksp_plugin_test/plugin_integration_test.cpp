@@ -588,8 +588,12 @@ TEST_F(PluginIntegrationTest, Prediction) {
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
   plugin.SetPredictionLength(2 * π * Second);
-  plugin.SetPredictionLengthTolerance(1 * Milli(Metre));
-  plugin.SetPredictionSpeedTolerance(1 * Milli(Metre) / Second);
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
+      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      /*max_steps=*/1000,
+      /*length_integration_tolerance=*/1 * Milli(Metre),
+      /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
+  plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
   Positions<World> rendered_prediction =

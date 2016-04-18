@@ -40,16 +40,6 @@ namespace interface {
 
 namespace {
 
-Ephemeris<Barycentric>::AdaptiveStepParameters
-FromInterfaceAdaptiveStepParameters(
-    AdaptiveStepParameters const& adaptive_step_parameters) {
-  return Ephemeris<Barycentric>::AdaptiveStepParameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-      adaptive_step_parameters.max_steps,
-      adaptive_step_parameters.length_integration_tolerance * Metre,
-      adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
-}
-
 ksp_plugin::Burn FromInterfaceBurn(Plugin const* const plugin,
                                    Burn const& burn) {
   return {burn.thrust_in_kilonewtons * Kilo(Newton),
@@ -57,7 +47,7 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const* const plugin,
           NewNavigationFrame(plugin, burn.frame),
           Instant() + burn.initial_time * Second,
           Velocity<Frenet<Navigation>>(
-              ToR3Element(burn.delta_v) * (Metre / Second))};
+              FromXYZ(burn.delta_v) * (Metre / Second))};
 }
 
 not_null<Vessel*> GetVessel(Plugin const* const plugin,
@@ -291,7 +281,7 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   GetFlightPlan(plugin, vessel_guid).GetAllSegments(&begin, &end);
   Position<World> q_sun =
       World::origin +
-      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   Positions<World> rendered_apoapsides;
   Positions<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
@@ -322,7 +312,7 @@ Iterator* principia__FlightPlanRenderedSegment(
       RenderedTrajectoryFromIterators(
           begin, end,
           World::origin + Displacement<World>(
-                              ToR3Element(sun_world_position) * Metre));
+                              FromXYZ(sun_world_position) * Metre));
   return m.Return(new TypedIterator<Positions<World>>(
       std::move(rendered_trajectory)));
 }
@@ -344,7 +334,7 @@ XYZSegment principia__FlightPlanRenderedSegmentEndpoints(
   --last;
   Position<World> sun_position =
       World::origin +
-      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   Position<World> first_position =
       CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
           begin.time(),
@@ -380,7 +370,7 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
   return m.Return(
       GetFlightPlan(plugin, vessel_guid).
           SetAdaptiveStepParameters(
-              FromInterfaceAdaptiveStepParameters(adaptive_step_parameters)));
+              FromAdaptiveStepParameters(adaptive_step_parameters)));
 }
 
 bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,

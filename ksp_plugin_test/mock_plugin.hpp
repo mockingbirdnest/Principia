@@ -88,9 +88,9 @@ class MockPlugin : public Plugin {
 
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
-  MOCK_METHOD1(SetPredictionLengthTolerance, void(Length const& t));
-
-  MOCK_METHOD1(SetPredictionSpeedTolerance, void(Speed const& t));
+  MOCK_METHOD1(SetPredictionAdaptiveStepParameters,
+               void(Ephemeris<Barycentric>::AdaptiveStepParameters const&
+                        prediction_adaptive_step_parameters));
 
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
   MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));

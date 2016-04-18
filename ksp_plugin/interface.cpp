@@ -459,8 +459,8 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
-          Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+          Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
+          Velocity<AliceSun>(FromXYZ(from_parent.p) * (Metre / Second))));
   return m.Return();
 }
 
@@ -577,7 +577,7 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
       RenderedVesselTrajectory(
           vessel_guid,
           World::origin + Displacement<World>(
-                              ToR3Element(sun_world_position) * Metre));
+                              FromXYZ(sun_world_position) * Metre));
   return m.Return(new TypedIterator<Positions<World>>(
       std::move(rendered_trajectory)));
 }
@@ -592,7 +592,7 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
       RenderedPrediction(
           vessel_guid,
           World::origin + Displacement<World>(
-                              ToR3Element(sun_world_position) * Metre));
+                              FromXYZ(sun_world_position) * Metre));
   return m.Return(new TypedIterator<Positions<World>>(
       std::move(rendered_trajectory)));
 }
@@ -610,7 +610,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
   Position<World> q_sun =
       World::origin +
-      Displacement<World>(ToR3Element(sun_world_position) * Metre);
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   Positions<World> rendered_apoapsides;
   Positions<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
@@ -634,17 +634,14 @@ void principia__SetPredictionLength(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__SetPredictionLengthTolerance(Plugin* const plugin,
-                                             double const l) {
-  journal::Method<journal::SetPredictionLengthTolerance> m({plugin, l});
-  CHECK_NOTNULL(plugin)->SetPredictionLengthTolerance(l * Metre);
-  return m.Return();
-}
-
-void principia__SetPredictionSpeedTolerance(Plugin* const plugin,
-                                            double const v) {
-  journal::Method<journal::SetPredictionSpeedTolerance> m({plugin, v});
-  CHECK_NOTNULL(plugin)->SetPredictionSpeedTolerance(v * Metre / Second);
+void principia__SetPredictionAdaptiveStepParameters(
+    Plugin* const plugin,
+    AdaptiveStepParameters const adaptive_step_parameters) {
+  journal::Method<journal::SetPredictionAdaptiveStepParameters> m(
+      {plugin, adaptive_step_parameters});
+  CHECK_NOTNULL(plugin)
+      ->SetPredictionAdaptiveStepParameters(
+          FromAdaptiveStepParameters(adaptive_step_parameters));
   return m.Return();
 }
 
@@ -673,12 +670,12 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                 DegreesOfFreedom<World>(
                     World::origin +
                         Displacement<World>(
-                            ToR3Element(part->world_position) * Metre),
+                            FromXYZ(part->world_position) * Metre),
                     Velocity<World>(
-                        ToR3Element(part->world_velocity) * (Metre / Second))),
+                        FromXYZ(part->world_velocity) * (Metre / Second))),
                 part->mass_in_tonnes * Tonne,
                 Vector<Acceleration, World>(
-                    ToR3Element(
+                    FromXYZ(
                         part->gravitational_acceleration_to_be_applied_by_ksp) *
                     (Metre / Pow<2>(Second))))));
   }
@@ -699,7 +696,7 @@ XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
   Displacement<World> const result =
       CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
           World::origin + Displacement<World>(
-                              ToR3Element(sun_position) * Metre));
+                              FromXYZ(sun_position) * Metre));
   return m.Return(ToXYZ(result.coordinates() / Metre));
 }
 
@@ -721,12 +718,12 @@ WXYZ principia__NavballOrientation(
                                                   ship_world_position});
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
       World::origin +
-          Displacement<World>(ToR3Element(sun_world_position) * Metre));
+          Displacement<World>(FromXYZ(sun_world_position) * Metre));
   return m.Return(ToWXYZ(
       frame_field(
           World::origin +
               Displacement<World>(
-                  ToR3Element(ship_world_position) * Metre)).quaternion()));
+                  FromXYZ(ship_world_position) * Metre)).quaternion()));
 }
 
 XYZ principia__VesselTangent(Plugin const* const plugin,
