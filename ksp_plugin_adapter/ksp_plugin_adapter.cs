@@ -47,11 +47,11 @@ public partial class PrincipiaPluginAdapter
       {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
   [KSPField(isPersistant = true)]
   private int prediction_length_tolerance_index_ = 1;
-  private readonly int[] prediction_max_steps_ =
+  private readonly double[] prediction_steps_ =
       {1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
        1 << 18, 1 << 20, 1 << 22, 1 << 24};
   [KSPField(isPersistant = true)]
-  private int prediction_max_steps_index_ = 4;
+  private int prediction_steps_index_ = 4;
   private readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -661,7 +661,7 @@ public partial class PrincipiaPluginAdapter
         // TODO(egg): make the speed tolerance independent.  Also max_steps.
         AdaptiveStepParameters adaptive_step_parameters =
             new AdaptiveStepParameters {
-              max_steps = prediction_max_steps_[prediction_max_steps_index_],
+              max_steps = (Int64)prediction_steps_[prediction_steps_index_],
               length_integration_tolerance =
                   prediction_length_tolerances_[
                       prediction_length_tolerance_index_],
@@ -1070,9 +1070,9 @@ public partial class PrincipiaPluginAdapter
              "Tolerance",
              ref changed_settings,
              "{0:0.0e0} m");
-    Selector(prediction_max_steps_,
-             ref prediction_max_steps_index_,
-             "Max. steps",
+    Selector(prediction_steps_,
+             ref prediction_steps_index_,
+             "Steps",
              ref changed_settings,
              "{0:0.00e0}");
   }
