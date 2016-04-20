@@ -287,6 +287,8 @@ Instant Ephemeris<Frame>::t_min() const {
     auto const& trajectory = pair.second;
     t_min = std::max(t_min, trajectory->t_min());
   }
+  CHECK(intermediate_states_.empty() ||
+        intermediate_states_.front().time.value >= t_min);
   return t_min;
 }
 
@@ -297,6 +299,8 @@ Instant Ephemeris<Frame>::t_max() const {
     auto const& trajectory = pair.second;
     t_max = std::min(t_max, trajectory->t_max());
   }
+  CHECK(intermediate_states_.empty() ||
+        intermediate_states_.back().time.value <= t_max);
   return t_max;
 }
 
@@ -308,7 +312,7 @@ Ephemeris<Frame>::planetary_integrator() const {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
+void Ephemeris<Frame>::ForgetAfter(Instant const& t) {
   auto it = std::lower_bound(
                 intermediate_states_.begin(), intermediate_states_.end(), t,
                 [](typename NewtonianMotionEquation::SystemState const& left,
@@ -329,15 +333,27 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
     ++index;
   }
   last_state_ = *it;
-  intermediate_states_.erase(it, intermediate_states_.end());
+  intermediate_states_.erase(++it, intermediate_states_.end());
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
+  auto it = std::upper_bound(
+                intermediate_states_.begin(), intermediate_states_.end(), t,
+                [](Instant const& left,
+                   typename NewtonianMotionEquation::SystemState const& right) {
+                  return left < right.time.value;
+                });
+  if (it == intermediate_states_.end()) {
+    return;
+  }
+  CHECK_LT(t, it->time.value);
+
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
     trajectory.ForgetBefore(t);
   }
+  intermediate_states_.erase(intermediate_states_.begin(), it);
 }
 
 template<typename Frame>
