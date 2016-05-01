@@ -29,13 +29,13 @@ inline Vessel::Vessel(not_null<Celestial const*> const parent,
                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
                           prediction_adaptive_step_parameters)
     : body_(),
-      parent_(parent),
-      ephemeris_(ephemeris),
       history_fixed_step_parameters_(history_fixed_step_parameters),
       prolongation_adaptive_step_parameters_(
           prolongation_adaptive_step_parameters),
       prediction_adaptive_step_parameters_(
-          prediction_adaptive_step_parameters) {}
+          prediction_adaptive_step_parameters),
+      parent_(parent),
+      ephemeris_(ephemeris) {}
 
 inline not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
@@ -266,11 +266,11 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
 inline Vessel::Vessel()
     : body_(),
-      parent_(testing_utilities::make_not_null<Celestial const*>()),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       history_fixed_step_parameters_(DefaultHistoryParameters()),
       prolongation_adaptive_step_parameters_(DefaultProlongationParameters()),
-      prediction_adaptive_step_parameters_(DefaultPredictionParameters()) {}
+      prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
+      parent_(testing_utilities::make_not_null<Celestial const*>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()) {}
 
 inline void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
   Instant const& history_last_time = history_->last().time();
