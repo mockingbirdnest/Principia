@@ -449,8 +449,8 @@ TEST_F(EphemerisTest, EarthProbe) {
     probe_positions.push_back(it.degrees_of_freedom().position() -
                               ICRFJ2000Equator::origin);
   }
-  // The problem is stiff, so different compilers result in different errors and
-  // thus different numbers of steps.
+  // The solution is a line, so the rounding errors dominate.  Different
+  // compilers result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(), AnyOf(Eq(476), Eq(534)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 259, 270));
