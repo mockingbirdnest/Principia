@@ -12,6 +12,9 @@ namespace physics {
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {
  public:
+  using typename Ephemeris<Frame>::AdaptiveStepParameters;
+  using typename Ephemeris<Frame>::FixedStepParameters;
+
   MockEphemeris() : Ephemeris<Frame>() {}
 
   MOCK_CONST_METHOD0_T(bodies,
