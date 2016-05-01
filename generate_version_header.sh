@@ -1,12 +1,13 @@
 #!/bin/bash
 VERSION_TEMPLATE="\xef\xbb\xbf
 #pragma once
+
 namespace principia {
 namespace base {
 
-  char const kBuildDate[] = \"%%DATE%%\";
-  char const kVersion[] =
-      u8\"%%VERSION%%\";
+char const kBuildDate[] = \"%%DATE%%\";
+char const kVersion[] =
+    u8\"%%VERSION%%\";
 
 }  // namespace base
 }  // namespace principia"
