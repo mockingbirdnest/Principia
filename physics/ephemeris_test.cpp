@@ -55,6 +55,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
+using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -448,9 +449,11 @@ TEST_F(EphemerisTest, EarthProbe) {
     probe_positions.push_back(it.degrees_of_freedom().position() -
                               ICRFJ2000Equator::origin);
   }
-  EXPECT_THAT(probe_positions.size(), Eq(476));
+  // The problem is stiff, so different compilers result in different errors and
+  // thus different numbers of steps.
+  EXPECT_THAT(probe_positions.size(), AnyOf(Eq(476), Eq(534)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 259));
+              AlmostEquals(1.00 * period * v_probe, 259, 270));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
@@ -1125,7 +1128,7 @@ TEST_F(EphemerisTest, ComputeApsides) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 1665));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2079));
     }
     previous_time = time;
   }
@@ -1149,7 +1152,7 @@ TEST_F(EphemerisTest, ComputeApsides) {
     Position<World> const position = pair.second.position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
-                  AlmostEquals(0.5 * T, 103, 2779));
+                  AlmostEquals(0.5 * T, 103, 3567));
       EXPECT_THAT((position - *previous_position).Norm(),
                   AlmostEquals(2.0 * a, 0, 176));
     }
