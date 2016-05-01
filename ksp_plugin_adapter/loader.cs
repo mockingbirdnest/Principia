@@ -13,6 +13,10 @@ internal static class Loader {
       return null;
     }
     bool is_32_bit = IntPtr.Size == 4;
+    if (is_32_bit) {
+      return "32-bit platforms are no longer supported; " +
+             "use the 64-bit KSP executable.";
+    }
     String[] possible_dll_paths = null;
     bool can_determine_cxx_installed;
     Func<bool> is_cxx_installed;
@@ -32,9 +36,6 @@ internal static class Loader {
       // (we probably don't actually encounter |PlatformID.MacOSX|.
       case PlatformID.Unix:
       case PlatformID.MacOSX:
-        if (is_32_bit) {
-          return "Linux and Mac OS X 32-bit are not supported at this time.";
-        }
         possible_dll_paths = new String[] {
             @"GameData/Principia/Linux64/principia.so",
             @"GameData/Principia/MacOS64/principia.so"};
