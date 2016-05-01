@@ -5,17 +5,18 @@ $headerpath = (join-path $solutiondir "base/version.hpp")
 
 $generateversionheader = {
   $text = [string]::format(
-      "#pragma once`n"                                `
-          + "`n"                                      `
-          + "namespace principia {{`n"                `
-          + "namespace base {{`n"                     `
-          + "`n"                                      `
-          + "char const kBuildDate[] = `"{0:O}`";`n"  `
-          + "char const kVersion[] =`n"               `
-          + "    u8`"{1}`";`n"                        `
-          + "`n"                                      `
-          + "}}  // namespace base`n"                 `
-          + "}}  // namespace principia`n",           `
+      "`n"                                                                   `
+    + "#pragma once`n"                                                       `
+    + "`n"                                                                   `
+    + "namespace principia {{`n"                                             `
+    + "namespace base {{`n"                                                  `
+    + "`n"                                                                   `
+    + "char const kBuildDate[] = `"{0:yyyy'-'MM'-'dd'T'HH':'mm':'ssK}`";`n"  `
+    + "char const kVersion[] =`n"                                            `
+    + "    u8`"{1}`";`n"                                                     `
+    + "`n"                                                                   `
+    + "}}  // namespace base`n"                                              `
+    + "}}  // namespace principia`n",
       (get-date).ToUniversalTime(),
       $newversion)
   [system.io.file]::writealltext(
