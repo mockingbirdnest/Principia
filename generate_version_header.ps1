@@ -5,7 +5,8 @@ $headerpath = (join-path $solutiondir "base/version.hpp")
 
 $generateversionheader = {
   $text = [string]::format(
-      "#pragma once`n"                                `
+      "`n"                                            `
+          + "#pragma once`n"                          `
           + "`n"                                      `
           + "namespace principia {{`n"                `
           + "namespace base {{`n"                     `
