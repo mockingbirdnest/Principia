@@ -63,13 +63,13 @@ class PlayerTest : public ::testing::Test {
 
 TEST_F(PlayerTest, PlayTiny) {
   {
-    Method<NewPlugin> method_in({1, 2});
-    method_in.Return(plugin_.get());
+    Method<NewPlugin> m({1, 2});
+    m.Return(plugin_.get());
   }
   {
     const ksp_plugin::Plugin* plugin = plugin_.get();
-    Method<DeletePlugin> method_in({&plugin}, {&plugin});
-    method_in.Return();
+    Method<DeletePlugin> m({&plugin}, {&plugin});
+    m.Return();
   }
 
   Player player(test_name_ + ".journal.hex");
