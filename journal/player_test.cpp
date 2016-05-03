@@ -109,16 +109,16 @@ TEST_F(PlayerTest, Debug) {
     }
     LOG(ERROR) << count << " journal entries in total";
 
-    //serialization::Method method_in;
-    //auto* extension = method_in.MutableExtension(
-    //    serialization::SerializePlugin::extension);
-    //auto* in = extension->mutable_in();
-    //in->set_plugin(850673856);
-    //in->set_serializer(0);
-    //serialization::Method method_out_return;
-    //method_out_return.MutableExtension(
-    //    serialization::SerializePlugin::extension);
-    //RunIfAppropriate<SerializePlugin>(method_in, method_out_return, player);
+    serialization::Method method_in;
+    auto* extension = method_in.MutableExtension(
+        serialization::SerializePlugin::extension);
+    auto* in = extension->mutable_in();
+    in->set_plugin(850673856);
+    in->set_serializer(0);
+    serialization::Method method_out_return;
+    method_out_return.MutableExtension(
+        serialization::SerializePlugin::extension);
+    RunIfAppropriate<SerializePlugin>(method_in, method_out_return, player);
   }
 }
 #endif
