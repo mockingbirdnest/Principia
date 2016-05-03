@@ -15,6 +15,7 @@ namespace principia {
 
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantites::IsFinite;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 
@@ -313,12 +314,25 @@ inline void Vessel::FlowProlongation(Instant const& time) {
 
 inline void Vessel::FlowPrediction(Instant const& time) {
   if (time > prediction_->last().time()) {
-    ephemeris_->FlowWithAdaptiveStep(
+    bool finite_time = IsFinite(time - prediction_->last().time()));
+    Instant const t = finite_time ? time : ephemeris_->t_max();
+    // This will not prolong the ephemeris if |time| is infinite (but it may do
+    // no if it is finite).
+    bool reached_t = ephemeris_->FlowWithAdaptiveStep(
+        prediction_,
+        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        t,
+        prediction_adaptive_step_parameters_,
+        FlightPlan::max_ephemeris_steps_per_frame);
+    if (!finite_time && reached_t) {
+      // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+      ephemeris_->FlowWithAdaptiveStep(
         prediction_,
         Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
         time,
         prediction_adaptive_step_parameters_,
         FlightPlan::max_ephemeris_steps_per_frame);
+    }
   }
 }
 
