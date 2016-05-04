@@ -15,7 +15,7 @@ namespace principia {
 
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
-using quantites::IsFinite;
+using quantities::IsFinite;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 
@@ -314,7 +314,7 @@ inline void Vessel::FlowProlongation(Instant const& time) {
 
 inline void Vessel::FlowPrediction(Instant const& time) {
   if (time > prediction_->last().time()) {
-    bool finite_time = IsFinite(time - prediction_->last().time()));
+    bool finite_time = IsFinite(time - prediction_->last().time());
     Instant const t = finite_time ? time : ephemeris_->t_max();
     // This will not prolong the ephemeris if |time| is infinite (but it may do
     // no if it is finite).
