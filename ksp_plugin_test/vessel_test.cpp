@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/vessel.hpp"
 
+#include <limits>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/ephemeris.hpp"
