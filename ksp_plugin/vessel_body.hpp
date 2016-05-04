@@ -317,7 +317,7 @@ inline void Vessel::FlowPrediction(Instant const& time) {
     bool finite_time = IsFinite(time - prediction_->last().time());
     Instant const t = finite_time ? time : ephemeris_->t_max();
     // This will not prolong the ephemeris if |time| is infinite (but it may do
-    // no if it is finite).
+    // so if it is finite).
     bool reached_t = ephemeris_->FlowWithAdaptiveStep(
         prediction_,
         Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
