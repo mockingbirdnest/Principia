@@ -14,6 +14,7 @@ using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
+using ::testing::Le;
 
 namespace ksp_plugin {
 
@@ -185,6 +186,22 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_TRUE(vessel_->has_flight_plan());
+}
+
+TEST_F(VesselTest, PredictBeyondTheInfinite) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  Instant const previous_t_max = ephemeris_->t_max();
+  for (int i = 0; i < 10; ++i) {
+    vessel_->UpdatePrediction(t2_ +
+                              std::numeric_limits<double>::infinity() * Second);
+  }
+  EXPECT_THAT(ephemeris_->t_max() - previous_t_max,
+              Le(FlightPlan::max_ephemeris_steps_per_frame *
+                 ephemeris_fixed_parameters_.step()));
+  LOG(ERROR) << (ephemeris_->t_max() - previous_t_max) /
+                    (FlightPlan::max_ephemeris_steps_per_frame *
+                     ephemeris_fixed_parameters_.step());
 }
 
 }  // namespace ksp_plugin
