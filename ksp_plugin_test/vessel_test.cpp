@@ -14,7 +14,11 @@ using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
+using ::testing::AllOf;
+using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::Le;
+using ::testing::Lt;
 
 namespace ksp_plugin {
 
@@ -197,17 +201,35 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           /*max_steps=*/5,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second));
-  Instant const previous_t_max = ephemeris_->t_max();
+  Instant previous_t_max = ephemeris_->t_max();
   for (int i = 0; i < 10; ++i) {
     vessel_->UpdatePrediction(t2_ +
                               std::numeric_limits<double>::infinity() * Second);
   }
+  // We stop prolonging when the ephemeris gets long enough (in this case, a
+  // single prolongation suffices).
   EXPECT_THAT(ephemeris_->t_max() - previous_t_max,
               Le(FlightPlan::max_ephemeris_steps_per_frame *
                  ephemeris_fixed_parameters_.step()));
-  LOG(ERROR) << (ephemeris_->t_max() - previous_t_max) /
-                    (FlightPlan::max_ephemeris_steps_per_frame *
-                     ephemeris_fixed_parameters_.step());
+  EXPECT_THAT(vessel_->prediction().last().time(), Lt(ephemeris_->t_max()));
+
+  vessel_->set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/1000,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second));
+  previous_t_max = ephemeris_->t_max();
+  for (int i = 0; i < 10; ++i) {
+    vessel_->UpdatePrediction(t2_ +
+                              std::numeric_limits<double>::infinity() * Second);
+  }
+  // Here the ephemeris isn't long enough yet; we have prolonged every time.
+  EXPECT_THAT((ephemeris_->t_max() - previous_t_max) /
+                  (FlightPlan::max_ephemeris_steps_per_frame *
+                   ephemeris_fixed_parameters_.step()),
+              AllOf(Gt(9), Le(10)));
+  EXPECT_THAT(vessel_->prediction().last().time(), Eq(ephemeris_->t_max()));
 }
 
 }  // namespace ksp_plugin
