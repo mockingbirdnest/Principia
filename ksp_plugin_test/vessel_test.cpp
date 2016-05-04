@@ -191,6 +191,12 @@ TEST_F(VesselTest, SerializationSuccess) {
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
   vessel_->AdvanceTimeNotInBubble(t2_);
+  vessel_->set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/5,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second));
   Instant const previous_t_max = ephemeris_->t_max();
   for (int i = 0; i < 10; ++i) {
     vessel_->UpdatePrediction(t2_ +
