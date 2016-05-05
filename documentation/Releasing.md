@@ -15,7 +15,7 @@ git push la-vache --tags
 ```
 After this is done, build the DLL using Profile Guided Optimization:
 
-1. Select configuration `Release`.
+1. Select configuration `Release`, platform `x64`.
 * Run `Build > Rebuild Solution`.  This makes sure that the tools and generated code are up-to-date.  It also creates the `journal_test.exe` binary.
 * Select project `ksp_plugin` and run `Build > Profile Guided Optimization > Instrument`.
 * Select project `journal` and run `Project > Set as StartUp Project`
