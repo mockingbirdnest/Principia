@@ -113,18 +113,19 @@ class FlightPlanner : WindowRenderer {
         UnityEngine.GUILayout.BeginHorizontal();
         UnityEngine.GUILayout.Label("Max. steps per segment:",
                                     UnityEngine.GUILayout.Width(150));
+        const int factor = 4;
         if (parameters.max_steps <= 100) {
           UnityEngine.GUILayout.Button("min");
         } else if (UnityEngine.GUILayout.Button("-")) {
-          parameters.max_steps /= 10;
+          parameters.max_steps /= factor;
           plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
         }
         UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                        UnityEngine.GUILayout.Width(75));
-        if (parameters.max_steps >= Int64.MaxValue / 10) {
+        if (parameters.max_steps >= Int64.MaxValue / factor) {
           UnityEngine.GUILayout.Button("max");
         } else if (UnityEngine.GUILayout.Button("+")) {
-          parameters.max_steps *= 10;
+          parameters.max_steps *= factor;
           plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
         }
         UnityEngine.GUILayout.EndHorizontal();
