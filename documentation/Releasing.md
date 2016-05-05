@@ -25,6 +25,5 @@ After this is done, build the DLL using Profile Guided Optimization:
 * Answer `Do Not Continue With Build` to the dialog box that asks if you would want to rebuild `ksp_plugin`.
 * Answer `Yes` to the dialog box that informs you that there were build errors.
 * The executable runs.  This takes a long time, 3-4 times longer than without instrumentation.  Have a cup of coffee.
-* When the executable finishes, it will create a file with a name like `<root>\Principia\Release\principia!3.pgc`.  Copy that file to `<root>\Principia\Release\GameData\Principia`.
-* Run `Build > Profile Guided Optimization > Optimize`.  This creates the optimized `Principia.dll`.
+* Select project `ksp_plugin` and run `Build > Profile Guided Optimization > Optimize`.  This creates the optimized `Principia.dll`.
 * Zip the contents of the `<root>\Principia\Release\GameData` folder into `principia <mathematician>.zip`.
