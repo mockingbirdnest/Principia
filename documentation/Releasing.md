@@ -16,7 +16,8 @@ git push la-vache --tags
 After this is done, build the DLL using Profile Guided Optimization:
 
 1. Select configuration `Release`, platform `x64`.
-* Run `Build > Rebuild Solution`.  This makes sure that the tools and generated code are up-to-date.  It also creates the `journal_test.exe` binary.
+* Remove all existing artifacts: `rm .\Release`.
+* Run `Build > Build Solution`.  This makes sure that the tools and generated code are up-to-date.  It also creates the `journal_test.exe` binary.
 * Select project `ksp_plugin` and run `Build > Profile Guided Optimization > Instrument`.
 * Select project `journal` and run `Project > Set as StartUp Project`
 * With project `journal` selected, run `Project > Properties`.  For configuration `Release` select the `Debugging` page and set `Command Arguments` to `--gtest_filter=PlayerTest.Benchmarks`.
