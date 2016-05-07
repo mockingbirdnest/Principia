@@ -1376,15 +1376,15 @@ public partial class PrincipiaPluginAdapter
     is_stock &= laythe.referenceBody == jool;
     is_stock &= vall.referenceBody   == jool;
     is_stock &= tylo.referenceBody   == jool;
-    is_stock &= (float)laythe.orbit.semiMajorAxis == 27184000f;
-    is_stock &= (float)vall.orbit.semiMajorAxis   == 43152000f;
-    is_stock &= (float)tylo.orbit.semiMajorAxis   == 68500000f;
-    is_stock &= (float)laythe.orbit.inclination == 0f;
-    is_stock &= (float)vall.orbit.inclination   == 0f;
-    is_stock &= (float)tylo.orbit.inclination   == 0.025f;
-    is_stock &= (float)mean_longitude(laythe) == 3.14f;
-    is_stock &= (float)mean_longitude(vall)   == 0.9f;
-    is_stock &= (float)mean_longitude(tylo)   == 3.14f;
+    is_stock &= Convert.ToSingle(laythe.orbit.semiMajorAxis) == 27184000f;
+    is_stock &= Convert.ToSingle(vall.orbit.semiMajorAxis)   == 43152000f;
+    is_stock &= Convert.ToSingle(tylo.orbit.semiMajorAxis)   == 68500000f;
+    is_stock &= Convert.ToSingle(laythe.orbit.inclination) == 0f;
+    is_stock &= Convert.ToSingle(vall.orbit.inclination)   == 0f;
+    is_stock &= Convert.ToSingle(tylo.orbit.inclination)   == 0.025f;
+    is_stock &= Convert.ToSingle(mean_longitude(laythe)) == 3.14f;
+    is_stock &= Convert.ToSingle(mean_longitude(vall))   == 0.9f;
+    is_stock &= Convert.ToSingle(mean_longitude(tylo))   == 3.14f;
     if (!is_stock) {
       return;
     }
