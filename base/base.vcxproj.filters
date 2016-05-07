@@ -80,7 +80,7 @@
     <ClInclude Include="optional_logging_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.hpp">
+    <ClInclude Include="version.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
