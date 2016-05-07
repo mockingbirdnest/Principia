@@ -277,7 +277,6 @@
     <ClInclude Include="push_deserializer_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
-    <ClInclude Include="version.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hexadecimal_test.cpp" />

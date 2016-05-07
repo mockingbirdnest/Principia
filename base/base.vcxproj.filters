@@ -80,9 +80,6 @@
     <ClInclude Include="optional_logging_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
