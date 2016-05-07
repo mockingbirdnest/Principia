@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/vessel.hpp"
 
+#include <limits>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/ephemeris.hpp"
@@ -14,6 +16,11 @@ using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
+using ::testing::AllOf;
+using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Le;
+using ::testing::Lt;
 
 namespace ksp_plugin {
 
@@ -185,6 +192,46 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_TRUE(vessel_->has_flight_plan());
+}
+
+TEST_F(VesselTest, PredictBeyondTheInfinite) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  vessel_->set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/5,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second));
+  Instant previous_t_max = ephemeris_->t_max();
+  for (int i = 0; i < 10; ++i) {
+    vessel_->UpdatePrediction(t2_ +
+                              std::numeric_limits<double>::infinity() * Second);
+  }
+  // We stop prolonging when the ephemeris gets long enough (in this case, a
+  // single prolongation suffices).
+  EXPECT_THAT(ephemeris_->t_max() - previous_t_max,
+              Le(FlightPlan::max_ephemeris_steps_per_frame *
+                 ephemeris_fixed_parameters_.step()));
+  EXPECT_THAT(vessel_->prediction().last().time(), Lt(ephemeris_->t_max()));
+
+  vessel_->set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          /*max_steps=*/1000,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second));
+  previous_t_max = ephemeris_->t_max();
+  for (int i = 0; i < 10; ++i) {
+    vessel_->UpdatePrediction(t2_ +
+                              std::numeric_limits<double>::infinity() * Second);
+  }
+  // Here the ephemeris isn't long enough yet; we have prolonged every time.
+  EXPECT_THAT((ephemeris_->t_max() - previous_t_max) /
+                  (FlightPlan::max_ephemeris_steps_per_frame *
+                   ephemeris_fixed_parameters_.step()),
+              AllOf(Gt(9), Le(10)));
+  EXPECT_THAT(vessel_->prediction().last().time(), Eq(ephemeris_->t_max()));
 }
 
 }  // namespace ksp_plugin

@@ -15,6 +15,7 @@ namespace principia {
 
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantities::IsFinite;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
 
@@ -29,13 +30,13 @@ inline Vessel::Vessel(not_null<Celestial const*> const parent,
                       Ephemeris<Barycentric>::AdaptiveStepParameters const&
                           prediction_adaptive_step_parameters)
     : body_(),
-      parent_(parent),
-      ephemeris_(ephemeris),
       history_fixed_step_parameters_(history_fixed_step_parameters),
       prolongation_adaptive_step_parameters_(
           prolongation_adaptive_step_parameters),
       prediction_adaptive_step_parameters_(
-          prediction_adaptive_step_parameters) {}
+          prediction_adaptive_step_parameters),
+      parent_(parent),
+      ephemeris_(ephemeris) {}
 
 inline not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
@@ -266,11 +267,11 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
 inline Vessel::Vessel()
     : body_(),
-      parent_(testing_utilities::make_not_null<Celestial const*>()),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       history_fixed_step_parameters_(DefaultHistoryParameters()),
       prolongation_adaptive_step_parameters_(DefaultProlongationParameters()),
-      prediction_adaptive_step_parameters_(DefaultPredictionParameters()) {}
+      prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
+      parent_(testing_utilities::make_not_null<Celestial const*>()),
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()) {}
 
 inline void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
   Instant const& history_last_time = history_->last().time();
@@ -313,12 +314,25 @@ inline void Vessel::FlowProlongation(Instant const& time) {
 
 inline void Vessel::FlowPrediction(Instant const& time) {
   if (time > prediction_->last().time()) {
-    ephemeris_->FlowWithAdaptiveStep(
+    bool const finite_time = IsFinite(time - prediction_->last().time());
+    Instant const t = finite_time ? time : ephemeris_->t_max();
+    // This will not prolong the ephemeris if |time| is infinite (but it may do
+    // so if it is finite).
+    bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
+        prediction_,
+        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        t,
+        prediction_adaptive_step_parameters_,
+        FlightPlan::max_ephemeris_steps_per_frame);
+    if (!finite_time && reached_t) {
+      // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+      ephemeris_->FlowWithAdaptiveStep(
         prediction_,
         Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
         time,
         prediction_adaptive_step_parameters_,
         FlightPlan::max_ephemeris_steps_per_frame);
+    }
   }
 }
 

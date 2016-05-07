@@ -1,6 +1,7 @@
 ﻿
 #include "journal/player.hpp"
 
+#include <chrono>
 #include <string>
 
 #include "base/array.hpp"
@@ -34,7 +35,15 @@ bool Player::Play() {
     return false;
   }
 
+  auto const before = std::chrono::system_clock::now();
+
 #include "journal/player.generated.cc"
+
+  auto const after = std::chrono::system_clock::now();
+  if (after - before > std::chrono::milliseconds(100)) {
+    LOG(ERROR) << "Long method:\n" << method_in->DebugString();
+  }
+
   return true;
 }
 

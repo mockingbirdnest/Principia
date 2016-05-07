@@ -47,12 +47,11 @@ public partial class PrincipiaPluginAdapter
       {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
   [KSPField(isPersistant = true)]
   private int prediction_length_tolerance_index_ = 1;
-  private readonly double[] prediction_lengths_ =
-      {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
-       1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
-       1 << 26, 1 << 27, 1 << 28};
+  private readonly double[] prediction_steps_ =
+      {1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
+       1 << 18, 1 << 20, 1 << 22, 1 << 24};
   [KSPField(isPersistant = true)]
-  private int prediction_length_index_ = 0;
+  private int prediction_steps_index_ = 4;
   private readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -662,7 +661,7 @@ public partial class PrincipiaPluginAdapter
         // TODO(egg): make the speed tolerance independent.  Also max_steps.
         AdaptiveStepParameters adaptive_step_parameters =
             new AdaptiveStepParameters {
-              max_steps = 1000,
+              max_steps = (Int64)prediction_steps_[prediction_steps_index_],
               length_integration_tolerance =
                   prediction_length_tolerances_[
                       prediction_length_tolerance_index_],
@@ -670,8 +669,7 @@ public partial class PrincipiaPluginAdapter
                   prediction_length_tolerances_[
                       prediction_length_tolerance_index_]};
         plugin_.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
-        plugin_.SetPredictionLength(
-            prediction_lengths_[prediction_length_index_]);
+        plugin_.SetPredictionLength(double.PositiveInfinity);
       }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
       if (ready_to_draw_active_vessel_trajectory) {
@@ -1072,11 +1070,11 @@ public partial class PrincipiaPluginAdapter
              "Tolerance",
              ref changed_settings,
              "{0:0.0e0} m");
-    Selector(prediction_lengths_,
-             ref prediction_length_index_,
-             "Length",
+    Selector(prediction_steps_,
+             ref prediction_steps_index_,
+             "Steps",
              ref changed_settings,
-             "{0:0.00e0} s");
+             "{0:0.00e0}");
   }
 
   private void KSPFeatures() {
@@ -1378,15 +1376,15 @@ public partial class PrincipiaPluginAdapter
     is_stock &= laythe.referenceBody == jool;
     is_stock &= vall.referenceBody   == jool;
     is_stock &= tylo.referenceBody   == jool;
-    is_stock &= (float)laythe.orbit.semiMajorAxis == 27184000f;
-    is_stock &= (float)vall.orbit.semiMajorAxis   == 43152000f;
-    is_stock &= (float)tylo.orbit.semiMajorAxis   == 68500000f;
-    is_stock &= (float)laythe.orbit.inclination == 0f;
-    is_stock &= (float)vall.orbit.inclination   == 0f;
-    is_stock &= (float)tylo.orbit.inclination   == 0.025f;
-    is_stock &= (float)mean_longitude(laythe) == 3.14f;
-    is_stock &= (float)mean_longitude(vall)   == 0.9f;
-    is_stock &= (float)mean_longitude(tylo)   == 3.14f;
+    is_stock &= Convert.ToSingle(laythe.orbit.semiMajorAxis) == 27184000f;
+    is_stock &= Convert.ToSingle(vall.orbit.semiMajorAxis)   == 43152000f;
+    is_stock &= Convert.ToSingle(tylo.orbit.semiMajorAxis)   == 68500000f;
+    is_stock &= Convert.ToSingle(laythe.orbit.inclination) == 0f;
+    is_stock &= Convert.ToSingle(vall.orbit.inclination)   == 0f;
+    is_stock &= Convert.ToSingle(tylo.orbit.inclination)   == 0.025f;
+    is_stock &= Convert.ToSingle(mean_longitude(laythe)) == 3.14f;
+    is_stock &= Convert.ToSingle(mean_longitude(vall))   == 0.9f;
+    is_stock &= Convert.ToSingle(mean_longitude(tylo))   == 3.14f;
     if (!is_stock) {
       return;
     }

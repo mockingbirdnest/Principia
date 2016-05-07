@@ -122,3 +122,6 @@ deps/
 
 # Generated files
 *.generated.*
+
+# Vagrant
+.vagrant/

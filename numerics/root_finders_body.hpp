@@ -15,6 +15,7 @@ namespace principia {
 using geometry::Barycentre;
 using geometry::Sign;
 using quantities::Square;
+using quantities::Sqrt;
 
 namespace numerics {
 
