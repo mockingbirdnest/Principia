@@ -733,7 +733,12 @@ void Ephemeris<Frame>::WriteToMessage(
   // The trajectories are serialized in the order resulting from the separation
   // between oblate and spherical bodies.
   for (auto const& trajectory : trajectories_) {
-    trajectory->WriteToMessage(message->add_trajectory());
+    if (intermediate_states_.empty()) {
+      trajectory->WriteToMessage(message->add_trajectory());
+    } else {
+      trajectory->WriteToMessage(message->add_trajectory(),
+                                 intermediate_states_.front().time.value);
+    }
   }
   parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
