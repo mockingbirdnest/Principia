@@ -312,31 +312,6 @@ Ephemeris<Frame>::planetary_integrator() const {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ForgetAfter(Instant const& t) {
-  auto it = std::lower_bound(
-                intermediate_states_.begin(), intermediate_states_.end(), t,
-                [](typename NewtonianMotionEquation::SystemState const& left,
-                   Instant const& right) {
-                  return left.time.value < right;
-                });
-  if (it == intermediate_states_.end()) {
-    return;
-  }
-  CHECK_LE(t, it->time.value);
-
-  int index = 0;
-  for (auto const& trajectory : trajectories_) {
-    trajectory->ForgetAfter(
-        it->time.value,
-        DegreesOfFreedom<Frame>(it->positions[index].value,
-                                it->velocities[index].value));
-    ++index;
-  }
-  last_state_ = *it;
-  intermediate_states_.erase(++it, intermediate_states_.end());
-}
-
-template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   auto it = std::upper_bound(
                 intermediate_states_.begin(), intermediate_states_.end(), t,
