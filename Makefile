@@ -1,6 +1,6 @@
 CXX := clang++
 
-VERSION_HEADER := base/version.hpp
+VERSION_HEADER := base/version.generated.h
 
 CPP_SOURCES := ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp 
 TOOLS_SOURCES := $(wildcard tools/*.cpp)

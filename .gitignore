@@ -113,8 +113,6 @@ packages/
 # Journal Files
 *.journal.hex
 
-# git version header
-base/version.hpp
 deps/
 
 # Mailboxes
