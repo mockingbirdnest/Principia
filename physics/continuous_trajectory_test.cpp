@@ -61,8 +61,8 @@ class ContinuousTrajectoryTest : public testing::Test {
       int const number_of_steps,
       Time const& step,
       std::function<Position<World>(Instant const)> position_function,
-      std::function<Velocity<World>(Instant const)> velocity_function) {
-    Instant time;
+      std::function<Velocity<World>(Instant const)> velocity_function,
+      Instant& time) {
     for (int i = 0; i < number_of_steps; ++i) {
       time += step;
       trajectory_->Append(time,
@@ -76,8 +76,7 @@ class ContinuousTrajectoryTest : public testing::Test {
     delete error_estimates_;
     error_estimates_ = new std::deque<Displacement<World>>(error_estimates);
 
-    Instant const t0;
-    Instant const t = t0 + 1 * Second;
+    Instant const t = t0_ + 1 * Second;
     std::vector<Displacement<World>> const q;
     std::vector<Velocity<World>> const v;
     trajectory_->ComputeBestNewhallApproximation(
@@ -101,6 +100,7 @@ class ContinuousTrajectoryTest : public testing::Test {
   }
 
   static std::deque<Displacement<World>>* error_estimates_;
+  Instant const t0_;
   std::unique_ptr<ContinuousTrajectory<World>> trajectory_;
 };
 
@@ -221,17 +221,16 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
   int const kNumberOfSteps = 20;
   int const kNumberOfSubsteps = 50;
   Time const kStep = 0.01 * Second;
-  Instant const t0;
 
   auto position_function =
-      [t0](Instant const t) {
+      [this](Instant const t) {
         return World::origin +
-            Displacement<World>({(t - t0) * 3 * Metre / Second,
-                                 (t - t0) * 5 * Metre / Second,
-                                 (t - t0) * (-2) * Metre / Second});
+            Displacement<World>({(t - t0_) * 3 * Metre / Second,
+                                 (t - t0_) * 5 * Metre / Second,
+                                 (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [t0](Instant const t) {
+      [](Instant const t) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -242,10 +241,12 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                     0.1 * Metre /*tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
-  FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
+  Instant time = t0_;
+  FillTrajectory(
+      kNumberOfSteps, kStep, position_function, velocity_function, time);
   EXPECT_FALSE(trajectory_->empty());
-  EXPECT_EQ(t0 + kStep, trajectory_->t_min());
-  EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
+  EXPECT_EQ(t0_ + kStep, trajectory_->t_min());
+  EXPECT_EQ(t0_ + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
             trajectory_->t_max());
 
   ContinuousTrajectory<World>::Hint hint;
@@ -272,13 +273,15 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   Time const kJupiterPeriod = 11.8618 * JulianYear;
   Time const kIoPeriod = 152853.5047 * Second;
   Time const kStep = 3600 * Second;
-  Instant const t0;
 
   auto position_function =
-      [t0, kSunJupiterDistance, kJupiterIoDistance, kJupiterPeriod, kIoPeriod](
-          Instant const t) {
-        Angle const jupiter_angle = 2 * π * Radian * (t - t0) / kJupiterPeriod;
-        Angle const io_angle = 2 * π * Radian * (t - t0) / kIoPeriod;
+      [this,
+       kSunJupiterDistance,
+       kJupiterIoDistance,
+       kJupiterPeriod,
+       kIoPeriod](Instant const t) {
+        Angle const jupiter_angle = 2 * π * Radian * (t - t0_) / kJupiterPeriod;
+        Angle const io_angle = 2 * π * Radian * (t - t0_) / kIoPeriod;
         return World::origin +
             Displacement<World>({
                 kSunJupiterDistance * Cos(jupiter_angle) +
@@ -287,30 +290,34 @@ TEST_F(ContinuousTrajectoryTest, Io) {
                     kJupiterIoDistance * Sin(io_angle),
                 0 * Metre});
       };
-  auto velocity_function =
-      [t0, kSunJupiterDistance, kJupiterIoDistance, kJupiterPeriod, kIoPeriod](
-          Instant const t) {
-        AngularFrequency const jupiter_ω = 2 * π * Radian / kJupiterPeriod;
-        AngularFrequency const io_ω = 2 * π * Radian / kIoPeriod;
-        Angle const jupiter_angle = jupiter_ω * (t - t0);
-        Angle const io_angle = io_ω * (t - t0);
+  auto velocity_function = [this,
+                            kSunJupiterDistance,
+                            kJupiterIoDistance,
+                            kJupiterPeriod,
+                            kIoPeriod](Instant const t) {
+    AngularFrequency const jupiter_ω = 2 * π * Radian / kJupiterPeriod;
+    AngularFrequency const io_ω = 2 * π * Radian / kIoPeriod;
+    Angle const jupiter_angle = jupiter_ω *(t - t0_);
+    Angle const io_angle = io_ω *(t - t0_);
         return Velocity<World>({
             (-jupiter_ω * kSunJupiterDistance * Sin(jupiter_angle) -
                 io_ω * kJupiterIoDistance * Sin(io_angle)) / Radian,
             (jupiter_ω * kSunJupiterDistance * Cos(jupiter_angle) +
                 io_ω * kJupiterIoDistance * Cos(io_angle)) / Radian,
             0 * Metre / Second});
-      };
+  };
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
                     5 * Milli(Metre) /*tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
-  FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
+  Instant time = t0_;
+  FillTrajectory(
+      kNumberOfSteps, kStep, position_function, velocity_function, time);
   EXPECT_FALSE(trajectory_->empty());
-  EXPECT_EQ(t0 + kStep, trajectory_->t_min());
-  EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
+  EXPECT_EQ(t0_ + kStep, trajectory_->t_min());
+  EXPECT_EQ(t0_ + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
             trajectory_->t_max());
 
   ContinuousTrajectory<World>::Hint hint;
@@ -331,10 +338,10 @@ TEST_F(ContinuousTrajectoryTest, Io) {
 
   trajectory_->ForgetBefore(trajectory_->t_min() - kStep);
 
-  Instant const kForgetBeforeTime = t0 + 44444 * Second;
+  Instant const kForgetBeforeTime = t0_ + 44444 * Second;
   trajectory_->ForgetBefore(kForgetBeforeTime);
   EXPECT_EQ(kForgetBeforeTime, trajectory_->t_min());
-  EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
+  EXPECT_EQ(t0_ + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
             trajectory_->t_max());
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
@@ -351,7 +358,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
               AbsoluteError(expected_velocity, actual_velocity));
   }
 
-  Instant const kForgetAfterTime = t0 + 25 * kStep;
+  Instant const kForgetAfterTime = t0_ + 25 * kStep;
   trajectory_->ForgetAfter(
       kForgetAfterTime,
       trajectory_->EvaluateDegreesOfFreedom(kForgetAfterTime,
@@ -381,17 +388,16 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   int const kNumberOfSubsteps = 50;
   Time const kStep = 0.01 * Second;
   Length const kTolerance = 0.1 * Metre;
-  Instant const t0;
 
   auto position_function =
-      [t0](Instant const t) {
+      [this](Instant const t) {
         return World::origin +
-            Displacement<World>({(t - t0) * 3 * Metre / Second,
-                                 (t - t0) * 5 * Metre / Second,
-                                 (t - t0) * (-2) * Metre / Second});
+            Displacement<World>({(t - t0_) * 3 * Metre / Second,
+                                 (t - t0_) * 5 * Metre / Second,
+                                 (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [t0](Instant const t) {
+      [](Instant const t) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -401,8 +407,9 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
                     kStep, kTolerance);
 
   EXPECT_TRUE(trajectory_->empty());
-  FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
-
+  Instant time = t0_;
+  FillTrajectory(
+      kNumberOfSteps, kStep, position_function, velocity_function, time);
   serialization::ContinuousTrajectory message;
   trajectory_->WriteToMessage(&message);
   EXPECT_EQ(kStep / Second, message.step().magnitude());
@@ -421,6 +428,66 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_EQ(trajectory->t_max(), trajectory_->t_max());
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
+       time += kStep / kNumberOfSubsteps) {
+    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, nullptr /*hint*/),
+              trajectory_->EvaluateDegreesOfFreedom(time, nullptr /*hint*/));
+  }
+}
+
+TEST_F(ContinuousTrajectoryTest, Checkpoint) {
+  int const kNumberOfSteps1 = 30;
+  int const kNumberOfSteps2 = 20;
+  int const kNumberOfSubsteps = 50;
+  Time const kStep = 0.01 * Second;
+  Length const kTolerance = 0.1 * Metre;
+
+  auto position_function =
+      [this](Instant const t) {
+        return World::origin +
+            Displacement<World>({(t - t0_) * 3 * Metre / Second,
+                                 (t - t0_) * 5 * Metre / Second,
+                                 (t - t0_) * (-2) * Metre / Second});
+      };
+  auto velocity_function =
+      [](Instant const t) {
+        return Velocity<World>({3 * Metre / Second,
+                                5 * Metre / Second,
+                                -2 * Metre / Second});
+      };
+
+  trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
+                    kStep, kTolerance);
+
+  EXPECT_TRUE(trajectory_->empty());
+
+  // Fill the trajectory, get a checkpoint and fill some more.
+  Instant time = t0_;
+  FillTrajectory(
+      kNumberOfSteps1, kStep, position_function, velocity_function, time);
+  ContinuousTrajectory<World>::Checkpoint const checkpoint =
+      trajectory_->GetCheckpoint();
+  Instant const checkpoint_t_max = trajectory_->t_max();
+  FillTrajectory(
+      kNumberOfSteps2, kStep, position_function, velocity_function, time);
+
+  serialization::ContinuousTrajectory message;
+  trajectory_->WriteToMessage(&message, checkpoint);
+  EXPECT_EQ(kStep / Second, message.step().magnitude());
+  EXPECT_EQ(kTolerance / Metre, message.tolerance().magnitude());
+  EXPECT_GE(message.adjusted_tolerance().magnitude(),
+            message.tolerance().magnitude());
+  EXPECT_TRUE(message.has_is_unstable());
+  EXPECT_EQ(3, message.degree());
+  EXPECT_GE(100, message.degree_age());
+  EXPECT_EQ(3, message.series_size());
+  EXPECT_TRUE(message.has_first_time());
+  EXPECT_EQ(6, message.last_point_size());
+
+  auto const trajectory = ContinuousTrajectory<World>::ReadFromMessage(message);
+  EXPECT_EQ(trajectory->t_min(), trajectory_->t_min());
+  EXPECT_EQ(trajectory->t_max(), checkpoint_t_max);
+  for (Instant time = trajectory_->t_min();
+       time <= checkpoint_t_max;
        time += kStep / kNumberOfSubsteps) {
     EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, nullptr /*hint*/),
               trajectory_->EvaluateDegreesOfFreedom(time, nullptr /*hint*/));
