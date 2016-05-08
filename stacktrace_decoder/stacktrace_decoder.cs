@@ -37,11 +37,12 @@ class StackTraceDecoder {
     string info_file_uri = args[0];
     string pdb_file = args[1];
     var web_client = new WebClient();
-    var stream = new StreamReader(web_client.OpenRead(info_file_uri));
+    var stream = new StreamReader(web_client.OpenRead(info_file_uri),
+                                  Encoding.UTF8);
     if (!unity_crash) {
       var version_regex = new Regex(
           @"^I.*\] Principia version " + 
-          @"([0-9]{10}-[A-Za-z]+)-[0-9]+-g([0-9a-f]{40}) built");
+          @"([0-9]{10}-\w+)-[0-9]+-g([0-9a-f]{40}) built");
       Match version_match;
       do {
         version_match = version_regex.Match(stream.ReadLine());
