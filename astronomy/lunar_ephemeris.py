@@ -57,12 +57,13 @@ from astropy.time import Time
 # U4 = 08:39:33
 # P4 = 09:52:05
 
+csv = open('lunareclipsetimes.csv', 'w')
+
 P1U1234P4 = ['1950-04-02T18:10:49', '1950-04-02T19:09:19', \
              '1950-04-02T20:30:38', '1950-04-02T20:57:33', \
              '1950-04-02T22:18:54', '1950-04-02T23:17:21']
 eclipseTimes = Time(P1U1234P4, format='isot', scale='utc')
 et2 = eclipseTimes.tdb
-csv = open('eclipsetimes.csv', 'w')
 csv.write(str(et2.jd))
 csv.write('\n')
 
