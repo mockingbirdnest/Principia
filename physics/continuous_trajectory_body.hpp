@@ -233,7 +233,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   for (auto const& s : series_) {
     if (s.t_max() <= checkpoint.t_max) {
       s.WriteToMessage(message->add_series());
-    } 
+    }
     if (s.t_max() == checkpoint.t_max) {
       break;
     }
