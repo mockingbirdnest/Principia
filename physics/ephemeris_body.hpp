@@ -321,17 +321,17 @@ void Ephemeris<Frame>::ForgetAfter(Instant const& t) {
   if (it == checkpoints_.end()) {
     return;
   }
-  CHECK_LE(t, it->time.value);
+  last_state_ = it->system_state;
+  CHECK_LE(t, last_state_.time.value);
 
   int index = 0;
   for (auto const& trajectory : trajectories_) {
     trajectory->ForgetAfter(
-        it->time.value,
-        DegreesOfFreedom<Frame>(it->positions[index].value,
-                                it->velocities[index].value));
+        last_state_.time.value,
+        DegreesOfFreedom<Frame>(last_state_.positions[index].value,
+                                last_state_.velocities[index].value));
     ++index;
   }
-  last_state_ = *it;
   checkpoints_.erase(++it, checkpoints_.end());
 }
 
@@ -345,7 +345,7 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   if (it == checkpoints_.end()) {
     return;
   }
-  CHECK_LT(t, it->time.value);
+  CHECK_LT(t, it->system_state.time.value);
 
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
@@ -735,12 +735,16 @@ void Ephemeris<Frame>::WriteToMessage(
   }
   // The trajectories are serialized in the order resulting from the separation
   // between oblate and spherical bodies.
-  for (auto const& trajectory : trajectories_) {
-    if (checkpoints_.empty()) {
+  if (checkpoints_.empty()) {
+    for (auto const& trajectory : trajectories_) {
       trajectory->WriteToMessage(message->add_trajectory());
-    } else {
-      trajectory->WriteToMessage(message->add_trajectory(),
-                                 checkpoints_.front());
+    }
+  } else {
+    auto const& checkpoints = checkpoints_.front().checkpoints;
+    CHECK_EQ(trajectories_.size(), checkpoints.size());
+    for (int i = 0; i < trajectories_.size(); ++i) {
+      trajectories_[i]->WriteToMessage(message->add_trajectory(),
+                                       checkpoints[i]);
     }
   }
   parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
@@ -914,10 +918,14 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   Instant const t_last_intermediate_state =
       checkpoints_.empty()
           ? Instant() - std::numeric_limits<double>::infinity() * Second
-          : checkpoints_.back().time.value;
-  CHECK_LE(t_last_intermediate_state, t_max);
-  if (t_max - t_last_intermediate_state > max_time_between_checkpoints) {
-    checkpoints_.push_back(state);
+          : checkpoints_.back().system_state.time.value;
+  CHECK_LE(t_last_intermediate_state, t_max());
+  if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
+    std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
+    for (auto const& trajectory : trajectories_) {
+      checkpoints.push_back(trajectory->GetCheckpoint());
+    }
+    checkpoints_.push_back({state, checkpoints});
   }
 }
 
