@@ -132,10 +132,6 @@ class Ephemeris {
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
 
-  // Calls |ForgetAfter| on all trajectories for a time which is greater than or
-  // equal to |t|, and less than 6 months after |t|.  On return |t_max() >= t|.
-  virtual void ForgetAfter(Instant const& t);
-
   // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
   virtual void ForgetBefore(Instant const& t);
 
