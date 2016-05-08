@@ -292,8 +292,8 @@ TEST_F(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
-// Test the behavior of ForgetAfter and ForgetBefore on the Earth-Moon system.
-TEST_F(EphemerisTest, Forget) {
+// Test the behavior of ForgetBefore on the Earth-Moon system.
+TEST_F(EphemerisTest, ForgetBefore) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -322,25 +322,6 @@ TEST_F(EphemerisTest, Forget) {
 
   Instant t_max = ephemeris.t_max();
   EXPECT_EQ(t0_ + 16 * period, t_max);
-  EXPECT_EQ(t_max, earth_trajectory.t_max());
-  EXPECT_EQ(t_max, moon_trajectory.t_max());
-
-  ephemeris.ForgetAfter(t0_ + 7 * period);
-  t_max = ephemeris.t_max();
-  EXPECT_LE(t0_ + 7 * period, t_max);
-  EXPECT_GE(t0_ + 7 * period + 180 * Day, t_max);
-  EXPECT_EQ(t_max, earth_trajectory.t_max());
-  EXPECT_EQ(t_max, moon_trajectory.t_max());
-
-  ephemeris.Prolong(t0_ + 16 * period);
-  t_max = ephemeris.t_max();
-  EXPECT_EQ(t_max, t0_ + 16 * period);
-  EXPECT_EQ(t_max, earth_trajectory.t_max());
-  EXPECT_EQ(t_max, moon_trajectory.t_max());
-
-  ephemeris.ForgetAfter(t0_ + 18 * period);
-  t_max = ephemeris.t_max();
-  EXPECT_EQ(t_max, t0_ + 16 * period);
   EXPECT_EQ(t_max, earth_trajectory.t_max());
   EXPECT_EQ(t_max, moon_trajectory.t_max());
 

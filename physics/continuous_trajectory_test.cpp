@@ -357,30 +357,6 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
-
-  Instant const kForgetAfterTime = t0_ + 25 * kStep;
-  trajectory_->ForgetAfter(
-      kForgetAfterTime,
-      trajectory_->EvaluateDegreesOfFreedom(kForgetAfterTime,
-                                            nullptr /*hint*/));
-  EXPECT_EQ(kForgetBeforeTime, trajectory_->t_min());
-  EXPECT_EQ(kForgetAfterTime, trajectory_->t_max());
-  for (Instant time = trajectory_->t_min();
-       time <= trajectory_->t_max();
-       time += kStep / kNumberOfSubsteps) {
-    Position<World> const actual_position =
-      trajectory_->EvaluatePosition(time, &hint);
-    Position<World> const expected_position = position_function(time);
-    Velocity<World> const actual_velocity =
-      trajectory_->EvaluateVelocity(time, &hint);
-    Velocity<World> const expected_velocity = velocity_function(time);
-    EXPECT_GT(0.492 * Milli(Metre),
-              AbsoluteError(expected_position, actual_position));
-    EXPECT_GT(1.60E-7 * Metre / Second,
-              AbsoluteError(expected_velocity, actual_velocity));
-  }
-
-  trajectory_->ForgetBefore(trajectory_->t_max() + kStep);
 }
 
 TEST_F(ContinuousTrajectoryTest, Serialization) {
