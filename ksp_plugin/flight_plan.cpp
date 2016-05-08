@@ -292,7 +292,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     }
     // We need to forcefully prolong, otherwise we might exceed the ephemeris
     // step limit while recomputing the segments and fail the check.
-    flight_plan->ephemeris_->Prolong(flight_plan->start_of_last_coast());
+    flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
     CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
   }
 
@@ -434,6 +434,7 @@ Instant FlightPlan::start_of_last_coast() const {
 }
 
 Instant FlightPlan::start_of_penultimate_coast() const {
+  CHECK(!manœuvres_.empty());
   return manœuvres_.size() == 1
              ? initial_time_
              : manœuvres_[manœuvres_.size() - 2].final_time();
