@@ -60,8 +60,8 @@ class ContinuousTrajectoryTest : public testing::Test {
   void FillTrajectory(
       int const number_of_steps,
       Time const& step,
-      std::function<Position<World>(Instant const)> position_function,
-      std::function<Velocity<World>(Instant const)> velocity_function,
+      std::function<Position<World>(Instant const)> const& position_function,
+      std::function<Velocity<World>(Instant const)> const& velocity_function,
       Instant& time) {
     for (int i = 0; i < number_of_steps; ++i) {
       time += step;
