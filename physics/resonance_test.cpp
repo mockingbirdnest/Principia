@@ -234,7 +234,7 @@ class ResonanceTest : public ::testing::Test {
                                    *elements_[moon].mean_motion;
       LOG(INFO) << "actual period   : " << actual_period;
       LOG(INFO) << "expected period : " << expected_period;
-      LOG(INFO) << "error           :"
+      LOG(INFO) << "error           : "
                 << RelativeError(expected_period, actual_period);
     }
   }

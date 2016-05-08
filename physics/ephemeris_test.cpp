@@ -67,7 +67,7 @@ namespace {
 
 Length constexpr kEarthPolarRadius = 6356.8 * Kilo(Metre);
 double constexpr kEarthJ2 = 0.00108262545;
-int constexpr kMaxSteps = 1000;
+int constexpr kMaxSteps = 1E6;
 
 }  // namespace
 
@@ -181,6 +181,61 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
       Barycentre<Instant, double>({t0_ + period, t_max}, {0.5, 0.5});
   ephemeris.Prolong(last_t);
   EXPECT_EQ(t_max, ephemeris.t_max());
+}
+
+TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
+  Length const kDistance = 1E9 * Metre;
+  Speed const kVelocity = 1E3 * Metre / Second;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  MassiveBody const* const earth = bodies[0].get();
+  Position<ICRFJ2000Equator> const earth_position =
+      initial_state[0].position();
+
+  Ephemeris<ICRFJ2000Equator>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          5 * Milli(Metre),
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+              period / 100));
+
+  MasslessBody probe;
+  DiscreteTrajectory<ICRFJ2000Equator> trajectory;
+  trajectory.Append(t0_,
+                    DegreesOfFreedom<ICRFJ2000Equator>(
+                        earth_position +
+                            Displacement<ICRFJ2000Equator>(
+                                {0 * Metre, kDistance, 0 * Metre}),
+                        Velocity<ICRFJ2000Equator>(
+                            {kVelocity, kVelocity, kVelocity})));
+
+  EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
+      &trajectory,
+      Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+      t0_ + period,
+      Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+          kMaxSteps,
+          1E-9 * Metre,
+          2.6E-15 * Metre / Second),
+      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps));
+  EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
+      &trajectory,
+      Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+      trajectory.last().time(),
+      Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+          kMaxSteps,
+          1E-9 * Metre,
+          2.6E-15 * Metre / Second),
+      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps));
 }
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.

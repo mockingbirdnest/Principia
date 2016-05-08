@@ -392,6 +392,11 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     Instant const& t,
     AdaptiveStepParameters const& parameters,
     std::int64_t const max_ephemeris_steps) {
+  Instant const& trajectory_last_time = trajectory->last().time();
+  if (trajectory_last_time == t) {
+    return true;
+  }
+
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
   std::vector<IntrinsicAcceleration> const intrinsic_accelerations =
@@ -403,7 +408,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   Instant const t_final =
       std::min(std::max(last_state_.time.value +
                             max_ephemeris_steps * parameters_.step(),
-                        trajectory->last().time() + parameters_.step()),
+                        trajectory_last_time + parameters_.step()),
                t);
   Prolong(t_final);
 
