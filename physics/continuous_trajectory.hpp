@@ -29,7 +29,11 @@ class ContinuousTrajectory {
   // is passed to all the calls.
   class Hint;
 
-  //TODO(phl):comment
+  // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
+  // state that gets incrementally updated as the Чебышёв polynomials are
+  // constructed.  The client may get a |Checkpoint| at any time and use it to
+  // serialize the trajectory up to and including the time designated by the
+  // |Checkpoint|.
   class Checkpoint;
 
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
@@ -85,12 +89,14 @@ class ContinuousTrajectory {
       Instant const& time,
       Hint* const hint) const;
 
-  //TODO(phl): Comment
+  // Returns a checkpoint for the current state of this object.
   Checkpoint GetCheckpoint() const;
 
+  // Serializes the current state of this object.
   void WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const;
-  //TODO(phl): Comment
+  // Serializes the state of this object as it existed when the checkpoint was
+  // taken.
   void WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message,
       Checkpoint const& checkpoint) const;
@@ -112,7 +118,7 @@ class ContinuousTrajectory {
   ContinuousTrajectory();
 
  private:
-  //TODO(phl): Comment
+  // The members have the same meaning as those of class |ContinuousTrajectory|.
   struct Checkpoint {
     Instant t_max;
     Length adjusted_tolerance;
