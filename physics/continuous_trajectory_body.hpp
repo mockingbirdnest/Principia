@@ -202,22 +202,47 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+typename ContinuousTrajectory<Frame>::Checkpoint
+ContinuousTrajectory<Frame>::GetCheckpoint() const {
+  return {t_max(),
+          adjusted_tolerance_,
+          is_unstable_,
+          degree_,
+          degree_age_,
+          last_points_};
+}
+
+template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
+  WriteToMessage(message, GetCheckpoint());
+}
+
+template<typename Frame>
+void ContinuousTrajectory<Frame>::WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message,
+      Checkpoint const& checkpoint) const {
   LOG(INFO) << __FUNCTION__;
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
-  adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
-  message->set_is_unstable(is_unstable_);
-  message->set_degree(degree_);
-  message->set_degree_age(degree_age_);
+  checkpoint.adjusted_tolerance.WriteToMessage(
+      message->mutable_adjusted_tolerance());
+  message->set_is_unstable(checkpoint.is_unstable);
+  message->set_degree(checkpoint.degree);
+  message->set_degree_age(checkpoint.degree_age);
   for (auto const& s : series_) {
-    s.WriteToMessage(message->add_series());
+    if (s.t_max() <= checkpoint.t_max) {
+      s.WriteToMessage(message->add_series());
+    }
+    if (s.t_max() == checkpoint.t_max) {
+      break;
+    }
+    CHECK_LT(s.t_max(), checkpoint.t_max);
   }
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
-  for (auto const& l : last_points_) {
+  for (auto const& l : checkpoint.last_points) {
     Instant const& instant = l.first;
     DegreesOfFreedom<Frame> degrees_of_freedom = l.second;
     not_null<

@@ -29,6 +29,13 @@ class ContinuousTrajectory {
   // is passed to all the calls.
   class Hint;
 
+  // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
+  // state that gets incrementally updated as the Чебышёв polynomials are
+  // constructed.  The client may get a |Checkpoint| at any time and use it to
+  // serialize the trajectory up to and including the time designated by the
+  // |Checkpoint|.
+  class Checkpoint;
+
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
   // polynomials have values in the range [-1, 1], the error resulting of
   // truncating the infinite Чебышёв series to a finite degree are a small
@@ -82,8 +89,17 @@ class ContinuousTrajectory {
       Instant const& time,
       Hint* const hint) const;
 
+  // Returns a checkpoint for the current state of this object.
+  Checkpoint GetCheckpoint() const;
+
+  // Serializes the current state of this object.
   void WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const;
+  // Serializes the state of this object as it existed when the checkpoint was
+  // taken.
+  void WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message,
+      Checkpoint const& checkpoint) const;
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
@@ -102,6 +118,16 @@ class ContinuousTrajectory {
   ContinuousTrajectory();
 
  private:
+  // The members have the same meaning as those of class |ContinuousTrajectory|.
+  struct Checkpoint {
+    Instant t_max;
+    Length adjusted_tolerance;
+    bool is_unstable;
+    int degree;
+    int degree_age;
+    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points;
+  };
+
   // Computes the best Newhall approximation based on the desired tolerance.
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
