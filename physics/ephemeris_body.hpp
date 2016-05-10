@@ -297,15 +297,8 @@ Instant Ephemeris<Frame>::t_max() const {
   Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
-    LOG(ERROR)<<"t_max from trajectory "<<t_max;
     t_max = std::min(t_max, trajectory->t_max());
   }
-  if (checkpoints_.empty()){
-    LOG(ERROR)<<"No checkpoints";
-  }else{
-    LOG(ERROR)<<"Checkpoint at "<<checkpoints_.back().system_state.time.value;
-  }
-  LOG(ERROR)<<"t_max "<<t_max;
   // Here we may have a checkpoint after |t_max| if the checkpointed state was
   // not yet incorporated in a series.
   return t_max;
@@ -358,7 +351,6 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    LOG(ERROR)<<t_max();
     parameters_.integrator_->Solve(problem, parameters_.step_);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
@@ -794,7 +786,6 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ++index;
   }
   if (message.has_t_max()) {
-    LOG(ERROR)<<message.t_max().DebugString();
     ephemeris->checkpoints_.push_back(
         ephemeris->GetCheckpoint(ephemeris->last_state_));
     ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
