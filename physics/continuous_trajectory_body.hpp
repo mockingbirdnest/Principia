@@ -214,8 +214,10 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   message->set_is_unstable(checkpoint.is_unstable);
   message->set_degree(checkpoint.degree);
   message->set_degree_age(checkpoint.degree_age);
+  LOG(ERROR)<<"t_max "<<checkpoint.t_max;
   for (auto const& s : series_) {
     if (s.t_max() <= checkpoint.t_max) {
+      LOG(ERROR)<<"s.t_max "<<s.t_max();
       s.WriteToMessage(message->add_series());
     }
     if (s.t_max() == checkpoint.t_max) {

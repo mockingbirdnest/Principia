@@ -230,6 +230,9 @@ class Ephemeris {
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
+  Checkpoint GetCheckpoint(
+      typename NewtonianMotionEquation::SystemState const& state);
+
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
   // indices [b2_begin, b2_end[ in the |positions| and |accelerations| arrays).

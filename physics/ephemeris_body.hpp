@@ -297,10 +297,17 @@ Instant Ephemeris<Frame>::t_max() const {
   Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
+    LOG(ERROR)<<"t_max from trajectory "<<t_max;
     t_max = std::min(t_max, trajectory->t_max());
   }
-  CHECK(checkpoints_.empty() ||
-        checkpoints_.back().system_state.time.value <= t_max);
+  if (checkpoints_.empty()){
+    LOG(ERROR)<<"No checkpoints";
+  }else{
+    LOG(ERROR)<<"Checkpoint at "<<checkpoints_.back().system_state.time.value;
+  }
+  LOG(ERROR)<<"t_max "<<t_max;
+  // Here we may have a checkpoint after |t_max| if the checkpointed state was
+  // not yet incorporated in a series.
   return t_max;
 }
 
@@ -351,6 +358,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
+    LOG(ERROR)<<t_max();
     parameters_.integrator_->Solve(problem, parameters_.step_);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
@@ -715,6 +723,7 @@ void Ephemeris<Frame>::WriteToMessage(
     for (auto const& trajectory : trajectories_) {
       trajectory->WriteToMessage(message->add_trajectory());
     }
+    last_state_.WriteToMessage(message->mutable_last_state());
   } else {
     auto const& checkpoints = checkpoints_.front().checkpoints;
     CHECK_EQ(trajectories_.size(), checkpoints.size());
@@ -722,10 +731,12 @@ void Ephemeris<Frame>::WriteToMessage(
       trajectories_[i]->WriteToMessage(message->add_trajectory(),
                                        checkpoints[i]);
     }
+    checkpoints_.front().system_state.WriteToMessage(
+        message->mutable_last_state());
   }
   parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
-  last_state_.WriteToMessage(message->mutable_last_state());
+  t_max().WriteToMessage(message->mutable_t_max());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -781,6 +792,12 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
     ++index;
+  }
+  if (message.has_t_max()) {
+    LOG(ERROR)<<message.t_max().DebugString();
+    ephemeris->checkpoints_.push_back(
+        ephemeris->GetCheckpoint(ephemeris->last_state_));
+    ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
   }
   return ephemeris;
 }
@@ -895,13 +912,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       checkpoints_.empty()
           ? Instant() - std::numeric_limits<double>::infinity() * Second
           : checkpoints_.back().system_state.time.value;
-  CHECK_LE(t_last_intermediate_state, t_max());
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
-    std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
-    for (auto const& trajectory : trajectories_) {
-      checkpoints.push_back(trajectory->GetCheckpoint());
-    }
-    checkpoints_.push_back({state, checkpoints});
+    checkpoints_.push_back(GetCheckpoint(state));
   }
 }
 
@@ -917,6 +929,16 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
                                 state.velocities[index].value));
     ++index;
   }
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint(
+    typename NewtonianMotionEquation::SystemState const& state) {
+  std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
+  for (auto const& trajectory : trajectories_) {
+    checkpoints.push_back(trajectory->GetCheckpoint());
+  }
+  return Checkpoint({state, checkpoints});
 }
 
 template<typename Frame>

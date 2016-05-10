@@ -87,7 +87,8 @@ message Ephemeris {
   repeated ContinuousTrajectory trajectory = 2;
   required Quantity fitting_tolerance = 5;
   required SystemState last_state = 6;
-  optional FixedStepParameters fixed_step_parameters = 7;  // required
+  optional FixedStepParameters fixed_step_parameters = 7;  // required.
+  optional Point t_max = 8;  // required.
 
   // Pre-Буняковский.
   optional FixedStepSizeIntegrator planetary_integrator = 3;
