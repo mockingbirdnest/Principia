@@ -786,8 +786,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ++index;
   }
   if (message.has_t_max()) {
-    ephemeris->checkpoints_.push_back(
-        ephemeris->GetCheckpoint(ephemeris->last_state_));
+    ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
     ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
   }
   return ephemeris;
@@ -904,7 +903,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
           ? Instant() - std::numeric_limits<double>::infinity() * Second
           : checkpoints_.back().system_state.time.value;
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
-    checkpoints_.push_back(GetCheckpoint(state));
+    checkpoints_.push_back(GetCheckpoint());
   }
 }
 
@@ -923,13 +922,12 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
 }
 
 template<typename Frame>
-typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint(
-    typename NewtonianMotionEquation::SystemState const& state) {
+typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
   std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   for (auto const& trajectory : trajectories_) {
     checkpoints.push_back(trajectory->GetCheckpoint());
   }
-  return Checkpoint({state, checkpoints});
+  return Checkpoint({last_state_, checkpoints});
 }
 
 template<typename Frame>
