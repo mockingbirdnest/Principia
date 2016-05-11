@@ -725,10 +725,10 @@ void Ephemeris<Frame>::WriteToMessage(
     }
     checkpoints_.front().system_state.WriteToMessage(
         message->mutable_last_state());
+    t_max().WriteToMessage(message->mutable_t_max());
   }
   parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
-  t_max().WriteToMessage(message->mutable_t_max());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
