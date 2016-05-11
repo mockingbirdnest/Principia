@@ -44,7 +44,18 @@ bool Player::Play() {
     LOG(ERROR) << "Long method:\n" << method_in->DebugString();
   }
 
+  last_method_in_.swap(method_in);
+  last_method_out_return_.swap(method_out_return);
+
   return true;
+}
+
+serialization::Method const& Player::last_method_in() const {
+  return *last_method_in_;
+}
+
+serialization::Method const& Player::last_method_out_return() const {
+  return *last_method_out_return_;
 }
 
 std::unique_ptr<serialization::Method> Player::Read() {
