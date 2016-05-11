@@ -360,6 +360,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_iterator.cpp" />
+    <ClCompile Include="interface_vessel.cpp" />
     <ClCompile Include="physics_bubble.cpp" />
     <ClCompile Include="plugin.cpp" />
   </ItemGroup>

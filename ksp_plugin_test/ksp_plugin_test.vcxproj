@@ -34,6 +34,7 @@
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_vessel.cpp" />
     <ClCompile Include="..\ksp_plugin\physics_bubble.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="celestial_test.cpp" />

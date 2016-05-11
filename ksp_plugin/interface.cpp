@@ -634,17 +634,6 @@ void principia__SetPredictionLength(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__SetPredictionAdaptiveStepParameters(
-    Plugin* const plugin,
-    AdaptiveStepParameters const adaptive_step_parameters) {
-  journal::Method<journal::SetPredictionAdaptiveStepParameters> m(
-      {plugin, adaptive_step_parameters});
-  CHECK_NOTNULL(plugin)
-      ->SetPredictionAdaptiveStepParameters(
-          FromAdaptiveStepParameters(adaptive_step_parameters));
-  return m.Return();
-}
-
 bool principia__HasVessel(Plugin* const plugin,
                           char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
@@ -724,27 +713,6 @@ WXYZ principia__NavballOrientation(
           World::origin +
               Displacement<World>(
                   FromXYZ(ship_world_position) * Metre)).quaternion()));
-}
-
-XYZ principia__VesselTangent(Plugin const* const plugin,
-                             char const* const vessel_guid) {
-  journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
-}
-
-XYZ principia__VesselNormal(Plugin const* const plugin,
-                            char const* const vessel_guid) {
-  journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
-}
-
-XYZ principia__VesselBinormal(Plugin const* const plugin,
-                              char const* const vessel_guid) {
-  journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {

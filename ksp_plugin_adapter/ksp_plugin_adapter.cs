@@ -668,7 +668,8 @@ public partial class PrincipiaPluginAdapter
               speed_integration_tolerance =
                   prediction_length_tolerances_[
                       prediction_length_tolerance_index_]};
-        plugin_.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
+        plugin_.VesselSetPredictionAdaptiveStepParameters(
+            active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);

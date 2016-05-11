@@ -144,6 +144,15 @@ inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
 
+inline AdaptiveStepParameters ToAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters) {
+  return {adaptive_step_parameters.max_steps(),
+          adaptive_step_parameters.length_integration_tolerance() / Metre,
+          adaptive_step_parameters.speed_integration_tolerance() /
+              (Metre / Second)};
+}
+
 inline WXYZ ToWXYZ(Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,
@@ -153,6 +162,12 @@ inline WXYZ ToWXYZ(Quaternion const& quaternion) {
 
 inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
+}
+
+inline not_null<Vessel*> GetVessel(Plugin const* const plugin,
+                                   char const* const vessel_guid) {
+  CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
+  return plugin->GetVessel(vessel_guid);
 }
 
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
