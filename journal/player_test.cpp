@@ -99,7 +99,7 @@ TEST_F(PlayerTest, Debug) {
     // An example of how journalling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20160502-200332)";
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20160511-195850)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -108,17 +108,21 @@ TEST_F(PlayerTest, Debug) {
                                             << " journal entries replayed";
     }
     LOG(ERROR) << count << " journal entries in total";
+    LOG(ERROR) << "Last successful method in:\n"
+               << player.last_method_in().DebugString();
+    LOG(ERROR) << "Last successful method out/return: \n"
+               << player.last_method_out_return().DebugString();
 
-    serialization::Method method_in;
-    auto* extension = method_in.MutableExtension(
+     serialization::Method method_in;
+     auto* extension = method_in.MutableExtension(
         serialization::SerializePlugin::extension);
-    auto* in = extension->mutable_in();
-    in->set_plugin(850673856);
-    in->set_serializer(0);
-    serialization::Method method_out_return;
-    method_out_return.MutableExtension(
+     auto* in = extension->mutable_in();
+     in->set_plugin(850673856);
+     in->set_serializer(0);
+     serialization::Method method_out_return;
+     method_out_return.MutableExtension(
         serialization::SerializePlugin::extension);
-    RunIfAppropriate<SerializePlugin>(method_in, method_out_return, player);
+     RunIfAppropriate<SerializePlugin>(method_in, method_out_return, player);
   }
 }
 #endif
