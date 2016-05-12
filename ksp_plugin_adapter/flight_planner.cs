@@ -57,9 +57,16 @@ class FlightPlanner : WindowRenderer {
     UnityEngine.GUI.skin = null;
     UnityEngine.GUILayout.BeginVertical();
 
-    if (vessel_ == null || vessel_ != FlightGlobals.ActiveVessel ||
-        !plugin_.HasVessel(vessel_.id.ToString())) {
-      Reset();
+    {
+      string vessel_guid = vessel_?.id.ToString();
+      if (vessel_guid == null ||
+          vessel_ != FlightGlobals.ActiveVessel ||
+          !plugin_.HasVessel(vessel_guid) ||
+          !plugin_.FlightPlanExists(vessel_guid) ||
+          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
+              burn_editors_?.Count) {
+        Reset();
+      }
     }
 
     if (vessel_ != null) {
