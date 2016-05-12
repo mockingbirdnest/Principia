@@ -408,6 +408,12 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
     EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, nullptr /*hint*/),
               trajectory_->EvaluateDegreesOfFreedom(time, nullptr /*hint*/));
   }
+
+  serialization::ContinuousTrajectory second_message;
+  trajectory->WriteToMessage(&second_message);
+  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
+      << "FIRST\n" << message.DebugString()
+      << "SECOND\n" << second_message.DebugString();
 }
 
 TEST_F(ContinuousTrajectoryTest, Checkpoint) {

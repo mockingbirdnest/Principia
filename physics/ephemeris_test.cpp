@@ -887,10 +887,11 @@ TEST_F(EphemerisTest, Serialization) {
                   time, nullptr /*hint*/));
   }
 
-  serialization::Ephemeris other_message;
-  ephemeris_read->WriteToMessage(&other_message);
-
-  EXPECT_EQ(other_message.SerializeAsString(), message.SerializeAsString());
+  serialization::Ephemeris second_message;
+  ephemeris_read->WriteToMessage(&second_message);
+  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
+      << "FIRST\n" << message.DebugString()
+      << "SECOND\n" << second_message.DebugString();
 }
 
 // The gravitational acceleration on at elephant located at the pole.

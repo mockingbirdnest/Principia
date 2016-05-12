@@ -368,7 +368,7 @@ TEST_F(PluginTest, Serialization) {
   plugin->WriteToMessage(&second_message);
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
       << "FIRST\n" << message.DebugString()
-      << "SECOND\n" << second_message.DebugString();;
+      << "SECOND\n" << second_message.DebugString();
   EXPECT_EQ(SolarSystemFactory::kLastMajorBody - SolarSystemFactory::kSun + 1,
             message.celestial_size());
 

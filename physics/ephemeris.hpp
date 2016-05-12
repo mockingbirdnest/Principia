@@ -218,11 +218,20 @@ class Ephemeris {
   Ephemeris();
 
  private:
+  // The state of the integration and of the continuous trajectory at a
+  // particular time that we might want to use for compact serialization.
+  struct Checkpoint {
+    typename NewtonianMotionEquation::SystemState system_state;
+    std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
+  };
+
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
+
+  Checkpoint GetCheckpoint();
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -316,11 +325,9 @@ class Ephemeris {
   Length const fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
 
-  // These are the states other that the last which we preserve in order to be
-  // to implement ForgetAfter.  The |state.time.value| are |t_max()| values for
-  // all the underlying trajectories.
-  std::vector<typename NewtonianMotionEquation::SystemState>
-      intermediate_states_;
+  // These are the states other that the last which we preserve in order to
+  // implement compact serialization.  The vector is time-ordered.
+  std::vector<Checkpoint> checkpoints_;
 
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;

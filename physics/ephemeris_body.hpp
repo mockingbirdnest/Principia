@@ -44,7 +44,7 @@ namespace physics {
 
 namespace {  // TODO(egg): this should be a named namespace (internal)
 
-Time const kMaxTimeBetweenIntermediateStates = 180 * Day;
+Time const max_time_between_checkpoints = 180 * Day;
 
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
@@ -287,8 +287,8 @@ Instant Ephemeris<Frame>::t_min() const {
     auto const& trajectory = pair.second;
     t_min = std::max(t_min, trajectory->t_min());
   }
-  CHECK(intermediate_states_.empty() ||
-        intermediate_states_.front().time.value >= t_min);
+  CHECK(checkpoints_.empty() ||
+        checkpoints_.front().system_state.time.value >= t_min);
   return t_min;
 }
 
@@ -299,8 +299,8 @@ Instant Ephemeris<Frame>::t_max() const {
     auto const& trajectory = pair.second;
     t_max = std::min(t_max, trajectory->t_max());
   }
-  CHECK(intermediate_states_.empty() ||
-        intermediate_states_.back().time.value <= t_max);
+  // Here we may have a checkpoint after |t_max| if the checkpointed state was
+  // not yet incorporated in a series.
   return t_max;
 }
 
@@ -314,21 +314,20 @@ Ephemeris<Frame>::planetary_integrator() const {
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   auto it = std::upper_bound(
-                intermediate_states_.begin(), intermediate_states_.end(), t,
-                [](Instant const& left,
-                   typename NewtonianMotionEquation::SystemState const& right) {
-                  return left < right.time.value;
+                checkpoints_.begin(), checkpoints_.end(), t,
+                [](Instant const& left, Checkpoint const& right) {
+                  return left < right.system_state.time.value;
                 });
-  if (it == intermediate_states_.end()) {
+  if (it == checkpoints_.end()) {
     return;
   }
-  CHECK_LT(t, it->time.value);
+  CHECK_LT(t, it->system_state.time.value);
 
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
     trajectory.ForgetBefore(t);
   }
-  intermediate_states_.erase(intermediate_states_.begin(), it);
+  checkpoints_.erase(checkpoints_.begin(), it);
 }
 
 template<typename Frame>
@@ -712,12 +711,24 @@ void Ephemeris<Frame>::WriteToMessage(
   }
   // The trajectories are serialized in the order resulting from the separation
   // between oblate and spherical bodies.
-  for (auto const& trajectory : trajectories_) {
-    trajectory->WriteToMessage(message->add_trajectory());
+  if (checkpoints_.empty()) {
+    for (auto const& trajectory : trajectories_) {
+      trajectory->WriteToMessage(message->add_trajectory());
+    }
+    last_state_.WriteToMessage(message->mutable_last_state());
+  } else {
+    auto const& checkpoints = checkpoints_.front().checkpoints;
+    CHECK_EQ(trajectories_.size(), checkpoints.size());
+    for (int i = 0; i < trajectories_.size(); ++i) {
+      trajectories_[i]->WriteToMessage(message->add_trajectory(),
+                                       checkpoints[i]);
+    }
+    checkpoints_.front().system_state.WriteToMessage(
+        message->mutable_last_state());
+    t_max().WriteToMessage(message->mutable_t_max());
   }
   parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
-  last_state_.WriteToMessage(message->mutable_last_state());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -773,6 +784,10 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     ephemeris->bodies_to_trajectories_.emplace(
         body, std::move(deserialized_trajectory));
     ++index;
+  }
+  if (message.has_t_max()) {
+    ephemeris->checkpoints_.push_back(ephemeris->GetCheckpoint());
+    ephemeris->Prolong(Instant::ReadFromMessage(message.t_max()));
   }
   return ephemeris;
 }
@@ -881,19 +896,14 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     ++index;
   }
 
-  // Record an intermediate state if we haven't done so for too long and this
-  // time is a |t_max|.
+  // Record an intermediate state if we haven't done so for too long.
   CHECK(!trajectories_.empty());
-  Instant const t_max = trajectories_.front()->t_max();
-  if (t_max == state.time.value) {
-    Instant const t_last_intermediate_state =
-        intermediate_states_.empty()
-            ? Instant() - std::numeric_limits<double>::infinity() * Second
-            : intermediate_states_.back().time.value;
-    CHECK_LE(t_last_intermediate_state, t_max);
-    if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {
-      intermediate_states_.push_back(state);
-    }
+  Instant const t_last_intermediate_state =
+      checkpoints_.empty()
+          ? Instant() - std::numeric_limits<double>::infinity() * Second
+          : checkpoints_.back().system_state.time.value;
+  if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
+    checkpoints_.push_back(GetCheckpoint());
   }
 }
 
@@ -909,6 +919,15 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
                                 state.velocities[index].value));
     ++index;
   }
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
+  std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
+  for (auto const& trajectory : trajectories_) {
+    checkpoints.push_back(trajectory->GetCheckpoint());
+  }
+  return Checkpoint({last_state_, checkpoints});
 }
 
 template<typename Frame>
