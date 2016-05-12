@@ -50,12 +50,6 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const* const plugin,
               FromXYZ(burn.delta_v) * (Metre / Second))};
 }
 
-not_null<Vessel*> GetVessel(Plugin const* const plugin,
-                            char const* const vessel_guid) {
-  CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
-  return plugin->GetVessel(vessel_guid);
-}
-
 FlightPlan& GetFlightPlan(Plugin const* const plugin,
                           char const* const vessel_guid) {
   Vessel const& vessel = *GetVessel(plugin, vessel_guid);
@@ -104,15 +98,6 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
           parameters,
           (manœuvre.initial_time() - Instant()) / Second,
           ToXYZ(Δv.coordinates() / (Metre / Second))};
-}
-
-AdaptiveStepParameters ToInterfaceAdaptiveStepParameters(
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
-  return {adaptive_step_parameters.max_steps(),
-          adaptive_step_parameters.length_integration_tolerance() / Metre,
-          adaptive_step_parameters.speed_integration_tolerance() /
-              (Metre / Second)};
 }
 
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(
@@ -205,7 +190,7 @@ AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetAdaptiveStepParameters> m(
       {plugin, vessel_guid});
-  return m.Return(ToInterfaceAdaptiveStepParameters(
+  return m.Return(ToAdaptiveStepParameters(
       GetFlightPlan(plugin, vessel_guid).adaptive_step_parameters()));
 }
 

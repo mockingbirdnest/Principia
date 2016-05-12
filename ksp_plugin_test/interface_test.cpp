@@ -643,26 +643,6 @@ TEST_F(InterfaceTest, Iterator) {
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
   EXPECT_CALL(*plugin_, SetPredictionLength(42 * Second));
   principia__SetPredictionLength(plugin_.get(), 42);
-
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-      /*max_steps=*/111,
-      /*length_integration_tolerance=*/222 * Metre,
-      /*speed_integration_tolerance=*/333 * Metre / Second);
-  AdaptiveStepParameters actual_adaptive_step_parameters = {111, 222, 333};
-  EXPECT_CALL(
-      *plugin_,
-      SetPredictionAdaptiveStepParameters(AllOf(
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
-                   111),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       length_integration_tolerance,
-                   222 * Metre),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       speed_integration_tolerance,
-                   333 * Metre / Second))));
-  principia__SetPredictionAdaptiveStepParameters(
-      plugin_.get(), actual_adaptive_step_parameters);
 }
 
 TEST_F(InterfaceTest, PhysicsBubble) {

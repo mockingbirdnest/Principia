@@ -11,6 +11,7 @@
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
@@ -22,6 +23,7 @@ using geometry::R3Element;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
+using ksp_plugin::Vessel;
 using physics::Ephemeris;
 
 namespace interface {
@@ -90,8 +92,15 @@ Ephemeris<Barycentric>::AdaptiveStepParameters FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
 R3Element<double> FromXYZ(XYZ const& xyz);
 
+AdaptiveStepParameters ToAdaptiveStepParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters);
 WXYZ ToWXYZ(Quaternion const& quaternion);
 XYZ ToXYZ(R3Element<double> const& r3_element);
+
+// TODO(phl): These utilities should maybe go into a separate file.
+not_null<Vessel*> GetVessel(Plugin const* const plugin,
+                            char const* const vessel_guid);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
