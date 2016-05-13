@@ -436,10 +436,12 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   // 2     1     1     2
   //   |<   7/3 m   >|
   // S0    P2    M3    P1
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()));
   plugin_->InsertCelestialJacobiKeplerian(0,
                                           std::experimental::nullopt,
                                           sun_keplerian_elements_,
-                                          std::move(sun_body_));
+                                          std::move(sun_body));
   elements.semimajor_axis = 7.0 / 3.0 * Metre;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/1,
@@ -478,7 +480,7 @@ TEST_F(PluginDeathTest, SunError) {
                                             std::experimental::nullopt,
                                             sun_keplerian_elements_,
                                             std::move(sun_body_));
-  }, "!hierarchical_initialization_");
+  }, ".bool.parent_index == .bool.hierarchical_initialization");
 }
 
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
@@ -791,10 +793,13 @@ TEST_F(PluginTest, Frenet) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 0 * Radian);
-  plugin.InsertCelestialJacobiKeplerian(SolarSystemFactory::kSun,
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(solar_system_->gravitational_parameter(
+          SolarSystemFactory::name(SolarSystemFactory::kEarth))));
+  plugin.InsertCelestialJacobiKeplerian(SolarSystemFactory::kEarth,
                                         std::experimental::nullopt,
                                         sun_keplerian_elements_,
-                                        std::move(sun_body_));
+                                        std::move(sun_body));
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);

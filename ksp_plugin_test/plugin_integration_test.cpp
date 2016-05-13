@@ -330,10 +330,12 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Speed const v0 = 1 * Kilo(Metre) / Day;
   Instant t;
   Plugin plugin(t, 0 * Radian);
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)));
   plugin.InsertCelestialJacobiKeplerian(celestial,
                                         std::experimental::nullopt,
                                         sun_keplerian_elements_,
-                                        std::move(sun_body_));
+                                        std::move(sun_body));
   plugin.EndInitialization();
 
   // Step 1: insert the Enterprise.
@@ -582,10 +584,12 @@ TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(), 0 * Radian);
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()));
   plugin.InsertCelestialJacobiKeplerian(celestial,
                                         std::experimental::nullopt,
                                         sun_keplerian_elements_,
-                                        std::move(sun_body_));
+                                        std::move(sun_body));
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
   plugin.SetPlottingFrame(

@@ -20,11 +20,6 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
   ~MockPlugin() override = default;
 
-  MOCK_METHOD3(InsertSun,
-               void(Index const celestial_index,
-                    GravitationalParameter const& gravitational_parameter,
-                    Length const& mean_radius));
-
   void InsertCelestialAbsoluteCartesian(
       Index const celestial_index,
       std::experimental::optional<Index> const& parent_index,
