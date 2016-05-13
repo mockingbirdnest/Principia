@@ -348,7 +348,7 @@ void principia__InsertCelestialAbsoluteCartesian(
 void principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
-    int const parent_index,
+    int const* const parent_index,
     char const* const gravitational_parameter,
     char const* const mean_radius,
     char const* const axis_right_ascension,
@@ -389,7 +389,9 @@ void principia__InsertCelestialJacobiKeplerian(
   CHECK_NOTNULL(plugin)
       ->InsertCelestialJacobiKeplerian(
           celestial_index,
-          parent_index,
+          parent_index == nullptr
+              ? std::experimental::nullopt
+              : std::experimental::make_optional(*parent_index),
           keplerian_elements,
           MakeMassiveBody(gravitational_parameter,
                           mean_radius,
@@ -397,21 +399,6 @@ void principia__InsertCelestialJacobiKeplerian(
                           axis_declination,
                           j2,
                           reference_radius));
-  return m.Return();
-}
-
-void principia__InsertSun(Plugin* const plugin,
-                          int const celestial_index,
-                          double const gravitational_parameter,
-                          double const mean_radius) {
-  journal::Method<journal::InsertSun> m({plugin,
-                                         celestial_index,
-                                         gravitational_parameter,
-                                         mean_radius});
-  CHECK_NOTNULL(plugin)->InsertSun(
-      celestial_index,
-      gravitational_parameter * SIUnit<GravitationalParameter>(),
-      mean_radius * Metre);
   return m.Return();
 }
 

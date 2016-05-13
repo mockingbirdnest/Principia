@@ -245,19 +245,6 @@ TEST_F(InterfaceTest, DeletePlugin) {
   EXPECT_THAT(plugin, IsNull());
 }
 
-TEST_F(InterfaceTest, InsertSun) {
-  EXPECT_CALL(*plugin_,
-              InsertSun(
-                  kCelestialIndex,
-                  kGravitationalParameter * SIUnit<GravitationalParameter>(),
-                  kRadius * Metre));
-  principia__InsertSun(plugin_.get(),
-                       kCelestialIndex,
-                       kGravitationalParameter,
-                       kRadius);
-}
-
-
 TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
   EXPECT_CALL(
       *plugin_,

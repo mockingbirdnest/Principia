@@ -1289,9 +1289,23 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       plugin_ = Interface.NewPlugin(0,
                                     Planetarium.InverseRotAngle);
-      plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
-                        Planetarium.fetch.Sun.gravParameter,
-                        Planetarium.fetch.Sun.Radius);
+      plugin_.InsertCelestialJacobiKeplerian(
+          celestial_index             :
+              Planetarium.fetch.Sun.flightGlobalsIndex,
+          parent_index                : null,
+          gravitational_parameter     :
+              Planetarium.fetch.Sun.gravParameter + " m^3/s^2",
+          mean_radius                 : Planetarium.fetch.Sun.Radius + " m",
+          axis_right_ascension        : null,
+          axis_declination            : null,
+          j2                          : null,
+          reference_radius            : null,
+          eccentricity                : 0,
+          mean_motion                 : "0 rad/s",
+          inclination                 : "0 deg",
+          longitude_of_ascending_node : "0 deg",
+          argument_of_periapsis       : "0 deg",
+          mean_anomaly                : "0 rad");
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];

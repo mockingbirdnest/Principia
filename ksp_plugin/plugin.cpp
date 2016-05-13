@@ -32,6 +32,7 @@ namespace principia {
 
 using base::FindOrDie;
 using base::make_not_null_unique;
+using base::not_null;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -85,50 +86,19 @@ Plugin::Plugin(Instant const& initial_time,
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {}
 
-// The three celestial-inserting functions log at the INFO level.  This is not
-// a concern since they are only called at initialization, which should happen
-// once per game.
-
-void Plugin::InsertSun(Index const celestial_index,
-                       GravitationalParameter const& gravitational_parameter,
-                       Length const& mean_radius) {
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  CHECK(!absolute_initialization_);
-  CHECK(!hierarchical_initialization_);
-  LOG(INFO) << __FUNCTION__ << "\n"
-            << NAMED(celestial_index) << "\n"
-            << NAMED(gravitational_parameter);
-  auto sun = make_not_null_unique<RotatingBody<Barycentric>>(
-      gravitational_parameter,
-      RotatingBody<Barycentric>::Parameters(
-          mean_radius,
-          Angle(),
-          Instant(),
-          AngularVelocity<Barycentric>({1 * Radian / Second,
-                                        1 * Radian / Second,
-                                        1 * Radian / Second})));
-  auto const unowned_sun = sun.get();
-  hierarchical_initialization_.emplace(std::move(sun));
-  hierarchical_initialization_->indices_to_bodies[celestial_index] =
-      unowned_sun;
-  hierarchical_initialization_->parents[celestial_index] =
-      std::experimental::nullopt;
-}
-
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    base::not_null<std::unique_ptr<MassiveBody const>> body) {
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  CHECK(!hierarchical_initialization_);
+    not_null<std::unique_ptr<MassiveBody const>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(parent_index) << "\n"
             << NAMED(initial_state) << "\n"
             << NAMED(body);
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  CHECK(!hierarchical_initialization_);
   if (!absolute_initialization_) {
     absolute_initialization_.emplace();
   }
@@ -152,27 +122,34 @@ void Plugin::InsertCelestialAbsoluteCartesian(
 
 void Plugin::InsertCelestialJacobiKeplerian(
     Index const celestial_index,
-    Index const parent_index,
+    std::experimental::optional<Index> const& parent_index,
     KeplerianElements<Barycentric> const& keplerian_elements,
-    base::not_null<std::unique_ptr<MassiveBody>> body) {
+    not_null<std::unique_ptr<MassiveBody>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(parent_index) << "\n"
             << NAMED(keplerian_elements) << "\n"
             << NAMED(body);
-  CHECK(initializing_);
-  CHECK(hierarchical_initialization_);
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  CHECK(!absolute_initialization_);
+  CHECK_EQ((bool)parent_index, (bool)hierarchical_initialization_);
+  MassiveBody* const unowned_body = body.get();
+  if (hierarchical_initialization_) {
+    hierarchical_initialization_->system.Add(
+        std::move(body),
+        hierarchical_initialization_->indices_to_bodies[*parent_index],
+        keplerian_elements);
+  } else {
+    hierarchical_initialization_.emplace(std::move(body));
+  }
   bool inserted =
       hierarchical_initialization_->parents.emplace(celestial_index,
                                                     parent_index).second;
   inserted &=
       hierarchical_initialization_->
-          indices_to_bodies.emplace(celestial_index, body.get()).second;
+          indices_to_bodies.emplace(celestial_index, unowned_body).second;
   CHECK(inserted);
-  hierarchical_initialization_->system.Add(
-      std::move(body),
-      hierarchical_initialization_->indices_to_bodies[parent_index],
-      keplerian_elements);
 }
 
 void Plugin::EndInitialization() {

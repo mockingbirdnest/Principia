@@ -172,7 +172,6 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
   int number_of_predictions_bucket2 = 0;
   int number_of_predictions_bucket3 = 0;
   for (auto const& pair : plugin->vessels()) {
-    auto const& guid = pair.first;
     Vessel const* const vessel = pair.second;
     if (vessel->has_flight_plan()) {
       ++number_of_flight_plans;
