@@ -1300,16 +1300,19 @@ public partial class PrincipiaPluginAdapter
           axis_declination            : null,
           j2                          : null,
           reference_radius            : null,
-          eccentricity                : 0,
-          mean_motion                 : "0 rad/s",
-          inclination                 : "0 deg",
-          longitude_of_ascending_node : "0 deg",
-          argument_of_periapsis       : "0 deg",
-          mean_anomaly                : "0 rad");
+          keplerian_elements          : null);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];
         double mean_motion = 2 * Math.PI / orbit.period;
+        var keplerian_elements = new KeplerianElements{
+            eccentricity                           = orbit.eccentricity,
+            mean_motion                            = mean_motion,
+            inclination_in_degrees                 = orbit.inclination,
+            longitude_of_ascending_node_in_degrees = orbit.LAN,
+            argument_of_periapsis_in_degrees       = orbit.argumentOfPeriapsis,
+            mean_anomaly                           = orbit.meanAnomalyAtEpoch -
+                                                     orbit.epoch * mean_motion};
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
             parent_index                : body.referenceBody.flightGlobalsIndex,
@@ -1319,13 +1322,7 @@ public partial class PrincipiaPluginAdapter
             axis_declination            : null,
             j2                          : null,
             reference_radius            : null,
-            eccentricity                : orbit.eccentricity,
-            mean_motion                 : mean_motion + " rad/s",
-            inclination                 : orbit.inclination + " deg",
-            longitude_of_ascending_node : orbit.LAN + " deg",
-            argument_of_periapsis       : orbit.argumentOfPeriapsis + " deg",
-            mean_anomaly                : orbit.meanAnomalyAtEpoch -
-                                          orbit.epoch * mean_motion + " rad");
+            keplerian_elements          : keplerian_elements);
       };
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();

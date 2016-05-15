@@ -33,6 +33,16 @@ message Burn {
   required XYZ delta_v = 5;
 }
 
+message KeplerianElements {
+  required double eccentricity = 1;
+  required double semimajor_axis = 2 [default = nan];  // Optional.
+  required double mean_motion = 3 [default = nan];     // Optional.
+  required double inclination_in_degrees = 4;
+  required double longitude_of_ascending_node_in_degrees = 5;
+  required double argument_of_periapsis_in_degrees = 6;
+  required double mean_anomaly = 7;
+}
+
 message NavigationManoeuvre {
   required Burn burn = 1;
   required double initial_mass_in_tonnes = 2;
@@ -76,7 +86,7 @@ message XYZSegment {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5091.
+  extensions 5000 to 5999;  // Last used: 5092.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -651,7 +661,7 @@ message InsertCelestialAbsoluteCartesian {
 
 message InsertCelestialJacobiKeplerian {
   extend Method {
-    optional InsertCelestialJacobiKeplerian extension = 5073;
+    optional InsertCelestialJacobiKeplerian extension = 5092;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
@@ -663,12 +673,7 @@ message InsertCelestialJacobiKeplerian {
     optional string axis_declination = 6;
     optional string j2 = 7;
     optional string reference_radius = 8;
-    required double eccentricity = 9;
-    required string mean_motion = 10;
-    required string inclination = 11;
-    required string longitude_of_ascending_node = 12;
-    required string argument_of_periapsis = 13;
-    required string mean_anomaly = 14;
+    optional KeplerianElements keplerian_elements = 9;
   }
   optional In in = 1;
 }

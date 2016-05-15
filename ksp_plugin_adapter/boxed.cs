@@ -20,12 +20,29 @@ internal class Boxed<T> where T : struct {
 }
 
 // The |MarshalAsAttribute| does not support marshaling of generic types.
+internal class BoxedDouble : Boxed<double> {
+  public static implicit operator BoxedDouble(double all) {
+    return new BoxedDouble(all);
+  }
+
+  protected BoxedDouble(double all) : base(all) {}
+}
+
 internal class BoxedInt32 : Boxed<int> {
   public static implicit operator BoxedInt32(int all) {
     return new BoxedInt32(all);
   }
 
   protected BoxedInt32(int all) : base(all) {}
+}
+
+internal class BoxedKeplerianElements : Boxed<KeplerianElements> {
+  public static implicit operator BoxedKeplerianElements(
+      KeplerianElements all) {
+    return new BoxedKeplerianElements(all);
+  }
+
+  protected BoxedKeplerianElements(KeplerianElements all) : base(all) {}
 }
 
 }  // namespace ksp_plugin_adapter

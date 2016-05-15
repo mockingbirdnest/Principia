@@ -45,7 +45,6 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::Positions;
 using ksp_plugin::World;
-using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RotatingBody;
@@ -355,12 +354,7 @@ void principia__InsertCelestialJacobiKeplerian(
     char const* const axis_declination,
     char const* const j2,
     char const* const reference_radius,
-    double const eccentricity,
-    char const* const mean_motion,
-    char const* const inclination,
-    char const* const longitude_of_ascending_node,
-    char const* const argument_of_periapsis,
-    char const* const mean_anomaly) {
+    KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
        celestial_index,
@@ -371,28 +365,17 @@ void principia__InsertCelestialJacobiKeplerian(
        axis_declination,
        j2,
        reference_radius,
-       eccentricity,
-       mean_motion,
-       inclination,
-       longitude_of_ascending_node,
-       argument_of_periapsis,
-       mean_anomaly});
-  KeplerianElements<Barycentric> keplerian_elements;
-  keplerian_elements.eccentricity = eccentricity;
-  keplerian_elements.mean_motion = ParseQuantity<AngularFrequency>(mean_motion);
-  keplerian_elements.inclination = ParseQuantity<Angle>(inclination);
-  keplerian_elements.longitude_of_ascending_node =
-      ParseQuantity<Angle>(longitude_of_ascending_node);
-  keplerian_elements.argument_of_periapsis =
-      ParseQuantity<Angle>(argument_of_periapsis);
-  keplerian_elements.mean_anomaly = ParseQuantity<Angle>(mean_anomaly);
+       keplerian_elements});
   CHECK_NOTNULL(plugin)
       ->InsertCelestialJacobiKeplerian(
           celestial_index,
           parent_index == nullptr
               ? std::experimental::nullopt
               : std::experimental::make_optional(*parent_index),
-          keplerian_elements,
+          keplerian_elements == nullptr
+              ? std::experimental::nullopt
+              : std::experimental::make_optional(
+                    FromKeplerianElements(*keplerian_elements)),
           MakeMassiveBody(gravitational_parameter,
                           mean_radius,
                           axis_right_ascension,

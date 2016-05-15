@@ -17,6 +17,7 @@ namespace principia {
 using astronomy::ICRFJ2000Equator;
 using geometry::Identity;
 using geometry::Permutation;
+using physics::KeplerianElements;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;

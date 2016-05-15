@@ -48,7 +48,6 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
-using physics::KeplerianElements;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Angle;
 using quantities::si::Hour;
@@ -89,17 +88,18 @@ class Plugin {
   // body is the body with index |*parent_index|, which must already have been
   // inserted.  Hierarchical initialization must not be ongoing.
   virtual void InsertCelestialAbsoluteCartesian(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    DegreesOfFreedom<Barycentric> const& initial_state,
-    not_null<std::unique_ptr<MassiveBody const>> body);
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      DegreesOfFreedom<Barycentric> const& initial_state,
+      not_null<std::unique_ptr<MassiveBody const>> body);
 
   // Hierarchical initialization must be ongoing.
   virtual void InsertCelestialJacobiKeplerian(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    KeplerianElements<Barycentric> const& keplerian_elements,
-    not_null<std::unique_ptr<MassiveBody>> body);
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      std::experimental::optional<
+          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
+      not_null<std::unique_ptr<MassiveBody>> body);
 
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();

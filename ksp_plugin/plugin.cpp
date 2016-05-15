@@ -47,6 +47,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DynamicFrame;
 using physics::Frenet;
+using physics::KeplerianElements;
 using physics::RotatingBody;
 using quantities::Force;
 using quantities::si::Milli;
@@ -123,7 +124,8 @@ void Plugin::InsertCelestialAbsoluteCartesian(
 void Plugin::InsertCelestialJacobiKeplerian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
-    KeplerianElements<Barycentric> const& keplerian_elements,
+    std::experimental::optional<KeplerianElements<Barycentric>> const&
+        keplerian_elements,
     not_null<std::unique_ptr<MassiveBody>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
@@ -133,13 +135,14 @@ void Plugin::InsertCelestialJacobiKeplerian(
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
   CHECK(!absolute_initialization_);
+  CHECK_EQ((bool)parent_index, (bool)keplerian_elements);
   CHECK_EQ((bool)parent_index, (bool)hierarchical_initialization_);
   MassiveBody* const unowned_body = body.get();
   if (hierarchical_initialization_) {
     hierarchical_initialization_->system.Add(
         std::move(body),
         hierarchical_initialization_->indices_to_bodies[*parent_index],
-        keplerian_elements);
+        *keplerian_elements);
   } else {
     hierarchical_initialization_.emplace(std::move(body));
   }

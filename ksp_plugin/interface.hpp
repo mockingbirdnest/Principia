@@ -18,13 +18,10 @@ namespace principia {
 
 using base::PullSerializer;
 using base::PushDeserializer;
-using geometry::Quaternion;
-using geometry::R3Element;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
-using physics::Ephemeris;
 
 namespace interface {
 
@@ -88,15 +85,20 @@ bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 bool operator==(XYZSegment const& left, XYZSegment const& right);
 
-Ephemeris<Barycentric>::AdaptiveStepParameters FromAdaptiveStepParameters(
+physics::Ephemeris<Barycentric>::AdaptiveStepParameters
+FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
-R3Element<double> FromXYZ(XYZ const& xyz);
+physics::KeplerianElements<Barycentric> FromKeplerianElements(
+    KeplerianElements const& keplerian_elements);
+geometry::R3Element<double> FromXYZ(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters);
-WXYZ ToWXYZ(Quaternion const& quaternion);
-XYZ ToXYZ(R3Element<double> const& r3_element);
+KeplerianElements ToKeplerianElements(
+    physics::KeplerianElements<Barycentric> const& keplerian_elements);
+WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
+XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 
 // TODO(phl): These utilities should maybe go into a separate file.
 not_null<Vessel*> GetVessel(Plugin const* const plugin,
