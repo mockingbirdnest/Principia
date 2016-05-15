@@ -34,6 +34,7 @@
 
 namespace principia {
 
+using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Point;
@@ -47,7 +48,6 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
-using physics::KeplerianElements;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Angle;
 using quantities::si::Hour;
@@ -82,32 +82,24 @@ class Plugin {
   // is set to |planetarium_rotation|.
   Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
 
-  // Inserts a celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|.  If this is called, it must be the
-  // first call during initialization; it initiates hierarchical initialization.
-  // TODO(phl): fuse with InsertCelestialJacobiKeplerian?
-  virtual void InsertSun(
-    Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter,
-    Length const& mean_radius);
-
   // Inserts a celestial body with index |celestial_index| body |body|,
   // giving it the initial state |initial_state|.
   // If |parent_index| is null, inserts the sun, otherwise the parent of the new
   // body is the body with index |*parent_index|, which must already have been
   // inserted.  Hierarchical initialization must not be ongoing.
   virtual void InsertCelestialAbsoluteCartesian(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    DegreesOfFreedom<Barycentric> const& initial_state,
-    base::not_null<std::unique_ptr<MassiveBody const>> body);
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      DegreesOfFreedom<Barycentric> const& initial_state,
+      not_null<std::unique_ptr<MassiveBody const>> body);
 
   // Hierarchical initialization must be ongoing.
   virtual void InsertCelestialJacobiKeplerian(
-    Index const celestial_index,
-    Index const parent_index,
-    KeplerianElements<Barycentric> const& keplerian_elements,
-    base::not_null<std::unique_ptr<MassiveBody>> body);
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      std::experimental::optional<
+          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
+      not_null<std::unique_ptr<MassiveBody>> body);
 
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
@@ -314,7 +306,7 @@ class Plugin {
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
   using IndexToMassiveBody =
-      std::map<Index, base::not_null<std::unique_ptr<MassiveBody const>>>;
+      std::map<Index, not_null<std::unique_ptr<MassiveBody const>>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;

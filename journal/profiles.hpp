@@ -3,7 +3,6 @@
 
 #include "base/not_null.hpp"
 #include "journal/player.hpp"
-#include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
 
@@ -13,6 +12,7 @@ using base::not_null;
 using interface::AdaptiveStepParameters;
 using interface::Burn;
 using interface::Iterator;
+using interface::KeplerianElements;
 using interface::KSPPart;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;

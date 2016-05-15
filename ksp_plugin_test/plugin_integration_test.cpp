@@ -17,6 +17,7 @@ namespace principia {
 using astronomy::ICRFJ2000Equator;
 using geometry::Identity;
 using geometry::Permutation;
+using physics::KeplerianElements;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -53,12 +54,12 @@ class PluginIntegrationTest : public testing::Test {
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::kAllBodiesAndOblateness)),
         initial_time_(Instant() + 42 * Second),
+        sun_body_(make_not_null_unique<MassiveBody>(
+            MassiveBody::Parameters(solar_system_->gravitational_parameter(
+                SolarSystemFactory::name(SolarSystemFactory::kSun))))),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
-    sun_gravitational_parameter_ =
-        solar_system_->gravitational_parameter(
-           SolarSystemFactory::name(SolarSystemFactory::kSun));
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -114,7 +115,7 @@ class PluginIntegrationTest : public testing::Test {
   Permutation<ICRFJ2000Equator, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant initial_time_;
-  GravitationalParameter sun_gravitational_parameter_;
+  not_null<std::unique_ptr<MassiveBody>> sun_body_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<Plugin>> plugin_;
@@ -328,7 +329,13 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Speed const v0 = 1 * Kilo(Metre) / Day;
   Instant t;
   Plugin plugin(t, 0 * Radian);
-  plugin.InsertSun(celestial, 1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day), 1 * Metre);
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)));
+  plugin.InsertCelestialJacobiKeplerian(
+      celestial,
+      /*parent_index=*/std::experimental::nullopt,
+      /*keplerian_elements=*/std::experimental::nullopt,
+      std::move(sun_body));
   plugin.EndInitialization();
 
   // Step 1: insert the Enterprise.
@@ -577,7 +584,13 @@ TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(), 0 * Radian);
-  plugin.InsertSun(celestial, 1 * SIUnit<GravitationalParameter>(), 1 * Metre);
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()));
+  plugin.InsertCelestialJacobiKeplerian(
+      celestial,
+      /*parent_index=*/std::experimental::nullopt,
+      /*keplerian_elements=*/std::experimental::nullopt,
+      std::move(sun_body));
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
   plugin.SetPlottingFrame(

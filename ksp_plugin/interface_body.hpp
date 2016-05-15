@@ -7,6 +7,9 @@
 #include <limits>
 
 namespace principia {
+
+using quantities::si::Degree;
+
 namespace interface {
 
 namespace {
@@ -130,7 +133,7 @@ inline bool operator==(XYZSegment const& left, XYZSegment const& right) {
   return left.begin == right.begin && left.end == right.end;
 }
 
-inline Ephemeris<Barycentric>::AdaptiveStepParameters
+inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
@@ -140,12 +143,37 @@ FromAdaptiveStepParameters(
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
 }
 
-inline R3Element<double> FromXYZ(XYZ const& xyz) {
+inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
+    KeplerianElements const& keplerian_elements) {
+  physics::KeplerianElements<Barycentric> barycentric_keplerian_elements;
+  barycentric_keplerian_elements.eccentricity = keplerian_elements.eccentricity;
+  barycentric_keplerian_elements.semimajor_axis =
+      std::isnan(keplerian_elements.semimajor_axis)
+          ? std::experimental::nullopt
+          : std::experimental::make_optional(keplerian_elements.semimajor_axis *
+                                             Metre);
+  barycentric_keplerian_elements.mean_motion =
+      std::isnan(keplerian_elements.mean_motion)
+          ? std::experimental::nullopt
+          : std::experimental::make_optional(keplerian_elements.mean_motion *
+                                             Radian / Second);
+  barycentric_keplerian_elements.inclination =
+      keplerian_elements.inclination_in_degrees * Degree;
+  barycentric_keplerian_elements.longitude_of_ascending_node =
+      keplerian_elements.longitude_of_ascending_node_in_degrees * Degree;
+  barycentric_keplerian_elements.argument_of_periapsis =
+      keplerian_elements.argument_of_periapsis_in_degrees * Degree;
+  barycentric_keplerian_elements.mean_anomaly =
+      keplerian_elements.mean_anomaly * Radian;
+  return barycentric_keplerian_elements;
+}
+
+inline geometry::R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
   return {adaptive_step_parameters.max_steps(),
           adaptive_step_parameters.length_integration_tolerance() / Metre,
@@ -153,14 +181,29 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
               (Metre / Second)};
 }
 
-inline WXYZ ToWXYZ(Quaternion const& quaternion) {
+inline KeplerianElements ToKeplerianElements(
+    physics::KeplerianElements<Barycentric> const& keplerian_elements) {
+  return {keplerian_elements.eccentricity,
+          keplerian_elements.semimajor_axis
+              ? *keplerian_elements.semimajor_axis / Metre
+              : std::numeric_limits<double>::quiet_NaN(),
+          keplerian_elements.mean_motion
+              ? *keplerian_elements.mean_motion / (Radian / Second)
+              : std::numeric_limits<double>::quiet_NaN(),
+          keplerian_elements.inclination / Degree,
+          keplerian_elements.longitude_of_ascending_node / Degree,
+          keplerian_elements.argument_of_periapsis / Degree,
+          keplerian_elements.mean_anomaly / Radian};
+}
+
+inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
 }
 
-inline XYZ ToXYZ(R3Element<double> const& r3_element) {
+inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 

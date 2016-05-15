@@ -115,8 +115,6 @@ class TestablePlugin : public Plugin {
 
  public:
   TestablePlugin(Instant const& initial_time,
-                 Index const sun_index,
-                 GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation)
       : Plugin(initial_time,
                planetarium_rotation),
@@ -181,17 +179,12 @@ class PluginTest : public testing::Test {
       : solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::kMajorBodiesOnly)),
         initial_time_(Instant() + 42 * Second),
-        sun_gravitational_parameter_(
-            solar_system_->gravitational_parameter(
-                SolarSystemFactory::name(SolarSystemFactory::kSun))),
-        sun_mean_radius_(
-            solar_system_->mean_radius(
-                SolarSystemFactory::name(SolarSystemFactory::kSun))),
+        sun_body_(make_not_null_unique<MassiveBody>(
+            MassiveBody::Parameters(solar_system_->gravitational_parameter(
+                SolarSystemFactory::name(SolarSystemFactory::kSun))))),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
-                    SolarSystemFactory::kSun,
-                    sun_gravitational_parameter_,
                     planetarium_rotation_)) {
     mock_ephemeris_ = plugin_->mock_ephemeris();
     satellite_initial_displacement_ =
@@ -269,8 +262,7 @@ class PluginTest : public testing::Test {
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant const initial_time_;
-  GravitationalParameter const sun_gravitational_parameter_;
-  Length const sun_mean_radius_;
+  not_null<std::unique_ptr<MassiveBody>> sun_body_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<TestablePlugin>> plugin_;
@@ -309,9 +301,11 @@ TEST_F(PluginTest, Serialization) {
   auto plugin = make_not_null_unique<Plugin>(
                     initial_time_,
                     planetarium_rotation_);
-  plugin->InsertSun(SolarSystemFactory::kSun,
-                    sun_gravitational_parameter_,
-                    sun_mean_radius_);
+  plugin->InsertCelestialJacobiKeplerian(
+      SolarSystemFactory::kSun,
+      /*parent_index=*/std::experimental::nullopt,
+      /*keplerian_elements=*/std::experimental::nullopt,
+      std::move(sun_body_));
   for (int index = SolarSystemFactory::kSun + 1;
        index <= SolarSystemFactory::kLastMajorBody;
        ++index) {
@@ -441,7 +435,13 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   // 2     1     1     2
   //   |<   7/3 m   >|
   // S0    P2    M3    P1
-  plugin_->InsertSun(0, 2 * SIUnit<GravitationalParameter>(), 1 * Metre);
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()));
+  plugin_->InsertCelestialJacobiKeplerian(
+      0,
+      /*parent_index=*/std::experimental::nullopt,
+      /*keplerian_elements=*/std::experimental::nullopt,
+      std::move(sun_body));
   elements.semimajor_axis = 7.0 / 3.0 * Metre;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/1,
@@ -472,9 +472,26 @@ TEST_F(PluginTest, HierarchicalInitialization) {
 
 TEST_F(PluginDeathTest, SunError) {
   EXPECT_DEATH({
-    plugin_->InsertSun(42, sun_gravitational_parameter_, sun_mean_radius_);
-    plugin_->InsertSun(43, sun_gravitational_parameter_, sun_mean_radius_);
-  }, "!hierarchical_initialization_");
+      plugin_->InsertCelestialJacobiKeplerian(
+          42,
+          /*parent_index=*/std::experimental::nullopt,
+          /*keplerian_elements=*/std::experimental::nullopt,
+          std::move(sun_body_));
+      plugin_->InsertCelestialJacobiKeplerian(
+          43,
+          /*parent_index=*/std::experimental::nullopt,
+          /*keplerian_elements=*/std::experimental::nullopt,
+          std::move(sun_body_));
+  }, ".bool.parent_index == .bool.hierarchical_initialization");
+  EXPECT_DEATH({
+    KeplerianElements<Barycentric> sun_keplerian_elements;
+    sun_keplerian_elements.mean_motion = AngularFrequency();
+    plugin_->InsertCelestialJacobiKeplerian(
+        43,
+        /*parent_index=*/std::experimental::nullopt,
+        sun_keplerian_elements,
+        std::move(sun_body_));
+  }, ".bool.parent_index == .bool.keplerian_elements");
 }
 
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
@@ -550,7 +567,6 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
 
 TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
-  Instant const t = initial_time_ + 100 * Second;
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
@@ -619,7 +635,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
 TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
-  Instant const t = initial_time_ + 100 * Second;
 
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -644,7 +659,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
                                     satellite_initial_velocity_));
-  auto const satellite = plugin_->GetVessel(guid);
 
   Instant const& time = initial_time_ + 1 * Second;
   EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(time, 5)))
@@ -763,9 +777,11 @@ TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 0 * Radian);
-  plugin.InsertSun(SolarSystemFactory::kSun,
-                   sun_gravitational_parameter_,
-                   sun_mean_radius_);
+  plugin.InsertCelestialJacobiKeplerian(
+      SolarSystemFactory::kSun,
+      /*parent_index=*/std::experimental::nullopt,
+      /*keplerian_elements=*/std::experimental::nullopt,
+      std::move(sun_body_));
   plugin.EndInitialization();
   not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
       plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::kSun);
@@ -789,11 +805,14 @@ TEST_F(PluginTest, Frenet) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 0 * Radian);
-  plugin.InsertSun(SolarSystemFactory::kEarth,
-                   solar_system_->gravitational_parameter(
-                       SolarSystemFactory::name(SolarSystemFactory::kEarth)),
-                   solar_system_->mean_radius(
-                       SolarSystemFactory::name(SolarSystemFactory::kEarth)));
+  auto sun_body = make_not_null_unique<MassiveBody>(
+      MassiveBody::Parameters(solar_system_->gravitational_parameter(
+          SolarSystemFactory::name(SolarSystemFactory::kEarth))));
+  plugin.InsertCelestialJacobiKeplerian(
+      SolarSystemFactory::kEarth,
+      /*parent_index=*/std::experimental::nullopt,
+      /*keplerian_elements=*/std::experimental::nullopt,
+      std::move(sun_body));
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);

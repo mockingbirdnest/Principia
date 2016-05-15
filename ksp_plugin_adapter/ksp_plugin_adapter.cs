@@ -1289,13 +1289,30 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       plugin_ = Interface.NewPlugin(0,
                                     Planetarium.InverseRotAngle);
-      plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
-                        Planetarium.fetch.Sun.gravParameter,
-                        Planetarium.fetch.Sun.Radius);
+      plugin_.InsertCelestialJacobiKeplerian(
+          celestial_index             :
+              Planetarium.fetch.Sun.flightGlobalsIndex,
+          parent_index                : null,
+          gravitational_parameter     :
+              Planetarium.fetch.Sun.gravParameter + " m^3/s^2",
+          mean_radius                 : Planetarium.fetch.Sun.Radius + " m",
+          axis_right_ascension        : null,
+          axis_declination            : null,
+          j2                          : null,
+          reference_radius            : null,
+          keplerian_elements          : null);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];
         double mean_motion = 2 * Math.PI / orbit.period;
+        var keplerian_elements = new KeplerianElements{
+            eccentricity                           = orbit.eccentricity,
+            mean_motion                            = mean_motion,
+            inclination_in_degrees                 = orbit.inclination,
+            longitude_of_ascending_node_in_degrees = orbit.LAN,
+            argument_of_periapsis_in_degrees       = orbit.argumentOfPeriapsis,
+            mean_anomaly                           = orbit.meanAnomalyAtEpoch -
+                                                     orbit.epoch * mean_motion};
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
             parent_index                : body.referenceBody.flightGlobalsIndex,
@@ -1305,13 +1322,7 @@ public partial class PrincipiaPluginAdapter
             axis_declination            : null,
             j2                          : null,
             reference_radius            : null,
-            eccentricity                : orbit.eccentricity,
-            mean_motion                 : mean_motion + " rad/s",
-            inclination                 : orbit.inclination + " deg",
-            longitude_of_ascending_node : orbit.LAN + " deg",
-            argument_of_periapsis       : orbit.argumentOfPeriapsis + " deg",
-            mean_anomaly                : orbit.meanAnomalyAtEpoch -
-                                          orbit.epoch * mean_motion + " rad");
+            keplerian_elements          : keplerian_elements);
       };
       ApplyToBodyTree(insert_body);
       plugin_.EndInitialization();

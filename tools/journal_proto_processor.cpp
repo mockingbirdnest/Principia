@@ -233,19 +233,22 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       };
 }
 
-void JournalProtoProcessor::ProcessOptionalInt32Field(
-    FieldDescriptor const* descriptor) {
-  // It is not possible to use a custom marshaler on an |int?|, as this raises
+void JournalProtoProcessor::ProcessOptionalNonStringField(
+    FieldDescriptor const* descriptor,
+    std::string const& cs_boxed_type,
+    std::string const& cs_unboxed_type,
+    std::string const& cxx_type) {
+  // It is not possible to use a custom marshaler on an |T?|, as this raises
   // |System.Runtime.InteropServices.MarshalDirectiveException| with the message
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
-  // value types.".  We could use a boxed |int|, whose type would be |object|,
-  // but we would lose static typing.  We use a custom strongly-typed boxed type
+  // value types.".  We could use a boxed |T|, whose type would be |object|, but
+  // we would lose static typing.  We use a custom strongly-typed boxed type
   // instead.
-  field_cs_type_[descriptor] = "BoxedInt32";
+  field_cs_type_[descriptor] = cs_boxed_type;
   field_cs_marshal_[descriptor] =
       "[MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
-  field_cxx_type_[descriptor] = "int const*";
+      "MarshalTypeRef = typeof(OptionalMarshaler<" + cs_unboxed_type + ">))]";
+  field_cxx_type_[descriptor] = cxx_type + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
@@ -255,12 +258,55 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
       [](std::string const& expr) {
         return "*" + expr;
       };
-  field_cxx_optional_pointer_fn_[descriptor] =
-      [this, descriptor](std::string const& condition,
+  field_cxx_optional_pointer_fn_[descriptor] = [this, cxx_type, descriptor](
+      std::string const& condition,
+      std::string const& expr) {
+    // Tricky.  We need a heap allocation to obtain a pointer to the value.
+    return condition + " ? std::make_unique<" + cxx_type + " const>(" + expr +
+           ") : nullptr";
+  };
+}
+
+void JournalProtoProcessor::ProcessOptionalDoubleField(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedDouble",
+      /*cs_unboxed_type=*/"double",
+      /*cxx_type=*/"double");
+}
+
+void JournalProtoProcessor::ProcessOptionalInt32Field(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedInt32",
+      /*cs_unboxed_type=*/"int",
+      /*cxx_type=*/"int");
+}
+
+void JournalProtoProcessor::ProcessOptionalMessageField(
+    FieldDescriptor const* descriptor) {
+  std::string const& message_type_name = descriptor->message_type()->name();
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"Boxed" + message_type_name,
+      /*cs_unboxed_type=*/message_type_name,
+      /*cxx_type=*/message_type_name);
+
+  field_cxx_assignment_fn_[descriptor] =
+      [this, descriptor](std::string const& prefix,
                          std::string const& expr) {
-        // Tricky.  We need a heap allocation to obtain a pointer to the value.
-        return condition + " ? std::make_unique<int const>(" + expr +
-               ") : nullptr";
+        return "  *" + prefix + "mutable_" + descriptor->name() +
+               "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
+      };
+  field_cxx_deserializer_fn_[descriptor] =
+      [message_type_name](std::string const& expr) {
+        return "Deserialize" + message_type_name + "(" + expr + ")";
+      };
+  field_cxx_serializer_fn_[descriptor] =
+      [message_type_name](std::string const& expr) {
+        return "Serialize" + message_type_name + "(" + expr + ")";
       };
 }
 
@@ -435,8 +481,14 @@ void JournalProtoProcessor::ProcessOptionalField(
         return condition + " ? " + expr + " : nullptr";
       };
   switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_DOUBLE:
+      ProcessOptionalDoubleField(descriptor);
+      break;
     case FieldDescriptor::TYPE_INT32:
       ProcessOptionalInt32Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      ProcessOptionalMessageField(descriptor);
       break;
     case FieldDescriptor::TYPE_STRING:
       ProcessSingleStringField(descriptor);
