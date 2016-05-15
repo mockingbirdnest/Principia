@@ -60,7 +60,6 @@ class PluginIntegrationTest : public testing::Test {
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
-    sun_keplerian_elements_.mean_motion = AngularFrequency();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -116,7 +115,6 @@ class PluginIntegrationTest : public testing::Test {
   Permutation<ICRFJ2000Equator, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant initial_time_;
-  KeplerianElements<Barycentric> sun_keplerian_elements_;
   not_null<std::unique_ptr<MassiveBody>> sun_body_;
   Angle planetarium_rotation_;
 
@@ -335,7 +333,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
       MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)));
   plugin.InsertCelestialJacobiKeplerian(celestial,
                                         std::experimental::nullopt,
-                                        sun_keplerian_elements_,
+                                        std::experimental::nullopt,
                                         std::move(sun_body));
   plugin.EndInitialization();
 
@@ -589,7 +587,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()));
   plugin.InsertCelestialJacobiKeplerian(celestial,
                                         std::experimental::nullopt,
-                                        sun_keplerian_elements_,
+                                        std::experimental::nullopt,
                                         std::move(sun_body));
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
