@@ -1307,6 +1307,7 @@ public partial class PrincipiaPluginAdapter
         double mean_motion = 2 * Math.PI / orbit.period;
         var keplerian_elements = new KeplerianElements{
             eccentricity                           = orbit.eccentricity,
+            semimajor_axis                         = double.NaN,
             mean_motion                            = mean_motion,
             inclination_in_degrees                 = orbit.inclination,
             longitude_of_ascending_node_in_degrees = orbit.LAN,
