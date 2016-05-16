@@ -102,9 +102,7 @@ char const kVesselGUID[] = "NCC-1701-D";
 Index const kCelestialIndex = 1;
 Index const kParentIndex = 2;
 
-double const kGravitationalParameter = 3;
 double const kPlanetariumRotation = 10;
-double const kRadius = 144;
 double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};

@@ -106,21 +106,36 @@ class ContinuousTrajectory {
     friend class ContinuousTrajectory<Frame>;
   };
 
+  // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
+  // state that gets incrementally updated as the Чебышёв polynomials are
+  // constructed.  The client may get a |Checkpoint| at any time and use it to
+  // serialize the trajectory up to and including the time designated by the
+  // |Checkpoint|.  The only thing that clients may do with |Checkpoint| objects
+  // is to initialize them with GetCheckpoint.
+  class Checkpoint {
+    // The members have the same meaning as those of class
+    // |ContinuousTrajectory|.
+    Checkpoint(Instant const& t_max,
+               Length const& adjusted_tolerance,
+               bool const is_unstable,
+               int const degree,
+               int const degree_age,
+               std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> const&
+                   last_points);
+    Instant t_max_;
+    Length adjusted_tolerance_;
+    bool is_unstable_;
+    int degree_;
+    int degree_age_;
+    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
+    friend class ContinuousTrajectory<Frame>;
+  };
+
  protected:
   // For mocking.
   ContinuousTrajectory();
 
  private:
-  // The members have the same meaning as those of class |ContinuousTrajectory|.
-  struct Checkpoint {
-    Instant t_max;
-    Length adjusted_tolerance;
-    bool is_unstable;
-    int degree;
-    int degree_age;
-    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points;
-  };
-
   // Computes the best Newhall approximation based on the desired tolerance.
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical

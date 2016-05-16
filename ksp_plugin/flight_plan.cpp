@@ -296,7 +296,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
   }
 
-  return std::move(flight_plan);
+  return flight_plan;
 }
 
 FlightPlan::FlightPlan()
