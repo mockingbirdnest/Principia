@@ -573,7 +573,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(*mock_ephemeris_, t_max()).WillRepeatedly(Return(Instant()));
   EXPECT_CALL(*mock_ephemeris_, empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
@@ -644,7 +644,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   EXPECT_CALL(*mock_ephemeris_, trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::kSun)));
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _))
+  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
   EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());

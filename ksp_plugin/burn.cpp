@@ -12,7 +12,7 @@ NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass)
                               std::move(burn.frame));
   manœuvre.set_initial_time(burn.initial_time);
   manœuvre.set_Δv(burn.Δv.Norm());
-  return std::move(manœuvre);
+  return manœuvre;
 }
 
 }  // namespace ksp_plugin

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "glog/stl_logging.h"
@@ -209,24 +210,24 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   LOG(INFO) << __FUNCTION__;
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
-  checkpoint.adjusted_tolerance.WriteToMessage(
+  checkpoint.adjusted_tolerance_.WriteToMessage(
       message->mutable_adjusted_tolerance());
-  message->set_is_unstable(checkpoint.is_unstable);
-  message->set_degree(checkpoint.degree);
-  message->set_degree_age(checkpoint.degree_age);
+  message->set_is_unstable(checkpoint.is_unstable_);
+  message->set_degree(checkpoint.degree_);
+  message->set_degree_age(checkpoint.degree_age_);
   for (auto const& s : series_) {
-    if (s.t_max() <= checkpoint.t_max) {
+    if (s.t_max() <= checkpoint.t_max_) {
       s.WriteToMessage(message->add_series());
     }
-    if (s.t_max() == checkpoint.t_max) {
+    if (s.t_max() == checkpoint.t_max_) {
       break;
     }
-    CHECK_LT(s.t_max(), checkpoint.t_max);
+    CHECK_LT(s.t_max(), checkpoint.t_max_);
   }
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
-  for (auto const& l : checkpoint.last_points) {
+  for (auto const& l : checkpoint.last_points_) {
     Instant const& instant = l.first;
     DegreesOfFreedom<Frame> degrees_of_freedom = l.second;
     not_null<
@@ -273,6 +274,21 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 template<typename Frame>
 ContinuousTrajectory<Frame>::Hint::Hint()
     : index_(std::numeric_limits<int>::max()) {}
+
+template<typename Frame>
+ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
+    Instant const& t_max,
+    Length const& adjusted_tolerance,
+    bool const is_unstable,
+    int const degree,
+    int const degree_age,
+    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> const& last_points)
+    : t_max_(t_max),
+      adjusted_tolerance_(adjusted_tolerance),
+      is_unstable_(is_unstable),
+      degree_(degree),
+      degree_age_(degree_age),
+      last_points_(last_points) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory() {}

@@ -60,7 +60,7 @@ class ManœuvreTest : public ::testing::Test {
     auto owned_mock_dynamic_frame =
         make_not_null_unique<StrictMock<MockDynamicFrame<World, Rendering>>>();
     mock_dynamic_frame_ = owned_mock_dynamic_frame.get();
-    return std::move(owned_mock_dynamic_frame);
+    return owned_mock_dynamic_frame;
   }
 
   Instant const t0_;

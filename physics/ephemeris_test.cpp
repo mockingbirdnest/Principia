@@ -66,7 +66,6 @@ namespace physics {
 namespace {
 
 Length constexpr kEarthPolarRadius = 6356.8 * Kilo(Metre);
-double constexpr kEarthJ2 = 0.00108262545;
 int constexpr kMaxSteps = 1E6;
 
 }  // namespace
@@ -192,7 +191,6 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  MassiveBody const* const earth = bodies[0].get();
   Position<ICRFJ2000Equator> const earth_position =
       initial_state[0].position();
 
@@ -942,8 +940,6 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           2.6E-15 * Metre / Second),
           Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
 
-  Speed const v_elephant_x =
-      trajectory.last().degrees_of_freedom().velocity().coordinates().x;
   Speed const v_elephant_y =
       trajectory.last().degrees_of_freedom().velocity().coordinates().y;
   std::vector<Displacement<ICRFJ2000Equator>> elephant_positions;
