@@ -52,8 +52,8 @@ int TypedIterator<Container>::Size() const {
 inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
     not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory)
     : trajectory_(std::move(trajectory)),
-      iterator_(trajectory->Begin()) {
-  CHECK(trajectory->is_root());
+      iterator_(trajectory_->Begin()) {
+  CHECK(trajectory_->is_root());
 }
 
 template<typename Interchange>
