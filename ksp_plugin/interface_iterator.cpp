@@ -30,6 +30,35 @@ void principia__IteratorIncrement(Iterator* const iterator) {
   return m.Return();
 }
 
+QP principia__IteratorGetQP(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetQP> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
+  return m.Return(typed_iterator->Get<QP>(
+      [](DiscreteTrajectory<World>::Iterator const& iterator) -> QP {
+        DegreesOfFreedom<World> const degrees_of_freedom =
+            iterator.degrees_of_freedom();
+        return {
+            ToXYZ(
+                (degrees_of_freedom.position() - World::origin).coordinates() /
+                Metre),
+            ToXYZ(degrees_of_freedom.velocity().coordinates() /
+                  (Metre / Second))};
+      }));
+}
+
+double principia__IteratorGetTime(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetTime> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
+  return m.Return(typed_iterator->Get<double>(
+      [](DiscreteTrajectory<World>::Iterator const& iterator) -> double {
+        return (iterator.time() - Instant()) / Second;
+      }));
+}
+
 XYZ principia__IteratorGetXYZ(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetXYZ> m({iterator});
   CHECK_NOTNULL(iterator);
