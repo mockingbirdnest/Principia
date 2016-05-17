@@ -41,7 +41,6 @@ using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
-using ksp_plugin::Positions;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
 using physics::Frenet;
@@ -516,7 +515,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  Positions<World> rendered_trajectory;
+  DiscreteTrajectory<World> rendered_trajectory;
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
@@ -580,7 +579,7 @@ TEST_F(InterfaceTest, Iterator) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  Positions<World> rendered_trajectory;
+  DiscreteTrajectory<World> rendered_trajectory;
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
@@ -998,7 +997,7 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       kVesselGUID));
 
-  Positions<World> const rendered_trajectory = {
+  DiscreteTrajectory<World> const rendered_trajectory = {
       World::origin,
       World::origin + Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
       World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre})};

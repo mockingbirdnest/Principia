@@ -59,7 +59,7 @@ Interchange TypedIterator<DiscreteTrajectory<World>>::Get(
     std::function<Interchange(
         DiscreteTrajectory<World>::Iterator const&)> const& convert) const {
   CHECK(iterator_ != trajectory_.End());
-  return convert(iterator);
+  return convert(iterator_);
 }
 
 bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {

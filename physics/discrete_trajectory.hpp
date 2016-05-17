@@ -68,18 +68,10 @@ class DiscreteTrajectory
   using Iterator = internal::DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
-  ~DiscreteTrajectory() override;
-
   DiscreteTrajectory(DiscreteTrajectory const&) = delete;
   DiscreteTrajectory(DiscreteTrajectory&&) = delete;
   DiscreteTrajectory& operator=(DiscreteTrajectory const&) = delete;
   DiscreteTrajectory& operator=(DiscreteTrajectory&&) = delete;
-
-  // Sets a callback to be run before this trajectory gets destroyed.
-  using OnDestroyCallback =
-      std::function<void(not_null<DiscreteTrajectory const*> const)>;
-  void set_on_destroy(OnDestroyCallback on_destroy);
-  OnDestroyCallback get_on_destroy() const;
 
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
@@ -168,8 +160,6 @@ class DiscreteTrajectory
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
 
   Timeline timeline_;
-
-  OnDestroyCallback on_destroy_;
 
   template<typename, typename>
   friend class internal::ForkableIterator;

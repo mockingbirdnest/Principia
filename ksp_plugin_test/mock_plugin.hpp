@@ -67,19 +67,19 @@ class MockPlugin : public Plugin {
 
   MOCK_CONST_METHOD2(
       RenderedVesselTrajectory,
-      Positions<World>(GUID const& vessel_guid,
-                       Position<World> const& sun_world_position));
+      DiscreteTrajectory<World>(GUID const& vessel_guid,
+                                Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD2(
       RenderedPrediction,
-      Positions<World>(GUID const& vessel_guid,
-                       Position<World> const& sun_world_position));
+      DiscreteTrajectory<World>(GUID const& vessel_guid,
+                                Position<World> const& sun_world_position));
 
-  MOCK_CONST_METHOD3(
-      RenderedTrajectoryFromIterators,
-      Positions<World>(DiscreteTrajectory<Barycentric>::Iterator const& begin,
-                       DiscreteTrajectory<Barycentric>::Iterator const& end,
-                       Position<World> const& sun_world_position));
+  MOCK_CONST_METHOD3(RenderedTrajectoryFromIterators,
+                     DiscreteTrajectory<World>(
+                         DiscreteTrajectory<Barycentric>::Iterator const& begin,
+                         DiscreteTrajectory<Barycentric>::Iterator const& end,
+                         Position<World> const& sun_world_position));
 
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
