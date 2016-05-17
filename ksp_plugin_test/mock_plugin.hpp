@@ -65,21 +65,39 @@ class MockPlugin : public Plugin {
                           Instant const& final_time,
                           Mass const& initial_mass));
 
-  MOCK_CONST_METHOD2(
-      RenderedVesselTrajectory,
-      DiscreteTrajectory<World>(GUID const& vessel_guid,
-                                Position<World> const& sun_world_position));
+  // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
+  // we override the function of the Plugin class with bona fide functions which
+  // call mock functions which fill a std::unique_ptr<> instead of returning it.
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> RenderedVesselTrajectory(
+      GUID const& vessel_guid,
+      Position<World> const& sun_world_position) const override;
+  MOCK_CONST_METHOD3(FillRenderedVesselTrajectory,
+                     void(GUID const& vessel_guid,
+                          Position<World> const& sun_world_position,
+                          std::unique_ptr<DiscreteTrajectory<World>>*
+                              rendered_vessel_trajectory));
 
-  MOCK_CONST_METHOD2(
-      RenderedPrediction,
-      DiscreteTrajectory<World>(GUID const& vessel_guid,
-                                Position<World> const& sun_world_position));
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> RenderedPrediction(
+      GUID const& vessel_guid,
+      Position<World> const& sun_world_position) const override;
+  MOCK_CONST_METHOD3(
+      FillRenderedPrediction,
+      void(GUID const& vessel_guid,
+           Position<World> const& sun_world_position,
+           std::unique_ptr<DiscreteTrajectory<World>>* rendered_prediction));
 
-  MOCK_CONST_METHOD3(RenderedTrajectoryFromIterators,
-                     DiscreteTrajectory<World>(
-                         DiscreteTrajectory<Barycentric>::Iterator const& begin,
-                         DiscreteTrajectory<Barycentric>::Iterator const& end,
-                         Position<World> const& sun_world_position));
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  RenderedTrajectoryFromIterators(
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Position<World> const& sun_world_position) const;
+  MOCK_CONST_METHOD4(
+      FillRenderedTrajectoryFromIterators,
+      void(DiscreteTrajectory<Barycentric>::Iterator const& begin,
+           DiscreteTrajectory<Barycentric>::Iterator const& end,
+           Position<World> const& sun_world_position,
+           std::unique_ptr<DiscreteTrajectory<World>>*
+               rendered_trajectory_from_iterators));
 
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
@@ -90,13 +108,9 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
   MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));
 
-  // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
-  // we override the function of the Plugin class with bona fide functions which
-  // call mock functions which fill a std::unique_ptr<> instead of returning it.
   not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(
       Index const reference_body_index) const override;
-
   not_null<std::unique_ptr<NavigationFrame>>
   NewBarycentricRotatingNavigationFrame(
       Index const primary_index,
@@ -106,7 +120,6 @@ class MockPlugin : public Plugin {
       FillBodyCentredNonRotatingNavigationFrame,
       void(Index const reference_body_index,
            std::unique_ptr<NavigationFrame>* navigation_frame));
-
   MOCK_CONST_METHOD3(
       FillBarycentricRotatingNavigationFrame,
       void(Index const primary_index,

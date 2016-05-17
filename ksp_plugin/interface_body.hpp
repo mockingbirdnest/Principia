@@ -49,29 +49,31 @@ int TypedIterator<Container>::Size() const {
   return container_.size();
 }
 
-TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
-    DiscreteTrajectory<World> trajectory)
+inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory)
     : trajectory_(std::move(trajectory)),
-      iterator_(trajectory.Begin()) {}
+      iterator_(trajectory->Begin()) {
+  CHECK(trajectory->is_root());
+}
 
 template<typename Interchange>
 Interchange TypedIterator<DiscreteTrajectory<World>>::Get(
     std::function<Interchange(
         DiscreteTrajectory<World>::Iterator const&)> const& convert) const {
-  CHECK(iterator_ != trajectory_.End());
+  CHECK(iterator_ != trajectory_->End());
   return convert(iterator_);
 }
 
-bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {
-  return iterator_ == trajectory_.End();
+inline bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {
+  return iterator_ == trajectory_->End();
 }
 
-void TypedIterator<DiscreteTrajectory<World>>::Increment() {
+inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
   ++iterator_;
 }
 
-int TypedIterator<DiscreteTrajectory<World>>::Size() const {
-  return trajectory_.Size();
+inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
+  return trajectory_->Size();
 }
 
 

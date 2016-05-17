@@ -323,7 +323,8 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
       prediction_parameters_);
 }
 
-DiscreteTrajectory<World> Plugin::RenderedVesselTrajectory(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
@@ -336,23 +337,22 @@ DiscreteTrajectory<World> Plugin::RenderedVesselTrajectory(
                                          sun_world_position);
 }
 
-DiscreteTrajectory<World> Plugin::RenderedPrediction(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  DiscreteTrajectory<World> result =
-      RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
-                                      vessel.prediction().End(),
-                                      sun_world_position);
-  return result;
+  return RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
+                                         vessel.prediction().End(),
+                                         sun_world_position);
 }
 
-DiscreteTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Plugin::RenderedTrajectoryFromIterators(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  DiscreteTrajectory<World> result;
+  auto result = make_not_null_unique<DiscreteTrajectory<World>>();
   auto const to_world =
       AffineMap<Barycentric, World, Length, OrthogonalMap>(
           sun_->current_position(current_time_),
@@ -386,13 +386,13 @@ DiscreteTrajectory<World> Plugin::RenderedTrajectoryFromIterators(
                 navigation_degrees_of_freedom.position()),
             from_navigation_frame_to_world_at_current_time.linear_map()(
                 navigation_degrees_of_freedom.velocity()));
-    result.Append(intermediate_it.time(), world_degrees_of_freedom);
+    result->Append(intermediate_it.time(), world_degrees_of_freedom);
   }
-  VLOG(1) << "Returning a " << result.Size() << "-point trajectory";
+  VLOG(1) << "Returning a " << result->Size() << "-point trajectory";
   return result;
 }
 
-DiscreteTrajectory<World> Plugin::RenderApsides(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderApsides(
       Position<World> const& sun_world_position,
       DiscreteTrajectory<Barycentric>& apsides) const {
   // NOTE(egg): this guarantees a bijection between segment |begin|s and
@@ -421,8 +421,8 @@ void Plugin::ComputeAndRenderApsides(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
-    DiscreteTrajectory<World>& apoapsides,
-    DiscreteTrajectory<World>& periapsides) const {
+    std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
+    std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const {
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ephemeris_->ComputeApsides(FindOrDie(celestials_, celestial_index)->body(),

@@ -515,27 +515,30 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  DiscreteTrajectory<World> rendered_trajectory;
+  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
                                            3 * SIUnit<Length>()});
-  rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
   for (int i = 1; i < kTrajectorySize; ++i) {
     position += Displacement<World>({10 * SIUnit<Length>(),
                                      20 * SIUnit<Length>(),
                                      30 * SIUnit<Length>()});
-    rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
 
   EXPECT_CALL(*plugin_,
-              RenderedPrediction(
+              FillRenderedPrediction(
                   kVesselGUID,
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()})))
-      .WillOnce(Return(rendered_trajectory));
+                                       kParentPosition.z * SIUnit<Length>()}),
+                  _))
+      .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     kVesselGUID,
@@ -579,28 +582,31 @@ TEST_F(InterfaceTest, Iterator) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  DiscreteTrajectory<World> rendered_trajectory;
+  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
                                            3 * SIUnit<Length>()});
-  rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
   for (int i = 1; i < kTrajectorySize; ++i) {
     position += Displacement<World>({10 * SIUnit<Length>(),
                                      20 * SIUnit<Length>(),
                                      30 * SIUnit<Length>()});
-    rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
 
   // Construct a LineAndIterator.
   EXPECT_CALL(*plugin_,
-              RenderedVesselTrajectory(
+              FillRenderedVesselTrajectory(
                   kVesselGUID,
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()})))
-      .WillOnce(Return(rendered_trajectory));
+                                       kParentPosition.z * SIUnit<Length>()}),
+                  _))
+      .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
@@ -997,13 +1003,24 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       kVesselGUID));
 
-  DiscreteTrajectory<World> const rendered_trajectory = {
-      World::origin,
-      World::origin + Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
-      World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre})};
+  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+  rendered_trajectory->Append(
+      t0_, DegreesOfFreedom<World>(World::origin, Velocity<World>()));
+  rendered_trajectory->Append(
+      t0_ + 1 * Second,
+      DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
+          Velocity<World>()));
+  rendered_trajectory->Append(
+      t0_ + 2 * Second,
+      DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
+          Velocity<World>()));
   EXPECT_CALL(flight_plan, GetSegment(3, _, _));
-  EXPECT_CALL(*plugin_, RenderedTrajectoryFromIterators(_, _, _))
-      .WillOnce(Return(rendered_trajectory));
+  EXPECT_CALL(*plugin_, FillRenderedTrajectoryFromIterators(_, _, _, _))
+      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
                                            kVesselGUID,

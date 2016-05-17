@@ -205,14 +205,13 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
-    DiscreteTrajectory<World> const rendered_trajectory =
-        plugin_->RenderedVesselTrajectory(satellite,
-                                          sun_world_position);
+    auto const rendered_trajectory =
+        plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::kEarth).displacement());
-    for (auto it = rendered_trajectory.Begin();
-         it != rendered_trajectory.End();
+    for (auto it = rendered_trajectory->Begin();
+         it != rendered_trajectory->End();
          ++it) {
       Length const distance =
           (it.degrees_of_freedom().position() - earth_world_position).Norm();
@@ -281,9 +280,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
-  DiscreteTrajectory<World> const rendered_trajectory =
-      plugin_->RenderedVesselTrajectory(satellite,
-                                        sun_world_position);
+  auto const rendered_trajectory =
+      plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                SolarSystemFactory::kEarth).displacement());
@@ -291,8 +289,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       earth_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::kMoon).displacement());
   Length const earth_moon = (moon_world_position - earth_world_position).Norm();
-  for (auto it = rendered_trajectory.Begin();
-       it != rendered_trajectory.End();
+  for (auto it = rendered_trajectory->Begin();
+       it != rendered_trajectory->End();
        ++it) {
     Position<World> const position = it.degrees_of_freedom().position();
     Length const satellite_earth = (position - earth_world_position).Norm();
@@ -304,14 +302,14 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
-  auto it0 = rendered_trajectory.Begin();
-  CHECK(it0 != rendered_trajectory.End());
+  auto it0 = rendered_trajectory->Begin();
+  CHECK(it0 != rendered_trajectory->End());
   auto it1 = it0;
   ++it1;
-  CHECK(it1 != rendered_trajectory.End());
+  CHECK(it1 != rendered_trajectory->End());
   auto it2 = it1;
   ++it2;
-  while (it2 != rendered_trajectory.End()) {
+  while (it2 != rendered_trajectory->End()) {
     EXPECT_THAT((it0.degrees_of_freedom().position() -
                  it2.degrees_of_freedom().position())
                     .Norm(),
@@ -629,13 +627,12 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
-  DiscreteTrajectory<World> rendered_prediction =
-      plugin.RenderedPrediction(satellite,
-                                World::origin);
-  EXPECT_EQ(16, rendered_prediction.Size());
+  auto rendered_prediction =
+      plugin.RenderedPrediction(satellite, World::origin);
+  EXPECT_EQ(16, rendered_prediction->Size());
   int index = 0;
-  for (auto it = rendered_prediction.Begin();
-       it != rendered_prediction.End();
+  for (auto it = rendered_prediction->Begin();
+       it != rendered_prediction->End();
        ++it, ++index) {
     auto const& position = it.degrees_of_freedom().position();
     EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
@@ -646,7 +643,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
     }
   }
   EXPECT_THAT(
-      AbsoluteError(rendered_prediction.last().degrees_of_freedom().position(),
+      AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));

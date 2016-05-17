@@ -542,7 +542,7 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
   journal::Method<journal::RenderedVesselTrajectory> m({plugin,
                                                         vessel_guid,
                                                         sun_world_position});
-  DiscreteTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+  auto rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
           World::origin + Displacement<World>(
@@ -557,7 +557,7 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
   journal::Method<journal::RenderedPrediction> m({plugin,
                                                   vessel_guid,
                                                   sun_world_position});
-  DiscreteTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+  auto rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedPrediction(
           vessel_guid,
           World::origin + Displacement<World>(
@@ -580,8 +580,8 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   Position<World> q_sun =
       World::origin +
       Displacement<World>(FromXYZ(sun_world_position) * Metre);
-  DiscreteTrajectory<World> rendered_apoapsides;
-  DiscreteTrajectory<World> rendered_periapsides;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   prediction.Fork(),
                                   prediction.End(),
@@ -589,9 +589,9 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                   rendered_apoapsides,
                                   rendered_periapsides);
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_apoapsides));
+      check_not_null(std::move(rendered_apoapsides)));
   *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_periapsides));
+      check_not_null(std::move(rendered_periapsides)));
   return m.Return();
 }
 

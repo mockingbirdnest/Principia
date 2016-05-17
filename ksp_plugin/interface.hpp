@@ -64,7 +64,8 @@ class TypedIterator : public Iterator {
 template<>
 class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
  public:
-  explicit TypedIterator(DiscreteTrajectory<World> trajectory);
+  explicit TypedIterator(
+      not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory);
 
   // Obtains the element denoted by this iterator and converts it to some
   // |Interchange| type using |convert|.
@@ -78,7 +79,7 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
   int Size() const override;
 
  private:
-  DiscreteTrajectory<World> trajectory_;
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory_;
   DiscreteTrajectory<World>::Iterator iterator_;
 };
 
