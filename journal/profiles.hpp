@@ -19,7 +19,6 @@ using interface::NavigationManoeuvre;
 using interface::QP;
 using interface::WXYZ;
 using interface::XYZ;
-using interface::XYZSegment;
 
 namespace journal {
 

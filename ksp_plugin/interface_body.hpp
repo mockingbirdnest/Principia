@@ -157,10 +157,6 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
          NaNIndependentEq(left.z, right.z);
 }
 
-inline bool operator==(XYZSegment const& left, XYZSegment const& right) {
-  return left.begin == right.begin && left.end == right.end;
-}
-
 inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
