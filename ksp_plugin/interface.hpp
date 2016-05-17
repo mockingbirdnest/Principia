@@ -12,6 +12,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
@@ -22,6 +23,8 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
+using ksp_plugin::World;
+using physics::DiscreteTrajectory;
 
 namespace interface {
 
@@ -43,7 +46,7 @@ class TypedIterator : public Iterator {
 
   // Obtains the element denoted by this iterator and converts it to some
   // |Interchange| type using |convert|.
-  template <typename Interchange>
+  template<typename Interchange>
   Interchange Get(
       std::function<Interchange(typename Container::value_type const&)> const&
           convert) const;
@@ -55,6 +58,28 @@ class TypedIterator : public Iterator {
  private:
   Container container_;
   typename Container::const_iterator iterator_;
+};
+
+// A specialization for |DiscreteTrajectory<World>|.
+template<>
+class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
+ public:
+  explicit TypedIterator(DiscreteTrajectory<World> trajectory);
+
+  // Obtains the element denoted by this iterator and converts it to some
+  // |Interchange| type using |convert|.
+  template<typename Interchange>
+  Interchange Get(
+      std::function<Interchange(
+          DiscreteTrajectory<World>::Iterator const&)> const& convert) const;
+
+  bool AtEnd() const override;
+  void Increment() override;
+  int Size() const override;
+
+ private:
+  DiscreteTrajectory<World> trajectory_;
+  DiscreteTrajectory<World>::Iterator iterator_;
 };
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls

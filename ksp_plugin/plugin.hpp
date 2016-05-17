@@ -64,10 +64,6 @@ using GUID = std::string;
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
 
-// We render trajectories as polygons.
-template<typename Frame>
-using Positions = std::vector<Position<Frame>>;
-
 class Plugin {
  public:
   Plugin() = delete;
@@ -186,7 +182,7 @@ class Plugin {
   // |sun_world_position| is the current position of the sun in |World| space as
   // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
   // relation between |WorldSun| and |World|.  No transfer of ownership.
-  virtual Positions<World> RenderedVesselTrajectory(
+  virtual DiscreteTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
@@ -199,7 +195,7 @@ class Plugin {
   // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
   // called after |predicted_vessel_| was set.
-  virtual Positions<World> RenderedPrediction(
+  virtual DiscreteTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;
 
@@ -208,12 +204,12 @@ class Plugin {
   // |begin| and |end|, as seen in the current |plotting_frame_|.
   // TODO(phl): Use this directly in the interface and remove the other
   // |Rendered...|.
-  virtual Positions<World> RenderedTrajectoryFromIterators(
+  virtual DiscreteTrajectory<World> RenderedTrajectoryFromIterators(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
 
-  virtual Positions<World> RenderApsides(
+  virtual DiscreteTrajectory<World> RenderApsides(
       Position<World> const& sun_world_position,
       DiscreteTrajectory<Barycentric>& apsides) const;
 
@@ -222,8 +218,8 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
-      Positions<World>& apoapsides,
-      Positions<World>& periapsides) const;
+      DiscreteTrajectory<World>& apoapsides,
+      DiscreteTrajectory<World>& periapsides) const;
 
   virtual void SetPredictionLength(Time const& t);
 
