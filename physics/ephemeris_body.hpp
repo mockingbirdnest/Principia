@@ -29,6 +29,7 @@ using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
+using numerics::Bisect;
 using numerics::Hermite3;
 using quantities::Abs;
 using quantities::Exponentiation;
@@ -684,6 +685,67 @@ void Ephemeris<Frame>::ComputeApsides(
     previous_time = time;
     previous_degrees_of_freedom = degrees_of_freedom;
     previous_squared_distance = squared_distance;
+    previous_squared_distance_derivative = squared_distance_derivative;
+  }
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
+                                      not_null<MassiveBody const*> const body2,
+                                      DiscreteTrajectory<Frame>& apoapsides,
+                                      DiscreteTrajectory<Frame>& periapsides) {
+  not_null<ContinuousTrajectory<Frame> const*> const body1_trajectory =
+      trajectory(body1);
+  not_null<ContinuousTrajectory<Frame> const*> const body2_trajectory =
+      trajectory(body2);
+  typename ContinuousTrajectory<Frame>::Hint hint1;
+  typename ContinuousTrajectory<Frame>::Hint hint2;
+
+  // Computes the derivative of the squared distance between |body1| and |body2|
+  // at time |t|.
+  auto const evaluate_square_distance_derivative =
+      [body1_trajectory, body2_trajectory, &hint1, &hint2](
+          Instant const& t) -> Variation<Square<Length>> {
+    DegreesOfFreedom<Frame> const body1_degrees_of_freedom =
+        body1_trajectory->EvaluateDegreesOfFreedom(t, &hint1);
+    DegreesOfFreedom<Frame> const body2_degrees_of_freedom =
+        body2_trajectory->EvaluateDegreesOfFreedom(t, &hint2);
+    RelativeDegreesOfFreedom<Frame> const relative =
+        body1_degrees_of_freedom - body2_degrees_of_freedom;
+    Square<Length> const squared_distance =
+        InnerProduct(relative.displacement(), relative.displacement());
+    // This is the derivative of |squared_distance|.
+    return 2.0 * InnerProduct(relative.displacement(), relative.velocity());
+  };
+
+  std::experimental::optional<Instant> previous_time;
+  std::experimental::optional<Variation<Square<Length>>>
+      previous_squared_distance_derivative;
+
+  for (Instant time = t_min(); time <= t_max(); time += parameters_.step()) {
+    Variation<Square<Length>> const squared_distance_derivative =
+        evaluate_square_distance_derivative(time);
+    if (previous_squared_distance_derivative &&
+        Sign(squared_distance_derivative) !=
+            Sign(*previous_squared_distance_derivative)) {
+      CHECK(previous_time);
+
+      // The derivative of |squared_distance| changed sign.  Find its zero by
+      // bisection, this is the time of the apsis.  Then compute the apsis and
+      // append it to one of the output trajectories.
+      Instant const apsis_time = Bisect(evaluate_square_distance_derivative,
+                                        *previous_time,
+                                        time);
+      DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
+          body1_trajectory->EvaluateDegreesOfFreedom(apsis_time, &hint1);
+      if (Sign(squared_distance_derivative).Negative()) {
+        apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
+      } else {
+        periapsides.Append(apsis_time, apsis_degrees_of_freedom);
+      }
+    }
+
+    previous_time = time;
     previous_squared_distance_derivative = squared_distance_derivative;
   }
 }

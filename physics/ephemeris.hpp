@@ -191,6 +191,12 @@ class Ephemeris {
       DiscreteTrajectory<Frame>& apoapsides,
       DiscreteTrajectory<Frame>& periapsides);
 
+  //TODO(phl):comment
+  virtual void ComputeApsides(not_null<MassiveBody const*> const body1,
+                              not_null<MassiveBody const*> const body2,
+                              DiscreteTrajectory<Frame>& apoapsides,
+                              DiscreteTrajectory<Frame>& periapsides);
+
   // Returns the index of the given body in the serialization produced by
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
   // suitable for other uses.
