@@ -33,13 +33,13 @@ class ResonanceTest : public ::testing::Test {
 
   // Gravitational parameters from the KSP wiki.
   ResonanceTest()
-      : sun_(AddBody(1.1723328E+18 * Pow<3>(Metre) / Pow<2>(Second))),
-        jool_(AddBody(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second))),
-        laythe_(AddBody(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        vall_(AddBody(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second))),
-        tylo_(AddBody(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        bop_(AddBody(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second))),
-        pol_(AddBody(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second))),
+      : sun_(AddBody(1.1723328e+18 * Pow<3>(Metre) / Pow<2>(Second))),
+        jool_(AddBody(2.8252800e+14 * Pow<3>(Metre) / Pow<2>(Second))),
+        laythe_(AddBody(1.9620000e+12 * Pow<3>(Metre) / Pow<2>(Second))),
+        vall_(AddBody(2.0748150e+11 * Pow<3>(Metre) / Pow<2>(Second))),
+        tylo_(AddBody(2.8252800e+12 * Pow<3>(Metre) / Pow<2>(Second))),
+        bop_(AddBody(2.4868349e+09 * Pow<3>(Metre) / Pow<2>(Second))),
+        pol_(AddBody(7.2170208e+08 * Pow<3>(Metre) / Pow<2>(Second))),
         bodies_({sun_, jool_, laythe_, vall_, tylo_, bop_, pol_}),
         jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
         joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {

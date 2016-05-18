@@ -50,7 +50,7 @@ class KSPSystemTest : public ::testing::Test {
 
   KSPSystemTest() {
     sun_.owned_body = std::make_unique<MassiveBody>(
-        1.1723327948324908E+18 * SIUnit<GravitationalParameter>());
+        1.1723327948324908e+18 * SIUnit<GravitationalParameter>());
     eeloo_.owned_body = std::make_unique<MassiveBody>(
         74410814527.049576 * SIUnit<GravitationalParameter>());
     jool_.owned_body = std::make_unique<MassiveBody>(

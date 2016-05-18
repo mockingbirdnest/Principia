@@ -229,12 +229,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       MakeMockDynamicFrame());
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_burn.mass_flow()),
-              Lt(1E-4));
+              Lt(1e-4));
 
   first_burn.set_duration(s_ivb_1st_eco - s_ivb_1st_90_percent_thrust);
   EXPECT_THAT(
       RelativeError(total_vehicle_at_s_ivb_1st_eco, first_burn.final_mass()),
-      Lt(1E-3));
+      Lt(1e-3));
 
   first_burn.set_initial_time(s_ivb_1st_90_percent_thrust);
   EXPECT_EQ(s_ivb_1st_eco, first_burn.final_time());
@@ -270,12 +270,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       MakeMockDynamicFrame());
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_burn.mass_flow()),
-              Lt(2E-4));
+              Lt(2e-4));
 
   second_burn.set_duration(s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust);
   EXPECT_THAT(
       RelativeError(total_vehicle_at_s_ivb_2nd_eco, second_burn.final_mass()),
-      Lt(2E-3));
+      Lt(2e-3));
 
   second_burn.set_initial_time(s_ivb_2nd_90_percent_thrust);
   EXPECT_EQ(s_ivb_2nd_eco, second_burn.final_time());

@@ -189,7 +189,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
                         t0_,
                         DegreesOfFreedom<Big>(position, Velocity<Big>())),
                     expected_acceleration),
-                Lt(1E-10 * SIUnit<Acceleration>()));
+                Lt(1e-10 * SIUnit<Acceleration>()));
   }
 }
 

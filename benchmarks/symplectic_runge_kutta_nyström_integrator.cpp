@@ -86,7 +86,7 @@ void SolveHarmonicOscillatorAndComputeError1D(
 #else
   Instant const t_final = t_initial + 1000 * Second;
 #endif
-  Time const step = 3.0E-4 * Second;
+  Time const step = 3.0e-4 * Second;
 
   std::vector<ODE::SystemState> solution;
   solution.reserve(static_cast<int>((t_final - t_initial) / step));
@@ -140,7 +140,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
 #else
   Instant const t_final = t_initial + 1000 * Second;
 #endif
-  Time const step = 3.0E-4 * Second;
+  Time const step = 3.0e-4 * Second;
 
   std::vector<ODE::SystemState> solution;
   solution.reserve(static_cast<int>((t_final - t_initial) / step));

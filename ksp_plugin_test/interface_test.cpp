@@ -253,7 +253,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
               Barycentric::origin +
               Displacement<Barycentric>(
                   {0 * Metre,
-                   23.456E-7 * Kilo(Metre),
+                   23.456e-7 * Kilo(Metre),
                    -1 * AstronomicalUnit}),
               Velocity<Barycentric>(
                   {1 * AstronomicalUnit / Day,
@@ -262,20 +262,20 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
-                             1.2345E6 * SIUnit<GravitationalParameter>()),
+                             1.2345e6 * SIUnit<GravitationalParameter>()),
                     Property(&MassiveBody::mean_radius,
                              666 * Kilo(Metre))))));
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,
-                                              "1.2345E6  m^3/s^2",
+                                              "1.2345e6  m^3/s^2",
                                               "666 km",
                                               nullptr /*axis_right_ascension*/,
                                               nullptr /*axis_declination*/,
                                               nullptr /*j2*/,
                                               nullptr /*reference_radius*/,
                                               "0 m",
-                                              "23.456E-7 km",
+                                              "23.456e-7 km",
                                               "-1 au",
                                               "1 au / d",
                                               "  1 km/s",
@@ -292,7 +292,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
               Barycentric::origin +
               Displacement<Barycentric>(
                   {0 * Metre,
-                   23.456E-7 * Kilo(Metre),
+                   23.456e-7 * Kilo(Metre),
                    -1 * AstronomicalUnit}),
               Velocity<Barycentric>(
                   {1 * AstronomicalUnit / Day,
@@ -301,21 +301,21 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, true),
                     Property(&MassiveBody::gravitational_parameter,
-                             1.2345E6 *
+                             1.2345e6 *
                                  Pow<3>(Kilo(Metre)) / Pow<2>(Second)),
                     Property(&MassiveBody::mean_radius,
                              666 * Kilo(Metre))))));
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,
-                                              "1.2345E6  km^3 / s^2",
+                                              "1.2345e6  km^3 / s^2",
                                               "666 km",
                                               "42 deg",
                                               u8"8°",
                                               "123e-6",
                                               "1000 km",
                                               "0 m",
-                                              "23.456E-7 km",
+                                              "23.456e-7 km",
                                               "-1 au",
                                               "1 au / d",
                                               "  1 km/s",
