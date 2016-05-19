@@ -170,8 +170,7 @@ template<typename Vector>
   CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
   // Precomputed to save operations at the expense of some accuracy loss.
   Time const duration = t_max_ - t_min_;
-  t_mean_ = t_min_ + 0.5 * duration;
-  two_over_duration_ = 2 / duration;
+  one_over_duration_ = 1 / duration;
 }
 
 
@@ -211,7 +210,7 @@ Vector ЧебышёвSeries<Vector>::last_coefficient() const {
 
 template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
-  double const scaled_t = (t - t_mean_) * two_over_duration_;
+  double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
   // TODO(phl): This should use DCHECK but these macros don't work because the
@@ -227,7 +226,7 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
 template<typename Vector>
 Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
     Instant const& t) const {
-  double const scaled_t = (t - t_mean_) * two_over_duration_;
+  double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
@@ -250,7 +249,7 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
     b_kplus1 = last_b_k;
   }
   return (helper_.coefficients(1) + two_scaled_t * *b_kplus1 - *b_kplus2) *
-             two_over_duration_;
+             (one_over_duration_ + one_over_duration_);
 }
 
 template<typename Vector>

@@ -54,8 +54,8 @@ namespace physics {
 
 namespace {
 
-constexpr char kBig[] = "Big";
-constexpr char kSmall[] = "Small";
+char constexpr kBig[] = "Big";
+char constexpr kSmall[] = "Small";
 
 }  // namespace
 

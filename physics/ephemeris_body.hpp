@@ -712,9 +712,6 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
         body2_trajectory->EvaluateDegreesOfFreedom(t, &hint2);
     RelativeDegreesOfFreedom<Frame> const relative =
         body1_degrees_of_freedom - body2_degrees_of_freedom;
-    Square<Length> const squared_distance =
-        InnerProduct(relative.displacement(), relative.displacement());
-    // This is the derivative of |squared_distance|.
     return 2.0 * InnerProduct(relative.displacement(), relative.velocity());
   };
 
