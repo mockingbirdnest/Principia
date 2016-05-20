@@ -256,7 +256,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
        time <= trajectory_->t_max();
        time += step / number_of_substeps) {
     EXPECT_THAT(trajectory_->EvaluatePosition(time, &hint) - World::origin,
-                AlmostEquals(position_function(time) - World::origin, 0, 7));
+                AlmostEquals(position_function(time) - World::origin, 0, 11));
     EXPECT_THAT(trajectory_->EvaluateVelocity(time, &hint),
                 AlmostEquals(velocity_function(time), 1, 3));
     EXPECT_EQ(trajectory_->EvaluateDegreesOfFreedom(time, &hint),

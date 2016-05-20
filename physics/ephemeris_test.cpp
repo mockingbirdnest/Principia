@@ -372,16 +372,16 @@ TEST_F(EphemerisTest, Moon) {
 
   EXPECT_THAT(moon_positions.size(), Eq(101));
   EXPECT_THAT(moon_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v, 362));
+              AlmostEquals(0.25 * period * v, 630));
   EXPECT_THAT(moon_positions[25].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v, 135));
+              AlmostEquals(0.50 * period * v, 362));
   EXPECT_THAT(moon_positions[50].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v, 543));
+              AlmostEquals(0.75 * period * v, 46));
   EXPECT_THAT(moon_positions[75].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v, 383));
+              AlmostEquals(1.00 * period * v, 135));
   EXPECT_THAT(moon_positions[100].coordinates().y, Eq(q));
 }
 
@@ -459,16 +459,16 @@ TEST_F(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 551));
+              AlmostEquals(0.25 * period * v_earth, 1012));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 230));
+              AlmostEquals(0.50 * period * v_earth, 551));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 413));
+              AlmostEquals(0.75 * period * v_earth, 22));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 622));
+              AlmostEquals(1.00 * period * v_earth, 232));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
@@ -485,9 +485,9 @@ TEST_F(EphemerisTest, EarthProbe) {
   }
   // The solution is a line, so the rounding errors dominate.  Different
   // compilers result in different errors and thus different numbers of steps.
-  EXPECT_THAT(probe_positions.size(), AnyOf(Eq(476), Eq(534)));
+  EXPECT_THAT(probe_positions.size(), AnyOf(Eq(419), Eq(-1)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 259, 270));
+              AlmostEquals(1.00 * period * v_probe, 207));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
@@ -594,16 +594,16 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 551));
+              AlmostEquals(0.25 * period * v_earth, 1012));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 230));
+              AlmostEquals(0.50 * period * v_earth, 551));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 413));
+              AlmostEquals(0.75 * period * v_earth, 22));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 622));
+              AlmostEquals(1.00 * period * v_earth, 232));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
@@ -638,9 +638,9 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
 #endif
   EXPECT_THAT(probe1_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe1, 15));
+              AlmostEquals(1.00 * period * v_probe1, 40));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe2, 0));
+              AlmostEquals(1.00 * period * v_probe2, 1));
   EXPECT_THAT(probe1_positions.back().coordinates().y,
               Eq(q_probe1));
   EXPECT_THAT(probe2_positions.back().coordinates().y,
