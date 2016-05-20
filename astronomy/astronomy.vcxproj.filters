@@ -49,9 +49,6 @@
     <Text Include="gravity_model_two_bodies_test.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="initial_state_two_bodies_test.proto.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
     <Text Include="initial_state_jd_2433374_257884090.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
@@ -65,6 +62,12 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="initial_state_jd_2451564_808127140.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initial_state_two_bodies_circular_test.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initial_state_two_bodies_elliptical_test.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
