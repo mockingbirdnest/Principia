@@ -2,7 +2,7 @@ initial_state {
   frame : ICRF_J2000_EQUATOR
   # The time of the initial state, as a TDB Julian date.
   # This is 1950-Apr-02 23:17:53.1853 TDB.
-  epoch : 2433374.47075446
+  epoch : 2433374.470754460
   body {
     name : "Ariel"
     x    : "-2.401011543223428e+08 km"
