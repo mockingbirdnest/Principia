@@ -113,6 +113,12 @@ class Forkable {
   Forkable() = default;
   virtual ~Forkable() = default;
 
+  // Cannot be moved or copied because of parent/children pointers.
+  Forkable(Forkable const&) = delete;
+  Forkable(Forkable&&) = delete;
+  Forkable& operator=(Forkable const&) = delete;
+  Forkable& operator=(Forkable&&) = delete;
+
   // Deletes the child trajectory denoted by |*trajectory|, which must be a
   // pointer previously returned by NewFork for this object.  Nulls
   // |*trajectory|.

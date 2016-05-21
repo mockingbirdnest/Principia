@@ -123,20 +123,6 @@ class DiscreteTrajectoryTest : public testing::Test {
 
 using DiscreteTrajectoryDeathTest = DiscreteTrajectoryTest;
 
-TEST_F(DiscreteTrajectoryTest, Destruction) {
-  int i = 1;
-  {
-    DiscreteTrajectory<World> massive_trajectory;
-  }
-  EXPECT_EQ(1, i);
-  {
-    DiscreteTrajectory<World> massive_trajectory;
-    massive_trajectory.set_on_destroy(
-        [&i](not_null<DiscreteTrajectory<World>const*> const) { ++i; });
-  }
-  EXPECT_EQ(2, i);
-}
-
 TEST_F(DiscreteTrajectoryDeathTest, NewForkWithCopyError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);

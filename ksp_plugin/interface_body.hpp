@@ -25,8 +25,8 @@ TypedIterator<Container>::TypedIterator(Container container)
     : container_(std::move(container)),
       iterator_(container_.begin()) {}
 
-template <typename Container>
-template <typename Interchange>
+template<typename Container>
+template<typename Interchange>
 Interchange TypedIterator<Container>::Get(
     std::function<Interchange(typename Container::value_type const&)> const&
         convert) const {
@@ -48,6 +48,34 @@ template<typename Container>
 int TypedIterator<Container>::Size() const {
   return container_.size();
 }
+
+inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory)
+    : trajectory_(std::move(trajectory)),
+      iterator_(trajectory_->Begin()) {
+  CHECK(trajectory_->is_root());
+}
+
+template<typename Interchange>
+Interchange TypedIterator<DiscreteTrajectory<World>>::Get(
+    std::function<Interchange(
+        DiscreteTrajectory<World>::Iterator const&)> const& convert) const {
+  CHECK(iterator_ != trajectory_->End());
+  return convert(iterator_);
+}
+
+inline bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {
+  return iterator_ == trajectory_->End();
+}
+
+inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
+  ++iterator_;
+}
+
+inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
+  return trajectory_->Size();
+}
+
 
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {

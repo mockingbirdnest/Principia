@@ -23,7 +23,6 @@ template<typename Vector>
 class Point {
  public:
   Point();
-  ~Point() = default;
 
   Vector operator-(Point const& from) const;
 
