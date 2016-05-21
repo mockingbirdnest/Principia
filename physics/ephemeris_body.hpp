@@ -689,11 +689,13 @@ void Ephemeris<Frame>::ComputeApsides(
   }
 }
 
-template<typename Frame>
+template <typename Frame>
 void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       not_null<MassiveBody const*> const body2,
-                                      DiscreteTrajectory<Frame>& apoapsides,
-                                      DiscreteTrajectory<Frame>& periapsides) {
+                                      DiscreteTrajectory<Frame>& apoapsides1,
+                                      DiscreteTrajectory<Frame>& periapsides1,
+                                      DiscreteTrajectory<Frame>& apoapsides2,
+                                      DiscreteTrajectory<Frame>& periapsides2) {
   not_null<ContinuousTrajectory<Frame> const*> const body1_trajectory =
       trajectory(body1);
   not_null<ContinuousTrajectory<Frame> const*> const body2_trajectory =
@@ -733,12 +735,16 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       Instant const apsis_time = Bisect(evaluate_square_distance_derivative,
                                         *previous_time,
                                         time);
-      DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
+      DegreesOfFreedom<Frame> const apsis1_degrees_of_freedom =
           body1_trajectory->EvaluateDegreesOfFreedom(apsis_time, &hint1);
+      DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
+          body2_trajectory->EvaluateDegreesOfFreedom(apsis_time, &hint2);
       if (Sign(squared_distance_derivative).Negative()) {
-        apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
+        apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom);
+        apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom);
       } else {
-        periapsides.Append(apsis_time, apsis_degrees_of_freedom);
+        periapsides1.Append(apsis_time, apsis1_degrees_of_freedom);
+        periapsides2.Append(apsis_time, apsis2_degrees_of_freedom);
       }
     }
 

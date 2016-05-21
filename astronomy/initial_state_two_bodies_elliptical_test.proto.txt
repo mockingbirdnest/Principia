@@ -6,8 +6,8 @@ initial_state {
   # The two bodies are on elliptical orbits around their center of mass.  The
   # center of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
   # period is 16000 Pi / (Sqrt[7] (73 - 8 Sqrt[35])^(3/2)) s, the semi major
-  # axis is 400 / (73 - 8 Sqrt[35]) km, the semi minor axis is
-  # (5 (7 + 4 Sqrt[35])) / Sqrt[7 (73 - 8 Sqrt[35])]
+  # axis is 400 / (73 - 8 Sqrt[35]) km, the excentricity is
+  # (7 + 8 Sqrt[35]) / 80.
   body {
     name : "Big"
     x    : "0 km"
