@@ -160,7 +160,7 @@ TEST_F(FlightPlanTest, Singular) {
   flight_plan_->GetSegment(0, &begin, &end);
   DiscreteTrajectory<Barycentric>::Iterator back = end;
   --back;
-  EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1E-4 * Second));
+  EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1e-4 * Second));
   // Attempting to put a burn past the singularity fails.
   EXPECT_FALSE(
       flight_plan_->Append(

@@ -244,12 +244,12 @@ TEST_F(EclipseTest, Year1950) {
   auto U4 = JulianDate(2433374.43016419);  // 22:18:54
   auto P4 = JulianDate(2433374.47075446);  // 23:17:21
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 28 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-5 * Radian, 30 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    2E-5 * Radian, 39 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    9E-6 * Radian, 21 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 28 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 30 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2e-5 * Radian, 28 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2e-5 * Radian, 30 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    2e-5 * Radian, 39 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    9e-6 * Radian, 21 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2e-5 * Radian, 28 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 30 * Second);
 
   // Times are TDB Julian Day for 1950-09-26.
   P1 = JulianDate(2433550.55712016);  // 01:21:43 UT
@@ -259,12 +259,12 @@ TEST_F(EclipseTest, Year1950) {
   U4 = JulianDate(2433550.75144885);  // 06:01:33
   P4 = JulianDate(2433550.800222);    // 07:11:47
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-5 * Radian, 34 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    3E-5 * Radian, 36 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-5 * Radian, 42 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    2E-5 * Radian, 29 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    3E-5 * Radian, 34 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 36 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2e-5 * Radian, 34 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3e-5 * Radian, 36 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3e-5 * Radian, 42 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    2e-5 * Radian, 29 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3e-5 * Radian, 34 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 36 * Second);
 }
 
 TEST_F(EclipseTest, Year1951) {
@@ -272,15 +272,15 @@ TEST_F(EclipseTest, Year1951) {
   auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
 
-  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 30 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 25 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9e-6 * Radian, 30 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8e-6 * Radian, 25 * Second);
 
   // Times are TDB Julian Day for 1951-09-15.
   P1 = JulianDate(2433904.93736321);  // 10:29:16
   P4 = JulianDate(2433905.1002799);   // 14:23:52
 
-  CheckLunarPenumbralEclipse(P1, U14, 9E-6 * Radian, 28 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 8E-6 * Radian, 23 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 9e-6 * Radian, 28 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8e-6 * Radian, 23 * Second);
 }
 
 TEST_F(EclipseTest, Year1952) {
@@ -290,10 +290,10 @@ TEST_F(EclipseTest, Year1952) {
   auto U4 = JulianDate(2434053.55203917);  // U4 = 01:14:24
   auto P4 = JulianDate(2434053.63249055);  // P4 = 03:10:15
 
-  CheckLunarPenumbralEclipse(P1, U14, 1E-5 * Radian, 30 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    4E-6 * Radian, 19 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    1E-5 * Radian, 50 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 40 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 1e-5 * Radian, 30 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    4e-6 * Radian, 19 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    1e-5 * Radian, 50 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 40 * Second);
 
   // Times are TDB Julian Day for 1952-08-05.
   P1 = JulianDate(2434230.22830075);  // P1 = 17:28:13 UT
@@ -301,10 +301,10 @@ TEST_F(EclipseTest, Year1952) {
   U4 = JulianDate(2434230.37606695);  // U4 = 21:01:00
   P4 = JulianDate(2434230.42161093);  // P4 = 22:06:35
 
-  CheckLunarPenumbralEclipse(P1, U14, 8E-6 * Radian, 18 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    9E-6 * Radian, 18 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-5 * Radian, 25 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-5 * Radian, 26 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 8e-6 * Radian, 18 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    9e-6 * Radian, 18 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2e-5 * Radian, 25 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 26 * Second);
 }
 
 #if 0
@@ -317,12 +317,12 @@ TEST_F(EclipseTest, Year2000) {
   auto U4 = JulianDate(2451564.76820815);  // 06:25:09
   auto P4 = JulianDate(2451564.80812714);  // 07:22:38
 
-  CheckLunarPenumbralEclipse(P1, U14, 8E-5 * Radian, -167 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    2E-4 * Radian, -164 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -167 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    2E-4 * Radian, -160 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    2E-4 * Radian, -161 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 8E-5 * Radian, -160 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 8e-5 * Radian, -167 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    2e-4 * Radian, -164 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3e-4 * Radian, -167 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    2e-4 * Radian, -160 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    2e-4 * Radian, -161 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 8e-5 * Radian, -160 * Second);
 }
 
 TEST_F(EclipseTest, Year2048) {
@@ -334,12 +334,12 @@ TEST_F(EclipseTest, Year2048) {
   auto U4 = JulianDate(2469076.86158778);  // 08:39:33
   auto P4 = JulianDate(2469076.91195815);  // 09:52:05
 
-  CheckLunarPenumbralEclipse(P1, U14, 2E-4 * Radian, -338 * Second);
-  CheckLunarUmbralEclipse(U1, U14,    3E-4 * Radian, -336 * Second);
-  CheckLunarUmbralEclipse(U2, U23,    3E-4 * Radian, -335 * Second);
-  CheckLunarUmbralEclipse(U3, U23,    3E-4 * Radian, -337 * Second);
-  CheckLunarUmbralEclipse(U4, U14,    3E-4 * Radian, -336 * Second);
-  CheckLunarPenumbralEclipse(P4, U14, 2E-4 * Radian, -335 * Second);
+  CheckLunarPenumbralEclipse(P1, U14, 2e-4 * Radian, -338 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3e-4 * Radian, -336 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3e-4 * Radian, -335 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    3e-4 * Radian, -337 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3e-4 * Radian, -336 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2e-4 * Radian, -335 * Second);
 }
 #endif
 

@@ -35,7 +35,7 @@ struct World;
 class ComponentwiseTest : public testing::Test {};
 
 TEST_F(ComponentwiseTest, R3Element) {
-  R3Element<double> r({1.0 + 1.0E-12, 1.0E-10, 3.5});
+  R3Element<double> r({1.0 + 1.0e-12, 1.0e-10, 3.5});
   EXPECT_THAT(r, Componentwise(AlmostEquals(1.0, 4504),
                                VanishesBefore(1.0, 450360),
                                Eq(3.5)));
@@ -48,8 +48,8 @@ TEST_F(ComponentwiseTest, R3Element) {
 }
 
 TEST_F(ComponentwiseTest, Grassmann) {
-  Vector<Length, World> v({(1.0 + 1.0E-12) * Metre,
-                            1.0E-10 * Metre,
+  Vector<Length, World> v({(1.0 + 1.0e-12) * Metre,
+                            1.0e-10 * Metre,
                             3.5 * Metre});
   EXPECT_THAT(v, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
@@ -57,8 +57,8 @@ TEST_F(ComponentwiseTest, Grassmann) {
   EXPECT_THAT(v, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
                                    Eq(2.5 * Metre))));
-  Bivector<Length, World> b({(1.0 + 1.0E-12) * Metre,
-                              1.0E-10 * Metre,
+  Bivector<Length, World> b({(1.0 + 1.0e-12) * Metre,
+                              1.0e-10 * Metre,
                               3.5 * Metre});
   EXPECT_THAT(b, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
@@ -70,11 +70,11 @@ TEST_F(ComponentwiseTest, Grassmann) {
 
 TEST_F(ComponentwiseTest, Pair) {
   using VV = Pair<Vector<Action, World>, Vector<Winding, World>>;
-  VV vv(Vector<Action, World>({(1.0 + 1.0E-12) * SIUnit<Action>(),
-                                1.0E-10 *  SIUnit<Action>(),
+  VV vv(Vector<Action, World>({(1.0 + 1.0e-12) * SIUnit<Action>(),
+                                1.0e-10 *  SIUnit<Action>(),
                                 3.5 *  SIUnit<Action>()}),
-        Vector<Winding, World>({(1.0 + 1.0E-12) * SIUnit<Winding>(),
-                                (2.0 + 1.0E-10) *  SIUnit<Winding>(),
+        Vector<Winding, World>({(1.0 + 1.0e-12) * SIUnit<Winding>(),
+                                (2.0 + 1.0e-10) *  SIUnit<Winding>(),
                                  3.5 *  SIUnit<Winding>()}));
   EXPECT_THAT(vv, Componentwise(
                       Componentwise(

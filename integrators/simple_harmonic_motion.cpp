@@ -200,7 +200,7 @@ TEST_P(SimpleHarmonicMotionTest, Error) {
 #else
   parameters_.tmax = 1000.0 * SIUnit<Time>();
 #endif
-  parameters_.Δt = 1.0E-3 * SIUnit<Time>();
+  parameters_.Δt = 1.0e-3 * SIUnit<Time>();
   parameters_.sampling_period = 1;
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       ComputeHarmonicOscillatorAcceleration,
@@ -376,10 +376,10 @@ TEST_P(SimpleHarmonicMotionTest, Symplecticity) {
       PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
   LOG(INFO) << GetParam();
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
-  EXPECT_THAT(correlation, Lt(2E-3));
+  EXPECT_THAT(correlation, Lt(2e-3));
   Power const slope = Slope(time_steps, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(Abs(slope), Lt(2E-6 * SIUnit<Power>()));
+  EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
   EXPECT_EQ(GetParam().expected_energy_error, max_energy_error);
