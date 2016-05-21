@@ -262,6 +262,17 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                   trajectory_->EvaluatePosition(time, &hint),
                   trajectory_->EvaluateVelocity(time, &hint)));
   }
+
+  {
+    ContinuousTrajectory<World>::Hint hint;
+    Position<World> const p1 =
+        trajectory_->EvaluatePosition(trajectory_->t_min() + kStep, &hint);
+    Position<World> const p2 =
+        trajectory_->EvaluatePosition(trajectory_->t_min() + 1.5 * kStep, &hint);
+    Position<World> const p3 =
+        trajectory_->EvaluatePosition(trajectory_->t_min() + kStep, &hint);
+    EXPECT_EQ(p1, p3);
+  }
 }
 
 // An approximation to the trajectory of Io.

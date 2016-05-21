@@ -51,25 +51,6 @@ DiscreteTrajectoryIterator<Frame>::that() const {
 }  // namespace internal
 
 template<typename Frame>
-DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
-  if (on_destroy_) {
-    on_destroy_(this);
-  }
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::set_on_destroy(
-    OnDestroyCallback on_destroy) {
-  on_destroy_ = on_destroy;
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::OnDestroyCallback
-DiscreteTrajectory<Frame>::get_on_destroy() const {
-  return on_destroy_;
-}
-
-template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
 DiscreteTrajectory<Frame>::last() const {
   return --this->End();
