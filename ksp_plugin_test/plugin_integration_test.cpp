@@ -341,7 +341,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   // We use km-day as our unit system because we need the orbit duration to
   // be much larger than 10 s, the fixed step of the histories.
   Time const period = 2 * π * Day;
-  double const ε = 1E-10;
+  double const ε = 1e-10;
   Time const δt = period * ε;
   Length const a = 1 * Kilo(Metre);
   Speed const v0 = 1 * Kilo(Metre) / Day;

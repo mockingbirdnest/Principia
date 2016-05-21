@@ -44,7 +44,7 @@ public partial class PrincipiaPluginAdapter
   private bool fix_navball_in_plotting_frame_ = true;
 
   private readonly double[] prediction_length_tolerances_ =
-      {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
+      {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
   [KSPField(isPersistant = true)]
   private int prediction_length_tolerance_index_ = 1;
   private readonly double[] prediction_steps_ =

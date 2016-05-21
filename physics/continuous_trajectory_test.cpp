@@ -332,7 +332,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.491 * Milli(Metre),
               AbsoluteError(expected_position, actual_position));
-    EXPECT_GT(1.60E-7 * Metre / Second,
+    EXPECT_GT(1.60e-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
 
@@ -354,7 +354,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.492 * Milli(Metre),
               AbsoluteError(expected_position, actual_position));
-    EXPECT_GT(1.60E-7 * Metre / Second,
+    EXPECT_GT(1.60e-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
 }

@@ -377,7 +377,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   }
 
   // A check that the tolerance did not explode.
-  CHECK_LT(adjusted_tolerance_, 1E6 * previous_adjusted_tolerance)
+  CHECK_LT(adjusted_tolerance_, 1e6 * previous_adjusted_tolerance)
       << "Apocalypse occurred at " << time
       << ", displacements are: " << q
       << ", velocities are: " << v;
