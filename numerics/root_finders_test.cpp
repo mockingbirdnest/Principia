@@ -71,9 +71,9 @@ TEST_F(RootFindersTest, QuadraticEquations) {
   // An ill-conditioned system.  I fart in its general direction.  If done
   // naively, this yields {-100032., -99968.4} according to Mathematica.
   auto const s4 = SolveQuadraticEquation(0.0,
-                                         1.0000001E25,
-                                         2.0000003E20,
-                                         1.0000001E15);
+                                         1.0000001e25,
+                                         2.0000003e20,
+                                         1.0000001e15);
   EXPECT_THAT(s4,
               ElementsAre(AlmostEquals(-100031.62777541532972762902, 66),
                           AlmostEquals(-99968.38222458367027247098, 65)));

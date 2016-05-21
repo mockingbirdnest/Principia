@@ -123,9 +123,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   auto outcome = integrator.Solve(problem, adaptive_step_size);
   EXPECT_EQ(TerminationCondition::Done, outcome);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
-              AllOf(Ge(3E-4 * Metre), Le(4E-4 * Metre)));
+              AllOf(Ge(3e-4 * Metre), Le(4e-4 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
-              AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
+              AllOf(Ge(2e-3 * Metre / Second), Le(3e-3 * Metre / Second)));
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps_forward, solution.size());
   EXPECT_EQ((1 + initial_rejections) * 4 +
@@ -149,9 +149,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   outcome = integrator.Solve(problem, adaptive_step_size);
   EXPECT_EQ(TerminationCondition::Done, outcome);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
-              AllOf(Ge(1E-3 * Metre), Le(2E-3 * Metre)));
+              AllOf(Ge(1e-3 * Metre), Le(2e-3 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
-              AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
+              AllOf(Ge(2e-3 * Metre / Second), Le(3e-3 * Metre / Second)));
   EXPECT_EQ(t_initial, solution.back().time.value);
   EXPECT_EQ(steps_backward, solution.size() - steps_forward);
   EXPECT_EQ((1 + initial_rejections) * 4 +
@@ -206,12 +206,12 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   EXPECT_THAT(AbsoluteError(
                   x_initial * Cos(ω * (solution.back().time.value - t_initial)),
                       solution.back().positions[0].value),
-              AllOf(Ge(8E-4 * Metre), Le(9E-4 * Metre)));
+              AllOf(Ge(8e-4 * Metre), Le(9e-4 * Metre)));
   EXPECT_THAT(AbsoluteError(
                   -v_amplitude *
                       Sin(ω * (solution.back().time.value - t_initial)),
                   solution.back().velocities[0].value),
-              AllOf(Ge(1E-3 * Metre / Second), Le(2E-3 * Metre / Second)));
+              AllOf(Ge(1e-3 * Metre / Second), Le(2e-3 * Metre / Second)));
   EXPECT_THAT(solution.back().time.value, Lt(t_final));
   EXPECT_EQ(100, solution.size());
 
@@ -224,9 +224,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
     auto const outcome = integrator.Solve(problem, adaptive_step_size);
     EXPECT_EQ(TerminationCondition::Done, outcome);
     EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
-                AllOf(Ge(3E-4 * Metre), Le(4E-4 * Metre)));
+                AllOf(Ge(3e-4 * Metre), Le(4e-4 * Metre)));
     EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
-                AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
+                AllOf(Ge(2e-3 * Metre / Second), Le(3e-3 * Metre / Second)));
     EXPECT_EQ(t_final, solution.back().time.value);
     EXPECT_EQ(steps_forward, solution.size());
   }

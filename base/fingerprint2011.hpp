@@ -25,8 +25,8 @@ namespace base {
 
 inline std::uint64_t FingerprintCat2011(std::uint64_t fp1, std::uint64_t fp2) {
   // Two big prime numbers.
-  const std::uint64_t kMul1 = 0xc6a4a7935bd1e995ULL;
-  const std::uint64_t kMul2 = 0x228876a7198b743ULL;
+  const std::uint64_t kMul1 = 0xC6A4A7935BD1E995u;
+  const std::uint64_t kMul2 = 0x228876A7198B743u;
   std::uint64_t a = fp1 * kMul1 + fp2 * kMul2;
   // Note: The following line also makes sure we never return 0 or 1, because we
   // will only add something to 'a' if there are any MSBs (the remaining bits
@@ -38,7 +38,7 @@ inline std::uint64_t FingerprintCat2011(std::uint64_t fp1, std::uint64_t fp2) {
 // without being much slower. It never returns 0 or 1.
 inline std::uint64_t Fingerprint2011(const char* bytes, size_t len) {
   // Some big prime numer.
-  std::uint64_t fp = 0xa5b85c5e198ed849ULL;
+  std::uint64_t fp = 0xA5B85C5E198ED849u;
   const char* end = bytes + len;
   while (bytes + 8 <= end) {
     fp = FingerprintCat2011(
