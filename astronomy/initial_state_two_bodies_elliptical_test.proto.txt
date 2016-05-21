@@ -3,16 +3,18 @@ initial_state {
   # This is 1950-Jan-01 00:00:00.0000 TDB.
   epoch : 2433282.500000000
 
-  # The two bodies are on circular orbits around their center of mass.  The
+  # The two bodies are on elliptical orbits around their center of mass.  The
   # center of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
-  # period is 10 Pi Sqrt[5/7] s.
+  # period is 16000 Pi / (Sqrt[7] (73 - 8 Sqrt[35])^(3/2)) s, the semi major
+  # axis is 400 / (73 - 8 Sqrt[35]) km, the semi minor axis is
+  # (5 (7 + 4 Sqrt[35])) / Sqrt[7 (73 - 8 Sqrt[35])]
   body {
     name : "Big"
     x    : "0 km"
     y    : "0 km"
     z    : "0 km"
-    # -2 / Sqrt[35] - 0.2 km/s
-    vx   : "-0.53806170189140663100 km/s"
+    # -2 / Sqrt[35] - 1 / 10 km/s
+    vx   : "-0.43806170189140663100 km/s"
     vy   : "0 km/s"
     vz   : "0 km/s"
   }
@@ -21,8 +23,8 @@ initial_state {
     x    : "0 km"
     y    : "5 km"
     z    : "0 km"
-    # 5 / Sqrt[35] + 0.5 km/s
-    vx   : "1.34515425472851657751 km/s"
+    # 5 / Sqrt[35] + 1 / 4 km/s
+    vx   : "1.09515425472851657751 km/s"
     vy   : "0 km/s"
     vz   : "0 km/s"
   }

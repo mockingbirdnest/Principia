@@ -1203,14 +1203,18 @@ TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
       SOLUTION_DIR / "astronomy" /
           "initial_state_two_bodies_elliptical_test.proto.txt");
   Instant const t0 = solar_system.epoch();
-  Time const period = 10 * π * sqrt(5.0 / 7.0) * Second;
+  Time const T =
+      16000 * π / (Sqrt(7) * std::pow(73 - 8 * Sqrt(35), 1.5)) * Second;
+  Length const a = 400 / (73 - 8 * Sqrt(35)) * Kilo(Metre);
+  Length const b =
+      (5 * (7 + 4 * Sqrt(35))) / Sqrt(7 * (73 - 8 * Sqrt(35))) * Kilo(Metre);
   auto ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/1 * Milli(Metre),
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
           integrators::McLachlanAtela1992Order4Optimal<
               Position<ICRFJ2000Equator>>(),
           /*step=*/10 * Milli(Second)));
-  ephemeris->Prolong(t0 + 10 * period);
+  ephemeris->Prolong(t0 + 10 * T);
 
   MassiveBody const* const big = solar_system.massive_body(*ephemeris, kBig);
   MassiveBody const* const small =
@@ -1219,43 +1223,42 @@ TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   DiscreteTrajectory<ICRFJ2000Equator> periapsides;
   ephemeris->ComputeApsides(big, small, apoapsides, periapsides);
 
+  std::experimental::optional<Position<ICRFJ2000Equator>> previous_position;
   std::experimental::optional<Instant> previous_time;
-  std::map<Instant, DegreesOfFreedom<ICRFJ2000Equator>> all_apsides;
   for (auto it = apoapsides.Begin(); it != apoapsides.End(); ++it) {
     Instant const time = it.time();
-    all_apsides.emplace(time, it.degrees_of_freedom());
-    if (previous_time) {
-      //EXPECT_THAT(time - *previous_time, AlmostEquals(period, 0, 0));
+    Position<ICRFJ2000Equator> const position =
+        it.degrees_of_freedom().position();
+    if (previous_position) {
+      EXPECT_THAT((position - *previous_position).Norm(),
+                  AlmostEquals(2.0 * a, 0, 0));
     }
+    if (previous_time) {
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 0, 0));
+    }
+    previous_position = position;
     previous_time = time;
   }
 
+  previous_position = std::experimental::nullopt;
   previous_time = std::experimental::nullopt;
   for (auto it = periapsides.Begin(); it != periapsides.End(); ++it) {
     Instant const time = it.time();
-    all_apsides.emplace(time, it.degrees_of_freedom());
-    if (previous_time) {
-      //EXPECT_THAT(time - *previous_time, AlmostEquals(period, 0, 0));
+    Position<ICRFJ2000Equator> const position =
+        it.degrees_of_freedom().position();
+    if (previous_position) {
+      EXPECT_THAT((position - *previous_position).Norm(),
+                  AlmostEquals(2.0 * b, 0, 0));
     }
-    previous_time = time;
-  }
-
-  EXPECT_EQ(20, all_apsides.size());
-
-  previous_time = std::experimental::nullopt;
-  std::experimental::optional<Position<ICRFJ2000Equator>> previous_position;
-  for (auto const pair : all_apsides) {
-    Instant const time = pair.first;
-    Position<ICRFJ2000Equator> const position = pair.second.position();
     if (previous_time) {
-      //EXPECT_THAT(time - *previous_time,
-      //            AlmostEquals(0.5 * period, 0, 0));
-      //EXPECT_THAT((position - *previous_position).Norm(),
-      //            AlmostEquals(2.0 * Metre, 0, 0));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 0, 0));
     }
-    previous_time = time;
     previous_position = position;
+    previous_time = time;
   }
+
+  EXPECT_EQ(20, apoapsides.Size());
+  EXPECT_EQ(20, periapsides.Size());
 }
 
 }  // namespace physics
