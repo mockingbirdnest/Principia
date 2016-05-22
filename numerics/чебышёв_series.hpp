@@ -87,8 +87,7 @@ class ЧебышёвSeries {
  private:
   Instant t_min_;
   Instant t_max_;
-  Instant t_mean_;
-  Time::Inverse two_over_duration_;
+  Time::Inverse one_over_duration_;
   internal::EvaluationHelper<Vector> helper_;
 };
 
