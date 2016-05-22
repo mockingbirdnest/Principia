@@ -62,12 +62,15 @@ class ContinuousTrajectoryTest : public testing::Test {
       Time const& step,
       std::function<Position<World>(Instant const)> const& position_function,
       std::function<Velocity<World>(Instant const)> const& velocity_function,
-      Instant& time) {
+      Instant const& time) {
     for (int i = 0; i < number_of_steps; ++i) {
-      time += step;
-      trajectory_->Append(time,
-                          DegreesOfFreedom<World>(position_function(time),
-                                                  velocity_function(time)));
+      // We use this way of computing the time (as opposed to consecutive
+      // additions) because it results in a bit of jitter in the intervals,
+      // which matters for continuity.
+      Instant ti = time + i * step;
+      trajectory_->Append(ti,
+                          DegreesOfFreedom<World>(position_function(ti),
+                                                  velocity_function(ti)));
     }
   }
 
@@ -238,7 +241,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    0.1 * Metre /*tolerance*/);
+                    /*tolerance=*/0.1 * Metre);
 
   EXPECT_TRUE(trajectory_->empty());
   Instant time = t0_;
@@ -261,17 +264,6 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
               DegreesOfFreedom<World>(
                   trajectory_->EvaluatePosition(time, &hint),
                   trajectory_->EvaluateVelocity(time, &hint)));
-  }
-
-  {
-    ContinuousTrajectory<World>::Hint hint;
-    Position<World> const p1 =
-        trajectory_->EvaluatePosition(trajectory_->t_min() + kStep, &hint);
-    Position<World> const p2 =
-        trajectory_->EvaluatePosition(trajectory_->t_min() + 1.5 * kStep, &hint);
-    Position<World> const p3 =
-        trajectory_->EvaluatePosition(trajectory_->t_min() + kStep, &hint);
-    EXPECT_EQ(p1, p3);
   }
 }
 
@@ -310,17 +302,17 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     AngularFrequency const io_ω = 2 * π * Radian / kIoPeriod;
     Angle const jupiter_angle = jupiter_ω *(t - t0_);
     Angle const io_angle = io_ω *(t - t0_);
-        return Velocity<World>({
-            (-jupiter_ω * kSunJupiterDistance * Sin(jupiter_angle) -
-                io_ω * kJupiterIoDistance * Sin(io_angle)) / Radian,
-            (jupiter_ω * kSunJupiterDistance * Cos(jupiter_angle) +
-                io_ω * kJupiterIoDistance * Cos(io_angle)) / Radian,
-            0 * Metre / Second});
+    return Velocity<World>({
+        (-jupiter_ω * kSunJupiterDistance * Sin(jupiter_angle) -
+            io_ω * kJupiterIoDistance * Sin(io_angle)) / Radian,
+        (jupiter_ω * kSunJupiterDistance * Cos(jupiter_angle) +
+            io_ω * kJupiterIoDistance * Cos(io_angle)) / Radian,
+        0 * Metre / Second});
   };
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    5 * Milli(Metre) /*tolerance*/);
+                    /*tolerance=*/5 * Milli(Metre));
 
   EXPECT_TRUE(trajectory_->empty());
   Instant time = t0_;
@@ -368,6 +360,63 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     EXPECT_GT(1.60e-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
+}
+
+TEST_F(ContinuousTrajectoryTest, Continuity) {
+  int const number_of_steps = 100;
+  Length const distance = 1 * Kilo(Metre);
+  Time const initial_time = /*π **/ 1e9 * Second;
+  Time const period = 100 * Second;
+  Time const step = 0.001 * Second;
+
+  auto position_function = [this, distance, period](Instant const t) {
+    Angle const angle = 2 * π * Radian * (t - t0_) / period;
+    return World::origin +
+        Displacement<World>({
+            distance * Cos(angle),
+            distance * Sin(angle),
+            0 * Metre});
+  };
+  auto velocity_function = [this, distance, period](Instant const t) {
+    AngularFrequency const ω = 2 * π * Radian / period;
+    Angle const angle = ω * (t - t0_);
+    return Velocity<World>({
+        -ω * distance * Sin(angle) / Radian,
+        ω * distance * Cos(angle) / Radian,
+        0 * Metre / Second});
+  };
+
+  trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
+                    step,
+                    /*tolerance=*/1 * Milli(Metre));
+
+  EXPECT_TRUE(trajectory_->empty());
+  Instant time = t0_ + initial_time;
+  FillTrajectory(
+      number_of_steps, step, position_function, velocity_function, time);
+  EXPECT_FALSE(trajectory_->empty());
+
+  // This time is exactly at the continuity point of two consecutive series.
+  int const interval = 11;
+  Instant const continuity_time = trajectory_->t_min() + 8 * interval * step;
+
+  ContinuousTrajectory<World>::Hint hint;
+
+  // Evaluate the position with an uninitialized hint.  This picks the series
+  // below |continuity_time| and fills |hint| accordingly.
+  Position<World> const p1 =
+      trajectory_->EvaluatePosition(continuity_time, &hint);
+
+  // Evaluate the position slightly after |continuity_time|.  This moves |hint|
+  // forward.
+  Position<World> const p2 =
+      trajectory_->EvaluatePosition(continuity_time + step, &hint);
+
+  // Evaluate the position at |continuity_time| again.  Because |hint| was
+  // moved forward, this picks the series above |continuity_time|.
+  Position<World> const p3 =
+      trajectory_->EvaluatePosition(continuity_time, &hint);
+  EXPECT_THAT(p1, AlmostEquals(p3, 0));
 }
 
 TEST_F(ContinuousTrajectoryTest, Serialization) {
