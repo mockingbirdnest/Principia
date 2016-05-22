@@ -417,7 +417,7 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
   // moved forward, this picks the series above |continuity_time|.
   Position<World> const p3 =
       trajectory_->EvaluatePosition(continuity_time, &hint);
-  EXPECT_THAT(p1, AlmostEquals(p3, 2));
+  EXPECT_THAT(p1, AlmostEquals(p3, 0, 2));
 }
 
 TEST_F(ContinuousTrajectoryTest, Serialization) {
