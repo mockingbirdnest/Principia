@@ -77,7 +77,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="eclipse_test.cpp">
+    <ClCompile Include="lunar_eclipse_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
