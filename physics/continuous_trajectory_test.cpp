@@ -67,7 +67,7 @@ class ContinuousTrajectoryTest : public testing::Test {
       // We use this way of computing the time (as opposed to consecutive
       // additions) because it results in a bit of jitter in the intervals,
       // which matters for continuity.
-      Instant ti = time + i * step;
+      Instant ti = time + (i + 1) * step;
       trajectory_->Append(ti,
                           DegreesOfFreedom<World>(position_function(ti),
                                                   velocity_function(ti)));
@@ -244,9 +244,8 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                     /*tolerance=*/0.1 * Metre);
 
   EXPECT_TRUE(trajectory_->empty());
-  Instant time = t0_;
   FillTrajectory(
-      kNumberOfSteps, kStep, position_function, velocity_function, time);
+      kNumberOfSteps, kStep, position_function, velocity_function, t0_);
   EXPECT_FALSE(trajectory_->empty());
   EXPECT_EQ(t0_ + kStep, trajectory_->t_min());
   EXPECT_EQ(t0_ + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
@@ -315,9 +314,8 @@ TEST_F(ContinuousTrajectoryTest, Io) {
                     /*tolerance=*/5 * Milli(Metre));
 
   EXPECT_TRUE(trajectory_->empty());
-  Instant time = t0_;
   FillTrajectory(
-      kNumberOfSteps, kStep, position_function, velocity_function, time);
+      kNumberOfSteps, kStep, position_function, velocity_function, t0_);
   EXPECT_FALSE(trajectory_->empty());
   EXPECT_EQ(t0_ + kStep, trajectory_->t_min());
   EXPECT_EQ(t0_ + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
@@ -367,7 +365,7 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
   Length const distance = 1 * Kilo(Metre);
   Time const initial_time = /*π **/ 1e9 * Second;
   Time const period = 100 * Second;
-  Time const step = 0.001 * Second;
+  Time const step = 1 * Milli(Second);
 
   auto position_function = [this, distance, period](Instant const t) {
     Angle const angle = 2 * π * Radian * (t - t0_) / period;
@@ -391,14 +389,17 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
                     /*tolerance=*/1 * Milli(Metre));
 
   EXPECT_TRUE(trajectory_->empty());
-  Instant time = t0_ + initial_time;
-  FillTrajectory(
-      number_of_steps, step, position_function, velocity_function, time);
+  FillTrajectory(number_of_steps,
+                 step,
+                 position_function,
+                 velocity_function,
+                 t0_ + initial_time);
   EXPECT_FALSE(trajectory_->empty());
 
   // This time is exactly at the continuity point of two consecutive series.
   int const interval = 11;
-  Instant const continuity_time = trajectory_->t_min() + 8 * interval * step;
+  Instant const continuity_time =
+      t0_ + initial_time + (8 * interval + 1) * step;
 
   ContinuousTrajectory<World>::Hint hint;
 
@@ -443,9 +444,8 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
                     kStep, kTolerance);
 
   EXPECT_TRUE(trajectory_->empty());
-  Instant time = t0_;
   FillTrajectory(
-      kNumberOfSteps, kStep, position_function, velocity_function, time);
+      kNumberOfSteps, kStep, position_function, velocity_function, t0_);
   serialization::ContinuousTrajectory message;
   trajectory_->WriteToMessage(&message);
   EXPECT_EQ(kStep / Second, message.step().magnitude());
@@ -503,14 +503,16 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_TRUE(trajectory_->empty());
 
   // Fill the trajectory, get a checkpoint and fill some more.
-  Instant time = t0_;
   FillTrajectory(
-      kNumberOfSteps1, kStep, position_function, velocity_function, time);
+      kNumberOfSteps1, kStep, position_function, velocity_function, t0_);
   ContinuousTrajectory<World>::Checkpoint const checkpoint =
       trajectory_->GetCheckpoint();
   Instant const checkpoint_t_max = trajectory_->t_max();
-  FillTrajectory(
-      kNumberOfSteps2, kStep, position_function, velocity_function, time);
+  FillTrajectory(kNumberOfSteps2,
+                 kStep,
+                 position_function,
+                 velocity_function,
+                 t0_ + kNumberOfSteps1 * kStep);
 
   serialization::ContinuousTrajectory message;
   trajectory_->WriteToMessage(&message, checkpoint);
