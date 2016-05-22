@@ -6,8 +6,8 @@
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "numerics/root_finders.hpp"
-#include "physics/solar_system.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -15,13 +15,13 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Equator;
 using geometry::AngleBetween;
 using geometry::JulianDate;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;
 using physics::Ephemeris;
+using physics::SolarSystem;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -33,7 +33,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 
-namespace physics {
+namespace astronomy {
 
 namespace {
 
