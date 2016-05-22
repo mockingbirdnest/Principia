@@ -138,25 +138,25 @@ TEST_F(QuantitiesTest, PhysicalConstants) {
                   4 * Pow<2>(π) * Pow<3>(AstronomicalUnit) /
                       (GravitationalConstant * Pow<2>(JulianYear)),
                   SolarMass),
-              Lt(4E-5));
-  EXPECT_THAT(RelativeError(1 * Parsec, 3.26156 * LightYear), Lt(2E-6));
+              Lt(4e-5));
+  EXPECT_THAT(RelativeError(1 * Parsec, 3.26156 * LightYear), Lt(2e-6));
   // The Keplerian approximation for the mass of the Earth
   // is pretty bad, but the error is still only 1%.
   EXPECT_THAT(RelativeError(
                   4 * Pow<2>(π) * Pow<3>(LunarDistance) /
                       (GravitationalConstant * Pow<2>(27.321582 * Day)),
                   EarthMass),
-              Lt(1E-2));
-  EXPECT_THAT(RelativeError(1 * SolarMass, 1047 * JupiterMass), Lt(4E-4));
+              Lt(1e-2));
+  EXPECT_THAT(RelativeError(1 * SolarMass, 1047 * JupiterMass), Lt(4e-4));
   // Delambre & Méchain.
   EXPECT_THAT(RelativeError(
                   GravitationalConstant * EarthMass /
                       Pow<2>(40 * Mega(Metre) / (2 * π)),
                   StandardGravity),
-              Lt(4E-3));
+              Lt(4e-3));
   // Talleyrand.
   EXPECT_THAT(RelativeError(π * Sqrt(1 * Metre / StandardGravity), 1 * Second),
-              Lt(4E-3));
+              Lt(4e-3));
 }
 
 #pragma warning(default: 4566)

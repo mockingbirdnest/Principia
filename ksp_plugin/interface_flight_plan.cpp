@@ -23,7 +23,6 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::Positions;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
@@ -267,17 +266,17 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   Position<World> q_sun =
       World::origin +
       Displacement<World>(FromXYZ(sun_world_position) * Metre);
-  Positions<World> rendered_apoapsides;
-  Positions<World> rendered_periapsides;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   begin, end,
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<Positions<World>>(
-      std::move(rendered_apoapsides));
-  *periapsides = new TypedIterator<Positions<World>>(
-      std::move(rendered_periapsides));
+  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_apoapsides)));
+  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_periapsides)));
   return m.Return();
 }
 
@@ -293,47 +292,13 @@ Iterator* principia__FlightPlanRenderedSegment(
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
-  Positions<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+  auto rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedTrajectoryFromIterators(
           begin, end,
           World::origin + Displacement<World>(
                               FromXYZ(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<Positions<World>>(
+  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory)));
-}
-
-XYZSegment principia__FlightPlanRenderedSegmentEndpoints(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    XYZ const sun_world_position,
-    int const index) {
-  journal::Method<journal::FlightPlanRenderedSegmentEndpoints> m(
-      {plugin,
-       vessel_guid,
-       sun_world_position,
-       index});
-  DiscreteTrajectory<Barycentric>::Iterator begin;
-  DiscreteTrajectory<Barycentric>::Iterator end;
-  GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
-  DiscreteTrajectory<Barycentric>::Iterator last = end;
-  --last;
-  Position<World> sun_position =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
-  Position<World> first_position =
-      CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
-          begin.time(),
-          begin.degrees_of_freedom().position(),
-          sun_position);
-  Position<World> last_position =
-      CHECK_NOTNULL(plugin)->PlotBarycentricPosition(
-          last.time(),
-          last.degrees_of_freedom().position(),
-          sun_position);
-  XYZSegment result;
-  result.begin = ToXYZ((first_position - World::origin).coordinates() / Metre);
-  result.end = ToXYZ((last_position - World::origin).coordinates() / Metre);
-  return m.Return(result);
 }
 
 bool principia__FlightPlanReplaceLast(Plugin const* const plugin,

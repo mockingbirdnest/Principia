@@ -205,14 +205,16 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
-    Positions<World> const rendered_trajectory =
-        plugin_->RenderedVesselTrajectory(satellite,
-                                          sun_world_position);
+    auto const rendered_trajectory =
+        plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::kEarth).displacement());
-    for (auto const position : rendered_trajectory) {
-      Length const distance = (position - earth_world_position).Norm();
+    for (auto it = rendered_trajectory->Begin();
+         it != rendered_trajectory->End();
+         ++it) {
+      Length const distance =
+          (it.degrees_of_freedom().position() - earth_world_position).Norm();
       perigee = std::min(perigee, distance);
       apogee = std::max(apogee, distance);
     }
@@ -278,9 +280,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
-  Positions<World> const rendered_trajectory =
-      plugin_->RenderedVesselTrajectory(satellite,
-                                        sun_world_position);
+  auto const rendered_trajectory =
+      plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                SolarSystemFactory::kEarth).displacement());
@@ -288,9 +289,11 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       earth_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::kMoon).displacement());
   Length const earth_moon = (moon_world_position - earth_world_position).Norm();
-  for (auto const position : rendered_trajectory) {
-    Length const satellite_earth =
-        (position - earth_world_position).Norm();
+  for (auto it = rendered_trajectory->Begin();
+       it != rendered_trajectory->End();
+       ++it) {
+    Position<World> const position = it.degrees_of_freedom().position();
+    Length const satellite_earth = (position - earth_world_position).Norm();
     Length const satellite_moon = (position - moon_world_position).Norm();
     EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
     EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
@@ -299,13 +302,28 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
-  for (std::size_t i = 0; i + 2 < rendered_trajectory.size(); ++i) {
-    EXPECT_THAT(
-        (rendered_trajectory[i] - rendered_trajectory[i + 2]).Norm(),
-        Gt(((rendered_trajectory[i] - rendered_trajectory[i + 1]).Norm() +
-            (rendered_trajectory[i + 1] - rendered_trajectory[i + 2]).Norm()) /
-           1.5))
-        << i;
+  auto it0 = rendered_trajectory->Begin();
+  CHECK(it0 != rendered_trajectory->End());
+  auto it1 = it0;
+  ++it1;
+  CHECK(it1 != rendered_trajectory->End());
+  auto it2 = it1;
+  ++it2;
+  while (it2 != rendered_trajectory->End()) {
+    EXPECT_THAT((it0.degrees_of_freedom().position() -
+                 it2.degrees_of_freedom().position())
+                    .Norm(),
+                Gt(((it0.degrees_of_freedom().position() -
+                     it1.degrees_of_freedom().position())
+                        .Norm() +
+                    (it1.degrees_of_freedom().position() -
+                     it2.degrees_of_freedom().position())
+                        .Norm()) /
+                   1.5))
+        << it0.time();
+    ++it0;
+    ++it1;
+    ++it2;
   }
 }
 
@@ -323,7 +341,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   // We use km-day as our unit system because we need the orbit duration to
   // be much larger than 10 s, the fixed step of the histories.
   Time const period = 2 * π * Day;
-  double const ε = 1E-10;
+  double const ε = 1e-10;
   Time const δt = period * ε;
   Length const a = 1 * Kilo(Metre);
   Speed const v0 = 1 * Kilo(Metre) / Day;
@@ -609,21 +627,23 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(satellite);
-  Positions<World> rendered_prediction =
-      plugin.RenderedPrediction(satellite,
-                                World::origin);
-  EXPECT_EQ(16, rendered_prediction.size());
-  for (int i = 0; i < rendered_prediction.size(); ++i) {
-    auto const& position = rendered_prediction[i];
+  auto rendered_prediction =
+      plugin.RenderedPrediction(satellite, World::origin);
+  EXPECT_EQ(16, rendered_prediction->Size());
+  int index = 0;
+  for (auto it = rendered_prediction->Begin();
+       it != rendered_prediction->End();
+       ++it, ++index) {
+    auto const& position = it.degrees_of_freedom().position();
     EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
                 Lt(0.5 * Milli(Metre)));
-    if (i >= 5) {
+    if (index >= 5) {
       EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
                   Gt(0.1 * Milli(Metre)));
     }
   }
   EXPECT_THAT(
-      AbsoluteError(rendered_prediction.back(),
+      AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));

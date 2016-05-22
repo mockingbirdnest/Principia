@@ -66,7 +66,7 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   ЧебышёвSeries<double> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const Δt = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1e-9;
   double result = 0.0;
 
   while (state.KeepRunning()) {
@@ -95,7 +95,7 @@ void BM_EvaluateQuantity(
   ЧебышёвSeries<Length> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const Δt = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1e-9;
   Length result = 0.0 * Metre;
 
   while (state.KeepRunning()) {
@@ -128,7 +128,7 @@ void BM_EvaluateR3ElementDouble(
   ЧебышёвSeries<R3Element<double>> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const Δt = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1e-9;
   R3Element<double> result{0.0, 0.0, 0.0};
 
   while (state.KeepRunning()) {
@@ -164,7 +164,7 @@ void BM_EvaluateVectorDouble(
       coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const Δt = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1e-9;
   Multivector<double, ICRFJ2000Ecliptic, 1> result{};
 
   while (state.KeepRunning()) {
@@ -200,7 +200,7 @@ void BM_EvaluateDisplacement(
     coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const Δt = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1e-9;
   Displacement<ICRFJ2000Ecliptic> result{};
 
   while (state.KeepRunning()) {

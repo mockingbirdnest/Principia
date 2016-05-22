@@ -155,10 +155,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
         to_big_small_frame_at_t(centre_of_mass_initial_state_);
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.position(),
                               BigSmallFrame::origin),
-                Lt(1.0E-11 * Metre));
+                Lt(1.0e-11 * Metre));
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
-                Lt(1.0E-11 * Metre / Second));
+                Lt(1.0e-11 * Metre / Second));
 
     // Check that the bodies don't move and are at the right locations.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
@@ -177,19 +177,19 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   10.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(1.0E-6 * Metre));
+                Lt(1.0e-6 * Metre));
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
-                Lt(1.0E-4 * Metre / Second));
+                Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
                                   -25.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(1.0E-5 * Metre));
+                Lt(1.0e-5 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
-                Lt(1.0E-4 * Metre / Second));
+                Lt(1.0e-4 * Metre / Second));
   }
 }
 
@@ -205,11 +205,11 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
     EXPECT_THAT(
         AbsoluteError(small_initial_state_transformed_and_back.position(),
                       small_initial_state_.position()),
-        Lt(1.0E-11 * Metre));
+        Lt(1.0e-11 * Metre));
     EXPECT_THAT(
         AbsoluteError(small_initial_state_transformed_and_back.velocity(),
                       small_initial_state_.velocity()),
-        Lt(1.0E-11 * Metre / Second));
+        Lt(1.0e-11 * Metre / Second));
   }
 }
 
@@ -340,8 +340,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
 
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1E3 * Metre / Pow<2>(Second),
-                               2E3 * Metre / Pow<2>(Second),
+                               1e3 * Metre / Pow<2>(Second),
+                               2e3 * Metre / Pow<2>(Second),
                                0 * Metre / Pow<2>(Second)}), 2));
 }
 
@@ -408,8 +408,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
   // The acceleration is centrifugal + Euler.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               (1E3 + 2E3) * Metre / Pow<2>(Second),
-                               (2E3 - 1E3) * Metre / Pow<2>(Second),
+                               (1e3 + 2e3) * Metre / Pow<2>(Second),
+                               (2e3 - 1e3) * Metre / Pow<2>(Second),
                                0 * Metre / Pow<2>(Second)}), 1));
 }
 
@@ -476,8 +476,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
   // The acceleration is linear + centrifugal.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1E3 * Metre / Pow<2>(Second),
-                               (-200 + 2E3) * Metre / Pow<2>(Second),
+                               1e3 * Metre / Pow<2>(Second),
+                               (-200 + 2e3) * Metre / Pow<2>(Second),
                                300 * Metre / Pow<2>(Second)}), 2));
 }
 
@@ -493,9 +493,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  2.32786248002527236E3 * Metre / Pow<2>(Second),
-                  -3.61670567977415587E1 * Metre / Pow<2>(Second),
-                  -5.38007972376415182E1 * Metre / Pow<2>(Second)}), 0));
+                  2.32786248002527236e3 * Metre / Pow<2>(Second),
+                  -3.61670567977415587e1 * Metre / Pow<2>(Second),
+                  -5.38007972376415182e1 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {

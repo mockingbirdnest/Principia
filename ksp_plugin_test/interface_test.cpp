@@ -41,7 +41,6 @@ using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
-using ksp_plugin::Positions;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
 using physics::Frenet;
@@ -253,7 +252,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
               Barycentric::origin +
               Displacement<Barycentric>(
                   {0 * Metre,
-                   23.456E-7 * Kilo(Metre),
+                   23.456e-7 * Kilo(Metre),
                    -1 * AstronomicalUnit}),
               Velocity<Barycentric>(
                   {1 * AstronomicalUnit / Day,
@@ -262,20 +261,20 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
-                             1.2345E6 * SIUnit<GravitationalParameter>()),
+                             1.2345e6 * SIUnit<GravitationalParameter>()),
                     Property(&MassiveBody::mean_radius,
                              666 * Kilo(Metre))))));
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,
-                                              "1.2345E6  m^3/s^2",
+                                              "1.2345e6  m^3/s^2",
                                               "666 km",
                                               nullptr /*axis_right_ascension*/,
                                               nullptr /*axis_declination*/,
                                               nullptr /*j2*/,
                                               nullptr /*reference_radius*/,
                                               "0 m",
-                                              "23.456E-7 km",
+                                              "23.456e-7 km",
                                               "-1 au",
                                               "1 au / d",
                                               "  1 km/s",
@@ -292,7 +291,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
               Barycentric::origin +
               Displacement<Barycentric>(
                   {0 * Metre,
-                   23.456E-7 * Kilo(Metre),
+                   23.456e-7 * Kilo(Metre),
                    -1 * AstronomicalUnit}),
               Velocity<Barycentric>(
                   {1 * AstronomicalUnit / Day,
@@ -301,21 +300,21 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, true),
                     Property(&MassiveBody::gravitational_parameter,
-                             1.2345E6 *
+                             1.2345e6 *
                                  Pow<3>(Kilo(Metre)) / Pow<2>(Second)),
                     Property(&MassiveBody::mean_radius,
                              666 * Kilo(Metre))))));
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,
-                                              "1.2345E6  km^3 / s^2",
+                                              "1.2345e6  km^3 / s^2",
                                               "666 km",
                                               "42 deg",
                                               u8"8°",
                                               "123e-6",
                                               "1000 km",
                                               "0 m",
-                                              "23.456E-7 km",
+                                              "23.456e-7 km",
                                               "-1 au",
                                               "1 au / d",
                                               "  1 km/s",
@@ -516,27 +515,30 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  Positions<World> rendered_trajectory;
+  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
                                            3 * SIUnit<Length>()});
-  rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
   for (int i = 1; i < kTrajectorySize; ++i) {
     position += Displacement<World>({10 * SIUnit<Length>(),
                                      20 * SIUnit<Length>(),
                                      30 * SIUnit<Length>()});
-    rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
 
   EXPECT_CALL(*plugin_,
-              RenderedPrediction(
+              FillRenderedPrediction(
                   kVesselGUID,
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()})))
-      .WillOnce(Return(rendered_trajectory));
+                                       kParentPosition.z * SIUnit<Length>()}),
+                  _))
+      .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     kVesselGUID,
@@ -580,28 +582,31 @@ TEST_F(InterfaceTest, Iterator) {
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
-  Positions<World> rendered_trajectory;
+  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Position<World> position =
       World::origin + Displacement<World>({1 * SIUnit<Length>(),
                                            2 * SIUnit<Length>(),
                                            3 * SIUnit<Length>()});
-  rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
   for (int i = 1; i < kTrajectorySize; ++i) {
     position += Displacement<World>({10 * SIUnit<Length>(),
                                      20 * SIUnit<Length>(),
                                      30 * SIUnit<Length>()});
-    rendered_trajectory.push_back(position);
+  rendered_trajectory->Append(
+      t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
 
   // Construct a LineAndIterator.
   EXPECT_CALL(*plugin_,
-              RenderedVesselTrajectory(
+              FillRenderedVesselTrajectory(
                   kVesselGUID,
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()})))
-      .WillOnce(Return(rendered_trajectory));
+                                       kParentPosition.z * SIUnit<Length>()}),
+                  _))
+      .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
@@ -998,13 +1003,24 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       kVesselGUID));
 
-  Positions<World> const rendered_trajectory = {
-      World::origin,
-      World::origin + Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
-      World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre})};
+  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+  rendered_trajectory->Append(
+      t0_, DegreesOfFreedom<World>(World::origin, Velocity<World>()));
+  rendered_trajectory->Append(
+      t0_ + 1 * Second,
+      DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
+          Velocity<World>()));
+  rendered_trajectory->Append(
+      t0_ + 2 * Second,
+      DegreesOfFreedom<World>(
+          World::origin +
+              Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
+          Velocity<World>()));
   EXPECT_CALL(flight_plan, GetSegment(3, _, _));
-  EXPECT_CALL(*plugin_, RenderedTrajectoryFromIterators(_, _, _))
-      .WillOnce(Return(rendered_trajectory));
+  EXPECT_CALL(*plugin_, FillRenderedTrajectoryFromIterators(_, _, _, _))
+      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
                                            kVesselGUID,
@@ -1015,28 +1031,6 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(XYZ({0, 1, 2}), principia__IteratorGetXYZ(iterator));
   principia__IteratorIncrement(iterator);
   EXPECT_EQ(XYZ({0, 2, 4}), principia__IteratorGetXYZ(iterator));
-
-  Position<World> q1 =
-      World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre});
-  Position<World> q2 =
-      World::origin + Displacement<World>({10 * Metre, 12 * Metre, 14 * Metre});
-  DiscreteTrajectory<Barycentric> trajectory;
-  trajectory.Append(t0_ + 1 * Second,
-                    {Barycentric::origin, Velocity<Barycentric>()});
-  trajectory.Append(t0_ + 2 * Second,
-                    {Barycentric::origin, Velocity<Barycentric>()});
-  EXPECT_CALL(flight_plan, GetSegment(5, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(trajectory.Begin()),
-                      SetArgPointee<2>(trajectory.End())));
-  EXPECT_CALL(*plugin_, PlotBarycentricPosition(t0_ + 1 * Second, _, _))
-      .WillOnce(Return(q1));
-  EXPECT_CALL(*plugin_, PlotBarycentricPosition(t0_ + 2 * Second, _, _))
-      .WillOnce(Return(q2));
-  EXPECT_EQ(XYZSegment({{0, 2, 4}, {10, 12, 14}}),
-      principia__FlightPlanRenderedSegmentEndpoints(plugin_.get(),
-                                                    kVesselGUID,
-                                                    {0, 1, 2},
-                                                    5));
 
   burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,

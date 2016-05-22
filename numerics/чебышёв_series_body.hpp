@@ -210,6 +210,8 @@ Vector ЧебышёвSeries<Vector>::last_coefficient() const {
 
 template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
+  // This formula ensures continuity at the edges by producing -1 or +1 within
+  // 2 ulps for |t_min_| and |t_max_|.
   double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
@@ -226,11 +228,9 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
 template<typename Vector>
 Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
     Instant const& t) const {
+  // See comments above.
   double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;
-  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
-  // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): See above.
 #ifdef _DEBUG
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
