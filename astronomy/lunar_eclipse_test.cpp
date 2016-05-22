@@ -46,7 +46,7 @@ char const arrow[] = "-------------------> ";
 
 }  // namespace
 
-class EclipseTest : public testing::Test {
+class LunarEclipseTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
     google::LogToStderr();
@@ -226,16 +226,16 @@ class EclipseTest : public testing::Test {
   static Length atmospheric_depth_;
 };
 
-SolarSystem<ICRFJ2000Equator> EclipseTest::solar_system_1950_;
-std::unique_ptr<Ephemeris<ICRFJ2000Equator>> EclipseTest::ephemeris_;
-Length EclipseTest::r_sun_;
-Length EclipseTest::r_earth_;
-Length EclipseTest::r_moon_;
-Length EclipseTest::atmospheric_depth_;
+SolarSystem<ICRFJ2000Equator> LunarEclipseTest::solar_system_1950_;
+std::unique_ptr<Ephemeris<ICRFJ2000Equator>> LunarEclipseTest::ephemeris_;
+Length LunarEclipseTest::r_sun_;
+Length LunarEclipseTest::r_earth_;
+Length LunarEclipseTest::r_moon_;
+Length LunarEclipseTest::atmospheric_depth_;
 
 #if !defined(_DEBUG)
 
-TEST_F(EclipseTest, Year1950) {
+TEST_F(LunarEclipseTest, Year1950) {
   // Times are TDB Julian Day for 1950-04-02.
   auto P1 = JulianDate(2433374.25788409);  // 18:10:49 UT
   auto U1 = JulianDate(2433374.29850909);  // 19:09:19
@@ -267,7 +267,7 @@ TEST_F(EclipseTest, Year1950) {
   CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 36 * Second);
 }
 
-TEST_F(EclipseTest, Year1951) {
+TEST_F(LunarEclipseTest, Year1951) {
   // Times are TDB Julian Day for 1951-03-23.
   auto P1 = JulianDate(2433728.86842806);  // 08:50:50
   auto P4 = JulianDate(2433729.01725909);  // 12:24:19
@@ -283,7 +283,7 @@ TEST_F(EclipseTest, Year1951) {
   CheckLunarPenumbralEclipse(P4, U14, 8e-6 * Radian, 23 * Second);
 }
 
-TEST_F(EclipseTest, Year1952) {
+TEST_F(LunarEclipseTest, Year1952) {
   // Times are TDB Julian Day for 1952-02-11 (or 10 for P1).
   auto P1 = JulianDate(2434053.42282623);  // P1 = 22:08:20 UT
   auto U1 = JulianDate(2434053.50334705);  // U1 = 00:04:17
@@ -307,8 +307,8 @@ TEST_F(EclipseTest, Year1952) {
   CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 26 * Second);
 }
 
-#if 0
-TEST_F(EclipseTest, Year2000) {
+#if 1
+TEST_F(LunarEclipseTest, Year2000) {
   // Times are TDB Julian Day for 2000-01-21.
   auto P1 = JulianDate(2451564.58715491);  // 02:04:26 UT
   auto U1 = JulianDate(2451564.62701602);  // 03:01:50
@@ -325,7 +325,7 @@ TEST_F(EclipseTest, Year2000) {
   CheckLunarPenumbralEclipse(P4, U14, 8e-5 * Radian, -160 * Second);
 }
 
-TEST_F(EclipseTest, Year2048) {
+TEST_F(LunarEclipseTest, Year2048) {
   // Times are TDB Julian Day for 2048-01-01.
   auto P1 = JulianDate(2469076.66235167);  // 03:52:39 UT
   auto U1 = JulianDate(2469076.71279148);  // 05:05:17
