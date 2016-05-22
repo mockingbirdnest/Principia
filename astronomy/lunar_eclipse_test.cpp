@@ -307,7 +307,7 @@ TEST_F(LunarEclipseTest, Year1952) {
   CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 26 * Second);
 }
 
-#if 1
+#if 0
 TEST_F(LunarEclipseTest, Year2000) {
   // Times are TDB Julian Day for 2000-01-21.
   auto P1 = JulianDate(2451564.58715491);  // 02:04:26 UT
