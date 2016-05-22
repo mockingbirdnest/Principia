@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "astronomy/frames.hpp"
