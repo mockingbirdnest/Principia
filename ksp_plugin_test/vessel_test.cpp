@@ -40,7 +40,8 @@ class VesselTest : public testing::Test {
             /*step=*/1 * Second) {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
-        SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
+        SOLUTION_DIR / "astronomy" /
+            "initial_state_two_bodies_circular_test.proto.txt");
     ephemeris_ = solar_system_.MakeEphemeris(
         /*fitting_tolerance=*/1 * Metre, ephemeris_fixed_parameters_);
     earth_ = std::make_unique<Celestial>(

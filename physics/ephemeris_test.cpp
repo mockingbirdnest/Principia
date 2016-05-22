@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -52,6 +53,7 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::AbsoluteError;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
@@ -67,6 +69,8 @@ namespace {
 
 Length constexpr kEarthPolarRadius = 6356.8 * Kilo(Metre);
 int constexpr kMaxSteps = 1e6;
+char constexpr kBig[] = "Big";
+char constexpr kSmall[] = "Small";
 
 }  // namespace
 
@@ -1101,7 +1105,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
               AlmostEquals(expected_acceleration3, 0, 4));
 }
 
-TEST_F(EphemerisTest, ComputeApsides) {
+TEST_F(EphemerisTest, ComputeApsidesDiscreteTrajectory) {
   Instant const t0;
   GravitationalParameter const μ = GravitationalConstant * SolarMass;
   auto const b = new MassiveBody(μ);
@@ -1191,6 +1195,97 @@ TEST_F(EphemerisTest, ComputeApsides) {
     }
     previous_time = time;
     previous_position = position;
+  }
+}
+
+TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
+  SolarSystem<ICRFJ2000Equator> solar_system;
+  solar_system.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_two_bodies_elliptical_test.proto.txt");
+
+  Length const fitting_tolerance = 1 * Milli(Metre);
+  Instant const t0 = solar_system.epoch();
+  Time const T =
+      16000 * π / (Sqrt(7) * std::pow(73 - 8 * Sqrt(35), 1.5)) * Second;
+  Length const a = 400 / (73 - 8 * Sqrt(35)) * Kilo(Metre);
+  double const e = (7 + 8 * Sqrt(35)) / 80;
+  Speed v_apoapsis = (-1631 + 348 * Sqrt(35)) / 1460 * Kilo(Metre) / Second;
+  Speed v_periapsis = Sqrt(7 * (87 + 8 * Sqrt(35))) / 20 * Kilo(Metre) / Second;
+
+  auto ephemeris = solar_system.MakeEphemeris(
+      fitting_tolerance,
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          integrators::McLachlanAtela1992Order4Optimal<
+              Position<ICRFJ2000Equator>>(),
+          /*step=*/10 * Milli(Second)));
+  ephemeris->Prolong(t0 + 10 * T);
+
+  MassiveBody const* const big = solar_system.massive_body(*ephemeris, kBig);
+  MassiveBody const* const small =
+      solar_system.massive_body(*ephemeris, kSmall);
+  DiscreteTrajectory<ICRFJ2000Equator> apoapsides1;
+  DiscreteTrajectory<ICRFJ2000Equator> apoapsides2;
+  DiscreteTrajectory<ICRFJ2000Equator> periapsides1;
+  DiscreteTrajectory<ICRFJ2000Equator> periapsides2;
+  ephemeris->ComputeApsides(big,
+                            small,
+                            apoapsides1,
+                            periapsides1,
+                            apoapsides2,
+                            periapsides2);
+
+  EXPECT_EQ(apoapsides1.Size(), apoapsides2.Size());
+  EXPECT_EQ(periapsides1.Size(), periapsides2.Size());
+
+  EXPECT_EQ(10, apoapsides1.Size());
+  EXPECT_EQ(10, periapsides1.Size());
+
+  std::experimental::optional<Instant> previous_time;
+  std::set<Instant> all_times;
+  for (auto it1 = apoapsides1.Begin(), it2 = apoapsides2.Begin();
+       it1 != apoapsides1.End() && it2 != apoapsides2.End();
+       ++it1, ++it2) {
+    Instant const time = it1.time();
+    all_times.emplace(time);
+    Displacement<ICRFJ2000Equator> const displacement =
+        it1.degrees_of_freedom().position() -
+        it2.degrees_of_freedom().position();
+    EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
+              1.9e-5 * fitting_tolerance);
+    if (previous_time) {
+      EXPECT_LT(AbsoluteError(time - *previous_time, T),
+                0.11 * fitting_tolerance / v_apoapsis);
+    }
+    previous_time = time;
+  }
+
+  previous_time = std::experimental::nullopt;
+  for (auto it1 = periapsides1.Begin(), it2 = periapsides2.Begin();
+       it1 != periapsides1.End() && it2 != periapsides2.End();
+       ++it1, ++it2) {
+    Instant const time = it1.time();
+    all_times.emplace(time);
+    Displacement<ICRFJ2000Equator> const displacement =
+        it1.degrees_of_freedom().position() -
+        it2.degrees_of_freedom().position();
+    EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
+              5.3e-3 * fitting_tolerance);
+    if (previous_time) {
+      EXPECT_LT(AbsoluteError(time - *previous_time, T),
+                2.1 * fitting_tolerance / v_periapsis);
+    }
+    previous_time = time;
+  }
+
+  previous_time = std::experimental::nullopt;
+  for (Instant const& time : all_times) {
+    if (previous_time) {
+      EXPECT_LT(AbsoluteError(time - *previous_time, 0.5 * T),
+                2.3 * fitting_tolerance / (v_apoapsis + v_periapsis));
+    }
+    previous_time = time;
   }
 }
 

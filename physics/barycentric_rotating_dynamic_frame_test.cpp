@@ -54,8 +54,8 @@ namespace physics {
 
 namespace {
 
-constexpr char kBig[] = "Big";
-constexpr char kSmall[] = "Small";
+char constexpr kBig[] = "Big";
+char constexpr kSmall[] = "Small";
 
 }  // namespace
 
@@ -77,7 +77,8 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
                              Velocity<ICRFJ2000Equator>()) {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
-        SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
+        SOLUTION_DIR / "astronomy" /
+            "initial_state_two_bodies_circular_test.proto.txt");
     t0_ = solar_system_.epoch();
     ephemeris_ = solar_system_.MakeEphemeris(
                     /*fitting_tolerance=*/1 * Milli(Metre),
