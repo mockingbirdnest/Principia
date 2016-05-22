@@ -109,7 +109,6 @@ bool operator==(NavigationManoeuvre const& left,
 bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
-bool operator==(XYZSegment const& left, XYZSegment const& right);
 
 physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(

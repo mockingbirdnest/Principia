@@ -795,31 +795,28 @@ public partial class PrincipiaPluginAdapter
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
+            var rendered_segments = plugin_.FlightPlanRenderedSegment(
+                active_vessel_guid, sun_world_position, i);
+            Vector3d position_at_start =
+                (Vector3d)rendered_segments.IteratorGetXYZ();
             GLLines.RenderAndDeleteTrajectory(
-                plugin_.FlightPlanRenderedSegment(active_vessel_guid,
-                                                  sun_world_position,
-                                                  i),
+                rendered_segments,
                 is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
                 is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
             if (is_burn) {
-              Vector3d position_at_ignition =
-                  (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
-                                active_vessel_guid,
-                                sun_world_position,
-                                i).begin;
               int manoeuvre_index = i / 2;
               NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
                                                   active_vessel_guid,
                                                   manoeuvre_index);
               double scale = (ScaledSpace.ScaledToLocalSpace(
                                   MapView.MapCamera.transform.position) -
-                              position_at_ignition).magnitude * 0.015;
+                              position_at_start).magnitude * 0.015;
               Action<XYZ, UnityEngine.Color> add_vector =
                   (world_direction, colour) => {
                 UnityEngine.GL.Color(colour);
                 GLLines.AddSegment(
-                    position_at_ignition,
-                    position_at_ignition + scale * (Vector3d)world_direction,
+                    position_at_start,
+                    position_at_start + scale * (Vector3d)world_direction,
                     hide_behind_bodies : false);
               };
               add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);

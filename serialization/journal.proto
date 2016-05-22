@@ -80,11 +80,6 @@ message WXYZ {
   required double z = 4;
 }
 
-message XYZSegment {
-  required XYZ begin = 1;
-  required XYZ end = 2;
-}
-
 message Method {
   extensions 5000 to 5999;  // Last used: 5094.
 }
@@ -457,24 +452,6 @@ message FlightPlanRenderedSegment {
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Iterator",
                                  (is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message FlightPlanRenderedSegmentEndpoints {
-  extend Method {
-    optional FlightPlanRenderedSegmentEndpoints extension = 5077;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required XYZ sun_world_position = 3;
-    required int32 index = 4;
-  }
-  message Return {
-    required XYZSegment result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

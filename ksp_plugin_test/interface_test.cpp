@@ -1032,28 +1032,6 @@ TEST_F(InterfaceTest, FlightPlan) {
   principia__IteratorIncrement(iterator);
   EXPECT_EQ(XYZ({0, 2, 4}), principia__IteratorGetXYZ(iterator));
 
-  Position<World> q1 =
-      World::origin + Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre});
-  Position<World> q2 =
-      World::origin + Displacement<World>({10 * Metre, 12 * Metre, 14 * Metre});
-  DiscreteTrajectory<Barycentric> trajectory;
-  trajectory.Append(t0_ + 1 * Second,
-                    {Barycentric::origin, Velocity<Barycentric>()});
-  trajectory.Append(t0_ + 2 * Second,
-                    {Barycentric::origin, Velocity<Barycentric>()});
-  EXPECT_CALL(flight_plan, GetSegment(5, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(trajectory.Begin()),
-                      SetArgPointee<2>(trajectory.End())));
-  EXPECT_CALL(*plugin_, PlotBarycentricPosition(t0_ + 1 * Second, _, _))
-      .WillOnce(Return(q1));
-  EXPECT_CALL(*plugin_, PlotBarycentricPosition(t0_ + 2 * Second, _, _))
-      .WillOnce(Return(q2));
-  EXPECT_EQ(XYZSegment({{0, 2, 4}, {10, 12, 14}}),
-      principia__FlightPlanRenderedSegmentEndpoints(plugin_.get(),
-                                                    kVesselGUID,
-                                                    {0, 1, 2},
-                                                    5));
-
   burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
