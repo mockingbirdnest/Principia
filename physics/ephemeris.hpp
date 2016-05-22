@@ -191,7 +191,10 @@ class Ephemeris {
       DiscreteTrajectory<Frame>& apoapsides,
       DiscreteTrajectory<Frame>& periapsides);
 
-  //TODO(phl):comment
+  // Computes the apsides of the relative trajectory of |body1| and |body2}.
+  // Appends to the given trajectories two point for each apsis, one for |body1|
+  // and one for |body2|.  The times of |apoapsides1| and |apoapsideds2| are
+  // identical (are similarly for |periapsides1| and |periapsides2|).
   virtual void ComputeApsides(not_null<MassiveBody const*> const body1,
                               not_null<MassiveBody const*> const body2,
                               DiscreteTrajectory<Frame>& apoapsides1,
