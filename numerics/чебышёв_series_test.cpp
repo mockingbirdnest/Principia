@@ -370,7 +370,7 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
                               near_length(2.9e-14 * Metre),
                               near_length(2.9e-14 * Metre),
                               near_length(4.3e-14 * Metre),
-                              near_length(3.2e-14 * Metre),
+                              near_length(3.6e-14 * Metre),
                               near_length(2.9e-14 * Metre)),
                   ElementsAre(near_length(1.5e-14 * Metre),
                               near_length(1.5e-14 * Metre),
