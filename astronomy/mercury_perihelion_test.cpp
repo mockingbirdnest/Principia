@@ -1,13 +1,15 @@
-
+﻿
 #include <numeric>
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/symplectic_runge_kutta_nystr�m_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -22,7 +24,10 @@ using geometry::AngleBetween;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
+using physics::KeplerianElements;
+using physics::KeplerOrbit;
 using physics::MassiveBody;
+using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
@@ -64,6 +69,18 @@ SolarSystem<ICRFJ2000Equator> MercuryPerihelionTest::solar_system_1950_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> MercuryPerihelionTest::ephemeris_;
 
 TEST_F(MercuryPerihelionTest, PrintPerihelion) {
+  // From Horizons by dichotomy, around 1950-JAN-11 03:12:30.0000 (TDB).
+  Instant const first_perihelion_low = JulianDate(2433292.633686343);
+  Instant const first_perihelion_high = JulianDate(2433292.633692130);
+  Instant const first_perihelion_mid = Barycentre<Instant, double>(
+      {first_perihelion_low, first_perihelion_high}, {1, 1});
+
+  // From Horizons by dichotomy, around 1959-Nov-26 21:00:28.0000 (TDB).
+  Instant const last_perihelion_low = JulianDate(2436899.375324074);
+  Instant const last_perihelion_high = JulianDate(2436899.375329861 );
+  Instant const last_perihelion_mid = Barycentre<Instant, double>(
+      {last_perihelion_low, last_perihelion_high}, {1, 1});
+
   DiscreteTrajectory<ICRFJ2000Equator> sun_apoapsides;
   DiscreteTrajectory<ICRFJ2000Equator> sun_periapsides;
   DiscreteTrajectory<ICRFJ2000Equator> mercury_apoapsides;
@@ -76,9 +93,14 @@ TEST_F(MercuryPerihelionTest, PrintPerihelion) {
                              mercury_apoapsides,
                              mercury_periapsides);
 
+  EXPECT_LT(AbsoluteError(sun_periapsides.Begin().time(), first_perihelion_mid),
+            0.26 * Second);
+  EXPECT_LT(AbsoluteError(sun_periapsides.last().time(), last_perihelion_mid),
+            99.3 * Second);
+
   std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<Displacement<ICRFJ2000Equator>>
-      previous_displacement;
+  std::experimental::optional<KeplerianElements<ICRFJ2000Equator>>
+      previous_keplerian_elements;
   std::vector<AngularFrequency> precessions;
   for (auto sun_it = sun_periapsides.Begin(),
             mercury_it = mercury_periapsides.Begin();
@@ -86,25 +108,28 @@ TEST_F(MercuryPerihelionTest, PrintPerihelion) {
        mercury_it != mercury_periapsides.End();
        ++sun_it, ++mercury_it) {
     Instant const time = sun_it.time();
-    Displacement<ICRFJ2000Equator> const displacement =
-        sun_it.degrees_of_freedom().position() -
-        mercury_it.degrees_of_freedom().position();
-    //LOG(ERROR)<<time<<": "<<displacement.Norm();
-    //EXPECT_LT(AbsoluteError(displacement.Norm(),
-    //                        3.075030670219868e-01 * AstronomicalUnit),
-    //          900 * Kilo(Metre));
+    RelativeDegreesOfFreedom<ICRFJ2000Equator> const
+        relative_degrees_of_freedom =
+            sun_it.degrees_of_freedom() - mercury_it.degrees_of_freedom();
+    KeplerOrbit<ICRFJ2000Equator> orbit(
+        *sun_, *mercury_, relative_degrees_of_freedom, time);
+    KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
+        orbit.elements_at_epoch();
+    Angle const anomaly =
+        keplerian_elements.mean_anomaly < 1 * Radian
+            ? keplerian_elements.mean_anomaly
+            : 2 * π * Radian - keplerian_elements.mean_anomaly;
+    EXPECT_LT(anomaly, 1e-12 * Radian);
     if (previous_time) {
       AngularFrequency const precession =
-          AngleBetween(displacement, *previous_displacement) /
+          (keplerian_elements.argument_of_periapsis -
+           previous_keplerian_elements->argument_of_periapsis) /
           (time - *previous_time);
       precessions.push_back(precession);
       LOG(ERROR)<<precession * 100 * JulianYear / (1 * ArcSecond);
-      //EXPECT_LT(
-      //    AbsoluteError(time - *previous_time, 8.796888204428582e+01 * Day),
-      //    75 * Second);
     }
     previous_time = time;
-    previous_displacement = displacement;
+    previous_keplerian_elements = keplerian_elements;
   }
   AngularFrequency average;
   for (auto const precession : precessions) {
