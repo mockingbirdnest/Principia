@@ -1,5 +1,8 @@
 
+#include <numeric>
+
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -15,6 +18,7 @@
 namespace principia {
 
 using base::not_null;
+using geometry::AngleBetween;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -64,7 +68,7 @@ TEST_F(MercuryPerihelionTest, PrintPerihelion) {
   DiscreteTrajectory<ICRFJ2000Equator> sun_periapsides;
   DiscreteTrajectory<ICRFJ2000Equator> mercury_apoapsides;
   DiscreteTrajectory<ICRFJ2000Equator> mercury_periapsides;
-  ephemeris_->Prolong(solar_system_1950_.epoch() + 1 * JulianYear);
+  ephemeris_->Prolong(solar_system_1950_.epoch() + 10 * JulianYear);
   ephemeris_->ComputeApsides(sun_,
                              mercury_,
                              sun_apoapsides,
@@ -73,6 +77,9 @@ TEST_F(MercuryPerihelionTest, PrintPerihelion) {
                              mercury_periapsides);
 
   std::experimental::optional<Instant> previous_time;
+  std::experimental::optional<Displacement<ICRFJ2000Equator>>
+      previous_displacement;
+  std::vector<AngularFrequency> precessions;
   for (auto sun_it = sun_periapsides.Begin(),
             mercury_it = mercury_periapsides.Begin();
        sun_it != sun_periapsides.End() &&
@@ -82,17 +89,29 @@ TEST_F(MercuryPerihelionTest, PrintPerihelion) {
     Displacement<ICRFJ2000Equator> const displacement =
         sun_it.degrees_of_freedom().position() -
         mercury_it.degrees_of_freedom().position();
-    LOG(ERROR)<<time<<": "<<displacement.Norm();
-    EXPECT_LT(AbsoluteError(displacement.Norm(),
-                            3.075030670219868e-01 * AstronomicalUnit),
-              900 * Kilo(Metre));
+    //LOG(ERROR)<<time<<": "<<displacement.Norm();
+    //EXPECT_LT(AbsoluteError(displacement.Norm(),
+    //                        3.075030670219868e-01 * AstronomicalUnit),
+    //          900 * Kilo(Metre));
     if (previous_time) {
-      EXPECT_LT(
-          AbsoluteError(time - *previous_time, 8.796888204428582e+01 * Day),
-          75 * Second);
+      AngularFrequency const precession =
+          AngleBetween(displacement, *previous_displacement) /
+          (time - *previous_time);
+      precessions.push_back(precession);
+      LOG(ERROR)<<precession * 100 * JulianYear / (1 * ArcSecond);
+      //EXPECT_LT(
+      //    AbsoluteError(time - *previous_time, 8.796888204428582e+01 * Day),
+      //    75 * Second);
     }
     previous_time = time;
+    previous_displacement = displacement;
   }
+  AngularFrequency average;
+  for (auto const precession : precessions) {
+    average += precession;
+  }
+  average /= precessions.size();
+  LOG(ERROR) << "Average: " << average * 100 * JulianYear / (1 * ArcSecond);
 }
 
 }  // namespace astronomy
