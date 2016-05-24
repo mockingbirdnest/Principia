@@ -152,8 +152,9 @@ class InterfaceTest : public testing::Test {
     journal::Recorder::Deactivate();
   }
 
-  InterfaceTest()
-      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
+  InterfaceTest() : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {
+    google::LogToStderr();
+  }
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   Instant const t0_;

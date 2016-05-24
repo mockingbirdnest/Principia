@@ -186,14 +186,17 @@ void Plugin::EndInitialization() {
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
   ephemeris_->WriteToMessage(&ephemeris_message);
-  auto const bytes = ephemeris_message.SerializeAsString();
-  base::UniqueArray<std::uint8_t> const hex(bytes.size() << 1 + 1);
+  std::string const bytes = ephemeris_message.SerializeAsString();
+  base::UniqueArray<std::uint8_t> const hex((bytes.size() << 1) + 1);
   base::HexadecimalEncode(
       base::Array<std::uint8_t const>(
           reinterpret_cast<std::uint8_t const*>(bytes.data()), bytes.size()),
       hex.get());
   hex.data[hex.size - 1] = 0;
-  LOG(INFO) << reinterpret_cast<char const*>(hex.data.get());
+  // Begin and end markers to make sure the hex did not get clipped (this might
+  // happen if the message is very big).
+  LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
+            << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,

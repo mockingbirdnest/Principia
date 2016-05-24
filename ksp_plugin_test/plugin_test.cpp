@@ -186,6 +186,7 @@ class PluginTest : public testing::Test {
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
                     planetarium_rotation_)) {
+    google::LogToStderr();
     mock_ephemeris_ = plugin_->mock_ephemeris();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
@@ -402,6 +403,7 @@ TEST_F(PluginTest, Serialization) {
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   for (int index = SolarSystemFactory::kSun + 1;
@@ -460,6 +462,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       /*parent_index=*/1,
       elements,
       make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
@@ -713,6 +716,7 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
   plugin_->EndInitialization();
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystemFactory::kEarth);
@@ -730,6 +734,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   for (int index = SolarSystemFactory::kSun + 1;
