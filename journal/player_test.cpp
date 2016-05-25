@@ -125,7 +125,7 @@ TEST_F(PlayerTest, Debug) {
     serialization::Method method_out_return;
     method_out_return.MutableExtension(
         serialization::AdvanceTime::extension);
-    LOG(ERROR) << "Running unpaired method " << method_in.DebugString();
+    LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
     CHECK(RunIfAppropriate<AdvanceTime>(method_in, method_out_return, player));
 #endif
   }
