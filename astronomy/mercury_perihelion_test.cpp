@@ -1,4 +1,5 @@
 ﻿
+#include <fstream>
 #include <numeric>
 
 #include "base/not_null.hpp"
@@ -6,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -22,6 +24,7 @@ namespace principia {
 using base::not_null;
 using geometry::AngleBetween;
 using integrators::McLachlanAtela1992Order5Optimal;
+using physics::ContinuousTrajectory;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -67,6 +70,37 @@ class MercuryPerihelionTest : public testing::Test {
 
 SolarSystem<ICRFJ2000Equator> MercuryPerihelionTest::solar_system_1950_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> MercuryPerihelionTest::ephemeris_;
+
+TEST_F(MercuryPerihelionTest, KeplerianElements) {
+  ephemeris_->Prolong(solar_system_1950_.epoch() + 100 * JulianYear);
+
+  auto const& sun_trajectory =
+      solar_system_1950_.trajectory(*ephemeris_, "Sun");
+  auto const& mercury_trajectory =
+      solar_system_1950_.trajectory(*ephemeris_, "Mercury");
+  typename ContinuousTrajectory<ICRFJ2000Equator>::Hint sun_hint;
+  typename ContinuousTrajectory<ICRFJ2000Equator>::Hint mercury_hint;
+
+  std::vector<Angle> arguments_of_periapsis;
+  for (Instant time = solar_system_1950_.epoch();
+       time <= solar_system_1950_.epoch() + 100 * JulianYear;
+       time += 1 * Day) {
+    RelativeDegreesOfFreedom<ICRFJ2000Equator> const
+        relative_degrees_of_freedom =
+            sun_trajectory.EvaluateDegreesOfFreedom(time, &sun_hint) -
+            mercury_trajectory.EvaluateDegreesOfFreedom(time, &mercury_hint);
+    KeplerOrbit<ICRFJ2000Equator> orbit(
+        *sun_, *mercury_, relative_degrees_of_freedom, time);
+    KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
+        orbit.elements_at_epoch();
+    arguments_of_periapsis.push_back(keplerian_elements.argument_of_periapsis);
+  }
+
+  std::ofstream file;
+  file.open("mercury_perihelion.generated.wl");
+  file << mathematica::Assign("argumentsOfPeriapsis", arguments_of_periapsis);
+  file.close();
+}
 
 TEST_F(MercuryPerihelionTest, PrintPerihelion) {
   // From Horizons by dichotomy, around 1950-01-11T03:12:30.0000Z (TDB).
