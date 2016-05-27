@@ -179,8 +179,8 @@ TEST_F(MercuryPerihelionTest, Year1960) {
   EXPECT_LT(RelativeError(keplerian_elements.inclination,
                           keplerian_elements_1960_.inclination), 1.1e-10);
   EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
-                          keplerian_elements_1960_.longitude_of_ascending_node),
-            1.3e-9);
+                          keplerian_elements_1960_.
+                              longitude_of_ascending_node), 1.3e-9);
   EXPECT_THAT(keplerian_elements_1960_.argument_of_periapsis -
                   keplerian_elements.argument_of_periapsis,
               AllOf(Gt(4.202 * ArcSecond), Lt(4.203 * ArcSecond)));
@@ -189,140 +189,42 @@ TEST_F(MercuryPerihelionTest, Year1960) {
               AllOf(Gt(17.0 * ArcSecond), Lt(17.1 * ArcSecond)));
 }
 
-TEST_F(MercuryPerihelionTest, KeplerianElements) {
-  LOG(ERROR) << JulianDate(2469807.500000000);
-  ephemeris_->Prolong(solar_system_1950_.epoch() + 100 * JulianYear);
+#if 1
+TEST_F(MercuryPerihelionTest, Year2050) {
+  ephemeris_->Prolong(t_2050_);
 
   auto const& sun_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Sun");
   auto const& mercury_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
-  typename ContinuousTrajectory<ICRFJ2000Equator>::Hint sun_hint;
-  typename ContinuousTrajectory<ICRFJ2000Equator>::Hint mercury_hint;
 
-  std::vector<Angle> arguments_of_periapsis;
-  std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<KeplerianElements<ICRFJ2000Equator>>
-      previous_keplerian_elements;
-  for (Instant time = solar_system_1950_.epoch();
-       time <= solar_system_1950_.epoch() + 100 * JulianYear;
-       time += 1 * Day) {
-    RelativeDegreesOfFreedom<ICRFJ2000Equator> const
-        relative_degrees_of_freedom =
-            mercury_trajectory.EvaluateDegreesOfFreedom(time, &mercury_hint) -
-            sun_trajectory.EvaluateDegreesOfFreedom(time, &sun_hint);
-    KeplerOrbit<ICRFJ2000Equator> orbit(
-        *sun_, *mercury_, relative_degrees_of_freedom, time);
-    KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
-        orbit.elements_at_epoch();
-    arguments_of_periapsis.push_back(keplerian_elements.argument_of_periapsis);
-    if (!previous_keplerian_elements) {
-      LOG(ERROR)<<time<<":\n"<<keplerian_elements;
-    }
-    previous_time = time;
-    previous_keplerian_elements = keplerian_elements;
-  }
-  LOG(ERROR) << *previous_time << ":\n" << *previous_keplerian_elements;
+  RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
+      mercury_trajectory.EvaluateDegreesOfFreedom(t_2050_, /*hint=*/nullptr) -
+      sun_trajectory.EvaluateDegreesOfFreedom(t_2050_, /*hint=*/nullptr);
+  KeplerOrbit<ICRFJ2000Equator> orbit(
+      *sun_, *mercury_, relative_degrees_of_freedom, t_2050_);
+  KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
+      orbit.elements_at_epoch();
 
-  std::ofstream file;
-  file.open("mercury_perihelion.generated.wl");
-  file << mathematica::Assign("argumentsOfPeriapsis", arguments_of_periapsis);
-  file.close();
+  EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
+                          keplerian_elements_2050_.eccentricity), 9.8e-8);
+  EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
+                          *keplerian_elements_2050_.semimajor_axis), 1.9e-8);
+  EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
+                          *keplerian_elements_2050_.mean_motion), 2.8e-8);
+  EXPECT_LT(RelativeError(keplerian_elements.inclination,
+                          keplerian_elements_2050_.inclination), 6.3e-9);
+  EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
+                          keplerian_elements_2050_.
+                              longitude_of_ascending_node), 9.1e-8);
+  EXPECT_THAT(keplerian_elements_2050_.argument_of_periapsis -
+                  keplerian_elements.argument_of_periapsis,
+              AllOf(Gt(42.83 * ArcSecond), Lt(42.84 * ArcSecond)));
+  EXPECT_THAT(keplerian_elements.mean_anomaly -
+                  keplerian_elements_2050_.mean_anomaly,
+              AllOf(Gt(171 * ArcSecond), Lt(172 * ArcSecond)));
 }
-
-TEST_F(MercuryPerihelionTest, PrintPerihelion) {
-  // From Horizons by dichotomy, around 1950-01-11T03:12:30.0000Z (TDB).
-  Instant const first_perihelion_time_low = JulianDate(2433292.633686343);
-  Instant const first_perihelion_time_high = JulianDate(2433292.633692130);
-  Instant const first_perihelion_time_mid = Barycentre<Instant, double>(
-      {first_perihelion_time_low, first_perihelion_time_high}, {1, 1});
-
-  // From Horizons by dichotomy, around 1959-11-26T21:00:28.0000Z (TDB).
-  Instant const last_perihelion_time_low = JulianDate(2436899.375324074);
-  Instant const last_perihelion_time_high = JulianDate(2436899.375329861 );
-  Instant const last_perihelion_time_mid = Barycentre<Instant, double>(
-      {last_perihelion_time_low, last_perihelion_time_high}, {1, 1});
-
-  Position<ICRFJ2000Equator> const last_perihelion_position_low =
-      ICRFJ2000Equator::origin +
-      Displacement<ICRFJ2000Equator>(
-          {7.084639885659656e-02 * AstronomicalUnit,
-           2.748967000176096e-01 * AstronomicalUnit,
-           1.388562317323265e-01 * AstronomicalUnit});
-  Position<ICRFJ2000Equator> const last_perihelion_position_high =
-      ICRFJ2000Equator::origin +
-      Displacement<ICRFJ2000Equator>(
-          {7.084620740779489e-02 * AstronomicalUnit,
-           2.748967303484739e-01 * AstronomicalUnit,
-           1.388562678052315e-01 * AstronomicalUnit});
-  Position<ICRFJ2000Equator> const last_perihelion_position_mid =
-      Barycentre<Position<ICRFJ2000Equator>, double>(
-          {last_perihelion_position_low, last_perihelion_position_high},
-          {1, 1});
-
-  DiscreteTrajectory<ICRFJ2000Equator> sun_apoapsides;
-  DiscreteTrajectory<ICRFJ2000Equator> sun_periapsides;
-  DiscreteTrajectory<ICRFJ2000Equator> mercury_apoapsides;
-  DiscreteTrajectory<ICRFJ2000Equator> mercury_periapsides;
-  ephemeris_->Prolong(solar_system_1950_.epoch() + 10 * JulianYear);
-  ephemeris_->ComputeApsides(sun_,
-                             mercury_,
-                             sun_apoapsides,
-                             sun_periapsides,
-                             mercury_apoapsides,
-                             mercury_periapsides);
-
-  EXPECT_LT(AbsoluteError(sun_periapsides.Begin().time(),
-                          first_perihelion_time_mid),
-            0.26 * Second);
-  EXPECT_LT(AbsoluteError(sun_periapsides.last().time(),
-                          last_perihelion_time_mid),
-            99.3 * Second);
-  EXPECT_LT(
-      AbsoluteError(mercury_periapsides.last().degrees_of_freedom().position(),
-                    last_perihelion_position_mid),
-      946 * Kilo(Metre));
-
-  std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<KeplerianElements<ICRFJ2000Equator>>
-      previous_keplerian_elements;
-  std::vector<AngularFrequency> precessions;
-  for (auto sun_it = sun_periapsides.Begin(),
-            mercury_it = mercury_periapsides.Begin();
-       sun_it != sun_periapsides.End() &&
-       mercury_it != mercury_periapsides.End();
-       ++sun_it, ++mercury_it) {
-    Instant const time = sun_it.time();
-    RelativeDegreesOfFreedom<ICRFJ2000Equator> const
-        relative_degrees_of_freedom =
-            sun_it.degrees_of_freedom() - mercury_it.degrees_of_freedom();
-    KeplerOrbit<ICRFJ2000Equator> orbit(
-        *sun_, *mercury_, relative_degrees_of_freedom, time);
-    KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
-        orbit.elements_at_epoch();
-    Angle const anomaly =
-        keplerian_elements.mean_anomaly < 1 * Radian
-            ? keplerian_elements.mean_anomaly
-            : 2 * π * Radian - keplerian_elements.mean_anomaly;
-    EXPECT_LT(anomaly, 1e-12 * Radian);
-    if (previous_time) {
-      AngularFrequency const precession =
-          (keplerian_elements.argument_of_periapsis -
-           previous_keplerian_elements->argument_of_periapsis) /
-          (time - *previous_time);
-      precessions.push_back(precession);
-      LOG(ERROR)<<precession * 100 * JulianYear / (1 * ArcSecond);
-    }
-    previous_time = time;
-    previous_keplerian_elements = keplerian_elements;
-  }
-  AngularFrequency average;
-  for (auto const precession : precessions) {
-    average += precession;
-  }
-  average /= precessions.size();
-  LOG(ERROR) << "Average: " << average * 100 * JulianYear / (1 * ArcSecond);
-}
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
