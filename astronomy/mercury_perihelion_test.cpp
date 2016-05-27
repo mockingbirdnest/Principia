@@ -121,6 +121,39 @@ class MercuryPerihelionTest : public testing::Test {
 SolarSystem<ICRFJ2000Equator> MercuryPerihelionTest::solar_system_1950_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> MercuryPerihelionTest::ephemeris_;
 
+TEST_F(MercuryPerihelionTest, Year1950) {
+  ephemeris_->Prolong(t_1950_);
+
+  auto const& sun_trajectory =
+      solar_system_1950_.trajectory(*ephemeris_, "Sun");
+  auto const& mercury_trajectory =
+      solar_system_1950_.trajectory(*ephemeris_, "Mercury");
+
+  RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
+      mercury_trajectory.EvaluateDegreesOfFreedom(t_1950_, /*hint=*/nullptr) -
+      sun_trajectory.EvaluateDegreesOfFreedom(t_1950_, /*hint=*/nullptr);
+  KeplerOrbit<ICRFJ2000Equator> orbit(
+      *sun_, *mercury_, relative_degrees_of_freedom, t_1950_);
+  KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
+      orbit.elements_at_epoch();
+
+  EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
+                          keplerian_elements_1950_.eccentricity), 3.8e-14);
+  EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
+                          *keplerian_elements_1950_.semimajor_axis), 1.1e-14);
+  EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
+                          *keplerian_elements_1950_.mean_motion), 1.5e-14);
+  EXPECT_LT(RelativeError(keplerian_elements.inclination,
+                          keplerian_elements_1950_.inclination), 5.2e-15);
+  EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
+                          keplerian_elements_1950_.
+                              longitude_of_ascending_node), 4.2e-15);
+  EXPECT_LT(RelativeError(keplerian_elements_1950_.argument_of_periapsis,
+                          keplerian_elements.argument_of_periapsis), 8.5e-14);
+  EXPECT_LT(RelativeError(keplerian_elements.mean_anomaly,
+                          keplerian_elements_1950_.mean_anomaly), 1.3e-14);
+}
+
 TEST_F(MercuryPerihelionTest, Year1960) {
   ephemeris_->Prolong(t_1960_);
 
@@ -138,7 +171,7 @@ TEST_F(MercuryPerihelionTest, Year1960) {
       orbit.elements_at_epoch();
 
   EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
-                          keplerian_elements_1960_.eccentricity), 6e-7);
+                          keplerian_elements_1960_.eccentricity), 5.3e-7);
   EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
                           *keplerian_elements_1960_.semimajor_axis), 1.1e-7);
   EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
