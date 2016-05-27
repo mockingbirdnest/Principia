@@ -189,7 +189,7 @@ TEST_F(MercuryPerihelionTest, Year1960) {
               AllOf(Gt(17.0 * ArcSecond), Lt(17.1 * ArcSecond)));
 }
 
-#if 1
+#if 0
 TEST_F(MercuryPerihelionTest, Year2050) {
   ephemeris_->Prolong(t_2050_);
 
