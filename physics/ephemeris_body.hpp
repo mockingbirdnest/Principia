@@ -566,7 +566,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         false /*body2_is_oblate*/>(
         *body /*body1*/, 0 /*b1*/,
         other_spherical_bodies /*bodies2*/,
-        other_oblate_bodies.size() + 1/*b2_begin*/, bodies_.size() /*b2_end*/,
+        other_oblate_bodies.size() + 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
         positions, &accelerations);
   } else {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
@@ -1007,14 +1007,15 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
     size_t const b2_end,
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations) {
+  Position<Frame> const& position_of_b1 = positions[b1];
   Vector<Acceleration, Frame>& acceleration_on_b1 = (*accelerations)[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
-  for (std::size_t b2 = std::max(b1 + 1, b2_begin); b2 < b2_end; ++b2) {
+  for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
     Vector<Acceleration, Frame>& acceleration_on_b2 = (*accelerations)[b2];
     MassiveBody const& body2 = *bodies2[b2 - b2_begin];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
-    Displacement<Frame> const Δq = positions[b1] - positions[b2];
+    Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
     Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
     // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
@@ -1131,7 +1132,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         true /*body2_is_oblate*/>(
         body1, b1,
         oblate_bodies_ /*bodies2*/,
-        0 /*b2_begin*/,
+        b1 + 1 /*b2_begin*/,
         number_of_oblate_bodies_ /*b2_end*/,
         positions,
         accelerations);
@@ -1157,7 +1158,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         false /*body2_is_oblate*/>(
         body1, b1,
         spherical_bodies_ /*bodies2*/,
-        number_of_oblate_bodies_ /*b2_begin*/,
+        b1 + 1 /*b2_begin*/,
         number_of_oblate_bodies_ +
             number_of_spherical_bodies_ /*b2_end*/,
         positions,
