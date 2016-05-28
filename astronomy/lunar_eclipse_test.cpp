@@ -345,5 +345,5 @@ TEST_F(LunarEclipseTest, Year2048) {
 
 #endif
 
-}  // namespace physics
+}  // namespace astronomy
 }  // namespace principia
