@@ -154,6 +154,7 @@ TEST_F(MercuryPerihelionTest, Year1950) {
                           keplerian_elements_1950_.mean_anomaly), 1.3e-14);
 }
 
+#if !defined(_DEBUG)
 TEST_F(MercuryPerihelionTest, Year1960) {
   ephemeris_->Prolong(t_1960_);
 
@@ -224,6 +225,7 @@ TEST_F(MercuryPerihelionTest, Year2050) {
                   keplerian_elements_2050_.mean_anomaly,
               AllOf(Gt(171 * ArcSecond), Lt(172 * ArcSecond)));
 }
+#endif
 #endif
 
 }  // namespace astronomy
