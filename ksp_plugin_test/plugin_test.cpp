@@ -187,7 +187,6 @@ class PluginTest : public testing::Test {
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
                     planetarium_rotation_)) {
-    google::LogToStderr();
     mock_ephemeris_ = plugin_->mock_ephemeris();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
