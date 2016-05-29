@@ -251,14 +251,14 @@ class Ephemeris {
   // therefore what forces apply.
   template<bool body1_is_oblate,
            bool body2_is_oblate>
-  static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
+  void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
       size_t const b1,
-      std::vector<not_null<MassiveBody const*>> const& bodies2,
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations)
+      const;
 
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
@@ -318,12 +318,6 @@ class Ephemeris {
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
-
-  // The indices in |bodies_| correspond to those in |oblate_bodies_| and
-  // |spherical_bodies_|, in sequence.  The elements of |oblate_bodies_| are
-  // really |OblateBody<Frame>| but it's inconvenient to express.
-  std::vector<not_null<MassiveBody const*>> oblate_bodies_;
-  std::vector<not_null<MassiveBody const*>> spherical_bodies_;
 
   // The indices in |bodies_| correspond to those in |trajectories_|.
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
