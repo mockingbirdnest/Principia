@@ -68,41 +68,41 @@ class MercuryPerihelionTest : public testing::Test {
         t_1950_(JulianDate(2433282.500000000)),
         t_1960_(JulianDate(2436934.500000000)),
         t_2050_(JulianDate(2469807.500000000)) {
-    keplerian_elements_1950_.eccentricity = 2.056187274905493E-01;
+    keplerian_elements_1950_.eccentricity = 2.056187274905493e-01;
     keplerian_elements_1950_.semimajor_axis =
-        5.790897350196702E+07 * Kilo(Metre);
+        5.790897350196702e+07 * Kilo(Metre);
     keplerian_elements_1950_.mean_motion =
-        4.736523381721572E-05 * Degree / Second;
-    keplerian_elements_1950_.inclination = 2.854970888858858E+01 * Degree;
+        4.736523381721572e-05 * Degree / Second;
+    keplerian_elements_1950_.inclination = 2.854970888858858e+01 * Degree;
     keplerian_elements_1950_.longitude_of_ascending_node =
-        1.100421919049157E+01 * Degree;
+        1.100421919049157e+01 * Degree;
     keplerian_elements_1950_.argument_of_periapsis =
-        6.747518782664667E+01 * Degree;
-    keplerian_elements_1950_.mean_anomaly = 3.185292722214373E+02 * Degree;
+        6.747518782664667e+01 * Degree;
+    keplerian_elements_1950_.mean_anomaly = 3.185292722214373e+02 * Degree;
 
-    keplerian_elements_1960_.eccentricity = 2.056305163902087E-01;
+    keplerian_elements_1960_.eccentricity = 2.056305163902087e-01;
     keplerian_elements_1960_.semimajor_axis =
-        5.790908221204869E+07 * Kilo(Metre);
+        5.790908221204869e+07 * Kilo(Metre);
     keplerian_elements_1960_.mean_motion =
-        4.736510044238512E-05 * Degree / Second;
-    keplerian_elements_1960_.inclination = 2.855025264340049E+01 * Degree;
+        4.736510044238512e-05 * Degree / Second;
+    keplerian_elements_1960_.inclination = 2.855025264340049e+01 * Degree;
     keplerian_elements_1960_.longitude_of_ascending_node =
-        1.100120089390144E+01 * Degree;
+        1.100120089390144e+01 * Degree;
     keplerian_elements_1960_.argument_of_periapsis =
-        6.748880915164143E+01 * Degree;
-    keplerian_elements_1960_.mean_anomaly = 1.437427180144607E+02 * Degree;
+        6.748880915164143e+01 * Degree;
+    keplerian_elements_1960_.mean_anomaly = 1.437427180144607e+02 * Degree;
 
-    keplerian_elements_2050_.eccentricity = 2.056443534543679E-01;
+    keplerian_elements_2050_.eccentricity = 2.056443534543679e-01;
     keplerian_elements_2050_.semimajor_axis =
-        5.790909484661692E+07 * Kilo(Metre);
+        5.790909484661692e+07 * Kilo(Metre);
     keplerian_elements_2050_.mean_motion =
-        4.736508494125626E-05 * Degree / Second;
-    keplerian_elements_2050_.inclination = 2.855459021021251E+01 * Degree;
+        4.736508494125626e-05 * Degree / Second;
+    keplerian_elements_2050_.inclination = 2.855459021021251e+01 * Degree;
     keplerian_elements_2050_.longitude_of_ascending_node =
-        1.097153493770216E+01 * Degree;
+        1.097153493770216e+01 * Degree;
     keplerian_elements_2050_.argument_of_periapsis =
-        6.765993779473686E+01 * Degree;
-    keplerian_elements_2050_.mean_anomaly = 3.105229688140852E+01 * Degree;
+        6.765993779473686e+01 * Degree;
+    keplerian_elements_2050_.mean_anomaly = 3.105229688140852e+01 * Degree;
   }
 
   static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
