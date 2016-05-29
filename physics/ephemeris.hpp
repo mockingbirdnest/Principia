@@ -246,9 +246,9 @@ class Ephemeris {
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
-  // indices [b2_begin, b2_end[ in the |positions| and |accelerations| arrays).
-  // The template parameters specify what we know about the bodies, and
-  // therefore what forces apply.
+  // indices [b2_begin, b2_end[ in the |bodies2|, |positions| and
+  // |accelerations| arrays).  The template parameters specify what we know
+  // about the bodies, and therefore what forces apply.
   template<bool body1_is_oblate,
            bool body2_is_oblate,
            typename MassiveBodyConstPtr>
