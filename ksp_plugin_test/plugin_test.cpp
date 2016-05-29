@@ -72,6 +72,7 @@ using ::testing::Lt;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -205,6 +206,12 @@ class PluginTest : public testing::Test {
         Sqrt(solar_system_->gravitational_parameter(
                  SolarSystemFactory::name(SolarSystemFactory::kEarth)) /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
+
+    // Fill required fields.
+    Length{}.WriteToMessage(
+        valid_ephemeris_message_.mutable_fitting_tolerance());
+    numerics::DoublePrecision<Instant>{}.WriteToMessage(
+        valid_ephemeris_message_.mutable_last_state()->mutable_time());
   }
 
   void InsertAllSolarSystemBodies() {
@@ -271,6 +278,7 @@ class PluginTest : public testing::Test {
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
   Velocity<AliceSun> satellite_initial_velocity_;
+  serialization::Ephemeris valid_ephemeris_message_;
 };
 
 RigidMotion<ICRFJ2000Equator, Barycentric> const
@@ -403,7 +411,8 @@ TEST_F(PluginTest, Serialization) {
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   for (int index = SolarSystemFactory::kSun + 1;
@@ -462,7 +471,8 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       /*parent_index=*/1,
       elements,
       make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
@@ -716,7 +726,8 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystemFactory::kEarth);
@@ -734,7 +745,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_));
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   for (int index = SolarSystemFactory::kSun + 1;
