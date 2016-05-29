@@ -244,17 +244,20 @@ class Ephemeris {
 
   Checkpoint GetCheckpoint();
 
-  // Computes the acceleration due to one body, |body1| (with index |b1| in the
-  // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
-  // indices [b2_begin, b2_end[ in the |positions| and |accelerations| arrays).
-  // The template parameters specify what we know about the bodies, and
-  // therefore what forces apply.
+  // Computes the accelerations between one body, |body1| (with index |b1| in
+  // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
+  // indices [b2_begin, b2_end[ in the |bodies2|, |positions| and
+  // |accelerations| arrays).  The template parameters specify what we know
+  // about the bodies, and therefore what forces apply.  Works for both owning
+  // and non-owning pointers thanks to the |MassiveBodyConstPtr| template
+  // parameter.
   template<bool body1_is_oblate,
-           bool body2_is_oblate>
+           bool body2_is_oblate,
+           typename MassiveBodyConstPtr>
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
       size_t const b1,
-      std::vector<not_null<MassiveBody const*>> const& bodies2,
+      std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
@@ -318,12 +321,6 @@ class Ephemeris {
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
-
-  // The indices in |bodies_| correspond to those in |oblate_bodies_| and
-  // |spherical_bodies_|, in sequence.  The elements of |oblate_bodies_| are
-  // really |OblateBody<Frame>| but it's inconvenient to express.
-  std::vector<not_null<MassiveBody const*>> oblate_bodies_;
-  std::vector<not_null<MassiveBody const*>> spherical_bodies_;
 
   // The indices in |bodies_| correspond to those in |trajectories_|.
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
