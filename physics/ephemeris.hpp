@@ -244,11 +244,13 @@ class Ephemeris {
 
   Checkpoint GetCheckpoint();
 
-  // Computes the acceleration due to one body, |body1| (with index |b1| in the
-  // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
+  // Computes the accelerations between one body, |body1| (with index |b1| in
+  // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
   // indices [b2_begin, b2_end[ in the |bodies2|, |positions| and
   // |accelerations| arrays).  The template parameters specify what we know
-  // about the bodies, and therefore what forces apply.
+  // about the bodies, and therefore what forces apply.  Works for both owning
+  // and non-owning pointers thanks to the |MassiveBodyConstPtr| template
+  // parameter.
   template<bool body1_is_oblate,
            bool body2_is_oblate,
            typename MassiveBodyConstPtr>
