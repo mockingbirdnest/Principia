@@ -514,11 +514,15 @@ TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->UpdateCelestialHierarchy(kNotABody, SolarSystemFactory::kPluto);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->UpdateCelestialHierarchy(SolarSystemFactory::kSun, kNotABody);
   }, "Map key not found");
@@ -532,6 +536,8 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, kNotABody);
   }, "Map key not found");
@@ -548,6 +554,8 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
@@ -556,6 +564,8 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kSun);
     EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_));
