@@ -250,15 +250,16 @@ class Ephemeris {
   // The template parameters specify what we know about the bodies, and
   // therefore what forces apply.
   template<bool body1_is_oblate,
-           bool body2_is_oblate>
-  void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
+           bool body2_is_oblate,
+           typename MassiveBodyConstPtr>
+  static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
       size_t const b1,
+      std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations)
-      const;
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
