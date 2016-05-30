@@ -614,6 +614,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
           MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
 
   InsertAllSolarSystemBodies();
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kEarth);
@@ -659,6 +661,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
 
   InsertAllSolarSystemBodies();
+  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
   EXPECT_CALL(*mock_ephemeris_, t_max()).WillRepeatedly(Return(Instant()));
@@ -704,11 +708,15 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->VesselFromParent(guid);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::kSun);
     plugin_->VesselFromParent(guid);
@@ -722,11 +730,15 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->CelestialFromParent(kNotABody);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+        .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->CelestialFromParent(SolarSystemFactory::kSun);
   }, "is the sun");
