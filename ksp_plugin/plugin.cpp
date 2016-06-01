@@ -10,6 +10,7 @@
 #include <vector>
 #include <set>
 
+#include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
@@ -181,6 +182,21 @@ void Plugin::EndInitialization() {
   initializing_.Flop();
 
   InitializeEphemerisAndSetCelestialTrajectories();
+
+  // Log the serialized ephemeris.
+  serialization::Ephemeris ephemeris_message;
+  ephemeris_->WriteToMessage(&ephemeris_message);
+  std::string const bytes = ephemeris_message.SerializeAsString();
+  base::UniqueArray<std::uint8_t> const hex((bytes.size() << 1) + 1);
+  base::HexadecimalEncode(
+      base::Array<std::uint8_t const>(
+          reinterpret_cast<std::uint8_t const*>(bytes.data()), bytes.size()),
+      hex.get());
+  hex.data[hex.size - 1] = 0;
+  // Begin and end markers to make sure the hex did not get clipped (this might
+  // happen if the message is very big).
+  LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
+            << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,

@@ -16,6 +16,7 @@
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/optional_logging.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/version.generated.h"
@@ -73,6 +74,18 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
     char const* const axis_declination,
     char const* const j2,
     char const* const reference_radius) {
+  // Logging operators would dereference a null C string.
+  auto const make_optional_c_string = [](char const* const c_string) {
+    return (c_string == nullptr) ? std::experimental::nullopt
+                                 : std::experimental::make_optional(c_string);
+  };
+  LOG(INFO) << __FUNCTION__ << "\n"
+            << NAMED(make_optional_c_string(gravitational_parameter)) << "\n"
+            << NAMED(make_optional_c_string(mean_radius)) << "\n"
+            << NAMED(make_optional_c_string(axis_right_ascension)) << "\n"
+            << NAMED(make_optional_c_string(axis_declination)) << "\n"
+            << NAMED(make_optional_c_string(j2)) << "\n"
+            << NAMED(make_optional_c_string(reference_radius));
   serialization::GravityModel::Body gravity_model;
   gravity_model.set_gravitational_parameter(gravitational_parameter);
   gravity_model.set_mean_radius(mean_radius);
