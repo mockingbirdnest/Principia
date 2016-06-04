@@ -53,6 +53,7 @@ internal class MapNodePool {
       node_properties.celestial = celestial;
       node_properties.world_position = apsis;
       node_properties.source = source;
+      node_properties.time = apsis_iterator.IteratorGetTime();
 
       if (pool_index_ == nodes_.Count) {
         AddMapNodeToPool();
@@ -114,11 +115,16 @@ internal class MapNodePool {
                   properties_[node].world_position).ToString("N0",
                                                              Culture.culture) +
               " m</color>";
+          caption.captionLine1 =
+              "T" +
+              FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
+                  Planetarium.GetUniversalTime() - properties_[node].time));
           if (properties_[node].celestial.GetAltitude(
-              properties_[node].world_position) < 0) {
-          caption.Header =
-              properties_[node].celestial.name + " Impact<color=" +
-              XKCDColors.HexFormat.Chartreuse + "></color>";
+                  properties_[node].world_position) < 0) {
+            caption.Header = properties_[node].celestial.name +
+                             " Impact<color=" +
+                             XKCDColors.HexFormat.Chartreuse + "></color>";
+            caption.captionLine1 = "";
           }
           switch (properties_[node].source) {
             case NodeSource.FLIGHT_PLAN:
@@ -144,6 +150,7 @@ internal class MapNodePool {
     public Vector3d world_position;
     public CelestialBody celestial;
     public NodeSource source;
+    public double time;
   }
 
   private List<KSP.UI.Screens.Mapview.MapNode> nodes_;
