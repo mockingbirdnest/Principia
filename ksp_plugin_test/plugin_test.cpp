@@ -834,6 +834,8 @@ TEST_F(PluginTest, Frenet) {
   EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 2));
   EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3));
   EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 4));
+  EXPECT_THAT(plugin.VesselVelocity(satellite),
+              AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 2));
 }
 
 }  // namespace ksp_plugin

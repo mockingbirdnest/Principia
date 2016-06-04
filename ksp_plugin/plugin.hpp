@@ -279,6 +279,8 @@ class Plugin {
   virtual Vector<double, World> VesselNormal(GUID const& vessel_guid) const;
   virtual Vector<double, World> VesselBinormal(GUID const& vessel_guid) const;
 
+  virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
+
   // Returns
   // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
