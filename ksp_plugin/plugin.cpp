@@ -579,6 +579,19 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
                                Vector<double, Frenet<Navigation>>({0, 0, 1}));
 }
 
+Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
+  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  auto const& last = vessel.prolongation().last();
+  Instant const& time = last.time();
+  DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
+      last.degrees_of_freedom();
+  DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
+      plotting_frame_->ToThisFrameAtTime(time)(barycentric_degrees_of_freedom);
+  return Identity<WorldSun, World>()(BarycentricToWorldSun()(
+      plotting_frame_->FromThisFrameAtTime(time).orthogonal_map()(
+          plotting_frame_degrees_of_freedom.velocity())));
+}
+
 OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
   return kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget();
 }
