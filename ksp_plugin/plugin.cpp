@@ -65,7 +65,8 @@ namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
 
-std::uint64_t const ksp_stock_system_fingerprint = 0x2491936A92E3111Eu;
+std::uint64_t const ksp_stock_system_fingerprint = 0xB0C5DF211A8E6008u;
+std::uint64_t const ksp_fixed_system_fingerprint = 0x2491936A92E3111Eu;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
@@ -174,6 +175,8 @@ void Plugin::EndInitialization() {
     if (system_fingerprint == ksp_stock_system_fingerprint) {
       is_ksp_stock_system_ = true;
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+    } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
+      LOG(INFO) << "This is the fixed KSP system, all hail retrobop!";
     }
 
     HierarchicalSystem<Barycentric>::BarycentricSystem system =
