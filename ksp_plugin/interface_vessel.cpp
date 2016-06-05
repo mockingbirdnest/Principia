@@ -48,5 +48,13 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
       ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
 }
 
+XYZ principia__VesselVelocity(Plugin const* const plugin,
+                              char const* const vessel_guid) {
+  journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
+  return m.Return(
+      ToXYZ(CHECK_NOTNULL(plugin)->VesselVelocity(vessel_guid).coordinates() /
+            (Metre / Second)));
+}
+
 }  // namespace interface
 }  // namespace principia

@@ -740,8 +740,7 @@ TEST_F(InterfaceTest, Frenet) {
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
     EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID)).WillOnce(Return(tangent));
-    XYZ t =
-        principia__VesselTangent(plugin_.get(), kVesselGUID);
+    XYZ t = principia__VesselTangent(plugin_.get(), kVesselGUID);
     EXPECT_EQ(t.x, tangent.coordinates().x);
     EXPECT_EQ(t.y, tangent.coordinates().y);
     EXPECT_EQ(t.z, tangent.coordinates().z);
@@ -749,8 +748,7 @@ TEST_F(InterfaceTest, Frenet) {
   {
     auto const normal = Vector<double, World>({-13, 7, 5});
     EXPECT_CALL(*plugin_, VesselNormal(kVesselGUID)).WillOnce(Return(normal));
-    XYZ n =
-        principia__VesselNormal(plugin_.get(), kVesselGUID);
+    XYZ n = principia__VesselNormal(plugin_.get(), kVesselGUID);
     EXPECT_EQ(n.x, normal.coordinates().x);
     EXPECT_EQ(n.y, normal.coordinates().y);
     EXPECT_EQ(n.z, normal.coordinates().z);
@@ -759,11 +757,20 @@ TEST_F(InterfaceTest, Frenet) {
     auto const binormal = Vector<double, World>({43, 67, 163});
     EXPECT_CALL(*plugin_, VesselBinormal(kVesselGUID))
         .WillOnce(Return(binormal));
-    XYZ b =
-        principia__VesselBinormal(plugin_.get(), kVesselGUID);
+    XYZ b = principia__VesselBinormal(plugin_.get(), kVesselGUID);
     EXPECT_EQ(b.x, binormal.coordinates().x);
     EXPECT_EQ(b.y, binormal.coordinates().y);
     EXPECT_EQ(b.z, binormal.coordinates().z);
+  }
+  {
+    auto const velocity = Velocity<World>(
+        {4 * Metre / Second, 5 * Metre / Second, 6 * Metre / Second});
+    EXPECT_CALL(*plugin_, VesselVelocity(kVesselGUID))
+        .WillOnce(Return(velocity));
+    XYZ v = principia__VesselVelocity(plugin_.get(), kVesselGUID);
+    EXPECT_EQ(v.x, velocity.coordinates().x / (Metre / Second));
+    EXPECT_EQ(v.y, velocity.coordinates().y / (Metre / Second));
+    EXPECT_EQ(v.z, velocity.coordinates().z / (Metre / Second));
   }
 }
 

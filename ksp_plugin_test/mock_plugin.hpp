@@ -174,6 +174,9 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(VesselBinormal,
                      Vector<double, World>(GUID const& vessel_guid));
 
+  MOCK_CONST_METHOD1(VesselVelocity,
+                     Velocity<World>(GUID const& vessel_guid));
+
   MOCK_CONST_METHOD0(BarycentricToWorldSun,
                      OrthogonalMap<Barycentric, WorldSun>());
 
