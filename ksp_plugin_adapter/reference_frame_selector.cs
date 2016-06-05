@@ -65,6 +65,68 @@ class ReferenceFrameSelector : WindowRenderer {
 
   public FrameType frame_type { get; private set; }
 
+  public static String Name(FrameType type, CelestialBody selected) {
+   switch (type) {
+     case FrameType.BODY_CENTRED_NON_ROTATING:
+       return selected.name + "-Centred Inertial";
+     case FrameType.BARYCENTRIC_ROTATING:
+        if (selected.is_root()) {
+          throw Log.Fatal("Naming barycentric rotating frame of root body");
+        } else {
+          return selected.referenceBody.name + "-" + selected.name +
+                 " Barycentric";
+        }
+     default:
+       throw Log.Fatal("Unexpected type " + type.ToString());
+   }
+  }
+
+  public static String ShortName(FrameType type, CelestialBody selected) {
+    switch (type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        return selected.name[0] + "CI";
+      case FrameType.BARYCENTRIC_ROTATING:
+        if (selected.is_root()) {
+          throw Log.Fatal("Naming barycentric rotating frame of root body");
+        } else {
+          return selected.referenceBody.name[0] + (selected.name[0] + "B");
+        }
+      default:
+        throw Log.Fatal("Unexpected type " + type.ToString());
+    }
+  }
+
+  public static String Description(FrameType type, CelestialBody selected) {
+    switch (type) {
+      case FrameType.BODY_CENTRED_NON_ROTATING:
+        return "Non-rotating reference frame fixing the centre of " +
+               selected.theName;
+      case FrameType.BARYCENTRIC_ROTATING:
+        if (selected.is_root()) {
+          throw Log.Fatal("Describing barycentric rotating frame of root body");
+        } else {
+          return "Reference frame fixing the barycentre of " +
+                 selected.theName + " and " + selected.referenceBody.theName +
+                 ", the plane in which they move about the barycentre, and" +
+                 " the line between them";
+        }
+      default:
+        throw Log.Fatal("Unexpected type " + type.ToString());
+    }
+  }
+
+  public String Name() {
+    return Name(frame_type, selected_celestial_);
+  }
+
+  public String ShortName() {
+    return ShortName(frame_type, selected_celestial_);
+  }
+
+  public String Description() {
+    return Description(frame_type, selected_celestial_);
+  }
+
   public CelestialBody[] FixedBodies() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
@@ -112,7 +174,8 @@ class ReferenceFrameSelector : WindowRenderer {
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (UnityEngine.GUILayout.Button(name_ + " selection...")) {
+    if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
+                                     ")...")) {
       show_selector_ = !show_selector_;
     }
     UnityEngine.GUI.skin = old_skin;
@@ -126,7 +189,8 @@ class ReferenceFrameSelector : WindowRenderer {
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
                               func       : RenderSelector,
-                              text       : name_ + " selection");
+                              text       : name_ + " selection (" + Name() +
+                                           ")");
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -144,27 +208,10 @@ class ReferenceFrameSelector : WindowRenderer {
 
     // Right-hand side: toggles for reference frame type selection.
     UnityEngine.GUILayout.BeginVertical();
-    TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING,
-                 "Non-rotating reference frame fixing the centre of " +
-                     selected_celestial_.theName);
-#if HAS_SURFACE
-    TypeSelector(FrameType.SURFACE,
-                 "Reference frame of the surface of " +
-                     selected_celestial_.theName);
-#endif
+    TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
     if (!selected_celestial_.is_root()) {
       CelestialBody parent = selected_celestial_.orbit.referenceBody;
-      TypeSelector(FrameType.BARYCENTRIC_ROTATING,
-                   "Reference frame fixing the barycentre of " +
-                   selected_celestial_.theName + " and " + parent.theName +
-                   ", the plane in which they move about the barycentre, and " +
-                   "the line between them");
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-      TypeSelector(FrameType.BODY_CENTRED_ALIGNED_WITH_PARENT,
-                   "Reference frame fixing the centre of " +
-                       selected_celestial_.theName + " and the line between " +
-                       selected_celestial_.theName + " and " + parent.theName);
-#endif
+      TypeSelector(FrameType.BARYCENTRIC_ROTATING);
     }
     UnityEngine.GUILayout.EndVertical();
 
@@ -219,11 +266,11 @@ class ReferenceFrameSelector : WindowRenderer {
     }
   }
 
-  private void TypeSelector(FrameType value, string text) {
+  private void TypeSelector(FrameType value) {
    bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
    UnityEngine.GUI.skin.toggle.wordWrap = true;
    if (UnityEngine.GUILayout.Toggle(frame_type == value,
-                                    text,
+                                    Description(value, selected_celestial_),
                                     UnityEngine.GUILayout.Width(150),
                                     UnityEngine.GUILayout.Height(120))) {
       if (frame_type != value) {
