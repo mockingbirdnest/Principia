@@ -12,6 +12,13 @@ message Celestial {
   required HistoryAndProlongation history_and_prolongation = 2;
 }
 
+message CelestialJacobiKeplerian {
+  required int32 celestial_index = 1;
+  optional int32 parent_index = 2;
+  optional KeplerianElements keplerian_elements = 3;
+  required MassiveBody body = 4;
+}
+
 // Pre-Буняковский.
 message HistoryAndProlongation {
   required DiscreteTrajectory history = 1;

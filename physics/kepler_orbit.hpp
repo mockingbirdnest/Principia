@@ -20,6 +20,9 @@ struct KeplerianElements {
   Angle longitude_of_ascending_node;
   Angle argument_of_periapsis;
   Angle mean_anomaly;
+
+  void WriteToMessage(
+      not_null<serialization::KeplerianElements*> const message) const;
 };
 
 template<typename Frame>

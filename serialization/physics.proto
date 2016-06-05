@@ -95,6 +95,17 @@ message Ephemeris {
   optional Quantity step = 4;
 }
 
+message KeplerianElements {
+  required Frame frame = 1;
+  required double eccentricity = 2;
+  optional Quantity semimajor_axis = 3;
+  optional Quantity mean_motion = 4;
+  required Quantity inclination = 5;
+  required Quantity longitude_of_ascending_node = 6;
+  required Quantity argument_of_periapsis = 7;
+  required Quantity mean_anomaly = 8;
+}
+
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
   extensions 2000 to 2999;  // Last used: 2002.
