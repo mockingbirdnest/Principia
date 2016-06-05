@@ -115,6 +115,18 @@ class ReferenceFrameSelector : WindowRenderer {
     }
   }
 
+  public String Name() {
+    return Name(frame_type, selected_celestial_);
+  }
+
+  public String ShortName() {
+    return ShortName(frame_type, selected_celestial_);
+  }
+
+  public String Description() {
+    return Description(frame_type, selected_celestial_);
+  }
+
   public CelestialBody[] FixedBodies() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
@@ -162,7 +174,8 @@ class ReferenceFrameSelector : WindowRenderer {
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (UnityEngine.GUILayout.Button(name_ + " selection...")) {
+    if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
+                                     ")...")) {
       show_selector_ = !show_selector_;
     }
     UnityEngine.GUI.skin = old_skin;
@@ -176,7 +189,8 @@ class ReferenceFrameSelector : WindowRenderer {
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
                               func       : RenderSelector,
-                              text       : name_ + " selection");
+                              text       : name_ + " selection (" + Name() +
+                                           ")");
     }
     UnityEngine.GUI.skin = old_skin;
   }
