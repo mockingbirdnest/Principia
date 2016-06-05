@@ -36,13 +36,15 @@ internal class BoxedInt32 : Boxed<int> {
   protected BoxedInt32(int all) : base(all) {}
 }
 
-internal class BoxedKeplerianElements : Boxed<KeplerianElements> {
-  public static implicit operator BoxedKeplerianElements(
-      KeplerianElements all) {
-    return new BoxedKeplerianElements(all);
+internal class BoxedInterfaceKeplerianElements :
+    Boxed<InterfaceKeplerianElements> {
+  public static implicit operator BoxedInterfaceKeplerianElements(
+      InterfaceKeplerianElements all) {
+    return new BoxedInterfaceKeplerianElements(all);
   }
 
-  protected BoxedKeplerianElements(KeplerianElements all) : base(all) {}
+  protected BoxedInterfaceKeplerianElements(InterfaceKeplerianElements all)
+      : base(all) {}
 }
 
 }  // namespace ksp_plugin_adapter

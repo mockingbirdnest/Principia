@@ -32,6 +32,7 @@
 namespace principia {
 
 using base::FindOrDie;
+using base::FingerprintCat2011;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::AffineMap;
@@ -154,11 +155,24 @@ void Plugin::InsertCelestialJacobiKeplerian(
       hierarchical_initialization_->
           indices_to_bodies.emplace(celestial_index, unowned_body).second;
   CHECK(inserted);
+
+  // Record the fingerprints of the parameters to detect if we are in KSP stock.
+  CHECK(celestial_jacobi_keplerian_fingerprints_.insert(
+            FingerprintCelestialJacobiKeplerian(celestial_index,
+                                                parent_index,
+                                                keplerian_elements,
+                                                *unowned_body)).second);
 }
 
 void Plugin::EndInitialization() {
   CHECK(initializing_);
   if (hierarchical_initialization_) {
+    std::uint64_t system_fingerprint = 0;
+    for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
+      system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
+    }
+    LOG(ERROR)<<"Overall fingerprint: "<<std::hex<<system_fingerprint;
+
     HierarchicalSystem<Barycentric>::BarycentricSystem system =
         hierarchical_initialization_->system.ConsumeBarycentricSystem();
     std::map<not_null<MassiveBody const*>, Index> bodies_to_indices;
@@ -919,6 +933,26 @@ void Plugin::ReadCelestialsFromMessages(
       celestial->set_parent(parent);
     }
   }
+}
+
+std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    std::experimental::optional<physics::KeplerianElements<Barycentric>> const&
+        keplerian_elements,
+    MassiveBody const& body) {
+  serialization::CelestialJacobiKeplerian message;
+  message.set_celestial_index(celestial_index);
+  if (parent_index) {
+    message.set_parent_index(*parent_index);
+  }
+  if (keplerian_elements) {
+    keplerian_elements->WriteToMessage(message.mutable_keplerian_elements());
+  }
+  body.WriteToMessage(message.mutable_body());
+
+  const std::string serialized = message.SerializeAsString();
+  return Fingerprint2011(serialized.c_str(), serialized.size());
 }
 
 }  // namespace ksp_plugin

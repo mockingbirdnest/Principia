@@ -1302,7 +1302,7 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Inserting " + body.name + "...");
         Orbit orbit = unmodified_orbits_[body];
         double mean_motion = 2 * Math.PI / orbit.period;
-        var keplerian_elements = new KeplerianElements{
+        var keplerian_elements = new InterfaceKeplerianElements{
             eccentricity                           = orbit.eccentricity,
             semimajor_axis                         = double.NaN,
             mean_motion                            = mean_motion,
