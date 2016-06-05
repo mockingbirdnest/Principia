@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ios>
 #include <limits>
 #include <map>
 #include <string>
@@ -169,6 +170,7 @@ void Plugin::EndInitialization() {
     for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
       system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
     }
+    LOG(INFO) << "System fingerprint is " << std::hex << system_fingerprint;
     if (system_fingerprint == ksp_stock_system_fingerprint) {
       is_ksp_stock_system_ = true;
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
