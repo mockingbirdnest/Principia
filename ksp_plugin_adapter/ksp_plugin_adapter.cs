@@ -521,7 +521,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void Update() {
+  private void LateUpdate() {
     if (MapView.MapIsEnabled && map_renderer_ == null) {
       map_renderer_ =
           PlanetariumCamera.Camera.gameObject.AddComponent<MapRenderer>();
@@ -560,72 +560,81 @@ public partial class PrincipiaPluginAdapter
         }
       }
 
+      // Orient the ball.
       if (PluginRunning() && fix_navball_in_plotting_frame_) {
-        // Orient the ball.
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-                (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-                    (XYZ)Planetarium.fetch.Sun.position,
-                    (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-        // TODO(egg): the navball should be independent from the frame of the
-        // Frenet trihedron (seeing your body-centric velocity with a compass
-        // navball like in stock makes sense, so does seeing your velocity in
-        // any reference frame with the fixed stars navball), although the
-        // Frenet trihedron should be in the same frame as the map view
-        // trajectory.  Right now when in space the navball is always linked to
-        // the frame of the Frenet trihedron and the trajectory.
-        if (has_active_vessel_in_space() &&
-          plugin_.HasVessel(active_vessel.id.ToString())) {
-          // Orient the Frenet trihedron.
-          Vector3d prograde =
-              (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString());
-          Vector3d radial =
-              (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString());
-          // Yes, the astrodynamicist's normal is the mathematician's binormal.
-          // Don't ask.
-          Vector3d normal =
-              (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
+            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+                (XYZ)Planetarium.fetch.Sun.position,
+                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+      }
 
-          SetNavballVector(navball_.progradeVector, prograde);
-          SetNavballVector(navball_.radialInVector, radial);
-          SetNavballVector(navball_.normalVector, normal);
-          SetNavballVector(navball_.retrogradeVector, -prograde);
-          SetNavballVector(navball_.radialOutVector, -radial);
-          SetNavballVector(navball_.antiNormalVector, -normal);
-          // Make the autopilot target our Frenet trihedron.
-          if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
-              (Delegate)(FlightInputCallback)OverrideRSASTarget) {
-            Log.Info("Prepending RSAS override");
-            active_vessel.OnAutopilotUpdate =
-                (FlightInputCallback)Delegate.Combine(
-                    new FlightInputCallback(OverrideRSASTarget),
-                    active_vessel.OnAutopilotUpdate);
-          }
-          if (active_vessel.Autopilot.Enabled) {
-            override_rsas_target_ = true;
-            switch (active_vessel.Autopilot.Mode) {
-              case VesselAutopilot.AutopilotMode.Prograde:
-                rsas_target_ = prograde;
-                break;
-              case VesselAutopilot.AutopilotMode.Retrograde:
-                rsas_target_ = -prograde;
-                break;
-              case VesselAutopilot.AutopilotMode.RadialIn:
-                rsas_target_ = radial;
-                break;
-              case VesselAutopilot.AutopilotMode.RadialOut:
-                rsas_target_ = -radial;
-                break;
-              case VesselAutopilot.AutopilotMode.Normal:
-                rsas_target_ = normal;
-                break;
-              case VesselAutopilot.AutopilotMode.Antinormal:
-                rsas_target_ = -normal;
-                break;
-              default:
-                override_rsas_target_ = false;
-                break;
-            }
+      if (PluginRunning() &&
+          has_active_vessel_in_space() &&
+          plugin_.HasVessel(active_vessel.id.ToString()) &&
+          FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Orbit) {
+        KSP.UI.Screens.Flight.SpeedDisplay speed_display =
+            KSP.UI.Screens.Flight.SpeedDisplay.Instance;
+        if (speed_display?.textTitle != null &&
+            speed_display?.textSpeed != null) {
+          speed_display.textTitle.text =
+              plotting_frame_selector_.get().ShortName();
+          speed_display.textSpeed.text =
+              ((Vector3d)plugin_.VesselVelocity(active_vessel.id.ToString()))
+                  .magnitude.ToString("F1") + "m/s";
+        }
+
+        // Orient the Frenet trihedron.
+        Vector3d prograde =
+            (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString());
+        Vector3d radial =
+            (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString());
+        // Yes, the astrodynamicist's normal is the mathematician's binormal.
+        // Don't ask.
+        Vector3d normal =
+            (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
+
+        SetNavballVector(navball_.progradeVector, prograde);
+        SetNavballVector(navball_.radialInVector, radial);
+        SetNavballVector(navball_.normalVector, normal);
+        SetNavballVector(navball_.retrogradeVector, -prograde);
+        SetNavballVector(navball_.radialOutVector, -radial);
+        SetNavballVector(navball_.antiNormalVector, -normal);
+
+        // Make the autopilot target our Frenet trihedron.
+        if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
+            (Delegate)(FlightInputCallback)OverrideRSASTarget) {
+          Log.Info("Prepending RSAS override");
+          active_vessel.OnAutopilotUpdate =
+              (FlightInputCallback)Delegate.Combine(
+                  new FlightInputCallback(OverrideRSASTarget),
+                  active_vessel.OnAutopilotUpdate);
+        }
+        if (active_vessel.Autopilot.Enabled) {
+          override_rsas_target_ = true;
+          switch (active_vessel.Autopilot.Mode) {
+            case VesselAutopilot.AutopilotMode.Prograde:
+              rsas_target_ = prograde;
+              break;
+            case VesselAutopilot.AutopilotMode.Retrograde:
+              rsas_target_ = -prograde;
+              break;
+            case VesselAutopilot.AutopilotMode.RadialIn:
+              rsas_target_ = radial;
+              break;
+            case VesselAutopilot.AutopilotMode.RadialOut:
+              rsas_target_ = -radial;
+              break;
+            case VesselAutopilot.AutopilotMode.Normal:
+              rsas_target_ = normal;
+              break;
+            case VesselAutopilot.AutopilotMode.Antinormal:
+              rsas_target_ = -normal;
+              break;
+            default:
+              override_rsas_target_ = false;
+              break;
           }
         }
       }
