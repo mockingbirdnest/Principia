@@ -100,7 +100,7 @@ class ReferenceFrameSelector : WindowRenderer {
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return "Non-rotating reference frame fixing the centre of " +
-                     selected.theName;
+               selected.theName;
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
           throw Log.Fatal("Describing barycentric rotating frame of root body");
