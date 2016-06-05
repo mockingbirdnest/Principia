@@ -170,6 +170,7 @@ void Plugin::EndInitialization() {
       system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
     }
     if (system_fingerprint == ksp_stock_system_fingerprint) {
+      is_ksp_stock_system_ = true;
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
     }
 
@@ -211,6 +212,11 @@ void Plugin::EndInitialization() {
   // happen if the message is very big).
   LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
             << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
+}
+
+bool Plugin::IsKspStockSystem() const {
+  CHECK(!initializing_);
+  return is_ksp_stock_system_;
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,

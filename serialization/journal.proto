@@ -81,7 +81,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5095.
+  extensions 5000 to 5999;  // Last used: 5096.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -663,6 +663,20 @@ message InsertOrKeepVessel {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required int32 parent_index = 3;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IsKspStockSystem {
+  extend Method {
+    optional IsKspStockSystem extension = 5096;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   message Return {
     required bool result = 1;

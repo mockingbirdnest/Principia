@@ -100,6 +100,10 @@ class Plugin {
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
 
+  // Returns true iff this is the unstable KSP stock system.  Must be called
+  // after initialization.
+  virtual bool IsKspStockSystem() const;
+
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies must already have been
   // inserted. Must be called after initialization.
@@ -414,6 +418,7 @@ class Plugin {
 
   // Used for detecting and patching the stock system.
   std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
+  bool is_ksp_stock_system_ = false;
 
   friend class TestablePlugin;
 };

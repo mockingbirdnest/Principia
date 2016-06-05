@@ -418,6 +418,11 @@ void principia__EndInitialization(Plugin* const plugin) {
   return m.Return();
 }
 
+bool principia__IsKspStockSystem(Plugin* const plugin) {
+  journal::Method<journal::IsKspStockSystem> m({plugin});
+  return m.Return(CHECK_NOTNULL(plugin)->IsKspStockSystem());
+}
+
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
