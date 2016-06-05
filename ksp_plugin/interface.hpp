@@ -114,13 +114,13 @@ physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
 physics::KeplerianElements<Barycentric> FromKeplerianElements(
-    KeplerianElements const& keplerian_elements);
+    InterfaceKeplerianElements const& keplerian_elements);
 geometry::R3Element<double> FromXYZ(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters);
-KeplerianElements ToKeplerianElements(
+InterfaceKeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements);
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);

@@ -23,11 +23,12 @@
 namespace principia {
 namespace base {
 
-inline std::uint64_t FingerprintCat2011(std::uint64_t fp1, std::uint64_t fp2) {
+inline std::uint64_t FingerprintCat2011(std::uint64_t const fp1,
+                                        std::uint64_t const fp2) {
   // Two big prime numbers.
-  const std::uint64_t kMul1 = 0xC6A4A7935BD1E995u;
-  const std::uint64_t kMul2 = 0x228876A7198B743u;
-  std::uint64_t a = fp1 * kMul1 + fp2 * kMul2;
+  std::uint64_t const kMul1 = 0xC6A4A7935BD1E995u;
+  std::uint64_t const kMul2 = 0x228876A7198B743u;
+  std::uint64_t const a = fp1 * kMul1 + fp2 * kMul2;
   // Note: The following line also makes sure we never return 0 or 1, because we
   // will only add something to 'a' if there are any MSBs (the remaining bits
   // after the shift) being 0, in which case wrapping around would not happen.
@@ -36,10 +37,10 @@ inline std::uint64_t FingerprintCat2011(std::uint64_t fp1, std::uint64_t fp2) {
 
 // This should be better (collision-wise) than the default hash<std::string>,
 // without being much slower. It never returns 0 or 1.
-inline std::uint64_t Fingerprint2011(const char* bytes, size_t len) {
+inline std::uint64_t Fingerprint2011(char const* bytes, size_t const len) {
   // Some big prime numer.
   std::uint64_t fp = 0xA5B85C5E198ED849u;
-  const char* end = bytes + len;
+  char const* end = bytes + len;
   while (bytes + 8 <= end) {
     fp = FingerprintCat2011(
              fp, *(reinterpret_cast<const std::uint64_t*>(bytes)));

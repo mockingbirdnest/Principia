@@ -32,6 +32,25 @@ using quantities::Time;
 namespace physics {
 
 template<typename Frame>
+void KeplerianElements<Frame>::WriteToMessage(
+    not_null<serialization::KeplerianElements*> const message) const {
+  Frame::WriteToMessage(message->mutable_frame());
+  message->set_eccentricity(eccentricity);
+  if (semimajor_axis) {
+    semimajor_axis->WriteToMessage(message->mutable_semimajor_axis());
+  }
+  if (mean_motion) {
+    mean_motion->WriteToMessage(message->mutable_mean_motion());
+  }
+  inclination.WriteToMessage(message->mutable_inclination());
+  longitude_of_ascending_node.WriteToMessage(
+      message->mutable_longitude_of_ascending_node());
+  argument_of_periapsis.WriteToMessage(
+      message->mutable_argument_of_periapsis());
+  mean_anomaly.WriteToMessage(message->mutable_mean_anomaly());
+}
+
+template<typename Frame>
 std::string DebugString(KeplerianElements<Frame> const& elements) {
   std::string result = "{";
   auto const append = [&result](

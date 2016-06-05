@@ -100,6 +100,10 @@ class Plugin {
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
 
+  // Returns true iff this is the unstable KSP stock system.  Must be called
+  // after initialization.
+  virtual bool IsKspStockSystem() const;
+
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies must already have been
   // inserted. Must be called after initialization.
@@ -354,6 +358,15 @@ class Plugin {
     google::protobuf::RepeatedPtrField<T> const& celestial_messages,
     not_null<IndexToOwnedCelestial*> const celestials);
 
+  // Computes a fingerprint for the parameters passed to
+  // |InsertCelestialJacobiKeplerian|.
+  static std::uint64_t FingerprintCelestialJacobiKeplerian(
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      std::experimental::optional<
+          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
+      MassiveBody const& body);
+
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
 
@@ -402,6 +415,10 @@ class Plugin {
   // Not null after initialization. |EndInitialization| sets it to the
   // heliocentric frame.
   std::unique_ptr<NavigationFrame> plotting_frame_;
+
+  // Used for detecting and patching the stock system.
+  std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
+  bool is_ksp_stock_system_ = false;
 
   friend class TestablePlugin;
 };

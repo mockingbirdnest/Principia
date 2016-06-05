@@ -32,6 +32,7 @@
 namespace principia {
 
 using base::FindOrDie;
+using base::FingerprintCat2011;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::AffineMap;
@@ -61,15 +62,13 @@ using ::operator<<;
 
 namespace {
 
-// The map between the vector spaces of |World| and |AliceWorld|.
-Permutation<World, AliceWorld> const kWorldLookingGlass(
-    Permutation<World, AliceWorld>::CoordinatePermutation::XZY);
+Length const fitting_tolerance = 1 * Milli(Metre);
+
+std::uint64_t const ksp_stock_system_fingerprint = 0x2491936A92E3111Eu;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
-Permutation<WorldSun, AliceSun> const kSunLookingGlass(
+Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
-
-Length const kFittingTolerance = 1 * Milli(Metre);
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
@@ -154,11 +153,27 @@ void Plugin::InsertCelestialJacobiKeplerian(
       hierarchical_initialization_->
           indices_to_bodies.emplace(celestial_index, unowned_body).second;
   CHECK(inserted);
+
+  // Record the fingerprints of the parameters to detect if we are in KSP stock.
+  CHECK(celestial_jacobi_keplerian_fingerprints_.insert(
+            FingerprintCelestialJacobiKeplerian(celestial_index,
+                                                parent_index,
+                                                keplerian_elements,
+                                                *unowned_body)).second);
 }
 
 void Plugin::EndInitialization() {
   CHECK(initializing_);
   if (hierarchical_initialization_) {
+    std::uint64_t system_fingerprint = 0;
+    for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
+      system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
+    }
+    if (system_fingerprint == ksp_stock_system_fingerprint) {
+      is_ksp_stock_system_ = true;
+      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+    }
+
     HierarchicalSystem<Barycentric>::BarycentricSystem system =
         hierarchical_initialization_->system.ConsumeBarycentricSystem();
     std::map<not_null<MassiveBody const*>, Index> bodies_to_indices;
@@ -197,6 +212,11 @@ void Plugin::EndInitialization() {
   // happen if the message is very big).
   LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
             << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
+}
+
+bool Plugin::IsKspStockSystem() const {
+  CHECK(!initializing_);
+  return is_ksp_stock_system_;
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
@@ -593,7 +613,7 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
 }
 
 OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
-  return kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget();
+  return sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget();
 }
 
 Instant Plugin::CurrentTime() const {
@@ -667,7 +687,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   if (is_pre_bourbaki) {
     ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
         message.pre_bourbaki_celestial(),
-        kFittingTolerance,
+        fitting_tolerance,
         DefaultEphemerisParameters());
     ReadCelestialsFromMessages(*ephemeris,
                                message.pre_bourbaki_celestial(),
@@ -794,7 +814,7 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
       std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
                                                initial_state,
                                                current_time_,
-                                               kFittingTolerance,
+                                               fitting_tolerance,
                                                DefaultEphemerisParameters());
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
@@ -919,6 +939,26 @@ void Plugin::ReadCelestialsFromMessages(
       celestial->set_parent(parent);
     }
   }
+}
+
+std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    std::experimental::optional<physics::KeplerianElements<Barycentric>> const&
+        keplerian_elements,
+    MassiveBody const& body) {
+  serialization::CelestialJacobiKeplerian message;
+  message.set_celestial_index(celestial_index);
+  if (parent_index) {
+    message.set_parent_index(*parent_index);
+  }
+  if (keplerian_elements) {
+    keplerian_elements->WriteToMessage(message.mutable_keplerian_elements());
+  }
+  body.WriteToMessage(message.mutable_body());
+
+  const std::string serialized = message.SerializeAsString();
+  return Fingerprint2011(serialized.c_str(), serialized.size());
 }
 
 }  // namespace ksp_plugin

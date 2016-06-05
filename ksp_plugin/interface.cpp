@@ -366,7 +366,7 @@ void principia__InsertCelestialJacobiKeplerian(
     char const* const axis_declination,
     char const* const j2,
     char const* const reference_radius,
-    KeplerianElements const* const keplerian_elements) {
+    InterfaceKeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
        celestial_index,
@@ -416,6 +416,11 @@ void principia__EndInitialization(Plugin* const plugin) {
   journal::Method<journal::EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin)->EndInitialization();
   return m.Return();
+}
+
+bool principia__IsKspStockSystem(Plugin* const plugin) {
+  journal::Method<journal::IsKspStockSystem> m({plugin});
+  return m.Return(CHECK_NOTNULL(plugin)->IsKspStockSystem());
 }
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
