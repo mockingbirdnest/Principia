@@ -388,7 +388,6 @@ public partial class PrincipiaPluginAdapter
                       t    : celestial.orbit.epoch,
                       body : celestial.orbit.referenceBody));
       }
-      Fix631();
     }
 
     GameEvents.onShowUI.Add(ShowGUI);
@@ -1293,46 +1292,55 @@ public partial class PrincipiaPluginAdapter
       // We create the plugin at time 0, rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
-      plugin_ = Interface.NewPlugin(0,
-                                    Planetarium.InverseRotAngle);
-      plugin_.InsertCelestialJacobiKeplerian(
-          celestial_index             :
-              Planetarium.fetch.Sun.flightGlobalsIndex,
-          parent_index                : null,
-          gravitational_parameter     :
-              Planetarium.fetch.Sun.gravParameter + " m^3/s^2",
-          mean_radius                 : Planetarium.fetch.Sun.Radius + " m",
-          axis_right_ascension        : null,
-          axis_declination            : null,
-          j2                          : null,
-          reference_radius            : null,
-          keplerian_elements          : null);
-      BodyProcessor insert_body = body => {
-        Log.Info("Inserting " + body.name + "...");
-        Orbit orbit = unmodified_orbits_[body];
-        double mean_motion = 2 * Math.PI / orbit.period;
-        var keplerian_elements = new KeplerianElements{
-            eccentricity                           = orbit.eccentricity,
-            semimajor_axis                         = double.NaN,
-            mean_motion                            = mean_motion,
-            inclination_in_degrees                 = orbit.inclination,
-            longitude_of_ascending_node_in_degrees = orbit.LAN,
-            argument_of_periapsis_in_degrees       = orbit.argumentOfPeriapsis,
-            mean_anomaly                           = orbit.meanAnomalyAtEpoch -
-                                                     orbit.epoch * mean_motion};
+      for(;;) {
+        plugin_ = Interface.NewPlugin(0,
+                                      Planetarium.InverseRotAngle);
         plugin_.InsertCelestialJacobiKeplerian(
-            celestial_index             : body.flightGlobalsIndex,
-            parent_index                : body.referenceBody.flightGlobalsIndex,
-            gravitational_parameter     : body.gravParameter + " m^3/s^2",
-            mean_radius                 : body.Radius + " m",
+            celestial_index             :
+                Planetarium.fetch.Sun.flightGlobalsIndex,
+            parent_index                : null,
+            gravitational_parameter     :
+                Planetarium.fetch.Sun.gravParameter + " m^3/s^2",
+            mean_radius                 : Planetarium.fetch.Sun.Radius + " m",
             axis_right_ascension        : null,
             axis_declination            : null,
             j2                          : null,
             reference_radius            : null,
-            keplerian_elements          : keplerian_elements);
-      };
-      ApplyToBodyTree(insert_body);
-      plugin_.EndInitialization();
+            keplerian_elements          : null);
+        BodyProcessor insert_body = body => {
+          Log.Info("Inserting " + body.name + "...");
+          Orbit orbit = unmodified_orbits_[body];
+          double mean_motion = 2 * Math.PI / orbit.period;
+          var keplerian_elements = new KeplerianElements{
+              eccentricity                           = orbit.eccentricity,
+              semimajor_axis                         = double.NaN,
+              mean_motion                            = mean_motion,
+              inclination_in_degrees                 = orbit.inclination,
+              longitude_of_ascending_node_in_degrees = orbit.LAN,
+              argument_of_periapsis_in_degrees       =
+                  orbit.argumentOfPeriapsis,
+              mean_anomaly                           =
+                  orbit.meanAnomalyAtEpoch - orbit.epoch * mean_motion};
+          plugin_.InsertCelestialJacobiKeplerian(
+              celestial_index             : body.flightGlobalsIndex,
+              parent_index                :
+                  body.referenceBody.flightGlobalsIndex,
+              gravitational_parameter     : body.gravParameter + " m^3/s^2",
+              mean_radius                 : body.Radius + " m",
+              axis_right_ascension        : null,
+              axis_declination            : null,
+              j2                          : null,
+              reference_radius            : null,
+              keplerian_elements          : keplerian_elements);
+        };
+        ApplyToBodyTree(insert_body);
+        plugin_.EndInitialization();
+        if (plugin_.IsKspStockSystem()) {
+          Fix631();
+        } else {
+          break;
+        }
+      }
     }
     plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
@@ -1369,44 +1377,12 @@ public partial class PrincipiaPluginAdapter
 
   // Deals with issue #631, unstability of the Jool system's resonance.
   private void Fix631() {
-    // Check whether this looks like stock.
-    if (FlightGlobals.Bodies.Count < 15) {
-      return;
-    }
-    Func<CelestialBody, double> mean_longitude =
-        (celestial) =>
-            (celestial.orbit.LAN + celestial.orbit.argumentOfPeriapsis) *
-                180 / Math.PI +
-            celestial.orbit.meanAnomalyAtEpoch;
     CelestialBody jool = FlightGlobals.Bodies[8];
     CelestialBody laythe = FlightGlobals.Bodies[9];
     CelestialBody vall = FlightGlobals.Bodies[10];
     CelestialBody bop = FlightGlobals.Bodies[11];
     CelestialBody tylo = FlightGlobals.Bodies[12];
     CelestialBody pol = FlightGlobals.Bodies[14];
-    bool is_stock = true;
-    is_stock &= jool.orbitingBodies.Count == 5;
-    is_stock &= jool.name   == "Jool";
-    is_stock &= laythe.name == "Laythe";
-    is_stock &= vall.name   == "Vall";
-    is_stock &= bop.name    == "Bop";
-    is_stock &= tylo.name   == "Tylo";
-    is_stock &= pol.name    == "Pol";
-    is_stock &= laythe.referenceBody == jool;
-    is_stock &= vall.referenceBody   == jool;
-    is_stock &= tylo.referenceBody   == jool;
-    is_stock &= Convert.ToSingle(laythe.orbit.semiMajorAxis) == 27184000f;
-    is_stock &= Convert.ToSingle(vall.orbit.semiMajorAxis)   == 43152000f;
-    is_stock &= Convert.ToSingle(tylo.orbit.semiMajorAxis)   == 68500000f;
-    is_stock &= Convert.ToSingle(laythe.orbit.inclination) == 0f;
-    is_stock &= Convert.ToSingle(vall.orbit.inclination)   == 0f;
-    is_stock &= Convert.ToSingle(tylo.orbit.inclination)   == 0.025f;
-    is_stock &= Convert.ToSingle(mean_longitude(laythe)) == 3.14f;
-    is_stock &= Convert.ToSingle(mean_longitude(vall))   == 0.9f;
-    is_stock &= Convert.ToSingle(mean_longitude(tylo))   == 3.14f;
-    if (!is_stock) {
-      return;
-    }
     const double φ = 1.61803398875;
     // The |unmodified_orbits_| are unmodified in the sense that they are
     // unaffected by the plugin's computation; they are the orbits from which
