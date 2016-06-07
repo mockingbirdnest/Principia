@@ -1229,12 +1229,14 @@ public partial class PrincipiaPluginAdapter
           gravity_model_configs[0].config.GetNodes("body").
               ToDictionary(node => node.GetValue("name"));
     } else if (gravity_model_configs.Length > 1) {
-      Log.Fatal("too many gravity models");
+      Log.Fatal("too many gravity models (" + gravity_model_configs.Length +
+                ")");
     }
     if (cartesian_configs.Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
       if (cartesian_configs.Length > 1) {
-        Log.Fatal("too many Cartesian configs");
+        Log.Fatal("too many Cartesian configs (" + cartesian_configs.Length +
+                  ")");
       }
       if (name_to_gravity_model == null) {
         Log.Fatal("Cartesian config without gravity models");
