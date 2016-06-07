@@ -26,6 +26,19 @@ internal partial struct WXYZ {
 internal static partial class Interface {
   internal const string kDllPath = "principia";
 
+  internal static InterfaceKeplerianElements Elements(this Orbit orbit) {
+    double mean_motion = 2 * Math.PI / orbit.period;
+    return new InterfaceKeplerianElements{
+        eccentricity                           = orbit.eccentricity,
+        semimajor_axis                         = double.NaN,
+        mean_motion                            = mean_motion,
+        inclination_in_degrees                 = orbit.inclination,
+        longitude_of_ascending_node_in_degrees = orbit.LAN,
+        argument_of_periapsis_in_degrees       = orbit.argumentOfPeriapsis,
+        mean_anomaly                           =
+            orbit.meanAnomalyAtEpoch - orbit.epoch * mean_motion};
+  }
+
   [DllImport(dllName           : Interface.kDllPath,
              EntryPoint        = "principia__ActivateRecorder",
              CallingConvention = CallingConvention.Cdecl)]
