@@ -168,7 +168,7 @@ FromAdaptiveStepParameters(
 }
 
 inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
-    InterfaceKeplerianElements const& keplerian_elements) {
+    KeplerianElements const& keplerian_elements) {
   physics::KeplerianElements<Barycentric> barycentric_keplerian_elements;
   barycentric_keplerian_elements.eccentricity = keplerian_elements.eccentricity;
   barycentric_keplerian_elements.semimajor_axis =
@@ -205,7 +205,7 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
               (Metre / Second)};
 }
 
-inline InterfaceKeplerianElements ToKeplerianElements(
+inline KeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements) {
   return {keplerian_elements.eccentricity,
           keplerian_elements.semimajor_axis

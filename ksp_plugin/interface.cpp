@@ -366,7 +366,7 @@ void principia__InsertCelestialJacobiKeplerian(
     char const* const axis_declination,
     char const* const j2,
     char const* const reference_radius,
-    InterfaceKeplerianElements const* const keplerian_elements) {
+    KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
        celestial_index,
