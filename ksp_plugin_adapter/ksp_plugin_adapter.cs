@@ -1220,22 +1220,20 @@ public partial class PrincipiaPluginAdapter
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
-    if (GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel).Length == 0) {
-      Log.Fatal("missing gravity models");
-    } else if (GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel).Length >
-               1) {
+    var gravity_model_configs =
+        GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel);
+    var cartesian_configs =
+        GameDatabase.Instance.GetConfigs(kPrincipiaInitialState);
+    if (gravity_model_configs.Length == 1) {
+      name_to_gravity_model =
+          gravity_model_configs[0].config.GetNodes("body").
+              ToDictionary(node => node.GetValue("name"));
+    } else if (gravity_model_configs.Length > 1) {
       Log.Fatal("too many gravity models");
-    } else {
-      ConfigNode gravity_models =
-          GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel)[0].config;
-      name_to_gravity_model = new Dictionary<String, ConfigNode>();
-              foreach (ConfigNode node in gravity_models.GetNodes("body")) {
-          name_to_gravity_model.Add(node.GetValue("name"), node);
-        }
     }
-    if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
+    if (cartesian_configs.Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
-      if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 1) {
+      if (cartesian_configs.Length > 1) {
         Log.Fatal("too many Cartesian configs");
       }
       if (name_to_gravity_model == null) {
@@ -1247,10 +1245,9 @@ public partial class PrincipiaPluginAdapter
         plugin_ =
             Interface.NewPlugin(double.Parse(initial_states.GetValue("epoch")),
                                 Planetarium.InverseRotAngle);
-        var name_to_initial_state = new Dictionary<String, ConfigNode>();
-        foreach (ConfigNode node in initial_states.GetNodes("body")) {
-          name_to_initial_state.Add(node.GetValue("name"), node);
-        }
+        var name_to_initial_state =
+            initial_states.GetNodes("body").
+                ToDictionary(node => node.GetValue("name"));
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
           ConfigNode gravity_model;
@@ -1298,10 +1295,13 @@ public partial class PrincipiaPluginAdapter
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
       for(;;) {
+        plugin_ = Interface.NewPlugin(0,
+                                Planetarium.InverseRotAngle);
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
-          ConfigNode gravity_model;
-          if (name_to_gravity_model.TryGetValue(body.name, out gravity_model)) {
+          ConfigNode gravity_model = null;
+          if (name_to_gravity_model?.TryGetValue(body.name,
+                                                 out gravity_model) == true) {
             Log.Info("using custom gravity model");
           }
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
@@ -1328,6 +1328,7 @@ public partial class PrincipiaPluginAdapter
         ApplyToBodyTree(insert_body);
         plugin_.EndInitialization();
         if (plugin_.IsKspStockSystem()) {
+          Interface.DeletePlugin(ref plugin_);
           Fix631();
         } else {
           break;
@@ -1431,8 +1432,10 @@ public partial class PrincipiaPluginAdapter
       body.orbit.referenceBody = unmodified_orbits_[body].referenceBody;
       body.orbit.Init();
       body.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
+      body.tidallyLocked = true;
       body.CBUpdate();
     }
+    RemoveBuggyTidalLocking();
   }
 
 }
