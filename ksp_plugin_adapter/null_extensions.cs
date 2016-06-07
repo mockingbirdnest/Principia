@@ -16,7 +16,7 @@ internal static class NullExtensions {
   // no useful analogue to |T T?.GetValueOrDefault()| in the case of a class.
   internal static Value GetValueOrDefault<Value>(this Value value,
                                                  Value default_value)
-   where Value : class {
+  where Value : class {
     return value == null ? default_value : value;
   }
 }

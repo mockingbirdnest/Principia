@@ -1296,7 +1296,7 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       for(;;) {
         plugin_ = Interface.NewPlugin(0,
-                                Planetarium.InverseRotAngle);
+                                      Planetarium.InverseRotAngle);
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
           ConfigNode gravity_model = null;
