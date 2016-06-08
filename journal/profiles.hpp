@@ -10,6 +10,7 @@ namespace principia {
 
 using base::not_null;
 using interface::AdaptiveStepParameters;
+using interface::BodyParameters;
 using interface::Burn;
 using interface::KeplerianElements;
 using interface::Iterator;
