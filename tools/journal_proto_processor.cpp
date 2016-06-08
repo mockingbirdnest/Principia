@@ -809,7 +809,11 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     deserialized_expressions.push_back(
         field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter));
     cxx_serialize_definition_[descriptor] +=
-        field_cxx_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+        //field_cxx_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+        field_cxx_optional_assignment_fn_[field_descriptor](
+            serialize_member_name,
+            field_cxx_assignment_fn_[field_descriptor](
+                "m.", serialize_member_name));
 
     cs_interface_type_declaration_[descriptor] +=
         "  public " + field_cs_type_[field_descriptor] + " " +
