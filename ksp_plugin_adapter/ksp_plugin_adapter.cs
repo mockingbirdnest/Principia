@@ -1263,19 +1263,21 @@ public partial class PrincipiaPluginAdapter
              Log.Fatal("missing Cartesian initial state for " + body.name);
           }
           int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
+          var body_parameters = new BodyParameters{
+              gravitational_parameter =
+                  gravity_model.GetValue("gravitational_parameter"),
+              mean_radius             = gravity_model.GetValue("mean_radius"),
+              axis_right_ascension    =
+                  gravity_model.GetValue("axis_right_ascension"),
+              axis_declination        =
+                  gravity_model.GetValue("axis_declination"),
+              j2                      = gravity_model.GetValue("j2"),
+              reference_radius        =
+                  gravity_model.GetValue("reference_radius")};
           plugin_.InsertCelestialAbsoluteCartesian(
               celestial_index         : body.flightGlobalsIndex,
               parent_index            : parent_index,
-              gravitational_parameter :
-                  gravity_model.GetValue("gravitational_parameter"),
-              mean_radius: gravity_model.GetValue("mean_radius"),
-              axis_right_ascension    :
-                  gravity_model.GetValue("axis_right_ascension"),
-              axis_declination        :
-                  gravity_model.GetValue("axis_declination"),
-              j2                      : gravity_model.GetValue("j2"),
-              reference_radius        :
-                  gravity_model.GetValue("reference_radius"),
+              body_parameters         : body_parameters,
               x                       : initial_state.GetValue("x"),
               y                       : initial_state.GetValue("y"),
               z                       : initial_state.GetValue("z"),
@@ -1307,23 +1309,25 @@ public partial class PrincipiaPluginAdapter
             Log.Info("using custom gravity model");
           }
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
+          var body_parameters = new BodyParameters{
+              gravitational_parameter =
+                  (gravity_model?.GetValue("gravitational_parameter")).
+                      GetValueOrDefault(body.gravParameter + " m^3/s^2"),
+              mean_radius             =
+                  (gravity_model?.GetValue("mean_radius")).
+                      GetValueOrDefault(body.Radius + " m"),
+              axis_right_ascension    =
+                  gravity_model?.GetValue("axis_right_ascension"),
+              axis_declination        =
+                  gravity_model?.GetValue("axis_declination"),
+              j2                          = gravity_model?.GetValue("j2"),
+              reference_radius        =
+                  gravity_model?.GetValue("reference_radius")};
           plugin_.InsertCelestialJacobiKeplerian(
               celestial_index             : body.flightGlobalsIndex,
               parent_index                :
                   orbit?.referenceBody.flightGlobalsIndex,
-              gravitational_parameter     :
-                  (gravity_model?.GetValue("gravitational_parameter")).
-                      GetValueOrDefault(body.gravParameter + " m^3/s^2"),
-              mean_radius                 :
-                  (gravity_model?.GetValue("mean_radius")).
-                      GetValueOrDefault(body.Radius + " m"),
-              axis_right_ascension        :
-                  gravity_model?.GetValue("axis_right_ascension"),
-              axis_declination            :
-                  gravity_model?.GetValue("axis_declination"),
-              j2                          : gravity_model?.GetValue("j2"),
-              reference_radius            :
-                  gravity_model?.GetValue("reference_radius"),
+              body_parameters             : body_parameters,
               keplerian_elements          : orbit?.Elements());
         };
         insert_body(Planetarium.fetch.Sun);
