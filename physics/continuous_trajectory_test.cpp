@@ -21,6 +21,8 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_continuous_trajectory {
 
 using geometry::Displacement;
 using geometry::Frame;
@@ -28,6 +30,7 @@ using geometry::Velocity;
 using numerics::ЧебышёвSeries;
 using quantities::Angle;
 using quantities::AngularFrequency;
+using quantities::Length;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Kilo;
@@ -37,8 +40,6 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
-
-namespace physics {
 
 class ContinuousTrajectoryTest : public testing::Test {
  public:
@@ -538,5 +539,6 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   }
 }
 
+}  // namespace internal_continuous_trajectory
 }  // namespace physics
 }  // namespace principia

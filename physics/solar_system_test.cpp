@@ -16,6 +16,7 @@ using astronomy::ICRFJ2000Equator;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Second;
 using quantities::si::Yotta;
 using testing_utilities::RelativeError;
