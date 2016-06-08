@@ -15,7 +15,10 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::Position;
+using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
 using numerics::ЧебышёвSeries;

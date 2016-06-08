@@ -6,6 +6,9 @@
 #include <vector>
 
 namespace principia {
+
+using geometry::Velocity;
+
 namespace physics {
 
 template<typename Frame>

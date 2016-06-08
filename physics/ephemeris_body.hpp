@@ -27,7 +27,9 @@ namespace internal_ephemeris {
 
 using base::FindOrDie;
 using base::make_not_null_unique;
+using geometry::Displacement;
 using geometry::InnerProduct;
+using geometry::Position;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;

@@ -33,6 +33,7 @@ namespace principia {
 using astronomy::ICRFJ2000Equator;
 using astronomy::kSolarSystemBarycentreEquator;
 using geometry::Barycentre;
+using geometry::Displacement;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;

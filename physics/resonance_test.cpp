@@ -15,6 +15,7 @@
 
 namespace principia {
 
+using geometry::BarycentreCalculator;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;

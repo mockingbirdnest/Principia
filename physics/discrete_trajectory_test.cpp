@@ -19,9 +19,11 @@
 
 namespace principia {
 
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Point;
+using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
 using quantities::Length;

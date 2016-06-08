@@ -82,6 +82,7 @@ using astronomy::ICRFJ2000Ecliptic;
 using astronomy::ICRFJ2000Equator;
 using astronomy::kEquatorialToEcliptic;
 using base::not_null;
+using geometry::Displacement;
 using geometry::Position;
 using geometry::Quaternion;
 using geometry::Rotation;

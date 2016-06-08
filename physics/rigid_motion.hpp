@@ -18,6 +18,7 @@ using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Vector;
+using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::si::Radian;

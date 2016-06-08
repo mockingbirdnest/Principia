@@ -15,6 +15,7 @@
 namespace principia {
 
 using geometry::AngularVelocity;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;
 using geometry::Permutation;

@@ -13,6 +13,7 @@
 namespace principia {
 
 using base::not_null;
+using geometry::BarycentreCalculator;
 using geometry::Identity;
 
 namespace physics {

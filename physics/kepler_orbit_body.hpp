@@ -14,6 +14,7 @@ namespace principia {
 using geometry::AngleBetween;
 using geometry::Bivector;
 using geometry::Commutator;
+using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::OrientedAngleBetween;
