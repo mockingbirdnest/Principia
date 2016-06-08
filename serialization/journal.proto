@@ -2,7 +2,7 @@ syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
 
-package principia.serialization;
+package principia.journal.serialization;
 
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
@@ -33,7 +33,7 @@ message Burn {
   required XYZ delta_v = 5;
 }
 
-message InterfaceKeplerianElements {
+message KeplerianElements {
   required double eccentricity = 1;
   required double semimajor_axis = 2 [default = nan];  // Optional.
   required double mean_motion = 3 [default = nan];     // Optional.
@@ -650,7 +650,7 @@ message InsertCelestialJacobiKeplerian {
     optional string axis_declination = 6;
     optional string j2 = 7;
     optional string reference_radius = 8;
-    optional InterfaceKeplerianElements keplerian_elements = 9;
+    optional KeplerianElements keplerian_elements = 9;
   }
   optional In in = 1;
 }

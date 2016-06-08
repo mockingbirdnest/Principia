@@ -26,9 +26,9 @@ internal partial struct WXYZ {
 internal static partial class Interface {
   internal const string kDllPath = "principia";
 
-  internal static InterfaceKeplerianElements Elements(this Orbit orbit) {
+  internal static KeplerianElements Elements(this Orbit orbit) {
     double mean_motion = 2 * Math.PI / orbit.period;
-    return new InterfaceKeplerianElements{
+    return new KeplerianElements{
         eccentricity                           = orbit.eccentricity,
         semimajor_axis                         = double.NaN,
         mean_motion                            = mean_motion,
