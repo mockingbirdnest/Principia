@@ -30,7 +30,7 @@ namespace physics {
 template<typename Frame>
 class DiscreteTrajectory;
 
-namespace internal {
+namespace internal_forkable {
 
 template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
@@ -52,20 +52,20 @@ class DiscreteTrajectoryIterator
   not_null<DiscreteTrajectoryIterator const*> that() const override;
 };
 
-}  // namespace internal
+}  // namespace internal_forkable
 
 template<typename Frame>
 class DiscreteTrajectory
     : public Forkable<DiscreteTrajectory<Frame>,
-                      internal::DiscreteTrajectoryIterator<Frame>> {
+                      internal_forkable::DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
   using TimelineConstIterator =
-      typename Forkable<
-          DiscreteTrajectory<Frame>,
-          internal::DiscreteTrajectoryIterator<Frame>>::TimelineConstIterator;
+      typename Forkable<DiscreteTrajectory<Frame>,
+                        internal_forkable::DiscreteTrajectoryIterator<Frame>>::
+          TimelineConstIterator;
 
  public:
-  using Iterator = internal::DiscreteTrajectoryIterator<Frame>;
+  using Iterator = internal_forkable::DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
   DiscreteTrajectory(DiscreteTrajectory const&) = delete;
@@ -162,7 +162,7 @@ class DiscreteTrajectory
   Timeline timeline_;
 
   template<typename, typename>
-  friend class internal::ForkableIterator;
+  friend class internal_forkable::ForkableIterator;
   template<typename, typename>
   friend class Forkable;
 

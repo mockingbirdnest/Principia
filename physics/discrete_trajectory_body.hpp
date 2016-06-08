@@ -17,7 +17,7 @@ using base::make_not_null_unique;
 using geometry::Instant;
 
 namespace physics {
-namespace internal {
+namespace internal_forkable {
 
 template<typename Frame>
 Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
@@ -48,7 +48,7 @@ DiscreteTrajectoryIterator<Frame>::that() const {
   return this;
 }
 
-}  // namespace internal
+}  // namespace internal_forkable
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator

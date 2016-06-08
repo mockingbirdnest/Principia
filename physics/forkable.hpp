@@ -12,10 +12,10 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_forkable {
 
 using geometry::Instant;
-
-namespace physics {
 
 // Forkable and ForkableIterator both use CRTP to achieve static polymorphism on
 // the parameters and return type of the member functions: we want them to
@@ -31,8 +31,6 @@ namespace physics {
 
 template<typename Tr4jectory, typename It3rator>
 class Forkable;
-
-namespace internal {
 
 // This traits class must export declarations similar to the following:
 //
@@ -94,10 +92,8 @@ class ForkableIterator {
   std::deque<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
   template<typename, typename>
-  friend class physics::Forkable;
+  friend class Forkable;
 };
-
-}  // namespace internal
 
 // This template represents a trajectory which is forkable and iterable (using
 // a ForkableIterator).
@@ -108,7 +104,7 @@ class Forkable {
   // Beware, if these iterators are invalidated all the guarantees of Forkable
   // are void.
   using TimelineConstIterator =
-      typename internal::ForkableTraits<Tr4jectory>::TimelineConstIterator;
+      typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
   Forkable() = default;
   virtual ~Forkable() = default;
@@ -240,8 +236,12 @@ class Forkable {
   Children children_;
 
   template<typename, typename>
-  friend class internal::ForkableIterator;
+  friend class ForkableIterator;
 };
+
+}  // namespace internal_forkable
+
+using internal_forkable::Forkable;
 
 }  // namespace physics
 }  // namespace principia
