@@ -8,6 +8,7 @@
 
 namespace principia {
 namespace physics {
+namespace internal_ephemeris {
 
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {
@@ -78,6 +79,10 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));
 };
+
+}  // namespace internal_ephemeris
+
+using internal_ephemeris::MockEphemeris;
 
 }  // namespace physics
 }  // namespace principia

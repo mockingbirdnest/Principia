@@ -27,6 +27,7 @@
 
 namespace principia {
 
+using base::FindOrDie;
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::JulianDate;

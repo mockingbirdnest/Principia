@@ -20,14 +20,14 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_ephemeris {
 
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
-
-namespace physics {
 
 template<typename Frame>
 class Ephemeris {
@@ -342,6 +342,10 @@ class Ephemeris {
 
   NewtonianMotionEquation massive_bodies_equation_;
 };
+
+} // namespace internal_ephemeris
+
+using internal_ephemeris::Ephemeris;
 
 }  // namespace physics
 }  // namespace principia
