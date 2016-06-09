@@ -43,7 +43,12 @@ class CoverageAnalyser {
         regex = new Regex("^principia::" + tested_unit);
       }
       Regex ignored_files_regex =
-          new Regex("((_test.cpp|generated.cc|generated.h)$|^mock_)");
+          new Regex("((_test\\.cpp|" +
+                      "\\.generated\\.cc|" +
+                      "\\.generated\\.h|" +
+                      "\\.pb\\.h|" +
+                      "\\.pb\\.cc)$|" +
+                     "/mock_)");
       var covered = new Dictionary<CodeLine, UInt32>();
       using (CoverageInfo info = CoverageInfo.CreateFromFile(file.FullName)) {
         CoverageDS dataset = info.BuildDataSet();
