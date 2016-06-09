@@ -9,6 +9,8 @@
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_dynamic_frame {
 
 using geometry::Frame;
 using geometry::InnerProduct;
@@ -16,10 +18,10 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
-
-namespace physics {
 
 namespace {
 
@@ -154,5 +156,6 @@ TEST_F(DynamicFrameTest, Helix) {
                             AlmostEquals(-Sqrt(0.5), 1)));
 }
 
+}  // namespace internal_dynamic_frame
 }  // namespace physics
 }  // namespace principia

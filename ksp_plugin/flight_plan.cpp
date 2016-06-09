@@ -11,6 +11,7 @@ namespace principia {
 
 using base::make_not_null_unique;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
+using quantities::si::Metre;
 
 namespace ksp_plugin {
 

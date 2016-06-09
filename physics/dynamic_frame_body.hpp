@@ -8,6 +8,8 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_dynamic_frame {
 
 using geometry::Bivector;
 using geometry::InnerProduct;
@@ -15,10 +17,6 @@ using geometry::Normalize;
 using geometry::R3x3Matrix;
 using geometry::Wedge;
 using quantities::Sqrt;
-using quantities::si::Metre;
-using quantities::si::Second;
-
-namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 Rotation<Frenet<ThisFrame>, ThisFrame>
@@ -77,5 +75,6 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   return result;
 }
 
+}  // namespace internal_dynamic_frame
 }  // namespace physics
 }  // namespace principia

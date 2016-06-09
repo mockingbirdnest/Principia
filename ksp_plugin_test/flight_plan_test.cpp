@@ -23,6 +23,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Newton;
 using testing_utilities::AbsoluteError;
