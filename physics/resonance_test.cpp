@@ -20,6 +20,7 @@ using geometry::BarycentreCalculator;
 using geometry::OrthogonalMap;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::astronomy::JulianYear;
+using quantities::Mass;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;

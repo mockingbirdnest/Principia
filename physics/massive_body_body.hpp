@@ -14,12 +14,12 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_massive_body {
 
 using quantities::constants::GravitationalConstant;
 using geometry::Frame;
 using geometry::ReadFrameFromMessage;
-
-namespace physics {
 
 inline MassiveBody::Parameters::Parameters(
     GravitationalParameter const& gravitational_parameter)
@@ -170,5 +170,6 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 
 #undef ROTATING_BODY_TAG_VALUE_CASE
 
+}  // namespace internal_massive_body
 }  // namespace physics
 }  // namespace principia

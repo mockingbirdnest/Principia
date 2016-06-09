@@ -14,6 +14,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using quantities::Mass;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;

@@ -24,6 +24,7 @@ using geometry::Rotation;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
+using quantities::Length;
 
 namespace physics {
 

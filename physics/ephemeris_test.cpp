@@ -42,6 +42,7 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
+using quantities::Mass;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::astronomy::JulianYear;
