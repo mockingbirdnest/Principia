@@ -12,6 +12,8 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_body {
 
 using geometry::AngularVelocity;
 using geometry::Frame;
@@ -21,8 +23,6 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using ::testing::IsNull;
 using ::testing::NotNull;
-
-namespace physics {
 
 class BodyTest : public testing::Test {
  protected:
@@ -317,5 +317,6 @@ TEST_F(BodyTest, AllFrames) {
                    serialization::Frame::TO>();
 }
 
+}  // namespace internal_body
 }  // namespace physics
 }  // namespace principia
