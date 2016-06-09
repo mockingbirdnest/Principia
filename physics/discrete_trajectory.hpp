@@ -16,6 +16,8 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_discrete_trajectory {
 
 using base::not_null;
 using geometry::Instant;
@@ -25,12 +27,14 @@ using quantities::Acceleration;
 using quantities::Length;
 using quantities::Speed;
 
-namespace physics {
-
 template<typename Frame>
 class DiscreteTrajectory;
 
+}  // namespace internal_discrete_trajectory
+
 namespace internal_forkable {
+
+using internal_discrete_trajectory::DiscreteTrajectory;
 
 template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
@@ -54,18 +58,20 @@ class DiscreteTrajectoryIterator
 
 }  // namespace internal_forkable
 
-template<typename Frame>
-class DiscreteTrajectory
-    : public Forkable<DiscreteTrajectory<Frame>,
-                      internal_forkable::DiscreteTrajectoryIterator<Frame>> {
+namespace internal_discrete_trajectory {
+
+using internal_forkable::DiscreteTrajectoryIterator;
+
+template <typename Frame>
+class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
+                                           DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-  using TimelineConstIterator =
-      typename Forkable<DiscreteTrajectory<Frame>,
-                        internal_forkable::DiscreteTrajectoryIterator<Frame>>::
-          TimelineConstIterator;
+  using TimelineConstIterator = typename Forkable<
+      DiscreteTrajectory<Frame>,
+      DiscreteTrajectoryIterator<Frame>>::TimelineConstIterator;
 
  public:
-  using Iterator = internal_forkable::DiscreteTrajectoryIterator<Frame>;
+  using Iterator = DiscreteTrajectoryIterator<Frame>;
 
   DiscreteTrajectory() = default;
   DiscreteTrajectory(DiscreteTrajectory const&) = delete;
@@ -170,6 +176,10 @@ class DiscreteTrajectory
   template<typename, typename>
   friend struct std::pair;
 };
+
+}  // namespace internal_discrete_trajectory
+
+using internal_discrete_trajectory::DiscreteTrajectory;
 
 }  // namespace physics
 }  // namespace principia

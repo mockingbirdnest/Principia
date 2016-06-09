@@ -33,6 +33,7 @@ using geometry::Instant;
 using geometry::JulianDate;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
+using geometry::Velocity;
 using quantities::Length;
 using quantities::ParseQuantity;
 using quantities::Speed;

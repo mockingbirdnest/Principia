@@ -28,6 +28,8 @@ using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
+using quantities::Acceleration;
+using quantities::Speed;
 
 template<typename Frame>
 class Ephemeris {
