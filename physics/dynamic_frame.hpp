@@ -14,6 +14,7 @@ namespace physics {
 namespace internal_dynamic_frame {
 
 using geometry::Rotation;
+using geometry::Vector;
 using quantities::Acceleration;
 
 // The Frenet frame of a free fall trajectory in |Frame|.

@@ -10,7 +10,10 @@
 
 namespace principia {
 
+using geometry::Instant;
+using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
+using quantities::Length;
 
 namespace physics {
 

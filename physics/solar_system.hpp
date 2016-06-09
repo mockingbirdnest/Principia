@@ -16,6 +16,7 @@
 namespace principia {
 
 using quantities::GravitationalParameter;
+using quantities::Length;
 
 namespace physics {
 

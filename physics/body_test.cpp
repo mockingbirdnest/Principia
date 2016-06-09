@@ -17,7 +17,9 @@ namespace internal_body {
 
 using geometry::AngularVelocity;
 using geometry::Frame;
+using geometry::Instant;
 using geometry::Normalize;
+using geometry::Vector;
 using quantities::GravitationalParameter;
 using quantities::Order2ZonalCoefficient;
 using quantities::si::Metre;

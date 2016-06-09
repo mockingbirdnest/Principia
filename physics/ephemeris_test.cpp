@@ -35,6 +35,7 @@ namespace internal_ephemeris {
 using astronomy::ICRFJ2000Equator;
 using astronomy::kSolarSystemBarycentreEquator;
 using geometry::Barycentre;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;

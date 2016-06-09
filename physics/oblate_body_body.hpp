@@ -13,6 +13,8 @@ namespace principia {
 namespace physics {
 namespace internal_oblate_body {
 
+using geometry::AngularVelocity;
+using geometry::Instant;
 using quantities::si::Radian;
 using quantities::si::Second;
 

@@ -16,6 +16,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::OrthogonalMap;
 using integrators::McLachlanAtela1992Order5Optimal;

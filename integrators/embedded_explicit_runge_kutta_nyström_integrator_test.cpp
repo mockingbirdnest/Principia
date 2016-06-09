@@ -16,6 +16,7 @@
 namespace principia {
 
 using quantities::Abs;
+using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::SpecificImpulse;
 using quantities::si::Centi;
