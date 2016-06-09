@@ -12,6 +12,7 @@
 namespace principia {
 
 using geometry::Rotation;
+using quantities::Acceleration;
 
 namespace physics {
 

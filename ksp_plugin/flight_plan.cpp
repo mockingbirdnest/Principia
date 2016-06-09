@@ -9,6 +9,7 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 
 namespace ksp_plugin {

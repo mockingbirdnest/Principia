@@ -20,6 +20,7 @@
 namespace principia {
 
 using integrators::McLachlanAtela1992Order5Optimal;
+using geometry::Position;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;

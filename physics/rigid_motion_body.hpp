@@ -6,10 +6,10 @@
 #include "geometry/linear_map.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rigid_motion {
 
 using geometry::LinearMap;
-
-namespace physics {
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
@@ -77,5 +77,6 @@ RigidMotion<FromFrame, ToFrame> operator*(
           {ToFrame::origin, Velocity<ToFrame>()})).velocity());
 }
 
+}  // namespace internal_rigid_motion
 }  // namespace physics
 }  // namespace principia

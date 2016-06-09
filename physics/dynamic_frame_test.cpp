@@ -12,6 +12,8 @@ namespace principia {
 
 using geometry::Frame;
 using geometry::InnerProduct;
+using geometry::OrthogonalMap;
+using geometry::Position;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
 using testing_utilities::AlmostEquals;

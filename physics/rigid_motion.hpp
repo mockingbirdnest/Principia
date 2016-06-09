@@ -11,6 +11,8 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rigid_motion {
 
 using geometry::AffineMap;
 using geometry::AngularVelocity;
@@ -22,8 +24,6 @@ using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::si::Radian;
-
-namespace physics {
 
 // An arbitrary rigid transformation.  Simultaneous positions between two frames
 // are always related by such a transformation.
@@ -75,6 +75,11 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame> operator*(
     RigidMotion<ThroughFrame, ToFrame> const& left,
     RigidMotion<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_rigid_motion
+
+using internal_rigid_motion::RigidTransformation;
+using internal_rigid_motion::RigidMotion;
 
 }  // namespace physics
 }  // namespace principia

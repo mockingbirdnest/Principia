@@ -15,6 +15,7 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BodyCentredNonRotatingDynamicFrame;
