@@ -29,6 +29,7 @@ using quantities::SpecificEnergy;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Radian;
 
 namespace physics {
 

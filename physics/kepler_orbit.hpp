@@ -9,6 +9,9 @@
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
+
+using quantities::GravitationalParameter;
+
 namespace physics {
 
 template<typename Frame>

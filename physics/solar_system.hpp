@@ -14,6 +14,9 @@
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
+
+using quantities::GravitationalParameter;
+
 namespace physics {
 
 template<typename Frame>

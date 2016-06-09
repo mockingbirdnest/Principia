@@ -26,6 +26,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Newton;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;

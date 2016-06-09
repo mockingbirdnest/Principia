@@ -17,10 +17,12 @@ using geometry::Displacement;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using geometry::Wedge;
+using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Speed;
+using quantities::si::Radian;
 
 namespace physics {
 

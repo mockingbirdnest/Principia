@@ -29,6 +29,7 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
+using quantities::si::Second;
 using testing_utilities::Componentwise;
 using testing_utilities::RelativeError;
 using ::testing::AllOf;

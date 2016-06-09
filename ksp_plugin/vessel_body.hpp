@@ -19,6 +19,7 @@ using quantities::IsFinite;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 

@@ -17,6 +17,8 @@ using base::make_not_null_unique;
 using quantities::Mass;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;

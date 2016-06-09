@@ -18,6 +18,8 @@ namespace internal_body {
 using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::Normalize;
+using quantities::GravitationalParameter;
+using quantities::Order2ZonalCoefficient;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
