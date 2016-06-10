@@ -7,6 +7,7 @@
 
 namespace principia {
 
+using geometry::AngularVelocity;
 using geometry::Identity;
 
 namespace physics {

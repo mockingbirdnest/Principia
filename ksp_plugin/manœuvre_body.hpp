@@ -11,6 +11,7 @@
 namespace principia {
 
 using base::check_not_null;
+using geometry::Rotation;
 using physics::RigidMotion;
 using quantities::Sqrt;
 

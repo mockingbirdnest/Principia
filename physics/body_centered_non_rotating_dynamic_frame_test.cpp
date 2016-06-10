@@ -26,7 +26,9 @@ namespace principia {
 using astronomy::ICRFJ2000Equator;
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Time;

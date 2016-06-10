@@ -10,6 +10,8 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_barycentric_rotating_dynamic_frame {
 
 using geometry::Barycentre;
 using geometry::Bivector;
@@ -23,8 +25,6 @@ using quantities::Pow;
 using quantities::Product;
 using quantities::Speed;
 using quantities::si::Radian;
-
-namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
@@ -195,5 +195,6 @@ ComputeAngularDegreesOfFreedom(
                       InnerProduct(reference_direction, reference_direction);
 }
 
+}  // namespace internal_barycentric_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

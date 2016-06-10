@@ -19,7 +19,9 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::Displacement;
 using geometry::Frame;
+using geometry::Velocity;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;

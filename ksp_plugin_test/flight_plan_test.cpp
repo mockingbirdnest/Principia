@@ -16,6 +16,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::Displacement;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -26,6 +27,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Newton;
+using quantities::Pow;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;

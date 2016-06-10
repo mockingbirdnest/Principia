@@ -12,10 +12,12 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::Velocity;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
 using quantities::si::Metre;

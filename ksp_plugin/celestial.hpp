@@ -16,6 +16,7 @@ namespace principia {
 
 using base::not_null;
 using base::make_not_null_unique;
+using geometry::Velocity;
 using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
