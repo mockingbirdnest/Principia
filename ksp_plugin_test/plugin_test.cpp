@@ -34,6 +34,7 @@ using astronomy::ICRFJ2000Equator;
 using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::Identity;
 using geometry::Permutation;
 using geometry::Trivector;
 using integrators::McLachlanAtela1992Order5Optimal;

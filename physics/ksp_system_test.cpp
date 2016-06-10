@@ -20,6 +20,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::BarycentreCalculator;
 using geometry::Frame;
 using geometry::Position;
 using integrators::McLachlanAtela1992Order5Optimal;

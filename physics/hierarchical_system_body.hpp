@@ -12,6 +12,7 @@ namespace physics {
 namespace internal_hierarchical_system {
 
 using base::make_not_null_unique;
+using geometry::Identity;
 using geometry::Velocity;
 
 template<typename Frame>

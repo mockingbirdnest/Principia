@@ -20,6 +20,7 @@ using geometry::Normalize;
 using geometry::OrientedAngleBetween;
 using geometry::Rotation;
 using geometry::Vector;
+using geometry::Velocity;
 using geometry::Wedge;
 using numerics::Bisect;
 using quantities::ArcCos;
