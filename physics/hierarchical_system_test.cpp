@@ -12,6 +12,8 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_hierarchical_system {
 
 using base::make_not_null_unique;
 using quantities::Mass;
@@ -22,8 +24,6 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
-
-namespace physics {
 
 class HierarchicalSystemTest : public ::testing::Test {
  protected:
@@ -133,5 +133,6 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
                           AlmostEquals(1 * Metre, 0, 1)));
 }
 
+}  // namespace internal_hierarchical_system
 }  // namespace physics
 }  // namespace principia
