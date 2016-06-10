@@ -7,12 +7,8 @@
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
-
-using geometry::Instant;
-using geometry::Vector;
-using quantities::Acceleration;
-
 namespace physics {
+namespace internal_dynamic_frame {
 
 template<typename InertialFrame, typename ThisFrame>
 class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
@@ -40,6 +36,10 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
       WriteToMessage,
       void(not_null<serialization::DynamicFrame*> const message));
 };
+
+}  // namespace internal_dynamic_frame
+
+using internal_dynamic_frame::MockDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia
