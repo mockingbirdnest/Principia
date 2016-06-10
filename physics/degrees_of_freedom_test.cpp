@@ -12,6 +12,8 @@
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_degrees_of_freedom {
 
 using geometry::Barycentre;
 using geometry::BarycentreCalculator;
@@ -24,8 +26,6 @@ using quantities::Speed;
 using quantities::SIUnit;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
-
-namespace physics {
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:
@@ -146,5 +146,6 @@ TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
                                       -50.0 * SIUnit<Speed>()}))));
 }
 
+}  // namespace internal_degrees_of_freedom
 }  // namespace physics
 }  // namespace principia
