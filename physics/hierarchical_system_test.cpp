@@ -16,7 +16,10 @@ namespace physics {
 namespace internal_hierarchical_system {
 
 using base::make_not_null_unique;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Mass;
+using quantities::Pow;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;

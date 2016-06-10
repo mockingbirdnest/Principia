@@ -9,6 +9,7 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
+using geometry::Instant;
 using geometry::Velocity;
 
 template<typename Frame>

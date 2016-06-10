@@ -45,6 +45,7 @@ using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidTransformation;
 using quantities::Abs;
+using quantities::AngularFrequency;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Sin;

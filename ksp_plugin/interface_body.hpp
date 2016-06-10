@@ -9,6 +9,7 @@
 namespace principia {
 
 using quantities::si::Degree;
+using quantities::si::Radian;
 
 namespace interface {
 

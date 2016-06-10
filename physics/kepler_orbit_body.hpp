@@ -10,6 +10,8 @@
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_kepler_orbit {
 
 using geometry::AngleBetween;
 using geometry::Bivector;
@@ -33,8 +35,6 @@ using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Radian;
-
-namespace physics {
 
 template<typename Frame>
 void KeplerianElements<Frame>::WriteToMessage(
@@ -245,5 +245,6 @@ KeplerianElements<Frame> const& KeplerOrbit<Frame>::elements_at_epoch() const {
   return elements_at_epoch_;
 }
 
+}  // namespace internal_kepler_orbit
 }  // namespace physics
 }  // namespace principia

@@ -10,6 +10,8 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_kepler_orbit {
 
 using astronomy::ICRFJ2000Equator;
 using geometry::JulianDate;
@@ -21,8 +23,6 @@ using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
-
-namespace physics {
 
 class KeplerOrbitTest : public ::testing::Test {};
 
@@ -126,5 +126,6 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(moon_orbit.elements_at_epoch().mean_anomaly, 6));
 }
 
+}  // namespace internal_kepler_orbit
 }  // namespace physics
 }  // namespace principia

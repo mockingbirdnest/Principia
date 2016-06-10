@@ -14,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
+using quantities::Length;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;

@@ -17,6 +17,7 @@ namespace internal_jacobi_coordinates {
 using base::not_null;
 using geometry::BarycentreCalculator;
 using geometry::Identity;
+using quantities::GravitationalParameter;
 
 // An utility for converting a linearly ordered system of massive bodies given
 // in Jacobi coordinates to barycentric coordinates.
