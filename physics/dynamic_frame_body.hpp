@@ -15,6 +15,7 @@ using geometry::Bivector;
 using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::R3x3Matrix;
+using geometry::Velocity;
 using geometry::Wedge;
 using quantities::Sqrt;
 

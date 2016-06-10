@@ -17,6 +17,8 @@ namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using geometry::Bivector;
+using geometry::Vector;
+using geometry::Velocity;
 using geometry::Wedge;
 using physics::Body;
 using physics::DegreesOfFreedom;
@@ -25,6 +27,7 @@ using physics::RelativeDegreesOfFreedom;
 using quantities::SpecificAngularMomentum;
 using quantities::SpecificEnergy;
 using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
 using quantities::Quotient;
