@@ -32,6 +32,7 @@ namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using base::not_null;
+using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;

@@ -12,6 +12,7 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;

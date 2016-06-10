@@ -21,13 +21,13 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using base::not_null;
 using geometry::Instant;
 using geometry::Vector;
 using quantities::Acceleration;
-
-namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingDynamicFrame
@@ -59,6 +59,12 @@ class BodyCentredNonRotatingDynamicFrame
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
   mutable typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };
+
+
+}  // namespace internal_body_centred_non_rotating_dynamic_frame
+
+using internal_body_centred_non_rotating_dynamic_frame::
+    BodyCentredNonRotatingDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia

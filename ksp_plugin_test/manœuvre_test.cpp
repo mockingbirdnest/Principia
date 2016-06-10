@@ -19,6 +19,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;

@@ -26,6 +26,7 @@ namespace principia {
 using base::check_not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
 using geometry::Vector;
