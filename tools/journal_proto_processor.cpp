@@ -18,10 +18,10 @@ namespace tools {
 
 namespace {
 
-char const method[] = "Method";
-char const in[] = "In";
-char const return[] = "Return";
-char const out[] = "Out";
+char const method_message_name[] = "Method";
+char const in_message_name[] = "In";
+char const return_message_name[] = "Return";
+char const out_message_name[] = "Out";
 
 template<typename Container>
 bool Contains(Container const& container,
@@ -74,7 +74,7 @@ void JournalProtoProcessor::ProcessMessages() {
     if (message_descriptor->extension_range_count() > 0) {
       // Only the |Method| message should have a range.  Don't generate any code
       // for it.
-      CHECK_EQ(method, message_descriptor_name)
+      CHECK_EQ(method_message_name, message_descriptor_name)
           << message_descriptor_name << " should not have extension ranges";
       continue;
     }
@@ -671,7 +671,7 @@ void JournalProtoProcessor::ProcessInOut(
     // For in-out parameters, the code is generated only once, on the in
     // occurrence.
     bool const must_generate_code =
-        name == in || !Contains(in_out_, field_descriptor);
+        name == in_message_name || !Contains(in_out_, field_descriptor);
 
     std::string const cxx_fill_member_name =
         ToLower(name) + "." + field_descriptor_name;
@@ -845,10 +845,10 @@ void JournalProtoProcessor::ProcessMethodExtension(
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
-    if (nested_name == in) {
+    if (nested_name == in_message_name) {
       has_in = true;
       ProcessInOut(nested_descriptor, &field_descriptors);
-    } else if (nested_name == out) {
+    } else if (nested_name == out_message_name) {
       has_out = true;
       std::vector<FieldDescriptor const*> out_field_descriptors;
       ProcessInOut(nested_descriptor, &out_field_descriptors);
@@ -856,7 +856,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(out_field_descriptors.begin(),
                 out_field_descriptors.end(),
                 std::back_inserter(field_descriptors));
-    } else if (nested_name == return) {
+    } else if (nested_name == return_message_name) {
       has_return = true;
     } else {
       LOG(FATAL) << "Unexpected nested message "
@@ -892,7 +892,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
-    if (nested_name == in) {
+    if (nested_name == in_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cxx_functions_implementation_[descriptor] +=
           "void " + name + "::Fill(In const& in, "
@@ -909,7 +909,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(cxx_run_arguments_[nested_descriptor].begin(),
                 cxx_run_arguments_[nested_descriptor].end(),
                 std::back_inserter(cxx_run_arguments));
-    } else if (nested_name == out) {
+    } else if (nested_name == out_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cxx_functions_implementation_[descriptor] +=
           "void " + name + "::Fill(Out const& out, "
@@ -926,7 +926,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(cxx_run_arguments_[nested_descriptor].begin(),
                 cxx_run_arguments_[nested_descriptor].end(),
                 std::back_inserter(cxx_run_arguments));
-    } else if (nested_name == return) {
+    } else if (nested_name == return_message_name) {
       ProcessReturn(nested_descriptor);
       cxx_functions_implementation_[descriptor] +=
           "void " + name + "::Fill("

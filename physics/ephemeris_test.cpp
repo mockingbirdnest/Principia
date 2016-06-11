@@ -73,8 +73,8 @@ namespace {
 
 Length constexpr earth_polar_radius = 6356.8 * Kilo(Metre);
 int constexpr max_steps = 1e6;
-char constexpr big[] = "Big";
-char constexpr small[] = "Small";
+char constexpr big_name[] = "Big";
+char constexpr small_name[] = "Small";
 
 }  // namespace
 
@@ -1226,9 +1226,10 @@ TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
           /*step=*/10 * Milli(Second)));
   ephemeris->Prolong(t0 + 10 * T);
 
-  MassiveBody const* const big = solar_system.massive_body(*ephemeris, big);
+  MassiveBody const* const big =
+      solar_system.massive_body(*ephemeris, big_name);
   MassiveBody const* const small =
-      solar_system.massive_body(*ephemeris, small);
+      solar_system.massive_body(*ephemeris, small_name);
   DiscreteTrajectory<ICRFJ2000Equator> apoapsides1;
   DiscreteTrajectory<ICRFJ2000Equator> apoapsides2;
   DiscreteTrajectory<ICRFJ2000Equator> periapsides1;

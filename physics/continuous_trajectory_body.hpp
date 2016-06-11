@@ -326,7 +326,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // tolerance, restart from the lowest degree.
   if (is_unstable_ && error_estimate > adjusted_tolerance_) {
     VLOG(1) << "Lowering degree for " << this << " from " << degree_
-            << " to " << kMinDegree
+            << " to " << min_degree
             << " because error estimate " << error_estimate
             << " exceeds adjusted tolerance " << adjusted_tolerance_
             << " and computations are unstable";

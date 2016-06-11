@@ -450,7 +450,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 
   NavigationFrameParameters parameters;
   parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                             barycentric_rotating_dynamic_frame_field_number;
+                             kBarycentricRotatingDynamicFrameFieldNumber;
   parameters.primary_index = celestial_index;
   parameters.secondary_index = parent_index;
 
@@ -464,7 +464,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 
   parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                             body_centred_non_rotating_dynamic_frame_field_number;
+                             kBodyCentredNonRotatingDynamicFrameFieldNumber;
   parameters.centre_index = celestial_index;
 
   EXPECT_CALL(*plugin_,

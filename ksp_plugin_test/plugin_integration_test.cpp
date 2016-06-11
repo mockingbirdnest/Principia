@@ -92,7 +92,7 @@ class PluginIntegrationTest : public testing::Test {
          index <= SolarSystemFactory::last_body;
          ++index) {
       std::experimental::optional<Index> parent_index =
-          index == SolarSystemFactory::kSun
+          index == SolarSystemFactory::sun
               ? std::experimental::nullopt
               : std::experimental::make_optional(
                     SolarSystemFactory::parent(index));

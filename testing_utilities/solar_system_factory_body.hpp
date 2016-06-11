@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <cctype>
 #include <experimental/filesystem>
 #include <set>
 #include <string>
@@ -141,35 +142,40 @@ inline int SolarSystemFactory::parent(int const index) {
 }
 
 inline std::string SolarSystemFactory::name(int const index) {
-#define BODY_NAME(name) case k##name: return #name
+#define BODY_NAME(name)                    \
+  case name:                               \
+    return [](std::string s) {             \
+      s.front() = std::toupper(s.front()); \
+      return s;                            \
+    }(#name)
   switch (index) {
-    BODY_NAME(Sun);
-    BODY_NAME(Jupiter);
-    BODY_NAME(Saturn);
-    BODY_NAME(Neptune);
-    BODY_NAME(Uranus);
-    BODY_NAME(Earth);
-    BODY_NAME(Venus);
-    BODY_NAME(Mars);
-    BODY_NAME(Mercury);
-    BODY_NAME(Ganymede);
-    BODY_NAME(Titan);
-    BODY_NAME(Callisto);
-    BODY_NAME(Io);
-    BODY_NAME(Moon);
-    BODY_NAME(Europa);
-    BODY_NAME(Triton);
-    BODY_NAME(Eris);
-    BODY_NAME(Pluto);
-    BODY_NAME(Titania);
-    BODY_NAME(Oberon);
-    BODY_NAME(Rhea);
-    BODY_NAME(Iapetus);
-    BODY_NAME(Charon);
-    BODY_NAME(Ariel);
-    BODY_NAME(Umbriel);
-    BODY_NAME(Dione);
-    BODY_NAME(Tethys);
+    BODY_NAME(sun);
+    BODY_NAME(jupiter);
+    BODY_NAME(saturn);
+    BODY_NAME(neptune);
+    BODY_NAME(uranus);
+    BODY_NAME(earth);
+    BODY_NAME(venus);
+    BODY_NAME(mars);
+    BODY_NAME(mercury);
+    BODY_NAME(ganymede);
+    BODY_NAME(titan);
+    BODY_NAME(callisto);
+    BODY_NAME(io);
+    BODY_NAME(moon);
+    BODY_NAME(europa);
+    BODY_NAME(triton);
+    BODY_NAME(eris);
+    BODY_NAME(pluto);
+    BODY_NAME(titania);
+    BODY_NAME(oberon);
+    BODY_NAME(rhea);
+    BODY_NAME(iapetus);
+    BODY_NAME(charon);
+    BODY_NAME(ariel);
+    BODY_NAME(umbriel);
+    BODY_NAME(dione);
+    BODY_NAME(tethys);
     default:
       LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
       base::noreturn();
