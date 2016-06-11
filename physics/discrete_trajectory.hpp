@@ -170,7 +170,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   template<typename, typename>
   friend class internal_forkable::ForkableIterator;
   template<typename, typename>
-  friend class Forkable;
+  friend class internal_forkable::Forkable;
 
   // For using the private constructor in maps.
   template<typename, typename>

@@ -31,6 +31,7 @@ using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Position;
 using geometry::R3Element;
+using geometry::Velocity;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
