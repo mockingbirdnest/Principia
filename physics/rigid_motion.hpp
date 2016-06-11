@@ -78,8 +78,8 @@ RigidMotion<FromFrame, ToFrame> operator*(
 
 }  // namespace internal_rigid_motion
 
-using internal_rigid_motion::RigidTransformation;
 using internal_rigid_motion::RigidMotion;
+using internal_rigid_motion::RigidTransformation;
 
 }  // namespace physics
 }  // namespace principia

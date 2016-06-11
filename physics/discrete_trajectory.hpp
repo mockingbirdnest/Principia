@@ -32,6 +32,7 @@ class DiscreteTrajectory;
 
 }  // namespace internal_discrete_trajectory
 
+// Reopening |internal_forkable| to specialize a template.
 namespace internal_forkable {
 
 using internal_discrete_trajectory::DiscreteTrajectory;

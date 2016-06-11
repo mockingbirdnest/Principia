@@ -62,8 +62,8 @@ class DynamicFrame {
 
 }  // namespace internal_dynamic_frame
 
-using internal_dynamic_frame::Frenet;
 using internal_dynamic_frame::DynamicFrame;
+using internal_dynamic_frame::Frenet;
 
 }  // namespace physics
 }  // namespace principia

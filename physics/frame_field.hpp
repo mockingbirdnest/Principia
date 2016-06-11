@@ -27,8 +27,8 @@ FrameField<Frame> CoordinateFrame();
 
 }  // namespace internal_frame_field;
 
-using internal_frame_field::FrameField;
 using internal_frame_field::CoordinateFrame;
+using internal_frame_field::FrameField;
 
 }  // namespace physics
 }  // namespace principia
