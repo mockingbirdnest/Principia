@@ -16,6 +16,6 @@ FrameField<Frame> CoordinateFrame() {
          };
 }
 
-}  // namespace internal_frame_field;
+}  // namespace internal_frame_field
 }  // namespace physics
 }  // namespace principia

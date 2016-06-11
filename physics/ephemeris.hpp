@@ -346,7 +346,7 @@ class Ephemeris {
   NewtonianMotionEquation massive_bodies_equation_;
 };
 
-} // namespace internal_ephemeris
+}  // namespace internal_ephemeris
 
 using internal_ephemeris::Ephemeris;
 
