@@ -6,6 +6,7 @@
 
 namespace principia {
 
+using geometry::Displacement;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
