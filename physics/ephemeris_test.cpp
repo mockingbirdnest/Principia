@@ -220,7 +220,7 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
                             Displacement<ICRFJ2000Equator>(
                                 {0 * Metre, distance, 0 * Metre}),
                         Velocity<ICRFJ2000Equator>(
-                            {kVelocity, kVelocity, velocity})));
+                            {kVelocity, velocity, velocity})));
 
   EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
@@ -434,7 +434,7 @@ TEST_F(EphemerisTest, EarthProbe) {
       [earth, distance](Instant const& t) {
         return Vector<Acceleration, ICRFJ2000Equator>(
             {0 * SIUnit<Acceleration>(),
-             earth->gravitational_parameter() / (kDistance * distance),
+             earth->gravitational_parameter() / (distance * distance),
              0 * SIUnit<Acceleration>()});
       };
 

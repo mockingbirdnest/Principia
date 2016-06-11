@@ -375,7 +375,7 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
       << "FIRST\n" << message.DebugString()
       << "SECOND\n" << second_message.DebugString();
-  EXPECT_EQ(SolarSystemFactory::kLastMajorBody - SolarSystemFactory::sun + 1,
+  EXPECT_EQ(SolarSystemFactory::last_major_body - SolarSystemFactory::sun + 1,
             message.celestial_size());
 
   EXPECT_FALSE(message.celestial(0).has_parent_index());

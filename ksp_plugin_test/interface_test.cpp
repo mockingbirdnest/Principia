@@ -108,7 +108,7 @@ double const time = 11;
 
 XYZ parent_position = {4, 5, 6};
 XYZ parent_velocity = {7, 8, 9};
-QP kParentRelativeDegreesOfFreedom = {kParentPosition, parent_velocity};
+QP kParentRelativeDegreesOfFreedom = {parent_position, parent_velocity};
 
 int const trajectory_size = 10;
 
@@ -172,10 +172,10 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__DeletePlugin(nullptr);
   }, "non NULL");
   EXPECT_DEATH({
-    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, parent_index);
+    principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, parent_index);
+    principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__InsertOrKeepVessel(plugin, kVesselGUID, parent_index);
@@ -326,7 +326,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
-              UpdateCelestialHierarchy(kCelestialIndex, parent_index));
+              UpdateCelestialHierarchy(celestial_index, parent_index));
   principia__UpdateCelestialHierarchy(plugin_.get(),
                                       celestial_index,
                                       parent_index);
@@ -371,7 +371,7 @@ TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
               AdvanceTime(t0_ + time * SIUnit<Time>(),
                           planetarium_rotation * Degree));
-  principia__AdvanceTime(plugin_.get(), kTime, planetarium_rotation);
+  principia__AdvanceTime(plugin_.get(), time, planetarium_rotation);
 }
 
 TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
@@ -829,35 +829,35 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
     ASSERT_EQ(100, principia__GetBufferedLogging());
     std::cerr << exit_message;
     exit(exit_code);
-  }, ExitedWithCode(kExitCode), exit_message);
+  }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
     principia__SetBufferDuration(101);
     ASSERT_EQ(101, principia__GetBufferDuration());
     std::cerr << exit_message;
     exit(exit_code);
-  }, ExitedWithCode(kExitCode), exit_message);
+  }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
     principia__SetSuppressedLogging(102);
     ASSERT_EQ(102, principia__GetSuppressedLogging());
     std::cerr << exit_message;
     exit(exit_code);
-  }, ExitedWithCode(kExitCode), exit_message);
+  }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
     principia__SetVerboseLogging(103);
     ASSERT_EQ(103, principia__GetVerboseLogging());
     std::cerr << exit_message;
     exit(exit_code);
-  }, ExitedWithCode(kExitCode), exit_message);
+  }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
     principia__SetStderrLogging(2);
     ASSERT_EQ(2, principia__GetStderrLogging());
     std::cerr << exit_message;
     exit(exit_code);
-  }, ExitedWithCode(kExitCode), exit_message);
+  }, ExitedWithCode(exit_code), exit_message);
 }
 
 TEST_F(InterfaceTest, FlightPlan) {

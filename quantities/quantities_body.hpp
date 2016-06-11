@@ -68,15 +68,15 @@ struct Dimensions {
   // The NOLINT are because glint is confused by the binary and.  I kid you not.
   static int64_t constexpr representation =
       (LengthExponent & exponent_mask)                                 |  // NOLINT
-      (MassExponent & kExponentMask)              << 1 * exponent_bits |  // NOLINT
-      (TimeExponent & kExponentMask)              << 2 * exponent_bits |  // NOLINT
-      (CurrentExponent & kExponentMask)           << 3 * exponent_bits |  // NOLINT
-      (TemperatureExponent & kExponentMask)       << 4 * exponent_bits |  // NOLINT
-      (AmountExponent & kExponentMask)            << 5 * exponent_bits |  // NOLINT
-      (LuminousIntensityExponent & kExponentMask) << 6 * exponent_bits |  // NOLINT
-      (AngleExponent & kExponentMask)             << 7 * exponent_bits |  // NOLINT
-      (SolidAngleExponent & kExponentMask)        << 8 * exponent_bits |  // NOLINT
-      (WindingExponent & kExponentMask)           << 9 * exponent_bits;   // NOLINT
+      (MassExponent & exponent_mask)              << 1 * exponent_bits |  // NOLINT
+      (TimeExponent & exponent_mask)              << 2 * exponent_bits |  // NOLINT
+      (CurrentExponent & exponent_mask)           << 3 * exponent_bits |  // NOLINT
+      (TemperatureExponent & exponent_mask)       << 4 * exponent_bits |  // NOLINT
+      (AmountExponent & exponent_mask)            << 5 * exponent_bits |  // NOLINT
+      (LuminousIntensityExponent & exponent_mask) << 6 * exponent_bits |  // NOLINT
+      (AngleExponent & exponent_mask)             << 7 * exponent_bits |  // NOLINT
+      (SolidAngleExponent & exponent_mask)        << 8 * exponent_bits |  // NOLINT
+      (WindingExponent & exponent_mask)           << 9 * exponent_bits;   // NOLINT
 };
 
 namespace internal {

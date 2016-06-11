@@ -33,10 +33,10 @@ class PointTest : public testing::Test {
 using PointDeathTest = PointTest;
 
 TEST_F(PointTest, Comparisons) {
-  EXPECT_TRUE(kUnixEpoch == unix_epoch);
+  EXPECT_TRUE(unix_epoch == unix_epoch);
   EXPECT_FALSE(unix_epoch == kJ2000);
   EXPECT_TRUE(unix_epoch != kJ2000);
-  EXPECT_FALSE(kUnixEpoch != unix_epoch);
+  EXPECT_FALSE(unix_epoch != unix_epoch);
 }
 
 TEST_F(PointTest, PlusMinus) {

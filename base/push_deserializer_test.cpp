@@ -40,9 +40,9 @@ class PushDeserializerTest : public ::testing::Test {
  protected:
   PushDeserializerTest()
       : pull_serializer_(std::make_unique<PullSerializer>(
-                             kSerializerChunkSize, number_of_chunks)),
+                             serializer_chunk_size, number_of_chunks)),
         push_deserializer_(std::make_unique<PushDeserializer>(
-                               kDeserializerChunkSize, number_of_chunks)),
+                               deserializer_chunk_size, number_of_chunks)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
@@ -153,7 +153,7 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   for (int i = 0; i < runs_per_test; ++i) {
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        kDeserializerChunkSize, number_of_chunks);
+        deserializer_chunk_size, number_of_chunks);
 
     written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
                                                 byte_size);
@@ -180,9 +180,9 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     std::uint8_t* data = &storage[0];
 
     pull_serializer_ =
-        std::make_unique<PullSerializer>(kSerializerChunkSize, number_of_chunks);
+        std::make_unique<PullSerializer>(serializer_chunk_size, number_of_chunks);
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        kDeserializerChunkSize, number_of_chunks);
+        deserializer_chunk_size, number_of_chunks);
 
     pull_serializer_->Start(std::move(written_trajectory));
     push_deserializer_->Start(
