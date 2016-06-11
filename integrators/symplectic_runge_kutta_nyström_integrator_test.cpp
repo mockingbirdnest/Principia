@@ -226,7 +226,7 @@ void TestConvergence(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -301,7 +301,7 @@ void TestSymplecticity(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -354,7 +354,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};

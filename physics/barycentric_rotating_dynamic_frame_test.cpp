@@ -63,9 +63,9 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the barycentre of the two bodies.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
-                              serialization::Frame::TEST, false /*inertial*/>;
+                              serialization::Frame::TEST, /*inertial=*/false>;
   using MockFrame = Frame<serialization::Frame::TestTag,
-                          serialization::Frame::TEST1, false /*inertial*/>;
+                          serialization::Frame::TEST1, /*inertial=*/false>;
 
   BarycentricRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),

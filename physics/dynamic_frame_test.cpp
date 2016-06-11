@@ -132,7 +132,7 @@ class DynamicFrameTest : public testing::Test {
           {Circular::origin,
            Velocity<Circular>(
                {0 * Metre / Second, 0 * Metre / Second, 1 * Metre / Second})},
-          Instant() /*epoch*/,
+          /*epoch=*/Instant() ,
           OrthogonalMap<Circular, Helical>::Identity(),
           &Gravity);
 };
