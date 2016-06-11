@@ -547,33 +547,33 @@ ComputeGravitationalAccelerationOnMassiveBody(
 
   if (body_is_oblate) {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        true /*body1_is_oblate*/,
-        true /*body2_is_oblate*/>(
-        *body /*body1*/, 0 /*b1*/,
-        reodered_bodies /*bodies2*/,
-        1 /*b2_begin*/, number_of_oblate_bodies_ /*b2_end*/,
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
+        /*body1=*/*body, /*b1=*/0,
+        /*bodies2=*/reodered_bodies,
+        /*b2_begin=*/1, /*b2_end=*/number_of_oblate_bodies_,
         positions, &accelerations);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        true /*body1_is_oblate*/,
-        false /*body2_is_oblate*/>(
-        *body /*body1*/, 0 /*b1*/,
-        reodered_bodies /*bodies2*/,
-        number_of_oblate_bodies_ /*b2_begin*/, bodies_.size() /*b2_end*/,
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/false>(
+        /*body1=*/*body, /*b1=*/0,
+        /*bodies2=*/reodered_bodies,
+        /*b2_begin=*/number_of_oblate_bodies_, /*b2_end=*/bodies_.size(),
         positions, &accelerations);
   } else {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        false /*body1_is_oblate*/,
-        true /*body2_is_oblate*/>(
-        *body /*body1*/, 0 /*b1*/,
-        reodered_bodies /*bodies2*/,
-        1 /*b2_begin*/, number_of_oblate_bodies_ + 1 /*b2_end*/,
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/true>(
+        /*body1=*/*body, /*b1=*/0,
+        /*bodies2=*/reodered_bodies,
+        /*b2_begin=*/1, /*b2_end=*/number_of_oblate_bodies_ + 1,
         positions, &accelerations);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        false /*body1_is_oblate*/,
-        false /*body2_is_oblate*/>(
-        *body /*body1*/, 0 /*b1*/,
-        reodered_bodies /*bodies2*/,
-        number_of_oblate_bodies_ + 1 /*b2_begin*/, bodies_.size() /*b2_end*/,
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        /*body1=*/*body, /*b1=*/0,
+        /*bodies2=*/reodered_bodies,
+        /*b2_begin=*/number_of_oblate_bodies_ + 1, /*b2_end=*/bodies_.size(),
         positions, &accelerations);
   }
 
@@ -1108,22 +1108,21 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        true /*body1_is_oblate*/,
-        true /*body2_is_oblate*/>(
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
         body1, b1,
-        bodies_ /*bodies2*/,
-        b1 + 1 /*b2_begin*/,
-        number_of_oblate_bodies_ /*b2_end*/,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1,
+        /*b2_end=*/number_of_oblate_bodies_,
         positions,
         accelerations);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        true /*body1_is_oblate*/,
-        false /*body2_is_oblate*/>(
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/false>(
         body1, b1,
-        bodies_ /*bodies2*/,
-        number_of_oblate_bodies_ /*b2_begin*/,
-        number_of_oblate_bodies_ +
-            number_of_spherical_bodies_ /*b2_end*/,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
         positions,
         accelerations);
   }
@@ -1133,13 +1132,12 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
        ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        false /*body1_is_oblate*/,
-        false /*body2_is_oblate*/>(
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
         body1, b1,
-        bodies_ /*bodies2*/,
-        b1 + 1 /*b2_begin*/,
-        number_of_oblate_bodies_ +
-            number_of_spherical_bodies_ /*b2_end*/,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
         positions,
         accelerations);
   }
@@ -1158,7 +1156,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
-        true /*body1_is_oblate*/>(
+        /*body1_is_oblate=*/true>(
         t,
         body1, b1,
         positions,
@@ -1171,7 +1169,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
        ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
-        false /*body1_is_oblate*/>(
+        /*body1_is_oblate=*/false>(
         t,
         body1, b1,
         positions,
