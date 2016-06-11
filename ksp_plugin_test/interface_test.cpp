@@ -265,10 +265,10 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
                              666 * Kilo(Metre))))));
   BodyParameters const body_parameters = {"1.2345e6  m^3/s^2",
                                           "666 km",
-                                          nullptr /*axis_right_ascension*/,
-                                          nullptr /*axis_declination*/,
-                                          nullptr /*j2*/,
-                                          nullptr /*reference_radius*/};
+                                          /*axis_right_ascension=*/nullptr,
+                                          /*axis_declination=*/nullptr,
+                                          /*j2=*/nullptr,
+                                          /*reference_radius=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               kCelestialIndex,
                                               &kParentIndex,

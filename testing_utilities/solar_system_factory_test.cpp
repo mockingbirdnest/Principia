@@ -130,8 +130,8 @@ class SolarSystemFactoryTest : public testing::Test {
                            tertiary_dof,
                            secondary_body,
                            secondary_dof,
-                           std::experimental::nullopt /*tertiary_body*/,
-                           std::experimental::nullopt /*tertiary*/,
+                           /*tertiary_body=*/std::experimental::nullopt,
+                           /*tertiary=*/std::experimental::nullopt,
                            message);
   }
 

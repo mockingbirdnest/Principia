@@ -96,10 +96,10 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 // Minimizes the 4th order truncation error.
 template<typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            4 /*higher_order*/,
-                                            3 /*lower_order*/,
-                                            4 /*stages*/,
-                                            true /*first_same_as_last*/> const&
+                                            /*higher_order=*/4,
+                                            /*lower_order=*/3,
+                                            /*stages=*/4,
+                                            /*first_same_as_last=*/true> const&
 DormandElMikkawyPrince1986RKN434FM();
 
 }  // namespace integrators

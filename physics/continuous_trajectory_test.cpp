@@ -363,7 +363,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
 TEST_F(ContinuousTrajectoryTest, Continuity) {
   int const number_of_steps = 100;
   Length const distance = 1 * Kilo(Metre);
-  Time const initial_time = /*π **/ 1e9 * Second;
+  Time const initial_time = 1e9 * Second;
   Time const period = 100 * Second;
   Time const step = 1 * Milli(Second);
 
@@ -465,8 +465,8 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, nullptr /*hint*/),
-              trajectory_->EvaluateDegreesOfFreedom(time, nullptr /*hint*/));
+    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr),
+              trajectory_->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr));
   }
 
   serialization::ContinuousTrajectory second_message;
@@ -533,8 +533,8 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   for (Instant time = trajectory_->t_min();
        time <= checkpoint_t_max;
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, nullptr /*hint*/),
-              trajectory_->EvaluateDegreesOfFreedom(time, nullptr /*hint*/));
+    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr),
+              trajectory_->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr));
   }
 }
 

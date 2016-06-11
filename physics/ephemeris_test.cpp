@@ -880,13 +880,13 @@ TEST_F(EphemerisTest, Serialization) {
        time <= ephemeris.t_max();
        time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
     EXPECT_EQ(ephemeris.trajectory(earth)->EvaluateDegreesOfFreedom(
-                  time, nullptr /*hint*/),
+                  time, /*hint=*/nullptr),
               ephemeris_read->trajectory(earth_read)->EvaluateDegreesOfFreedom(
-                  time, nullptr /*hint*/));
+                  time, /*hint=*/nullptr));
     EXPECT_EQ(ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(
-                  time, nullptr /*hint*/),
+                  time, /*hint=*/nullptr),
               ephemeris_read->trajectory(moon_read)->EvaluateDegreesOfFreedom(
-                  time, nullptr /*hint*/));
+                  time, /*hint=*/nullptr));
   }
 
   serialization::Ephemeris second_message;

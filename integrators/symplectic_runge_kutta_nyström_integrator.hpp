@@ -101,9 +101,9 @@ class SymplecticRungeKuttaNyströmIntegrator
 // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      4 /*order*/,
-                                      false /*time_reversible*/,
-                                      4 /*evaluations*/,
+                                      /*order=*/4,
+                                      /*time_reversible=*/false,
+                                      /*evaluations=*/4,
                                       kBA> const&
 McLachlanAtela1992Order4Optimal();
 // Coefficients from McLachlan (1995),
@@ -111,27 +111,27 @@ McLachlanAtela1992Order4Optimal();
 // composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      4 /*order*/,
-                                      true /*time_reversible*/,
-                                      4 /*evaluations*/,
+                                      /*order=*/4,
+                                      /*time_reversible=*/true,
+                                      /*evaluations=*/4,
                                       kABA> const& McLachlan1995SB3A4();
 // Coefficients from McLachlan (1995),
 // On the numerical integration of ordinary differential equations by symmetric
 // composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      4 /*order*/,
-                                      true /*time_reversible*/,
-                                      5 /*evaluations*/,
+                                      /*order=*/4,
+                                      /*time_reversible=*/true,
+                                      /*evaluations=*/5,
                                       kABA> const& McLachlan1995SB3A5();
 // Coefficients from Blanes and Moan (2002),
 // Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
 // http://personales.upv.es/serblaza/2002JCAM.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      4 /*order*/,
-                                      true /*time_reversible*/,
-                                      6 /*evaluations*/,
+                                      /*order=*/4,
+                                      /*time_reversible=*/true,
+                                      /*evaluations=*/6,
                                       kBAB> const& BlanesMoan2002SRKN6B();
 // This method minimizes the error constant.
 // Coefficients from Robert I. McLachlan and Pau Atela (1992),
@@ -139,9 +139,9 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
 // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      5 /*order*/,
-                                      false /*time_reversible*/,
-                                      6 /*evaluations*/,
+                                      /*order=*/5,
+                                      /*time_reversible=*/false,
+                                      /*evaluations=*/6,
                                       kBA> const&
 McLachlanAtela1992Order5Optimal();
 // Coefficients from Okunbor and Skeel (1994),
@@ -154,9 +154,9 @@ McLachlanAtela1992Order5Optimal();
 // TODO(egg): Derive the coefficients with Mathematica.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      6 /*order*/,
-                                      true /*time_reversible*/,
-                                      7 /*evaluations*/,
+                                      /*order=*/6,
+                                      /*time_reversible=*/true,
+                                      /*evaluations=*/7,
                                       kABA> const&
 OkunborSkeel1994Order6Method13();
 // Coefficients from Blanes and Moan (2002),
@@ -164,18 +164,18 @@ OkunborSkeel1994Order6Method13();
 // http://personales.upv.es/serblaza/2002JCAM.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      6 /*order*/,
-                                      true /*time_reversible*/,
-                                      11 /*evaluations*/,
+                                      /*order=*/6,
+                                      /*time_reversible=*/true,
+                                      /*evaluations=*/11,
                                       kBAB> const& BlanesMoan2002SRKN11B();
 // Coefficients from Blanes and Moan (2002),
 // Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
 // http://personales.upv.es/serblaza/2002JCAM.pdf.
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      6 /*order*/,
-                                      true /*time_reversible*/,
-                                      14 /*evaluations*/,
+                                      /*order=*/6,
+                                      /*time_reversible=*/true,
+                                      /*evaluations=*/14,
                                       kABA> const& BlanesMoan2002SRKN14A();
 
 }  // namespace integrators
