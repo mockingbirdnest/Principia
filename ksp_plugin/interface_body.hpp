@@ -243,11 +243,11 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::BarycentricRotatingDynamicFrame::
-        kBarycentricRotatingDynamicFrameFieldNumber:
+        barycentric_rotating_dynamic_frame_field_number:
       return CHECK_NOTNULL(plugin)->NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredNonRotatingDynamicFrame::
-        kBodyCentredNonRotatingDynamicFrameFieldNumber:
+        body_centred_non_rotating_dynamic_frame_field_number:
       return CHECK_NOTNULL(plugin)->NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
     default:

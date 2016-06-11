@@ -80,7 +80,7 @@ namespace principia {
 
 using astronomy::ICRFJ2000Ecliptic;
 using astronomy::ICRFJ2000Equator;
-using astronomy::kEquatorialToEcliptic;
+using astronomy::equatorial_to_ecliptic;
 using base::not_null;
 using geometry::Displacement;
 using geometry::Position;
@@ -127,11 +127,11 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
     state->PauseTiming();
     error = (at_спутник_1_launch->trajectory(
                  *ephemeris,
-                 SolarSystemFactory::name(SolarSystemFactory::kSun)).
+                 SolarSystemFactory::name(SolarSystemFactory::sun)).
                      EvaluatePosition(final_time, nullptr) -
              at_спутник_1_launch->trajectory(
                  *ephemeris,
-                 SolarSystemFactory::name(SolarSystemFactory::kEarth)).
+                 SolarSystemFactory::name(SolarSystemFactory::earth)).
                      EvaluatePosition(final_time, nullptr)).
                  Norm();
     state->ResumeTiming();
@@ -165,35 +165,35 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     DiscreteTrajectory<ICRFJ2000Equator> trajectory;
     DegreesOfFreedom<ICRFJ2000Equator> const sun_degrees_of_freedom =
         at_спутник_1_launch->initial_state(
-            SolarSystemFactory::name(SolarSystemFactory::kSun));
+            SolarSystemFactory::name(SolarSystemFactory::sun));
     DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
         at_спутник_1_launch->initial_state(
-            SolarSystemFactory::name(SolarSystemFactory::kEarth));
+            SolarSystemFactory::name(SolarSystemFactory::earth));
     Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
-        kEquatorialToEcliptic(earth_degrees_of_freedom.position() -
+        equatorial_to_ecliptic(earth_degrees_of_freedom.position() -
                               sun_degrees_of_freedom.position());
     Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic> const l4_rotation(
         Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
     Displacement<ICRFJ2000Ecliptic> const sun_l4_displacement =
         l4_rotation(sun_earth_displacement);
     Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
-        kEquatorialToEcliptic(earth_degrees_of_freedom.velocity() -
+        equatorial_to_ecliptic(earth_degrees_of_freedom.velocity() -
                               sun_degrees_of_freedom.velocity());
     Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
         l4_rotation(sun_earth_velocity);
     trajectory.Append(at_спутник_1_launch->epoch(),
                       DegreesOfFreedom<ICRFJ2000Equator>(
                           sun_degrees_of_freedom.position() +
-                              kEquatorialToEcliptic.Inverse()(
+                              equatorial_to_ecliptic.Inverse()(
                                   sun_l4_displacement),
                           sun_degrees_of_freedom.velocity() +
-                              kEquatorialToEcliptic.Inverse()(
+                              equatorial_to_ecliptic.Inverse()(
                                   sun_l4_velocity)));
 
     state->ResumeTiming();
     ephemeris->FlowWithAdaptiveStep(
         &trajectory,
-        Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+        Ephemeris<ICRFJ2000Equator>::no_intrinsic_acceleration,
         final_time,
         Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
@@ -205,13 +205,13 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
     sun_error = (at_спутник_1_launch->trajectory(
                      *ephemeris,
-                     SolarSystemFactory::name(SolarSystemFactory::kSun)).
+                     SolarSystemFactory::name(SolarSystemFactory::sun)).
                          EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
                        *ephemeris,
-                       SolarSystemFactory::name(SolarSystemFactory::kEarth)).
+                       SolarSystemFactory::name(SolarSystemFactory::earth)).
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
@@ -253,12 +253,12 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     DiscreteTrajectory<ICRFJ2000Equator> trajectory;
     DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
         at_спутник_1_launch->initial_state(
-            SolarSystemFactory::name(SolarSystemFactory::kEarth));
+            SolarSystemFactory::name(SolarSystemFactory::earth));
     Displacement<ICRFJ2000Equator> const earth_probe_displacement(
         {6371 * Kilo(Metre) + 100 * NauticalMile, 0 * Metre, 0 * Metre});
     Speed const earth_probe_speed =
         Sqrt(at_спутник_1_launch->gravitational_parameter(
-                 SolarSystemFactory::name(SolarSystemFactory::kEarth)) /
+                 SolarSystemFactory::name(SolarSystemFactory::earth)) /
                      earth_probe_displacement.Norm());
     Velocity<ICRFJ2000Equator> const earth_probe_velocity(
         {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
@@ -272,7 +272,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     state->ResumeTiming();
     ephemeris->FlowWithAdaptiveStep(
         &trajectory,
-        Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+        Ephemeris<ICRFJ2000Equator>::no_intrinsic_acceleration,
         final_time,
         Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
             DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
@@ -284,13 +284,13 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
     sun_error = (at_спутник_1_launch->trajectory(
                      *ephemeris,
-                     SolarSystemFactory::name(SolarSystemFactory::kSun)).
+                     SolarSystemFactory::name(SolarSystemFactory::sun)).
                          EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
                        *ephemeris,
-                       SolarSystemFactory::name(SolarSystemFactory::kEarth)).
+                       SolarSystemFactory::name(SolarSystemFactory::earth)).
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
@@ -311,59 +311,59 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void BM_EphemerisSolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy::kMajorBodiesOnly,
+  EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy::major_bodies_only,
                                 &state);
 }
 
 void BM_EphemerisSolarSystemMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisSolarSystemBenchmark(
-      SolarSystemFactory::Accuracy::kMinorAndMajorBodies,
+      SolarSystemFactory::Accuracy::minor_and_major_bodies,
       &state);
 }
 
 void BM_EphemerisSolarSystemAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisSolarSystemBenchmark(
-      SolarSystemFactory::Accuracy::kAllBodiesAndOblateness,
+      SolarSystemFactory::Accuracy::all_bodies_and_oblateness,
       &state);
 }
 
 void BM_EphemerisL4ProbeMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::kMajorBodiesOnly,
+  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::major_bodies_only,
                             &state);
 }
 
 void BM_EphemerisL4ProbeMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::kMinorAndMajorBodies,
+  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::minor_and_major_bodies,
                             &state);
 }
 
 void BM_EphemerisL4ProbeAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisL4ProbeBenchmark(
-      SolarSystemFactory::Accuracy::kAllBodiesAndOblateness,
+      SolarSystemFactory::Accuracy::all_bodies_and_oblateness,
       &state);
 }
 
 void BM_EphemerisLEOProbeMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::kMajorBodiesOnly,
+  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::major_bodies_only,
                              &state);
 }
 
 void BM_EphemerisLEOProbeMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::kMinorAndMajorBodies,
+  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::minor_and_major_bodies,
                              &state);
 }
 
 void BM_EphemerisLEOProbeAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisLEOProbeBenchmark(
-      SolarSystemFactory::Accuracy::kAllBodiesAndOblateness,
+      SolarSystemFactory::Accuracy::all_bodies_and_oblateness,
       &state);
 }
 

@@ -61,7 +61,7 @@ using quantities::si::Second;
 namespace physics {
 
 namespace {
-const Length kTolerance = 0.01 * Metre;
+const Length tolerance = 0.01 * Metre;
 }  // namespace
 
 using Rendering = Frame<serialization::Frame::TestTag,
@@ -222,10 +222,10 @@ void BM_BarycentricRotatingDynamicFrame(
   }
 }
 
-int const kIter = (1000 << 10) + 1;
+int const iter = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(kIter);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(kIter);
+BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(iter);
+BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(iter);
 
 }  // namespace physics
 }  // namespace principia

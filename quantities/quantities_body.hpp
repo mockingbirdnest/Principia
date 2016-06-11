@@ -29,54 +29,54 @@ struct Dimensions {
     SolidAngle        = SolidAngleExponent
   };
 
-  static int constexpr kMinExponent = -16;
-  static int constexpr kMaxExponent = 15;
-  static int constexpr kExponentBits = 5;
-  static int constexpr kExponentMask = 0x1F;
+  static int constexpr min_exponent = -16;
+  static int constexpr max_exponent = 15;
+  static int constexpr exponent_bits = 5;
+  static int constexpr exponent_mask = 0x1F;
 
-  static_assert(LengthExponent >= kMinExponent &&
-                LengthExponent <= kMaxExponent,
+  static_assert(LengthExponent >= min_exponent &&
+                LengthExponent <= max_exponent,
                 "Invalid length exponent");
-  static_assert(MassExponent >= kMinExponent &&
-                MassExponent <= kMaxExponent,
+  static_assert(MassExponent >= min_exponent &&
+                MassExponent <= max_exponent,
                 "Invalid mass exponent");
-  static_assert(TimeExponent >= kMinExponent &&
-                TimeExponent <= kMaxExponent,
+  static_assert(TimeExponent >= min_exponent &&
+                TimeExponent <= max_exponent,
                 "Invalid time exponent");
-  static_assert(CurrentExponent >= kMinExponent &&
-                CurrentExponent <= kMaxExponent,
+  static_assert(CurrentExponent >= min_exponent &&
+                CurrentExponent <= max_exponent,
                 "Invalid current exponent");
-  static_assert(TemperatureExponent >= kMinExponent &&
-                TemperatureExponent <= kMaxExponent,
+  static_assert(TemperatureExponent >= min_exponent &&
+                TemperatureExponent <= max_exponent,
                 "Invalid temperature exponent");
-  static_assert(AmountExponent >= kMinExponent &&
-                AmountExponent <= kMaxExponent,
+  static_assert(AmountExponent >= min_exponent &&
+                AmountExponent <= max_exponent,
                 "Invalid amount exponent");
-  static_assert(LuminousIntensityExponent >= kMinExponent &&
-                LuminousIntensityExponent <= kMaxExponent,
+  static_assert(LuminousIntensityExponent >= min_exponent &&
+                LuminousIntensityExponent <= max_exponent,
                 "Invalid luminous intensity exponent");
-  static_assert(AngleExponent >= kMinExponent &&
-                AngleExponent <= kMaxExponent,
+  static_assert(AngleExponent >= min_exponent &&
+                AngleExponent <= max_exponent,
                 "Invalid angle exponent");
-  static_assert(SolidAngleExponent >= kMinExponent &&
-                SolidAngleExponent <= kMaxExponent,
+  static_assert(SolidAngleExponent >= min_exponent &&
+                SolidAngleExponent <= max_exponent,
                 "Invalid solid angle exponent");
-  static_assert(WindingExponent >= kMinExponent &&
-                WindingExponent <= kMaxExponent,
+  static_assert(WindingExponent >= min_exponent &&
+                WindingExponent <= max_exponent,
                 "Invalid winding exponent");
 
   // The NOLINT are because glint is confused by the binary and.  I kid you not.
   static int64_t constexpr representation =
-      (LengthExponent & kExponentMask)                                 |  // NOLINT
-      (MassExponent & kExponentMask)              << 1 * kExponentBits |  // NOLINT
-      (TimeExponent & kExponentMask)              << 2 * kExponentBits |  // NOLINT
-      (CurrentExponent & kExponentMask)           << 3 * kExponentBits |  // NOLINT
-      (TemperatureExponent & kExponentMask)       << 4 * kExponentBits |  // NOLINT
-      (AmountExponent & kExponentMask)            << 5 * kExponentBits |  // NOLINT
-      (LuminousIntensityExponent & kExponentMask) << 6 * kExponentBits |  // NOLINT
-      (AngleExponent & kExponentMask)             << 7 * kExponentBits |  // NOLINT
-      (SolidAngleExponent & kExponentMask)        << 8 * kExponentBits |  // NOLINT
-      (WindingExponent & kExponentMask)           << 9 * kExponentBits;   // NOLINT
+      (LengthExponent & exponent_mask)                                 |  // NOLINT
+      (MassExponent & kExponentMask)              << 1 * exponent_bits |  // NOLINT
+      (TimeExponent & kExponentMask)              << 2 * exponent_bits |  // NOLINT
+      (CurrentExponent & kExponentMask)           << 3 * exponent_bits |  // NOLINT
+      (TemperatureExponent & kExponentMask)       << 4 * exponent_bits |  // NOLINT
+      (AmountExponent & kExponentMask)            << 5 * exponent_bits |  // NOLINT
+      (LuminousIntensityExponent & kExponentMask) << 6 * exponent_bits |  // NOLINT
+      (AngleExponent & kExponentMask)             << 7 * exponent_bits |  // NOLINT
+      (SolidAngleExponent & kExponentMask)        << 8 * exponent_bits |  // NOLINT
+      (WindingExponent & kExponentMask)           << 9 * exponent_bits;   // NOLINT
 };
 
 namespace internal {

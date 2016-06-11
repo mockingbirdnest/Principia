@@ -33,7 +33,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRFJ2000Equator;
-using astronomy::kSolarSystemBarycentreEquator;
+using astronomy::solar_system_barycentre_equator;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -71,10 +71,10 @@ using ::testing::Ref;
 
 namespace {
 
-Length constexpr kEarthPolarRadius = 6356.8 * Kilo(Metre);
-int constexpr kMaxSteps = 1e6;
-char constexpr kBig[] = "Big";
-char constexpr kSmall[] = "Small";
+Length constexpr earth_polar_radius = 6356.8 * Kilo(Metre);
+int constexpr max_steps = 1e6;
+char constexpr big[] = "Big";
+char constexpr small[] = "Small";
 
 }  // namespace
 
@@ -191,8 +191,8 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
 }
 
 TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
-  Length const kDistance = 1e9 * Metre;
-  Speed const kVelocity = 1e3 * Metre / Second;
+  Length const distance = 1e9 * Metre;
+  Speed const velocity = 1e3 * Metre / Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -218,27 +218,27 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
                     DegreesOfFreedom<ICRFJ2000Equator>(
                         earth_position +
                             Displacement<ICRFJ2000Equator>(
-                                {0 * Metre, kDistance, 0 * Metre}),
+                                {0 * Metre, distance, 0 * Metre}),
                         Velocity<ICRFJ2000Equator>(
-                            {kVelocity, kVelocity, kVelocity})));
+                            {kVelocity, kVelocity, velocity})));
 
   EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
-      Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+      Ephemeris<ICRFJ2000Equator>::no_intrinsic_acceleration,
       t0_ + period,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-          kMaxSteps,
+          max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
       Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps));
   EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
-      Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
+      Ephemeris<ICRFJ2000Equator>::no_intrinsic_acceleration,
       trajectory.last().time(),
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-          kMaxSteps,
+          max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
       Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps));
@@ -397,7 +397,7 @@ TEST_F(EphemerisTest, Moon) {
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
 TEST_F(EphemerisTest, EarthProbe) {
-  Length const kDistance = 1e9 * Metre;
+  Length const distance = 1e9 * Metre;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -428,13 +428,13 @@ TEST_F(EphemerisTest, EarthProbe) {
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRFJ2000Equator>(
                         earth_position + Vector<Length, ICRFJ2000Equator>(
-                            {0 * Metre, kDistance, 0 * Metre}),
+                            {0 * Metre, distance, 0 * Metre}),
                         earth_velocity));
   auto const intrinsic_acceleration =
-      [earth, kDistance](Instant const& t) {
+      [earth, distance](Instant const& t) {
         return Vector<Acceleration, ICRFJ2000Equator>(
             {0 * SIUnit<Acceleration>(),
-             earth->gravitational_parameter() / (kDistance * kDistance),
+             earth->gravitational_parameter() / (kDistance * distance),
              0 * SIUnit<Acceleration>()});
       };
 
@@ -444,7 +444,7 @@ TEST_F(EphemerisTest, EarthProbe) {
       t0_ + period,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-          kMaxSteps,
+          max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
           Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
@@ -508,7 +508,7 @@ TEST_F(EphemerisTest, EarthProbe) {
           t0_ + std::numeric_limits<double>::infinity() * Second,
           Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
               DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-              kMaxSteps,
+              max_steps,
               1e-9 * Metre,
               2.6e-15 * Metre / Second),
           /*max_ephemeris_steps=*/0));
@@ -658,10 +658,10 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 TEST_F(EphemerisTest, Спутник1ToСпутник2) {
   auto const at_спутник_1_launch =
       SolarSystemFactory::AtСпутник1Launch(
-          SolarSystemFactory::Accuracy::kAllBodiesAndOblateness);
+          SolarSystemFactory::Accuracy::all_bodies_and_oblateness);
   auto const at_спутник_2_launch =
       SolarSystemFactory::AtСпутник2Launch(
-          SolarSystemFactory::Accuracy::kAllBodiesAndOblateness);
+          SolarSystemFactory::Accuracy::all_bodies_and_oblateness);
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
@@ -679,93 +679,93 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                   double> const expected_parent_distance_error = {{}};
   static std::map<SolarSystemFactory::Index,
                   double> const expected_parent_offset_error = {
-      {SolarSystemFactory::kAriel, 1e-3},
-      {SolarSystemFactory::kDione, 1e-3},
-      {SolarSystemFactory::kIo, 1e-3},
-      {SolarSystemFactory::kTethys, 1e-3},
-      {SolarSystemFactory::kTitania, 1e-3},
-      {SolarSystemFactory::kUmbriel, 1e-3},
-      {SolarSystemFactory::kCharon, 1e-4},
-      {SolarSystemFactory::kEuropa, 1e-4},
-      {SolarSystemFactory::kOberon, 1e-4},
-      {SolarSystemFactory::kRhea, 1e-4},
-      {SolarSystemFactory::kTitan, 1e-4},
-      {SolarSystemFactory::kTriton, 1e-4},
-      {SolarSystemFactory::kGanymede, 1e-5},
-      {SolarSystemFactory::kIapetus, 1e-5},
-      {SolarSystemFactory::kMoon, 1e-5},  // What is this?
-      {SolarSystemFactory::kMercury, 1e-6},  // NOTE(egg): General relativity.
-      {SolarSystemFactory::kCallisto, 1e-7},
-      {SolarSystemFactory::kVenus, 1e-7},
-      {SolarSystemFactory::kEarth, 1e-8},
-      {SolarSystemFactory::kSaturn, 1e-8},
-      {SolarSystemFactory::kUranus, 1e-8},
-      {SolarSystemFactory::kMars, 1e-9},
-      {SolarSystemFactory::kPluto, 1e-9},
-      {SolarSystemFactory::kJupiter, 1e-10},
-      {SolarSystemFactory::kEris, 1e-12},
-      {SolarSystemFactory::kNeptune, 1e-12}};
+      {SolarSystemFactory::ariel, 1e-3},
+      {SolarSystemFactory::dione, 1e-3},
+      {SolarSystemFactory::io, 1e-3},
+      {SolarSystemFactory::tethys, 1e-3},
+      {SolarSystemFactory::titania, 1e-3},
+      {SolarSystemFactory::umbriel, 1e-3},
+      {SolarSystemFactory::charon, 1e-4},
+      {SolarSystemFactory::europa, 1e-4},
+      {SolarSystemFactory::oberon, 1e-4},
+      {SolarSystemFactory::rhea, 1e-4},
+      {SolarSystemFactory::titan, 1e-4},
+      {SolarSystemFactory::triton, 1e-4},
+      {SolarSystemFactory::ganymede, 1e-5},
+      {SolarSystemFactory::iapetus, 1e-5},
+      {SolarSystemFactory::moon, 1e-5},  // What is this?
+      {SolarSystemFactory::mercury, 1e-6},  // NOTE(egg): General relativity.
+      {SolarSystemFactory::callisto, 1e-7},
+      {SolarSystemFactory::venus, 1e-7},
+      {SolarSystemFactory::earth, 1e-8},
+      {SolarSystemFactory::saturn, 1e-8},
+      {SolarSystemFactory::uranus, 1e-8},
+      {SolarSystemFactory::mars, 1e-9},
+      {SolarSystemFactory::pluto, 1e-9},
+      {SolarSystemFactory::jupiter, 1e-10},
+      {SolarSystemFactory::eris, 1e-12},
+      {SolarSystemFactory::neptune, 1e-12}};
   static std::map<SolarSystemFactory::Index,
                   double> const expected_position_error = {
-      {SolarSystemFactory::kMercury, 1e-6},  // NOTE(egg): General relativity.
-      {SolarSystemFactory::kIo, 1e-6},
-      {SolarSystemFactory::kTethys, 1e-6},
-      {SolarSystemFactory::kDione, 1e-7},
-      {SolarSystemFactory::kEuropa, 1e-7},
-      {SolarSystemFactory::kMoon, 1e-7},
-      {SolarSystemFactory::kOberon, 1e-7},
-      {SolarSystemFactory::kRhea, 1e-7},
-      {SolarSystemFactory::kTitan, 1e-7},
-      {SolarSystemFactory::kTitania, 1e-7},
-      {SolarSystemFactory::kUmbriel, 1e-7},
-      {SolarSystemFactory::kVenus, 1e-7},
-      {SolarSystemFactory::kAriel, 1e-8},
-      {SolarSystemFactory::kEarth, 1e-8},
-      {SolarSystemFactory::kGanymede, 1e-8},
-      {SolarSystemFactory::kIapetus, 1e-8},
-      {SolarSystemFactory::kSaturn, 1e-8},
-      {SolarSystemFactory::kSun, 1e-8},
-      {SolarSystemFactory::kTriton, 1e-8},
-      {SolarSystemFactory::kUranus, 1e-8},
-      {SolarSystemFactory::kCallisto, 1e-9},
-      {SolarSystemFactory::kCharon, 1e-9},
-      {SolarSystemFactory::kJupiter, 1e-9},
-      {SolarSystemFactory::kMars, 1e-9},
-      {SolarSystemFactory::kPluto, 1e-9},
-      {SolarSystemFactory::kNeptune, 1e-12},
-      {SolarSystemFactory::kEris, 1e-13}};
+      {SolarSystemFactory::mercury, 1e-6},  // NOTE(egg): General relativity.
+      {SolarSystemFactory::io, 1e-6},
+      {SolarSystemFactory::tethys, 1e-6},
+      {SolarSystemFactory::dione, 1e-7},
+      {SolarSystemFactory::europa, 1e-7},
+      {SolarSystemFactory::moon, 1e-7},
+      {SolarSystemFactory::oberon, 1e-7},
+      {SolarSystemFactory::rhea, 1e-7},
+      {SolarSystemFactory::titan, 1e-7},
+      {SolarSystemFactory::titania, 1e-7},
+      {SolarSystemFactory::umbriel, 1e-7},
+      {SolarSystemFactory::venus, 1e-7},
+      {SolarSystemFactory::ariel, 1e-8},
+      {SolarSystemFactory::earth, 1e-8},
+      {SolarSystemFactory::ganymede, 1e-8},
+      {SolarSystemFactory::iapetus, 1e-8},
+      {SolarSystemFactory::saturn, 1e-8},
+      {SolarSystemFactory::sun, 1e-8},
+      {SolarSystemFactory::triton, 1e-8},
+      {SolarSystemFactory::uranus, 1e-8},
+      {SolarSystemFactory::callisto, 1e-9},
+      {SolarSystemFactory::charon, 1e-9},
+      {SolarSystemFactory::jupiter, 1e-9},
+      {SolarSystemFactory::mars, 1e-9},
+      {SolarSystemFactory::pluto, 1e-9},
+      {SolarSystemFactory::neptune, 1e-12},
+      {SolarSystemFactory::eris, 1e-13}};
   static std::map<SolarSystemFactory::Index,
                   double> const expected_velocity_error = {
-      {SolarSystemFactory::kDione, 1e-3},
-      {SolarSystemFactory::kIo, 1e-3},
-      {SolarSystemFactory::kTethys, 1e-3},
-      {SolarSystemFactory::kAriel, 1e-4},
-      {SolarSystemFactory::kEuropa, 1e-4},
-      {SolarSystemFactory::kOberon, 1e-4},
-      {SolarSystemFactory::kRhea, 1e-4},
-      {SolarSystemFactory::kTitania, 1e-4},
-      {SolarSystemFactory::kTriton, 1e-4},
-      {SolarSystemFactory::kUmbriel, 1e-4},
-      {SolarSystemFactory::kCharon, 1e-5},
-      {SolarSystemFactory::kTitan, 1e-5},
-      {SolarSystemFactory::kUranus, 1e-5},
-      {SolarSystemFactory::kGanymede, 1e-6},
-      {SolarSystemFactory::kIapetus, 1e-6},
-      {SolarSystemFactory::kMercury, 1e-6},  // NOTE(egg): General relativity.
-      {SolarSystemFactory::kMoon, 1e-6},
-      {SolarSystemFactory::kPluto, 1e-6},
-      {SolarSystemFactory::kSaturn, 1e-6},
-      {SolarSystemFactory::kCallisto, 1e-7},
-      {SolarSystemFactory::kEarth, 1e-7},
-      {SolarSystemFactory::kJupiter, 1e-7},
-      {SolarSystemFactory::kSun, 1e-7},
-      {SolarSystemFactory::kVenus, 1e-7},
-      {SolarSystemFactory::kMars, 1e-8},
-      {SolarSystemFactory::kNeptune, 1e-8},
-      {SolarSystemFactory::kEris, 1e-10}};
+      {SolarSystemFactory::dione, 1e-3},
+      {SolarSystemFactory::io, 1e-3},
+      {SolarSystemFactory::tethys, 1e-3},
+      {SolarSystemFactory::ariel, 1e-4},
+      {SolarSystemFactory::europa, 1e-4},
+      {SolarSystemFactory::oberon, 1e-4},
+      {SolarSystemFactory::rhea, 1e-4},
+      {SolarSystemFactory::titania, 1e-4},
+      {SolarSystemFactory::triton, 1e-4},
+      {SolarSystemFactory::umbriel, 1e-4},
+      {SolarSystemFactory::charon, 1e-5},
+      {SolarSystemFactory::titan, 1e-5},
+      {SolarSystemFactory::uranus, 1e-5},
+      {SolarSystemFactory::ganymede, 1e-6},
+      {SolarSystemFactory::iapetus, 1e-6},
+      {SolarSystemFactory::mercury, 1e-6},  // NOTE(egg): General relativity.
+      {SolarSystemFactory::moon, 1e-6},
+      {SolarSystemFactory::pluto, 1e-6},
+      {SolarSystemFactory::saturn, 1e-6},
+      {SolarSystemFactory::callisto, 1e-7},
+      {SolarSystemFactory::earth, 1e-7},
+      {SolarSystemFactory::jupiter, 1e-7},
+      {SolarSystemFactory::sun, 1e-7},
+      {SolarSystemFactory::venus, 1e-7},
+      {SolarSystemFactory::mars, 1e-8},
+      {SolarSystemFactory::neptune, 1e-8},
+      {SolarSystemFactory::eris, 1e-10}};
 
-  for (int i = SolarSystemFactory::kSun;
-       i <= SolarSystemFactory::kLastBody;
+  for (int i = SolarSystemFactory::sun;
+       i <= SolarSystemFactory::last_body;
        ++i) {
     SolarSystemFactory::Index const index =
         static_cast<SolarSystemFactory::Index>(i);
@@ -775,9 +775,9 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
     DegreesOfFreedom<ICRFJ2000Equator> final_state =
         at_спутник_2_launch->initial_state(SolarSystemFactory::name(i));
     double const position_error = RelativeError(
-        final_state.position() - kSolarSystemBarycentreEquator,
+        final_state.position() - solar_system_barycentre_equator,
         trajectory.EvaluatePosition(at_спутник_2_launch->epoch(), nullptr) -
-            kSolarSystemBarycentreEquator);
+            solar_system_barycentre_equator);
     double const velocity_error = RelativeError(
         final_state.velocity(),
         trajectory.EvaluateVelocity(at_спутник_2_launch->epoch(), nullptr));
@@ -789,7 +789,7 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
         << SolarSystemFactory::name(i);
     EXPECT_THAT(velocity_error, Gt(expected_velocity_error.at(index) / 10.0))
         << SolarSystemFactory::name(i);
-    if (i != SolarSystemFactory::kSun) {
+    if (i != SolarSystemFactory::sun) {
       // Look at the error in the position relative to the parent.
       Vector<Length, ICRFJ2000Equator> expected =
           final_state.position() -
@@ -902,7 +902,7 @@ TEST_F(EphemerisTest, Serialization) {
 
 // The gravitational acceleration on at elephant located at the pole.
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
-  Time const kDuration = 1 * Second;
+  Time const duration = 1 * Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
 
@@ -927,23 +927,23 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
               McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              kDuration / 100));
+              duration / 100));
 
   MasslessBody elephant;
   DiscreteTrajectory<ICRFJ2000Equator> trajectory;
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRFJ2000Equator>(
                         earth_position + Vector<Length, ICRFJ2000Equator>(
-                            {0 * Metre, 0 * Metre, kEarthPolarRadius}),
+                            {0 * Metre, 0 * Metre, earth_polar_radius}),
                         earth_velocity));
 
   ephemeris.FlowWithAdaptiveStep(
       &trajectory,
-      Ephemeris<ICRFJ2000Equator>::kNoIntrinsicAcceleration,
-      t0_ + kDuration,
+      Ephemeris<ICRFJ2000Equator>::no_intrinsic_acceleration,
+      t0_ + duration,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-          kMaxSteps,
+          max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
           Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
@@ -970,9 +970,9 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               VanishesBefore(1 * Metre, 0));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
-              AlmostEquals(kDuration * v_elephant_y, 0));
+              AlmostEquals(duration * v_elephant_y, 0));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
-                          kEarthPolarRadius), 8e-7);
+                          earth_polar_radius), 8e-7);
 
   EXPECT_THAT(elephant_accelerations.size(), Eq(9));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
@@ -984,9 +984,9 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 }
 
 TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
-  Time const kDuration = 1 * Second;
+  Time const duration = 1 * Second;
   double const kJ2 = 1e6;
-  Length const kRadius = 1 * LunarDistance;
+  Length const radius = 1 * LunarDistance;
 
   Mass const m0 = 1 * SolarMass;
   Mass const m1 = 2 * SolarMass;
@@ -1003,7 +1003,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                                 0 * Radian / Second,
                                                 4 * Radian / Second})),
                                         OblateBody<World>::Parameters(
-                                            kJ2, kRadius));
+                                            kJ2, radius));
   auto const b1 = new MassiveBody(m1);
   auto const b2 = new MassiveBody(m2);
   auto const b3 = new MassiveBody(m3);
@@ -1047,8 +1047,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
           5 * Milli(Metre),
           Ephemeris<World>::FixedStepParameters(
               McLachlanAtela1992Order5Optimal<Position<World>>(),
-              kDuration / 100));
-  ephemeris.Prolong(t0_ + kDuration);
+              duration / 100));
+  ephemeris.Prolong(t0_ + duration);
 
   Vector<Acceleration, World> actual_acceleration0 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b0, t0_);
@@ -1058,10 +1058,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
       Vector<Acceleration, World>(
           {(1.5 * m1 - (9 / Sqrt(512)) * m2) * GravitationalConstant *
-               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm()),
+               Pow<2>(radius) * kJ2 / Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
            (-3 * m3 + (3 / Sqrt(512)) * m2) * GravitationalConstant *
-               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
+               Pow<2>(radius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration0,
               AlmostEquals(expected_acceleration0, 0, 6));
 
@@ -1072,7 +1072,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                m2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
                                m3 * (q3 - q1) / Pow<3>((q3 - q1).Norm())) +
       Vector<Acceleration, World>(
-          {-1.5 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
+          {-1.5 * GravitationalConstant * m0 * Pow<2>(radius) * kJ2 /
                Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
            0 * SIUnit<Acceleration>()});
@@ -1087,10 +1087,10 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                m3 * (q3 - q2) / Pow<3>((q3 - q2).Norm())) +
       Vector<Acceleration, World>(
           {(9 / Sqrt(512)) * GravitationalConstant * m0 *
-               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm()),
+               Pow<2>(radius) * kJ2 / Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
            (-3 / Sqrt(512)) * GravitationalConstant * m0 *
-               Pow<2>(kRadius) * kJ2 / Pow<4>((q0 - q1).Norm())});
+               Pow<2>(radius) * kJ2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
               AlmostEquals(expected_acceleration2, 0, 3));
 
@@ -1103,7 +1103,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       Vector<Acceleration, World>(
           {0 * SIUnit<Acceleration>(),
            0 * SIUnit<Acceleration>(),
-           3 * GravitationalConstant * m0 * Pow<2>(kRadius) * kJ2 /
+           3 * GravitationalConstant * m0 * Pow<2>(radius) * kJ2 /
                Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration3,
               AlmostEquals(expected_acceleration3, 0, 4));
@@ -1146,7 +1146,7 @@ TEST_F(EphemerisTest, ComputeApsidesDiscreteTrajectory) {
 
   ephemeris.FlowWithAdaptiveStep(
       &trajectory,
-      Ephemeris<World>::kNoIntrinsicAcceleration,
+      Ephemeris<World>::no_intrinsic_acceleration,
       t0 + 10 * JulianYear,
       Ephemeris<World>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<World>>(),
@@ -1226,9 +1226,9 @@ TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
           /*step=*/10 * Milli(Second)));
   ephemeris->Prolong(t0 + 10 * T);
 
-  MassiveBody const* const big = solar_system.massive_body(*ephemeris, kBig);
+  MassiveBody const* const big = solar_system.massive_body(*ephemeris, big);
   MassiveBody const* const small =
-      solar_system.massive_body(*ephemeris, kSmall);
+      solar_system.massive_body(*ephemeris, small);
   DiscreteTrajectory<ICRFJ2000Equator> apoapsides1;
   DiscreteTrajectory<ICRFJ2000Equator> apoapsides2;
   DiscreteTrajectory<ICRFJ2000Equator> periapsides1;

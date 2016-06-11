@@ -70,11 +70,11 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int rows>
 class FixedStrictlyLowerTriangularMatrix {
  public:
-  static int constexpr kDimension = rows * (rows - 1) / 2;
+  static int constexpr dimension = rows * (rows - 1) / 2;
 
   // The |data| must be in row-major format.
   constexpr explicit FixedStrictlyLowerTriangularMatrix(
-      std::array<Scalar, kDimension> const& data);
+      std::array<Scalar, dimension> const& data);
   FixedStrictlyLowerTriangularMatrix(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
@@ -89,7 +89,7 @@ class FixedStrictlyLowerTriangularMatrix {
   constexpr Scalar const* operator[](int const index) const;
 
  private:
-  std::array<Scalar, kDimension> data_;
+  std::array<Scalar, dimension> data_;
 };
 
 }  // namespace numerics

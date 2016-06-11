@@ -1225,7 +1225,7 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
 
 template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
-    Ephemeris<Frame>::kNoIntrinsicAccelerations;
+    Ephemeris<Frame>::no_intrinsic_accelerations;
 
 }  // namespace internal_ephemeris
 }  // namespace physics

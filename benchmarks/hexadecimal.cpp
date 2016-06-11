@@ -89,7 +89,7 @@ char constexpr kPi500Bytes[] =
     "\xF5\x6C\x16\xAA\x64\xED\x3A\xA6\x23\x63\xF7\x70\x61\xBF\xED\xF7\x24\x29"
     "\xB0\x23\xD3\x7D\x0D\x72\x4D\x00\xA1\x24\x8D\xB0\xFE\xAD";
 
-int const kCopiesOfPi = 10000;
+int const copies_of_pi = 10000;
 
 void HexEncode(not_null<benchmark::State*> const state,
               not_null<bool*> const correct,
@@ -108,8 +108,8 @@ void HexEncode(not_null<benchmark::State*> const state,
 std::vector<uint8_t> PiBytes() {
   std::string const pi_bytes(kPi500Bytes, 500);
   std::string bytes_str;
-  bytes_str.reserve(500 * kCopiesOfPi);
-  for (int i = 0; i < kCopiesOfPi; ++i) {
+  bytes_str.reserve(500 * copies_of_pi);
+  for (int i = 0; i < copies_of_pi; ++i) {
     bytes_str += pi_bytes;
   }
   return std::vector<uint8_t>(bytes_str.begin(), bytes_str.end());
@@ -117,8 +117,8 @@ std::vector<uint8_t> PiBytes() {
 
 std::vector<uint8_t> PiDigits() {
   std::string digits_str;
-  digits_str.reserve(1000 * kCopiesOfPi);
-  for (int i = 0; i < kCopiesOfPi; ++i) {
+  digits_str.reserve(1000 * copies_of_pi);
+  for (int i = 0; i < copies_of_pi; ++i) {
     digits_str += kPi1000HexadecimalDigits;
   }
   return std::vector<uint8_t>(digits_str.begin(), digits_str.end());

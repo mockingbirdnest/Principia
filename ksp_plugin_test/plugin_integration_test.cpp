@@ -54,11 +54,11 @@ class PluginIntegrationTest : public testing::Test {
         looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
-                SolarSystemFactory::Accuracy::kAllBodiesAndOblateness)),
+                SolarSystemFactory::Accuracy::all_bodies_and_oblateness)),
         initial_time_(Instant() + 42 * Second),
         sun_body_(make_not_null_unique<MassiveBody>(
             MassiveBody::Parameters(solar_system_->gravitational_parameter(
-                SolarSystemFactory::name(SolarSystemFactory::kSun))))),
+                SolarSystemFactory::name(SolarSystemFactory::sun))))),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
@@ -77,7 +77,7 @@ class PluginIntegrationTest : public testing::Test {
     // This yields a circular orbit.
     satellite_initial_velocity_ =
         Sqrt(solar_system_->gravitational_parameter(
-                 SolarSystemFactory::name(SolarSystemFactory::kEarth)) /
+                 SolarSystemFactory::name(SolarSystemFactory::earth)) /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
@@ -88,8 +88,8 @@ class PluginIntegrationTest : public testing::Test {
   }
 
   void InsertAllSolarSystemBodies() {
-    for (int index = SolarSystemFactory::kSun;
-         index <= SolarSystemFactory::kLastBody;
+    for (int index = SolarSystemFactory::sun;
+         index <= SolarSystemFactory::last_body;
          ++index) {
       std::experimental::optional<Index> parent_index =
           index == SolarSystemFactory::kSun
@@ -144,7 +144,7 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   EXPECT_THAT(
       RelativeError(
           plugin_->CelestialFromParent(
-              SolarSystemFactory::kEarth).displacement().Norm(),
+              SolarSystemFactory::earth).displacement().Norm(),
           1 * AstronomicalUnit),
       Lt(0.01));
   serialization::Plugin plugin_message;
@@ -158,7 +158,7 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   EXPECT_THAT(
       RelativeError(
           plugin_->CelestialFromParent(
-              SolarSystemFactory::kEarth).displacement().Norm(),
+              SolarSystemFactory::earth).displacement().Norm(),
           1 * AstronomicalUnit),
       Lt(0.01));
 }
@@ -167,14 +167,14 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   GUID const satellite = "satellite";
-  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
   plugin_->SetVesselStateOffset(satellite,
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
                                     satellite_initial_velocity_));
   plugin_->SetPlottingFrame(
       plugin_->NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::kEarth));
+          SolarSystemFactory::earth));
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -194,13 +194,13 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
   }
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
     // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
         World::origin + Velocity<World>(
@@ -211,7 +211,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
         plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
-                                 SolarSystemFactory::kEarth).displacement());
+                                 SolarSystemFactory::earth).displacement());
     for (auto it = rendered_trajectory->Begin();
          it != rendered_trajectory->End();
          ++it) {
@@ -228,10 +228,10 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   GUID const satellite = "satellite";
-  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
   // A vessel at the Lagrange point L₅.
   RelativeDegreesOfFreedom<AliceSun> const from_the_earth_to_the_moon =
-      plugin_->CelestialFromParent(SolarSystemFactory::kMoon);
+      plugin_->CelestialFromParent(SolarSystemFactory::moon);
   Displacement<AliceSun> const from_the_earth_to_l5 =
       from_the_earth_to_the_moon.displacement() / 2 -
           Normalize(from_the_earth_to_the_moon.velocity()) *
@@ -246,8 +246,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                                 {from_the_earth_to_l5, initial_velocity});
   plugin_->SetPlottingFrame(
       plugin_->NewBarycentricRotatingNavigationFrame(
-          SolarSystemFactory::kEarth,
-          SolarSystemFactory::kMoon));
+          SolarSystemFactory::earth,
+          SolarSystemFactory::moon));
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -265,17 +265,17 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
   }
   for (; t < initial_time_ + duration; t += δt_long) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
   }
   plugin_->AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::kEarth);
+  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::earth);
   // We give the sun an arbitrary nonzero velocity in |World|.
   Position<World> const sun_world_position =
       World::origin + Velocity<World>(
@@ -286,10 +286,10 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
-                               SolarSystemFactory::kEarth).displacement());
+                               SolarSystemFactory::earth).displacement());
   Position<World> const moon_world_position =
       earth_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
-                                 SolarSystemFactory::kMoon).displacement());
+                                 SolarSystemFactory::moon).displacement());
   Length const earth_moon = (moon_world_position - earth_world_position).Norm();
   for (auto it = rendered_trajectory->Begin();
        it != rendered_trajectory->End();

@@ -51,9 +51,9 @@ class JacobiCoordinates {
  private:
   // A reference frame parallel to |Frame|, in which the primary is motionless
   // at the origin.
-  enum class PrivateFrameTag { kFrameTag };
+  enum class PrivateFrameTag { frame_tag };
   using PrimocentricFrame = geometry::Frame<PrivateFrameTag,
-                                            PrivateFrameTag::kFrameTag,
+                                            PrivateFrameTag::frame_tag,
                                             /*frame_is_inertial=*/false>;
   static Identity<PrimocentricFrame, Frame> const id_pf_;
   static Identity<Frame, PrimocentricFrame> const id_fp_;

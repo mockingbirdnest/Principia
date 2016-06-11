@@ -77,7 +77,7 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
         serialization::BarycentricRotatingDynamicFrame::
             barycentric_rotating_dynamic_frame);
     parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                               kBarycentricRotatingDynamicFrameFieldNumber;
+                               barycentric_rotating_dynamic_frame_field_number;
     parameters.primary_index = extension.primary();
     parameters.secondary_index = extension.secondary();
   }
@@ -88,7 +88,7 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
         serialization::BodyCentredNonRotatingDynamicFrame::
             body_centred_non_rotating_dynamic_frame);
     parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                               kBodyCentredNonRotatingDynamicFrameFieldNumber;
+                               body_centred_non_rotating_dynamic_frame_field_number;
     parameters.centre_index = extension.centre();
   }
 

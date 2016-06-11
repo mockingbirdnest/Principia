@@ -564,8 +564,8 @@ void SPRKIntegrator::SolveIncrement(
     Parameters<Position, Momentum> const& parameters,
     not_null<Solution<Position, Momentum>*> const solution) const {
   switch (vanishing_coefficients_) {
-    case kNone:
-      SolveIncrementOptimized<kNone, Position, Momentum>(
+    case none:
+      SolveIncrementOptimized<none, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kFirstBVanishes:
@@ -667,7 +667,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
       q_stage[k] = q_last[k].value;
     }
 
-    if (vanishing_coefficients != kNone) {
+    if (vanishing_coefficients != none) {
       should_synchronize = at_end ||
                            (parameters.sampling_period != 0 &&
                             sampling_phase % parameters.sampling_period == 0);

@@ -29,7 +29,7 @@ using base::PushDeserializer;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
-using geometry::kUnixEpoch;
+using geometry::unix_epoch;
 using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
@@ -77,7 +77,7 @@ using ::testing::_;
 
 namespace interface {
 
-char const kSerializedBoringPlugin[] =
+char const serialized_boring_plugin[] =
     "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
     "\xB9\x1\n\xAE\x1\n\x12\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\0\x12"
     "\x97\x1\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\x84\x1\n>\x12<\n:\n-\n"
@@ -89,7 +89,7 @@ char const kSerializedBoringPlugin[] =
     "\x80\x80\x80\x80\x1\x11\0\0\0\0\0\0\0\0*\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0"
     "\0\0""0\0";
 
-char const kHexadecimalBoringPlugin[] =
+char const hexadecimal_boring_plugin[] =
     "12D201080012CD010A0F0A0D0883F00111000000000000F03F12B9010AAE010A120A0E120C"
     "08800811000000000000000012001297010A0E120C0880081100000000000000001284010A"
     "3E123C0A3A0A2D0A0D120B0801110000000000000000120D120B0801110000000000000000"
@@ -100,17 +100,17 @@ char const kHexadecimalBoringPlugin[] =
 
 char const kVesselGUID[] = "NCC-1701-D";
 
-Index const kCelestialIndex = 1;
-Index const kParentIndex = 2;
+Index const celestial_index = 1;
+Index const parent_index = 2;
 
-double const kPlanetariumRotation = 10;
-double const kTime = 11;
+double const planetarium_rotation = 10;
+double const time = 11;
 
-XYZ kParentPosition = {4, 5, 6};
-XYZ kParentVelocity = {7, 8, 9};
-QP kParentRelativeDegreesOfFreedom = {kParentPosition, kParentVelocity};
+XYZ parent_position = {4, 5, 6};
+XYZ parent_velocity = {7, 8, 9};
+QP kParentRelativeDegreesOfFreedom = {kParentPosition, parent_velocity};
 
-int const kTrajectorySize = 10;
+int const trajectory_size = 10;
 
 ACTION_P2(FillBarycentricRotatingDynamicFrame, primary_index, secondary_index) {
   auto* extension = arg0->MutableExtension(
@@ -172,28 +172,28 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__DeletePlugin(nullptr);
   }, "non NULL");
   EXPECT_DEATH({
-    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
+    principia__InsertOrKeepVessel(plugin, kVesselGUID, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__SetVesselStateOffset(plugin,
                                     kVesselGUID,
-                                    kParentRelativeDegreesOfFreedom);
+                                    parent_relative_degrees_of_freedom);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__VesselFromParent(plugin, kVesselGUID);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__CelestialFromParent(plugin, kCelestialIndex);
+    principia__CelestialFromParent(plugin, celestial_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__NewBodyCentredNonRotatingNavigationFrame(plugin,
-                                                        kCelestialIndex);
+                                                        celestial_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__LogFatal("a fatal error");
@@ -207,13 +207,13 @@ TEST_F(InterfaceTest, InitGoogleLogging1) {
 TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
   // We use EXPECT_EXIT in this test to avoid interfering with the execution of
   // the other tests.
-  int const kExitCode = 66;
+  int const exit_code = 66;
 
   EXPECT_EXIT({
     google::ShutdownGoogleLogging();
     principia__InitGoogleLogging();
-    exit(kExitCode);
-  }, ExitedWithCode(kExitCode), "");
+    exit(exit_code);
+  }, ExitedWithCode(exit_code), "");
 }
 
 TEST_F(InterfaceDeathTest, ActivateRecorder) {
@@ -232,8 +232,8 @@ TEST_F(InterfaceTest, Log) {
 
 TEST_F(InterfaceTest, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     kTime,
-                                     kPlanetariumRotation));
+                                     time,
+                                     planetarium_rotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
 
@@ -247,8 +247,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
   EXPECT_CALL(
       *plugin_,
       InsertCelestialAbsoluteCartesianConstRef(
-          kCelestialIndex,
-          std::experimental::make_optional(kParentIndex),
+          celestial_index,
+          std::experimental::make_optional(parent_index),
           DegreesOfFreedom<Barycentric>(
               Barycentric::origin +
               Displacement<Barycentric>(
@@ -272,8 +272,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
                                           /*j2=*/nullptr,
                                           /*reference_radius=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              kCelestialIndex,
-                                              &kParentIndex,
+                                              celestial_index,
+                                              &parent_index,
                                               body_parameters,
                                               "0 m",
                                               "23.456e-7 km",
@@ -287,8 +287,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
   EXPECT_CALL(
       *plugin_,
       InsertCelestialAbsoluteCartesianConstRef(
-          kCelestialIndex,
-          std::experimental::make_optional(kParentIndex),
+          celestial_index,
+          std::experimental::make_optional(parent_index),
           DegreesOfFreedom<Barycentric>(
               Barycentric::origin +
               Displacement<Barycentric>(
@@ -313,8 +313,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "123e-6",
                                           "1000 km"};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              kCelestialIndex,
-                                              &kParentIndex,
+                                              celestial_index,
+                                              &parent_index,
                                               body_parameters,
                                               "0 m",
                                               "23.456e-7 km",
@@ -326,10 +326,10 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
-              UpdateCelestialHierarchy(kCelestialIndex, kParentIndex));
+              UpdateCelestialHierarchy(kCelestialIndex, parent_index));
   principia__UpdateCelestialHierarchy(plugin_.get(),
-                                      kCelestialIndex,
-                                      kParentIndex);
+                                      celestial_index,
+                                      parent_index);
 }
 
 TEST_F(InterfaceTest, EndInitialization) {
@@ -340,12 +340,12 @@ TEST_F(InterfaceTest, EndInitialization) {
 
 TEST_F(InterfaceTest, InsertOrKeepVessel) {
   EXPECT_CALL(*plugin_,
-              InsertOrKeepVessel(kVesselGUID, kParentIndex));
+              InsertOrKeepVessel(kVesselGUID, parent_index));
   EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
   EXPECT_FALSE(plugin_->HasVessel(kVesselGUID));
-  principia__InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
+  principia__InsertOrKeepVessel(plugin_.get(), kVesselGUID, parent_index);
   EXPECT_TRUE(plugin_->HasVessel(kVesselGUID));
 }
 
@@ -355,29 +355,29 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
                   kVesselGUID,
                   RelativeDegreesOfFreedom<AliceSun>(
                       Displacement<AliceSun>(
-                          {kParentPosition.x * SIUnit<Length>(),
-                           kParentPosition.y * SIUnit<Length>(),
-                           kParentPosition.z * SIUnit<Length>()}),
+                          {parent_position.x * SIUnit<Length>(),
+                           parent_position.y * SIUnit<Length>(),
+                           parent_position.z * SIUnit<Length>()}),
                       Velocity<AliceSun>(
-                          {kParentVelocity.x * SIUnit<Speed>(),
-                           kParentVelocity.y * SIUnit<Speed>(),
-                           kParentVelocity.z * SIUnit<Speed>()}))));
+                          {parent_velocity.x * SIUnit<Speed>(),
+                           parent_velocity.y * SIUnit<Speed>(),
+                           parent_velocity.z * SIUnit<Speed>()}))));
   principia__SetVesselStateOffset(plugin_.get(),
                                   kVesselGUID,
-                                  kParentRelativeDegreesOfFreedom);
+                                  parent_relative_degrees_of_freedom);
 }
 
 TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
-              AdvanceTime(t0_ + kTime * SIUnit<Time>(),
-                          kPlanetariumRotation * Degree));
-  principia__AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
+              AdvanceTime(t0_ + time * SIUnit<Time>(),
+                          planetarium_rotation * Degree));
+  principia__AdvanceTime(plugin_.get(), kTime, planetarium_rotation);
 }
 
 TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
   EXPECT_CALL(*plugin_,
-              ForgetAllHistoriesBefore(t0_ + kTime * SIUnit<Time>()));
-  principia__ForgetAllHistoriesBefore(plugin_.get(), kTime);
+              ForgetAllHistoriesBefore(t0_ + time * SIUnit<Time>()));
+  principia__ForgetAllHistoriesBefore(plugin_.get(), time);
 }
 
 TEST_F(InterfaceTest, VesselFromParent) {
@@ -385,33 +385,33 @@ TEST_F(InterfaceTest, VesselFromParent) {
               VesselFromParent(kVesselGUID))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
-                               {kParentPosition.x * SIUnit<Length>(),
-                                kParentPosition.y * SIUnit<Length>(),
-                                kParentPosition.z * SIUnit<Length>()}),
+                               {parent_position.x * SIUnit<Length>(),
+                                parent_position.y * SIUnit<Length>(),
+                                parent_position.z * SIUnit<Length>()}),
                            Velocity<AliceSun>(
-                               {kParentVelocity.x * SIUnit<Speed>(),
-                                kParentVelocity.y * SIUnit<Speed>(),
-                                kParentVelocity.z * SIUnit<Speed>()}))));
+                               {parent_velocity.x * SIUnit<Speed>(),
+                                parent_velocity.y * SIUnit<Speed>(),
+                                parent_velocity.z * SIUnit<Speed>()}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
                                                 kVesselGUID);
-  EXPECT_THAT(result, Eq(kParentRelativeDegreesOfFreedom));
+  EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 
 TEST_F(InterfaceTest, CelestialFromParent) {
   EXPECT_CALL(*plugin_,
-              CelestialFromParent(kCelestialIndex))
+              CelestialFromParent(celestial_index))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
-                               {kParentPosition.x * SIUnit<Length>(),
-                                kParentPosition.y * SIUnit<Length>(),
-                                kParentPosition.z * SIUnit<Length>()}),
+                               {parent_position.x * SIUnit<Length>(),
+                                parent_position.y * SIUnit<Length>(),
+                                parent_position.z * SIUnit<Length>()}),
                            Velocity<AliceSun>(
-                               {kParentVelocity.x * SIUnit<Speed>(),
-                                kParentVelocity.y * SIUnit<Speed>(),
-                                kParentVelocity.z * SIUnit<Speed>()}))));
+                               {parent_velocity.x * SIUnit<Speed>(),
+                                parent_velocity.y * SIUnit<Speed>(),
+                                parent_velocity.z * SIUnit<Speed>()}))));
   QP const result = principia__CelestialFromParent(plugin_.get(),
-                                                    kCelestialIndex);
-  EXPECT_THAT(result, Eq(kParentRelativeDegreesOfFreedom));
+                                                    celestial_index);
+  EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 
 TEST_F(InterfaceTest, NewBodyCentredNonRotatingNavigationFrame) {
@@ -419,11 +419,11 @@ TEST_F(InterfaceTest, NewBodyCentredNonRotatingNavigationFrame) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(mock_navigation_frame));
   std::unique_ptr<NavigationFrame> navigation_frame(
       principia__NewBodyCentredNonRotatingNavigationFrame(plugin_.get(),
-                                                          kCelestialIndex));
+                                                          celestial_index));
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
@@ -432,14 +432,14 @@ TEST_F(InterfaceTest, NewBarycentricRotatingNavigationFrame) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                     kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                     parent_index,
                                                      _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   std::unique_ptr<NavigationFrame> navigation_frame(
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
-                                                       kCelestialIndex,
-                                                       kParentIndex));
+                                                       celestial_index,
+                                                       parent_index));
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
@@ -450,13 +450,13 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 
   NavigationFrameParameters parameters;
   parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                             kBarycentricRotatingDynamicFrameFieldNumber;
-  parameters.primary_index = kCelestialIndex;
-  parameters.secondary_index = kParentIndex;
+                             barycentric_rotating_dynamic_frame_field_number;
+  parameters.primary_index = celestial_index;
+  parameters.secondary_index = parent_index;
 
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                     kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                     parent_index,
                                                      _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   std::unique_ptr<NavigationFrame> navigation_frame(
@@ -464,11 +464,11 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 
   parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                             kBodyCentredNonRotatingDynamicFrameFieldNumber;
-  parameters.centre_index = kCelestialIndex;
+                             body_centred_non_rotating_dynamic_frame_field_number;
+  parameters.centre_index = celestial_index;
 
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(mock_navigation_frame));
   navigation_frame.release();
   navigation_frame.reset(
@@ -481,14 +481,14 @@ TEST_F(InterfaceTest, SetPlottingFrame) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                     kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                     parent_index,
                                                      _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrame* navigation_frame(
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
-                                                       kCelestialIndex,
-                                                       kParentIndex));
+                                                       celestial_index,
+                                                       parent_index));
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
@@ -503,14 +503,14 @@ TEST_F(InterfaceTest, RenderedPrediction) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                    kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                    parent_index,
                                                     _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrame* navigation_frame =
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
-                                                      kCelestialIndex,
-                                                      kParentIndex);
+                                                      celestial_index,
+                                                      parent_index);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -525,7 +525,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
                                            3 * SIUnit<Length>()});
   rendered_trajectory->Append(
       t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
-  for (int i = 1; i < kTrajectorySize; ++i) {
+  for (int i = 1; i < trajectory_size; ++i) {
     position += Displacement<World>({10 * SIUnit<Length>(),
                                      20 * SIUnit<Length>(),
                                      30 * SIUnit<Length>()});
@@ -537,19 +537,19 @@ TEST_F(InterfaceTest, RenderedPrediction) {
               FillRenderedPrediction(
                   kVesselGUID,
                   World::origin + Displacement<World>(
-                                      {kParentPosition.x * SIUnit<Length>(),
-                                       kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()}),
+                                      {parent_position.x * SIUnit<Length>(),
+                                       parent_position.y * SIUnit<Length>(),
+                                       parent_position.z * SIUnit<Length>()}),
                   _))
       .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     kVesselGUID,
-                                    kParentPosition);
-  EXPECT_EQ(kTrajectorySize, principia__IteratorSize(iterator));
+                                    parent_position);
+  EXPECT_EQ(trajectory_size, principia__IteratorSize(iterator));
 
   // Traverse it and check that we get the right data.
-  for (int i = 0; i < kTrajectorySize; ++i) {
+  for (int i = 0; i < trajectory_size; ++i) {
     EXPECT_FALSE(principia__IteratorAtEnd(iterator));
     XYZ const xyz = principia__IteratorGetXYZ(iterator);
     EXPECT_EQ(1 + 10 * i, xyz.x);
@@ -570,14 +570,14 @@ TEST_F(InterfaceTest, Iterator) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                     kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                     parent_index,
                                                      _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrame* navigation_frame =
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
-                                                       kCelestialIndex,
-                                                       kParentIndex);
+                                                       celestial_index,
+                                                       parent_index);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -592,7 +592,7 @@ TEST_F(InterfaceTest, Iterator) {
                                            3 * SIUnit<Length>()});
   rendered_trajectory->Append(
       t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
-  for (int i = 1; i < kTrajectorySize; ++i) {
+  for (int i = 1; i < trajectory_size; ++i) {
     position += Displacement<World>({10 * SIUnit<Length>(),
                                      20 * SIUnit<Length>(),
                                      30 * SIUnit<Length>()});
@@ -605,19 +605,19 @@ TEST_F(InterfaceTest, Iterator) {
               FillRenderedVesselTrajectory(
                   kVesselGUID,
                   World::origin + Displacement<World>(
-                                      {kParentPosition.x * SIUnit<Length>(),
-                                       kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()}),
+                                      {parent_position.x * SIUnit<Length>(),
+                                       parent_position.y * SIUnit<Length>(),
+                                       parent_position.z * SIUnit<Length>()}),
                   _))
       .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
-                                          kParentPosition);
-  EXPECT_EQ(kTrajectorySize, principia__IteratorSize(iterator));
+                                          parent_position);
+  EXPECT_EQ(trajectory_size, principia__IteratorSize(iterator));
 
   // Traverse it and check that we get the right data.
-  for (int i = 0; i < kTrajectorySize; ++i) {
+  for (int i = 0; i < trajectory_size; ++i) {
     EXPECT_FALSE(principia__IteratorAtEnd(iterator));
     XYZ const xyz = principia__IteratorGetXYZ(iterator);
     EXPECT_EQ(1 + 10 * i, xyz.x);
@@ -660,22 +660,22 @@ TEST_F(InterfaceTest, PhysicsBubble) {
   EXPECT_CALL(*plugin_,
               BubbleDisplacementCorrection(
                   World::origin + Displacement<World>(
-                                      {kParentPosition.x * SIUnit<Length>(),
-                                       kParentPosition.y * SIUnit<Length>(),
-                                       kParentPosition.z * SIUnit<Length>()})))
+                                      {parent_position.x * SIUnit<Length>(),
+                                       parent_position.y * SIUnit<Length>(),
+                                       parent_position.z * SIUnit<Length>()})))
       .WillOnce(Return(Displacement<World>({77 * SIUnit<Length>(),
                                             88 * SIUnit<Length>(),
                                             99 * SIUnit<Length>()})));
   XYZ const displacement =
-      principia__BubbleDisplacementCorrection(plugin_.get(), kParentPosition);
+      principia__BubbleDisplacementCorrection(plugin_.get(), parent_position);
   EXPECT_THAT(displacement, Eq(XYZ{77, 88, 99}));
 
-  EXPECT_CALL(*plugin_, BubbleVelocityCorrection(kParentIndex))
+  EXPECT_CALL(*plugin_, BubbleVelocityCorrection(parent_index))
       .WillOnce(Return(Velocity<World>({66 * SIUnit<Speed>(),
                                         55 * SIUnit<Speed>(),
                                         44 * SIUnit<Speed>()})));
   XYZ const velocity =
-      principia__BubbleVelocityCorrection(plugin_.get(), kParentIndex);
+      principia__BubbleVelocityCorrection(plugin_.get(), parent_index);
   EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
 
   EXPECT_CALL(*plugin_, PhysicsBubbleIsEmpty()).WillOnce(Return(true));
@@ -688,14 +688,14 @@ TEST_F(InterfaceTest, NavballOrientation) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                parent_index,
                                                 _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrame* navigation_frame =
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
-                                                       kCelestialIndex,
-                                                       kParentIndex);
+                                                       celestial_index,
+                                                       parent_index);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -727,14 +727,14 @@ TEST_F(InterfaceTest, Frenet) {
      mock_navigation_frame =
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(kCelestialIndex,
-                                                kParentIndex,
+              FillBarycentricRotatingNavigationFrame(celestial_index,
+                                                parent_index,
                                                 _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrame* navigation_frame =
       principia__NewBarycentricRotatingNavigationFrame(plugin_.get(),
-                                                       kCelestialIndex,
-                                                       kParentIndex);
+                                                       celestial_index,
+                                                       parent_index);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -779,23 +779,23 @@ TEST_F(InterfaceTest, Frenet) {
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(kUnixEpoch));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(unix_epoch));
   double const current_time = principia__CurrentTime(plugin_.get());
-  EXPECT_THAT(t0_ + current_time * Second, Eq(kUnixEpoch));
+  EXPECT_THAT(t0_ + current_time * Second, Eq(unix_epoch));
 }
 
 TEST_F(InterfaceTest, SerializePlugin) {
   PullSerializer* serializer = nullptr;
   std::string const message_bytes =
-      std::string(kSerializedBoringPlugin,
-                  (sizeof(kSerializedBoringPlugin) - 1) / sizeof(char));
+      std::string(serialized_boring_plugin,
+                  (sizeof(serialized_boring_plugin) - 1) / sizeof(char));
   principia::serialization::Plugin message;
   message.ParseFromString(message_bytes);
 
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
   char const* serialization =
       principia__SerializePlugin(plugin_.get(), &serializer);
-  EXPECT_STREQ(kHexadecimalBoringPlugin, serialization);
+  EXPECT_STREQ(hexadecimal_boring_plugin, serialization);
   EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
   principia__DeletePluginSerialization(&serialization);
   EXPECT_THAT(serialization, IsNull());
@@ -805,11 +805,11 @@ TEST_F(InterfaceTest, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   principia__DeserializePlugin(
-          kHexadecimalBoringPlugin,
-          (sizeof(kHexadecimalBoringPlugin) - 1) / sizeof(char),
+          hexadecimal_boring_plugin,
+          (sizeof(hexadecimal_boring_plugin) - 1) / sizeof(char),
           &deserializer,
           &plugin);
-  principia__DeserializePlugin(kHexadecimalBoringPlugin,
+  principia__DeserializePlugin(hexadecimal_boring_plugin,
                                0,
                                &deserializer,
                                &plugin);
@@ -821,49 +821,49 @@ TEST_F(InterfaceTest, DeserializePlugin) {
 TEST_F(InterfaceDeathTest, SettersAndGetters) {
   // We use EXPECT_EXITs in this test to avoid interfering with the execution of
   // the other tests.
-  int const kExitCode = 66;
-  char const kExitMessage[] = "Exiting";
+  int const exit_code = 66;
+  char const exit_message[] = "Exiting";
 
   EXPECT_EXIT({
     principia__SetBufferedLogging(100);
     ASSERT_EQ(100, principia__GetBufferedLogging());
-    std::cerr << kExitMessage;
-    exit(kExitCode);
-  }, ExitedWithCode(kExitCode), kExitMessage);
+    std::cerr << exit_message;
+    exit(exit_code);
+  }, ExitedWithCode(kExitCode), exit_message);
 
   EXPECT_EXIT({
     principia__SetBufferDuration(101);
     ASSERT_EQ(101, principia__GetBufferDuration());
-    std::cerr << kExitMessage;
-    exit(kExitCode);
-  }, ExitedWithCode(kExitCode), kExitMessage);
+    std::cerr << exit_message;
+    exit(exit_code);
+  }, ExitedWithCode(kExitCode), exit_message);
 
   EXPECT_EXIT({
     principia__SetSuppressedLogging(102);
     ASSERT_EQ(102, principia__GetSuppressedLogging());
-    std::cerr << kExitMessage;
-    exit(kExitCode);
-  }, ExitedWithCode(kExitCode), kExitMessage);
+    std::cerr << exit_message;
+    exit(exit_code);
+  }, ExitedWithCode(kExitCode), exit_message);
 
   EXPECT_EXIT({
     principia__SetVerboseLogging(103);
     ASSERT_EQ(103, principia__GetVerboseLogging());
-    std::cerr << kExitMessage;
-    exit(kExitCode);
-  }, ExitedWithCode(kExitCode), kExitMessage);
+    std::cerr << exit_message;
+    exit(exit_code);
+  }, ExitedWithCode(kExitCode), exit_message);
 
   EXPECT_EXIT({
     principia__SetStderrLogging(2);
     ASSERT_EQ(2, principia__GetStderrLogging());
-    std::cerr << kExitMessage;
-    exit(kExitCode);
-  }, ExitedWithCode(kExitCode), kExitMessage);
+    std::cerr << exit_message;
+    exit(exit_code);
+  }, ExitedWithCode(kExitCode), exit_message);
 }
 
 TEST_F(InterfaceTest, FlightPlan) {
   Burn burn = {/*thrust_in_kilonewtons=*/1,
                /*specific_impulse_in_seconds_g0=*/2,
-               /*frame=*/{/*extension=*/6000, /*centre=*/kCelestialIndex},
+               /*frame=*/{/*extension=*/6000, /*centre=*/celestial_index},
                /*initial_time=*/3,
                /*delta_v=*/{4, 5, 6}};
   StrictMock<MockVessel> vessel;
@@ -938,7 +938,7 @@ TEST_F(InterfaceTest, FlightPlan) {
                 plugin_.get(), kVesselGUID));
 
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   EXPECT_CALL(flight_plan,
@@ -1044,7 +1044,7 @@ TEST_F(InterfaceTest, FlightPlan) {
 
   burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(kCelestialIndex, _))
+              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(
                     new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
   EXPECT_CALL(flight_plan,

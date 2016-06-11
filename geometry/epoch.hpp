@@ -31,7 +31,7 @@ Instant const kJ2000;
 // Unix epoch, obtained by subtracting 30 years (including 7 leap years)
 // and the UTC time of day at J2000.0 from J2000.0.
 // +2000-01-01T00:00:00.000 (UTC)
-Instant const kUnixEpoch = kJ2000 - ((30 * 365 + 7) * Day + 11 * Hour +
+Instant const unix_epoch = kJ2000 - ((30 * 365 + 7) * Day + 11 * Hour +
                                      58 * Minute + 55.816 * Second);
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of

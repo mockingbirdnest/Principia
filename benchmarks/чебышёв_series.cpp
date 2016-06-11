@@ -50,7 +50,7 @@ using quantities::si::Second;
 namespace numerics {
 
 namespace {
-int const kEvaluationsPerIteration = 1000;
+int const evaluations_per_iteration = 1000;
 }  // namespace
 
 void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
@@ -70,7 +70,7 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   double result = 0.0;
 
   while (state.KeepRunning()) {
-    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+    for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
     }
@@ -99,7 +99,7 @@ void BM_EvaluateQuantity(
   Length result = 0.0 * Metre;
 
   while (state.KeepRunning()) {
-    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+    for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
     }
@@ -132,7 +132,7 @@ void BM_EvaluateR3ElementDouble(
   R3Element<double> result{0.0, 0.0, 0.0};
 
   while (state.KeepRunning()) {
-    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+    for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
     }
@@ -168,7 +168,7 @@ void BM_EvaluateVectorDouble(
   Multivector<double, ICRFJ2000Ecliptic, 1> result{};
 
   while (state.KeepRunning()) {
-    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+    for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
     }
@@ -204,7 +204,7 @@ void BM_EvaluateDisplacement(
   Displacement<ICRFJ2000Ecliptic> result{};
 
   while (state.KeepRunning()) {
-    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+    for (int i = 0; i < evaluations_per_iteration; ++i) {
       result += series.Evaluate(t);
       t += Δt;
     }

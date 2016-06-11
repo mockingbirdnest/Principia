@@ -1,4 +1,4 @@
-#include "ksp_plugin/interface.hpp"
+﻿#include "ksp_plugin/interface.hpp"
 
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"

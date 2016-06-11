@@ -229,7 +229,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
   } else {
-    vanishing_coefficients_ = kNone;
+    vanishing_coefficients_ = none;
     first_same_as_last_ = std::experimental::nullopt;
     a_ = a;
     b_ = b;
@@ -258,8 +258,8 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
   // because MSVC doesn't want to deduce it.  Clang-cl deduces it without any
   // issues.
   switch (vanishing_coefficients_) {
-    case kNone:
-      SolveTrivialKineticEnergyIncrementOptimized<kNone, Position>(
+    case none:
+      SolveTrivialKineticEnergyIncrementOptimized<none, Position>(
           compute_acceleration,
           parameters,
           solution);
@@ -367,7 +367,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
       q_stage[k] = q_last[k].value;
     }
 
-    if (vanishing_coefficients != kNone) {
+    if (vanishing_coefficients != none) {
       should_synchronize = at_end ||
                            (parameters.sampling_period != 0 &&
                             sampling_phase % parameters.sampling_period == 0);

@@ -74,7 +74,7 @@ class SRKNIntegrator : public MotionIntegrator {
 
  protected:
   enum VanishingCoefficients {
-    kNone,
+    none,
     kFirstBVanishes,
     kLastAVanishes,
   };
@@ -86,7 +86,7 @@ class SRKNIntegrator : public MotionIntegrator {
 
   // Indicates whether some nodes vanish in a way that enables optimizations.
   VanishingCoefficients vanishing_coefficients_;
-  // Null if, and only if, |vanishing_coefficients_ == kNone|.
+  // Null if, and only if, |vanishing_coefficients_ == none|.
   // If |vanishing_coefficients_ == kFirstBVanishes|, this contains the first
   // and last a coefficients.
   // If |vanishing_coefficients_ == FirstAVanishes|, this contains the first

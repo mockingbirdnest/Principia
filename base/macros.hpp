@@ -16,40 +16,40 @@ namespace base {
 // TODO(phl): See whether that |COMPILER_MSVC| macro can be removed from port.h.
 #if defined(_MSC_VER) && defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG_CL 1
-char const* const kCompilerName = "Clang-cl";
-char const* const kCompilerVersion = __VERSION__;
+char const* const compiler_name = "Clang-cl";
+char const* const compiler_version = __VERSION__;
 #elif defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG 1
-char const* const kCompilerName = "Clang";
-char const* const kCompilerVersion = __VERSION__;
+char const* const compiler_name = "Clang";
+char const* const compiler_version = __VERSION__;
 #elif defined(_MSC_VER)
 #define PRINCIPIA_COMPILER_MSVC 1
-char const* const kCompilerName = "Microsoft Visual C++";
-char const* const kCompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
+char const* const compiler_name = "Microsoft Visual C++";
+char const* const compiler_version = STRINGIFY_EXPANSION(_MSC_FULL_VER);
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
-char const* const kCompilerName = "Intel C++ Compiler";
-char const* const kCompilerVersion = __VERSION__;
+char const* const compiler_name = "Intel C++ Compiler";
+char const* const compiler_version = __VERSION__;
 #elif defined(__GNUC__)
 #define PRINCIPIA_COMPILER_GCC 1
-char const* const kCompilerName = "G++";
-char const* const kCompilerVersion = __VERSION__;
+char const* const compiler_name = "G++";
+char const* const compiler_version = __VERSION__;
 #else
 #error "What is this, Borland C++?"
 #endif
 
 #if defined(__APPLE__)
 #define OS_MACOSX 1
-char const* const kOperatingSystem = "OS X";
+char const* const operating_system = "OS X";
 #elif defined(__linux__)
 #define OS_LINUX 1
-char const* const kOperatingSystem = "Linux";
+char const* const operating_system = "Linux";
 #elif defined(__FreeBSD__)
 #define OS_FREEBSD 1
-char const* const kOperatingSystem = "FreeBSD";
+char const* const operating_system = "FreeBSD";
 #elif defined(_WIN32)
 #define OS_WIN 1
-char const* const kOperatingSystem = "Windows";
+char const* const operating_system = "Windows";
 #else
 #error "Try OS/360."
 #endif
@@ -59,13 +59,13 @@ char const* const kOperatingSystem = "Windows";
 #define ARCH_CPU_X86 1
 #define ARCH_CPU_32_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-char const* const kArchitecture = "x86";
+char const* const architecture = "x86";
 #elif defined(_M_X64) || defined(__x86_64__)
 #define ARCH_CPU_X86_FAMILY 1
 #define ARCH_CPU_X86_64 1
 #define ARCH_CPU_64_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-char const* const kArchitecture = "x86-64";
+char const* const architecture = "x86-64";
 #else
 #error "Have you tried a Cray-1?"
 #endif

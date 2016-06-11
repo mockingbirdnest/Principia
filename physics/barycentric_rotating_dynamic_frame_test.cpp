@@ -54,8 +54,8 @@ using ::testing::_;
 
 namespace {
 
-char constexpr kBig[] = "Big";
-char constexpr kSmall[] = "Small";
+char constexpr big[] = "Big";
+char constexpr small[] = "Small";
 
 }  // namespace
 
@@ -86,14 +86,14 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
                         integrators::McLachlanAtela1992Order4Optimal<
                             Position<ICRFJ2000Equator>>(),
                         /*step=*/10 * Milli(Second)));
-    big_ = solar_system_.massive_body(*ephemeris_, kBig);
-    small_ = solar_system_.massive_body(*ephemeris_, kSmall);
+    big_ = solar_system_.massive_body(*ephemeris_, big);
+    small_ = solar_system_.massive_body(*ephemeris_, small);
     ephemeris_->Prolong(t0_ + 2 * period_);
-    big_initial_state_ = solar_system_.initial_state(kBig);
-    big_gravitational_parameter_ = solar_system_.gravitational_parameter(kBig);
-    small_initial_state_ = solar_system_.initial_state(kSmall);
+    big_initial_state_ = solar_system_.initial_state(big);
+    big_gravitational_parameter_ = solar_system_.gravitational_parameter(big);
+    small_initial_state_ = solar_system_.initial_state(small);
     small_gravitational_parameter_ =
-        solar_system_.gravitational_parameter(kSmall);
+        solar_system_.gravitational_parameter(small);
     centre_of_mass_initial_state_ =
         Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
             {big_initial_state_, small_initial_state_},
@@ -106,10 +106,10 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
     mock_ephemeris_ =
        std::make_unique<StrictMock<MockEphemeris<ICRFJ2000Equator>>>();
     EXPECT_CALL(*mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, kBig)))
+                trajectory(solar_system_.massive_body(*ephemeris_, big)))
         .WillOnce(Return(&mock_big_trajectory_));
     EXPECT_CALL(*mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, kSmall)))
+                trajectory(solar_system_.massive_body(*ephemeris_, small)))
         .WillOnce(Return(&mock_small_trajectory_));
     mock_frame_ =
         std::make_unique<
@@ -143,11 +143,11 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
 
 
 TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
-  int const kSteps = 100;
+  int const steps = 100;
 
   ContinuousTrajectory<ICRFJ2000Equator>::Hint big_hint;
   ContinuousTrajectory<ICRFJ2000Equator>::Hint small_hint;
-  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
 
     // Check that the centre of mass is at the origin and doesn't move.
@@ -162,10 +162,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
 
     // Check that the bodies don't move and are at the right locations.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
-        solar_system_.trajectory(*ephemeris_, kBig).
+        solar_system_.trajectory(*ephemeris_, big).
             EvaluateDegreesOfFreedom(t, &big_hint);
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
-        solar_system_.trajectory(*ephemeris_, kSmall).
+        solar_system_.trajectory(*ephemeris_, small).
             EvaluateDegreesOfFreedom(t, &small_hint);
 
     DegreesOfFreedom<BigSmallFrame> const big_in_big_small_at_t =
@@ -194,8 +194,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, Inverse) {
-  int const kSteps = 100;
-  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+  int const steps = 100;
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const from_big_small_frame_at_t =
         big_small_frame_->FromThisFrameAtTime(t);
     auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
