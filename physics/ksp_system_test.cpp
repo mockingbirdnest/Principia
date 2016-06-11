@@ -317,12 +317,12 @@ class KSPSystemTest : public ::testing::Test {
 };
 
 TEST_F(KSPSystemTest, KerbalSystem) {
+#if NDEBUG
   google::LogToStderr();
 
   auto const moons = {&laythe_, &vall_, &tylo_, &pol_, &bop_};
 
   auto const ephemeris = MakeEphemeris();
-#if NDEBUG
 #if 0
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
 #else  // A small century so the tests don't take too long.
