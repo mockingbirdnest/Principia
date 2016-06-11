@@ -25,7 +25,7 @@ using FrameField =
 template<typename Frame>
 FrameField<Frame> CoordinateFrame();
 
-}  // namespace internal_frame_field;
+}  // namespace internal_frame_field
 
 using internal_frame_field::CoordinateFrame;
 using internal_frame_field::FrameField;
