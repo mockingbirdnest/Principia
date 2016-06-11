@@ -241,8 +241,10 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    Vector3d gravity =
-        FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
+    if (FlightIntegrator.GraviticForceMultiplier != 0) {
+      Log.Info("Killing stock gravity");
+      FlightIntegrator.GraviticForceMultiplier = 0;  // sic.
+    }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
         (from part in vessel.parts
@@ -252,7 +254,7 @@ public partial class PrincipiaPluginAdapter
              world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
              mass_in_tonnes =
                  (double)part.mass + (double)part.GetResourceMass(),
-             gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
+             gravitational_acceleration_to_be_applied_by_ksp = default(XYZ),
              id = part.flightID}).ToArray();
     if (parts.Count() > 0) {
       bool inserted = plugin_.InsertOrKeepVessel(
@@ -659,6 +661,11 @@ public partial class PrincipiaPluginAdapter
       time_is_advancing_ = true;
       if (has_inertial_physics_bubble_in_space()) {
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
+      } else {
+        if (FlightIntegrator.GraviticForceMultiplier != 1) {
+          Log.Info("Reinstating stock gravity");
+          FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
+        }
       }
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
