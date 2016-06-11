@@ -227,9 +227,9 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
-  for (auto const& l : checkpoint.last_points_) {
-    Instant const& instant = l.first;
-    DegreesOfFreedom<Frame> degrees_of_freedom = l.second;
+  for (auto const& pair : checkpoint.last_points_) {
+    Instant const& instant = pair.first;
+    DegreesOfFreedom<Frame> degrees_of_freedom = pair.second;
     not_null<
         serialization::ContinuousTrajectory::InstantaneousDegreesOfFreedom*>
         const instantaneous_degrees_of_freedom = message->add_last_point();

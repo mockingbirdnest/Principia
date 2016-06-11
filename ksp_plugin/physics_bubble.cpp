@@ -336,8 +336,8 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
     not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__;
   BarycentreCalculator<DegreesOfFreedom<World>, Mass> centre_of_mass_calculator;
-  for (auto const& id_part : next->parts) {
-    not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
+  for (auto const& pair : next->parts) {
+    not_null<std::unique_ptr<Part<World>>> const& part = pair.second;
     centre_of_mass_calculator.Add(part->degrees_of_freedom(), part->mass());
   }
   next->centre_of_mass.emplace(centre_of_mass_calculator.Get());
@@ -350,11 +350,10 @@ void PhysicsBubble::ComputeNextVesselOffsets(
   VLOG(1) << __FUNCTION__;
   next->from_centre_of_mass.emplace();
   VLOG(1) << NAMED(next->vessels.size());
-  for (auto const& vessel_parts : next->vessels) {
-    not_null<Vessel const*> const vessel = vessel_parts.first;
+  for (auto const& pair : next->vessels) {
+    not_null<Vessel const*> const vessel = pair.first;
     // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
-    std::vector<not_null<Part<World>*>> const& parts =
-        vessel_parts.second;
+    std::vector<not_null<Part<World>*>> const& parts = pair.second;
     VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
     BarycentreCalculator<DegreesOfFreedom<World>, Mass> vessel_calculator;
     for (auto const part : parts) {
@@ -375,11 +374,10 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
                                 not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__<< '\n' << NAMED(current_time);
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> bubble_calculator;
-  for (auto const& vessel_parts : next->vessels) {
-    not_null<Vessel const*> vessel = vessel_parts.first;
+  for (auto const& pair : next->vessels) {
+    not_null<Vessel const*> vessel = pair.first;
     // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
-    std::vector<not_null<Part<World>*>> const& parts =
-        vessel_parts.second;
+    std::vector<not_null<Part<World>*>> const& parts = pair.second;
     for (not_null<Part<World> const*> const part : parts) {
       bubble_calculator.Add(vessel->prolongation().last().degrees_of_freedom(),
                             part->mass());
@@ -431,9 +429,9 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
   BarycentreCalculator<Vector<Acceleration, World>, Mass>
       acceleration_calculator;
   Time const δt = next_time - current_time;
-  for (auto const& current_next : common_parts) {
-    not_null<Part<World>*> const current_part = current_next.first;
-    not_null<Part<World>*> const next_part = current_next.second;
+  for (auto const& pair : common_parts) {
+    not_null<Part<World>*> const current_part = pair.first;
+    not_null<Part<World>*> const next_part = pair.second;
     acceleration_calculator.Add(
         (next_part->degrees_of_freedom().velocity() -
             (current_part->degrees_of_freedom().velocity() +
@@ -453,9 +451,9 @@ void PhysicsBubble::Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
           << NAMED(current_time) << '\n' << NAMED(common_parts);
   BarycentreCalculator<DegreesOfFreedom<World>, Mass> current_common_calculator;
   BarycentreCalculator<DegreesOfFreedom<World>, Mass> next_common_calculator;
-  for (auto const& current_next : common_parts) {
-    not_null<Part<World>*> const current_part = current_next.first;
-    not_null<Part<World>*> const next_part = current_next.second;
+  for (auto const& pair : common_parts) {
+    not_null<Part<World>*> const current_part = pair.first;
+    not_null<Part<World>*> const next_part = pair.second;
     current_common_calculator.Add(current_part->degrees_of_freedom(),
                                   current_part->mass());
     next_common_calculator.Add(next_part->degrees_of_freedom(),

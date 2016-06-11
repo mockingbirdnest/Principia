@@ -147,28 +147,30 @@ class TestablePlugin : public Plugin {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Barycentric>> initial_state;
     auto bodies_it = absolute_initialization_->bodies.begin();
-    for (auto const& index_state : absolute_initialization_->initial_state) {
-      EXPECT_EQ(index_state.first, bodies_it->first);
+    for (auto const& pair : absolute_initialization_->initial_state) {
+      Index const index = pair.first;
+      auto const& degree_of_freedom = pair.second;
+      EXPECT_EQ(pair.first, bodies_it->first);
       auto const inserted =
           trajectories_.emplace(std::piecewise_construct,
-                                std::forward_as_tuple(index_state.first),
+                                std::forward_as_tuple(index),
                                 std::forward_as_tuple(45 * Minute,
                                                       1 * Milli(Metre)));
       EXPECT_TRUE(inserted.second);
       for (int i = 0; i < 9; ++i) {
         inserted.first->second.Append(
             current_time_ + i * 45 * Minute,
-            {index_state.second.position() +
-                 i * 45 * Minute * index_state.second.velocity(),
-             index_state.second.velocity()});
+            {degree_of_freedom.position() +
+                 i * 45 * Minute * degree_of_freedom.velocity(),
+             degree_of_freedom.velocity()});
       }
       ++bodies_it;
     }
     absolute_initialization_ = std::experimental::nullopt;
     ephemeris_ = std::move(mock_ephemeris_);
-    for (auto const& index_celestial : celestials_) {
-      auto const& index = index_celestial.first;
-      auto& celestial = *index_celestial.second;
+    for (auto const& pair : celestials_) {
+      auto const& index = pair.first;
+      auto& celestial = *pair.second;
       celestial.set_trajectory(&FindOrDie(trajectories_, index));
     }
   }
