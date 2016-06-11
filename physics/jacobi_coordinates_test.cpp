@@ -11,14 +11,15 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_jacobi_coordinates {
 
+using quantities::Length;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
-
-namespace physics {
 
 class JacobiCoordinatesTest : public ::testing::Test {
  protected:
@@ -80,5 +81,6 @@ TEST_F(JacobiCoordinatesTest, Jacobi) {
                           5 * Metre));
 }
 
+}  // namespace internal_jacobi_coordinates
 }  // namespace physics
 }  // namespace principia

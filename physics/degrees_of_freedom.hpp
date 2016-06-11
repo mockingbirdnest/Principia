@@ -12,13 +12,13 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_degrees_of_freedom {
 
 using geometry::Displacement;
 using geometry::Pair;
 using geometry::Position;
 using geometry::Velocity;
-
-namespace physics {
 
 // This class is analogous to the pair which is its base class, except that it
 // exports properly-named selectors.  It is implicitly convertible in both
@@ -80,6 +80,11 @@ std::ostream& operator<<(
     std::ostream& out,
     RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom);
 
+}  // namespace internal_degrees_of_freedom
+
+using internal_degrees_of_freedom::DegreesOfFreedom;
+using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
+
 }  // namespace physics
 
 // Reopen the base namespace to make RelativeDegreesOfFreedom mappable.
@@ -90,9 +95,9 @@ class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
  public:
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(
-                                std::declval<Displacement<Frame>>())),
+                                std::declval<geometry::Displacement<Frame>>())),
                    decltype(std::declval<Functor>()(
-                                std::declval<Velocity<Frame>>()))>;
+                                std::declval<geometry::Velocity<Frame>>()))>;
 
   static type Do(Functor const& functor,
                  physics::RelativeDegreesOfFreedom<Frame> const& relative);

@@ -26,19 +26,21 @@
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_solar_system {
 
+using base::FindOrDie;
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::JulianDate;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
+using geometry::Velocity;
 using quantities::Length;
 using quantities::ParseQuantity;
 using quantities::Speed;
 using quantities::si::Radian;
 using quantities::si::Second;
-
-namespace physics {
 
 template<typename Frame>
 void SolarSystem<Frame>::Initialize(
@@ -294,5 +296,6 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   return degrees_of_freedom;
 }
 
+}  // namespace internal_solar_system
 }  // namespace physics
 }  // namespace principia

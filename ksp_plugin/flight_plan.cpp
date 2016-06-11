@@ -9,7 +9,10 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 

@@ -11,17 +11,18 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_solar_system {
 
 using astronomy::ICRFJ2000Equator;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Second;
 using quantities::si::Yotta;
 using testing_utilities::RelativeError;
 using ::testing::ElementsAreArray;
-
-namespace physics {
 
 class SolarSystemTest : public ::testing::Test {
  protected:
@@ -142,5 +143,6 @@ TEST_F(SolarSystemTest, Clear) {
   EXPECT_FALSE(sun_gravity_model.has_axis_declination());
 }
 
+}  // namespace internal_solar_system
 }  // namespace physics
 }  // namespace principia

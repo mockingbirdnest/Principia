@@ -15,6 +15,8 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using geometry::AffineMap;
+using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
 using physics::KeplerianElements;

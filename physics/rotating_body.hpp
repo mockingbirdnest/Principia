@@ -17,6 +17,8 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rotating_body {
 
 using geometry::AngularVelocity;
 using geometry::Instant;
@@ -24,8 +26,7 @@ using geometry::Rotation;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
-
-namespace physics {
+using quantities::Length;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {
@@ -86,6 +87,10 @@ class RotatingBody : public MassiveBody {
  private:
   Parameters const parameters_;
 };
+
+}  // namespace internal_rotating_body
+
+using internal_rotating_body::RotatingBody;
 
 }  // namespace physics
 }  // namespace principia

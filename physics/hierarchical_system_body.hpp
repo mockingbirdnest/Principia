@@ -8,10 +8,12 @@
 #include <vector>
 
 namespace principia {
+namespace physics {
+namespace internal_hierarchical_system {
 
 using base::make_not_null_unique;
-
-namespace physics {
+using geometry::Identity;
+using geometry::Velocity;
 
 template<typename Frame>
 HierarchicalSystem<Frame>::HierarchicalSystem(
@@ -156,5 +158,6 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   return std::move(result);
 }
 
+}  // namespace internal_hierarchical_system
 }  // namespace physics
 }  // namespace principia

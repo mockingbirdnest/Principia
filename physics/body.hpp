@@ -6,10 +6,10 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_body {
 
 using base::not_null;
-
-namespace physics {
 
 class Body {
  public:
@@ -52,6 +52,10 @@ class Body {
      CompatibilityHelper() = delete;
   };
 };
+
+}  // namespace internal_body
+
+using internal_body::Body;
 
 }  // namespace physics
 }  // namespace principia

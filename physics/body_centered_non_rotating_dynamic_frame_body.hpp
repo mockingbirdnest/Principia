@@ -6,10 +6,11 @@
 #include "geometry/identity.hpp"
 
 namespace principia {
-
-using geometry::Identity;
-
 namespace physics {
+namespace internal_body_centred_non_rotating_dynamic_frame {
+
+using geometry::AngularVelocity;
+using geometry::Identity;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
@@ -87,5 +88,6 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
              ephemeris->body_for_serialization_index(message.centre()));
 }
 
+}  // namespace internal_body_centred_non_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

@@ -10,6 +10,7 @@
 
 namespace principia {
 
+using geometry::Displacement;
 using physics::Ephemeris;
 using physics::SolarSystem;
 using quantities::si::Kilo;

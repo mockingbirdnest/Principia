@@ -16,14 +16,14 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_oblate_body {
 
 using geometry::Vector;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Order2ZonalCoefficient;
 using quantities::Quotient;
-
-namespace physics {
 
 template<typename Frame>
 class OblateBody : public RotatingBody<Frame> {
@@ -84,6 +84,10 @@ class OblateBody : public RotatingBody<Frame> {
   Parameters parameters_;
   Vector<double, Frame> const axis_;
 };
+
+}  // namespace internal_oblate_body
+
+using internal_oblate_body::OblateBody;
 
 }  // namespace physics
 }  // namespace principia

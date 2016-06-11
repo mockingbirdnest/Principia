@@ -22,6 +22,8 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_barycentric_rotating_dynamic_frame {
 
 using base::not_null;
 using geometry::AngularVelocity;
@@ -29,8 +31,6 @@ using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
-
-namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 class BarycentricRotatingDynamicFrame
@@ -77,6 +77,11 @@ class BarycentricRotatingDynamicFrame
   mutable typename ContinuousTrajectory<InertialFrame>::Hint primary_hint_;
   mutable typename ContinuousTrajectory<InertialFrame>::Hint secondary_hint_;
 };
+
+}  // namespace internal_barycentric_rotating_dynamic_frame
+
+using internal_barycentric_rotating_dynamic_frame::
+    BarycentricRotatingDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia

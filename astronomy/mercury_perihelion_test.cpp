@@ -23,6 +23,7 @@ namespace principia {
 
 using base::not_null;
 using geometry::AngleBetween;
+using geometry::JulianDate;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
 using physics::DiscreteTrajectory;

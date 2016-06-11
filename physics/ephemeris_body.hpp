@@ -22,28 +22,31 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_ephemeris {
 
 using base::FindOrDie;
 using base::make_not_null_unique;
+using geometry::Displacement;
 using geometry::InnerProduct;
+using geometry::Position;
 using geometry::R3Element;
+using geometry::Velocity;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
 using numerics::Hermite3;
 using quantities::Abs;
 using quantities::Exponentiation;
+using quantities::GravitationalParameter;
 using quantities::Quotient;
 using quantities::Square;
 using quantities::Time;
 using quantities::si::Day;
+using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
-
-namespace physics {
-
-namespace {  // TODO(egg): this should be a named namespace (internal)
 
 Time const max_time_between_checkpoints = 180 * Day;
 
@@ -96,8 +99,6 @@ class DummyIntegrator
     return instance;
   }
 };
-
-}  // namespace
 
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
@@ -1226,5 +1227,6 @@ template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
     Ephemeris<Frame>::kNoIntrinsicAccelerations;
 
+}  // namespace internal_ephemeris
 }  // namespace physics
 }  // namespace principia

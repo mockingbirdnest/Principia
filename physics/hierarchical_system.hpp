@@ -13,10 +13,10 @@
 #include "physics/massive_body.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_hierarchical_system {
 
 using base::not_null;
-
-namespace physics {
 
 template<typename Frame>
 class HierarchicalSystem {
@@ -85,6 +85,10 @@ class HierarchicalSystem {
   // None of these pointers should be null, but I want to use operator[].
   std::map<not_null<MassiveBody const*>, System*> systems_;
 };
+
+}  // namespace internal_hierarchical_system
+
+using internal_hierarchical_system::HierarchicalSystem;
 
 }  // namespace physics
 }  // namespace principia

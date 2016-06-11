@@ -15,6 +15,10 @@
 
 namespace principia {
 namespace physics {
+namespace internal_solar_system {
+
+using quantities::GravitationalParameter;
+using quantities::Length;
 
 template<typename Frame>
 class SolarSystem {
@@ -96,6 +100,10 @@ class SolarSystem {
   std::map<std::string,
            serialization::GravityModel::Body*> gravity_model_map_;
 };
+
+}  // namespace internal_solar_system
+
+using internal_solar_system::SolarSystem;
 
 }  // namespace physics
 }  // namespace principia

@@ -31,8 +31,11 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using base::FindOrDie;
 using base::not_null;
+using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::Identity;
 using geometry::Permutation;
 using geometry::Trivector;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -43,6 +46,7 @@ using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidTransformation;
 using quantities::Abs;
+using quantities::AngularFrequency;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Sin;

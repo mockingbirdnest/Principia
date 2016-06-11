@@ -19,7 +19,13 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
+using geometry::BarycentreCalculator;
+using geometry::Frame;
+using geometry::Position;
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -27,6 +33,8 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::Componentwise;
 using testing_utilities::RelativeError;
 using ::testing::AllOf;

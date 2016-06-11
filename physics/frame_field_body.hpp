@@ -6,8 +6,8 @@
 #include "geometry/named_quantities.hpp"
 
 namespace principia {
-
 namespace physics {
+namespace internal_frame_field {
 
 template<typename Frame>
 FrameField<Frame> CoordinateFrame() {
@@ -16,5 +16,6 @@ FrameField<Frame> CoordinateFrame() {
          };
 }
 
+}  // namespace internal_frame_field
 }  // namespace physics
 }  // namespace principia

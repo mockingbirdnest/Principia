@@ -10,6 +10,12 @@
 
 namespace principia {
 namespace physics {
+namespace internal_kepler_orbit {
+
+using geometry::Instant;
+using quantities::AngularFrequency;
+using quantities::GravitationalParameter;
+using quantities::Length;
 
 template<typename Frame>
 struct KeplerianElements {
@@ -59,6 +65,11 @@ class KeplerOrbit {
   KeplerianElements<Frame> elements_at_epoch_;
   Instant const epoch_;
 };
+
+}  // namespace internal_kepler_orbit
+
+using internal_kepler_orbit::KeplerianElements;
+using internal_kepler_orbit::KeplerOrbit;
 
 }  // namespace physics
 }  // namespace principia

@@ -12,14 +12,12 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_continuous_trajectory {
 
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::ULPDistance;
-
-namespace physics {
-
-namespace {
 
 int const kMaxDegree = 17;
 int const kMinDegree = 3;
@@ -27,8 +25,6 @@ int const kMaxDegreeAge = 100;
 
 // Only supports 8 divisions for now.
 int const kDivisions = 8;
-
-}  // namespace
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
@@ -421,5 +417,6 @@ bool ContinuousTrajectory<Frame>::MayUseHint(Instant const& time,
   return false;
 }
 
+}  // namespace internal_continuous_trajectory
 }  // namespace physics
 }  // namespace principia

@@ -10,11 +10,13 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_oblate_body {
 
+using geometry::AngularVelocity;
+using geometry::Instant;
 using quantities::si::Radian;
 using quantities::si::Second;
-
-namespace physics {
 
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
@@ -119,5 +121,6 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
                                              parameters);
 }
 
+}  // namespace internal_oblate_body
 }  // namespace physics
 }  // namespace principia

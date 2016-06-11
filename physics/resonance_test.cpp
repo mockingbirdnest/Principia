@@ -15,12 +15,22 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
+using geometry::AngularVelocity;
+using geometry::BarycentreCalculator;
+using geometry::OrthogonalMap;
+using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;
+using numerics::Bisect;
+using quantities::GravitationalParameter;
+using quantities::Mass;
+using quantities::Pow;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Radian;
 using testing_utilities::RelativeError;
 
 namespace physics {

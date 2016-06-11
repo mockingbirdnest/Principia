@@ -10,10 +10,10 @@
 #include "quantities/constants.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rotating_body {
 
 using geometry::Exp;
-
-namespace physics {
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(
@@ -118,5 +118,6 @@ RotatingBody<Frame>::ReadFromMessage(
   }
 }
 
+}  // namespace internal_rotating_body
 }  // namespace physics
 }  // namespace principia

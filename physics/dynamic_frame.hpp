@@ -10,10 +10,12 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_dynamic_frame {
 
 using geometry::Rotation;
-
-namespace physics {
+using geometry::Vector;
+using quantities::Acceleration;
 
 // The Frenet frame of a free fall trajectory in |Frame|.
 // TODO(egg): this should actually depend on its template parameter somehow.
@@ -57,6 +59,11 @@ class DynamicFrame {
       ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> const ephemeris,
                       serialization::DynamicFrame const& message);
 };
+
+}  // namespace internal_dynamic_frame
+
+using internal_dynamic_frame::DynamicFrame;
+using internal_dynamic_frame::Frenet;
 
 }  // namespace physics
 }  // namespace principia

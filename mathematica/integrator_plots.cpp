@@ -28,6 +28,7 @@ using astronomy::ICRFJ2000Equator;
 using base::not_null;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
+using geometry::Velocity;
 using integrators::SRKNIntegrator;
 using quantities::AngularFrequency;
 using quantities::Cos;

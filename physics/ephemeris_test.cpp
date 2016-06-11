@@ -29,15 +29,21 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_ephemeris {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::kSolarSystemBarycentreEquator;
 using geometry::Barycentre;
+using geometry::AngularVelocity;
+using geometry::Displacement;
+using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
+using quantities::Mass;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::astronomy::JulianYear;
@@ -62,8 +68,6 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
-
-namespace physics {
 
 namespace {
 
@@ -1289,5 +1293,6 @@ TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   }
 }
 
+}  // namespace internal_ephemeris
 }  // namespace physics
 }  // namespace principia

@@ -20,6 +20,7 @@
 namespace principia {
 
 using base::not_null;
+using geometry::Displacement;
 using geometry::OrthogonalMap;
 using physics::DegreesOfFreedom;
 using physics::RelativeDegreesOfFreedom;

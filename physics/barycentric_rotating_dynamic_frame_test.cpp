@@ -25,6 +25,8 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_barycentric_rotating_dynamic_frame {
 
 using astronomy::ICRFJ2000Equator;
 using base::check_not_null;
@@ -49,8 +51,6 @@ using ::testing::Not;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
-
-namespace physics {
 
 namespace {
 
@@ -529,5 +529,6 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
             read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
 
+}  // namespace internal_barycentric_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

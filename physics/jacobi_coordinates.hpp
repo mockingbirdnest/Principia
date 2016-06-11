@@ -11,11 +11,13 @@
 #include "physics/massive_body.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_jacobi_coordinates {
 
 using base::not_null;
+using geometry::BarycentreCalculator;
 using geometry::Identity;
-
-namespace physics {
+using quantities::GravitationalParameter;
 
 // An utility for converting a linearly ordered system of massive bodies given
 // in Jacobi coordinates to barycentric coordinates.
@@ -65,6 +67,10 @@ class JacobiCoordinates {
   BarycentreCalculator<DegreesOfFreedom<PrimocentricFrame>,
                        GravitationalParameter> system_barycentre_;
 };
+
+}  // namespace internal_jacobi_coordinates
+
+using internal_jacobi_coordinates::JacobiCoordinates;
 
 }  // namespace physics
 }  // namespace principia

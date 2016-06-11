@@ -22,13 +22,20 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using astronomy::ICRFJ2000Equator;
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
+using geometry::Velocity;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -40,8 +47,6 @@ using testing_utilities::AlmostEquals;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-
-namespace physics {
 
 namespace {
 
@@ -223,5 +228,6 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
             read_small_frame->GeometricAcceleration(t, point_dof));
 }
 
+}  // namespace internal_body_centred_non_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

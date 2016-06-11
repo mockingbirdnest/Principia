@@ -12,13 +12,16 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_continuous_trajectory {
 
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::Position;
+using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
 using numerics::ЧебышёвSeries;
-
-namespace physics {
 
 template<typename Frame>
 class ContinuousTrajectory {
@@ -189,6 +192,10 @@ class ContinuousTrajectory {
 
   friend class ContinuousTrajectoryTest;
 };
+
+}  // namespace internal_continuous_trajectory
+
+using internal_continuous_trajectory::ContinuousTrajectory;
 
 }  // namespace physics
 }  // namespace principia
