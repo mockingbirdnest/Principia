@@ -234,7 +234,9 @@ public partial class PrincipiaPluginAdapter
     // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
         pos     : (Vector3d)from_parent.q +
-                  (Vector3d)from_parent.p * UnityEngine.Time.deltaTime,
+                  (vessel.orbitDriver.offsetPosByAFrame
+                       ? (Vector3d)from_parent.p * UnityEngine.Time.deltaTime
+                       : Vector3d.zero),
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
@@ -263,11 +265,13 @@ public partial class PrincipiaPluginAdapter
       if (inserted) {
         // NOTE(egg): this is only used when a (plugin-managed) physics bubble
         // appears with a new vessel (e.g. when exiting the atmosphere).
-        // TODO(egg): these degrees of freedom are off by one Δt and we don't
-        // compensate for the pos/vel synchronization bug.
         plugin_.SetVesselStateOffset(
             vessel_guid : vessel.id.ToString(),
-            from_parent : new QP{q = (XYZ)vessel.orbit.pos,
+            from_parent : new QP{
+                q = vessel.orbitDriver.offsetPosByAFrame
+                      ? (XYZ)(vessel.orbit.pos -
+                              vessel.orbit.vel * TimeWarp.fixedDeltaTime)
+                      : (XYZ)vessel.orbit.pos,
                                  p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
