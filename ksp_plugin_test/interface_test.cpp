@@ -108,7 +108,7 @@ double const time = 11;
 
 XYZ parent_position = {4, 5, 6};
 XYZ parent_velocity = {7, 8, 9};
-QP kParentRelativeDegreesOfFreedom = {parent_position, parent_velocity};
+QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
 
 int const trajectory_size = 10;
 

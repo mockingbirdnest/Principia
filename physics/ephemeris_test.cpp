@@ -220,7 +220,7 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
                             Displacement<ICRFJ2000Equator>(
                                 {0 * Metre, distance, 0 * Metre}),
                         Velocity<ICRFJ2000Equator>(
-                            {kVelocity, velocity, velocity})));
+                            {velocity, velocity, velocity})));
 
   EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
       &trajectory,

@@ -89,22 +89,22 @@ TEST_F(HexadecimalTest, LargeOutput) {
 TEST_F(HexadecimalTest, Adjacent) {
   auto buffer = std::make_unique<uint8_t[]>(digits + bytes);
   std::memcpy(&buffer[0], bytes_.data.get(), bytes);
-  HexadecimalEncode({&buffer[0], kBytes}, {&buffer[bytes], digits});
+  HexadecimalEncode({&buffer[0], bytes}, {&buffer[bytes], digits});
   EXPECT_EQ(uppercase_digits_, Bytes(&buffer[bytes], digits));
   std::memcpy(&buffer[0], uppercase_digits_.data.get(), digits);
-  HexadecimalDecode({&buffer[0], kDigits}, {&buffer[digits], bytes});
+  HexadecimalDecode({&buffer[0], digits}, {&buffer[digits], bytes});
   EXPECT_EQ(bytes_, Bytes(&buffer[digits], bytes));
-  HexadecimalDecode({&buffer[0], kDigits + 1}, {&buffer[digits], bytes});
+  HexadecimalDecode({&buffer[0], digits + 1}, {&buffer[digits], bytes});
   EXPECT_EQ(bytes_, Bytes(&buffer[digits], bytes));
 }
 
 TEST_F(HexadecimalDeathTest, Overlap) {
   auto buffer = std::make_unique<uint8_t[]>(digits + bytes - 1);
   EXPECT_DEATH({
-    HexadecimalEncode({&buffer[kDigits - 1], bytes}, {&buffer[0], digits});
+    HexadecimalEncode({&buffer[digits - 1], bytes}, {&buffer[0], digits});
   }, "bad overlap");
   EXPECT_DEATH({
-    HexadecimalDecode({&buffer[0], kDigits}, {&buffer[digits - 1], bytes});
+    HexadecimalDecode({&buffer[0], digits}, {&buffer[digits - 1], bytes});
   }, "bad overlap");
   buffer = std::make_unique<uint8_t[]>(digits);
   EXPECT_DEATH({
