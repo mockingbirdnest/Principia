@@ -29,20 +29,20 @@ using ::testing::ElementsAreArray;
 namespace base {
 
 namespace {
-int const kDeserializerChunkSize = 99;
-int const kRunsPerTest = 1000;
-int const kSerializerChunkSize = 99;
-int const kNumberOfChunks = 3;
-const char kStart[] = "START";
+int const deserializer_chunk_size = 99;
+int const runs_per_test = 1000;
+int const serializer_chunk_size = 99;
+int const number_of_chunks = 3;
+const char start[] = "START";
 }  // namespace
 
 class PushDeserializerTest : public ::testing::Test {
  protected:
   PushDeserializerTest()
       : pull_serializer_(std::make_unique<PullSerializer>(
-                             kSerializerChunkSize, kNumberOfChunks)),
+                             serializer_chunk_size, number_of_chunks)),
         push_deserializer_(std::make_unique<PushDeserializer>(
-                               kDeserializerChunkSize, kNumberOfChunks)),
+                               deserializer_chunk_size, number_of_chunks)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
@@ -105,17 +105,17 @@ TEST_F(PushDeserializerTest, Stream) {
   void const* data;
   int size;
 
-  strings_ = {kStart, "abc"};
+  strings_ = {start, "abc"};
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   EXPECT_EQ("abc", std::string(static_cast<char const*>(data), size));
   EXPECT_EQ(3, stream_.ByteCount());
 
-  strings_ = {kStart, ""};
+  strings_ = {start, ""};
   EXPECT_FALSE(stream_.Next(&data, &size));
   EXPECT_EQ(3, stream_.ByteCount());
 
-  strings_ = {kStart, "abc", "xyzt"};
+  strings_ = {start, "abc", "xyzt"};
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   EXPECT_EQ("abc", std::string(static_cast<char const*>(data), size));
@@ -124,7 +124,7 @@ TEST_F(PushDeserializerTest, Stream) {
   EXPECT_EQ("xyzt", std::string(static_cast<char const*>(data), size));
   EXPECT_EQ(10, stream_.ByteCount());
 
-  strings_ = {kStart, "abc", "xyzt", "uvw", ""};
+  strings_ = {start, "abc", "xyzt", "uvw", ""};
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   EXPECT_TRUE(stream_.Skip(2));
@@ -134,7 +134,7 @@ TEST_F(PushDeserializerTest, Stream) {
   EXPECT_FALSE(stream_.Skip(5));
   EXPECT_EQ(20, stream_.ByteCount());
 
-  strings_ = {kStart, "abc"};
+  strings_ = {start, "abc"};
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   stream_.BackUp(1);
@@ -150,10 +150,10 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   auto const serialized_trajectory =
       std::make_unique<std::uint8_t[]>(byte_size);
 
-  for (int i = 0; i < kRunsPerTest; ++i) {
+  for (int i = 0; i < runs_per_test; ++i) {
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        kDeserializerChunkSize, kNumberOfChunks);
+        deserializer_chunk_size, number_of_chunks);
 
     written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
                                                 byte_size);
@@ -173,16 +173,16 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
 TEST_F(PushDeserializerTest, SerializationDeserialization) {
   auto const trajectory = BuildTrajectory();
   int const byte_size = trajectory->ByteSize();
-  for (int i = 0; i < kRunsPerTest; ++i) {
+  for (int i = 0; i < runs_per_test; ++i) {
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     auto written_trajectory = BuildTrajectory();
     auto storage = std::make_unique<std::uint8_t[]>(byte_size);
     std::uint8_t* data = &storage[0];
 
-    pull_serializer_ =
-        std::make_unique<PullSerializer>(kSerializerChunkSize, kNumberOfChunks);
+    pull_serializer_ = std::make_unique<PullSerializer>(serializer_chunk_size,
+                                                        number_of_chunks);
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        kDeserializerChunkSize, kNumberOfChunks);
+        deserializer_chunk_size, number_of_chunks);
 
     pull_serializer_->Start(std::move(written_trajectory));
     push_deserializer_->Start(
@@ -209,7 +209,7 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
 // Check that deserialization fails if we stomp on one extra bytes.
 TEST_F(PushDeserializerDeathTest, Stomp) {
   EXPECT_DEATH({
-    const int kStompChunk = 77;
+    const int stomp_chunk = 77;
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     auto const trajectory = BuildTrajectory();
     int const byte_size = trajectory->ByteSize();
@@ -219,12 +219,12 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
     push_deserializer_->Start(
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
     int left = byte_size;
-    for (int i = 0; i < byte_size; i += kStompChunk) {
-      Bytes bytes(&serialized_trajectory[i], std::min(left, kStompChunk));
+    for (int i = 0; i < byte_size; i += stomp_chunk) {
+      Bytes bytes(&serialized_trajectory[i], std::min(left, stomp_chunk));
       push_deserializer_->Push(bytes,
                                std::bind(&PushDeserializerTest::Stomp,
                                          Bytes(bytes.data, bytes.size + 1)));
-      left -= kStompChunk;
+      left -= stomp_chunk;
     }
     push_deserializer_->Push(Bytes(), nullptr);
     push_deserializer_.reset();

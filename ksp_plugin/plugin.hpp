@@ -286,7 +286,7 @@ class Plugin {
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
   // Returns
-  // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
+  // |sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget()|.
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
   virtual Instant CurrentTime() const;

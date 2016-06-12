@@ -24,7 +24,7 @@ internal partial struct WXYZ {
 }
 
 internal static partial class Interface {
-  internal const string kDllPath = "principia";
+  internal const string dll_path = "principia";
 
   internal static KeplerianElements Elements(this Orbit orbit) {
     double mean_motion = 2 * Math.PI / orbit.period;
@@ -39,12 +39,12 @@ internal static partial class Interface {
             orbit.meanAnomalyAtEpoch - orbit.epoch * mean_motion};
   }
 
-  [DllImport(dllName           : Interface.kDllPath,
+  [DllImport(dllName           : Interface.dll_path,
              EntryPoint        = "principia__ActivateRecorder",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void ActivateRecorder(bool activate);
 
-  [DllImport(dllName           : kDllPath,
+  [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InitGoogleLogging",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitGoogleLogging();

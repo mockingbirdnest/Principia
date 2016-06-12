@@ -9,15 +9,15 @@ using quantities::si::Day;
 
 namespace geometry {
 
-Instant const kJD0  = kJ2000 - 2451545.0 * Day;
-Instant const kMJD0 = kJ2000 - 51544.5 * Day;
+Instant const jd0  = J2000 - 2451545.0 * Day;
+Instant const mjd0 = J2000 - 51544.5 * Day;
 
 inline Instant JulianDate(double const days) {
-  return kJD0 + days * Day;
+  return jd0 + days * Day;
 }
 
 inline Instant ModifiedJulianDate(double const days) {
-  return kMJD0 + days * Day;
+  return mjd0 + days * Day;
 }
 
 }  // namespace geometry

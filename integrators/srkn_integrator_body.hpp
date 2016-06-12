@@ -211,7 +211,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
     : a_(a),
       b_(b) {
   if (b.front() == 0.0) {
-    vanishing_coefficients_ = kFirstBVanishes;
+    vanishing_coefficients_ = FirstBVanishes;
     first_same_as_last_ = std::experimental::make_optional<FirstSameAsLast>(
                               {a.front(), a.back()});
     a_ = std::vector<double>(a.begin() + 1, a.end());
@@ -220,7 +220,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
   } else if (a.back() == 0.0) {
-    vanishing_coefficients_ = kLastAVanishes;
+    vanishing_coefficients_ = LastAVanishes;
     first_same_as_last_ = std::experimental::make_optional<FirstSameAsLast>(
                               {b.front(), b.back()});
     a_ = std::vector<double>(a.begin(), a.end() - 1);
@@ -229,7 +229,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
   } else {
-    vanishing_coefficients_ = kNone;
+    vanishing_coefficients_ = None;
     first_same_as_last_ = std::experimental::nullopt;
     a_ = a;
     b_ = b;
@@ -239,7 +239,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
 
   // Runge-Kutta time weights.
   c_.resize(stages_);
-  if (vanishing_coefficients_ == kFirstBVanishes) {
+  if (vanishing_coefficients_ == FirstBVanishes) {
     c_[0] = first_same_as_last_->first;
   } else {
     c_[0] = 0.0;
@@ -258,20 +258,20 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
   // because MSVC doesn't want to deduce it.  Clang-cl deduces it without any
   // issues.
   switch (vanishing_coefficients_) {
-    case kNone:
-      SolveTrivialKineticEnergyIncrementOptimized<kNone, Position>(
+    case None:
+      SolveTrivialKineticEnergyIncrementOptimized<None, Position>(
           compute_acceleration,
           parameters,
           solution);
       break;
-    case kFirstBVanishes:
-      SolveTrivialKineticEnergyIncrementOptimized<kFirstBVanishes, Position>(
+    case FirstBVanishes:
+      SolveTrivialKineticEnergyIncrementOptimized<FirstBVanishes, Position>(
           compute_acceleration,
           parameters,
           solution);
       break;
-    case kLastAVanishes:
-      SolveTrivialKineticEnergyIncrementOptimized<kLastAVanishes, Position>(
+    case LastAVanishes:
+      SolveTrivialKineticEnergyIncrementOptimized<LastAVanishes, Position>(
           compute_acceleration,
           parameters,
           solution);
@@ -367,13 +367,13 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
       q_stage[k] = q_last[k].value;
     }
 
-    if (vanishing_coefficients != kNone) {
+    if (vanishing_coefficients != None) {
       should_synchronize = at_end ||
                            (parameters.sampling_period != 0 &&
                             sampling_phase % parameters.sampling_period == 0);
     }
 
-    if (vanishing_coefficients == kFirstBVanishes &&
+    if (vanishing_coefficients == FirstBVanishes &&
         q_and_v_are_synchronized) {
       // Desynchronize.
       std::swap(Δqstage_current, Δqstage_previous);
@@ -392,7 +392,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
       // By using |tn.error| below we get a time value which is possibly a wee
       // bit more precise.
-      if (vanishing_coefficients == kLastAVanishes &&
+      if (vanishing_coefficients == LastAVanishes &&
           q_and_v_are_synchronized && i == 0) {
         ADVANCE_ΔVSTAGE(first_same_as_last_->first * h,
                         tn.value);
@@ -401,7 +401,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
         ADVANCE_ΔVSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
 
-      if (vanishing_coefficients == kFirstBVanishes &&
+      if (vanishing_coefficients == FirstBVanishes &&
           should_synchronize && i == stages_ - 1) {
         ADVANCE_ΔQSTAGE(first_same_as_last_->last * h);
         q_and_v_are_synchronized = true;
@@ -409,7 +409,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
         ADVANCE_ΔQSTAGE(a_[i] * h);
       }
     }
-    if (vanishing_coefficients == kLastAVanishes && should_synchronize) {
+    if (vanishing_coefficients == LastAVanishes && should_synchronize) {
       std::swap(Δvstage_current, Δvstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
       ADVANCE_ΔVSTAGE(first_same_as_last_->last * h,

@@ -20,8 +20,8 @@ using physics::SolarSystem;
 using quantities::si::Second;
 
 namespace {
-constexpr char kCfg[] = "cfg";
-constexpr char kProtoTxt[] = "proto.txt";
+constexpr char cfg[] = "cfg";
+constexpr char proto_txt[] = "proto.txt";
 }  // namespace
 
 namespace tools {
@@ -33,11 +33,11 @@ void GenerateConfiguration(Instant const& game_epoch,
       SOLUTION_DIR / "astronomy";
   SolarSystem<ICRFJ2000Equator> solar_system;
   solar_system.Initialize(
-      (directory / gravity_model_stem).replace_extension(kProtoTxt),
-      (directory / initial_state_stem).replace_extension(kProtoTxt));
+      (directory / gravity_model_stem).replace_extension(proto_txt),
+      (directory / initial_state_stem).replace_extension(proto_txt));
 
   std::ofstream gravity_model_cfg(
-      (directory / gravity_model_stem).replace_extension(kCfg));
+      (directory / gravity_model_stem).replace_extension(cfg));
   CHECK(gravity_model_cfg.good());
   gravity_model_cfg << "principia_gravity_model:NEEDS[RealSolarSystem] {\n";
   for (std::string const& name : solar_system.names()) {
@@ -71,7 +71,7 @@ void GenerateConfiguration(Instant const& game_epoch,
   gravity_model_cfg << "}\n";
 
   std::ofstream initial_state_cfg(
-      (directory / initial_state_stem).replace_extension(kCfg));
+      (directory / initial_state_stem).replace_extension(cfg));
   CHECK(initial_state_cfg.good());
   initial_state_cfg << "principia_initial_state:NEEDS[RealSolarSystem] {\n";
   initial_state_cfg << "  epoch = "

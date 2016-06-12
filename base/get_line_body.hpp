@@ -10,7 +10,7 @@ namespace base {
 
 namespace {
 
-int constexpr kBufferSize = 200;
+int constexpr buffer_size = 200;
 
 std::string GetLineWithSize(std::size_t const size,
                             not_null<std::ifstream*> const stream) {
@@ -29,7 +29,7 @@ std::string GetLineWithSize(std::size_t const size,
 }  // namespace
 
 std::string GetLine(not_null<std::ifstream*> const stream) {
-  return GetLineWithSize(kBufferSize, stream);
+  return GetLineWithSize(buffer_size, stream);
 }
 
 }  // namespace base

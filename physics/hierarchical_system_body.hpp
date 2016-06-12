@@ -89,9 +89,9 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   // origin.
   // TODO(egg): declaring these frame tags to make sure that local frames
   // don't go out of scope is a bit cumbersome.
-  enum class LocalFrameTag { kFrameTag };
+  enum class LocalFrameTag { frame_tag };
   using SystemBarycentre = geometry::Frame<LocalFrameTag,
-                                           LocalFrameTag::kFrameTag,
+                                           LocalFrameTag::frame_tag,
                                            /*frame_is_inertial=*/false>;
   static DegreesOfFreedom<SystemBarycentre> const system_barycentre = {
       SystemBarycentre::origin, Velocity<SystemBarycentre>()};

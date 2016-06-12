@@ -109,14 +109,14 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int rows>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
-        std::array<Scalar, kDimension> const& data)
+        std::array<Scalar, dimension> const& data)
     : data_(data) {}
 
 template<typename Scalar, int rows>
 FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
         std::initializer_list<Scalar> const& data) {
-  CHECK_EQ(kDimension, data.size());
+  CHECK_EQ(dimension, data.size());
   std::copy(data.begin(), data.end(), data_.begin());
 }
 
@@ -130,7 +130,7 @@ template<typename Scalar, int rows>
 FixedStrictlyLowerTriangularMatrix<Scalar, rows>&
 FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator=(
     std::initializer_list<Scalar> const& right) {
-  CHECK_EQ(kDimension, right.size());
+  CHECK_EQ(dimension, right.size());
   std::copy(right.begin(), right.end(), data_.begin());
   return *this;
 }
@@ -149,7 +149,7 @@ FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 }
 
 template<typename Scalar, int rows>
-int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::kDimension;
+int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
 
 }  // namespace numerics
 }  // namespace principia

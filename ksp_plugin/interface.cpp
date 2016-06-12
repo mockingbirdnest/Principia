@@ -64,8 +64,8 @@ namespace interface {
 
 namespace {
 
-int const kChunkSize = 64 << 10;
-int const kNumberOfChunks = 8;
+int const chunk_size = 64 << 10;
+int const number_of_chunks = 8;
 
 base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
     BodyParameters const& body_parameters) {
@@ -139,12 +139,12 @@ void principia__InitGoogleLogging() {
         });
 
     LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << principia::base::kVersion
-              << " built on " << principia::base::kBuildDate
-              << " by " << principia::base::kCompilerName
-              << " version " << principia::base::kCompilerVersion
-              << " for " << principia::base::kOperatingSystem
-              << " " << principia::base::kArchitecture;
+    LOG(INFO) << "Principia version " << principia::base::version
+              << " built on " << principia::base::build_date
+              << " by " << principia::base::CompilerName
+              << " version " << principia::base::CompilerVersion
+              << " for " << principia::base::OperatingSystem
+              << " " << principia::base::Architecture;
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));
@@ -691,7 +691,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
-    *serializer = new PullSerializer(kChunkSize, kNumberOfChunks);
+    *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
     (*serializer)->Start(std::move(message));
@@ -749,7 +749,7 @@ void principia__DeserializePlugin(char const* const serialization,
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
-    *deserializer = new PushDeserializer(kChunkSize, kNumberOfChunks);
+    *deserializer = new PushDeserializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
         std::move(message),
@@ -791,8 +791,8 @@ void principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
-  *CHECK_NOTNULL(build_date) = base::kBuildDate;
-  *CHECK_NOTNULL(version) = base::kVersion;
+  *CHECK_NOTNULL(build_date) = base::build_date;
+  *CHECK_NOTNULL(version) = base::version;
   return m.Return();
 }
 
