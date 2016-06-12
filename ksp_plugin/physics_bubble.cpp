@@ -375,7 +375,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
   VLOG(1) << __FUNCTION__<< '\n' << NAMED(current_time);
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> bubble_calculator;
   for (auto const& pair : next->vessels) {
-    not_null<Vessel const*> vessel = pair.first;
+    not_null<Vessel const*> const vessel = pair.first;
     // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
     std::vector<not_null<Part<World>*>> const& parts = pair.second;
     for (not_null<Part<World> const*> const part : parts) {

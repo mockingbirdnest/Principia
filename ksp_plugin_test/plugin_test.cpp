@@ -150,7 +150,7 @@ class TestablePlugin : public Plugin {
     for (auto const& pair : absolute_initialization_->initial_state) {
       Index const index = pair.first;
       auto const& degree_of_freedom = pair.second;
-      EXPECT_EQ(pair.first, bodies_it->first);
+      EXPECT_EQ(index, bodies_it->first);
       auto const inserted =
           trajectories_.emplace(std::piecewise_construct,
                                 std::forward_as_tuple(index),
