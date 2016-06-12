@@ -179,8 +179,8 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     auto storage = std::make_unique<std::uint8_t[]>(byte_size);
     std::uint8_t* data = &storage[0];
 
-    pull_serializer_ =
-        std::make_unique<PullSerializer>(serializer_chunk_size, number_of_chunks);
+    pull_serializer_ = std::make_unique<PullSerializer>(serializer_chunk_size,
+                                                        number_of_chunks);
     push_deserializer_ = std::make_unique<PushDeserializer>(
         deserializer_chunk_size, number_of_chunks);
 

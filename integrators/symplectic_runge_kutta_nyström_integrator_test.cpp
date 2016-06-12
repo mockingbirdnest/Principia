@@ -112,11 +112,11 @@ void TestTermination(
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
   switch (integrator.composition) {
-    case kBA:
-    case kABA:
+    case BA:
+    case ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case kBAB:
+    case BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -170,11 +170,11 @@ void Test1000SecondsAt1Millisecond(
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
-    case kBA:
-    case kABA:
+    case BA:
+    case ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case kBAB:
+    case BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:

@@ -39,9 +39,9 @@ class Ephemeris {
  public:
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
-  static std::nullptr_t constexpr no_intrinsic_acceleration = nullptr;
+  static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
-  static IntrinsicAccelerations const no_intrinsic_accelerations;
+  static IntrinsicAccelerations const NoIntrinsicAccelerations;
   static std::int64_t constexpr unlimited_max_ephemeris_steps =
       std::numeric_limits<std::int64_t>::max();
 

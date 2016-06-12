@@ -19,40 +19,40 @@ void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
   std::set<std::string> existing;
   std::set<std::string> oblate;
   switch (accuracy) {
-    case SolarSystemFactory::Accuracy::all_bodies_and_oblateness:
-      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::jupiter));
-      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::saturn));
-      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::neptune));
-      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::uranus));
-    case SolarSystemFactory::Accuracy::minor_and_major_bodies:
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::titania));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::oberon));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::rhea));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::iapetus));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::charon));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::ariel));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::umbriel));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::dione));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::tethys));
-    case SolarSystemFactory::Accuracy::major_bodies_only:
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::sun));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::jupiter));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::saturn));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::neptune));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::uranus));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::earth));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::venus));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::mars));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::mercury));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::ganymede));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::titan));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::callisto));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::io));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::moon));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::europa));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::triton));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::eris));
-      existing.insert(SolarSystemFactory::name(SolarSystemFactory::pluto));
+    case SolarSystemFactory::Accuracy::AllBodiesAndOblateness:
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Jupiter));
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Saturn));
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Neptune));
+      oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Uranus));
+    case SolarSystemFactory::Accuracy::MinorAndMajorBodies:
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Titania));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Oberon));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Rhea));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Iapetus));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Charon));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Ariel));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Umbriel));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Dione));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Tethys));
+    case SolarSystemFactory::Accuracy::MajorBodiesOnly:
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Sun));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Jupiter));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Saturn));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Neptune));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Uranus));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Earth));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Venus));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Mars));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Mercury));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Ganymede));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Titan));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Callisto));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Io));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Moon));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Europa));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Triton));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Eris));
+      existing.insert(SolarSystemFactory::name(SolarSystemFactory::Pluto));
   }
   std::vector<std::string> bodies_to_remove;
   std::vector<std::string> bodies_to_spherify;
@@ -99,42 +99,42 @@ SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
 
 inline int SolarSystemFactory::parent(int const index) {
   switch (index) {
-    case sun:
+    case Sun:
       LOG(FATAL) << FUNCTION_SIGNATURE << "The Sun has no parent";
       base::noreturn();
-    case jupiter:
-    case saturn:
-    case neptune:
-    case uranus:
-    case earth:
-    case venus:
-    case mars:
-    case mercury:
-    case eris:
-    case pluto:
-      return sun;
-    case ganymede:
-    case callisto:
-    case io:
-    case europa:
-      return jupiter;
-    case titan:
-    case rhea:
-    case iapetus:
-    case dione:
-    case tethys:
-      return saturn;
-    case moon:
-      return earth;
-    case triton:
-      return neptune;
-    case titania:
-    case oberon:
-    case ariel:
-    case umbriel:
-      return uranus;
-    case charon:
-      return pluto;
+    case Jupiter:
+    case Saturn:
+    case Neptune:
+    case Uranus:
+    case Earth:
+    case Venus:
+    case Mars:
+    case Mercury:
+    case Eris:
+    case Pluto:
+      return Sun;
+    case Ganymede:
+    case Callisto:
+    case Io:
+    case Europa:
+      return Jupiter;
+    case Titan:
+    case Rhea:
+    case Iapetus:
+    case Dione:
+    case Tethys:
+      return Saturn;
+    case Moon:
+      return Earth;
+    case Triton:
+      return Neptune;
+    case Titania:
+    case Oberon:
+    case Ariel:
+    case Umbriel:
+      return Uranus;
+    case Charon:
+      return Pluto;
     default:
       LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
       base::noreturn();
@@ -142,40 +142,35 @@ inline int SolarSystemFactory::parent(int const index) {
 }
 
 inline std::string SolarSystemFactory::name(int const index) {
-#define BODY_NAME(name)                    \
-  case name:                               \
-    return [](std::string s) {             \
-      s.front() = std::toupper(s.front()); \
-      return s;                            \
-    }(#name)
+#define BODY_NAME(name) case name: return #name
   switch (index) {
-    BODY_NAME(sun);
-    BODY_NAME(jupiter);
-    BODY_NAME(saturn);
-    BODY_NAME(neptune);
-    BODY_NAME(uranus);
-    BODY_NAME(earth);
-    BODY_NAME(venus);
-    BODY_NAME(mars);
-    BODY_NAME(mercury);
-    BODY_NAME(ganymede);
-    BODY_NAME(titan);
-    BODY_NAME(callisto);
-    BODY_NAME(io);
-    BODY_NAME(moon);
-    BODY_NAME(europa);
-    BODY_NAME(triton);
-    BODY_NAME(eris);
-    BODY_NAME(pluto);
-    BODY_NAME(titania);
-    BODY_NAME(oberon);
-    BODY_NAME(rhea);
-    BODY_NAME(iapetus);
-    BODY_NAME(charon);
-    BODY_NAME(ariel);
-    BODY_NAME(umbriel);
-    BODY_NAME(dione);
-    BODY_NAME(tethys);
+    BODY_NAME(Sun);
+    BODY_NAME(Jupiter);
+    BODY_NAME(Saturn);
+    BODY_NAME(Neptune);
+    BODY_NAME(Uranus);
+    BODY_NAME(Earth);
+    BODY_NAME(Venus);
+    BODY_NAME(Mars);
+    BODY_NAME(Mercury);
+    BODY_NAME(Ganymede);
+    BODY_NAME(Titan);
+    BODY_NAME(Callisto);
+    BODY_NAME(Io);
+    BODY_NAME(Moon);
+    BODY_NAME(Europa);
+    BODY_NAME(Triton);
+    BODY_NAME(Eris);
+    BODY_NAME(Pluto);
+    BODY_NAME(Titania);
+    BODY_NAME(Oberon);
+    BODY_NAME(Rhea);
+    BODY_NAME(Iapetus);
+    BODY_NAME(Charon);
+    BODY_NAME(Ariel);
+    BODY_NAME(Umbriel);
+    BODY_NAME(Dione);
+    BODY_NAME(Tethys);
     default:
       LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
       base::noreturn();

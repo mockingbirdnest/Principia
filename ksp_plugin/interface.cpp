@@ -141,10 +141,10 @@ void principia__InitGoogleLogging() {
     LOG(INFO) << "Initialized Google logging for Principia";
     LOG(INFO) << "Principia version " << principia::base::version
               << " built on " << principia::base::build_date
-              << " by " << principia::base::compiler_name
-              << " version " << principia::base::compiler_version
-              << " for " << principia::base::operating_system
-              << " " << principia::base::architecture;
+              << " by " << principia::base::CompilerName
+              << " version " << principia::base::CompilerVersion
+              << " for " << principia::base::OperatingSystem
+              << " " << principia::base::Architecture;
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));

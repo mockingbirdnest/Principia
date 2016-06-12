@@ -222,10 +222,10 @@ void BM_BarycentricRotatingDynamicFrame(
   }
 }
 
-int const iter = (1000 << 10) + 1;
+int const iterations = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(iter);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(iter);
+BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(iterations);
+BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(iterations);
 
 }  // namespace physics
 }  // namespace principia

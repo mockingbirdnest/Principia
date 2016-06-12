@@ -141,8 +141,8 @@ class SolarSystemFactoryTest : public testing::Test {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> GetDegreesOfFreedom(
       SolarSystem<ICRFJ2000Equator> const& solar_system) {
     std::vector<DegreesOfFreedom<ICRFJ2000Equator>> degrees_of_freedom;
-    for (int i = SolarSystemFactory::sun;
-         i <= SolarSystemFactory::last_body;
+    for (int i = SolarSystemFactory::Sun;
+         i <= SolarSystemFactory::LastBody;
          ++i) {
       degrees_of_freedom.emplace_back(
           solar_system.initial_state(SolarSystemFactory::name(i)));
@@ -153,8 +153,8 @@ class SolarSystemFactoryTest : public testing::Test {
   std::vector<std::unique_ptr<MassiveBody>> GetMassiveBodies(
     SolarSystem<ICRFJ2000Equator> const& solar_system) {
     std::vector<std::unique_ptr<MassiveBody>> massive_bodies;
-    for (int i = SolarSystemFactory::sun;
-         i <= SolarSystemFactory::last_body;
+    for (int i = SolarSystemFactory::Sun;
+         i <= SolarSystemFactory::LastBody;
          ++i) {
       massive_bodies.emplace_back(
           SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
@@ -168,14 +168,14 @@ using SolarSystemFactoryDeathTest = SolarSystemFactoryTest;
 
 TEST_F(SolarSystemFactoryDeathTest, Parent) {
   EXPECT_DEATH({
-    SolarSystemFactory::parent(SolarSystemFactory::sun);
+    SolarSystemFactory::parent(SolarSystemFactory::Sun);
   }, "has no parent");
 }
 
 TEST_F(SolarSystemFactoryTest, Name) {
   std::vector<std::string> names;
-  for (int i = SolarSystemFactory::sun;
-       i <= SolarSystemFactory::last_body;
+  for (int i = SolarSystemFactory::Sun;
+       i <= SolarSystemFactory::LastBody;
        ++i) {
     names.push_back(SolarSystemFactory::name(i));
   }
@@ -189,8 +189,8 @@ TEST_F(SolarSystemFactoryTest, Name) {
 
 TEST_F(SolarSystemFactoryTest, Parent) {
   std::vector<std::string> parent_names;
-  for (int i = SolarSystemFactory::sun + 1;
-       i <= SolarSystemFactory::last_body;
+  for (int i = SolarSystemFactory::Sun + 1;
+       i <= SolarSystemFactory::LastBody;
        ++i) {
     parent_names.push_back(
         SolarSystemFactory::name(SolarSystemFactory::parent(i)));
@@ -205,65 +205,65 @@ TEST_F(SolarSystemFactoryTest, Parent) {
 
 TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
   auto const solar_system = SolarSystemFactory::AtСпутник1Launch(
-      SolarSystemFactory::Accuracy::minor_and_major_bodies);
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies);
   auto const massive_bodies = GetMassiveBodies(*solar_system);
   auto const dof = GetDegreesOfFreedom(*solar_system);
 
-  auto const& sun_dof      = dof[SolarSystemFactory::sun];
-  auto const& jupiter_dof  = dof[SolarSystemFactory::jupiter];
-  auto const& saturn_dof   = dof[SolarSystemFactory::saturn];
-  auto const& neptune_dof  = dof[SolarSystemFactory::neptune];
-  auto const& uranus_dof   = dof[SolarSystemFactory::uranus];
-  auto const& earth_dof    = dof[SolarSystemFactory::earth];
-  auto const& venus_dof    = dof[SolarSystemFactory::venus];
-  auto const& mars_dof     = dof[SolarSystemFactory::mars];
-  auto const& mercury_dof  = dof[SolarSystemFactory::mercury];
-  auto const& ganymede_dof = dof[SolarSystemFactory::ganymede];
-  auto const& titan_dof    = dof[SolarSystemFactory::titan];
-  auto const& callisto_dof = dof[SolarSystemFactory::callisto];
-  auto const& io_dof       = dof[SolarSystemFactory::io];
-  auto const& moon_dof     = dof[SolarSystemFactory::moon];
-  auto const& europa_dof   = dof[SolarSystemFactory::europa];
-  auto const& triton_dof   = dof[SolarSystemFactory::triton];
-  auto const& eris_dof     = dof[SolarSystemFactory::eris];
-  auto const& pluto_dof    = dof[SolarSystemFactory::pluto];
-  auto const& titania_dof  = dof[SolarSystemFactory::titania];
-  auto const& oberon_dof   = dof[SolarSystemFactory::oberon];
-  auto const& rhea_dof     = dof[SolarSystemFactory::rhea];
-  auto const& iapetus_dof  = dof[SolarSystemFactory::iapetus];
-  auto const& charon_dof   = dof[SolarSystemFactory::charon];
-  auto const& ariel_dof    = dof[SolarSystemFactory::ariel];
-  auto const& umbriel_dof  = dof[SolarSystemFactory::umbriel];
-  auto const& dione_dof    = dof[SolarSystemFactory::dione];
-  auto const& tethys_dof   = dof[SolarSystemFactory::tethys];
+  auto const& sun_dof      = dof[SolarSystemFactory::Sun];
+  auto const& jupiter_dof  = dof[SolarSystemFactory::Jupiter];
+  auto const& saturn_dof   = dof[SolarSystemFactory::Saturn];
+  auto const& neptune_dof  = dof[SolarSystemFactory::Neptune];
+  auto const& uranus_dof   = dof[SolarSystemFactory::Uranus];
+  auto const& earth_dof    = dof[SolarSystemFactory::Earth];
+  auto const& venus_dof    = dof[SolarSystemFactory::Venus];
+  auto const& mars_dof     = dof[SolarSystemFactory::Mars];
+  auto const& mercury_dof  = dof[SolarSystemFactory::Mercury];
+  auto const& ganymede_dof = dof[SolarSystemFactory::Ganymede];
+  auto const& titan_dof    = dof[SolarSystemFactory::Titan];
+  auto const& callisto_dof = dof[SolarSystemFactory::Callisto];
+  auto const& io_dof       = dof[SolarSystemFactory::Io];
+  auto const& moon_dof     = dof[SolarSystemFactory::Moon];
+  auto const& europa_dof   = dof[SolarSystemFactory::Europa];
+  auto const& triton_dof   = dof[SolarSystemFactory::Triton];
+  auto const& eris_dof     = dof[SolarSystemFactory::Eris];
+  auto const& pluto_dof    = dof[SolarSystemFactory::Pluto];
+  auto const& titania_dof  = dof[SolarSystemFactory::Titania];
+  auto const& oberon_dof   = dof[SolarSystemFactory::Oberon];
+  auto const& rhea_dof     = dof[SolarSystemFactory::Rhea];
+  auto const& iapetus_dof  = dof[SolarSystemFactory::Iapetus];
+  auto const& charon_dof   = dof[SolarSystemFactory::Charon];
+  auto const& ariel_dof    = dof[SolarSystemFactory::Ariel];
+  auto const& umbriel_dof  = dof[SolarSystemFactory::Umbriel];
+  auto const& dione_dof    = dof[SolarSystemFactory::Dione];
+  auto const& tethys_dof   = dof[SolarSystemFactory::Tethys];
 
-  auto const& sun      = *massive_bodies[SolarSystemFactory::sun];
-  auto const& jupiter  = *massive_bodies[SolarSystemFactory::jupiter];
-  auto const& saturn   = *massive_bodies[SolarSystemFactory::saturn];
-  auto const& neptune  = *massive_bodies[SolarSystemFactory::neptune];
-  auto const& uranus   = *massive_bodies[SolarSystemFactory::uranus];
-  auto const& earth    = *massive_bodies[SolarSystemFactory::earth];
-  auto const& venus    = *massive_bodies[SolarSystemFactory::venus];
-  auto const& mars     = *massive_bodies[SolarSystemFactory::mars];
-  auto const& mercury  = *massive_bodies[SolarSystemFactory::mercury];
-  auto const& ganymede = *massive_bodies[SolarSystemFactory::ganymede];
-  auto const& titan    = *massive_bodies[SolarSystemFactory::titan];
-  auto const& callisto = *massive_bodies[SolarSystemFactory::callisto];
-  auto const& io       = *massive_bodies[SolarSystemFactory::io];
-  auto const& moon     = *massive_bodies[SolarSystemFactory::moon];
-  auto const& europa   = *massive_bodies[SolarSystemFactory::europa];
-  auto const& triton   = *massive_bodies[SolarSystemFactory::triton];
-  auto const& eris     = *massive_bodies[SolarSystemFactory::eris];
-  auto const& pluto    = *massive_bodies[SolarSystemFactory::pluto];
-  auto const& titania  = *massive_bodies[SolarSystemFactory::titania];
-  auto const& oberon   = *massive_bodies[SolarSystemFactory::oberon];
-  auto const& rhea     = *massive_bodies[SolarSystemFactory::rhea];
-  auto const& iapetus  = *massive_bodies[SolarSystemFactory::iapetus];
-  auto const& charon   = *massive_bodies[SolarSystemFactory::charon];
-  auto const& ariel    = *massive_bodies[SolarSystemFactory::ariel];
-  auto const& umbriel  = *massive_bodies[SolarSystemFactory::umbriel];
-  auto const& dione    = *massive_bodies[SolarSystemFactory::dione];
-  auto const& tethys   = *massive_bodies[SolarSystemFactory::tethys];
+  auto const& sun      = *massive_bodies[SolarSystemFactory::Sun];
+  auto const& jupiter  = *massive_bodies[SolarSystemFactory::Jupiter];
+  auto const& saturn   = *massive_bodies[SolarSystemFactory::Saturn];
+  auto const& neptune  = *massive_bodies[SolarSystemFactory::Neptune];
+  auto const& uranus   = *massive_bodies[SolarSystemFactory::Uranus];
+  auto const& earth    = *massive_bodies[SolarSystemFactory::Earth];
+  auto const& venus    = *massive_bodies[SolarSystemFactory::Venus];
+  auto const& mars     = *massive_bodies[SolarSystemFactory::Mars];
+  auto const& mercury  = *massive_bodies[SolarSystemFactory::Mercury];
+  auto const& ganymede = *massive_bodies[SolarSystemFactory::Ganymede];
+  auto const& titan    = *massive_bodies[SolarSystemFactory::Titan];
+  auto const& callisto = *massive_bodies[SolarSystemFactory::Callisto];
+  auto const& io       = *massive_bodies[SolarSystemFactory::Io];
+  auto const& moon     = *massive_bodies[SolarSystemFactory::Moon];
+  auto const& europa   = *massive_bodies[SolarSystemFactory::Europa];
+  auto const& triton   = *massive_bodies[SolarSystemFactory::Triton];
+  auto const& eris     = *massive_bodies[SolarSystemFactory::Eris];
+  auto const& pluto    = *massive_bodies[SolarSystemFactory::Pluto];
+  auto const& titania  = *massive_bodies[SolarSystemFactory::Titania];
+  auto const& oberon   = *massive_bodies[SolarSystemFactory::Oberon];
+  auto const& rhea     = *massive_bodies[SolarSystemFactory::Rhea];
+  auto const& iapetus  = *massive_bodies[SolarSystemFactory::Iapetus];
+  auto const& charon   = *massive_bodies[SolarSystemFactory::Charon];
+  auto const& ariel    = *massive_bodies[SolarSystemFactory::Ariel];
+  auto const& umbriel  = *massive_bodies[SolarSystemFactory::Umbriel];
+  auto const& dione    = *massive_bodies[SolarSystemFactory::Dione];
+  auto const& tethys   = *massive_bodies[SolarSystemFactory::Tethys];
 
   // Reference excentricities from HORIZONS, truncated.
   // Using centre: Sun (body centre) [500@10].
@@ -397,65 +397,65 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
 
 TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник2Launch) {
   auto const solar_system = SolarSystemFactory::AtСпутник2Launch(
-      SolarSystemFactory::Accuracy::minor_and_major_bodies);
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies);
   auto const massive_bodies = GetMassiveBodies(*solar_system);
   auto const dof = GetDegreesOfFreedom(*solar_system);
 
-  auto const& sun_dof      = dof[SolarSystemFactory::sun];
-  auto const& jupiter_dof  = dof[SolarSystemFactory::jupiter];
-  auto const& saturn_dof   = dof[SolarSystemFactory::saturn];
-  auto const& neptune_dof  = dof[SolarSystemFactory::neptune];
-  auto const& uranus_dof   = dof[SolarSystemFactory::uranus];
-  auto const& earth_dof    = dof[SolarSystemFactory::earth];
-  auto const& venus_dof    = dof[SolarSystemFactory::venus];
-  auto const& mars_dof     = dof[SolarSystemFactory::mars];
-  auto const& mercury_dof  = dof[SolarSystemFactory::mercury];
-  auto const& ganymede_dof = dof[SolarSystemFactory::ganymede];
-  auto const& titan_dof    = dof[SolarSystemFactory::titan];
-  auto const& callisto_dof = dof[SolarSystemFactory::callisto];
-  auto const& io_dof       = dof[SolarSystemFactory::io];
-  auto const& moon_dof     = dof[SolarSystemFactory::moon];
-  auto const& europa_dof   = dof[SolarSystemFactory::europa];
-  auto const& triton_dof   = dof[SolarSystemFactory::triton];
-  auto const& eris_dof     = dof[SolarSystemFactory::eris];
-  auto const& pluto_dof    = dof[SolarSystemFactory::pluto];
-  auto const& titania_dof  = dof[SolarSystemFactory::titania];
-  auto const& oberon_dof   = dof[SolarSystemFactory::oberon];
-  auto const& rhea_dof     = dof[SolarSystemFactory::rhea];
-  auto const& iapetus_dof  = dof[SolarSystemFactory::iapetus];
-  auto const& charon_dof   = dof[SolarSystemFactory::charon];
-  auto const& ariel_dof    = dof[SolarSystemFactory::ariel];
-  auto const& umbriel_dof  = dof[SolarSystemFactory::umbriel];
-  auto const& dione_dof    = dof[SolarSystemFactory::dione];
-  auto const& tethys_dof   = dof[SolarSystemFactory::tethys];
+  auto const& sun_dof      = dof[SolarSystemFactory::Sun];
+  auto const& jupiter_dof  = dof[SolarSystemFactory::Jupiter];
+  auto const& saturn_dof   = dof[SolarSystemFactory::Saturn];
+  auto const& neptune_dof  = dof[SolarSystemFactory::Neptune];
+  auto const& uranus_dof   = dof[SolarSystemFactory::Uranus];
+  auto const& earth_dof    = dof[SolarSystemFactory::Earth];
+  auto const& venus_dof    = dof[SolarSystemFactory::Venus];
+  auto const& mars_dof     = dof[SolarSystemFactory::Mars];
+  auto const& mercury_dof  = dof[SolarSystemFactory::Mercury];
+  auto const& ganymede_dof = dof[SolarSystemFactory::Ganymede];
+  auto const& titan_dof    = dof[SolarSystemFactory::Titan];
+  auto const& callisto_dof = dof[SolarSystemFactory::Callisto];
+  auto const& io_dof       = dof[SolarSystemFactory::Io];
+  auto const& moon_dof     = dof[SolarSystemFactory::Moon];
+  auto const& europa_dof   = dof[SolarSystemFactory::Europa];
+  auto const& triton_dof   = dof[SolarSystemFactory::Triton];
+  auto const& eris_dof     = dof[SolarSystemFactory::Eris];
+  auto const& pluto_dof    = dof[SolarSystemFactory::Pluto];
+  auto const& titania_dof  = dof[SolarSystemFactory::Titania];
+  auto const& oberon_dof   = dof[SolarSystemFactory::Oberon];
+  auto const& rhea_dof     = dof[SolarSystemFactory::Rhea];
+  auto const& iapetus_dof  = dof[SolarSystemFactory::Iapetus];
+  auto const& charon_dof   = dof[SolarSystemFactory::Charon];
+  auto const& ariel_dof    = dof[SolarSystemFactory::Ariel];
+  auto const& umbriel_dof  = dof[SolarSystemFactory::Umbriel];
+  auto const& dione_dof    = dof[SolarSystemFactory::Dione];
+  auto const& tethys_dof   = dof[SolarSystemFactory::Tethys];
 
-  auto const& sun      = *massive_bodies[SolarSystemFactory::sun];
-  auto const& jupiter  = *massive_bodies[SolarSystemFactory::jupiter];
-  auto const& saturn   = *massive_bodies[SolarSystemFactory::saturn];
-  auto const& neptune  = *massive_bodies[SolarSystemFactory::neptune];
-  auto const& uranus   = *massive_bodies[SolarSystemFactory::uranus];
-  auto const& earth    = *massive_bodies[SolarSystemFactory::earth];
-  auto const& venus    = *massive_bodies[SolarSystemFactory::venus];
-  auto const& mars     = *massive_bodies[SolarSystemFactory::mars];
-  auto const& mercury  = *massive_bodies[SolarSystemFactory::mercury];
-  auto const& ganymede = *massive_bodies[SolarSystemFactory::ganymede];
-  auto const& titan    = *massive_bodies[SolarSystemFactory::titan];
-  auto const& callisto = *massive_bodies[SolarSystemFactory::callisto];
-  auto const& io       = *massive_bodies[SolarSystemFactory::io];
-  auto const& moon     = *massive_bodies[SolarSystemFactory::moon];
-  auto const& europa   = *massive_bodies[SolarSystemFactory::europa];
-  auto const& triton   = *massive_bodies[SolarSystemFactory::triton];
-  auto const& eris     = *massive_bodies[SolarSystemFactory::eris];
-  auto const& pluto    = *massive_bodies[SolarSystemFactory::pluto];
-  auto const& titania  = *massive_bodies[SolarSystemFactory::titania];
-  auto const& oberon   = *massive_bodies[SolarSystemFactory::oberon];
-  auto const& rhea     = *massive_bodies[SolarSystemFactory::rhea];
-  auto const& iapetus  = *massive_bodies[SolarSystemFactory::iapetus];
-  auto const& charon   = *massive_bodies[SolarSystemFactory::charon];
-  auto const& ariel    = *massive_bodies[SolarSystemFactory::ariel];
-  auto const& umbriel  = *massive_bodies[SolarSystemFactory::umbriel];
-  auto const& dione    = *massive_bodies[SolarSystemFactory::dione];
-  auto const& tethys   = *massive_bodies[SolarSystemFactory::tethys];
+  auto const& sun      = *massive_bodies[SolarSystemFactory::Sun];
+  auto const& jupiter  = *massive_bodies[SolarSystemFactory::Jupiter];
+  auto const& saturn   = *massive_bodies[SolarSystemFactory::Saturn];
+  auto const& neptune  = *massive_bodies[SolarSystemFactory::Neptune];
+  auto const& uranus   = *massive_bodies[SolarSystemFactory::Uranus];
+  auto const& earth    = *massive_bodies[SolarSystemFactory::Earth];
+  auto const& venus    = *massive_bodies[SolarSystemFactory::Venus];
+  auto const& mars     = *massive_bodies[SolarSystemFactory::Mars];
+  auto const& mercury  = *massive_bodies[SolarSystemFactory::Mercury];
+  auto const& ganymede = *massive_bodies[SolarSystemFactory::Ganymede];
+  auto const& titan    = *massive_bodies[SolarSystemFactory::Titan];
+  auto const& callisto = *massive_bodies[SolarSystemFactory::Callisto];
+  auto const& io       = *massive_bodies[SolarSystemFactory::Io];
+  auto const& moon     = *massive_bodies[SolarSystemFactory::Moon];
+  auto const& europa   = *massive_bodies[SolarSystemFactory::Europa];
+  auto const& triton   = *massive_bodies[SolarSystemFactory::Triton];
+  auto const& eris     = *massive_bodies[SolarSystemFactory::Eris];
+  auto const& pluto    = *massive_bodies[SolarSystemFactory::Pluto];
+  auto const& titania  = *massive_bodies[SolarSystemFactory::Titania];
+  auto const& oberon   = *massive_bodies[SolarSystemFactory::Oberon];
+  auto const& rhea     = *massive_bodies[SolarSystemFactory::Rhea];
+  auto const& iapetus  = *massive_bodies[SolarSystemFactory::Iapetus];
+  auto const& charon   = *massive_bodies[SolarSystemFactory::Charon];
+  auto const& ariel    = *massive_bodies[SolarSystemFactory::Ariel];
+  auto const& umbriel  = *massive_bodies[SolarSystemFactory::Umbriel];
+  auto const& dione    = *massive_bodies[SolarSystemFactory::Dione];
+  auto const& tethys   = *massive_bodies[SolarSystemFactory::Tethys];
 
   // Reference excentricities from HORIZONS, truncated.
   // Using centre: Sun (body centre) [500@10].

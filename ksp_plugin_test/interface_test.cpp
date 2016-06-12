@@ -29,7 +29,7 @@ using base::PushDeserializer;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
-using geometry::unix_epoch;
+using geometry::UnixEpoch;
 using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
@@ -98,7 +98,7 @@ char const hexadecimal_boring_plugin[] =
     "11000000000000000022090DAF1FB1791003180112060A04080010001A020A002210088080"
     "808080011100000000000000002A0E120C0880081100000000000000003000";
 
-char const kVesselGUID[] = "NCC-1701-D";
+char const vessel_guid[] = "NCC-1701-D";
 
 Index const celestial_index = 1;
 Index const parent_index = 2;
@@ -178,15 +178,15 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__InsertOrKeepVessel(plugin, kVesselGUID, parent_index);
+    principia__InsertOrKeepVessel(plugin, vessel_guid, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__SetVesselStateOffset(plugin,
-                                    kVesselGUID,
+                                    vessel_guid,
                                     parent_relative_degrees_of_freedom);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__VesselFromParent(plugin, kVesselGUID);
+    principia__VesselFromParent(plugin, vessel_guid);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__CelestialFromParent(plugin, celestial_index);
@@ -340,19 +340,19 @@ TEST_F(InterfaceTest, EndInitialization) {
 
 TEST_F(InterfaceTest, InsertOrKeepVessel) {
   EXPECT_CALL(*plugin_,
-              InsertOrKeepVessel(kVesselGUID, parent_index));
-  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
+              InsertOrKeepVessel(vessel_guid, parent_index));
+  EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
-  EXPECT_FALSE(plugin_->HasVessel(kVesselGUID));
-  principia__InsertOrKeepVessel(plugin_.get(), kVesselGUID, parent_index);
-  EXPECT_TRUE(plugin_->HasVessel(kVesselGUID));
+  EXPECT_FALSE(plugin_->HasVessel(vessel_guid));
+  principia__InsertOrKeepVessel(plugin_.get(), vessel_guid, parent_index);
+  EXPECT_TRUE(plugin_->HasVessel(vessel_guid));
 }
 
 TEST_F(InterfaceTest, SetVesselStateOffset) {
   EXPECT_CALL(*plugin_,
               SetVesselStateOffset(
-                  kVesselGUID,
+                  vessel_guid,
                   RelativeDegreesOfFreedom<AliceSun>(
                       Displacement<AliceSun>(
                           {parent_position.x * SIUnit<Length>(),
@@ -363,7 +363,7 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
                            parent_velocity.y * SIUnit<Speed>(),
                            parent_velocity.z * SIUnit<Speed>()}))));
   principia__SetVesselStateOffset(plugin_.get(),
-                                  kVesselGUID,
+                                  vessel_guid,
                                   parent_relative_degrees_of_freedom);
 }
 
@@ -382,7 +382,7 @@ TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
 
 TEST_F(InterfaceTest, VesselFromParent) {
   EXPECT_CALL(*plugin_,
-              VesselFromParent(kVesselGUID))
+              VesselFromParent(vessel_guid))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
                                {parent_position.x * SIUnit<Length>(),
@@ -393,7 +393,7 @@ TEST_F(InterfaceTest, VesselFromParent) {
                                 parent_velocity.y * SIUnit<Speed>(),
                                 parent_velocity.z * SIUnit<Speed>()}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
-                                                kVesselGUID);
+                                                vessel_guid);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 
@@ -535,7 +535,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
 
   EXPECT_CALL(*plugin_,
               FillRenderedPrediction(
-                  kVesselGUID,
+                  vessel_guid,
                   World::origin + Displacement<World>(
                                       {parent_position.x * SIUnit<Length>(),
                                        parent_position.y * SIUnit<Length>(),
@@ -544,7 +544,7 @@ TEST_F(InterfaceTest, RenderedPrediction) {
       .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
-                                    kVesselGUID,
+                                    vessel_guid,
                                     parent_position);
   EXPECT_EQ(trajectory_size, principia__IteratorSize(iterator));
 
@@ -603,7 +603,7 @@ TEST_F(InterfaceTest, Iterator) {
   // Construct a LineAndIterator.
   EXPECT_CALL(*plugin_,
               FillRenderedVesselTrajectory(
-                  kVesselGUID,
+                  vessel_guid,
                   World::origin + Displacement<World>(
                                       {parent_position.x * SIUnit<Length>(),
                                        parent_position.y * SIUnit<Length>(),
@@ -612,7 +612,7 @@ TEST_F(InterfaceTest, Iterator) {
       .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
-                                          kVesselGUID,
+                                          vessel_guid,
                                           parent_position);
   EXPECT_EQ(trajectory_size, principia__IteratorSize(iterator));
 
@@ -644,7 +644,7 @@ TEST_F(InterfaceTest, PhysicsBubble) {
                       {{7, 8, 9}, {70, 80, 90}, 900.0, {6, 6, 6}, 7}};
   EXPECT_CALL(*plugin_,
               AddVesselToNextPhysicsBubbleConstRef(
-                  kVesselGUID,
+                  vessel_guid,
                   ElementsAre(
                       testing::Pair(1, Pointee(Property(&Part<World>::mass,
                                                         300.0 * Tonne))),
@@ -653,7 +653,7 @@ TEST_F(InterfaceTest, PhysicsBubble) {
                       testing::Pair(7, Pointee(Property(&Part<World>::mass,
                                                         900.0 * Tonne))))));
   principia__AddVesselToNextPhysicsBubble(plugin_.get(),
-                                          kVesselGUID,
+                                          vessel_guid,
                                           &parts[0],
                                           3);
 
@@ -743,25 +743,25 @@ TEST_F(InterfaceTest, Frenet) {
 
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
-    EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID)).WillOnce(Return(tangent));
-    XYZ t = principia__VesselTangent(plugin_.get(), kVesselGUID);
+    EXPECT_CALL(*plugin_, VesselTangent(vessel_guid)).WillOnce(Return(tangent));
+    XYZ t = principia__VesselTangent(plugin_.get(), vessel_guid);
     EXPECT_EQ(t.x, tangent.coordinates().x);
     EXPECT_EQ(t.y, tangent.coordinates().y);
     EXPECT_EQ(t.z, tangent.coordinates().z);
   }
   {
     auto const normal = Vector<double, World>({-13, 7, 5});
-    EXPECT_CALL(*plugin_, VesselNormal(kVesselGUID)).WillOnce(Return(normal));
-    XYZ n = principia__VesselNormal(plugin_.get(), kVesselGUID);
+    EXPECT_CALL(*plugin_, VesselNormal(vessel_guid)).WillOnce(Return(normal));
+    XYZ n = principia__VesselNormal(plugin_.get(), vessel_guid);
     EXPECT_EQ(n.x, normal.coordinates().x);
     EXPECT_EQ(n.y, normal.coordinates().y);
     EXPECT_EQ(n.z, normal.coordinates().z);
   }
   {
     auto const binormal = Vector<double, World>({43, 67, 163});
-    EXPECT_CALL(*plugin_, VesselBinormal(kVesselGUID))
+    EXPECT_CALL(*plugin_, VesselBinormal(vessel_guid))
         .WillOnce(Return(binormal));
-    XYZ b = principia__VesselBinormal(plugin_.get(), kVesselGUID);
+    XYZ b = principia__VesselBinormal(plugin_.get(), vessel_guid);
     EXPECT_EQ(b.x, binormal.coordinates().x);
     EXPECT_EQ(b.y, binormal.coordinates().y);
     EXPECT_EQ(b.z, binormal.coordinates().z);
@@ -769,9 +769,9 @@ TEST_F(InterfaceTest, Frenet) {
   {
     auto const velocity = Velocity<World>(
         {4 * Metre / Second, 5 * Metre / Second, 6 * Metre / Second});
-    EXPECT_CALL(*plugin_, VesselVelocity(kVesselGUID))
+    EXPECT_CALL(*plugin_, VesselVelocity(vessel_guid))
         .WillOnce(Return(velocity));
-    XYZ v = principia__VesselVelocity(plugin_.get(), kVesselGUID);
+    XYZ v = principia__VesselVelocity(plugin_.get(), vessel_guid);
     EXPECT_EQ(v.x, velocity.coordinates().x / (Metre / Second));
     EXPECT_EQ(v.y, velocity.coordinates().y / (Metre / Second));
     EXPECT_EQ(v.z, velocity.coordinates().z / (Metre / Second));
@@ -779,9 +779,9 @@ TEST_F(InterfaceTest, Frenet) {
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(unix_epoch));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(UnixEpoch));
   double const current_time = principia__CurrentTime(plugin_.get());
-  EXPECT_THAT(t0_ + current_time * Second, Eq(unix_epoch));
+  EXPECT_THAT(t0_ + current_time * Second, Eq(UnixEpoch));
 }
 
 TEST_F(InterfaceTest, SerializePlugin) {
@@ -869,39 +869,39 @@ TEST_F(InterfaceTest, FlightPlan) {
   StrictMock<MockVessel> vessel;
   StrictMock<MockFlightPlan> flight_plan;
 
-  EXPECT_CALL(*plugin_, HasVessel(kVesselGUID))
+  EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*plugin_, GetVessel(kVesselGUID))
+  EXPECT_CALL(*plugin_, GetVessel(vessel_guid))
       .WillRepeatedly(Return(&vessel));
   EXPECT_CALL(vessel, has_flight_plan())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(vessel, flight_plan())
       .WillRepeatedly(ReturnRef(flight_plan));
 
-  EXPECT_TRUE(principia__FlightPlanExists(plugin_.get(), kVesselGUID));
+  EXPECT_TRUE(principia__FlightPlanExists(plugin_.get(), vessel_guid));
 
-  EXPECT_CALL(*plugin_, CreateFlightPlan(kVesselGUID,
+  EXPECT_CALL(*plugin_, CreateFlightPlan(vessel_guid,
                                          Instant() + 30 * Second,
                                          100 * Tonne));
   principia__FlightPlanCreate(plugin_.get(),
-                              kVesselGUID,
+                              vessel_guid,
                               /*final_time=*/30,
                               /*mass_in_tonnes=*/100);
 
   EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
-                                                       kVesselGUID,
+                                                       vessel_guid,
                                                        60));
 
   EXPECT_CALL(flight_plan, initial_time())
       .WillOnce(Return(Instant() + 3 * Second));
-  EXPECT_EQ(3, principia__FlightPlanGetInitialTime(plugin_.get(), kVesselGUID));
+  EXPECT_EQ(3, principia__FlightPlanGetInitialTime(plugin_.get(), vessel_guid));
 
   EXPECT_CALL(flight_plan, desired_final_time())
       .WillOnce(Return(Instant() + 4 * Second));
   EXPECT_EQ(4, principia__FlightPlanGetDesiredFinalTime(plugin_.get(),
-                                                        kVesselGUID));
+                                                        vessel_guid));
 
   EXPECT_CALL(
       flight_plan,
@@ -917,7 +917,7 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
                   plugin_.get(),
-                  kVesselGUID,
+                  vessel_guid,
                   {/*max_step=*/11,
                    /*length_integration_tolerance=*/22,
                    /*speed_integration_tolerance=*/33}));
@@ -935,7 +935,7 @@ TEST_F(InterfaceTest, FlightPlan) {
       /*speed_integration_tolerance=*/333};
   EXPECT_EQ(expected_adaptive_step_parameters,
             principia__FlightPlanGetAdaptiveStepParameters(
-                plugin_.get(), kVesselGUID));
+                plugin_.get(), vessel_guid));
 
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
@@ -951,12 +951,12 @@ TEST_F(InterfaceTest, FlightPlan) {
                                    5 * (Metre / Second),
                                    6 * (Metre / Second)}))))
       .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), kVesselGUID, burn));
+  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), vessel_guid, burn));
 
   EXPECT_CALL(flight_plan, number_of_manœuvres())
       .WillOnce(Return(4));
   EXPECT_EQ(4, principia__FlightPlanNumberOfManoeuvres(plugin_.get(),
-                                                       kVesselGUID));
+                                                       vessel_guid));
 
   auto const plotting_frame =
       make_not_null_unique<MockDynamicFrame<Barycentric, Navigation>>();
@@ -998,7 +998,7 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
       principia__FlightPlanGetManoeuvre(plugin_.get(),
-                                        kVesselGUID,
+                                        vessel_guid,
                                         3);
   EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
   EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
@@ -1011,7 +1011,7 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(flight_plan, number_of_segments())
       .WillOnce(Return(12));
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
-                                                      kVesselGUID));
+                                                      vessel_guid));
 
   auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   rendered_trajectory->Append(
@@ -1033,7 +1033,7 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
-                                           kVesselGUID,
+                                           vessel_guid,
                                            {0, 1, 2},
                                            3);
   EXPECT_EQ(XYZ({0, 0, 0}), principia__IteratorGetXYZ(iterator));
@@ -1058,14 +1058,14 @@ TEST_F(InterfaceTest, FlightPlan) {
                                    6 * (Metre / Second)}))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
-                                               kVesselGUID,
+                                               vessel_guid,
                                                burn));
 
   EXPECT_CALL(flight_plan, RemoveLast());
-  principia__FlightPlanRemoveLast(plugin_.get(), kVesselGUID);
+  principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);
 
   EXPECT_CALL(vessel, DeleteFlightPlan());
-  principia__FlightPlanDelete(plugin_.get(), kVesselGUID);
+  principia__FlightPlanDelete(plugin_.get(), vessel_guid);
 }
 
 }  // namespace interface
