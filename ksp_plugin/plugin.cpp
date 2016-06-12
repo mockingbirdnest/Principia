@@ -631,25 +631,26 @@ void Plugin::WriteToMessage(
   CHECK(!initializing_);
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
-  for (auto const& index_celestial : celestials_) {
-    celestial_to_index.emplace(index_celestial.second.get(),
-                               index_celestial.first);
+  for (auto const& pair : celestials_) {
+    Index const index = pair.first;
+    auto const& owned_celestial = pair.second;
+    celestial_to_index.emplace(owned_celestial.get(), index);
   }
-  for (auto const& index_celestial : celestials_) {
-    Index const index = index_celestial.first;
-    not_null<Celestial const*> const celestial = index_celestial.second.get();
+  for (auto const& pair : celestials_) {
+    Index const index = pair.first;
+    auto const& owned_celestial = pair.second.get();
     auto* const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
-    if (celestial->has_parent()) {
+    if (owned_celestial->has_parent()) {
       Index const parent_index =
-          FindOrDie(celestial_to_index, celestial->parent());
+          FindOrDie(celestial_to_index, owned_celestial->parent());
       celestial_message->set_parent_index(parent_index);
     }
   }
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
-  for (auto const& guid_vessel : vessels_) {
-    std::string const& guid = guid_vessel.first;
-    not_null<Vessel*> const vessel = guid_vessel.second.get();
+  for (auto const& pair : vessels_) {
+    std::string const& guid = pair.first;
+    not_null<Vessel*> const vessel = pair.second.get();
     vessel_to_guid.emplace(vessel, guid);
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
@@ -796,8 +797,8 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
-  for (auto const& guid_vessel : vessels_) {
-    auto const& vessel = guid_vessel.second;
+  for (auto const& pair : vessels_) {
+    auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());
   }
   initializing_.Flop();
@@ -811,8 +812,9 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
     auto& body = pair.second;
     bodies.emplace_back(std::move(body));
   }
-  for (auto const& state : absolute_initialization_->initial_state) {
-    initial_state.emplace_back(state.second);
+  for (auto const& pair : absolute_initialization_->initial_state) {
+    auto const& degrees_of_freedom = pair.second;
+    initial_state.emplace_back(degrees_of_freedom);
   }
   absolute_initialization_ = std::experimental::nullopt;
   ephemeris_ =
