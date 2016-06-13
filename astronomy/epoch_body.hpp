@@ -17,5 +17,5 @@ inline Instant ModifiedJulianDate(double const days) {
   return mjd0 + days * Day;
 }
 
-}  // namespace geometry
+}  // namespace astronomy
 }  // namespace principia
