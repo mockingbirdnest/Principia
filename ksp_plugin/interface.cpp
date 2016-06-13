@@ -139,8 +139,8 @@ void principia__InitGoogleLogging() {
         });
 
     LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << principia::base::version
-              << " built on " << principia::base::build_date
+    LOG(INFO) << "Principia version " << principia::base::Version
+              << " built on " << principia::base::BuildDate
               << " by " << principia::base::CompilerName
               << " version " << principia::base::CompilerVersion
               << " for " << principia::base::OperatingSystem
@@ -791,8 +791,8 @@ void principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
-  *CHECK_NOTNULL(build_date) = base::build_date;
-  *CHECK_NOTNULL(version) = base::version;
+  *CHECK_NOTNULL(build_date) = base::BuildDate;
+  *CHECK_NOTNULL(version) = base::Version;
   return m.Return();
 }
 
