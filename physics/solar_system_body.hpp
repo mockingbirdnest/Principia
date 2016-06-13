@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
-#include "geometry/epoch.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -29,10 +29,10 @@ namespace principia {
 namespace physics {
 namespace internal_solar_system {
 
+using astronomy::JulianDate;
 using base::FindOrDie;
 using geometry::Bivector;
 using geometry::Instant;
-using geometry::JulianDate;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;

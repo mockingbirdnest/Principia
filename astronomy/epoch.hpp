@@ -8,12 +8,13 @@
 // Time, which is parallel to it).
 namespace principia {
 
+using geometry::Instant;
 using quantities::si::Day;
 using quantities::si::Hour;
 using quantities::si::Minute;
 using quantities::si::Second;
 
-namespace geometry {
+namespace astronomy {
 
 // |J2000| represents to the standard epoch J2000.0.
 // According to Resolution B1 (On the Use of Julian Dates) of the XXIIIrd IAU
@@ -41,7 +42,7 @@ Instant JulianDate(double const days);
 // so |ModifiedJulianDate(0)| is +1858-11-17-T00:00:00.000 (Terrestrial Time).
 Instant ModifiedJulianDate(double const days);
 
-}  // namespace geometry
+}  // namespace astronomy
 }  // namespace principia
 
-#include "geometry/epoch_body.hpp"
+#include "astronomy/epoch_body.hpp"

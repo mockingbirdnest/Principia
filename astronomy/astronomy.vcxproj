@@ -200,6 +200,8 @@
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="epoch.hpp" />
+    <ClInclude Include="epoch_body.hpp" />
     <ClInclude Include="frames.hpp" />
   </ItemGroup>
   <ItemGroup>

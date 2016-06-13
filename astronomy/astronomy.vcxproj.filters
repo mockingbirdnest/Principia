@@ -75,6 +75,12 @@
     <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="epoch.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="epoch_body.hpp">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lunar_eclipse_test.cpp">

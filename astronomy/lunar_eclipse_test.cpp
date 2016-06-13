@@ -1,5 +1,5 @@
 ﻿
-#include "geometry/epoch.hpp"
+#include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
@@ -15,8 +15,8 @@
 
 namespace principia {
 
+using astronomy::JulianDate;
 using geometry::AngleBetween;
-using geometry::JulianDate;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;

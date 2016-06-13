@@ -5,7 +5,6 @@
 #include <string>
 
 #include "astronomy/frames.hpp"
-#include "geometry/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "physics/solar_system.hpp"

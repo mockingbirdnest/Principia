@@ -2,6 +2,7 @@
 #include <fstream>
 #include <numeric>
 
+#include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
@@ -21,9 +22,9 @@
 
 namespace principia {
 
+using astronomy::JulianDate;
 using base::not_null;
 using geometry::AngleBetween;
-using geometry::JulianDate;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
 using physics::DiscreteTrajectory;

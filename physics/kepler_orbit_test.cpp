@@ -1,8 +1,8 @@
 ﻿
 #include "physics/kepler_orbit.hpp"
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
-#include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -14,7 +14,7 @@ namespace physics {
 namespace internal_kepler_orbit {
 
 using astronomy::ICRFJ2000Equator;
-using geometry::JulianDate;
+using astronomy::JulianDate;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
