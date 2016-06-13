@@ -50,8 +50,8 @@ using ::testing::Not;
 
 namespace {
 
-constexpr char kBig[] = "Big";
-constexpr char kSmall[] = "Small";
+constexpr char big[] = "Big";
+constexpr char small[] = "Small";
 
 }  // namespace
 
@@ -59,9 +59,9 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
  protected:
   // The non-rotating frame centred on the big body.
   using Big = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST, false /*inertial*/>;
+                    serialization::Frame::TEST, /*inertial=*/false>;
   using Small = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, false /*inertial*/>;
+                      serialization::Frame::TEST1, /*inertial=*/false>;
 
   BodyCentredNonRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
@@ -83,20 +83,20 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                             Position<ICRFJ2000Equator>>(),
                         /*step=*/10 * Milli(Second)));
     ephemeris_->Prolong(t0_ + 2 * period_);
-    big_initial_state_ = solar_system_.initial_state(kBig);
-    big_gravitational_parameter_ = solar_system_.gravitational_parameter(kBig);
+    big_initial_state_ = solar_system_.initial_state(big);
+    big_gravitational_parameter_ = solar_system_.gravitational_parameter(big);
     big_frame_ = std::make_unique<
                      BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Big>>(
                          ephemeris_.get(),
-                         solar_system_.massive_body(*ephemeris_, kBig));
-    small_initial_state_ = solar_system_.initial_state(kSmall);
+                         solar_system_.massive_body(*ephemeris_, big));
+    small_initial_state_ = solar_system_.initial_state(small);
     small_gravitational_parameter_ =
-        solar_system_.gravitational_parameter(kSmall);
+        solar_system_.gravitational_parameter(small);
     small_frame_ = std::make_unique<
                      BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator,
                                                         Small>>(
                          ephemeris_.get(),
-                         solar_system_.massive_body(*ephemeris_, kSmall));
+                         solar_system_.massive_body(*ephemeris_, small));
     centre_of_mass_initial_state_ =
         Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
             {big_initial_state_, small_initial_state_},
@@ -122,15 +122,15 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
 // Check that the small body has the right degrees of freedom in the frame of
 // the big body.
 TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
-  int const kSteps = 100;
+  int const steps = 100;
   Bivector<double, ICRFJ2000Equator> const axis({0, 0, 1});
 
   RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
   ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
-  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
-        solar_system_.trajectory(*ephemeris_, kSmall).
+        solar_system_.trajectory(*ephemeris_, small).
             EvaluateDegreesOfFreedom(t, &hint);
 
     auto const rotation_in_big_frame_at_t =
@@ -154,8 +154,8 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
 }
 
 TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
-  int const kSteps = 100;
-  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / kSteps) {
+  int const steps = 100;
+  for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const from_big_frame_at_t = big_frame_->FromThisFrameAtTime(t);
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
     auto const small_initial_state_transformed_and_back =
@@ -168,15 +168,15 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
 }
 
 TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
-  int const kSteps = 10;
+  int const steps = 10;
   RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
   Length const big_to_small = initial_big_to_small.displacement().Norm();
   Acceleration const small_on_big =
       small_gravitational_parameter_ / (big_to_small * big_to_small);
-  for (Length y = big_to_small / kSteps;
+  for (Length y = big_to_small / steps;
        y < big_to_small;
-       y += big_to_small / kSteps) {
+       y += big_to_small / steps) {
     Position<Big> const position(Big::origin +
                                      Displacement<Big>({0 * Kilo(Metre),
                                                         y,

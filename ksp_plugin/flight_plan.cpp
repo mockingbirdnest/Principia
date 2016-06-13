@@ -367,7 +367,7 @@ void FlightPlan::CoastLastSegment(Instant const& desired_final_time) {
     bool const reached_desired_final_time =
         ephemeris_->FlowWithAdaptiveStep(
                         segments_.back(),
-                        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+                        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                         desired_final_time,
                         adaptive_step_parameters_,
                         max_ephemeris_steps_per_frame);
@@ -422,7 +422,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
   bool const reached_manœuvre_initial_time =
       ephemeris_->FlowWithAdaptiveStep(
           recomputed_coast,
-          Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           manœuvre.initial_time(),
           adaptive_step_parameters_,
           max_ephemeris_steps_per_frame);

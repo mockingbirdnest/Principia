@@ -22,18 +22,18 @@ using ::testing::ElementsAreArray;
 namespace base {
 
 namespace {
-  int const kChunkSize = 99;
-  int const kNumberOfChunks = 3;
-  int const kRunsPerTest = 1000;
-  int const kSmallChunkSize = 3;
+  int const chunk_size = 99;
+  int const number_of_chunks = 3;
+  int const runs_per_test = 1000;
+  int const small_chunk_size = 3;
 }  // namespace
 
 class PullSerializerTest : public ::testing::Test {
  protected:
   PullSerializerTest()
       : pull_serializer_(
-            std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks)),
-        stream_(Bytes(data_, kSmallChunkSize),
+            std::make_unique<PullSerializer>(chunk_size, number_of_chunks)),
+        stream_(Bytes(data_, small_chunk_size),
                 std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
@@ -69,13 +69,13 @@ class PullSerializerTest : public ::testing::Test {
     strings->push_back(
         std::string(reinterpret_cast<const char*>(&bytes.data[0]),
                     static_cast<size_t>(bytes.size)));
-    return Bytes(data_, kSmallChunkSize);
+    return Bytes(data_, small_chunk_size);
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
   internal::DelegatingArrayOutputStream stream_;
   std::list<std::string> strings_;
-  std::uint8_t data_[kSmallChunkSize];
+  std::uint8_t data_[small_chunk_size];
 };
 
 TEST_F(PullSerializerTest, Stream) {
@@ -105,7 +105,7 @@ TEST_F(PullSerializerTest, SerializationSizes) {
   auto trajectory = BuildTrajectory();
   pull_serializer_->Start(std::move(trajectory));
   std::vector<std::int64_t> actual_sizes;
-  std::vector<std::int64_t> expected_sizes(53, kChunkSize);
+  std::vector<std::int64_t> expected_sizes(53, chunk_size);
   expected_sizes.push_back(53);
   for (;;) {
     Bytes const bytes = pull_serializer_->Pull();
@@ -128,7 +128,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
 
   // Run this test repeatedly to detect threading issues (it will flake in case
   // of problems).
-  for (int i = 0; i < kRunsPerTest; ++i) {
+  for (int i = 0; i < runs_per_test; ++i) {
     auto trajectory = BuildTrajectory();
     auto actual_serialized_trajectory =
         std::make_unique<std::uint8_t[]>(byte_size);
@@ -136,7 +136,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
 
     // The serialization happens concurrently with the test.
     pull_serializer_ =
-        std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks);
+        std::make_unique<PullSerializer>(chunk_size, number_of_chunks);
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();

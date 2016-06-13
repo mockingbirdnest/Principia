@@ -33,29 +33,29 @@ class PointTest : public testing::Test {
 using PointDeathTest = PointTest;
 
 TEST_F(PointTest, Comparisons) {
-  EXPECT_TRUE(kUnixEpoch == kUnixEpoch);
-  EXPECT_FALSE(kUnixEpoch == kJ2000);
-  EXPECT_TRUE(kUnixEpoch != kJ2000);
-  EXPECT_FALSE(kUnixEpoch != kUnixEpoch);
+  EXPECT_TRUE(UnixEpoch == UnixEpoch);
+  EXPECT_FALSE(UnixEpoch == J2000);
+  EXPECT_TRUE(UnixEpoch != J2000);
+  EXPECT_FALSE(UnixEpoch != UnixEpoch);
 }
 
 TEST_F(PointTest, PlusMinus) {
   EXPECT_THAT(ModifiedJulianDate(0) - JulianDate(0), Eq(2400000.5 * Day));
-  EXPECT_THAT(JulianDate(2451545.0), Eq(kJ2000));
+  EXPECT_THAT(JulianDate(2451545.0), Eq(J2000));
   EXPECT_THAT(ModifiedJulianDate(0) - 2400000.5 * Day, Eq(JulianDate(0)));
 }
 
 TEST_F(PointTest, AssignmentOperators) {
-  Instant accumulator = kUnixEpoch;
+  Instant accumulator = UnixEpoch;
   Instant assignment_result;
   assignment_result = (accumulator += 365 * Day);
   EXPECT_THAT(assignment_result, Eq(accumulator));
-  EXPECT_THAT(accumulator, Eq(kUnixEpoch + 365 * Day));
+  EXPECT_THAT(accumulator, Eq(UnixEpoch + 365 * Day));
   assignment_result = (accumulator -= 365 * Day);
   EXPECT_THAT(assignment_result, Eq(accumulator));
-  EXPECT_THAT(accumulator, Eq(kUnixEpoch));
-  EXPECT_THAT((accumulator += 365 * Day) -= 365 * Day, Eq(kUnixEpoch));
-  EXPECT_THAT(accumulator, Eq(kUnixEpoch));
+  EXPECT_THAT(accumulator, Eq(UnixEpoch));
+  EXPECT_THAT((accumulator += 365 * Day) -= 365 * Day, Eq(UnixEpoch));
+  EXPECT_THAT(accumulator, Eq(UnixEpoch));
 }
 
 TEST_F(PointTest, Ordering) {
@@ -65,8 +65,8 @@ TEST_F(PointTest, Ordering) {
   Point<double> d2 = zero -3.0;
   EXPECT_TRUE(d2 < d1);
   // Check ordering for instants.
-  Instant const t1 = kUnixEpoch + 1 * Day;
-  Instant const t2 = kUnixEpoch - 3 * Day;
+  Instant const t1 = UnixEpoch + 1 * Day;
+  Instant const t2 = UnixEpoch - 3 * Day;
   EXPECT_TRUE(t2 < t1);
   EXPECT_FALSE(t2 < t2);
   EXPECT_TRUE(t2 <= t1);
@@ -124,8 +124,8 @@ TEST_F(PointDeathTest, BarycentreError) {
     return Barycentre<Instant, Volume>(instants, weights);
   };
   EXPECT_DEATH({
-    Instant const t1 = kUnixEpoch + 1 * Day;
-    Instant const t2 = kUnixEpoch - 3 * Day;
+    Instant const t1 = UnixEpoch + 1 * Day;
+    Instant const t2 = UnixEpoch - 3 * Day;
     barycentre({t1, t2}, {3 * Litre, 4 * Litre, 5 * Litre});
   }, "unequal sizes");
   EXPECT_DEATH({
@@ -139,27 +139,27 @@ TEST_F(PointDeathTest, BarycentreError) {
 }
 
 TEST_F(PointTest, Barycentres) {
-  Instant const t1 = kUnixEpoch + 1 * Day;
-  Instant const t2 = kUnixEpoch - 3 * Day;
+  Instant const t1 = UnixEpoch + 1 * Day;
+  Instant const t2 = UnixEpoch - 3 * Day;
   Instant const b1 = Barycentre<Instant, Volume>({t1, t2},
                                                  {3 * Litre, 1 * Litre});
   Instant const b2 = Barycentre<Instant, double>({t2, t1}, {1, 1});
-  EXPECT_THAT(b1, Eq(kUnixEpoch));
-  EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));
+  EXPECT_THAT(b1, Eq(UnixEpoch));
+  EXPECT_THAT(b2, Eq(UnixEpoch - 1 * Day));
 }
 
 TEST_F(PointTest, InstantBarycentreCalculator) {
   BarycentreCalculator<Instant, double> calculator;
-  Instant const t1 = kUnixEpoch + 2 * Day;
-  Instant const t2 = kUnixEpoch - 3 * Day;
-  Instant const t3 = kUnixEpoch + 5 * Day;
-  Instant const t4 = kUnixEpoch - 7 * Day;
+  Instant const t1 = UnixEpoch + 2 * Day;
+  Instant const t2 = UnixEpoch - 3 * Day;
+  Instant const t3 = UnixEpoch + 5 * Day;
+  Instant const t4 = UnixEpoch - 7 * Day;
   calculator.Add(t1, 1);
   calculator.Add(t2, 2);
-  EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 4 * Day / 3));
+  EXPECT_THAT(calculator.Get(), Eq(UnixEpoch - 4 * Day / 3));
   calculator.Add(t3, 3);
   calculator.Add(t4, 4);
-  EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 1.7 * Day));
+  EXPECT_THAT(calculator.Get(), Eq(UnixEpoch - 1.7 * Day));
 }
 
 TEST_F(PointTest, DoubleBarycentreCalculator) {

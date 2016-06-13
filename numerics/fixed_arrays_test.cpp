@@ -71,7 +71,7 @@ TEST_F(FixedArraysTest, VectorIndexing) {
 }
 
 TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
-  EXPECT_EQ(6, (FixedStrictlyLowerTriangularMatrix<double, 4>::kDimension));
+  EXPECT_EQ(6, (FixedStrictlyLowerTriangularMatrix<double, 4>::dimension));
   EXPECT_EQ(1, l4_[1][0]);
   EXPECT_EQ(2, l4_[2][0]);
   EXPECT_EQ(3, l4_[2][1]);

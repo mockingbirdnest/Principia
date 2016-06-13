@@ -92,10 +92,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
 
   Manœuvre<World, Rendering> manœuvre(
-      1 * Newton /*thrust*/,
-      2 * Kilogram /*initial_mass*/,
-      1 * Newton * Second / Kilogram /*specific_impulse*/,
-      2 * e_y /*direction*/,
+      /*thrust=*/1 * Newton,
+      /*initial_mass=*/2 * Kilogram,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
+      /*direction=*/2 * e_y,
       MakeMockDynamicFrame());
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
@@ -143,10 +143,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
 TEST_F(ManœuvreTest, TargetΔv) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
-      1 * Newton /*thrust*/,
-      2 * Kilogram /*initial_mass*/,
-      1 * Newton * Second / Kilogram /*specific_impulse*/,
-      e_y /*direction*/,
+      /*thrust=*/1 * Newton,
+      /*initial_mass=*/2 * Kilogram,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
+      /*direction=*/e_y,
       MakeMockDynamicFrame());
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
@@ -330,10 +330,10 @@ TEST_F(ManœuvreTest, Serialization) {
   auto const unowned_dynamic_frame = mock_dynamic_frame.get();
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
-      1 * Newton /*thrust*/,
-      2 * Kilogram /*initial_mass*/,
-      1 * Newton * Second / Kilogram /*specific_impulse*/,
-      e_y /*direction*/,
+      /*thrust=*/1 * Newton,
+      /*initial_mass=*/2 * Kilogram,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
+      /*direction=*/e_y,
       std::move(mock_dynamic_frame));
   manœuvre.set_Δv(1 * Metre / Second);
   manœuvre.set_time_of_half_Δv(t0_);

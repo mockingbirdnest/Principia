@@ -25,9 +25,9 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
 AffineMap<ToFrame, FromFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Inverse() const {
   return AffineMap<ToFrame, FromFrame, Scalar, LinearMap>(
-      to_origin_ /*from_origin*/,
-      from_origin_ /*to_origin*/,
-      linear_map_.Inverse() /*linear_map*/);
+      /*from_origin=*/to_origin_,
+      /*to_origin=*/from_origin_,
+      /*linear_map=*/linear_map_.Inverse());
 }
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
@@ -88,10 +88,10 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
     AffineMap<FromFrame, ThroughFrame, Scalar, LinearMap> const& right) {
   return AffineMap<FromFrame, ToFrame, Scalar, LinearMap>(
-      right.from_origin_ /*from_origin*/,
-      left.to_origin_ +
-          left.linear_map_(right.to_origin_ - left.from_origin_) /*to_origin*/,
-      left.linear_map_ * right.linear_map_ /*linear_map*/);
+      /*from_origin=*/right.from_origin_,
+      /*to_origin=*/left.to_origin_ +
+          left.linear_map_(right.to_origin_ - left.from_origin_),
+      /*linear_map=*/left.linear_map_ * right.linear_map_);
 }
 
 }  // namespace geometry

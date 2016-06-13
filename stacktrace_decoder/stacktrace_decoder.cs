@@ -12,7 +12,7 @@ namespace principia {
 namespace tools {
 
 class StackTraceDecoder {
-  const string kDBH =
+  const string dbh =
       @"\Program Files (x86)\Windows Kits\10\Debuggers\x86\dbh.exe";
 
   private static void Main(string[] args) {
@@ -90,7 +90,7 @@ class StackTraceDecoder {
       var p = new Process();
       p.StartInfo.UseShellExecute = false;
       p.StartInfo.RedirectStandardOutput = true;
-      p.StartInfo.FileName = kDBH;
+      p.StartInfo.FileName = dbh;
       p.StartInfo.Arguments =
           '"' + pdb_file + "\" laddr \"" + rebased_address + '"';
       p.Start();

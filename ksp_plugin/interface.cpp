@@ -64,42 +64,42 @@ namespace interface {
 
 namespace {
 
-int const kChunkSize = 64 << 10;
-int const kNumberOfChunks = 8;
+int const chunk_size = 64 << 10;
+int const number_of_chunks = 8;
 
 base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
-    char const* const gravitational_parameter,
-    char const* const mean_radius,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius) {
+    BodyParameters const& body_parameters) {
   // Logging operators would dereference a null C string.
   auto const make_optional_c_string = [](char const* const c_string) {
     return (c_string == nullptr) ? std::experimental::nullopt
                                  : std::experimental::make_optional(c_string);
   };
-  LOG(INFO) << __FUNCTION__ << "\n"
-            << NAMED(make_optional_c_string(gravitational_parameter)) << "\n"
-            << NAMED(make_optional_c_string(mean_radius)) << "\n"
-            << NAMED(make_optional_c_string(axis_right_ascension)) << "\n"
-            << NAMED(make_optional_c_string(axis_declination)) << "\n"
-            << NAMED(make_optional_c_string(j2)) << "\n"
-            << NAMED(make_optional_c_string(reference_radius));
+  LOG(INFO)
+      << __FUNCTION__ << "\n"
+      << NAMED(make_optional_c_string(body_parameters.gravitational_parameter))
+      << "\n"
+      << NAMED(make_optional_c_string(body_parameters.mean_radius)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.axis_right_ascension))
+      << "\n"
+      << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.reference_radius));
   serialization::GravityModel::Body gravity_model;
-  gravity_model.set_gravitational_parameter(gravitational_parameter);
-  gravity_model.set_mean_radius(mean_radius);
-  if (axis_right_ascension != nullptr) {
-    gravity_model.set_axis_right_ascension(axis_right_ascension);
+  gravity_model.set_gravitational_parameter(
+      body_parameters.gravitational_parameter);
+  gravity_model.set_mean_radius(body_parameters.mean_radius);
+  if (body_parameters.axis_right_ascension != nullptr) {
+    gravity_model.set_axis_right_ascension(
+        body_parameters.axis_right_ascension);
   }
-  if (axis_declination != nullptr) {
-    gravity_model.set_axis_declination(axis_declination);
+  if (body_parameters.axis_declination != nullptr) {
+    gravity_model.set_axis_declination(body_parameters.axis_declination);
   }
-  if (j2 != nullptr) {
-    gravity_model.set_j2(j2);
+  if (body_parameters.j2 != nullptr) {
+    gravity_model.set_j2(body_parameters.j2);
   }
-  if (reference_radius != nullptr) {
-    gravity_model.set_reference_radius(reference_radius);
+  if (body_parameters.reference_radius != nullptr) {
+    gravity_model.set_reference_radius(body_parameters.reference_radius);
   }
   return SolarSystem<Barycentric>::MakeMassiveBody(gravity_model);
 }
@@ -139,12 +139,12 @@ void principia__InitGoogleLogging() {
         });
 
     LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << principia::base::kVersion
-              << " built on " << principia::base::kBuildDate
-              << " by " << principia::base::kCompilerName
-              << " version " << principia::base::kCompilerVersion
-              << " for " << principia::base::kOperatingSystem
-              << " " << principia::base::kArchitecture;
+    LOG(INFO) << "Principia version " << principia::base::version
+              << " built on " << principia::base::build_date
+              << " by " << principia::base::CompilerName
+              << " version " << principia::base::CompilerVersion
+              << " for " << principia::base::OperatingSystem
+              << " " << principia::base::Architecture;
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));
@@ -309,12 +309,7 @@ void principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
-    char const* const gravitational_parameter,
-    char const* const mean_radius,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius,
+    BodyParameters const body_parameters,
     char const* const x,
     char const* const y,
     char const* const z,
@@ -325,12 +320,7 @@ void principia__InsertCelestialAbsoluteCartesian(
       {plugin,
        celestial_index,
        parent_index,
-       gravitational_parameter,
-       mean_radius,
-       axis_right_ascension,
-       axis_declination,
-       j2,
-       reference_radius,
+       body_parameters,
        x, y, z,
        vx, vy, vz});
   serialization::InitialState::Body initial_state;
@@ -347,12 +337,7 @@ void principia__InsertCelestialAbsoluteCartesian(
               ? std::experimental::nullopt
               : std::experimental::make_optional(*parent_index),
           SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
-          MakeMassiveBody(gravitational_parameter,
-                          mean_radius,
-                          axis_right_ascension,
-                          axis_declination,
-                          j2,
-                          reference_radius));
+          MakeMassiveBody(body_parameters));
   return m.Return();
 }
 
@@ -360,23 +345,13 @@ void principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
-    char const* const gravitational_parameter,
-    char const* const mean_radius,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius,
+    BodyParameters const body_parameters,
     KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
        celestial_index,
        parent_index,
-       gravitational_parameter,
-       mean_radius,
-       axis_right_ascension,
-       axis_declination,
-       j2,
-       reference_radius,
+       body_parameters,
        keplerian_elements});
   CHECK_NOTNULL(plugin)
       ->InsertCelestialJacobiKeplerian(
@@ -388,12 +363,7 @@ void principia__InsertCelestialJacobiKeplerian(
               ? std::experimental::nullopt
               : std::experimental::make_optional(
                     FromKeplerianElements(*keplerian_elements)),
-          MakeMassiveBody(gravitational_parameter,
-                          mean_radius,
-                          axis_right_ascension,
-                          axis_declination,
-                          j2,
-                          reference_radius));
+          MakeMassiveBody(body_parameters));
   return m.Return();
 }
 
@@ -721,7 +691,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
-    *serializer = new PullSerializer(kChunkSize, kNumberOfChunks);
+    *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
     (*serializer)->Start(std::move(message));
@@ -779,7 +749,7 @@ void principia__DeserializePlugin(char const* const serialization,
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
-    *deserializer = new PushDeserializer(kChunkSize, kNumberOfChunks);
+    *deserializer = new PushDeserializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
         std::move(message),
@@ -821,8 +791,8 @@ void principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
-  *CHECK_NOTNULL(build_date) = base::kBuildDate;
-  *CHECK_NOTNULL(version) = base::kVersion;
+  *CHECK_NOTNULL(build_date) = base::build_date;
+  *CHECK_NOTNULL(version) = base::version;
   return m.Return();
 }
 

@@ -20,7 +20,7 @@ namespace ksp_plugin {
 // Universal time 0, time of game creation.
 // Putting the origin here makes the instants we use equal to the corresponding
 // KSP universal time doubles.
-Instant const kUniversalTimeEpoch;
+Instant const UniversalTimeEpoch;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
@@ -36,7 +36,7 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
                          serialization::Frame::ALICE_WORLD, false>;
 
 // The barycentric reference frame of the solar system.
-// The basis is the basis of |AliceWorld| at |kUniversalTimeEpoch|.
+// The basis is the basis of |AliceWorld| at |UniversalTimeEpoch|.
 // TODO(egg): it *should* be the barycentric frame. For the moment we're using
 // the velocity of the sun at the time of construction as our reference.
 // The origin is the position of the sun at the instant |initial_time| passed at

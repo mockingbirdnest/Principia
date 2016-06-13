@@ -22,7 +22,7 @@ using quantities::Acceleration;
 template<typename Frame>
 using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
                                serialization::Frame::FRENET,
-                               false /*frame_is_inertial*/>;
+                               /*frame_is_inertial=*/false>;
 
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.

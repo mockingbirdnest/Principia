@@ -292,17 +292,17 @@ template<typename Vector>
     Instant const& t_min,
     Instant const& t_max) {
   // Only supports 8 divisions for now.
-  int const kDivisions = 8;
-  CHECK_EQ(kDivisions + 1, q.size());
-  CHECK_EQ(kDivisions + 1, v.size());
+  int const divisions = 8;
+  CHECK_EQ(divisions + 1, q.size());
+  CHECK_EQ(divisions + 1, v.size());
 
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Vector, 2 * kDivisions + 2> qv;
-  for (int i = 0, j = 2 * kDivisions;
-       i < kDivisions + 1 && j >= 0;
+  FixedVector<Vector, 2 * divisions + 2> qv;
+  for (int i = 0, j = 2 * divisions;
+       i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
     qv[j] = q[i];
     qv[j + 1] = v[i] * duration_over_two;

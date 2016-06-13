@@ -74,9 +74,9 @@ class SRKNIntegrator : public MotionIntegrator {
 
  protected:
   enum VanishingCoefficients {
-    kNone,
-    kFirstBVanishes,
-    kLastAVanishes,
+    None,
+    FirstBVanishes,
+    LastAVanishes,
   };
 
   struct FirstSameAsLast {
@@ -86,8 +86,8 @@ class SRKNIntegrator : public MotionIntegrator {
 
   // Indicates whether some nodes vanish in a way that enables optimizations.
   VanishingCoefficients vanishing_coefficients_;
-  // Null if, and only if, |vanishing_coefficients_ == kNone|.
-  // If |vanishing_coefficients_ == kFirstBVanishes|, this contains the first
+  // Null if, and only if, |vanishing_coefficients_ == None|.
+  // If |vanishing_coefficients_ == FirstBVanishes|, this contains the first
   // and last a coefficients.
   // If |vanishing_coefficients_ == FirstAVanishes|, this contains the first
   // and last b coefficients.
@@ -98,14 +98,14 @@ class SRKNIntegrator : public MotionIntegrator {
   int stages_;
 
   // The position and momentum nodes.
-  // If |vanishing_coefficients_ == kFirstBVanishes|, we do not store the first
+  // If |vanishing_coefficients_ == FirstBVanishes|, we do not store the first
   // b coefficient, and the last entry of |a_| is the sum of the first and last
   // a coefficients.
   std::vector<double> a_;
   std::vector<double> b_;
 
   // The weights.  Note that the first c coefficient is not stored if
-  // |vanishing_coefficients_ == kFirstBVanishes|.
+  // |vanishing_coefficients_ == FirstBVanishes|.
   std::vector<double> c_;
 
  private:

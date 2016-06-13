@@ -112,11 +112,11 @@ void TestTermination(
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
   switch (integrator.composition) {
-    case kBA:
-    case kABA:
+    case BA:
+    case ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case kBAB:
+    case BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -170,11 +170,11 @@ void Test1000SecondsAt1Millisecond(
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
-    case kBA:
-    case kABA:
+    case BA:
+    case ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case kBAB:
+    case BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -226,7 +226,7 @@ void TestConvergence(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -301,7 +301,7 @@ void TestSymplecticity(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -354,7 +354,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
