@@ -104,6 +104,8 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture barycentric_navball_texture_;
   private bool navball_changed_ = true;
 
+  private CelestialBody previous_bubble_reference_body_;
+
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
   // It is, as usual for KSP, an ineffable acronym; it is however likely derived
@@ -663,13 +665,17 @@ public partial class PrincipiaPluginAdapter
         return;
       }
       time_is_advancing_ = true;
-      if (has_inertial_physics_bubble_in_space()) {
+      if (has_inertial_physics_bubble_in_space() &&
+          (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
+           previous_bubble_reference_body_ == null)) {
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
+        previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
       } else {
         if (FlightIntegrator.GraviticForceMultiplier != 1) {
           Log.Info("Reinstating stock gravity");
           FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
         }
+        previous_bubble_reference_body_ = null;
       }
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
