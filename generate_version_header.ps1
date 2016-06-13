@@ -11,8 +11,8 @@ $generateversionheader = {
       "namespace principia {{`n"                                             +
       "namespace base {{`n"                                                  +
       "`n"                                                                   +
-      "char const build_date[] = `"{0:yyyy'-'MM'-'dd'T'HH':'mm':'ssK}`";`n"  +
-      "char const version[] =`n"                                             +
+      "char const BuildDate[] = `"{0:yyyy'-'MM'-'dd'T'HH':'mm':'ssK}`";`n"  +
+      "char const Version[] =`n"                                             +
       "    u8`"{1}`";`n"                                                     +
       "`n"                                                                   +
       "}}  // namespace base`n"                                              +

@@ -5,8 +5,8 @@ VERSION_TEMPLATE="\xef\xbb\xbf
 namespace principia {
 namespace base {
 
-char const kBuildDate[] = \"%%DATE%%\";
-char const kVersion[] =
+char const BuildDate[] = \"%%DATE%%\";
+char const Version[] =
     u8\"%%VERSION%%\";
 
 }  // namespace base
