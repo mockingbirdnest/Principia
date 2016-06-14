@@ -3,10 +3,10 @@
 
 #include <string>
 
+#include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "geometry/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -23,13 +23,13 @@
 
 namespace principia {
 
+using astronomy::UnixEpoch;
 using base::check_not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
-using geometry::UnixEpoch;
 using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;

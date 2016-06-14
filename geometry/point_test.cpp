@@ -3,8 +3,8 @@
 
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -15,6 +15,10 @@
 namespace principia {
 namespace geometry {
 
+using astronomy::J2000;
+using astronomy::JulianDate;
+using astronomy::ModifiedJulianDate;
+using astronomy::UnixEpoch;
 using quantities::Time;
 using quantities::Volume;
 using quantities::si::Day;
