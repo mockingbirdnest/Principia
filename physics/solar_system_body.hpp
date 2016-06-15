@@ -166,15 +166,15 @@ ContinuousTrajectory<Frame> const& SolarSystem<Frame>::trajectory(
 }
 
 template<typename Frame>
-serialization::InitialState::Body const&
-SolarSystem<Frame>::initial_state_message(std::string const& name) const {
-  return *FindOrDie(initial_state_map_, name);
-}
-
-template<typename Frame>
 serialization::GravityModel::Body const&
 SolarSystem<Frame>::gravity_model_message(std::string const& name) const {
   return *FindOrDie(gravity_model_map_, name);
+}
+
+template<typename Frame>
+serialization::InitialState::Body const&
+SolarSystem<Frame>::initial_state_message(std::string const& name) const {
+  return *FindOrDie(initial_state_map_, name);
 }
 
 template<typename Frame>
@@ -194,11 +194,16 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
 
 template<typename Frame>
 std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
-    serialization::GravityModel::Body const& body) {
+    serialization::GravityModel::Body const& body,
+    std::experimental::optional<Instant> const& epoch) {
   CHECK(body.has_gravitational_parameter());
+  CHECK_EQ(body.has_mean_radius(), (bool)epoch);
+  CHECK_EQ(body.has_mean_radius(), body.has_axis_right_ascension());
+  CHECK_EQ(body.has_mean_radius(), body.has_axis_declination());
+  CHECK_EQ(body.has_mean_radius(), body.has_reference_angle());
+  CHECK_EQ(body.has_mean_radius(), body.has_angular_velocity());
   CHECK_EQ(body.has_j2(), body.has_reference_radius());
-  CHECK(body.has_mean_radius() || !body.has_axis_declination());
-  CHECK_EQ(body.has_axis_declination(), body.has_axis_right_ascension());
+
   MassiveBody::Parameters massive_body_parameters(
                               ParseQuantity<GravitationalParameter>(
                                   body.gravitational_parameter()));
@@ -206,30 +211,18 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
     // TODO(phl): Parse the additional parameters.
     std::unique_ptr<typename RotatingBody<Frame>::Parameters>
         rotating_body_parameters;
-    if (body.has_axis_declination()) {
-      rotating_body_parameters =
-          std::make_unique<typename RotatingBody<Frame>::Parameters>(
-              ParseQuantity<Length>(body.mean_radius()),
-              Angle(),
-              Instant(),
-              Bivector<double, Frame>(
-                  RadiusLatitudeLongitude(
-                      1.0,
-                      ParseQuantity<Angle>(body.axis_declination()),
-                      ParseQuantity<Angle>(body.axis_right_ascension()))
-                      .ToCartesian()) *
-                  Radian / Second);
-    } else {
-      rotating_body_parameters =
-          std::make_unique<typename RotatingBody<Frame>::Parameters>(
-              ParseQuantity<Length>(body.mean_radius()),
-              Angle(),
-              Instant(),
-              Bivector<double, Frame>(
-                  RadiusLatitudeLongitude(1.0, Angle(), Angle())
-                      .ToCartesian()) *
-                  Radian / Second);
-    }
+    rotating_body_parameters =
+        std::make_unique<typename RotatingBody<Frame>::Parameters>(
+            ParseQuantity<Length>(body.mean_radius()),
+            ParseQuantity<Angle>(body.reference_angle()),
+            *epoch,
+            Bivector<double, Frame>(
+                RadiusLatitudeLongitude(
+                    1.0,
+                    ParseQuantity<Angle>(body.axis_declination()),
+                    ParseQuantity<Angle>(body.axis_right_ascension()))
+                    .ToCartesian()) *
+                ParseQuantity<AngularFrequency>(body.angular_velocity()));
     if (body.has_j2()) {
       typename OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
@@ -272,15 +265,12 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
 
 template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-SolarSystem<Frame>::MakeAllMassiveBodies() {
+SolarSystem<Frame>::MakeAllMassiveBodies(
+    std::experimental::optional<Instant> const& epoch) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
     serialization::GravityModel::Body const* const body = pair.second;
-    CHECK(body->has_gravitational_parameter());
-    CHECK_EQ(body->has_j2(), body->has_reference_radius());
-    CHECK(body->has_mean_radius() || !body->has_axis_declination());
-    CHECK_EQ(body->has_axis_declination(), body->has_axis_right_ascension());
-    bodies.emplace_back(MakeMassiveBody(*body));
+    bodies.emplace_back(MakeMassiveBody(*body, epoch));
   }
   return bodies;
 }

@@ -7,14 +7,20 @@ package principia.serialization;
 message GravityModel {
   message Body {
     required string name = 1;
+    // Massive body.
     required string gravitational_parameter = 2;
-    optional string mean_radius = 7;
+    // Rotating body.
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
+    optional string mean_radius = 7;
+    optional string reference_angle = 8;
+    optional string angular_velocity = 9;
+    // Oblate body.
     optional string j2 = 5;
     optional string reference_radius = 6;
   }
   optional Frame.SolarSystemTag frame = 1;
+  optional double epoch = 3;  // Julian date for the reference_angle.
   repeated Body body = 2;
 }
 
