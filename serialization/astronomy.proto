@@ -11,9 +11,9 @@ message GravityModel {
     required string gravitational_parameter = 2;
     // Rotating body.
     optional double reference_instant = 10;  // Julian date.
+    optional string mean_radius = 7;
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
-    optional string mean_radius = 7;
     optional string reference_angle = 8;
     optional string angular_velocity = 9;
     // Oblate body.

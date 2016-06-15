@@ -5,9 +5,7 @@ gravity_model {
   # of the IAU Working Group on Cartographic Coordinates and Rotational
   # Elements: 2009", Archinal et al.,
   # http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
-  # The values given are for J2000.
-  # TODO(egg): actually compute the value at J2000, instead of using the
-  # constant term; some of the higher-order terms don't vanish at J2000.0.
+  # The values given are for JD 2451545.0, i.e., 2000-Jan-01 12:00:00.0000 TDB.
 
   # Unless mentioned otherwise, gravitational parameters are from the SPICE
   # kernel for DE431,
@@ -24,6 +22,7 @@ gravity_model {
     # Interesting analysis of the Sun radius at http://www.icra.it/solar/Sole2.pdf.
     name                    : "Sun"
     gravitational_parameter : "1.3271244004193938e+11 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "696000.0 km"
     axis_right_ascension    : "286.13 deg"
     axis_declination        : "63.87 deg"
@@ -37,6 +36,7 @@ gravity_model {
   body {
     name                    : "Jupiter"
     gravitational_parameter : "1.266865349218008e+08 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "69911 km"
     axis_right_ascension    : "268.056595 deg"
     axis_declination        : "64.495303 deg"
@@ -46,6 +46,7 @@ gravity_model {
   body {
     name                    : "Saturn"
     gravitational_parameter : "3.793120749865224e+07 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "58232 km"
     axis_right_ascension    : "40.589 deg"
     axis_declination        : "83.537 deg"
@@ -55,6 +56,7 @@ gravity_model {
   body {
     name                    : "Neptune"
     gravitational_parameter : "6.835099502439672e+06 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "24622 km"
     axis_right_ascension    : "299.36 deg"
     axis_declination        : "43.46 deg"
@@ -64,6 +66,7 @@ gravity_model {
   body {
     name                    : "Uranus"
     gravitational_parameter : "5.793951322279009e+06 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "25362 km"
     axis_right_ascension    : "257.311 deg"
     axis_declination        : "-15.175 deg"
@@ -77,6 +80,7 @@ gravity_model {
     # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
     name                    : "Earth"
     gravitational_parameter : "3.9860043543609598e+05 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "6371.0084 km"
     axis_right_ascension    : "0.0 deg"
     axis_declination        : "90.0 deg"
@@ -88,6 +92,7 @@ gravity_model {
     # https://github.com/haisamido/GMAT/blob/master/gmat/application/data/gravity/venus/MGNP180U.cof.
     name                    : "Venus"
     gravitational_parameter : "3.2485859200000006e+05 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "6051.8 km"
     axis_right_ascension    : "272.76 deg"
     axis_declination        : "67.16 deg"
@@ -99,6 +104,7 @@ gravity_model {
     # http://pds-geosciences.wustl.edu/mro/mro-m-rss-5-sdp-v1/mrors_1xxx/data/shadr/jgmro_110c_sha.tab.
     name                    : "Mars"
     gravitational_parameter : "4.282837362069909e+04 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "3389.50 km"
     axis_right_ascension    : "317.68143 deg"
     axis_declination        : "52.88650 deg"
@@ -110,6 +116,7 @@ gravity_model {
     # http://pds-geosciences.wustl.edu/messenger/mess-h-rss_mla-5-sdp-v1/messrs_1001/data/shadr/ggmes_50v06_sha.tab.
     name                    : "Mercury"
     gravitational_parameter : "2.2031780000000021e+04 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "2439.7 km"
     axis_right_ascension    : "281.0097 deg"
     axis_declination        : "61.4143 deg"
@@ -145,6 +152,7 @@ gravity_model {
     # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
     name                    : "Moon"
     gravitational_parameter : "4.9028000661637961e+03 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "1737.4 km"
     axis_right_ascension    : "269.9949 deg"
     axis_declination        : "66.5392 deg"
@@ -242,6 +250,7 @@ gravity_model {
     # For the mean radius we compute the mean of the radii given by the IAU.
     name                    : "Vesta"
     gravitational_parameter : "0.1728824496930000e+02 km^3/s^2"
+    reference_instant       : 2451545.000000000
     mean_radius             : "266 km"
     axis_right_ascension    : "309.05870 deg"
     axis_declination        : "42.23190 deg"
