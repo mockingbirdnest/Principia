@@ -36,6 +36,7 @@ using geometry::Instant;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
+using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::ParseQuantity;
 using quantities::Speed;
@@ -194,28 +195,26 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
 
 template<typename Frame>
 std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
-    serialization::GravityModel::Body const& body,
-    std::experimental::optional<Instant> const& epoch) {
+    serialization::GravityModel::Body const& body) {
   CHECK(body.has_gravitational_parameter());
-  CHECK_EQ(body.has_mean_radius(), (bool)epoch);
-  CHECK_EQ(body.has_mean_radius(), body.has_axis_right_ascension());
-  CHECK_EQ(body.has_mean_radius(), body.has_axis_declination());
-  CHECK_EQ(body.has_mean_radius(), body.has_reference_angle());
-  CHECK_EQ(body.has_mean_radius(), body.has_angular_velocity());
+  CHECK_EQ(body.has_reference_instant(), body.has_axis_right_ascension());
+  CHECK_EQ(body.has_reference_instant(), body.has_axis_declination());
+  CHECK_EQ(body.has_reference_instant(), body.has_mean_radius());
+  CHECK_EQ(body.has_reference_instant(), body.has_reference_angle());
+  CHECK_EQ(body.has_reference_instant(), body.has_angular_velocity());
   CHECK_EQ(body.has_j2(), body.has_reference_radius());
 
   MassiveBody::Parameters massive_body_parameters(
                               ParseQuantity<GravitationalParameter>(
                                   body.gravitational_parameter()));
   if (body.has_mean_radius()) {
-    // TODO(phl): Parse the additional parameters.
     std::unique_ptr<typename RotatingBody<Frame>::Parameters>
         rotating_body_parameters;
     rotating_body_parameters =
         std::make_unique<typename RotatingBody<Frame>::Parameters>(
             ParseQuantity<Length>(body.mean_radius()),
             ParseQuantity<Angle>(body.reference_angle()),
-            *epoch,
+            JulianDate(body.reference_instant()),
             Bivector<double, Frame>(
                 RadiusLatitudeLongitude(
                     1.0,
@@ -265,12 +264,11 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
 
 template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-SolarSystem<Frame>::MakeAllMassiveBodies(
-    std::experimental::optional<Instant> const& epoch) {
+SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
     serialization::GravityModel::Body const* const body = pair.second;
-    bodies.emplace_back(MakeMassiveBody(*body, epoch));
+    bodies.emplace_back(MakeMassiveBody(*body));
   }
   return bodies;
 }

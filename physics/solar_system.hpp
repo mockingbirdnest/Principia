@@ -77,8 +77,7 @@ class SolarSystem {
   static DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
       serialization::InitialState::Body const& body);
   static std::unique_ptr<MassiveBody> MakeMassiveBody(
-      serialization::GravityModel::Body const& body,
-      std::experimental::optional<Instant> const& epoch);
+      serialization::GravityModel::Body const& body);
 
   // Utilities for patching the internal protocol buffers after initialization.
   // Should only be used in tests.
@@ -87,15 +86,14 @@ class SolarSystem {
 
  private:
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-      MakeAllMassiveBodies(std::experimental::optional<Instant> const& epoch);
+  MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
   // Note that the maps below hold pointers into these protocol buffers.
   serialization::SolarSystemFile gravity_model_;
   serialization::SolarSystemFile initial_state_;
 
-  std::experimental::optional<Instant> gravity_model_epoch_;
-  Instant initial_state_epoch_;
+  Instant epoch_;
   std::vector<std::string> names_;
   std::map<std::string,
            serialization::GravityModel::Body*> gravity_model_map_;

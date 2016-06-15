@@ -10,6 +10,7 @@ message GravityModel {
     // Massive body.
     required string gravitational_parameter = 2;
     // Rotating body.
+    optional double reference_instant = 10;  // Julian date.
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
     optional string mean_radius = 7;
@@ -20,7 +21,6 @@ message GravityModel {
     optional string reference_radius = 6;
   }
   optional Frame.SolarSystemTag frame = 1;
-  optional double epoch = 3;  // Julian date for the reference_angle.
   repeated Body body = 2;
 }
 
