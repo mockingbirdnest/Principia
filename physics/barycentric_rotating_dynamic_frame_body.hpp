@@ -72,83 +72,6 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-RigidMotion<ThisFrame, InertialFrame>
-BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
-FromThisFrameAtTime(Instant const& t) const {
-  return ToThisFrameAtTime(t).Inverse();
-}
-
-template<typename InertialFrame, typename ThisFrame>
-Vector<Acceleration, ThisFrame>
-BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
-GeometricAcceleration(
-    Instant const& t,
-    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  auto const to_this_frame = ToThisFrameAtTime(t);
-  auto const from_this_frame = to_this_frame.Inverse();
-
-  DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
-  DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
-      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
-
-  // Beware, we want the angular velocity of ThisFrame as seen in the
-  // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
-  AngularVelocity<InertialFrame> const Ω_inertial =
-      to_this_frame.angular_velocity_of_to_frame();
-  AngularVelocity<ThisFrame> const Ω =
-      to_this_frame.orthogonal_map()(Ω_inertial);
-
-  Vector<Acceleration, InertialFrame> const primary_acceleration =
-      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
-          primary_, t);
-  Vector<Acceleration, InertialFrame> const secondary_acceleration =
-      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
-          secondary_, t);
-
-  // TODO(egg): TeX and reference.
-  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
-      primary_degrees_of_freedom - secondary_degrees_of_freedom;
-  Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
-      to_this_frame.orthogonal_map()
-          (Wedge(primary_secondary.displacement(),
-                 (primary_acceleration - secondary_acceleration)) * Radian -
-           2 * Ω_inertial * InnerProduct(primary_secondary.displacement(),
-                                         primary_secondary.velocity())) /
-               InnerProduct(primary_secondary.displacement(),
-                            primary_secondary.displacement());
-
-  Displacement<ThisFrame> const r =
-      degrees_of_freedom.position() - ThisFrame::origin;
-  Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
-      to_this_frame.orthogonal_map()(
-          ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
-              from_this_frame.rigid_transformation()(
-                  degrees_of_freedom.position()), t));
-  Vector<Acceleration, ThisFrame> const linear_acceleration =
-      to_this_frame.orthogonal_map()(
-          -Barycentre<Vector<Acceleration, InertialFrame>,
-                      GravitationalParameter>(
-              {primary_acceleration,
-               secondary_acceleration},
-              {primary_->gravitational_parameter(),
-               secondary_->gravitational_parameter()}));
-  Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
-      -2 * Ω * degrees_of_freedom.velocity() / Radian;
-  Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =
-      -Ω * (Ω * r) / Pow<2>(Radian);
-  Vector<Acceleration, ThisFrame> const euler_acceleration_at_point =
-      -dΩ_over_dt * r / Radian;
-
-  Vector<Acceleration, ThisFrame> const fictitious_acceleration =
-      linear_acceleration +
-      coriolis_acceleration_at_point +
-      centrifugal_acceleration_at_point +
-      euler_acceleration_at_point;
-  return gravitational_acceleration_at_point + fictitious_acceleration;
-}
-
-template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   auto* const extension =
@@ -170,6 +93,54 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
       ephemeris,
       ephemeris->body_for_serialization_index(message.primary()),
       ephemeris->body_for_serialization_index(message.secondary()));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Vector<Acceleration, InertialFrame>
+BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+    GravitationalAcceleration(Instant const& t,
+                              Position<InertialFrame> const& q) const {
+  return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+SecondOrderRigidMotion<InertialFrame, ThisFrame>
+BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::Motion(
+    Instant const& t) const {
+  DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
+      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+  DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
+      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
+
+  Vector<Acceleration, InertialFrame> const primary_acceleration =
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_, t);
+  Vector<Acceleration, InertialFrame> const secondary_acceleration =
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
+
+  auto const to_this_frame = ToThisFrameAtTime(t);
+
+  // TODO(egg): TeX and reference.
+  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
+      primary_degrees_of_freedom - secondary_degrees_of_freedom;
+  Variation<AngularVelocity<InertialFrame>> const
+      angular_acceleration_of_to_frame =
+          (Wedge(primary_secondary.displacement(),
+                 (primary_acceleration - secondary_acceleration)) * Radian -
+           2 * to_this_frame.angular_velocity_of_to_frame() *
+               InnerProduct(primary_secondary.displacement(),
+                            primary_secondary.velocity())) /
+          InnerProduct(primary_secondary.displacement(),
+                       primary_secondary.displacement());
+
+  Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
+      Barycentre<Vector<Acceleration, InertialFrame>, GravitationalParameter>(
+          {primary_acceleration, secondary_acceleration},
+          {primary_->gravitational_parameter(),
+           secondary_->gravitational_parameter()});
+  return SecondOrderRigidMotion<InertialFrame, ThisFrame>(
+             to_this_frame,
+             angular_acceleration_of_to_frame,
+             acceleration_of_to_frame_origin);
 }
 
 template<typename InertialFrame, typename ThisFrame>

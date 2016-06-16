@@ -77,6 +77,34 @@ RigidMotion<FromFrame, ToFrame> operator*(
           {ToFrame::origin, Velocity<ToFrame>()})).velocity());
 }
 
+template<typename FromFrame, typename ToFrame>
+SecondOrderRigidMotion<FromFrame, ToFrame>::SecondOrderRigidMotion(
+    RigidMotion<FromFrame, ToFrame> const& first_order_motion,
+    Variation<AngularVelocity<FromFrame>> const&
+        angular_acceleration_of_to_frame,
+    Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin)
+    : first_order_motion_(first_order_motion),
+      angular_acceleration_of_to_frame_(angular_acceleration_of_to_frame),
+      acceleration_of_to_frame_origin_(acceleration_of_to_frame_origin) {}
+
+template<typename FromFrame, typename ToFrame>
+RigidMotion<FromFrame, ToFrame>
+SecondOrderRigidMotion<FromFrame, ToFrame>::first_order_motion() const {
+  return first_order_motion_;
+}
+template<typename FromFrame, typename ToFrame>
+Variation<AngularVelocity<FromFrame>>
+SecondOrderRigidMotion<FromFrame, ToFrame>::angular_acceleration_of_to_frame()
+    const {
+  return angular_acceleration_of_to_frame_;
+}
+template<typename FromFrame, typename ToFrame>
+Vector<Acceleration, FromFrame>
+SecondOrderRigidMotion<FromFrame, ToFrame>::acceleration_of_to_frame_origin()
+    const {
+  return acceleration_of_to_frame_origin_;
+}
+
 }  // namespace internal_rigid_motion
 }  // namespace physics
 }  // namespace principia

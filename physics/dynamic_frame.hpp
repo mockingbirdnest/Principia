@@ -13,6 +13,7 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
+using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
@@ -35,14 +36,14 @@ class DynamicFrame {
   virtual RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const = 0;
   virtual RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
-      Instant const& t) const = 0;
+      Instant const& t) const;
 
   // The acceleration due to the non-inertial motion of |ThisFrame| and gravity.
   // A particle in free fall follows a trajectory whose second derivative
   // is |GeometricAcceleration|.
   virtual Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const = 0;
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   // The definition of the Frenet frame of a free fall trajectory in |ThisFrame|
   // with the given |degrees_of_freedom| at instant |t|.
@@ -58,6 +59,13 @@ class DynamicFrame {
   static std::unique_ptr<DynamicFrame>
       ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> const ephemeris,
                       serialization::DynamicFrame const& message);
+
+ private:
+  virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const = 0;
+  virtual SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
+      Instant const& t) const = 0;
 };
 
 }  // namespace internal_dynamic_frame

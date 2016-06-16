@@ -16,6 +16,7 @@ namespace internal_rigid_motion {
 
 using geometry::AffineMap;
 using geometry::AngularVelocity;
+using geometry::Bivector;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
@@ -23,6 +24,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Length;
+using quantities::Variation;
 using quantities::si::Radian;
 
 // An arbitrary rigid transformation.  Simultaneous positions between two frames
@@ -76,10 +78,35 @@ RigidMotion<FromFrame, ToFrame> operator*(
     RigidMotion<ThroughFrame, ToFrame> const& left,
     RigidMotion<FromFrame, ThroughFrame> const& right);
 
+// A |RigidTransformation|, its first derivative (a |RigidMotion|), and its
+// second derivative (angular and linear accelerations).
+template<typename FromFrame, typename ToFrame>
+class SecondOrderRigidMotion {
+ public:
+  SecondOrderRigidMotion(
+      RigidMotion<FromFrame, ToFrame> const& first_order_motion,
+      Variation<AngularVelocity<FromFrame>> const&
+          angular_acceleration_of_to_frame,
+      Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin);
+
+  RigidMotion<FromFrame, ToFrame> first_order_motion() const;
+  Variation<AngularVelocity<FromFrame>> angular_acceleration_of_to_frame()
+      const;
+  Vector<Acceleration, FromFrame> acceleration_of_to_frame_origin() const;
+
+ private:
+  RigidMotion<FromFrame, ToFrame> first_order_motion_;
+  // d/dt first_order_motion_.angular_velocity_of_to_frame().
+  Variation<AngularVelocity<FromFrame>> angular_acceleration_of_to_frame_;
+  // d/dt first_order_motion_.velocity_of_to_frame_origin().
+  Vector<Acceleration, FromFrame> acceleration_of_to_frame_origin_;
+};
+
 }  // namespace internal_rigid_motion
 
 using internal_rigid_motion::RigidMotion;
 using internal_rigid_motion::RigidTransformation;
+using internal_rigid_motion::SecondOrderRigidMotion;
 
 }  // namespace physics
 }  // namespace principia
