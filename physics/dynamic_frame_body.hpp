@@ -41,27 +41,20 @@ DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
 
   // Beware, we want the angular velocity of ThisFrame as seen in the
   // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
-  AngularVelocity<InertialFrame> const Ω_inertial =
-      to_this_frame.angular_velocity_of_to_frame();
-  AngularVelocity<ThisFrame> const Ω =
-      to_this_frame.orthogonal_map()(Ω_inertial);
-
-  Variation<AngularVelocity<InertialFrame>> const dΩ_over_dt_inertial =
-      motion.angular_acceleration_of_to_frame();
+  AngularVelocity<ThisFrame> const Ω = to_this_frame.orthogonal_map()(
+      to_this_frame.angular_velocity_of_to_frame());
   Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
-      to_this_frame.orthogonal_map()(dΩ_over_dt_inertial);
+      to_this_frame.orthogonal_map()(motion.angular_acceleration_of_to_frame());
+  Displacement<ThisFrame> const r =
+      degrees_of_freedom.position() - ThisFrame::origin;
 
   Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
       to_this_frame.orthogonal_map()(
           GravitationalAcceleration(t,
                                     from_this_frame.rigid_transformation()(
                                         degrees_of_freedom.position())));
-
   Vector<Acceleration, ThisFrame> const linear_acceleration =
       -to_this_frame.orthogonal_map()(motion.acceleration_of_to_frame_origin());
-
-  Displacement<ThisFrame> const r =
-      degrees_of_freedom.position() - ThisFrame::origin;
   Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
       -2 * Ω * degrees_of_freedom.velocity() / Radian;
   Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =

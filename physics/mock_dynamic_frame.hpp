@@ -35,6 +35,15 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
   MOCK_CONST_METHOD1_T(
       WriteToMessage,
       void(not_null<serialization::DynamicFrame*> const message));
+
+ private:
+  MOCK_CONST_METHOD2_T(
+      GravitationalAcceleration,
+      Vector<Acceleration, InertialFrame>(Instant const& t,
+                                          Position<InertialFrame> const& q));
+  MOCK_CONST_METHOD1_T(
+      Motion,
+      SecondOrderRigidMotion<InertialFrame, ThisFrame>(Instant const& t));
 };
 
 }  // namespace internal_dynamic_frame
