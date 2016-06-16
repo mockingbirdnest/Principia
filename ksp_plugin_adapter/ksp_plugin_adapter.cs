@@ -651,6 +651,10 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
+    if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
+      Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
+      GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
+    }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = plugin_.CurrentTime();
