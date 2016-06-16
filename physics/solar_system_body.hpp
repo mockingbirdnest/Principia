@@ -196,13 +196,17 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
 template<typename Frame>
 std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
-  CHECK(body.has_gravitational_parameter());
-  CHECK_EQ(body.has_reference_instant(), body.has_mean_radius());
-  CHECK_EQ(body.has_reference_instant(), body.has_axis_right_ascension());
-  CHECK_EQ(body.has_reference_instant(), body.has_axis_declination());
-  CHECK_EQ(body.has_reference_instant(), body.has_reference_angle());
-  CHECK_EQ(body.has_reference_instant(), body.has_angular_velocity());
-  CHECK_EQ(body.has_j2(), body.has_reference_radius());
+  CHECK(body.has_gravitational_parameter()) << body.name();
+  CHECK_EQ(body.has_reference_instant(), body.has_mean_radius()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_axis_right_ascension()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_axis_declination()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_reference_angle()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_angular_velocity()) << body.name();
+  CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
 
   MassiveBody::Parameters massive_body_parameters(
                               ParseQuantity<GravitationalParameter>(
