@@ -813,12 +813,12 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
         << SolarSystemFactory::name(i);
     if (i != SolarSystemFactory::Sun) {
       // Look at the error in the position relative to the parent.
-      Vector<Length, ICRFJ2000Equator> expected =
+      Vector<Length, ICRFJ2000Equator> const expected =
           final_state.position() -
           at_спутник_2_launch->initial_state(
               SolarSystemFactory::name(SolarSystemFactory::parent(i))).
               position();
-      Vector<Length, ICRFJ2000Equator> actual =
+      Vector<Length, ICRFJ2000Equator> const actual =
           trajectory.EvaluatePosition(at_спутник_2_launch->epoch(), nullptr) -
           at_спутник_1_launch->trajectory(
               *ephemeris,
@@ -839,7 +839,7 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
       if (expected_parent_distance_error.find(index) !=
           expected_parent_distance_error.end()) {
         double const parent_distance_error = RelativeError(expected.Norm(),
-                                                  actual.Norm());
+                                                           actual.Norm());
         EXPECT_THAT(parent_distance_error,
                     Lt(expected_parent_distance_error.at(index)))
             << SolarSystemFactory::name(i);
