@@ -59,10 +59,10 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
       not_null<serialization::DynamicFrame*> message) const override;
 
  private:
-  virtual Vector<Acceleration, OtherFrame> GravitationalAcceleration(
+  Vector<Acceleration, OtherFrame> GravitationalAcceleration(
       Instant const& t,
       Position<OtherFrame> const& q) const override;
-  virtual SecondOrderRigidMotion<OtherFrame, ThisFrame> Motion(
+  SecondOrderRigidMotion<OtherFrame, ThisFrame> Motion(
       Instant const& t) const override;
 
   DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;

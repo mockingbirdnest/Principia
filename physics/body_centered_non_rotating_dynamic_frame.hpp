@@ -50,10 +50,10 @@ class BodyCentredNonRotatingDynamicFrame
           serialization::BodyCentredNonRotatingDynamicFrame const& message);
 
  private:
-  virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+  Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
-  virtual SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
+  SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
       Instant const& t) const override;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;

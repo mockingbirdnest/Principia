@@ -54,10 +54,10 @@ class BarycentricRotatingDynamicFrame
           serialization::BarycentricRotatingDynamicFrame const& message);
 
  private:
-  virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+  Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
-  virtual SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
+  SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
       Instant const& t) const override;
 
   // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
