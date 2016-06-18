@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <limits>
 #include <string>
 
 #include "astronomy/epoch.hpp"
