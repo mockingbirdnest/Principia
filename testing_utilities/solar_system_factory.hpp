@@ -76,7 +76,7 @@ class SolarSystemFactory {
     MajorBodiesOnly,
     // Same as above, with some smaller satellites of the main planets.
     MinorAndMajorBodies,
-    // Same as above, with oblateness for the gas giants.
+    // Same as above, with oblateness.
     AllBodiesAndOblateness,
   };
 

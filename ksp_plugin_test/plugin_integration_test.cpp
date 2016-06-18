@@ -54,7 +54,7 @@ class PluginIntegrationTest : public testing::Test {
         looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
-                SolarSystemFactory::Accuracy::AllBodiesAndOblateness)),
+                SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
         initial_time_(Instant() + 42 * Second),
         sun_body_(make_not_null_unique<MassiveBody>(
             MassiveBody::Parameters(solar_system_->gravitational_parameter(
@@ -62,6 +62,7 @@ class PluginIntegrationTest : public testing::Test {
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              planetarium_rotation_)) {
+    // A subterranean satellite.
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
