@@ -183,7 +183,8 @@ TEST_F(SolarSystemFactoryTest, Name) {
       "Sun", "Jupiter", "Saturn", "Neptune", "Uranus", "Earth", "Venus", "Mars",
       "Mercury", "Ganymede", "Titan", "Callisto", "Io", "Moon", "Europa",
       "Triton", "Eris", "Pluto", "Titania", "Oberon", "Rhea", "Iapetus",
-      "Charon", "Ariel", "Umbriel", "Dione", "Tethys"};
+      "Charon", "Ariel", "Umbriel", "Dione", "Ceres", "Tethys", "Vesta",
+      "Enceladus", "Miranda", "Mimas", "Phobos", "Deimos"};
   EXPECT_THAT(names, ElementsAreArray(expected_names));
 }
 
@@ -199,7 +200,8 @@ TEST_F(SolarSystemFactoryTest, Parent) {
       "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Jupiter",
       "Saturn", "Jupiter", "Jupiter", "Earth", "Jupiter", "Neptune", "Sun",
       "Sun", "Uranus", "Uranus", "Saturn", "Saturn", "Pluto", "Uranus",
-      "Uranus", "Saturn", "Saturn"};
+      "Uranus", "Saturn", "Sun", "Saturn", "Sun", "Saturn", "Uranus", "Saturn",
+      "Mars", "Mars"};
   EXPECT_THAT(parent_names, ElementsAreArray(expected_parent_names));
 }
 
