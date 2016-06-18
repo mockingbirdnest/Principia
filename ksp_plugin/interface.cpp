@@ -78,22 +78,37 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
       << __FUNCTION__ << "\n"
       << NAMED(make_optional_c_string(body_parameters.gravitational_parameter))
       << "\n"
+      << NAMED(body_parameters.reference_instant) << "\n"
       << NAMED(make_optional_c_string(body_parameters.mean_radius)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_right_ascension))
       << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.reference_angle)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.angular_velocity)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.reference_radius));
   serialization::GravityModel::Body gravity_model;
   gravity_model.set_gravitational_parameter(
       body_parameters.gravitational_parameter);
-  gravity_model.set_mean_radius(body_parameters.mean_radius);
+  if (!std::isnan(body_parameters.reference_instant)) {
+    gravity_model.set_reference_instant(body_parameters.reference_instant);
+  }
+  if (body_parameters.mean_radius != nullptr) {
+    gravity_model.set_mean_radius(body_parameters.mean_radius);
+  }
   if (body_parameters.axis_right_ascension != nullptr) {
     gravity_model.set_axis_right_ascension(
         body_parameters.axis_right_ascension);
   }
   if (body_parameters.axis_declination != nullptr) {
     gravity_model.set_axis_declination(body_parameters.axis_declination);
+  }
+  if (body_parameters.reference_angle != nullptr) {
+    gravity_model.set_reference_angle(body_parameters.reference_angle);
+  }
+  if (body_parameters.angular_velocity != nullptr) {
+    gravity_model.set_angular_velocity(
+        body_parameters.angular_velocity);
   }
   if (body_parameters.j2 != nullptr) {
     gravity_model.set_j2(body_parameters.j2);
