@@ -1,9 +1,9 @@
 gravity_model {
   frame : ICRF_J2000_EQUATOR
 
-  # Unless otherwise mentioned, axis directions and mean radii are from "Report
-  # of the IAU Working Group on Cartographic Coordinates and Rotational
-  # Elements: 2009", Archinal et al.,
+  # Unless otherwise mentioned, axis directions, mean radii, reference angles
+  # and angular frequencies are from "Report of the IAU Working Group on
+  # Cartographic Coordinates and Rotational Elements: 2009", Archinal et al.,
   # http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   # The values given are for JD 2451545.0, i.e., 2000-Jan-01 12:00:00.0000 TDB.
 
@@ -27,7 +27,7 @@ gravity_model {
     axis_right_ascension    : "286.13 deg"
     axis_declination        : "63.87 deg"
     reference_angle         : "84.176 deg"
-    angular_velocity        : "6.1385025 deg / d"
+    angular_frequency       : "14.1844000 deg / d"
     j2                      : "2.1106088532726840e-07"
     reference_radius        : "696000.0 km"
   }
@@ -43,7 +43,7 @@ gravity_model {
     axis_right_ascension    : "268.056595 deg"
     axis_declination        : "64.495303 deg"
     reference_angle         : "284.95 deg"
-    angular_velocity        : "870.5360000 deg / d"
+    angular_frequency       : "870.5360000 deg / d"
     j2                      : "14695.62e-6"
     reference_radius        : "71492 km"
   }
@@ -55,7 +55,7 @@ gravity_model {
     axis_right_ascension    : "40.589 deg"
     axis_declination        : "83.537 deg"
     reference_angle         : "38.90 deg"
-    angular_velocity        : "810.7939024 deg / d"
+    angular_frequency       : "810.7939024 deg / d"
     j2                      : "16290.71e-6"
     reference_radius        : "60330 km"
   }
@@ -67,7 +67,7 @@ gravity_model {
     axis_right_ascension    : "299.36 deg"
     axis_declination        : "43.46 deg"
     reference_angle         : "253.18 deg"
-    angular_velocity        : "536.3128492 deg / d"
+    angular_frequency       : "536.3128492 deg / d"
     j2                      : "3408.43e-6"
     reference_radius        : "25225 km"
   }
@@ -79,7 +79,7 @@ gravity_model {
     axis_right_ascension    : "257.311 deg"
     axis_declination        : "-15.175 deg"
     reference_angle         : "203.81 deg"
-    angular_velocity        : "-501.1600928 deg / d"
+    angular_frequency       : "-501.1600928 deg / d"
     j2                      : "3510.68e-6"
     reference_radius        : "25559 km"
   }
@@ -95,7 +95,7 @@ gravity_model {
     axis_right_ascension    : "0.0 deg"
     axis_declination        : "90.0 deg"
     reference_angle         : "190.147 deg"
-    angular_velocity        : "360.89198226 deg / d"
+    angular_frequency       : "360.9856235 deg / d"
     j2                      : "0.00108262545"
     reference_radius        : "6378.1363 km"
   }
@@ -109,7 +109,7 @@ gravity_model {
     axis_right_ascension    : "272.76 deg"
     axis_declination        : "67.16 deg"
     reference_angle         : "160.20 deg"
-    angular_velocity        : "-1.4813688 deg / d"
+    angular_frequency       : "-1.4813688 deg / d"
     j2                      : "4.4044353248204983e-6"
     reference_radius        : "6.05100000000000e+06 m"
   }
@@ -123,7 +123,7 @@ gravity_model {
     axis_right_ascension    : "317.68143 deg"
     axis_declination        : "52.88650 deg"
     reference_angle         : "176.630 deg"
-    angular_velocity        : "350.89198226 deg / d"
+    angular_frequency       : "350.89198226 deg / d"
     j2                      : "0.0019566091594086663"
     reference_radius        : "0.3396000000000000e+04 km"
   }
@@ -137,7 +137,7 @@ gravity_model {
     axis_right_ascension    : "281.0097 deg"
     axis_declination        : "61.4143 deg"
     reference_angle         : "329.5469 deg"
-    angular_velocity        : "6.1385025 deg / d"
+    angular_frequency       : "6.1385025 deg / d"
     j2                      : "4.4044353248204983e-6"
     reference_radius        : "2.4400000000000000e+03 km"
   }
@@ -151,7 +151,7 @@ gravity_model {
     axis_right_ascension    : "268.20 deg"
     axis_declination        : "64.57 deg"
     reference_angle         : "44.064 deg"
-    angular_velocity        : "50.3176081 deg / d"
+    angular_frequency       : "50.3176081 deg / d"
   }
   body {
     # Gravitational characteristics from Cassini data,
@@ -163,7 +163,7 @@ gravity_model {
     axis_right_ascension    : "39.4827 deg"
     axis_declination        : "83.4279 deg"
     reference_angle         : "186.5855 deg"
-    angular_velocity        : "22.5769768 deg / d"
+    angular_frequency       : "22.5769768 deg / d"
   }
   body {
     name                    : "Callisto"
@@ -173,7 +173,7 @@ gravity_model {
     axis_right_ascension    : "268.72 deg"
     axis_declination        : "64.83 deg"
     reference_angle         : "259.51 deg"
-    angular_velocity        : "21.5710715 deg / d"
+    angular_frequency       : "21.5710715 deg / d"
   }
   body {
     name                    : "Io"
@@ -183,7 +183,7 @@ gravity_model {
     axis_right_ascension    : "268.05 deg"
     axis_declination        : "64.50 deg"
     reference_angle         : "200.39 deg"
-    angular_velocity        : "203.4889538 deg / d"
+    angular_frequency       : "203.4889538 deg / d"
   }
   body {
     # J2 coefficient and reference radius from DE431,
@@ -195,7 +195,7 @@ gravity_model {
     axis_right_ascension    : "269.9949 deg"
     axis_declination        : "66.5392 deg"
     reference_angle         : "38.3213 deg"
-    angular_velocity        : "13.17635815 deg / d"
+    angular_frequency       : "13.17635815 deg / d"
     j2                      : "2.0321568464952570e-04"
     reference_radius        : "1738.0 km"
   }
@@ -206,8 +206,8 @@ gravity_model {
     mean_radius             : "1560.8 km"
     axis_right_ascension    : "268.08 deg"
     axis_declination        : "64.51 deg"
-    reference_angle         : "38.3213 deg"
-    angular_velocity        : "101.3747235 deg / d"
+    reference_angle         : "36.022 deg"
+    angular_frequency       : "101.3747235 deg / d"
   }
   body {
     name                    : "Triton"
@@ -217,7 +217,7 @@ gravity_model {
     axis_right_ascension    : "299.36 deg"
     axis_declination        : "41.17 deg"
     reference_angle         : "296.53 deg"
-    angular_velocity        : "-61.2572637 deg / d"
+    angular_frequency       : "-61.2572637 deg / d"
   }
   body {
     # Gravitational characteristics from Brown and Schaller (2007),
@@ -232,17 +232,19 @@ gravity_model {
     axis_right_ascension    : "0 deg"  # Unknown.
     axis_declination        : "0 deg"  # Unknown.
     reference_angle         : "0 deg"  # Unknown.
-    angular_velocity        : "333 deg / d"
+    angular_frequency       : "333 deg / d"
   }
   body {
+    # Characteristics from New Horizons data,
+    # http://naif.jpl.nasa.gov/pub/naif/pds/data/nh-j_p_ss-spice-6-v1.0/nhsp_1000/data/pck/pck00010.tpc
     name                    : "Pluto"
     gravitational_parameter : "8.696138177608748e+02 km^3/s^2"
     reference_instant       : 2451545.000000000
     mean_radius             : "1195 km"
     axis_right_ascension    : "132.993 deg"
     axis_declination        : "-6.163 deg"
-    reference_angle         : "237.305 deg"
-    angular_velocity        : "56.3625225 deg / d"
+    reference_angle         : "302.695 deg"
+    angular_frequency       : "56.3625225 deg / d"
   }
   body {
     name                    : "Titania"
@@ -252,7 +254,7 @@ gravity_model {
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
     reference_angle         : "77.74 deg"
-    angular_velocity        : "-41.3514316 deg / d"
+    angular_frequency       : "-41.3514316 deg / d"
   }
   body {
     name                    : "Oberon"
@@ -262,7 +264,7 @@ gravity_model {
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
     reference_angle         : "6.77 deg"
-    angular_velocity        : "-26.7394932 deg / d"
+    angular_frequency       : "-26.7394932 deg / d"
   }
   body {
     # Gravitational characteristics from Cassini data,
@@ -274,7 +276,7 @@ gravity_model {
     axis_right_ascension    : "40.38 deg"
     axis_declination        : "83.55 deg"
     reference_angle         : "235.16 deg"
-    angular_velocity        : "79.6900478 deg / d"
+    angular_frequency       : "79.6900478 deg / d"
   }
   body {
     # Gravitational characteristics from Cassini data,
@@ -286,7 +288,7 @@ gravity_model {
     axis_right_ascension    : "318.16 deg"
     axis_declination        : "75.03 deg"
     reference_angle         : "355.2 deg"
-    angular_velocity        : "4.5379572 deg / d"
+    angular_frequency       : "4.5379572 deg / d"
   }
   body {
     name                    : "Charon"
@@ -296,7 +298,7 @@ gravity_model {
     axis_right_ascension    : "132.993 deg"
     axis_declination        : "-6.163 deg"
     reference_angle         : "57.305 deg"
-    angular_velocity        : "56.3625225 deg / d"
+    angular_frequency       : "56.3625225 deg / d"
   }
   body {
     name                    : "Umbriel"
@@ -306,7 +308,7 @@ gravity_model {
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
     reference_angle         : "108.05 deg"
-    angular_velocity        : "-86.8688923 deg / d"
+    angular_frequency       : "-86.8688923 deg / d"
   }
   body {
     name                    : "Ariel"
@@ -316,7 +318,7 @@ gravity_model {
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
     reference_angle         : "156.22 deg"
-    angular_velocity        : "-142.8356681 deg / d"
+    angular_frequency       : "-142.8356681 deg / d"
   }
   body {
     # Gravitational characteristics from Cassini data,
@@ -328,7 +330,7 @@ gravity_model {
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
     reference_angle         : "357.6 deg"
-    angular_velocity        : "131.5349316 deg / d"
+    angular_frequency       : "131.5349316 deg / d"
   }
   body {
     # Characteristics from Dawn data,
@@ -340,7 +342,7 @@ gravity_model {
     axis_right_ascension    : "291.418 deg"
     axis_declination        : "66.764 deg"
     reference_angle         : "170.65 deg"
-    angular_velocity        : "952.1532 deg / d"
+    angular_frequency       : "952.1532 deg / d"
   }
   body {
     # Gravitational characteristics from Cassini data,
@@ -352,14 +354,15 @@ gravity_model {
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
     reference_angle         : "8.95 deg"
-    angular_velocity        : "190.6979085 deg / d"
+    angular_frequency       : "190.6979085 deg / d"
   }
   body {
     # Gravitational characteristics from Dawn gravity science level 2,
     # Konopliv, A.S., Park, R.S., Asmar, S.W., and Buccino, D.R., Dawn Vesta
     # Derived Gravity Data, NASA Planetary Data System, DAWN-A-RSS-5-VEGR-V1.0,
     # 2014, http://sbn.psi.edu/archive/dawn/grav/DWNVGRS_2/DATA/SHADR/JGDWN_VES20H_SHA.TAB.
-    # Axis direction ibidem, http://sbn.psi.edu/archive/dawn/grav/DWNVGRS_2/DATA/SHADR/JGDWN_VES20H_SHA.LBL.
+    # Axis direction and rotational elements ibidem,
+    # http://sbn.psi.edu/archive/dawn/grav/DWNVGRS_2/DATA/SHADR/JGDWN_VES20H_SHA.LBL.
     # For the mean radius we compute the mean of the radii given by the IAU.
     name                    : "Vesta"
     gravitational_parameter : "0.1728824496930000e+02 km^3/s^2"
@@ -368,7 +371,7 @@ gravity_model {
     axis_right_ascension    : "309.05870 deg"
     axis_declination        : "42.23190 deg"
     reference_angle         : "284.59521 deg"
-    angular_velocity        : "1617.3331279 deg / d"
+    angular_frequency       : "1617.3331279 deg / d"
     j2                      : "0.071060891954441914"
     reference_radius        : "0.2650000000000000e+03 km"
   }
@@ -382,7 +385,7 @@ gravity_model {
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
     reference_angle         : "6.32 deg"
-    angular_velocity        : "262.7318996 deg / d"
+    angular_frequency       : "262.7318996 deg / d"
   }
   body {
     name                    : "Miranda"
@@ -390,9 +393,9 @@ gravity_model {
     reference_instant       : 2451545.000000000
     mean_radius             : "235.8 km"
     axis_right_ascension    : "257.43 deg"
-    axis_declination        : "-15.18 deg"
+    axis_declination        : "-15.08 deg"
     reference_angle         : "30.70 deg"
-    angular_velocity        : "-254.6906892 deg / d"
+    angular_frequency       : "-254.6906892 deg / d"
   }
   body {
     # Gravitational characteristics from Cassini data,
@@ -404,7 +407,7 @@ gravity_model {
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
     reference_angle         : "333.46 deg"
-    angular_velocity        : "381.994 deg / d"
+    angular_frequency       : "381.9945550 deg / d"
   }
   body {
     name                    : "Phobos"
@@ -414,7 +417,7 @@ gravity_model {
     axis_right_ascension    : "317.68 deg"
     axis_declination        : "52.90 deg"
     reference_angle         : "35.06 deg"
-    angular_velocity        : "1128.8445850 deg / d"
+    angular_frequency       : "1128.8445850 deg / d"
   }
   body {
     name                    : "Deimos"
@@ -424,6 +427,6 @@ gravity_model {
     axis_right_ascension    : "316.65 deg"
     axis_declination        : "53.52 deg"
     reference_angle         : "79.41 deg"
-    angular_velocity        : "285.1618970 deg / d"
+    angular_frequency       : "285.1618970 deg / d"
   }
 }

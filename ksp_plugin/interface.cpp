@@ -84,7 +84,8 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
       << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.reference_angle)) << "\n"
-      << NAMED(make_optional_c_string(body_parameters.angular_velocity)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.angular_frequency))
+      << "\n"
       << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.reference_radius));
   serialization::GravityModel::Body gravity_model;
@@ -106,9 +107,9 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
   if (body_parameters.reference_angle != nullptr) {
     gravity_model.set_reference_angle(body_parameters.reference_angle);
   }
-  if (body_parameters.angular_velocity != nullptr) {
-    gravity_model.set_angular_velocity(
-        body_parameters.angular_velocity);
+  if (body_parameters.angular_frequency!= nullptr) {
+    gravity_model.set_angular_frequency(
+        body_parameters.angular_frequency);
   }
   if (body_parameters.j2 != nullptr) {
     gravity_model.set_j2(body_parameters.j2);

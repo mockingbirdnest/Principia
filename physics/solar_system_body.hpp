@@ -205,7 +205,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
   CHECK_EQ(body.has_reference_instant(),
            body.has_reference_angle()) << body.name();
   CHECK_EQ(body.has_reference_instant(),
-           body.has_angular_velocity()) << body.name();
+           body.has_angular_frequency()) << body.name();
   CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
 
   MassiveBody::Parameters massive_body_parameters(
@@ -225,7 +225,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
                     ParseQuantity<Angle>(body.axis_declination()),
                     ParseQuantity<Angle>(body.axis_right_ascension()))
                     .ToCartesian()) *
-                ParseQuantity<AngularFrequency>(body.angular_velocity()));
+                ParseQuantity<AngularFrequency>(body.angular_frequency()));
     if (body.has_j2()) {
       typename OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
