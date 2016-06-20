@@ -24,6 +24,13 @@ using quantities::Sqrt;
 using quantities::si::Radian;
 
 template<typename InertialFrame, typename ThisFrame>
+RigidMotion<InertialFrame, ThisFrame>
+DynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
+    Instant const& t) const {
+  return FromThisFrameAtTime(t).Inverse();
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
 DynamicFrame<InertialFrame, ThisFrame>::FromThisFrameAtTime(
     Instant const& t) const {
@@ -35,9 +42,11 @@ Vector<Acceleration, ThisFrame>
 DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  auto const motion = Motion(t);
-  auto const to_this_frame = motion.first_order_motion();
-  auto const from_this_frame = to_this_frame.Inverse();
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion = MotionOfThisFrame(t);
+  RigidMotion<InertialFrame, ThisFrame> const to_this_frame =
+      motion.rigid_motion();
+  RigidMotion<ThisFrame, InertialFrame> const from_this_frame =
+      to_this_frame.Inverse();
 
   // Beware, we want the angular velocity of ThisFrame as seen in the
   // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.

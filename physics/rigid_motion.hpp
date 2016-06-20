@@ -81,32 +81,32 @@ RigidMotion<FromFrame, ToFrame> operator*(
 // A |RigidTransformation|, its first derivative (a |RigidMotion|), and its
 // second derivative (angular and linear accelerations).
 template<typename FromFrame, typename ToFrame>
-class SecondOrderRigidMotion {
+class AcceleratedRigidMotion {
  public:
-  SecondOrderRigidMotion(
-      RigidMotion<FromFrame, ToFrame> const& first_order_motion,
+  AcceleratedRigidMotion(
+      RigidMotion<FromFrame, ToFrame> const& rigid_motion,
       Variation<AngularVelocity<FromFrame>> const&
           angular_acceleration_of_to_frame,
       Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin);
 
-  RigidMotion<FromFrame, ToFrame> first_order_motion() const;
+  RigidMotion<FromFrame, ToFrame> rigid_motion() const;
   Variation<AngularVelocity<FromFrame>> angular_acceleration_of_to_frame()
       const;
   Vector<Acceleration, FromFrame> acceleration_of_to_frame_origin() const;
 
  private:
-  RigidMotion<FromFrame, ToFrame> first_order_motion_;
-  // d/dt first_order_motion_.angular_velocity_of_to_frame().
-  Variation<AngularVelocity<FromFrame>> angular_acceleration_of_to_frame_;
-  // d/dt first_order_motion_.velocity_of_to_frame_origin().
-  Vector<Acceleration, FromFrame> acceleration_of_to_frame_origin_;
+  RigidMotion<FromFrame, ToFrame> const rigid_motion_;
+  // d/dt rigid_motion_.angular_velocity_of_to_frame().
+  Variation<AngularVelocity<FromFrame>> const angular_acceleration_of_to_frame_;
+  // d/dt rigid_motion_.velocity_of_to_frame_origin().
+  Vector<Acceleration, FromFrame> const acceleration_of_to_frame_origin_;
 };
 
 }  // namespace internal_rigid_motion
 
 using internal_rigid_motion::RigidMotion;
 using internal_rigid_motion::RigidTransformation;
-using internal_rigid_motion::SecondOrderRigidMotion;
+using internal_rigid_motion::AcceleratedRigidMotion;
 
 }  // namespace physics
 }  // namespace principia

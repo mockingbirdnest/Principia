@@ -104,8 +104,8 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 }
 
 template<typename InertialFrame, typename ThisFrame>
-SecondOrderRigidMotion<InertialFrame, ThisFrame>
-BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::Motion(
+AcceleratedRigidMotion<InertialFrame, ThisFrame>
+BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
       primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
@@ -122,22 +122,23 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::Motion(
   // TODO(egg): TeX and reference.
   RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
       primary_degrees_of_freedom - secondary_degrees_of_freedom;
+  Displacement<InertialFrame> const& r = primary_secondary.displacement();
+  Velocity<InertialFrame> const& ṙ = primary_secondary.velocity();
+  Vector<Acceleration, InertialFrame> const r̈ =
+      primary_acceleration - secondary_acceleration;
+  AngularVelocity<InertialFrame> const& ω =
+      to_this_frame.angular_velocity_of_to_frame();
   Variation<AngularVelocity<InertialFrame>> const
       angular_acceleration_of_to_frame =
-          (Wedge(primary_secondary.displacement(),
-                 (primary_acceleration - secondary_acceleration)) * Radian -
-           2 * to_this_frame.angular_velocity_of_to_frame() *
-               InnerProduct(primary_secondary.displacement(),
-                            primary_secondary.velocity())) /
-          InnerProduct(primary_secondary.displacement(),
-                       primary_secondary.displacement());
+          (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) /
+          InnerProduct(r, r);
 
   Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
       Barycentre<Vector<Acceleration, InertialFrame>, GravitationalParameter>(
           {primary_acceleration, secondary_acceleration},
           {primary_->gravitational_parameter(),
            secondary_->gravitational_parameter()});
-  return SecondOrderRigidMotion<InertialFrame, ThisFrame>(
+  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              to_this_frame,
              angular_acceleration_of_to_frame,
              acceleration_of_to_frame_origin);

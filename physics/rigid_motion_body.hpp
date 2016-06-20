@@ -78,29 +78,29 @@ RigidMotion<FromFrame, ToFrame> operator*(
 }
 
 template<typename FromFrame, typename ToFrame>
-SecondOrderRigidMotion<FromFrame, ToFrame>::SecondOrderRigidMotion(
-    RigidMotion<FromFrame, ToFrame> const& first_order_motion,
+AcceleratedRigidMotion<FromFrame, ToFrame>::AcceleratedRigidMotion(
+    RigidMotion<FromFrame, ToFrame> const& rigid_motion,
     Variation<AngularVelocity<FromFrame>> const&
         angular_acceleration_of_to_frame,
     Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin)
-    : first_order_motion_(first_order_motion),
+    : rigid_motion_(rigid_motion),
       angular_acceleration_of_to_frame_(angular_acceleration_of_to_frame),
       acceleration_of_to_frame_origin_(acceleration_of_to_frame_origin) {}
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>
-SecondOrderRigidMotion<FromFrame, ToFrame>::first_order_motion() const {
-  return first_order_motion_;
+AcceleratedRigidMotion<FromFrame, ToFrame>::rigid_motion() const {
+  return rigid_motion_;
 }
 template<typename FromFrame, typename ToFrame>
 Variation<AngularVelocity<FromFrame>>
-SecondOrderRigidMotion<FromFrame, ToFrame>::angular_acceleration_of_to_frame()
+AcceleratedRigidMotion<FromFrame, ToFrame>::angular_acceleration_of_to_frame()
     const {
   return angular_acceleration_of_to_frame_;
 }
 template<typename FromFrame, typename ToFrame>
 Vector<Acceleration, FromFrame>
-SecondOrderRigidMotion<FromFrame, ToFrame>::acceleration_of_to_frame_origin()
+AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_to_frame_origin()
     const {
   return acceleration_of_to_frame_origin_;
 }

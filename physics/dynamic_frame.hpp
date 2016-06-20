@@ -33,8 +33,12 @@ class DynamicFrame {
 
  public:
   virtual ~DynamicFrame() = default;
+
+  // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
+  // overriden in derived classes; the default implementation inverts the other
+  // one.
   virtual RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
-      Instant const& t) const = 0;
+      Instant const& t) const;
   virtual RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
       Instant const& t) const;
 
@@ -64,7 +68,7 @@ class DynamicFrame {
   virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const = 0;
-  virtual SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
+  virtual AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const = 0;
 };
 

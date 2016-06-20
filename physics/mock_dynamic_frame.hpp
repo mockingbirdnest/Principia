@@ -42,8 +42,8 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
       Vector<Acceleration, InertialFrame>(Instant const& t,
                                           Position<InertialFrame> const& q));
   MOCK_CONST_METHOD1_T(
-      Motion,
-      SecondOrderRigidMotion<InertialFrame, ThisFrame>(Instant const& t));
+      MotionOfThisFrame,
+      AcceleratedRigidMotion<InertialFrame, ThisFrame>(Instant const& t));
 };
 
 }  // namespace internal_dynamic_frame

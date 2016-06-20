@@ -66,10 +66,10 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 }
 
 template<typename InertialFrame, typename ThisFrame>
-SecondOrderRigidMotion<InertialFrame, ThisFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::Motion(
+AcceleratedRigidMotion<InertialFrame, ThisFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  return SecondOrderRigidMotion<InertialFrame, ThisFrame>(
+  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              ToThisFrameAtTime(t),
              /*angular_acceleration_of_to_frame=*/{},
              /*acceleration_of_to_frame_origin=*/ephemeris_->

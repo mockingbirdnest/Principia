@@ -62,7 +62,7 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
   Vector<Acceleration, OtherFrame> GravitationalAcceleration(
       Instant const& t,
       Position<OtherFrame> const& q) const override;
-  SecondOrderRigidMotion<OtherFrame, ThisFrame> Motion(
+  AcceleratedRigidMotion<OtherFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
   DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
@@ -114,9 +114,9 @@ InertialFrame<OtherFrame, ThisFrame>::GravitationalAcceleration(
 }
 
 template<typename OtherFrame, typename ThisFrame>
-SecondOrderRigidMotion<OtherFrame, ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::Motion(Instant const& t) const {
-  return SecondOrderRigidMotion<OtherFrame, ThisFrame>(
+AcceleratedRigidMotion<OtherFrame, ThisFrame>
+InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(Instant const& t) const {
+  return AcceleratedRigidMotion<OtherFrame, ThisFrame>(
       ToThisFrameAtTime(t),
       /*angular_acceleration_of_to_frame=*/{},
       /*acceleration_of_to_frame_origin=*/{});

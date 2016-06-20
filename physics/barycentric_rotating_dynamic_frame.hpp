@@ -57,7 +57,7 @@ class BarycentricRotatingDynamicFrame
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
-  SecondOrderRigidMotion<InertialFrame, ThisFrame> Motion(
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
   // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
