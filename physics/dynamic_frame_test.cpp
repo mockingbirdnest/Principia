@@ -54,20 +54,17 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
 
   RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
-  RigidMotion<ThisFrame, OtherFrame> FromThisFrameAtTime(
-      Instant const& t) const override;
-
-  // The acceleration due to gravity.
-  // A particle in free fall follows a trajectory whose second derivative
-  // is |GeometricAcceleration|.
-  Vector<Acceleration, ThisFrame> GeometricAcceleration(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> message) const override;
 
  private:
+  Vector<Acceleration, OtherFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<OtherFrame> const& q) const override;
+  AcceleratedRigidMotion<OtherFrame, ThisFrame> MotionOfThisFrame(
+      Instant const& t) const override;
+
   DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
   Instant const epoch_;
   OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
@@ -105,24 +102,26 @@ InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename OtherFrame, typename ThisFrame>
-RigidMotion<ThisFrame, OtherFrame>
-InertialFrame<OtherFrame, ThisFrame>::FromThisFrameAtTime(
-    Instant const& t) const {
-  return ToThisFrameAtTime(t).Inverse();
-}
-
-template<typename OtherFrame, typename ThisFrame>
-Vector<Acceleration, ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::GeometricAcceleration(
-    Instant const& t,
-    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  return orthogonal_map_(
-      gravity_(t, FromThisFrameAtTime(t)(degrees_of_freedom).position()));
-}
-
-template<typename OtherFrame, typename ThisFrame>
 void InertialFrame<OtherFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::DynamicFrame*> message) const {}
+
+template<typename OtherFrame, typename ThisFrame>
+Vector<Acceleration, OtherFrame>
+InertialFrame<OtherFrame, ThisFrame>::GravitationalAcceleration(
+    Instant const& t,
+    Position<OtherFrame> const& q) const {
+  return gravity_(t, q);
+}
+
+template<typename OtherFrame, typename ThisFrame>
+AcceleratedRigidMotion<OtherFrame, ThisFrame>
+InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(
+    Instant const& t) const {
+  return AcceleratedRigidMotion<OtherFrame, ThisFrame>(
+      ToThisFrameAtTime(t),
+      /*angular_acceleration_of_to_frame=*/{},
+      /*acceleration_of_to_frame_origin=*/{});
+}
 
 }  // namespace
 

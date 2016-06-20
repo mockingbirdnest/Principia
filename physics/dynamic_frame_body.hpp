@@ -11,13 +11,74 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
+using geometry::AngularVelocity;
 using geometry::Bivector;
+using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::R3x3Matrix;
 using geometry::Velocity;
 using geometry::Wedge;
+using quantities::Pow;
 using quantities::Sqrt;
+using quantities::si::Radian;
+
+template<typename InertialFrame, typename ThisFrame>
+RigidMotion<InertialFrame, ThisFrame>
+DynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
+    Instant const& t) const {
+  return FromThisFrameAtTime(t).Inverse();
+}
+
+template<typename InertialFrame, typename ThisFrame>
+RigidMotion<ThisFrame, InertialFrame>
+DynamicFrame<InertialFrame, ThisFrame>::FromThisFrameAtTime(
+    Instant const& t) const {
+  return ToThisFrameAtTime(t).Inverse();
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Vector<Acceleration, ThisFrame>
+DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
+    Instant const& t,
+    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion =
+      MotionOfThisFrame(t);
+  RigidMotion<InertialFrame, ThisFrame> const& to_this_frame =
+      motion.rigid_motion();
+  RigidMotion<ThisFrame, InertialFrame> const from_this_frame =
+      to_this_frame.Inverse();
+
+  // Beware, we want the angular velocity of ThisFrame as seen in the
+  // InertialFrame, but pushed to ThisFrame.  Otherwise the sign is wrong.
+  AngularVelocity<ThisFrame> const Ω = to_this_frame.orthogonal_map()(
+      to_this_frame.angular_velocity_of_to_frame());
+  Variation<AngularVelocity<ThisFrame>> const dΩ_over_dt =
+      to_this_frame.orthogonal_map()(motion.angular_acceleration_of_to_frame());
+  Displacement<ThisFrame> const r =
+      degrees_of_freedom.position() - ThisFrame::origin;
+
+  Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
+      to_this_frame.orthogonal_map()(
+          GravitationalAcceleration(t,
+                                    from_this_frame.rigid_transformation()(
+                                        degrees_of_freedom.position())));
+  Vector<Acceleration, ThisFrame> const linear_acceleration =
+      -to_this_frame.orthogonal_map()(motion.acceleration_of_to_frame_origin());
+  Vector<Acceleration, ThisFrame> const coriolis_acceleration_at_point =
+      -2 * Ω * degrees_of_freedom.velocity() / Radian;
+  Vector<Acceleration, ThisFrame> const centrifugal_acceleration_at_point =
+      -Ω * (Ω * r) / Pow<2>(Radian);
+  Vector<Acceleration, ThisFrame> const euler_acceleration_at_point =
+      -dΩ_over_dt * r / Radian;
+
+  Vector<Acceleration, ThisFrame> const fictitious_acceleration =
+      linear_acceleration +
+      coriolis_acceleration_at_point +
+      centrifugal_acceleration_at_point +
+      euler_acceleration_at_point;
+  return gravitational_acceleration_at_point + fictitious_acceleration;
+}
 
 template<typename InertialFrame, typename ThisFrame>
 Rotation<Frenet<ThisFrame>, ThisFrame>
