@@ -89,10 +89,11 @@ class AcceleratedRigidMotion {
           angular_acceleration_of_to_frame,
       Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin);
 
-  RigidMotion<FromFrame, ToFrame> rigid_motion() const;
-  Variation<AngularVelocity<FromFrame>> angular_acceleration_of_to_frame()
+  RigidMotion<FromFrame, ToFrame> const& rigid_motion() const;
+  Variation<AngularVelocity<FromFrame>> const&
+  angular_acceleration_of_to_frame() const;
+  Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin()
       const;
-  Vector<Acceleration, FromFrame> acceleration_of_to_frame_origin() const;
 
  private:
   RigidMotion<FromFrame, ToFrame> const rigid_motion_;
@@ -104,9 +105,9 @@ class AcceleratedRigidMotion {
 
 }  // namespace internal_rigid_motion
 
+using internal_rigid_motion::AcceleratedRigidMotion;
 using internal_rigid_motion::RigidMotion;
 using internal_rigid_motion::RigidTransformation;
-using internal_rigid_motion::AcceleratedRigidMotion;
 
 }  // namespace physics
 }  // namespace principia

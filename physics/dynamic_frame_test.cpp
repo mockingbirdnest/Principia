@@ -115,7 +115,8 @@ InertialFrame<OtherFrame, ThisFrame>::GravitationalAcceleration(
 
 template<typename OtherFrame, typename ThisFrame>
 AcceleratedRigidMotion<OtherFrame, ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(Instant const& t) const {
+InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(
+    Instant const& t) const {
   return AcceleratedRigidMotion<OtherFrame, ThisFrame>(
       ToThisFrameAtTime(t),
       /*angular_acceleration_of_to_frame=*/{},

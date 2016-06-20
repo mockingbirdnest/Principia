@@ -42,8 +42,9 @@ Vector<Acceleration, ThisFrame>
 DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion = MotionOfThisFrame(t);
-  RigidMotion<InertialFrame, ThisFrame> const to_this_frame =
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion =
+      MotionOfThisFrame(t);
+  RigidMotion<InertialFrame, ThisFrame> const& to_this_frame =
       motion.rigid_motion();
   RigidMotion<ThisFrame, InertialFrame> const from_this_frame =
       to_this_frame.Inverse();
