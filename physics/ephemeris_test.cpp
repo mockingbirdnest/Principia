@@ -39,7 +39,7 @@ using astronomy::SolarSystemBarycentreEquator;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
-using geometry::OrthogonalMap;
+using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -665,48 +665,96 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
   auto const at_спутник_2_launch =
       SolarSystemFactory::AtСпутник2Launch(
           SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
+  Instant const& epoch = at_спутник_2_launch->epoch();
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+              integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
+              /*step=*/1 * Minute));
 
-  ephemeris->Prolong(at_спутник_2_launch->epoch());
+  ephemeris->Prolong(epoch);
 
-  for (int i = 0; i <= SolarSystemFactory::LastBody; ++i) {
-    auto const actual_dof = ephemeris->trajectory(i)->EvaluateDegreesOfFreedom(
-                                at_спутник_2_launch->epoch());
-    auto const expected_dof =
-        at_спутник_2_launch->initial_state(SolarSystemFactory::name(index));
-    enum class LocalFrameTag { actual, expected };
-    struct ActualBodyEquator =
-        Frame<LocalFrameTag, actual, /*frame_is_inertial*/ = true>;
+  for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
+    auto const name = SolarSystemFactory::name(i);
+    auto const parent_name =
+        SolarSystemFactory::name(SolarSystemFactory::parent(i));
+    auto const body = at_спутник_1_launch->massive_body(*ephemeris, name);
+    auto const* const parent =
+        dynamic_cast<RotatingBody<ICRFJ2000Equator> const*>(
+            &*at_спутник_1_launch->massive_body(*ephemeris, parent_name));
+
+    auto const actual_dof =
+        ephemeris->trajectory(body)->
+            EvaluateDegreesOfFreedom(epoch, /*hint=*/nullptr);
+    auto const expected_dof = at_спутник_2_launch->initial_state(name);
+
+    auto const actual_parent_dof =
+        ephemeris->trajectory(parent)->
+            EvaluateDegreesOfFreedom(epoch, /*hint=*/nullptr);
+    auto const expected_parent_dof =
+        at_спутник_2_launch->initial_state(parent_name);
+
+    // We transform to a frame in which |parent| has the z-axis as its rotation
+    // axis by rotating around the normal to Earth's and |parent|'s rotation
+    // axes.
     auto const z = geometry::Bivector<double, ICRFJ2000Equator>({0, 0, 1});
-    auto const ω = dynamic_cast<RotatingBody<ICRFJ2000Equator>&>(
-                       *ephemeris->bodies()[i]).angular_velocity();
+    auto const ω = parent->angular_velocity();
     auto const normal = geometry::Commutator(ω, z);
-    auto const axis_declination = geometry::AngleBetween(ω, z);
+    auto const parent_axis_declination = geometry::AngleBetween(ω, z);
+    enum LocalFrameTag { tag };
+    using ParentEquator = Frame<LocalFrameTag, tag, /*frame_is_inertial=*/true>;
+    RigidMotion<ICRFJ2000Equator, ParentEquator> const
+        to_parent_equator(
+            {ICRFJ2000Equator::origin,
+             ParentEquator::origin,
+             Rotation<ICRFJ2000Equator, ParentEquator>(parent_axis_declination,
+                                                       normal).Forget()},
+            /*angular_velocity_of_to_frame=*/{},
+            /*velocity_of_to_frame_origin=*/{});
 
-    RigidMotion<ICRFJ2000Equator, ActualBodyEquator> const
-        to_actual_body_centred_inertial(
-            {actual_dof.position(),
-             ActualBodyEquator::origin,
-             OrthogonalMap<ICRFJ2000Equator, ActualBodyEquator>::Identity()},
-            /*angular_velocity_of_to_frame=*/{},
-            /*velocity_of_to_frame_origin=*/actual_dof.velocity());
-    struct ExpectedBodyEquator =
-        Frame<LocalFrameTag, expected, /*frame_is_inertial*/ = true>;
-    RigidMotion<ICRFJ2000Equator, ExpectedBodyEquator> const
-        to_expected_body_centred_inertial(
-            {expected_dof.position(),
-             ExpectedBodyEquator::origin,
-             OrthogonalMap<ICRFJ2000Equator, ActualBodyEquator>::Identity()},
-            /*angular_velocity_of_to_frame=*/{},
-            /*velocity_of_to_frame_origin=*/expected_dof.velocity());
-    KeplerOrbit<ActualBodyEquator> actual_osculating_orbit;
-    KeplerOrbit<BodyEquator> expected_osculating_orbit;
+    KeplerOrbit<ParentEquator> actual_osculating_orbit(
+        /*primary=*/*parent,
+        /*secondary=*/*body,
+        /*state_vectors=*/to_parent_equator(actual_dof) -
+            to_parent_equator(actual_parent_dof),
+        epoch);
+    KeplerOrbit<ParentEquator> expected_osculating_orbit(
+        /*primary=*/*parent,
+        /*secondary=*/*body,
+        /*state_vectors=*/to_parent_equator(expected_dof) -
+            to_parent_equator(expected_parent_dof),
+        epoch);
+    KeplerianElements<ParentEquator> const& actual_elements =
+        actual_osculating_orbit.elements_at_epoch();
+    KeplerianElements<ParentEquator> const& expected_elements =
+        expected_osculating_orbit.elements_at_epoch();
+    LOG(ERROR)<<"==="<<SolarSystemFactory::name(i)<<"===";
+    LOG(ERROR)<<actual_elements;
+    LOG(ERROR)<<expected_elements;
+    LOG(ERROR) << u8"Δω       = " << std::fixed
+               << AbsoluteError(expected_elements.argument_of_periapsis,
+                                actual_elements.argument_of_periapsis) / Degree
+               << u8"°";
+    LOG(ERROR) << u8"Δ(Ω+ω+M) = " << std::fixed
+               << AbsoluteError(expected_elements.longitude_of_ascending_node +
+                                    expected_elements.argument_of_periapsis +
+                                    expected_elements.mean_anomaly,
+                                actual_elements.longitude_of_ascending_node +
+                                    actual_elements.argument_of_periapsis +
+                                    actual_elements.mean_anomaly) / Degree
+               << u8"°";
+    LOG(ERROR) << std::fixed
+               << geometry::AngleBetween(
+                      actual_dof.position() - actual_parent_dof.position(),
+                      expected_dof.position() -
+                          expected_parent_dof.position()) / Degree
+               << u8"°";
+    LOG(ERROR) << u8"Δi =" << std::fixed
+               << AbsoluteError(expected_elements.inclination,
+                                actual_elements.inclination) / Degree
+               << u8"°";
   }
 }
 
