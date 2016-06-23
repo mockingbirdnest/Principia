@@ -666,17 +666,22 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
       SolarSystemFactory::AtСпутник2Launch(
           SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
   Instant const& epoch = at_спутник_2_launch->epoch();
+  Time const duration = epoch - at_спутник_1_launch->epoch();
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
               integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
-              /*step=*/1 * Minute));
+              /*step=*/10 * Minute));
 
   ephemeris->Prolong(epoch);
 
   for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
+    // Heliocentric elements for planets with large moons are not interesting.
+    if (SolarSystemFactory::parent(i) == SolarSystemFactory::Sun) {
+      continue;
+    }
     auto const name = SolarSystemFactory::name(i);
     auto const parent_name =
         SolarSystemFactory::name(SolarSystemFactory::parent(i));
@@ -730,6 +735,9 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
         actual_osculating_orbit.elements_at_epoch();
     KeplerianElements<ParentEquator> const& expected_elements =
         expected_osculating_orbit.elements_at_epoch();
+
+    Time const period = 2 * π * Radian / *actual_elements.mean_motion;
+    double const orbits = duration / period;
     LOG(ERROR)<<"==="<<SolarSystemFactory::name(i)<<"===";
     LOG(ERROR)<<actual_elements;
     LOG(ERROR)<<expected_elements;
@@ -737,6 +745,11 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                << AbsoluteError(expected_elements.argument_of_periapsis,
                                 actual_elements.argument_of_periapsis) / Degree
                << u8"°";
+    LOG(ERROR) << u8"Δω       = " << std::fixed
+               << AbsoluteError(expected_elements.argument_of_periapsis,
+                                actual_elements.argument_of_periapsis) /
+                      Degree / orbits
+               << u8"°/orbit";
     LOG(ERROR) << u8"Δ(Ω+ω+M) = " << std::fixed
                << AbsoluteError(expected_elements.longitude_of_ascending_node +
                                     expected_elements.argument_of_periapsis +
@@ -751,10 +764,22 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                       expected_dof.position() -
                           expected_parent_dof.position()) / Degree
                << u8"°";
+    LOG(ERROR) << std::fixed
+               << geometry::AngleBetween(
+                      actual_dof.position() - actual_parent_dof.position(),
+                      expected_dof.position() -
+                          expected_parent_dof.position()) /
+                      ArcSecond / orbits
+               << u8"″/orbit";
     LOG(ERROR) << u8"Δi =" << std::fixed
                << AbsoluteError(expected_elements.inclination,
                                 actual_elements.inclination) / Degree
                << u8"°";
+    LOG(ERROR) << u8"Δi =" << std::fixed
+               << AbsoluteError(expected_elements.inclination,
+                                actual_elements.inclination) /
+                      ArcSecond / orbits
+               << u8"″/orbit";
   }
 }
 
