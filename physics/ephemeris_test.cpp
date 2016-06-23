@@ -676,10 +676,15 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
               /*step=*/10 * Minute));
 
   ephemeris->Prolong(epoch);
-
+  //TODO(egg): A data structure or something saner than this...
+  for (int parent_index = 1; parent_index <= SolarSystemFactory::LastBody;
+       ++parent_index) {
+    if (SolarSystemFactory::parent(parent_index) != SolarSystemFactory::Sun) {
+      continue;
+    }
+  LOG(ERROR)<<"***"<<SolarSystemFactory::name(parent_index)<<"***";
   for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
-    // Heliocentric elements for planets with large moons are not interesting.
-    if (SolarSystemFactory::parent(i) == SolarSystemFactory::Sun) {
+    if (SolarSystemFactory::parent(i) != parent_index) {
       continue;
     }
     auto const name = SolarSystemFactory::name(i);
@@ -756,6 +761,7 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                                 1 / (2 * *actual_elements.semimajor_axis)) *
                       quantities::astronomy::Parsec / orbits
                << u8"pc⁻¹/orbit";
+  }
   }
 }
 
