@@ -739,31 +739,6 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
     Time const period = 2 * π * Radian / *actual_elements.mean_motion;
     double const orbits = duration / period;
     LOG(ERROR)<<"==="<<SolarSystemFactory::name(i)<<"===";
-    LOG(ERROR)<<actual_elements;
-    LOG(ERROR)<<expected_elements;
-    LOG(ERROR) << u8"Δω       = " << std::fixed
-               << AbsoluteError(expected_elements.argument_of_periapsis,
-                                actual_elements.argument_of_periapsis) / Degree
-               << u8"°";
-    LOG(ERROR) << u8"Δω       = " << std::fixed
-               << AbsoluteError(expected_elements.argument_of_periapsis,
-                                actual_elements.argument_of_periapsis) /
-                      Degree / orbits
-               << u8"°/orbit";
-    LOG(ERROR) << u8"Δ(Ω+ω+M) = " << std::fixed
-               << AbsoluteError(expected_elements.longitude_of_ascending_node +
-                                    expected_elements.argument_of_periapsis +
-                                    expected_elements.mean_anomaly,
-                                actual_elements.longitude_of_ascending_node +
-                                    actual_elements.argument_of_periapsis +
-                                    actual_elements.mean_anomaly) / Degree
-               << u8"°";
-    LOG(ERROR) << std::fixed
-               << geometry::AngleBetween(
-                      actual_dof.position() - actual_parent_dof.position(),
-                      expected_dof.position() -
-                          expected_parent_dof.position()) / Degree
-               << u8"°";
     LOG(ERROR) << std::fixed
                << geometry::AngleBetween(
                       actual_dof.position() - actual_parent_dof.position(),
@@ -773,13 +748,14 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                << u8"″/orbit";
     LOG(ERROR) << u8"Δi =" << std::fixed
                << AbsoluteError(expected_elements.inclination,
-                                actual_elements.inclination) / Degree
-               << u8"°";
-    LOG(ERROR) << u8"Δi =" << std::fixed
-               << AbsoluteError(expected_elements.inclination,
                                 actual_elements.inclination) /
                       ArcSecond / orbits
                << u8"″/orbit";
+    LOG(ERROR) << u8"Δ(ε/μ) =" << std::fixed
+               << AbsoluteError(1 / (2 * *expected_elements.semimajor_axis),
+                                1 / (2 * *actual_elements.semimajor_axis)) *
+                      quantities::astronomy::Parsec / orbits
+               << u8"pc⁻¹/orbit";
   }
 }
 
