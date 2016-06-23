@@ -247,9 +247,9 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    if (FlightIntegrator.GraviticForceMultiplier != 0) {
+    if (FlightIntegrator.GraviticForceMultiplier != 0) {  // sic.
       Log.Info("Killing stock gravity");
-      FlightIntegrator.GraviticForceMultiplier = 0;  // sic.
+      FlightIntegrator.GraviticForceMultiplier = 0;
     }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
@@ -273,10 +273,10 @@ public partial class PrincipiaPluginAdapter
             vessel_guid : vessel.id.ToString(),
             from_parent : new QP{
                 q = vessel.orbitDriver.offsetPosByAFrame
-                      ? (XYZ)(vessel.orbit.pos -
-                              vessel.orbit.vel * TimeWarp.fixedDeltaTime)
-                      : (XYZ)vessel.orbit.pos,
-                                 p = (XYZ)vessel.orbit.vel});
+                        ? (XYZ)(vessel.orbit.pos -
+                                vessel.orbit.vel * TimeWarp.fixedDeltaTime)
+                        : (XYZ)vessel.orbit.pos,
+                p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
                                            parts       : parts,
