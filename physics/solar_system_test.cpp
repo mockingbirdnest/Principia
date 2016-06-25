@@ -139,8 +139,8 @@ TEST_F(SolarSystemTest, Clear) {
   EXPECT_EQ("+1.309126697236264e+05 km", sun_initial_state.x());
   EXPECT_EQ("-7.799754996220354e-03 km/s", sun_initial_state.vx());
   auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");
-  EXPECT_FALSE(sun_gravity_model.has_j2());
-  EXPECT_FALSE(sun_gravity_model.has_reference_radius());
+  EXPECT_FALSE(sun_gravity_model.has_axis_right_ascension());
+  EXPECT_FALSE(sun_gravity_model.has_axis_declination());
 }
 
 }  // namespace internal_solar_system
