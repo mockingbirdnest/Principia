@@ -1289,17 +1289,11 @@ public partial class PrincipiaPluginAdapter
           var body_parameters = new BodyParameters{
               gravitational_parameter =
                   gravity_model.GetValue("gravitational_parameter"),
-              reference_instant       =
-                  double.Parse(gravity_model.GetValue("reference_instant")),
               mean_radius             = gravity_model.GetValue("mean_radius"),
               axis_right_ascension    =
                   gravity_model.GetValue("axis_right_ascension"),
               axis_declination        =
                   gravity_model.GetValue("axis_declination"),
-              reference_angle         =
-                  gravity_model.GetValue("reference_angle"),
-              angular_frequency       =
-                  gravity_model.GetValue("angular_frequency"),
               j2                      = gravity_model.GetValue("j2"),
               reference_radius        =
                   gravity_model.GetValue("reference_radius")};

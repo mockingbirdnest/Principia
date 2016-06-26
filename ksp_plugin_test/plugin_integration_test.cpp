@@ -54,7 +54,7 @@ class PluginIntegrationTest : public testing::Test {
         looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
-                SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
+                SolarSystemFactory::Accuracy::AllBodiesAndOblateness)),
         initial_time_(Instant() + 42 * Second),
         sun_body_(make_not_null_unique<MassiveBody>(
             MassiveBody::Parameters(solar_system_->gravitational_parameter(
