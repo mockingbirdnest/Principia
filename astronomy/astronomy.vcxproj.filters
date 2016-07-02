@@ -81,12 +81,18 @@
     <ClInclude Include="epoch_body.hpp">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="date.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lunar_eclipse_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="mercury_perihelion_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="date.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -200,6 +200,7 @@
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="date.hpp" />
     <ClInclude Include="epoch.hpp" />
     <ClInclude Include="epoch_body.hpp" />
     <ClInclude Include="frames.hpp" />
@@ -210,6 +211,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="date.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
   </ItemGroup>
