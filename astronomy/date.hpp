@@ -611,7 +611,7 @@ constexpr int YearsToDays(int const years_from_2000) {
                years_from_2000 / 400;
 }
 
-constexpr Instant DateTimeToTT(DateTime const& date_time) {
+constexpr Instant DateTimeAsTT(DateTime const& date_time) {
   return CHECKING(!date_time.time().is_leap_second(),
                   J2000 +
                   date_time.time().nanosecond() / 1e9 * Second +
@@ -622,7 +622,7 @@ constexpr Instant DateTimeToTT(DateTime const& date_time) {
                    date_time.date().ordinal() - 1) * Day);
 }
 
-constexpr Instant DateTimeToTAI(DateTime const& date_time) {
+constexpr Instant DateTimeAsTAI(DateTime const& date_time) {
   return CHECKING(!date_time.time().is_leap_second(),
                   J2000 +
                   (date_time.time().nanosecond() + 184'000'000) / 1e9 * Second +
@@ -681,7 +681,7 @@ constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {
     +0,      // 2016
 };
 
-// Returns UTC - TAI in seconds.
+// Returns UTC - TAI on the given UTC day (similar to Bulletin C).
 constexpr Time UTC_TAI(Date const& utc_date) {
   return utc_date.month() == 1 && utc_date.day() == 1
              ? utc_date.year() == 1972
@@ -696,9 +696,9 @@ constexpr Time UTC_TAI(Date const& utc_date) {
 }
 
 // NOTE(egg): no check for invalid UTC in case of negative leap seconds.
-constexpr Instant DateTimeToUTC(DateTime const& date_time) {
+constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
   return date_time.time().is_end_of_day()
-             ? DateTimeToUTC(date_time.normalized_end_of_day())
+             ? DateTimeAsUTC(date_time.normalized_end_of_day())
              : CHECKING(
                    !date_time.time().is_leap_second() ||
                    (date_time.date().month() == 6 &&
@@ -706,28 +706,36 @@ constexpr Instant DateTimeToUTC(DateTime const& date_time) {
                    (date_time.date().month() == 12 &&
                     leap_seconds[(date_time.date().year() - 1972) * 2 + 1] ==
                         +1),
-                   DateTimeToTAI(date_time) + UTC_TAI(date_time.date()));
+                   DateTimeAsTAI(date_time) - UTC_TAI(date_time.date()));
 }
 
 constexpr Instant operator""_TT(char const* string, std::size_t size) {
-  return DateTimeToTT(operator""_DateTime(string, size));
+  return DateTimeAsTT(operator""_DateTime(string, size));
 }
 
 constexpr Instant operator""_TAI(char const* string, std::size_t size) {
-  return DateTimeToTAI(operator""_DateTime(string, size));
+  return DateTimeAsTAI(operator""_DateTime(string, size));
 };
 
 constexpr Instant operator""_UTC(char const* string, std::size_t size) {
-  return DateTimeToUTC(operator""_DateTime(string, size));
+  return DateTimeAsUTC(operator""_DateTime(string, size));
 };
 
 
 constexpr Instant i = "2000-01-01T12:00:00Z"_TT;
+constexpr Instant i_tai = "2000-01-01T11:59:27,816Z"_TAI;
+constexpr Instant i_utc = "2000-01-01T11:58:55,816Z"_UTC;
 constexpr Instant j_tt = "2000-01-01T12:00:32,184Z"_TT;
 constexpr Instant j_tai = "2000-01-01T12:00:00Z"_TAI;
 constexpr Instant j2_tai = "2000-01-01T11:59:28Z"_TAI;
 constexpr Time no_time =
     "2000-01-01T12:00:32,184Z"_TT - "2000-01-01T12:00:00Z"_TAI;
+
+constexpr Time foo =
+    "2000-01-01T11:58:55,816Z"_UTC - "2000-01-01T11:58:55,816Z"_TAI;
+
+ constexpr Instant bat = "2000-01-01T11:58:55,816Z"_UTC;
+ constexpr Instant baz = "2000-01-01T11:58:55,816Z"_TAI;
 
 constexpr Time utc_tai =
     "2016-07-03T15:39:41Z"_UTC - "2016-07-03T15:39:41Z"_TAI;
