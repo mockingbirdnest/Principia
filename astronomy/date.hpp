@@ -23,7 +23,6 @@ class Date {
   constexpr int month() const;
   constexpr int day() const;
 
-
  private:
   constexpr Date(int const year,
                  std::int8_t const month,
@@ -31,9 +30,9 @@ class Date {
 
   constexpr Date const& checked() const;
 
-  int const year_ = -1;
-  int const month_ = -1;
-  int const day_ = -1;
+  int const year_;
+  int const month_;
+  int const day_;
 
   friend constexpr Date add_days(Date const& date, int const days);
   friend struct OrdinalDate;
@@ -213,6 +212,7 @@ constexpr Date Date::YYYYwwD(std::int64_t digits) {
                            digit_range(digits, 0, 1)).ToDate());
 }
 
+namespace from_integers_test {
 constexpr Date egg_month = Date::YYYYMMDD(1993'12'11);
 static_assert(egg_month.year() == 1993, "bad year");
 static_assert(egg_month.month() == 12, "bad month");
@@ -225,29 +225,9 @@ constexpr Date egg_ordinal = Date::YYYYDDD(1993'345);
 static_assert(egg_ordinal.year() == 1993, "bad year");
 static_assert(egg_ordinal.month() == 12, "bad month");
 static_assert(egg_ordinal.day() == 11, "bad day");
+}
 
 struct DateStringInfo {
-  constexpr DateStringInfo(char const* const string,
-                           std::size_t size,
-                           int const read,
-                           std::int64_t digits,
-                           int digit_count,
-                           int const hyphens,
-                           int const first_hyphen_index,
-                           int const second_hyphen_index,
-                           bool const has_w,
-                           int const w_index)
-      : string(string),
-        size(size),
-        read(read),
-        digits(digits),
-        digit_count(digit_count),
-        hyphens(hyphens),
-        first_hyphen_index(first_hyphen_index),
-        second_hyphen_index(second_hyphen_index),
-        has_w(has_w),
-        w_index(w_index) {}
-
   constexpr DateStringInfo Fill() const {
     return read == size
                ? *this
@@ -320,16 +300,16 @@ struct DateStringInfo {
                                       Date::YYYYDDD(digits)));
   }
 
-  char const* const string = nullptr;
-  std::size_t size = 0;
-  int const read = 0;
-  std::int64_t digits = 0;
-  int digit_count = 0;
-  int const hyphens = 0;
-  int const first_hyphen_index = -1;
-  int const second_hyphen_index = -1;
-  bool const has_w = false;
-  int const w_index = -1;
+  char const* const string;
+  std::size_t size;
+  int const read;
+  std::int64_t digits;
+  int digit_count;
+  int const hyphens;
+  int const first_hyphen_index;
+  int const second_hyphen_index;
+  bool const has_w;
+  int const w_index;
 };
 
 constexpr Date operator""_date(char const* string, std::size_t size) {
@@ -345,34 +325,246 @@ constexpr Date operator""_date(char const* string, std::size_t size) {
                         /*w_index=*/-1}.Fill().ToDate();
 }
 
+class TimeOfDay {
+ public:
+  static constexpr TimeOfDay hhmmss_ns(int const hhmmss, int ns) {
+    return TimeOfDay(digit_range(hhmmss, 4, 2),
+                     digit_range(hhmmss, 2, 2),
+                     digit_range(hhmmss, 0, 2),
+                     ns).checked();
+  }
+
+  constexpr int hour() const;
+  constexpr int minute() const;
+  constexpr int second() const;
+  constexpr int nanosecond() const;
+
+  constexpr bool is_leap_second() const;
+
+ private:
+  constexpr TimeOfDay(int const hour,
+                      int const minute,
+                      int const second,
+                      int const nanosecond)
+      : hour_(hour),
+        minute_(minute),
+        second_(second),
+        nanosecond_(nanosecond) {}
+
+  // Checks that this represents a valid time of day as per ISO 8601, thus
+  // that the components are in the normal range, or that the object represents
+  // a time in a leap second, or that it represents the end of the day.
+  constexpr TimeOfDay const& checked() const {
+    return CHECKING(
+        (hour_ == 24 && minute_ == 0 && second_ == 0 && nanosecond_ == 0) ||
+            ((nanosecond_ >= 0 && nanosecond_ <= 999'999'999) &&
+             ((hour_ == 23 && minute_ == 59 && second_ == 60) ||
+              (hour_ >= 0 && hour_ <= 23 && minute_ >= 0 && minute_ <= 59 &&
+               second_ >= 0 && second_ <= 59))),
+        *this);
+  }
+
+  int const hour_;
+  int const minute_;
+  int const second_;
+  int const nanosecond_;
+};
+
+constexpr int TimeOfDay::hour() const {
+  return hour_;
+}
+
+constexpr int TimeOfDay::minute() const {
+  return minute_;
+}
+
+constexpr int TimeOfDay::second() const {
+  return second_;
+}
+
+constexpr int TimeOfDay::nanosecond() const {
+  return nanosecond_;
+}
+
+constexpr bool TimeOfDay::is_leap_second() const {
+  return second_ == 60;
+}
+
+constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
+  return count == 0 ? x : add_0s(x * 10, count - 1);
+}
+
+struct TimeStringInfo {
+  constexpr TimeStringInfo Fill() const {
+    return read == size
+               ? *this
+               : string[read] == ':'
+                     ? CHECKING(
+                           colons < 2,
+                           colons == 0
+                               ? TimeStringInfo({string,
+                                                 size,
+                                                 read + 1,
+                                                 digits,
+                                                 digit_count,
+                                                 colons + 1,
+                                                 /*first_colon_index=*/read,
+                                                 second_colon_index,
+                                                 has_decimal_mark,
+                                                 decimal_mark_index}).Fill()
+                               : TimeStringInfo({string,
+                                                 size,
+                                                 read + 1,
+                                                 digits,
+                                                 digit_count,
+                                                 colons + 1,
+                                                 first_colon_index,
+                                                 /*second_colon_index=*/read,
+                                                 has_decimal_mark,
+                                                 decimal_mark_index})).Fill()
+                     : string[read] == ',' || string[read] == '.'
+                           ? CHECKING(
+                                 !has_decimal_mark,
+                                 TimeStringInfo(
+                                    {string,
+                                     size,
+                                     read + 1,
+                                     digits,
+                                     digit_count,
+                                     colons,
+                                     first_colon_index,
+                                     second_colon_index,
+                                     /*has_decimal_mark=*/true,
+                                     /*decimal_mark_index=*/read}).Fill())
+                           : string[read] == 'Z'
+                                 ? CHECKING(
+                                       read == size - 1,
+                                       TimeStringInfo(
+                                           {string,
+                                            size,
+                                            read + 1,
+                                            digits,
+                                            digit_count,
+                                            colons,
+                                            first_colon_index,
+                                            second_colon_index,
+                                            has_decimal_mark,
+                                            decimal_mark_index}).Fill())
+                                 : CHECKING(
+                                       string[read] >= '0' &&
+                                       string[read] <= '9',
+                                       TimeStringInfo(
+                                           {string,
+                                            size,
+                                            read + 1,
+                                            digits * 10 + string[read] - '0',
+                                            digit_count + 1,
+                                            colons,
+                                            first_colon_index,
+                                            second_colon_index,
+                                            has_decimal_mark,
+                                            decimal_mark_index}).Fill());
+  }
+
+  constexpr TimeOfDay ToTime() const {
+    return CHECKING(
+        digit_count >= 6 &&
+            (colons == 0 || (colons == 2 && first_colon_index == 2 &&
+                             second_colon_index == 5)) &&
+            ((digit_count == 6 && !has_decimal_mark) ||
+             (has_decimal_mark &&
+              ((colons == 0 && decimal_mark_index == 6) ||
+               (colons != 0 && decimal_mark_index == 8)))) &&
+            digit_count <= 15 &&
+            string[size - 1] == 'Z',
+        TimeOfDay::hhmmss_ns(digit_range(digits, digit_count - 6, 6),
+                           add_0s(digit_range(digits, 0, digit_count - 6),
+                                  9 - (digit_count - 6))));
+  }
+
+  char const* const string;
+  std::size_t size;
+  int const read;
+  std::int64_t digits;
+  int digit_count;
+  int const colons;
+  int const first_colon_index;
+  int const second_colon_index;
+  bool const has_decimal_mark;
+  int const decimal_mark_index;
+};
+
+constexpr TimeOfDay operator""_time(char const* string, std::size_t size) {
+  return TimeStringInfo{string,
+                        size,
+                        /*read=*/0,
+                        /*digits=*/0,
+                        /*digit_count=*/0,
+                        /*colons=*/0,
+                        /*first_colon_index=*/-1,
+                        /*second_colon_index=*/-1,
+                        /*has_decimal_mark=*/false,
+                        /*decimal_mark_index=*/-1}.Fill().ToTime();
+}
+
+struct DateTime {
+  // We use an explicit constructor here because too many initializer-lists in
+  // constexpr code confuse the compiler and eventually make it crash and burn.
+  // It removes one layer of brackets anyway (we're in macros), and this struct
+  // has few members.
+  constexpr DateTime(Date const date, TimeOfDay const time)
+      : date(date),
+        time(time) {}
+
+  // Checks that |time| does not represent a leap second unless |date| is the
+  // last day of June, December, March, or September.
+  constexpr DateTime const& checked() const {
+    return CHECKING(
+        !time.is_leap_second() ||
+            (date.day() == month_length(date.year(), date.month()) &&
+             (date.month() == 6 || date.month() == 12 || date.month() == 3 ||
+              date.month() == 9)),
+        *this);
+  }
+
+  Date const date;
+  TimeOfDay const time;
+};
+
+constexpr bool contains(char const* string, std::size_t size, char const c) {
+  return (size > 0 && string[0] == c) || contains(string + 1, size - 1, c);
+}
+
+constexpr int index_of(char const* string, std::size_t size, char const c) {
+  return CHECKING(size > 0,
+                  string[0] == c ? 0 : (index_of(string + 1, size - 1, c) + 1));
+}
+
+constexpr DateTime operator""_date_time(char const* string, std::size_t size) {
+  return CHECKING(
+      contains(string, size, '-') == contains(string, size, ':'),
+      DateTime(
+          operator""_date(string, index_of(string, size, 'T')),
+          operator""_time(string + index_of(string, size, 'T') + 1,
+                          size - (index_of(string, size, 'T') + 1))).checked());
+}
+
+constexpr DateTime date_time = "1993-12-11T12:34:56,789Z"_date_time;
+
+constexpr TimeOfDay t = "193512,11Z"_time;
+constexpr TimeOfDay t_extended = "19:35:12,11Z"_time;
+constexpr TimeOfDay t_round = "19:35:12Z"_time;
+
 namespace basic_format_test {
 constexpr Date egg_month = "19931211"_date;
-static_assert(egg_month.year() == 1993, "bad year");
-static_assert(egg_month.month() == 12, "bad month");
-static_assert(egg_month.day() == 11, "bad day");
 constexpr Date egg_week = "1993W496"_date;
-static_assert(egg_week.year() == 1993, "bad year");
-static_assert(egg_week.month() == 12, "bad month");
-static_assert(egg_week.day() == 11, "bad day");
 constexpr Date egg_ordinal = "1993345"_date;
-static_assert(egg_ordinal.year() == 1993, "bad year");
-static_assert(egg_ordinal.month() == 12, "bad month");
-static_assert(egg_ordinal.day() == 11, "bad day");
 }
 
 namespace extended_format_test {
 constexpr Date egg_month = "1993-12-11"_date;
-static_assert(egg_month.year() == 1993, "bad year");
-static_assert(egg_month.month() == 12, "bad month");
-static_assert(egg_month.day() == 11, "bad day");
 constexpr Date egg_week = "1993-W49-6"_date;
-static_assert(egg_week.year() == 1993, "bad year");
-static_assert(egg_week.month() == 12, "bad month");
-static_assert(egg_week.day() == 11, "bad day");
 constexpr Date egg_ordinal = "1993-345"_date;
-static_assert(egg_ordinal.year() == 1993, "bad year");
-static_assert(egg_ordinal.month() == 12, "bad month");
-static_assert(egg_ordinal.day() == 11, "bad day");
 }
 
 }  // namespace internal_date
