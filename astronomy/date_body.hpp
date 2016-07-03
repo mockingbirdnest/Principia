@@ -11,6 +11,9 @@
 #include "glog/logging.h"
 #include "quantities/si.hpp"
 
+// A macro to allow glog checking within C++11 constexpr code.  If |condition|,
+// evaluates to |expression|.  Otherwise, results in a CHECK failure at runtime
+// and a compilation error due to a call to non-constexpr code at compile time.
 #define CHECKING(condition, expression) \
   ((condition) ? (expression) : (CHECK(condition), (expression)))
 
@@ -155,6 +158,18 @@ constexpr int ordinal_of_w_01_1(int const year) {
              : (9 - day_of_week_on_january_1st(year));
 }
 
+constexpr int days_from_2000_01_01_at_start_of_2000_based_year(
+    int const years_from_2000) {
+  return years_from_2000 > 0
+             ? 1 + years_from_2000 * 365 +
+               (years_from_2000 - 1) / 4 -
+               (years_from_2000 - 1) / 100 +
+               (years_from_2000 - 1) / 400
+             : years_from_2000 * 365 +
+               years_from_2000 / 4 -
+               years_from_2000 / 100 +
+               years_from_2000 / 400;
+}
 
 // Returns the number formed by taking |size| increasingly significant digits,
 // starting from the digit of the (10 ** |begin|)s.
@@ -169,8 +184,13 @@ constexpr std::int64_t digit_range(std::int64_t const digits,
                              : digit_range(digits / 10, begin - 1, size)));
 }
 
+// Returns x * 10 ** count.
+constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
+  return CHECKING(count >= 0, count == 0 ? x : add_0s(x * 10, count - 1));
+}
+
 // Returns |date| advanced by the specified number of |days|. |days| must be
-// positive, and the result must be in the same year.
+// nonnegative, and the result must be in the same year.
 constexpr Date add_days_within_year(Date const& date, int const days) {
   return CHECKING(
       days > 0,
@@ -257,9 +277,9 @@ constexpr int Date::day() const {
 constexpr int Date::ordinal() const {
   return day_ > 1 ? (day_ - 1) + Date(year_, month_, 1).ordinal()
                   : month_ > 1
-                        ? month_length(year_, month_) +
+                        ? month_length(year_, month_ - 1) +
                               Date(year_, month_ - 1, 1).ordinal()
-                        : day_;
+                        : 1;
 }
 
 constexpr Date Date::next_day() const {
@@ -371,6 +391,8 @@ static_assert(egg_ordinal.month() == 12, "bad month");
 static_assert(egg_ordinal.day() == 11, "bad day");
 }
 
+// Date parsing.
+
 struct DateStringInfo {
   constexpr DateStringInfo Fill() const {
     return read == size
@@ -469,9 +491,7 @@ constexpr Date operator""_Date(char const* string, std::size_t size) {
                         /*w_index=*/-1}.Fill().ToDate();
 }
 
-constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
-  return count == 0 ? x : add_0s(x * 10, count - 1);
-}
+// Time parsing.
 
 struct TimeStringInfo {
   constexpr TimeStringInfo Fill() const {
@@ -586,6 +606,8 @@ constexpr TimeOfDay operator""_Time(char const* string, std::size_t size) {
                         /*decimal_mark_index=*/-1}.Fill().ToTime();
 }
 
+// DateTime parsing.
+
 constexpr bool contains(char const* string, std::size_t size, char const c) {
   return size > 0 && (string[0] == c || contains(string + 1, size - 1, c));
 }
@@ -604,17 +626,7 @@ constexpr DateTime operator""_DateTime(char const* string, std::size_t size) {
                           size - (index_of(string, size, 'T') + 1))).checked());
 }
 
-constexpr int YearsToDays(int const years_from_2000) {
-  return years_from_2000 > 0
-             ? 1 + years_from_2000 * 365 +
-               (years_from_2000 - 1) / 4 -
-               (years_from_2000 - 1) / 100 +
-               (years_from_2000 - 1) / 400
-             : years_from_2000 * 365 +
-               years_from_2000 / 4 -
-               years_from_2000 / 100 +
-               years_from_2000 / 400;
-}
+// Conversion to |Instant|, continuous time scales.
 
 constexpr Instant DateTimeAsTT(DateTime const& date_time) {
   return CHECKING(!date_time.time().is_leap_second(),
@@ -623,7 +635,8 @@ constexpr Instant DateTimeAsTT(DateTime const& date_time) {
                   (date_time.time().second() +
                    date_time.time().minute() * 60 +
                    (date_time.time().hour() - 12) * 60 * 60) * Second +
-                  (YearsToDays(date_time.date().year() - 2000) * 365 +
+                  (days_from_2000_01_01_at_start_of_2000_based_year(
+                       date_time.date().year() - 2000) +
                    date_time.date().ordinal() - 1) * Day);
 }
 
@@ -634,9 +647,12 @@ constexpr Instant DateTimeAsTAI(DateTime const& date_time) {
                   ((date_time.time().second() - 28) +
                    (date_time.time().minute() - 59) * 60 +
                    (date_time.time().hour() - 11) * 60 * 60) * Second +
-                  (YearsToDays(date_time.date().year() - 2000) * 365 +
+                  (days_from_2000_01_01_at_start_of_2000_based_year(
+                       date_time.date().year() - 2000) +
                    date_time.date().ordinal() - 1) * Day);
 }
+
+// Leap second handling and conversion to UTC.
 
 constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {
     +1, +1,  // 1972
@@ -714,6 +730,8 @@ constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
                    DateTimeAsTAI(date_time) - UTC_TAI(date_time.date()));
 }
 
+// |Instant| date literals.
+
 constexpr Instant operator""_TT(char const* string, std::size_t size) {
   return DateTimeAsTT(operator""_DateTime(string, size));
 }
@@ -726,6 +744,8 @@ constexpr Instant operator""_UTC(char const* string, std::size_t size) {
   return DateTimeAsUTC(operator""_DateTime(string, size));
 };
 
+constexpr Instant mjd0 = "1858-11-17T00:00:00Z"_TT;
+constexpr Instant mjd_0 = J2000 - 51544.5 * Day;
 
 constexpr Instant i = "2000-01-01T12:00:00Z"_TT;
 constexpr Instant i_tai = "2000-01-01T11:59:27,816Z"_TAI;
