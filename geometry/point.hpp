@@ -22,11 +22,12 @@ namespace geometry {
 template<typename Vector>
 class Point {
  public:
-  Point();
+  constexpr Point();
 
-  Vector operator-(Point const& from) const;
+  // TODO(egg): constexpr all the operators.
+  constexpr Vector operator-(Point const& from) const;
 
-  Point operator+(Vector const& translation) const;
+  constexpr Point operator+(Vector const& translation) const;
   Point operator-(Vector const& translation) const;
 
   Point& operator+=(Vector const& translation);
@@ -39,6 +40,11 @@ class Point {
   static Point ReadFromMessage(serialization::Point const& message);
 
  private:
+  // This constructor allows for C++11 functional constexpr operators, and
+  // possibly move-magic.  We may want to reconsider this after we truly have
+  // C++14.
+  constexpr Point(Vector const& coordinates);
+
   Vector coordinates_;
 
   template<typename V>

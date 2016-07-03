@@ -4,7 +4,10 @@
 #include <array>
 #include <cstdint>
 
+#include "astronomy/epoch.hpp"
+#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "quantities/si.hpp"
 
 #define CHECKING(condition, expression) \
   ((condition) ? (expression) : (CHECK(condition), (expression)))
@@ -12,6 +15,13 @@
 namespace principia {
 namespace astronomy {
 namespace internal_date {
+
+using geometry::Instant;
+using quantities::si::Day;
+using quantities::si::Hour;
+using quantities::si::Minute;
+using quantities::si::Second;
+using quantities::si::Nano;
 
 class Date {
  public:
@@ -22,6 +32,8 @@ class Date {
   constexpr int year() const;
   constexpr int month() const;
   constexpr int day() const;
+
+  constexpr int ordinal() const;
 
  private:
   constexpr Date(int const year,
@@ -36,11 +48,28 @@ class Date {
 
   friend constexpr Date add_days(Date const& date, int const days);
   friend struct OrdinalDate;
-  friend constexpr Date operator""_date(char const* string, std::size_t size);
+  friend constexpr Date operator""_Date(char const* string, std::size_t size);
 };
 
 // The following is horrendous because written in C++11, thus functionally; it
 // should perhaps be reworked once MSVC offers proper C++14 constexpr.
+
+constexpr std::array<int, 12>
+    non_leap_year_month_lengths{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+constexpr bool is_gregorian_leap_year(int const year) {
+  return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+}
+
+constexpr int gregorian_year_length(int const year) {
+  return is_gregorian_leap_year(year) ? 366 : 365;
+}
+
+constexpr int month_length(int year, int month) {
+  return (is_gregorian_leap_year(year) && month == 2)
+             ? 29
+             : non_leap_year_month_lengths[month - 1];
+}
 
 constexpr Date::Date(int const year,
                      std::int8_t const month,
@@ -61,6 +90,14 @@ constexpr int Date::day() const {
   return day_;
 }
 
+constexpr int Date::ordinal() const {
+  return day_ > 1 ? (day_ - 1) + Date(year_, month_, 1).ordinal()
+                  : month_ > 1
+                        ? month_length(year_, month_) +
+                              Date(year_, month_ - 1, 1).ordinal()
+                        : day_;
+}
+
 constexpr std::int64_t digit_range(std::int64_t const digits,
                                    int const begin,
                                    int const size) {
@@ -70,23 +107,6 @@ constexpr std::int64_t digit_range(std::int64_t const digits,
                              ? digit_range(digits / 10, 0, size - 1) * 10 +
                                    digits % 10
                              : digit_range(digits / 10, begin - 1, size)));
-}
-
-constexpr bool is_gregorian_leap_year(int const year) {
-  return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
-}
-
-constexpr int gregorian_year_length(int const year) {
-  return is_gregorian_leap_year(year) ? 366 : 365;
-}
-
-constexpr std::array<int, 12>
-    non_leap_year_month_lengths{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-constexpr int month_length(int year, int month) {
-  return (is_gregorian_leap_year(year) && month == 2)
-             ? 29
-             : non_leap_year_month_lengths[month - 1];
 }
 
 constexpr int mod_7_offset_1 (int const x) {
@@ -312,7 +332,7 @@ struct DateStringInfo {
   int const w_index;
 };
 
-constexpr Date operator""_date(char const* string, std::size_t size) {
+constexpr Date operator""_Date(char const* string, std::size_t size) {
   return DateStringInfo{string,
                         size,
                         /*read=*/0,
@@ -494,7 +514,7 @@ struct TimeStringInfo {
   int const decimal_mark_index;
 };
 
-constexpr TimeOfDay operator""_time(char const* string, std::size_t size) {
+constexpr TimeOfDay operator""_Time(char const* string, std::size_t size) {
   return TimeStringInfo{string,
                         size,
                         /*read=*/0,
@@ -507,32 +527,44 @@ constexpr TimeOfDay operator""_time(char const* string, std::size_t size) {
                         /*decimal_mark_index=*/-1}.Fill().ToTime();
 }
 
-struct DateTime {
-  // We use an explicit constructor here because too many initializer-lists in
-  // constexpr code confuse the compiler and eventually make it crash and burn.
-  // It removes one layer of brackets anyway (we're in macros), and this struct
-  // has few members.
+class DateTime {
+ public:
+  constexpr Date const& date() const;
+  constexpr TimeOfDay const& time() const;
+
+ private:
   constexpr DateTime(Date const date, TimeOfDay const time)
-      : date(date),
-        time(time) {}
+      : date_(date),
+        time_(time) {}
 
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of June, December, March, or September.
   constexpr DateTime const& checked() const {
     return CHECKING(
-        !time.is_leap_second() ||
-            (date.day() == month_length(date.year(), date.month()) &&
-             (date.month() == 6 || date.month() == 12 || date.month() == 3 ||
-              date.month() == 9)),
+        !time_.is_leap_second() ||
+            (date_.day() == month_length(date_.year(), date_.month()) &&
+             (date_.month() == 6 || date_.month() == 12 || date_.month() == 3 ||
+              date_.month() == 9)),
         *this);
   }
 
-  Date const date;
-  TimeOfDay const time;
+  Date const date_;
+  TimeOfDay const time_;
+
+  friend constexpr DateTime operator""_DateTime(char const* string,
+                                                 std::size_t size);
 };
 
+constexpr Date const& DateTime::date() const {
+  return date_;
+}
+
+constexpr TimeOfDay const& DateTime::time() const {
+  return time_;
+}
+
 constexpr bool contains(char const* string, std::size_t size, char const c) {
-  return (size > 0 && string[0] == c) || contains(string + 1, size - 1, c);
+  return size > 0 && (string[0] == c || contains(string + 1, size - 1, c));
 }
 
 constexpr int index_of(char const* string, std::size_t size, char const c) {
@@ -540,31 +572,82 @@ constexpr int index_of(char const* string, std::size_t size, char const c) {
                   string[0] == c ? 0 : (index_of(string + 1, size - 1, c) + 1));
 }
 
-constexpr DateTime operator""_date_time(char const* string, std::size_t size) {
+constexpr DateTime operator""_DateTime(char const* string, std::size_t size) {
   return CHECKING(
       contains(string, size, '-') == contains(string, size, ':'),
       DateTime(
-          operator""_date(string, index_of(string, size, 'T')),
-          operator""_time(string + index_of(string, size, 'T') + 1,
+          operator""_Date(string, index_of(string, size, 'T')),
+          operator""_Time(string + index_of(string, size, 'T') + 1,
                           size - (index_of(string, size, 'T') + 1))).checked());
 }
 
-constexpr DateTime date_time = "1993-12-11T12:34:56,789Z"_date_time;
+constexpr int YearsToDays(int const years_from_2000) {
+  return years_from_2000 > 0
+             ? 1 + years_from_2000 * 365 +
+               (years_from_2000 - 1) / 4 -
+               (years_from_2000 - 1) / 100 +
+               (years_from_2000 - 1) / 400
+             : years_from_2000 * 365 +
+               years_from_2000 / 4 -
+               years_from_2000 / 100 +
+               years_from_2000 / 400;
+}
 
-constexpr TimeOfDay t = "193512,11Z"_time;
-constexpr TimeOfDay t_extended = "19:35:12,11Z"_time;
-constexpr TimeOfDay t_round = "19:35:12Z"_time;
+constexpr Instant DateTimeToTT(DateTime const& date_time) {
+  return CHECKING(!date_time.time().is_leap_second(),
+                  J2000 +
+                  date_time.time().nanosecond() * Nano(Second) +
+                  date_time.time().second() * Second +
+                  date_time.time().minute() * Minute +
+                  (date_time.time().hour() - 12) * Hour +
+                  (YearsToDays(date_time.date().year() - 2000) * 365 +
+                   date_time.date().ordinal() - 1) * Day);
+}
+
+constexpr Instant DateTimeToTAI(DateTime const& date_time) {
+  return CHECKING(!date_time.time().is_leap_second(),
+                  J2000 +
+                  (date_time.time().nanosecond() - 816'000'000) * Nano(Second) +
+                  (date_time.time().second() - 27) * Second +
+                  (date_time.time().minute() - 59) * Minute +
+                  (date_time.time().hour() - 11) * Hour +
+                  (YearsToDays(date_time.date().year() - 2000) * 365 +
+                   date_time.date().ordinal() - 1) * Day);
+}
+
+constexpr Instant operator""_TT(char const* string, std::size_t size) {
+  return DateTimeToTT(operator""_DateTime(string, size));
+}
+
+constexpr Instant operator""_TAI(char const* string, std::size_t size) {
+  return DateTimeToTAI(operator""_DateTime(string, size));
+}
+
+
+constexpr Instant i = "2000-01-01T12:00:00Z"_TT;
+constexpr Instant j_tt = "2000-01-01T12:00:32,184Z"_TT;
+constexpr Instant j_tai = "2000-01-01T12:00:00Z"_TAI;
+constexpr quantities::Time no_time =
+    "2000-01-01T12:00:32,184Z"_TT - "2000-01-01T12:00:00Z"_TAI;
+
+constexpr DateTime date_Time = "1993-12-11T12:34:56,789Z"_DateTime;
+constexpr DateTime date_Time_2 = "1993W496T123456.789Z"_DateTime;
+
+constexpr TimeOfDay t = "193512,11Z"_Time;
+constexpr TimeOfDay t_extended = "19:35:12,11Z"_Time;
+constexpr TimeOfDay t_round = "19:35:12Z"_Time;
 
 namespace basic_format_test {
-constexpr Date egg_month = "19931211"_date;
-constexpr Date egg_week = "1993W496"_date;
-constexpr Date egg_ordinal = "1993345"_date;
+constexpr Date egg_month = "19931211"_Date;
+constexpr Date egg_week = "1993W496"_Date;
+constexpr Date egg_ordinal = "1993345"_Date;
+constexpr int ordinal = "1993345"_Date.ordinal();
 }
 
 namespace extended_format_test {
-constexpr Date egg_month = "1993-12-11"_date;
-constexpr Date egg_week = "1993-W49-6"_date;
-constexpr Date egg_ordinal = "1993-345"_date;
+constexpr Date egg_month = "1993-12-11"_Date;
+constexpr Date egg_week = "1993-W49-6"_Date;
+constexpr Date egg_ordinal = "1993-345"_Date;
 }
 
 }  // namespace internal_date
