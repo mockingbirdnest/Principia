@@ -33,6 +33,8 @@ class Date {
 
   constexpr int ordinal() const;
 
+  constexpr Date next_day() const;
+
  private:
   constexpr Date(int const year,
                  std::int8_t const month,
@@ -47,6 +49,7 @@ class Date {
   friend constexpr Date add_days(Date const& date, int const days);
   friend struct OrdinalDate;
   friend constexpr Date operator""_Date(char const* string, std::size_t size);
+  friend constexpr Time UTC_TAI(Date const& utc_date);
 };
 
 // The following is horrendous because written in C++11, thus functionally; it
@@ -94,6 +97,12 @@ constexpr int Date::ordinal() const {
                         ? month_length(year_, month_) +
                               Date(year_, month_ - 1, 1).ordinal()
                         : day_;
+}
+
+constexpr Date Date::next_day() const {
+  return day_ == month_length(year_, month_)
+             ? month_ == 12 ? Date(year_ + 1, 1, 1) : Date(year_, month_ + 1, 1)
+             : Date(year_, month_, day_ + 1);
 }
 
 constexpr std::int64_t digit_range(std::int64_t const digits,
@@ -358,6 +367,7 @@ class TimeOfDay {
   constexpr int nanosecond() const;
 
   constexpr bool is_leap_second() const;
+  constexpr bool is_end_of_day() const;
 
  private:
   constexpr TimeOfDay(int const hour,
@@ -406,6 +416,10 @@ constexpr int TimeOfDay::nanosecond() const {
 
 constexpr bool TimeOfDay::is_leap_second() const {
   return second_ == 60;
+}
+
+constexpr bool TimeOfDay::is_end_of_day() const {
+  return hour_ == 24;
 }
 
 constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
@@ -530,6 +544,12 @@ class DateTime {
   constexpr Date const& date() const;
   constexpr TimeOfDay const& time() const;
 
+  constexpr DateTime normalized_end_of_day() const {
+    return time_.is_end_of_day()
+               ? DateTime(date_.next_day(), TimeOfDay::hhmmss_ns(00'00'00, 0))
+               : *this;
+  }
+
  private:
   constexpr DateTime(Date const date, TimeOfDay const time)
       : date_(date),
@@ -613,15 +633,94 @@ constexpr Instant DateTimeToTAI(DateTime const& date_time) {
                    date_time.date().ordinal() - 1) * Day);
 }
 
+constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {
+    +1, +1,  // 1972
+    +0, +1,  // 1973
+    +0, +1,  // 1974
+    +0, +1,  // 1975
+    +0, +1,  // 1976
+    +0, +1,  // 1977
+    +0, +1,  // 1978
+    +0, +1,  // 1979
+    +0, +0,  // 1980
+    +1, +0,  // 1981
+    +1, +0,  // 1982
+    +1, +0,  // 1983
+    +0, +0,  // 1984
+    +1, +0,  // 1985
+    +0, +0,  // 1986
+    +0, +1,  // 1987
+    +0, +0,  // 1988
+    +0, +1,  // 1989
+    +0, +1,  // 1990
+    +0, +0,  // 1991
+    +1, +0,  // 1992
+    +1, +0,  // 1993
+    +1, +0,  // 1994
+    +0, +1,  // 1995
+    +0, +0,  // 1996
+    +1, +0,  // 1997
+    +0, +1,  // 1998
+    +0, +0,  // 1999
+    +0, +0,  // 2000
+    +0, +0,  // 2001
+    +0, +0,  // 2002
+    +0, +0,  // 2003
+    +0, +0,  // 2004
+    +0, +1,  // 2005
+    +0, +0,  // 2006
+    +0, +0,  // 2007
+    +0, +1,  // 2008
+    +0, +0,  // 2009
+    +0, +0,  // 2010
+    +0, +0,  // 2011
+    +1, +0,  // 2012
+    +0, +0,  // 2013
+    +0, +0,  // 2014
+    +1, +0,  // 2015
+    +0,      // 2016
+};
+
+// Returns UTC - TAI in seconds.
+constexpr Time UTC_TAI(Date const& utc_date) {
+  return utc_date.month() == 1 && utc_date.day() == 1
+             ? utc_date.year() == 1972
+                   ? -10 * Second
+                   : -leap_seconds[(utc_date.year() - 1973) * 2] * Second +
+                     -leap_seconds[(utc_date.year() - 1973) * 2 + 1] * Second +
+                     UTC_TAI(Date(utc_date.year() - 1, 1, 1))
+             : (utc_date.month() > 6
+                    ? -leap_seconds[(utc_date.year() - 1972) * 2] * Second
+                    : 0 * Second) +
+               UTC_TAI(Date(utc_date.year(), 1, 1));
+}
+
+// NOTE(egg): no check for invalid UTC in case of negative leap seconds.
+constexpr Instant DateTimeToUTC(DateTime const& date_time) {
+  return date_time.time().is_end_of_day()
+             ? DateTimeToUTC(date_time.normalized_end_of_day())
+             : CHECKING(
+                   !date_time.time().is_leap_second() ||
+                   (date_time.date().month() == 6 &&
+                    leap_seconds[(date_time.date().year() - 1972) * 2] == +1) ||
+                   (date_time.date().month() == 12 &&
+                    leap_seconds[(date_time.date().year() - 1972) * 2 + 1] ==
+                        +1),
+                   DateTimeToTAI(date_time) + UTC_TAI(date_time.date()));
+}
+
 constexpr Instant operator""_TT(char const* string, std::size_t size) {
   return DateTimeToTT(operator""_DateTime(string, size));
 }
 
 constexpr Instant operator""_TAI(char const* string, std::size_t size) {
   return DateTimeToTAI(operator""_DateTime(string, size));
-}
+};
 
-constexpr Time ms = Milli(Second);
+constexpr Instant operator""_UTC(char const* string, std::size_t size) {
+  return DateTimeToUTC(operator""_DateTime(string, size));
+};
+
 
 constexpr Instant i = "2000-01-01T12:00:00Z"_TT;
 constexpr Instant j_tt = "2000-01-01T12:00:32,184Z"_TT;
@@ -629,6 +728,9 @@ constexpr Instant j_tai = "2000-01-01T12:00:00Z"_TAI;
 constexpr Instant j2_tai = "2000-01-01T11:59:28Z"_TAI;
 constexpr Time no_time =
     "2000-01-01T12:00:32,184Z"_TT - "2000-01-01T12:00:00Z"_TAI;
+
+constexpr Time utc_tai =
+    "2016-07-03T15:39:41Z"_UTC - "2016-07-03T15:39:41Z"_TAI;
 
 constexpr DateTime date_Time = "1993-12-11T12:34:56,789Z"_DateTime;
 constexpr DateTime date_Time_2 = "1993W496T123456.789Z"_DateTime;
