@@ -12,6 +12,9 @@
     <Filter Include="Test Files">
       <UniqueIdentifier>{31add3e9-2183-44db-8904-34f86f3aecad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2f348d01-8c8d-4e0d-8ad2-c4e1d1a62595}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="query.f">
@@ -83,6 +86,9 @@
     </ClInclude>
     <ClInclude Include="date.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
