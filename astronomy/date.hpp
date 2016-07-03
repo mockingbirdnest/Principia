@@ -761,5 +761,10 @@ constexpr Date egg_ordinal = "1993-345"_Date;
 }
 
 }  // namespace internal_date
+
+using internal_date::operator""_TAI;
+using internal_date::operator""_TT;
+using internal_date::operator""_UTC;
+
 }  // namespace astronomy
 }  // namespace principia

@@ -28,7 +28,7 @@ class Point {
   constexpr Vector operator-(Point const& from) const;
 
   constexpr Point operator+(Vector const& translation) const;
-  Point operator-(Vector const& translation) const;
+  constexpr Point operator-(Vector const& translation) const;
 
   Point& operator+=(Vector const& translation);
   Point& operator-=(Vector const& translation);
