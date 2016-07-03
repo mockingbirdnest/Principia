@@ -17,11 +17,9 @@ namespace astronomy {
 namespace internal_date {
 
 using geometry::Instant;
+using quantities::Time;
 using quantities::si::Day;
-using quantities::si::Hour;
-using quantities::si::Minute;
 using quantities::si::Second;
-using quantities::si::Nano;
 
 class Date {
  public:
@@ -596,10 +594,10 @@ constexpr int YearsToDays(int const years_from_2000) {
 constexpr Instant DateTimeToTT(DateTime const& date_time) {
   return CHECKING(!date_time.time().is_leap_second(),
                   J2000 +
-                  date_time.time().nanosecond() * Nano(Second) +
-                  date_time.time().second() * Second +
-                  date_time.time().minute() * Minute +
-                  (date_time.time().hour() - 12) * Hour +
+                  date_time.time().nanosecond() / 1e9 * Second +
+                  (date_time.time().second() +
+                   date_time.time().minute() * 60 +
+                   (date_time.time().hour() - 12) * 60 * 60) * Second +
                   (YearsToDays(date_time.date().year() - 2000) * 365 +
                    date_time.date().ordinal() - 1) * Day);
 }
@@ -607,10 +605,10 @@ constexpr Instant DateTimeToTT(DateTime const& date_time) {
 constexpr Instant DateTimeToTAI(DateTime const& date_time) {
   return CHECKING(!date_time.time().is_leap_second(),
                   J2000 +
-                  (date_time.time().nanosecond() - 816'000'000) * Nano(Second) +
-                  (date_time.time().second() - 27) * Second +
-                  (date_time.time().minute() - 59) * Minute +
-                  (date_time.time().hour() - 11) * Hour +
+                  (date_time.time().nanosecond() + 184'000'000) / 1e9 * Second +
+                  ((date_time.time().second() - 28) +
+                   (date_time.time().minute() - 59) * 60 +
+                   (date_time.time().hour() - 11) * 60 * 60) * Second +
                   (YearsToDays(date_time.date().year() - 2000) * 365 +
                    date_time.date().ordinal() - 1) * Day);
 }
@@ -623,11 +621,13 @@ constexpr Instant operator""_TAI(char const* string, std::size_t size) {
   return DateTimeToTAI(operator""_DateTime(string, size));
 }
 
+constexpr Time ms = Milli(Second);
 
 constexpr Instant i = "2000-01-01T12:00:00Z"_TT;
 constexpr Instant j_tt = "2000-01-01T12:00:32,184Z"_TT;
 constexpr Instant j_tai = "2000-01-01T12:00:00Z"_TAI;
-constexpr quantities::Time no_time =
+constexpr Instant j2_tai = "2000-01-01T11:59:28Z"_TAI;
+constexpr Time no_time =
     "2000-01-01T12:00:32,184Z"_TT - "2000-01-01T12:00:00Z"_TAI;
 
 constexpr DateTime date_Time = "1993-12-11T12:34:56,789Z"_DateTime;
