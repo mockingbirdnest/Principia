@@ -33,6 +33,12 @@ class Date {
   static constexpr Date YYYYwwD(std::int64_t digits);
   static constexpr Date YYYYDDD(std::int64_t digits);
 
+  static constexpr Date Calendar(int const year,
+                                       int const month,
+                                       int const day);
+  static constexpr Date Ordinal(int const year, int const day);
+  static constexpr Date Week(int const year, int const week, int const day);
+
   constexpr int year() const;
   constexpr int month() const;
   constexpr int day() const;
@@ -46,16 +52,9 @@ class Date {
                  std::int8_t const month,
                  std::int8_t const day);
 
-  constexpr Date const& checked() const;
-
   int const year_;
   int const month_;
   int const day_;
-
-  friend constexpr Date add_days(Date const& date, int const days);
-  friend struct OrdinalDate;
-  friend constexpr Date operator""_Date(char const* string, std::size_t size);
-  friend constexpr Time UTC_TAI(Date const& utc_date);
 };
 
 class TimeOfDay {
@@ -144,6 +143,19 @@ constexpr int day_of_week_on_january_1st(int const year) {
                         6 * ((year - 1) % 400));
 }
 
+constexpr bool is_53_week_year(int const year) {
+  return day_of_week_on_january_1st(year) == 4 ||
+         (is_gregorian_leap_year(year) &&
+          day_of_week_on_january_1st(year) == 3);
+}
+
+constexpr int ordinal_of_w_01_1(int const year) {
+  return day_of_week_on_january_1st(year) <= 4
+             ? 2 - day_of_week_on_january_1st(year)
+             : (9 - day_of_week_on_january_1st(year));
+}
+
+
 // Returns the number formed by taking |size| increasingly significant digits,
 // starting from the digit of the (10 ** |begin|)s.
 constexpr std::int64_t digit_range(std::int64_t const digits,
@@ -156,6 +168,113 @@ constexpr std::int64_t digit_range(std::int64_t const digits,
                                    digits % 10
                              : digit_range(digits / 10, begin - 1, size)));
 }
+
+// Returns |date| advanced by the specified number of |days|. |days| must be
+// positive, and the result must be in the same year.
+constexpr Date add_days_within_year(Date const& date, int const days) {
+  return CHECKING(
+      days > 0,
+      days == 0
+          ? date
+          : (date.day() + days > month_length(date.year(), date.month())
+                 ? CHECKING(
+                       date.month() <= 11,
+                       add_days_within_year(
+                           Date::Calendar(date.year(),
+                                                date.month() + 1,
+                                                1),
+                           days - month_length(date.year(), date.month()) +
+                               date.day() - 1))
+                 : Date::Calendar(date.year(),
+                                        date.month(),
+                                        date.day() + days)));
+}
+
+// The |day|th day of some |year|.  The resulting date need not be in |year|.
+constexpr Date ArbitraryOrdinal(int const year, int const day) {
+  return day < 1
+             ? ArbitraryOrdinal(year - 1, gregorian_year_length(year - 1) + day)
+             : day > gregorian_year_length(year)
+                   ? ArbitraryOrdinal(year + 1,
+                                      day - gregorian_year_length(year))
+                   : Date::Ordinal(year, day);
+}
+
+// Implementation of class |Date|.
+
+constexpr Date Date::YYYYMMDD(std::int64_t digits) {
+  return CHECKING(digits > 0 && digits < 9999'99'99,
+                  Date::Calendar(digit_range(digits, 4, 4),
+                                 digit_range(digits, 2, 2),
+                                 digit_range(digits, 0, 2)));
+}
+
+constexpr Date Date::YYYYDDD(std::int64_t digits) {
+  return CHECKING(
+      digits > 0 && digits < 9999'999,
+      Date::Ordinal(digit_range(digits, 3, 4), digit_range(digits, 0, 3)));
+}
+
+constexpr Date Date::YYYYwwD(std::int64_t digits) {
+  return CHECKING(digits > 0 && digits < 9999'99'9,
+                  Date::Week(digit_range(digits, 3, 4),
+                             digit_range(digits, 1, 2),
+                             digit_range(digits, 0, 1)));
+}
+
+constexpr Date Date::Calendar(int const year, int const month, int const day) {
+  return CHECKING(year >= 1583 && year <= 9999 && month >= 1 && month <= 12 &&
+                  day >= 1 && day <= month_length(year, month),
+                  Date(year, month, day));
+}
+
+constexpr Date Date::Ordinal(int const year, int const day) {
+  return CHECKING(
+      day >= 1 && day <= gregorian_year_length(year),
+      add_days_within_year(Date::Calendar(year, 1, 1), day - 1));
+}
+
+constexpr Date Date::Week(int const year, int const week, int const day) {
+  return CHECKING(week >= 1 && week <= (is_53_week_year(year) ? 53 : 52) &&
+                  day >= 1 && day <= 7,
+                  ArbitraryOrdinal(
+                      year,
+                      (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year)));
+}
+
+constexpr int Date::year() const {
+  return year_;
+}
+
+constexpr int Date::month() const {
+  return month_;
+}
+
+constexpr int Date::day() const {
+  return day_;
+}
+
+constexpr int Date::ordinal() const {
+  return day_ > 1 ? (day_ - 1) + Date(year_, month_, 1).ordinal()
+                  : month_ > 1
+                        ? month_length(year_, month_) +
+                              Date(year_, month_ - 1, 1).ordinal()
+                        : day_;
+}
+
+constexpr Date Date::next_day() const {
+  return day_ == month_length(year_, month_)
+             ? month_ == 12 ? Date(year_ + 1, 1, 1) : Date(year_, month_ + 1, 1)
+             : Date(year_, month_, day_ + 1);
+}
+
+constexpr Date::Date(int const year,
+                     std::int8_t const month,
+                     std::int8_t const day)
+      : year_(year),
+        month_(month),
+        day_(day) {}
+
 
 constexpr Date const& DateTime::date() const {
   return date_;
@@ -209,146 +328,6 @@ constexpr DateTime const& DateTime::checked() const {
            (date_.month() == 6 || date_.month() == 12 || date_.month() == 3 ||
             date_.month() == 9)),
       *this);
-}
-
-constexpr Date::Date(int const year,
-                     std::int8_t const month,
-                     std::int8_t const day)
-      : year_(year),
-        month_(month),
-        day_(day) {}
-
-constexpr int Date::year() const {
-  return year_;
-}
-
-constexpr int Date::month() const {
-  return month_;
-}
-
-constexpr int Date::day() const {
-  return day_;
-}
-
-constexpr int Date::ordinal() const {
-  return day_ > 1 ? (day_ - 1) + Date(year_, month_, 1).ordinal()
-                  : month_ > 1
-                        ? month_length(year_, month_) +
-                              Date(year_, month_ - 1, 1).ordinal()
-                        : day_;
-}
-
-constexpr Date Date::next_day() const {
-  return day_ == month_length(year_, month_)
-             ? month_ == 12 ? Date(year_ + 1, 1, 1) : Date(year_, month_ + 1, 1)
-             : Date(year_, month_, day_ + 1);
-}
-
-constexpr Date Date::YYYYMMDD(std::int64_t digits) {
-  return CHECKING(digits < 9999'99'99,
-                  Date(digit_range(digits, 4, 4),
-                       digit_range(digits, 2, 2),
-                       digit_range(digits, 0, 2)).checked());
-}
-
-constexpr Date const& Date::checked() const {
-  return CHECKING(year_ >= 1583 && year_ <= 9999 &&
-                  month_ >= 1 && month_ <= 12 &&
-                  day_ >= 1 && day_ <= month_length(year_, month_),
-                  *this);
-}
-
-
-// Returns |date| advanced by the specified number of |days|. |days| must be
-// positive, and the result must be in the same year.
-constexpr Date add_days(Date const& date, int const days) {
-  return CHECKING(
-      days > 0,
-      days == 0
-          ? date
-          : (date.day() + days > month_length(date.year(), date.month())
-                 ? CHECKING(
-                       date.month() <= 11,
-                       add_days(Date(date.year(), date.month() + 1, 1),
-                                days - month_length(date.year(), date.month()) +
-                                    date.day() - 1))
-                 : Date(date.year(), date.month(), date.day() + days)));
-}
-
-struct OrdinalDate {
-  constexpr OrdinalDate(int const year, int const day) : year(year), day(day) {}
-
-  constexpr OrdinalDate const& checked() const {
-    return CHECKING(year >= 1583 && year < 9999 &&
-                    day >= 1 && day <= gregorian_year_length(year),
-                    *this);
-  }
-
-  constexpr OrdinalDate const& normalized() const {
-    return day < 1
-        ? OrdinalDate(year - 1,
-                      gregorian_year_length(year - 1) + day).normalized()
-        : (day > gregorian_year_length(year)
-               ? OrdinalDate(year + 1,
-                             day - gregorian_year_length(year)).normalized()
-               : *this);
-  }
-
-  constexpr Date ToDate() const {
-    return add_days(Date(year, 1, 1), day - 1);
-  }
-
-  int year;
-  int day;
-};
-
-constexpr Date Date::YYYYDDD(std::int64_t digits) {
-  return CHECKING(
-      digits > 0 && digits < 9999'999,
-      OrdinalDate(digit_range(digits, 3, 4),
-                  digit_range(digits, 0, 3)).checked().ToDate());
-}
-
-constexpr bool is_53_week_year(int const year) {
-  return day_of_week_on_january_1st(year) == 4 ||
-         (is_gregorian_leap_year(year) &&
-          day_of_week_on_january_1st(year) == 3);
-}
-
-constexpr int ordinal_of_w_01_1(int const year) {
-  return day_of_week_on_january_1st(year) <= 4
-             ? 2 - day_of_week_on_january_1st(year)
-             : (9 - day_of_week_on_january_1st(year));
-}
-
-struct WeekDate {
-  constexpr WeekDate(int year, int week, int day)
-      : year(year), week(week), day(day) {}
-
-  constexpr WeekDate const& checked() const {
-    return CHECKING(year >= 1583 && year < 9999 &&
-                    week >= 1 && week <= (is_53_week_year(year) ? 53 : 52) &&
-                    day >= 1 && day <= 7,
-                    *this);
-  }
-
-  constexpr Date ToDate() const {
-    return OrdinalDate(
-        year,
-        (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year)).
-            normalized().checked().ToDate();
-  }
-
-  int year;
-  int week;
-  int day;
-};
-
-constexpr Date Date::YYYYwwD(std::int64_t digits) {
-  return CHECKING(digits > 0 && digits < 9999'99'9,
-                  WeekDate(digit_range(digits, 3, 4),
-                           digit_range(digits, 1, 2),
-                           digit_range(digits, 0, 1)).ToDate());
 }
 
 namespace from_integers_test {
@@ -712,11 +691,11 @@ constexpr Time UTC_TAI(Date const& utc_date) {
                    ? -10 * Second
                    : -leap_seconds[(utc_date.year() - 1973) * 2] * Second +
                      -leap_seconds[(utc_date.year() - 1973) * 2 + 1] * Second +
-                     UTC_TAI(Date(utc_date.year() - 1, 1, 1))
+                     UTC_TAI(Date::Calendar(utc_date.year() - 1, 1, 1))
              : (utc_date.month() > 6
                     ? -leap_seconds[(utc_date.year() - 1972) * 2] * Second
                     : 0 * Second) +
-               UTC_TAI(Date(utc_date.year(), 1, 1));
+               UTC_TAI(Date::Calendar(utc_date.year(), 1, 1));
 }
 
 // NOTE(egg): no check for invalid UTC in case of negative leap seconds.
