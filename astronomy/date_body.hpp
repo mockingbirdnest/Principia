@@ -275,21 +275,37 @@ constexpr Date::Date(int const year,
         month_(month),
         day_(day) {}
 
-
-constexpr Date const& DateTime::date() const {
-  return date_;
-}
-
-constexpr TimeOfDay const& DateTime::time() const {
-  return time_;
-}
-
+// Implementation of class TimeOfDay.
 
 constexpr TimeOfDay TimeOfDay::hhmmss_ns(int const hhmmss, int ns) {
   return TimeOfDay(digit_range(hhmmss, 4, 2),
                    digit_range(hhmmss, 2, 2),
                    digit_range(hhmmss, 0, 2),
                    ns).checked();
+}
+
+constexpr int TimeOfDay::hour() const {
+  return hour_;
+}
+
+constexpr int TimeOfDay::minute() const {
+  return minute_;
+}
+
+constexpr int TimeOfDay::second() const {
+  return second_;
+}
+
+constexpr int TimeOfDay::nanosecond() const {
+  return nanosecond_;
+}
+
+constexpr bool TimeOfDay::is_leap_second() const {
+  return second_ == 60;
+}
+
+constexpr bool TimeOfDay::is_end_of_day() const {
+  return hour_ == 24;
 }
 
 constexpr TimeOfDay::TimeOfDay(int const hour,
@@ -309,6 +325,16 @@ constexpr TimeOfDay const& TimeOfDay::checked() const {
             (hour_ >= 0 && hour_ <= 23 && minute_ >= 0 && minute_ <= 59 &&
              second_ >= 0 && second_ <= 59))),
       *this);
+}
+
+// Implementation of class DateTime.
+
+constexpr Date const& DateTime::date() const {
+  return date_;
+}
+
+constexpr TimeOfDay const& DateTime::time() const {
+  return time_;
 }
 
 constexpr DateTime DateTime::normalized_end_of_day() const {
@@ -441,30 +467,6 @@ constexpr Date operator""_Date(char const* string, std::size_t size) {
                         /*second_hyphen_index=*/-1,
                         /*has_w=*/false,
                         /*w_index=*/-1}.Fill().ToDate();
-}
-
-constexpr int TimeOfDay::hour() const {
-  return hour_;
-}
-
-constexpr int TimeOfDay::minute() const {
-  return minute_;
-}
-
-constexpr int TimeOfDay::second() const {
-  return second_;
-}
-
-constexpr int TimeOfDay::nanosecond() const {
-  return nanosecond_;
-}
-
-constexpr bool TimeOfDay::is_leap_second() const {
-  return second_ == 60;
-}
-
-constexpr bool TimeOfDay::is_end_of_day() const {
-  return hour_ == 24;
 }
 
 constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
