@@ -98,7 +98,7 @@
     <ClCompile Include="mercury_perihelion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="date.cpp">
+    <ClCompile Include="date_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

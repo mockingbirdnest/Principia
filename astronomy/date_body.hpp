@@ -20,6 +20,7 @@
 namespace principia {
 namespace astronomy {
 namespace internal_date {
+
 using quantities::Time;
 using quantities::si::Day;
 using quantities::si::Second;
@@ -37,8 +38,8 @@ class Date {
   static constexpr Date YYYYDDD(std::int64_t digits);
 
   static constexpr Date Calendar(int const year,
-                                       int const month,
-                                       int const day);
+                                 int const month,
+                                 int const day);
   static constexpr Date Ordinal(int const year, int const day);
   static constexpr Date Week(int const year, int const week, int const day);
 
@@ -200,14 +201,12 @@ constexpr Date add_days_within_year(Date const& date, int const days) {
                  ? CHECKING(
                        date.month() <= 11,
                        add_days_within_year(
-                           Date::Calendar(date.year(),
-                                                date.month() + 1,
-                                                1),
+                           Date::Calendar(date.year(), date.month() + 1, 1),
                            days - month_length(date.year(), date.month()) +
                                date.day() - 1))
                  : Date::Calendar(date.year(),
-                                        date.month(),
-                                        date.day() + days)));
+                                  date.month(),
+                                  date.day() + days)));
 }
 
 // The |day|th day of some |year|.  The resulting date need not be in |year|.
@@ -374,21 +373,6 @@ constexpr DateTime const& DateTime::checked() const {
            (date_.month() == 6 || date_.month() == 12 || date_.month() == 3 ||
             date_.month() == 9)),
       *this);
-}
-
-namespace from_integers_test {
-constexpr Date egg_month = Date::YYYYMMDD(1993'12'11);
-static_assert(egg_month.year() == 1993, "bad year");
-static_assert(egg_month.month() == 12, "bad month");
-static_assert(egg_month.day() == 11, "bad day");
-constexpr Date egg_week = Date::YYYYwwD(1993'49'6);
-static_assert(egg_week.year() == 1993, "bad year");
-static_assert(egg_week.month() == 12, "bad month");
-static_assert(egg_week.day() == 11, "bad day");
-constexpr Date egg_ordinal = Date::YYYYDDD(1993'345);
-static_assert(egg_ordinal.year() == 1993, "bad year");
-static_assert(egg_ordinal.month() == 12, "bad month");
-static_assert(egg_ordinal.day() == 11, "bad day");
 }
 
 // Date parsing.
@@ -743,48 +727,6 @@ constexpr Instant operator""_TAI(char const* string, std::size_t size) {
 constexpr Instant operator""_UTC(char const* string, std::size_t size) {
   return DateTimeAsUTC(operator""_DateTime(string, size));
 };
-
-constexpr Instant mjd0 = "1858-11-17T00:00:00Z"_TT;
-constexpr Instant mjd_0 = J2000 - 51544.5 * Day;
-
-constexpr Instant i = "2000-01-01T12:00:00Z"_TT;
-constexpr Instant i_tai = "2000-01-01T11:59:27,816Z"_TAI;
-constexpr Instant i_utc = "2000-01-01T11:58:55,816Z"_UTC;
-constexpr Instant j_tt = "2000-01-01T12:00:32,184Z"_TT;
-constexpr Instant j_tai = "2000-01-01T12:00:00Z"_TAI;
-constexpr Instant j2_tai = "2000-01-01T11:59:28Z"_TAI;
-constexpr Time no_time =
-    "2000-01-01T12:00:32,184Z"_TT - "2000-01-01T12:00:00Z"_TAI;
-
-constexpr Time foo =
-    "2000-01-01T11:58:55,816Z"_UTC - "2000-01-01T11:58:55,816Z"_TAI;
-
- constexpr Instant bat = "2000-01-01T11:58:55,816Z"_UTC;
- constexpr Instant baz = "2000-01-01T11:58:55,816Z"_TAI;
-
-constexpr Time utc_tai =
-    "2016-07-03T15:39:41Z"_UTC - "2016-07-03T15:39:41Z"_TAI;
-
-constexpr DateTime date_Time = "1993-12-11T12:34:56,789Z"_DateTime;
-constexpr DateTime date_Time_2 = "1993W496T123456.789Z"_DateTime;
-
-constexpr TimeOfDay t = "193512,11Z"_Time;
-constexpr TimeOfDay t_extended = "19:35:12,11Z"_Time;
-constexpr TimeOfDay t_round = "19:35:12Z"_Time;
-
-namespace basic_format_test {
-constexpr Date egg_month = "19931211"_Date;
-constexpr Date egg_week = "1993W496"_Date;
-constexpr Date egg_ordinal = "1993345"_Date;
-constexpr int ordinal = "1993345"_Date.ordinal();
-}
-
-namespace extended_format_test {
-constexpr Date egg_month = "1993-12-11"_Date;
-constexpr Date egg_week = "1993-W49-6"_Date;
-constexpr Date egg_ordinal = "1993-345"_Date;
-}
-
 
 }  // namespace internal_date
 }  // namespace astronomy
