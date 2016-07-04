@@ -1,12 +1,14 @@
 
 #include "astronomy/date.hpp"
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
 
 namespace principia {
 namespace astronomy {
 namespace internal_date {
+
+using ::testing::Eq;
 
 class DateTest : public testing::Test {};
 
@@ -35,8 +37,7 @@ TEST_F(DateDeathTest, InvalidTime) {
   EXPECT_DEATH("2001-01-01T23:59:61Z"_TT, "second_ == 60");
 }
 
-constexpr Instant mjd0 = "1858-11-17T00:00:00Z"_TT;
-constexpr Instant mjd_0 = J2000 - 51544.5 * Day;
+constexpr Instant j2000_week = "1999-W52-6T12:00:00Z"_TT;
 
 constexpr Instant j2000_from_tt = "2000-01-01T12:00:00Z"_TT;
 constexpr Instant j2000_from_tai = "2000-01-01T11:59:27,816Z"_TAI;
@@ -44,21 +45,22 @@ constexpr Instant j2000_from_utc = "2000-01-01T11:58:55,816Z"_UTC;
 constexpr Instant j2000_tai = "2000-01-01T12:00:00Z"_TAI;
 constexpr Instant j2000_tai_from_tt = "2000-01-01T12:00:32,184Z"_TT;
 
-constexpr Time foo =
-    "2000-01-01T11:58:55,816Z"_UTC - "2000-01-01T11:58:55,816Z"_TAI;
+TEST_F(DateDeathTest, ReferenceDates) {
+  EXPECT_THAT("1858-11-17T00:00:00Z"_TT, Eq(ModifiedJulianDate(0)));
+  EXPECT_THAT(j2000_week, Eq(J2000));
+  EXPECT_THAT(j2000_from_tt, Eq(J2000));
+  EXPECT_THAT(j2000_from_tai, Eq(J2000));
+  EXPECT_THAT(j2000_from_utc, Eq(J2000));
+  EXPECT_THAT(j2000_tai, Eq(j2000_tai_from_tt));
+  EXPECT_THAT(j2000_tai - J2000, Eq(32.184 * Second));
 
- constexpr Instant bat = "2000-01-01T11:58:55,816Z"_UTC;
- constexpr Instant baz = "2000-01-01T11:58:55,816Z"_TAI;
+  // Besselian epochs.
+  constexpr Instant B1900 = "1899-12-31T00:00:00Z"_TT + 0.8135 * Day;
+  EXPECT_THAT(B1900, Eq(JulianDate(2415020.3135)));
 
-constexpr Time utc_tai =
-    "2016-07-03T15:39:41Z"_UTC - "2016-07-03T15:39:41Z"_TAI;
-
-constexpr DateTime date_Time = "1993-12-11T12:34:56,789Z"_DateTime;
-constexpr DateTime date_Time_2 = "1993W496T123456.789Z"_DateTime;
-
-constexpr TimeOfDay t = "193512,11Z"_Time;
-constexpr TimeOfDay t_extended = "19:35:12,11Z"_Time;
-constexpr TimeOfDay t_round = "19:35:12Z"_Time;
+  constexpr Instant B1950 = "1949-12-31T00:00:00Z"_TT + 0.9235 * Day;
+  EXPECT_THAT(B1950, Eq(JulianDate(2433282.4235)));
+}
 
 }  // namespace internal_date
 }  // namespace astronomy

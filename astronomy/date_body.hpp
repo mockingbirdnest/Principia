@@ -194,7 +194,7 @@ constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
 // nonnegative, and the result must be in the same year.
 constexpr Date add_days_within_year(Date const& date, int const days) {
   return CHECKING(
-      days > 0,
+      days >= 0,
       days == 0
           ? date
           : (date.day() + days > month_length(date.year(), date.month())
