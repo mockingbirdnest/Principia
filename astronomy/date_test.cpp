@@ -25,6 +25,8 @@ using DateDeathTest = DateTest;
 // The checks are giant boolean expressions which are entirely repeated in the
 // error message; we try to match the relevant part.
 
+#if !((PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599)
+
 TEST_F(DateDeathTest, InvalidCalendarDate) {
   EXPECT_DEATH("2001-04-00T12:00:00Z"_TT, "day >= 1");
   EXPECT_DEATH("2001-02-29T12:00:00Z"_TT, "day <= month_length");
@@ -48,6 +50,8 @@ TEST_F(DateDeathTest, InvalidTime) {
 TEST_F(DateDeathTest, InvalidDateTime) {
   EXPECT_DEATH("2001-01-01T23:59:60Z"_TT, "");
 }
+
+#endif
 
 namespace {
 

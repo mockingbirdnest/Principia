@@ -18,7 +18,7 @@ using geometry::Instant;
 // FWIW it seems that clang supports this proposal with
 // -Wno-gnu-string-literal-operator-template.
 
-#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+#if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
 template<typename C, C... string>
 constexpr Instant operator""_TAI();
 template<typename C, C... string>

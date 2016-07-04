@@ -716,7 +716,7 @@ constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
 
 // |Instant| date literals.
 
-#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+#if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
 template<typename C, C... string>
 constexpr std::array<C, sizeof...(string)> unpack_as_array() {
   return std::array<C, sizeof...(string)>{{string...}};
@@ -728,30 +728,33 @@ constexpr T const& as_const_ref(T const& t) {
 }
 
 template<typename C, std::size_t size>
-constexpr C const* c_str(std::array<C, size> array) {
+constexpr C const* c_str(std::array<C, size> const& array) {
   // In C++17 this could be |data()|.  For the moment this does the job.
   return &as_const_ref(array)[0];
 }
 
 template<typename C, C... string>
 constexpr Instant operator""_TAI() {
-  return DateTimeAsTAI(
+  constexpr auto result = DateTimeAsTAI(
       operator""_DateTime(c_str(unpack_as_array<C, string...>()),
                           sizeof...(string)));
+  return result;
 }
 
 template<typename C, C... string>
 constexpr Instant operator""_TT() {
-  return DateTimeAsTT(
+  constexpr auto result = DateTimeAsTT(
       operator""_DateTime(c_str(unpack_as_array<C, string...>()),
                           sizeof...(string)));
+  return result;
 }
 
 template<typename C, C... string>
 constexpr Instant operator""_UTC() {
-  return DateTimeAsUTC(
+  constexpr auto result = DateTimeAsUTC(
       operator""_DateTime(c_str(unpack_as_array<C, string...>()),
                           sizeof...(string)));
+  return result;
 }
 #else
 constexpr Instant operator""_TAI(char const* string, std::size_t size) {
