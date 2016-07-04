@@ -63,14 +63,17 @@ constexpr Instant j2000_from_utc = "2000-01-01T11:58:55,816Z"_UTC;
 constexpr Instant j2000_tai = "2000-01-01T12:00:00Z"_TAI;
 constexpr Instant j2000_tai_from_tt = "2000-01-01T12:00:32,184Z"_TT;
 
-}  // namespace
-
 static_assert(j2000_week == J2000, "");
 static_assert(j2000_from_tt == J2000, "");
 static_assert(j2000_from_tai == J2000, "");
 static_assert(j2000_from_utc == J2000, "");
 static_assert(j2000_tai == j2000_tai_from_tt, "");
 static_assert(j2000_tai - J2000 == 32.184 * Second, "");
+
+// Check that week dates that go to the previous year work.
+static_assert("1914-W01-1T00:00:00Z"_TT == "19131229T000000Z"_TT, "");
+
+}  // namespace
 
 TEST_F(DateTest, ReferenceDates) {
   EXPECT_THAT("1858-11-17T00:00:00Z"_TT, Eq(ModifiedJulianDate(0)));
