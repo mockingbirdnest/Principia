@@ -624,16 +624,21 @@ constexpr Instant DateTimeAsTT(DateTime const& date_time) {
                    date_time.date().ordinal() - 1) * Day);
 }
 
+// Allows leap seconds, which are interpreted as the first second of the
+// following TAI day; used both the implementation of both TAI and UTC.
+constexpr Instant DateTimeAsTAIUnchecked(DateTime const& date_time) {
+  return J2000 + (date_time.time().nanosecond() + 184'000'000) / 1e9 * Second +
+         ((date_time.time().second() - 28) +
+          (date_time.time().minute() - 59) * 60 +
+          (date_time.time().hour() - 11) * 60 * 60) * Second +
+         (days_from_2000_01_01_at_start_of_2000_based_year(
+              date_time.date().year() - 2000) +
+          date_time.date().ordinal() - 1) * Day;
+}
+
 constexpr Instant DateTimeAsTAI(DateTime const& date_time) {
   return CHECKING(!date_time.time().is_leap_second(),
-                  J2000 +
-                  (date_time.time().nanosecond() + 184'000'000) / 1e9 * Second +
-                  ((date_time.time().second() - 28) +
-                   (date_time.time().minute() - 59) * 60 +
-                   (date_time.time().hour() - 11) * 60 * 60) * Second +
-                  (days_from_2000_01_01_at_start_of_2000_based_year(
-                       date_time.date().year() - 2000) +
-                   date_time.date().ordinal() - 1) * Day);
+                  DateTimeAsTAIUnchecked(date_time));
 }
 
 // Leap second handling and conversion to UTC.
@@ -711,7 +716,8 @@ constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
                    (date_time.date().month() == 12 &&
                     leap_seconds[(date_time.date().year() - 1972) * 2 + 1] ==
                         +1),
-                   DateTimeAsTAI(date_time) - UTC_TAI(date_time.date()));
+                   DateTimeAsTAIUnchecked(date_time) -
+                       UTC_TAI(date_time.date()));
 }
 
 // |Instant| date literals.

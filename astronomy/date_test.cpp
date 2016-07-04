@@ -72,7 +72,7 @@ static_assert(j2000_from_utc == J2000, "");
 static_assert(j2000_tai == j2000_tai_from_tt, "");
 static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 
-TEST_F(DateDeathTest, ReferenceDates) {
+TEST_F(DateTest, ReferenceDates) {
   EXPECT_THAT("1858-11-17T00:00:00Z"_TT, Eq(ModifiedJulianDate(0)));
   EXPECT_THAT(j2000_week, Eq(J2000));
   EXPECT_THAT(j2000_from_tt, Eq(J2000));
@@ -93,6 +93,23 @@ TEST_F(DateDeathTest, ReferenceDates) {
   EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 26));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2433282_4235, B1950),
               AllOf(Ge(1 * Micro(Second)), Lt(10 * Micro(Second))));
+}
+
+TEST_F(DateTest, LeapSecond) {
+  Instant const eleven_fifty_nine_and_fifty_eight_seconds =
+      "2015-06-30T23:59:58Z"_UTC;
+  EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 1 * Second,
+              Eq("2015-06-30T23:59:59Z"_UTC));
+  EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 1.5 * Second,
+              Eq("2015-06-30T23:59:59,5Z"_UTC));
+  EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 2 * Second,
+              Eq("2015-06-30T23:59:60Z"_UTC));
+  EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 2.5 * Second,
+              Eq("2015-06-30T23:59:60,5Z"_UTC));
+  EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 3 * Second,
+              Eq("2015-06-30T24:00:00Z"_UTC));
+  EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 3 * Second,
+              Eq("2015-07-01T00:00:00Z"_UTC));
 }
 
 }  // namespace internal_date
