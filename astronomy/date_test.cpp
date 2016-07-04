@@ -3,12 +3,20 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace internal_date {
 
+using quantities::si::Micro;
+using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
+using ::testing::AllOf;
 using ::testing::Eq;
+using ::testing::Ge;
+using ::testing::Lt;
 
 class DateTest : public testing::Test {};
 
@@ -37,6 +45,12 @@ TEST_F(DateDeathTest, InvalidTime) {
   EXPECT_DEATH("2001-01-01T23:59:61Z"_TT, "second_ == 60");
 }
 
+TEST_F(DateDeathTest, InvalidDateTime) {
+  EXPECT_DEATH("2001-01-01T23:59:60Z"_TT, "");
+}
+
+namespace {
+
 constexpr Instant j2000_week = "1999-W52-6T12:00:00Z"_TT;
 
 constexpr Instant j2000_from_tt = "2000-01-01T12:00:00Z"_TT;
@@ -44,6 +58,15 @@ constexpr Instant j2000_from_tai = "2000-01-01T11:59:27,816Z"_TAI;
 constexpr Instant j2000_from_utc = "2000-01-01T11:58:55,816Z"_UTC;
 constexpr Instant j2000_tai = "2000-01-01T12:00:00Z"_TAI;
 constexpr Instant j2000_tai_from_tt = "2000-01-01T12:00:32,184Z"_TT;
+
+}  // namespace
+
+static_assert(j2000_week == J2000, "");
+static_assert(j2000_from_tt == J2000, "");
+static_assert(j2000_from_tai == J2000, "");
+static_assert(j2000_from_utc == J2000, "");
+static_assert(j2000_tai == j2000_tai_from_tt, "");
+static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 
 TEST_F(DateDeathTest, ReferenceDates) {
   EXPECT_THAT("1858-11-17T00:00:00Z"_TT, Eq(ModifiedJulianDate(0)));
@@ -56,10 +79,16 @@ TEST_F(DateDeathTest, ReferenceDates) {
 
   // Besselian epochs.
   constexpr Instant B1900 = "1899-12-31T00:00:00Z"_TT + 0.8135 * Day;
-  EXPECT_THAT(B1900, Eq(JulianDate(2415020.3135)));
+  Instant const JD2415020_3135 = JulianDate(2415020.3135);
+  EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 51));
+  EXPECT_THAT(testing_utilities::AbsoluteError(JD2415020_3135, B1900),
+              AllOf(Ge(10 * Micro(Second)), Lt(100 * Micro(Second))));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00Z"_TT + 0.9235 * Day;
-  EXPECT_THAT(B1950, Eq(JulianDate(2433282.4235)));
+  Instant const JD2433282_4235 = JulianDate(2433282.4235);
+  EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 26));
+  EXPECT_THAT(testing_utilities::AbsoluteError(JD2433282_4235, B1950),
+              AllOf(Ge(1 * Micro(Second)), Lt(10 * Micro(Second))));
 }
 
 }  // namespace internal_date

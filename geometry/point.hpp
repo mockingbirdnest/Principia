@@ -24,6 +24,17 @@ class Point {
  public:
   constexpr Point();
 
+#if PRINCIPIA_COMPILER_MSVC && !__INTELLISENSE__
+  // Explicitly define constexpr default copy and move constructors because
+  // otherwise MSVC fails to initialize constant expressions.  In addition,
+  // intellisense gets confused by these (because of course MSVC and
+  // intellisense are different compilers and have bugs in different places).
+  constexpr Point(Point const& other);
+  constexpr Point(Point&& other);
+  Point& operator=(Point const& other) = default;
+  Point& operator=(Point&& other) = default;
+#endif
+
   // TODO(egg): constexpr all the operators.
   constexpr Vector operator-(Point const& from) const;
 
@@ -33,8 +44,8 @@ class Point {
   Point& operator+=(Vector const& translation);
   Point& operator-=(Vector const& translation);
 
-  bool operator==(Point const& right) const;
-  bool operator!=(Point const& right) const;
+  constexpr bool operator==(Point const& right) const;
+  constexpr bool operator!=(Point const& right) const;
 
   void WriteToMessage(not_null<serialization::Point*> const message) const;
   static Point ReadFromMessage(serialization::Point const& message);
