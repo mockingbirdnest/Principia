@@ -116,8 +116,8 @@ class DateTime {
 
 // Arithmetico-calendrical utility functions.
 
-constexpr std::array<int, 12>
-    non_leap_year_month_lengths{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+constexpr std::array<int, 12> non_leap_year_month_lengths{
+    {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
 
 constexpr bool is_gregorian_leap_year(int const year) {
   return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
@@ -638,7 +638,7 @@ constexpr Instant DateTimeAsTAI(DateTime const& date_time) {
 
 // Leap second handling and conversion to UTC.
 
-constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {
+constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {{
     +1, +1,  // 1972
     +0, +1,  // 1973
     +0, +1,  // 1974
@@ -684,7 +684,7 @@ constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {
     +0, +0,  // 2014
     +1, +0,  // 2015
     +0,      // 2016
-};
+}};
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
 constexpr Time UTC_TAI(Date const& utc_date) {
@@ -716,17 +716,56 @@ constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
 
 // |Instant| date literals.
 
+#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+template<typename C, C... string>
+constexpr std::array<C, sizeof...(string)> unpack_as_array() {
+  return std::array<C, sizeof...(string)>{{string...}};
+}
+
+template<typename T>
+constexpr T const& as_const_ref(T const& t) {
+  return t;
+}
+
+template<typename C, std::size_t size>
+constexpr C const* c_str(std::array<C, size> array) {
+  // In C++17 this could be |data()|.  For the moment this does the job.
+  return &as_const_ref(array)[0];
+}
+
+template<typename C, C... string>
+constexpr Instant operator""_TAI() {
+  return DateTimeAsTAI(
+      operator""_DateTime(c_str(unpack_as_array<C, string...>()),
+                          sizeof...(string)));
+}
+
+template<typename C, C... string>
+constexpr Instant operator""_TT() {
+  return DateTimeAsTT(
+      operator""_DateTime(c_str(unpack_as_array<C, string...>()),
+                          sizeof...(string)));
+}
+
+template<typename C, C... string>
+constexpr Instant operator""_UTC() {
+  return DateTimeAsUTC(
+      operator""_DateTime(c_str(unpack_as_array<C, string...>()),
+                          sizeof...(string)));
+}
+#else
+constexpr Instant operator""_TAI(char const* string, std::size_t size) {
+  return DateTimeAsTAI(operator""_DateTime(string, size));
+}
+
 constexpr Instant operator""_TT(char const* string, std::size_t size) {
   return DateTimeAsTT(operator""_DateTime(string, size));
 }
 
-constexpr Instant operator""_TAI(char const* string, std::size_t size) {
-  return DateTimeAsTAI(operator""_DateTime(string, size));
-};
-
 constexpr Instant operator""_UTC(char const* string, std::size_t size) {
   return DateTimeAsUTC(operator""_DateTime(string, size));
-};
+}
+#endif
 
 }  // namespace internal_date
 }  // namespace astronomy

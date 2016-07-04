@@ -18,9 +18,18 @@ using geometry::Instant;
 // FWIW it seems that clang supports this proposal with
 // -Wno-gnu-string-literal-operator-template.
 
+#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+template<typename C, C... string>
+constexpr Instant operator""_TAI();
+template<typename C, C... string>
+constexpr Instant operator""_TT();
+template<typename C, C... string>
+constexpr Instant operator""_UTC();
+#else
 constexpr Instant operator""_TAI(char const* string, std::size_t size);
 constexpr Instant operator""_TT(char const* string, std::size_t size);
 constexpr Instant operator""_UTC(char const* string, std::size_t size);
+#endif
 
 }  // namespace internal_date
 
