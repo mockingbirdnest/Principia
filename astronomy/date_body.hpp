@@ -11,9 +11,10 @@
 #include "glog/logging.h"
 #include "quantities/si.hpp"
 
-// A macro to allow glog checking within C++11 constexpr code.  If |condition|,
-// evaluates to |expression|.  Otherwise, results in a CHECK failure at runtime
-// and a compilation error due to a call to non-constexpr code at compile time.
+// A macro to allow glog checking within C++11 constexpr code.  If |condition|
+// is true, evaluates to |expression|.  Otherwise, results in a CHECK failure at
+// runtime and a compilation error due to a call to non-constexpr code at
+// compile time.
 #define CHECKING(condition, expression) \
   ((condition) ? (expression) : (CHECK(condition), (expression)))
 
@@ -21,7 +22,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_date {
 
-using quantities::Time;
 using quantities::si::Day;
 using quantities::si::Second;
 
@@ -33,9 +33,9 @@ using quantities::si::Second;
 
 class Date {
  public:
-  static constexpr Date YYYYMMDD(std::int64_t digits);
-  static constexpr Date YYYYwwD(std::int64_t digits);
-  static constexpr Date YYYYDDD(std::int64_t digits);
+  static constexpr Date YYYYMMDD(std::int64_t const digits);
+  static constexpr Date YYYYwwD(std::int64_t const digits);
+  static constexpr Date YYYYDDD(std::int64_t const digits);
 
   static constexpr Date Calendar(int const year,
                                  int const month,
@@ -53,17 +53,17 @@ class Date {
 
  private:
   constexpr Date(int const year,
-                 std::int8_t const month,
-                 std::int8_t const day);
+                 int const month,
+                 int const day);
 
   int const year_;
   int const month_;
   int const day_;
 };
 
-class TimeOfDay {
+class Time {
  public:
-  static constexpr TimeOfDay hhmmss_ns(int const hhmmss, int ns);
+  static constexpr Time hhmmss_ns(int const hhmmss, int ns);
 
   constexpr int hour() const;
   constexpr int minute() const;
@@ -75,15 +75,15 @@ class TimeOfDay {
   constexpr bool is_end_of_day() const;
 
  private:
-  constexpr TimeOfDay(int const hour,
-                      int const minute,
-                      int const second,
-                      int const nanosecond);
+  constexpr Time(int const hour,
+                 int const minute,
+                 int const second,
+                 int const nanosecond);
 
   // Checks that this represents a valid time of day as per ISO 8601, thus
   // that the components are in the normal range, or that the object represents
   // a time in a leap second, or that it represents the end of the day.
-  constexpr TimeOfDay const& checked() const;
+  constexpr Time const& checked() const;
 
   int const hour_;
   int const minute_;
@@ -94,24 +94,24 @@ class TimeOfDay {
 class DateTime {
  public:
   constexpr Date const& date() const;
-  constexpr TimeOfDay const& time() const;
+  constexpr Time const& time() const;
 
   // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
-  // expressed as 00:00:00 on the next day; otherwise, returns *this.
+  // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-  constexpr DateTime(Date const date, TimeOfDay const time);
+  constexpr DateTime(Date const date, Time const time);
 
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of June, December, March, or September.
   constexpr DateTime const& checked() const;
 
   Date const date_;
-  TimeOfDay const time_;
+  Time const time_;
 
   friend constexpr DateTime operator""_DateTime(char const* string,
-                                                 std::size_t size);
+                                                std::size_t size);
 };
 
 // Arithmetico-calendrical utility functions.
@@ -133,8 +133,8 @@ constexpr int month_length(int year, int month) {
              : non_leap_year_month_lengths[month - 1];
 }
 
-constexpr int mod_7_offset_1 (int const x) {
-  return x % 7 == 0 ? 7 : (x % 7);
+constexpr int mod_7_offset_1(int const x) {
+  return ((x + 6) % 7) + 1;
 }
 
 // Result in [1, 7], 1 is Monday.
@@ -147,51 +147,60 @@ constexpr int day_of_week_on_january_1st(int const year) {
                         6 * ((year - 1) % 400));
 }
 
-constexpr bool is_53_week_year(int const year) {
+constexpr int number_of_weeks_in_year(int const year) {
   return day_of_week_on_january_1st(year) == 4 ||
-         (is_gregorian_leap_year(year) &&
-          day_of_week_on_january_1st(year) == 3);
+                 (is_gregorian_leap_year(year) &&
+                  day_of_week_on_january_1st(year) == 3)
+             ? 53
+             : 52;
 }
 
+// Returns the ordinal in |year| of the first day of the first week of |year|.
+// The result is in [-2, 4], with values in [-2, 0] meaning that the first week
+// of |year| starts in |year - 1|.
+// A result in [-2, 1] means that the first day of |year| is in the first week
+// of |year|; otherwise, it is in the last week of |year - 1|.
 constexpr int ordinal_of_w_01_1(int const year) {
-  return day_of_week_on_january_1st(year) <= 4
-             ? 2 - day_of_week_on_january_1st(year)
-             : (9 - day_of_week_on_january_1st(year));
+  // NOTE: (4 - d) % 7 would differ from 4 - d mod 7 for d > 4, since operator%
+  // behaves like Ada's rem since C++11 (it was implementation-defined before
+  // that).
+  return ((7 + 4 - day_of_week_on_january_1st(year)) % 7) - 2;
 }
 
-constexpr int days_from_2000_01_01_at_start_of_2000_based_year(
-    int const years_from_2000) {
-  return years_from_2000 > 0
-             ? 1 + years_from_2000 * 365 +
-               (years_from_2000 - 1) / 4 -
-               (years_from_2000 - 1) / 100 +
-               (years_from_2000 - 1) / 400
-             : years_from_2000 * 365 +
-               years_from_2000 / 4 -
-               years_from_2000 / 100 +
-               years_from_2000 / 400;
+// The signed number of days from 2000-01-01 to the first day of |year|.
+constexpr int days_from_2000_01_01_at_start_of_year(int const year) {
+  return year - 2000 > 0
+             ? 1 + (year - 2000) * 365 +
+               (year - 2000 - 1) / 4 -
+               (year - 2000 - 1) / 100 +
+               (year - 2000 - 1) / 400
+             : (year - 2000) * 365 +
+               (year - 2000) / 4 -
+               (year - 2000) / 100 +
+               (year - 2000) / 400;
 }
 
-// Returns the number formed by taking |size| increasingly significant digits,
-// starting from the digit of the (10 ** |begin|)s.
+// Returns the number formed by taking |end - begin| increasingly significant
+// digits, starting from the digit of the (10 ** |begin|)s.
 constexpr std::int64_t digit_range(std::int64_t const digits,
                                    int const begin,
-                                   int const size) {
+                                   int const end) {
   return CHECKING(
-      digits >= 0 && begin >= 0 && size >= 0,
-      (size == 0) ? 0 : ((begin == 0)
-                             ? digit_range(digits / 10, 0, size - 1) * 10 +
-                                   digits % 10
-                             : digit_range(digits / 10, begin - 1, size)));
+      digits >= 0 && begin >= 0 && begin <= end,
+      (begin == end)
+          ? 0
+          : ((begin == 0)
+                 ? digit_range(digits / 10, 0, end - 1) * 10 + digits % 10
+                 : digit_range(digits / 10, begin - 1, end - 1)));
 }
 
 // Returns x * 10 ** count.
-constexpr std::int64_t add_0s(std::int64_t const x, int const count) {
-  return CHECKING(count >= 0, count == 0 ? x : add_0s(x * 10, count - 1));
+constexpr std::int64_t append_0s(std::int64_t const x, int const count) {
+  return CHECKING(count >= 0, count == 0 ? x : append_0s(x * 10, count - 1));
 }
 
-// Returns |date| advanced by the specified number of |days|. |days| must be
-// nonnegative, and the result must be in the same year.
+// Returns |date| advanced by the specified number of |days|. The result must be
+// in the same year.
 constexpr Date add_days_within_year(Date const& date, int const days) {
   return CHECKING(
       days >= 0,
@@ -210,34 +219,34 @@ constexpr Date add_days_within_year(Date const& date, int const days) {
 }
 
 // The |day|th day of some |year|.  The resulting date need not be in |year|.
-constexpr Date ArbitraryOrdinal(int const year, int const day) {
-  return day < 1
-             ? ArbitraryOrdinal(year - 1, gregorian_year_length(year - 1) + day)
-             : day > gregorian_year_length(year)
-                   ? ArbitraryOrdinal(year + 1,
-                                      day - gregorian_year_length(year))
-                   : Date::Ordinal(year, day);
+constexpr Date arbitrary_ordinal(int const year, int const day) {
+  return day < 1 ? arbitrary_ordinal(year - 1,
+                                     gregorian_year_length(year - 1) + day)
+                 : day > gregorian_year_length(year)
+                       ? arbitrary_ordinal(year + 1,
+                                           day - gregorian_year_length(year))
+                       : Date::Ordinal(year, day);
 }
 
 // Implementation of class |Date|.
 
-constexpr Date Date::YYYYMMDD(std::int64_t digits) {
-  return CHECKING(digits > 0 && digits < 9999'99'99,
-                  Date::Calendar(digit_range(digits, 4, 4),
-                                 digit_range(digits, 2, 2),
+constexpr Date Date::YYYYMMDD(std::int64_t const digits) {
+  return CHECKING(digits >= 0 && digits <= 9999'99'99,
+                  Date::Calendar(digit_range(digits, 4, 8),
+                                 digit_range(digits, 2, 4),
                                  digit_range(digits, 0, 2)));
 }
 
-constexpr Date Date::YYYYDDD(std::int64_t digits) {
+constexpr Date Date::YYYYDDD(std::int64_t const digits) {
   return CHECKING(
-      digits > 0 && digits < 9999'999,
-      Date::Ordinal(digit_range(digits, 3, 4), digit_range(digits, 0, 3)));
+      digits >= 0 && digits <= 9999'999,
+      Date::Ordinal(digit_range(digits, 3, 7), digit_range(digits, 0, 3)));
 }
 
-constexpr Date Date::YYYYwwD(std::int64_t digits) {
-  return CHECKING(digits > 0 && digits < 9999'99'9,
-                  Date::Week(digit_range(digits, 3, 4),
-                             digit_range(digits, 1, 2),
+constexpr Date Date::YYYYwwD(std::int64_t const digits) {
+  return CHECKING(digits >= 0 && digits <= 9999'99'9,
+                  Date::Week(digit_range(digits, 3, 7),
+                             digit_range(digits, 1, 3),
                              digit_range(digits, 0, 1)));
 }
 
@@ -254,11 +263,11 @@ constexpr Date Date::Ordinal(int const year, int const day) {
 }
 
 constexpr Date Date::Week(int const year, int const week, int const day) {
-  return CHECKING(week >= 1 && week <= (is_53_week_year(year) ? 53 : 52) &&
-                  day >= 1 && day <= 7,
-                  ArbitraryOrdinal(
-                      year,
-                      (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year)));
+  return CHECKING(
+      week >= 1 && week <= number_of_weeks_in_year(year) &&
+      day >= 1 && day <= 7,
+      arbitrary_ordinal(year,
+                        (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year)));
 }
 
 constexpr int Date::year() const {
@@ -288,55 +297,56 @@ constexpr Date Date::next_day() const {
 }
 
 constexpr Date::Date(int const year,
-                     std::int8_t const month,
-                     std::int8_t const day)
+                     int const month,
+                     int const day)
       : year_(year),
         month_(month),
         day_(day) {}
 
-// Implementation of class TimeOfDay.
+// Implementation of class Time.
 
-constexpr TimeOfDay TimeOfDay::hhmmss_ns(int const hhmmss, int ns) {
-  return TimeOfDay(digit_range(hhmmss, 4, 2),
-                   digit_range(hhmmss, 2, 2),
-                   digit_range(hhmmss, 0, 2),
-                   ns).checked();
+constexpr Time Time::hhmmss_ns(int const hhmmss, int ns) {
+  return CHECKING(hhmmss >= 0 && hhmmss <= 99'99'99,
+                  Time(digit_range(hhmmss, 4, 6),
+                       digit_range(hhmmss, 2, 4),
+                       digit_range(hhmmss, 0, 2),
+                       ns).checked());
 }
 
-constexpr int TimeOfDay::hour() const {
+constexpr int Time::hour() const {
   return hour_;
 }
 
-constexpr int TimeOfDay::minute() const {
+constexpr int Time::minute() const {
   return minute_;
 }
 
-constexpr int TimeOfDay::second() const {
+constexpr int Time::second() const {
   return second_;
 }
 
-constexpr int TimeOfDay::nanosecond() const {
+constexpr int Time::nanosecond() const {
   return nanosecond_;
 }
 
-constexpr bool TimeOfDay::is_leap_second() const {
+constexpr bool Time::is_leap_second() const {
   return second_ == 60;
 }
 
-constexpr bool TimeOfDay::is_end_of_day() const {
+constexpr bool Time::is_end_of_day() const {
   return hour_ == 24;
 }
 
-constexpr TimeOfDay::TimeOfDay(int const hour,
-                               int const minute,
-                               int const second,
-                               int const nanosecond)
+constexpr Time::Time(int const hour,
+                     int const minute,
+                     int const second,
+                     int const nanosecond)
     : hour_(hour),
       minute_(minute),
       second_(second),
       nanosecond_(nanosecond) {}
 
-constexpr TimeOfDay const& TimeOfDay::checked() const {
+constexpr Time const& Time::checked() const {
   return CHECKING(
       (hour_ == 24 && minute_ == 0 && second_ == 0 && nanosecond_ == 0) ||
           ((nanosecond_ >= 0 && nanosecond_ <= 999'999'999) &&
@@ -352,17 +362,17 @@ constexpr Date const& DateTime::date() const {
   return date_;
 }
 
-constexpr TimeOfDay const& DateTime::time() const {
+constexpr Time const& DateTime::time() const {
   return time_;
 }
 
 constexpr DateTime DateTime::normalized_end_of_day() const {
   return time_.is_end_of_day()
-             ? DateTime(date_.next_day(), TimeOfDay::hhmmss_ns(00'00'00, 0))
+             ? DateTime(date_.next_day(), Time::hhmmss_ns(00'00'00, 0))
              : *this;
 }
 
-constexpr DateTime::DateTime(Date const date, TimeOfDay const time)
+constexpr DateTime::DateTime(Date const date, Time const time)
     : date_(date),
       time_(time) {}
 
@@ -549,7 +559,7 @@ struct TimeStringInfo {
                                             decimal_mark_index}).Fill());
   }
 
-  constexpr TimeOfDay ToTime() const {
+  constexpr Time ToTime() const {
     return CHECKING(
         digit_count >= 6 &&
             (colons == 0 || (colons == 2 && first_colon_index == 2 &&
@@ -560,8 +570,8 @@ struct TimeStringInfo {
                (colons != 0 && decimal_mark_index == 8)))) &&
             digit_count <= 15 &&
             string[size - 1] == 'Z',
-        TimeOfDay::hhmmss_ns(digit_range(digits, digit_count - 6, 6),
-                           add_0s(digit_range(digits, 0, digit_count - 6),
+        Time::hhmmss_ns(digit_range(digits, digit_count - 6, digit_count),
+                        append_0s(digit_range(digits, 0, digit_count - 6),
                                   9 - (digit_count - 6))));
   }
 
@@ -577,7 +587,7 @@ struct TimeStringInfo {
   int const decimal_mark_index;
 };
 
-constexpr TimeOfDay operator""_Time(char const* string, std::size_t size) {
+constexpr Time operator""_Time(char const* string, std::size_t size) {
   return TimeStringInfo{string,
                         size,
                         /*read=*/0,
@@ -619,8 +629,8 @@ constexpr Instant DateTimeAsTT(DateTime const& date_time) {
                   (date_time.time().second() +
                    date_time.time().minute() * 60 +
                    (date_time.time().hour() - 12) * 60 * 60) * Second +
-                  (days_from_2000_01_01_at_start_of_2000_based_year(
-                       date_time.date().year() - 2000) +
+                  (days_from_2000_01_01_at_start_of_year(
+                       date_time.date().year()) +
                    date_time.date().ordinal() - 1) * Day);
 }
 
@@ -631,8 +641,7 @@ constexpr Instant DateTimeAsTAIUnchecked(DateTime const& date_time) {
          ((date_time.time().second() - 28) +
           (date_time.time().minute() - 59) * 60 +
           (date_time.time().hour() - 11) * 60 * 60) * Second +
-         (days_from_2000_01_01_at_start_of_2000_based_year(
-              date_time.date().year() - 2000) +
+         (days_from_2000_01_01_at_start_of_year(date_time.date().year()) +
           date_time.date().ordinal() - 1) * Day;
 }
 
@@ -692,7 +701,7 @@ constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {{
 }};
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
-constexpr Time UTC_TAI(Date const& utc_date) {
+constexpr quantities::Time UTC_TAI(Date const& utc_date) {
   return utc_date.month() == 1 && utc_date.day() == 1
              ? utc_date.year() == 1972
                    ? -10 * Second

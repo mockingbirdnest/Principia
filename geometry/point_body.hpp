@@ -75,7 +75,8 @@ constexpr Point<Vector> Point<Vector>::operator+(
 }
 
 template<typename Vector>
-constexpr Point<Vector> Point<Vector>::operator-(Vector const& translation) const {
+constexpr Point<Vector> Point<Vector>::operator-(
+    Vector const& translation) const {
   return Point(coordinates_ - translation);
 }
 
