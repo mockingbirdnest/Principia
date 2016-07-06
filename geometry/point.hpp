@@ -27,15 +27,14 @@ class Point {
 #if PRINCIPIA_COMPILER_MSVC && !__INTELLISENSE__
   // Explicitly define constexpr default copy and move constructors because
   // otherwise MSVC fails to initialize constant expressions.  In addition,
-  // intellisense gets confused by these (because of course MSVC and
-  // intellisense are different compilers and have bugs in different places).
+  // Intellisense gets confused by these (because of course MSVC and
+  // Intellisense are different compilers and have bugs in different places).
   constexpr Point(Point const& other);
   constexpr Point(Point&& other);
   Point& operator=(Point const& other) = default;
   Point& operator=(Point&& other) = default;
 #endif
 
-  // TODO(egg): constexpr all the operators.
   constexpr Vector operator-(Point const& from) const;
 
   constexpr Point operator+(Vector const& translation) const;
@@ -52,8 +51,8 @@ class Point {
 
  private:
   // This constructor allows for C++11 functional constexpr operators, and
-  // possibly move-magic.  We may want to reconsider this after we truly have
-  // C++14.
+  // possibly move-magic.
+  // TODO(egg): We may want to reconsider this after we truly have C++14.
   constexpr Point(Vector const& coordinates);
 
   Vector coordinates_;
@@ -81,6 +80,7 @@ class Point {
   friend class BarycentreCalculator;
 };
 
+// TODO(egg): constexpr these operators.
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);

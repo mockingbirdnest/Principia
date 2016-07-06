@@ -19,16 +19,16 @@ using geometry::Instant;
 // -Wno-gnu-string-literal-operator-template.
 
 #if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
-template<typename C, C... string>
+template<typename C, C... str>
 constexpr Instant operator""_TAI();
-template<typename C, C... string>
+template<typename C, C... str>
 constexpr Instant operator""_TT();
-template<typename C, C... string>
+template<typename C, C... str>
 constexpr Instant operator""_UTC();
 #else
-constexpr Instant operator""_TAI(char const* string, std::size_t size);
-constexpr Instant operator""_TT(char const* string, std::size_t size);
-constexpr Instant operator""_UTC(char const* string, std::size_t size);
+constexpr Instant operator""_TAI(char const* str, std::size_t size);
+constexpr Instant operator""_TT(char const* str, std::size_t size);
+constexpr Instant operator""_UTC(char const* str, std::size_t size);
 #endif
 
 }  // namespace internal_date

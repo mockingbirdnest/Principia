@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include "astronomy/date.hpp"
@@ -110,7 +110,7 @@ class DateTime {
   Date const date_;
   Time const time_;
 
-  friend constexpr DateTime operator""_DateTime(char const* string,
+  friend constexpr DateTime operator""_DateTime(char const* str,
                                                 std::size_t size);
 };
 
@@ -133,18 +133,29 @@ constexpr int month_length(int year, int month) {
              : non_leap_year_month_lengths[month - 1];
 }
 
-constexpr int mod_7_offset_1(int const x) {
-  return ((x + 6) % 7) + 1;
+// The result of |mod| has the same sign as |divisor| (same convention as Ada,
+// ISO Prolog, Haskell, etc.), whereas the result of |dividend % divisor| has
+// the same sign as |dividend| (like |rem| in the aforementioned languages).
+constexpr int mod(int const dividend, int const divisor) {
+  return ((dividend % divisor) + divisor) % divisor;
+}
+
+// Similar to Mathematica's |Mod|: the result is congruent to |dividend| modulo
+// |divisor|, and lies in [offset, divisor + offset[ if divisor > 0, and in
+// ]divisor + offset, offset] otherwise.
+constexpr int mod(int const dividend, int const divisor, int const offset) {
+  return mod(dividend - offset, divisor) + offset;
 }
 
 // Result in [1, 7], 1 is Monday.
 constexpr int day_of_week_on_january_1st(int const year) {
   // Gauss's formula, see
   // https://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week#Gauss.27s_algorithm.
-  return mod_7_offset_1(1 +
-                        5 * ((year - 1) % 4) +
-                        4 * ((year - 1) % 100) +
-                        6 * ((year - 1) % 400));
+  return mod(1 + 5 * ((year - 1) % 4) +
+                 4 * ((year - 1) % 100) +
+                 6 * ((year - 1) % 400),
+             7,
+             1);
 }
 
 constexpr int number_of_weeks_in_year(int const year) {
@@ -161,10 +172,7 @@ constexpr int number_of_weeks_in_year(int const year) {
 // A result in [-2, 1] means that the first day of |year| is in the first week
 // of |year|; otherwise, it is in the last week of |year - 1|.
 constexpr int ordinal_of_w_01_1(int const year) {
-  // NOTE: (4 - d) % 7 would differ from 4 - d mod 7 for d > 4, since operator%
-  // behaves like Ada's rem since C++11 (it was implementation-defined before
-  // that).
-  return ((7 + 4 - day_of_week_on_january_1st(year)) % 7) - 2;
+  return mod(2 - day_of_week_on_january_1st(year), 7, -2);
 }
 
 // The signed number of days from 2000-01-01 to the first day of |year|.
@@ -385,239 +393,402 @@ constexpr DateTime const& DateTime::checked() const {
       *this);
 }
 
+// Parsing utilities.
+
+constexpr bool contains(char const* str, std::size_t size, char const c) {
+  return size > 0 && (str[0] == c || contains(str + 1, size - 1, c));
+}
+
+constexpr int index_of(char const* str, std::size_t size, char const c) {
+  return CHECKING(size > 0,
+                  str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1));
+}
+
+class CStringIterator {
+ public:
+  constexpr CStringIterator(char const* str, std::size_t size);
+
+  constexpr bool at_end() const;
+  constexpr CStringIterator next() const;
+  constexpr int index() const;
+  constexpr char const& operator*() const;
+
+ private:
+  constexpr CStringIterator(char const* str, char const* end, char const* it);
+
+  char const* const str_;
+  char const* const end_;
+  char const* const it_;
+};
+
+constexpr CStringIterator::CStringIterator(char const* str, std::size_t size)
+    : str_(str),
+      end_(str + size),
+      it_(str) {}
+
+constexpr bool CStringIterator::at_end() const {
+  return it_ == end_;
+}
+
+constexpr CStringIterator CStringIterator::next() const {
+  return CHECKING(!at_end(), CStringIterator(str_, end_, it_ + 1));
+}
+
+constexpr int CStringIterator::index() const {
+  return it_ - str_;
+}
+
+constexpr char const& CStringIterator::operator*() const {
+  return CHECKING(!at_end(), *it_);
+}
+
+constexpr CStringIterator::CStringIterator(char const* str,
+                                           char const* end,
+                                           char const* it)
+    : str_(str),
+      end_(end),
+      it_(it) {}
+
 // Date parsing.
 
-struct DateStringInfo {
-  constexpr DateStringInfo Fill() const {
-    return read == size
-               ? *this
-               : string[read] == '-'
-                     ? CHECKING(
-                           hyphens < 2,
-                           hyphens == 0
-                               ? DateStringInfo({string,
-                                                 size,
-                                                 read + 1,
-                                                 digits,
-                                                 digit_count,
-                                                 hyphens + 1,
-                                                 /*first_hyphen_index=*/read,
-                                                 second_hyphen_index,
-                                                 has_w,
-                                                 w_index}).Fill()
-                               : DateStringInfo({string,
-                                                 size,
-                                                 read + 1,
-                                                 digits,
-                                                 digit_count,
-                                                 hyphens + 1,
-                                                 first_hyphen_index,
-                                                 /*second_hyphen_index=*/read,
-                                                 has_w,
-                                                 w_index})).Fill()
-                     : string[read] == 'W'
-                           ? CHECKING(!has_w,
-                                      DateStringInfo({string,
-                                                      size,
-                                                      read + 1,
+// A |DateParser| contains information about a string necessary to interpret it
+// as a date representation.
+class DateParser {
+ public:
+  // Returns a |Date| corresponding to the representation |str|.
+  // Fails unless |str| is a date representation of one of the following forms:
+  // [YYYY-MM-DD], [YYYYMMDD], [YYYY-Www-D], [YYYYWwwD], [YYYY-DDD], [YYYYDDD].
+  static constexpr Date Parse(char const* str, std::size_t size);
+
+ private:
+  constexpr DateParser(std::int64_t const digits,
+                       int const digit_count,
+                       int const hyphens,
+                       int const first_hyphen_index,
+                       int const second_hyphen_index,
+                       bool const has_w,
+                       int const w_index);
+
+  // Returns a |DateParser| describing the given string. Fails if the string
+  // does not exclusively consist of:
+  //   - any number of decimal digits;
+  //   - at most two hyphens;
+  //   - at most one 'W'.
+  static constexpr DateParser ReadToEnd(char const* str, std::size_t size);
+  static constexpr DateParser ReadToEnd(CStringIterator const str,
+                                        std::int64_t const digits,
+                                        int const digit_count,
+                                        int const colons,
+                                        int const first_hyphen_index,
+                                        int const second_hyphen_index,
+                                        bool const has_w,
+                                        int const w_index);
+
+  // Returns a |Date| corresponding to the string that |*this| describes.
+  // Fails if the format is invalid or the string represents an invalid date.
+  constexpr Date ToDate() const;
+
+  // The number formed by all digits in the string.
+  std::int64_t const digits_;
+  // The number of digits.
+  int const digit_count_;
+  // The number of hyphens.
+  int const hyphens_;
+  // The index of the first hyphen.
+  int const first_hyphen_index_;
+  // The index of the second hyphen.
+  int const second_hyphen_index_;
+  // Whether the string contains a W.
+  bool const has_w_;
+  // The index of the W.
+  int const w_index_;
+};
+
+constexpr Date DateParser::Parse(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).ToDate();
+}
+
+constexpr DateParser::DateParser(std::int64_t const digits,
+                                 int const digit_count,
+                                 int const hyphens,
+                                 int const first_hyphen_index,
+                                 int const second_hyphen_index,
+                                 bool const has_w,
+                                 int const w_index)
+    : digits_(digits),
+      digit_count_(digit_count),
+      hyphens_(hyphens),
+      first_hyphen_index_(first_hyphen_index),
+      second_hyphen_index_(second_hyphen_index),
+      has_w_(has_w),
+      w_index_(w_index) {}
+
+constexpr DateParser DateParser::ReadToEnd(char const* str, std::size_t size) {
+  return ReadToEnd(CStringIterator(str, size),
+                   /*digits=*/0,
+                   /*digit_count=*/0,
+                   /*hyphens=*/0,
+                   /*first_hyphen_index=*/-1,
+                   /*second_hyphen_index=*/-1,
+                   /*has_w=*/false,
+                   /*w_index=*/-1);
+}
+
+constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
+                                           std::int64_t const digits,
+                                           int const digit_count,
+                                           int const hyphens,
+                                           int const first_hyphen_index,
+                                           int const second_hyphen_index,
+                                           bool const has_w,
+                                           int const w_index) {
+  return str.at_end()
+             ? DateParser{digits,
+                          digit_count,
+                          hyphens,
+                          first_hyphen_index,
+                          second_hyphen_index,
+                          has_w,
+                          w_index}
+             : *str == '-'
+                   ? CHECKING(
+                         hyphens < 2,
+                         hyphens == 0
+                             ? ReadToEnd(str.next(),
+                                         digits,
+                                         digit_count,
+                                         hyphens + 1,
+                                         /*first_hyphen_index=*/str.index(),
+                                         second_hyphen_index,
+                                         has_w,
+                                         w_index)
+                             : ReadToEnd(str.next(),
+                                         digits,
+                                         digit_count,
+                                         hyphens + 1,
+                                         first_hyphen_index,
+                                         /*second_hyphen_index=*/str.index(),
+                                         has_w,
+                                         w_index))
+                   : *str == 'W' ? CHECKING(!has_w,
+                                            ReadToEnd(str.next(),
                                                       digits,
                                                       digit_count,
                                                       hyphens,
                                                       first_hyphen_index,
                                                       second_hyphen_index,
                                                       /*has_w=*/true,
-                                                      /*w_index=*/read})).Fill()
-                           : CHECKING(
-                                 string[read] >= '0' && string[read] <= '9',
-                                 DateStringInfo(
-                                     {string,
-                                      size,
-                                      read + 1,
-                                      digits * 10 + string[read] - '0',
-                                      digit_count + 1,
-                                      hyphens,
-                                      first_hyphen_index,
-                                      second_hyphen_index,
-                                      has_w,
-                                      w_index}).Fill());
-  }
+                                                      /*w_index=*/str.index()))
+                                 : CHECKING(*str >= '0' && *str <= '9',
+                                            ReadToEnd(str.next(),
+                                                      digits * 10 + *str - '0',
+                                                      digit_count + 1,
+                                                      hyphens,
+                                                      first_hyphen_index,
+                                                      second_hyphen_index,
+                                                      has_w,
+                                                      w_index));
+}
 
-  constexpr Date ToDate() const {
-    return digit_count == 8
-               ? CHECKING(
-                     hyphens == 0 || (hyphens == 2 && first_hyphen_index == 4 &&
-                                      second_hyphen_index == 7),
-                     Date::YYYYMMDD(digits))
-               : CHECKING(
-                     digit_count == 7,
-                     has_w ? CHECKING(
-                                 (hyphens == 0 && w_index == 4) ||
-                                     (hyphens == 2 && first_hyphen_index == 4 &&
-                                      w_index == 5 && second_hyphen_index == 8),
-                                 Date::YYYYwwD(digits))
-                           : CHECKING(hyphens == 0 || (hyphens == 1 &&
-                                                       first_hyphen_index == 4),
-                                      Date::YYYYDDD(digits)));
-  }
+constexpr Date DateParser::ToDate() const {
+  return digit_count_ == 8
+             ? CHECKING(hyphens_ == 0 ||
+                            (hyphens_ == 2 && first_hyphen_index_ == 4 &&
+                             second_hyphen_index_ == 7),
+                        Date::YYYYMMDD(digits_))
+             : CHECKING(
+                   digit_count_ == 7,
+                   has_w_
+                       ? CHECKING(
+                             (hyphens_ == 0 && w_index_ == 4) ||
+                                 (hyphens_ == 2 && first_hyphen_index_ == 4 &&
+                                  w_index_ == 5 && second_hyphen_index_ == 8),
+                             Date::YYYYwwD(digits_))
+                       : CHECKING(hyphens_ == 0 || (hyphens_ == 1 &&
+                                                    first_hyphen_index_ == 4),
+                                  Date::YYYYDDD(digits_)));
+}
 
-  char const* const string;
-  std::size_t size;
-  int const read;
-  std::int64_t digits;
-  int digit_count;
-  int const hyphens;
-  int const first_hyphen_index;
-  int const second_hyphen_index;
-  bool const has_w;
-  int const w_index;
-};
-
-constexpr Date operator""_Date(char const* string, std::size_t size) {
-  return DateStringInfo{string,
-                        size,
-                        /*read=*/0,
-                        /*digits=*/0,
-                        /*digit_count=*/0,
-                        /*hyphens=*/0,
-                        /*first_hyphen_index=*/-1,
-                        /*second_hyphen_index=*/-1,
-                        /*has_w=*/false,
-                        /*w_index=*/-1}.Fill().ToDate();
+constexpr Date operator""_Date(char const* str, std::size_t size) {
+  return DateParser::Parse(str, size);
 }
 
 // Time parsing.
 
-struct TimeStringInfo {
-  constexpr TimeStringInfo Fill() const {
-    return read == size
-               ? *this
-               : string[read] == ':'
-                     ? CHECKING(
-                           colons < 2,
-                           colons == 0
-                               ? TimeStringInfo({string,
-                                                 size,
-                                                 read + 1,
-                                                 digits,
-                                                 digit_count,
-                                                 colons + 1,
-                                                 /*first_colon_index=*/read,
-                                                 second_colon_index,
-                                                 has_decimal_mark,
-                                                 decimal_mark_index}).Fill()
-                               : TimeStringInfo({string,
-                                                 size,
-                                                 read + 1,
-                                                 digits,
-                                                 digit_count,
-                                                 colons + 1,
-                                                 first_colon_index,
-                                                 /*second_colon_index=*/read,
-                                                 has_decimal_mark,
-                                                 decimal_mark_index})).Fill()
-                     : string[read] == ',' || string[read] == '.'
-                           ? CHECKING(
-                                 !has_decimal_mark,
-                                 TimeStringInfo(
-                                    {string,
-                                     size,
-                                     read + 1,
-                                     digits,
-                                     digit_count,
-                                     colons,
-                                     first_colon_index,
-                                     second_colon_index,
-                                     /*has_decimal_mark=*/true,
-                                     /*decimal_mark_index=*/read}).Fill())
-                           : string[read] == 'Z'
-                                 ? CHECKING(
-                                       read == size - 1,
-                                       TimeStringInfo(
-                                           {string,
-                                            size,
-                                            read + 1,
-                                            digits,
-                                            digit_count,
-                                            colons,
-                                            first_colon_index,
-                                            second_colon_index,
-                                            has_decimal_mark,
-                                            decimal_mark_index}).Fill())
-                                 : CHECKING(
-                                       string[read] >= '0' &&
-                                       string[read] <= '9',
-                                       TimeStringInfo(
-                                           {string,
-                                            size,
-                                            read + 1,
-                                            digits * 10 + string[read] - '0',
-                                            digit_count + 1,
-                                            colons,
-                                            first_colon_index,
-                                            second_colon_index,
-                                            has_decimal_mark,
-                                            decimal_mark_index}).Fill());
-  }
+// A |TimeParser| contains information about a string necessary to interpret it
+// as a time representation.
+class TimeParser {
+ public:
+  // Returns a |Time| corresponding to the representation |str|.
+  // Fails unless |str| is a valid time representation of one of the following
+  // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
+  // [hhmmss,ss̲], with at most nine digits after the decimal mark.
+  static constexpr Time Parse(char const* str, std::size_t size);
 
-  constexpr Time ToTime() const {
-    return CHECKING(
-        digit_count >= 6 &&
-            (colons == 0 || (colons == 2 && first_colon_index == 2 &&
-                             second_colon_index == 5)) &&
-            ((digit_count == 6 && !has_decimal_mark) ||
-             (has_decimal_mark &&
-              ((colons == 0 && decimal_mark_index == 6) ||
-               (colons != 0 && decimal_mark_index == 8)))) &&
-            digit_count <= 15 &&
-            string[size - 1] == 'Z',
-        Time::hhmmss_ns(digit_range(digits, digit_count - 6, digit_count),
-                        append_0s(digit_range(digits, 0, digit_count - 6),
-                                  9 - (digit_count - 6))));
-  }
+ private:
+  constexpr TimeParser(std::int64_t const digits,
+                       int const digit_count,
+                       int const colons,
+                       int const first_colon_index,
+                       int const second_colon_index,
+                       bool const has_decimal_mark,
+                       int const decimal_mark_index);
 
-  char const* const string;
-  std::size_t size;
-  int const read;
-  std::int64_t digits;
-  int digit_count;
-  int const colons;
-  int const first_colon_index;
-  int const second_colon_index;
-  bool const has_decimal_mark;
-  int const decimal_mark_index;
+  // Returns a |TimeParser| describing the given string. Fails if the string
+  // does not exclusively consist of:
+  // Fails if the string does not exclusively consist of:
+  //   - any number of decimal digits;
+  //   - at most two colons;
+  //   - at most one decimal mark ('.' or ',').
+  static constexpr TimeParser ReadToEnd(char const* str, std::size_t size);
+  static constexpr TimeParser ReadToEnd(CStringIterator const str,
+                                        std::int64_t const digits,
+                                        int const digit_count,
+                                        int const colons,
+                                        int const first_colon_index,
+                                        int const second_colon_index,
+                                        bool const has_decimal_mark,
+                                        int const decimal_mark_index);
+
+  // Returns a |Time| corresponding to the string that |*this| describes.
+  // Fails if the format is invalid or the string represents an invalid time.
+  constexpr Time ToTime() const;
+
+  // The number formed by all digits in the string.
+  std::int64_t const digits_;
+  // The number of digits.
+  int const digit_count_;
+  // The number of colons.
+  int const colons_;
+  // The index of the first colon.
+  int const first_colon_index_;
+  // The index of the second colon.
+  int const second_colon_index_;
+  // Whether the string contains a decimal mark.
+  bool const has_decimal_mark_;
+  // The index of the decimal mark.
+  int const decimal_mark_index_;
 };
 
-constexpr Time operator""_Time(char const* string, std::size_t size) {
-  return TimeStringInfo{string,
-                        size,
-                        /*read=*/0,
-                        /*digits=*/0,
-                        /*digit_count=*/0,
-                        /*colons=*/0,
-                        /*first_colon_index=*/-1,
-                        /*second_colon_index=*/-1,
-                        /*has_decimal_mark=*/false,
-                        /*decimal_mark_index=*/-1}.Fill().ToTime();
+constexpr Time TimeParser::Parse(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).ToTime();
+}
+
+constexpr TimeParser::TimeParser(std::int64_t const digits,
+                                 int const digit_count,
+                                 int const colons,
+                                 int const first_colon_index,
+                                 int const second_colon_index,
+                                 bool const has_decimal_mark,
+                                 int const decimal_mark_index)
+    : digits_(digits),
+      digit_count_(digit_count),
+      colons_(colons),
+      first_colon_index_(first_colon_index),
+      second_colon_index_(second_colon_index),
+      has_decimal_mark_(has_decimal_mark),
+      decimal_mark_index_(decimal_mark_index) {}
+
+constexpr TimeParser TimeParser::ReadToEnd(char const* str, std::size_t size) {
+  return ReadToEnd(CStringIterator(str, size),
+                   /*digits=*/0,
+                   /*digit_count*/ 0,
+                   /*colons=*/0,
+                   /*first_colon_index=*/-1,
+                   /*second_colon_index=*/-1,
+                   /*has_decimal_mark=*/false,
+                   /*decimal_mark_index=*/-1);
+}
+
+constexpr TimeParser TimeParser::ReadToEnd(CStringIterator const str,
+                                           std::int64_t const digits,
+                                           int const digit_count,
+                                           int const colons,
+                                           int const first_colon_index,
+                                           int const second_colon_index,
+                                           bool const has_decimal_mark,
+                                           int const decimal_mark_index) {
+  return str.at_end()
+             ? TimeParser(digits,
+                          digit_count,
+                          colons,
+                          first_colon_index,
+                          second_colon_index,
+                          has_decimal_mark,
+                          decimal_mark_index)
+             : *str == ':'
+                   ? CHECKING(
+                         colons < 2,
+                         colons == 0
+                             ? ReadToEnd(str.next(),
+                                         digits,
+                                         digit_count,
+                                         colons + 1,
+                                         /*first_colon_index=*/str.index(),
+                                         second_colon_index,
+                                         has_decimal_mark,
+                                         decimal_mark_index)
+                             : ReadToEnd(str.next(),
+                                         digits,
+                                         digit_count,
+                                         colons + 1,
+                                         first_colon_index,
+                                         /*second_colon_index=*/str.index(),
+                                         has_decimal_mark,
+                                         decimal_mark_index))
+                   : *str == ',' || *str == '.'
+                         ? CHECKING(
+                               !has_decimal_mark,
+                               ReadToEnd(str.next(),
+                                         digits,
+                                         digit_count,
+                                         colons,
+                                         first_colon_index,
+                                         second_colon_index,
+                                         /*has_decimal_mark=*/true,
+                                         /*decimal_mark_index=*/str.index()))
+                         : CHECKING(*str >= '0' && *str <= '9',
+                                    ReadToEnd(str.next(),
+                                              digits * 10 + *str - '0',
+                                              digit_count + 1,
+                                              colons,
+                                              first_colon_index,
+                                              second_colon_index,
+                                              has_decimal_mark,
+                                              decimal_mark_index));
+}
+
+constexpr Time TimeParser::ToTime() const {
+  return CHECKING(
+      digit_count_ >= 6 &&
+          (colons_ == 0 || (colons_ == 2 && first_colon_index_ == 2 &&
+                            second_colon_index_ == 5)) &&
+          ((digit_count_ == 6 && !has_decimal_mark_) ||
+           (has_decimal_mark_ &&
+            ((colons_ == 0 && decimal_mark_index_ == 6) ||
+             (colons_ != 0 && decimal_mark_index_ == 8)))) &&
+          digit_count_ <= 15,
+      Time::hhmmss_ns(digit_range(digits_, digit_count_ - 6, digit_count_),
+                      append_0s(digit_range(digits_, 0, digit_count_ - 6),
+                                9 - (digit_count_ - 6))));
+}
+
+constexpr Time operator""_Time(char const* str, std::size_t size) {
+  return TimeParser::Parse(str, size);
 }
 
 // DateTime parsing.
 
-constexpr bool contains(char const* string, std::size_t size, char const c) {
-  return size > 0 && (string[0] == c || contains(string + 1, size - 1, c));
-}
-
-constexpr int index_of(char const* string, std::size_t size, char const c) {
-  return CHECKING(size > 0,
-                  string[0] == c ? 0 : (index_of(string + 1, size - 1, c) + 1));
-}
-
-constexpr DateTime operator""_DateTime(char const* string, std::size_t size) {
+constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
+  // Given correctness of the date and time parts of the string, this check
+  // ensures that either both are in basic format or both are in extended
+  // format.
   return CHECKING(
-      contains(string, size, '-') == contains(string, size, ':'),
+      contains(str, size, '-') == contains(str, size, ':'),
       DateTime(
-          operator""_Date(string, index_of(string, size, 'T')),
-          operator""_Time(string + index_of(string, size, 'T') + 1,
-                          size - (index_of(string, size, 'T') + 1))).checked());
+          operator""_Date(str, index_of(str, size, 'T')),
+          operator""_Time(str + index_of(str, size, 'T') + 1,
+                          size - (index_of(str, size, 'T') + 1))).checked());
 }
 
 // Conversion to |Instant|, continuous time scales.
@@ -635,7 +806,7 @@ constexpr Instant DateTimeAsTT(DateTime const& date_time) {
 }
 
 // Allows leap seconds, which are interpreted as the first second of the
-// following TAI day; used both the implementation of both TAI and UTC.
+// following TAI day; used in the implementation of both TAI and UTC.
 constexpr Instant DateTimeAsTAIUnchecked(DateTime const& date_time) {
   return J2000 + (date_time.time().nanosecond() + 184'000'000) / 1e9 * Second +
          ((date_time.time().second() - 28) +
@@ -732,9 +903,9 @@ constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
 // |Instant| date literals.
 
 #if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
-template<typename C, C... string>
-constexpr std::array<C, sizeof...(string)> unpack_as_array() {
-  return std::array<C, sizeof...(string)>{{string...}};
+template<typename C, C... str>
+constexpr std::array<C, sizeof...(str)> unpack_as_array() {
+  return std::array<C, sizeof...(str)>{{str...}};
 }
 
 template<typename T>
@@ -748,40 +919,41 @@ constexpr C const* c_str(std::array<C, size> const& array) {
   return &as_const_ref(array)[0];
 }
 
-template<typename C, C... string>
+// NOTE(egg): In the following three functions, the |constexpr| intermediate
+// variable forces failures occur at compile time and not as glog |CHECK|
+// failures at evaluation.
+
+template<typename C, C... str>
 constexpr Instant operator""_TAI() {
   constexpr auto result = DateTimeAsTAI(
-      operator""_DateTime(c_str(unpack_as_array<C, string...>()),
-                          sizeof...(string)));
+      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
   return result;
 }
 
-template<typename C, C... string>
+template<typename C, C... str>
 constexpr Instant operator""_TT() {
   constexpr auto result = DateTimeAsTT(
-      operator""_DateTime(c_str(unpack_as_array<C, string...>()),
-                          sizeof...(string)));
+      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
   return result;
 }
 
-template<typename C, C... string>
+template<typename C, C... str>
 constexpr Instant operator""_UTC() {
   constexpr auto result = DateTimeAsUTC(
-      operator""_DateTime(c_str(unpack_as_array<C, string...>()),
-                          sizeof...(string)));
+      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
   return result;
 }
 #else
-constexpr Instant operator""_TAI(char const* string, std::size_t size) {
-  return DateTimeAsTAI(operator""_DateTime(string, size));
+constexpr Instant operator""_TAI(char const* str, std::size_t size) {
+  return DateTimeAsTAI(operator""_DateTime(str, size));
 }
 
-constexpr Instant operator""_TT(char const* string, std::size_t size) {
-  return DateTimeAsTT(operator""_DateTime(string, size));
+constexpr Instant operator""_TT(char const* str, std::size_t size) {
+  return DateTimeAsTT(operator""_DateTime(str, size));
 }
 
-constexpr Instant operator""_UTC(char const* string, std::size_t size) {
-  return DateTimeAsUTC(operator""_DateTime(string, size));
+constexpr Instant operator""_UTC(char const* str, std::size_t size) {
+  return DateTimeAsUTC(operator""_DateTime(str, size));
 }
 #endif
 
