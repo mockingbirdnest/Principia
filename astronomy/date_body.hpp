@@ -920,7 +920,7 @@ constexpr C const* c_str(std::array<C, size> const& array) {
 }
 
 // NOTE(egg): In the following three functions, the |constexpr| intermediate
-// variable forces failures occur at compile time and not as glog |CHECK|
+// variable forces failures to occur at compile time and not as glog |CHECK|
 // failures at evaluation.
 
 template<typename C, C... str>
