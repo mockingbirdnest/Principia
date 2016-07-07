@@ -51,25 +51,33 @@ class PointSerializer<Multivector<Scalar, Frame, rank>> {
 };
 
 template<typename Vector>
-Point<Vector>::Point() : coordinates_() {}
+constexpr Point<Vector>::Point() : coordinates_() {}
+
+#if PRINCIPIA_COMPILER_MSVC && !__INTELLISENSE__
+template<typename Vector>
+constexpr Point<Vector>::Point(Point const& other)
+    : coordinates_(other.coordinates_) {}
 
 template<typename Vector>
-Vector Point<Vector>::operator-(Point const& from) const {
+constexpr Point<Vector>::Point(Point&& other)
+    : coordinates_(std::move(other.coordinates_)) {}
+#endif
+
+template<typename Vector>
+constexpr Vector Point<Vector>::operator-(Point const& from) const {
   return coordinates_ - from.coordinates_;
 }
 
 template<typename Vector>
-Point<Vector> Point<Vector>::operator+(Vector const& translation) const {
-  Point result;
-  result.coordinates_ = coordinates_ + translation;
-  return result;
+constexpr Point<Vector> Point<Vector>::operator+(
+    Vector const& translation) const {
+  return Point(coordinates_ + translation);
 }
 
 template<typename Vector>
-Point<Vector> Point<Vector>::operator-(Vector const& translation) const {
-  Point result;
-  result.coordinates_ = coordinates_ - translation;
-  return result;
+constexpr Point<Vector> Point<Vector>::operator-(
+    Vector const& translation) const {
+  return Point(coordinates_ - translation);
 }
 
 template<typename Vector>
@@ -85,12 +93,12 @@ Point<Vector>& Point<Vector>::operator-=(Vector const& translation) {
 }
 
 template<typename Vector>
-bool Point<Vector>::operator==(Point<Vector> const& right) const {
+constexpr bool Point<Vector>::operator==(Point<Vector> const& right) const {
   return coordinates_ == right.coordinates_;
 }
 
 template<typename Vector>
-bool Point<Vector>::operator!=(Point<Vector> const& right) const {
+constexpr bool Point<Vector>::operator!=(Point<Vector> const& right) const {
   return coordinates_ != right.coordinates_;
 }
 
@@ -107,6 +115,10 @@ Point<Vector> Point<Vector>::ReadFromMessage(
   result.coordinates_ = PointSerializer<Vector>::ReadFromMessage(message);
   return result;
 }
+
+template<typename Vector>
+constexpr Point<Vector>::Point(Vector const& coordinates)
+    : coordinates_(coordinates) {}
 
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
