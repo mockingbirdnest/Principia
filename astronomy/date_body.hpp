@@ -823,7 +823,7 @@ constexpr Instant DateTimeAsTAI(DateTime const& date_time) {
 
 // Leap second handling and conversion to UTC.
 
-constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {{
+constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
     +1, +1,  // 1972
     +0, +1,  // 1973
     +0, +1,  // 1974
@@ -868,7 +868,7 @@ constexpr std::array<int, (2016 - 1972) * 2 + 1> leap_seconds = {{
     +0, +0,  // 2013
     +0, +0,  // 2014
     +1, +0,  // 2015
-    +0,      // 2016
+    +0, +1,  // 2016
 }};
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
