@@ -114,6 +114,15 @@ TEST_F(DateTest, LeapSecond) {
               Eq("2015-06-30T24:00:00"_UTC));
   EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 3 * Second,
               Eq("2015-07-01T00:00:00"_UTC));
+
+  constexpr Instant end_of_december_2016 = "2016-12-31T24:00:00"_UTC;
+  EXPECT_THAT(end_of_december_2016 - 2 * Second, Eq("2016-12-31T23:59:59"_UTC));
+  EXPECT_THAT(end_of_december_2016 - 1 * Second, Eq("2016-12-31T23:59:60"_UTC));
+  EXPECT_THAT(end_of_december_2016 - 0 * Second, Eq("2017-01-01T00:00:00"_UTC));
+  EXPECT_THAT("2016-12-31T23:59:59"_UTC - "2016-12-31T23:59:59"_TAI,
+              Eq(36 * Second));
+  EXPECT_THAT("2017-01-01T00:00:00"_UTC - "2017-01-01T00:00:00"_TAI,
+              Eq(37 * Second));
 }
 
 }  // namespace internal_date
