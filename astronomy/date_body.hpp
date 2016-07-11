@@ -51,6 +51,14 @@ class Date {
 
   constexpr Date next_day() const;
 
+  constexpr bool operator==(Date const& other) const;
+  constexpr bool operator!=(Date const& other) const;
+  
+  constexpr bool operator<(Date const& other) const;
+  constexpr bool operator>(Date const& other) const;
+  constexpr bool operator<=(Date const& other) const;
+  constexpr bool operator>=(Date const& other) const;
+
  private:
   constexpr Date(int const year,
                  int const month,
@@ -63,12 +71,12 @@ class Date {
 
 class Time {
  public:
-  static constexpr Time hhmmss_ns(int const hhmmss, int ns);
+  static constexpr Time hhmmss_ms(int const hhmmss, int ms);
 
   constexpr int hour() const;
   constexpr int minute() const;
   constexpr int second() const;
-  constexpr int nanosecond() const;
+  constexpr int millisecond() const;
 
   constexpr bool is_leap_second() const;
   // Whether |*this| is 24:00:00.
@@ -78,7 +86,7 @@ class Time {
   constexpr Time(int const hour,
                  int const minute,
                  int const second,
-                 int const nanosecond);
+                 int const millisecond);
 
   // Checks that this represents a valid time of day as per ISO 8601, thus
   // that the components are in the normal range, or that the object represents
@@ -88,7 +96,7 @@ class Time {
   int const hour_;
   int const minute_;
   int const second_;
-  int const nanosecond_;
+  int const millisecond_;
 };
 
 class DateTime {
@@ -104,7 +112,7 @@ class DateTime {
   constexpr DateTime(Date const date, Time const time);
 
   // Checks that |time| does not represent a leap second unless |date| is the
-  // last day of June, December, March, or September.
+  // last day of the month.
   constexpr DateTime const& checked() const;
 
   Date const date_;
@@ -175,17 +183,53 @@ constexpr int ordinal_of_w_01_1(int const year) {
   return mod(2 - day_of_week_on_january_1st(year), 7, -2);
 }
 
+constexpr int days_in_1_year = 365;
+constexpr int days_in_4_years = days_in_1_year * 4 + 1;
+constexpr int days_in_100_years = days_in_4_years * 25 - 1;
+constexpr int days_in_400_years = days_in_100_years * 4 + 1;
+
+// Given number of days |d| since 0000-01-01 (proleptic Gregorian), returns the
+// Gregorian year.
+constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
+  // NOTE(egg): in order to extend this to the whole proleptic Gregorian
+  // calendar (including d ≤ 0), we would need to use |mod| and a division
+  // consistent with it.  However, in astronomy the proleptic Julian calendar is
+  // used before 1582, and that is not allowed by ISO 8601, so for now let us
+  // ignore the problem and assume that there are no dates before 1583-01-01.
+  return CHECKING(
+      d > 0,
+      ((d - 1) / days_in_400_years) * 400 +
+      (((d - 1) % days_in_400_years) / days_in_100_years) * 100 +
+      ((((d - 1) % days_in_400_years) % days_in_100_years) / days_in_4_years) *
+          4 +
+      ((((d - 1) % days_in_400_years) % days_in_100_years) % days_in_4_years) /
+          days_in_1_year);
+}
+
+// Given number of days |d| since 0000-01-01 (proleptic Gregorian), returns the
+// ordinal in the current Gregorian year.
+constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
+  return CHECKING(
+      d > 0,
+      (((((d - 1) % days_in_400_years) % days_in_100_years) % days_in_4_years) %
+       days_in_1_year) + 1);
+}
+
+// The number of days since 0000-01-01 on the first day of |year|, in the
+// proleptic Gregorian calendar.
+// |gregorian_days_to_year| is a left inverse of this function.
+constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
+  return CHECKING(year > 0,
+                  1 + (year) * 365 +
+                      (year - 1) / 4 -
+                      (year - 1) / 100 +
+                      (year - 1) / 400);
+}
+
 // The signed number of days from 2000-01-01 to the first day of |year|.
 constexpr int days_from_2000_01_01_at_start_of_year(int const year) {
-  return year - 2000 > 0
-             ? 1 + (year - 2000) * 365 +
-               (year - 2000 - 1) / 4 -
-               (year - 2000 - 1) / 100 +
-               (year - 2000 - 1) / 400
-             : (year - 2000) * 365 +
-               (year - 2000) / 4 -
-               (year - 2000) / 100 +
-               (year - 2000) / 400;
+  return gregorian_days_from_0000_01_01_at_start_of_year(year) -
+         gregorian_days_from_0000_01_01_at_start_of_year(2000);
 }
 
 // Returns the number formed by taking |end - begin| increasingly significant
@@ -304,6 +348,30 @@ constexpr Date Date::next_day() const {
              : Date(year_, month_, day_ + 1);
 }
 
+constexpr bool Date::operator==(Date const& other) const {
+  return year_ == other.year_ && month_ == other.month_ && day_ == other.day_;
+}
+
+constexpr bool Date::operator!=(Date const& other) const {
+  return year_ != other.year_ || month_ != other.month_ || day_ != other.day_;
+}
+
+constexpr bool Date::operator<(Date const& other) const {
+  return year_ < other.year_ || month_ < other.month_ || day_ < other.day_;
+}
+
+constexpr bool Date::operator>(Date const& other) const {
+  return year_ > other.year_ || month_ > other.month_ || day_ > other.day_;
+}
+
+constexpr bool Date::operator<=(Date const& other) const {
+  return !(*this > other);
+}
+
+constexpr bool Date::operator>=(Date const& other) const {
+  return !(*this < other);
+}
+
 constexpr Date::Date(int const year,
                      int const month,
                      int const day)
@@ -313,12 +381,12 @@ constexpr Date::Date(int const year,
 
 // Implementation of class Time.
 
-constexpr Time Time::hhmmss_ns(int const hhmmss, int ns) {
+constexpr Time Time::hhmmss_ms(int const hhmmss, int ms) {
   return CHECKING(hhmmss >= 0 && hhmmss <= 99'99'99,
                   Time(digit_range(hhmmss, 4, 6),
                        digit_range(hhmmss, 2, 4),
                        digit_range(hhmmss, 0, 2),
-                       ns).checked());
+                       ms).checked());
 }
 
 constexpr int Time::hour() const {
@@ -333,8 +401,8 @@ constexpr int Time::second() const {
   return second_;
 }
 
-constexpr int Time::nanosecond() const {
-  return nanosecond_;
+constexpr int Time::millisecond() const {
+  return millisecond_;
 }
 
 constexpr bool Time::is_leap_second() const {
@@ -348,16 +416,16 @@ constexpr bool Time::is_end_of_day() const {
 constexpr Time::Time(int const hour,
                      int const minute,
                      int const second,
-                     int const nanosecond)
+                     int const millisecond)
     : hour_(hour),
       minute_(minute),
       second_(second),
-      nanosecond_(nanosecond) {}
+      millisecond_(millisecond) {}
 
 constexpr Time const& Time::checked() const {
   return CHECKING(
-      (hour_ == 24 && minute_ == 0 && second_ == 0 && nanosecond_ == 0) ||
-          ((nanosecond_ >= 0 && nanosecond_ <= 999'999'999) &&
+      (hour_ == 24 && minute_ == 0 && second_ == 0 && millisecond_ == 0) ||
+          ((millisecond_ >= 0 && millisecond_ <= 999) &&
            ((hour_ == 23 && minute_ == 59 && second_ == 60) ||
             (hour_ >= 0 && hour_ <= 23 && minute_ >= 0 && minute_ <= 59 &&
              second_ >= 0 && second_ <= 59))),
@@ -376,7 +444,7 @@ constexpr Time const& DateTime::time() const {
 
 constexpr DateTime DateTime::normalized_end_of_day() const {
   return time_.is_end_of_day()
-             ? DateTime(date_.next_day(), Time::hhmmss_ns(00'00'00, 0))
+             ? DateTime(date_.next_day(), Time::hhmmss_ms(00'00'00, 0))
              : *this;
 }
 
@@ -385,12 +453,9 @@ constexpr DateTime::DateTime(Date const date, Time const time)
       time_(time) {}
 
 constexpr DateTime const& DateTime::checked() const {
-  return CHECKING(
-      !time_.is_leap_second() ||
-          (date_.day() == month_length(date_.year(), date_.month()) &&
-           (date_.month() == 6 || date_.month() == 12 || date_.month() == 3 ||
-            date_.month() == 9)),
-      *this);
+  return CHECKING(!time_.is_leap_second() ||
+                      date_.day() == month_length(date_.year(), date_.month()),
+                  *this);
 }
 
 // Parsing utilities.
@@ -622,7 +687,7 @@ class TimeParser {
   // Returns a |Time| corresponding to the representation |str|.
   // Fails unless |str| is a valid time representation of one of the following
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
-  // [hhmmss,ss̲], with at most nine digits after the decimal mark.
+  // [hhmmss,ss̲], with at most three digits after the decimal mark.
   static constexpr Time Parse(char const* str, std::size_t size);
 
  private:
@@ -768,9 +833,9 @@ constexpr Time TimeParser::ToTime() const {
             ((colons_ == 0 && decimal_mark_index_ == 6) ||
              (colons_ != 0 && decimal_mark_index_ == 8)))) &&
           digit_count_ <= 15,
-      Time::hhmmss_ns(digit_range(digits_, digit_count_ - 6, digit_count_),
+      Time::hhmmss_ms(digit_range(digits_, digit_count_ - 6, digit_count_),
                       append_0s(digit_range(digits_, 0, digit_count_ - 6),
-                                9 - (digit_count_ - 6))));
+                                3 - (digit_count_ - 6))));
 }
 
 constexpr Time operator""_Time(char const* str, std::size_t size) {
@@ -791,37 +856,39 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
                           size - (index_of(str, size, 'T') + 1))).checked());
 }
 
-// Conversion to |Instant|, continuous time scales.
+// Interpretation utilities.
 
-constexpr Instant DateTimeAsTT(DateTime const& date_time) {
-  return CHECKING(!date_time.time().is_leap_second(),
-                  J2000 +
-                  date_time.time().nanosecond() / 1e9 * Second +
-                  (date_time.time().second() +
-                   date_time.time().minute() * 60 +
-                   (date_time.time().hour() - 12) * 60 * 60) * Second +
-                  (days_from_2000_01_01_at_start_of_year(
-                       date_time.date().year()) +
-                   date_time.date().ordinal() - 1) * Day);
+// Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
+// timescale), not counting any leap seconds that may have occured in the past.
+// |date_time| itself may be leap second.
+// Note that this may count non-SI seconds depending on the time scale according
+// to which it is interpreted.
+// On a time scale with leap seconds, this is not injective: a positive leap
+// second and the following second map to the same interval.
+constexpr quantities::Time TimeScale(DateTime const& date_time) {
+  return (date_time.time().millisecond() / 1e3) * Second +
+         (date_time.time().second() +
+          60 * (date_time.time().minute() +
+                60 * (date_time.time().hour() - 12 +
+                      24 * static_cast<std::int64_t>(
+                               days_from_2000_01_01_at_start_of_year(
+                                   date_time.date().year()) +
+                               date_time.date().ordinal() - 1)))) * Second;
 }
 
-// Allows leap seconds, which are interpreted as the first second of the
-// following TAI day; used in the implementation of both TAI and UTC.
-constexpr Instant DateTimeAsTAIUnchecked(DateTime const& date_time) {
-  return J2000 + (date_time.time().nanosecond() + 184'000'000) / 1e9 * Second +
-         ((date_time.time().second() - 28) +
-          (date_time.time().minute() - 59) * 60 +
-          (date_time.time().hour() - 11) * 60 * 60) * Second +
-         (days_from_2000_01_01_at_start_of_year(date_time.date().year()) +
-          date_time.date().ordinal() - 1) * Day;
+constexpr double mjd(quantities::Time const& from_j2000) {
+  return from_j2000 / Day + 51544.5;
 }
 
-constexpr Instant DateTimeAsTAI(DateTime const& date_time) {
-  return CHECKING(!date_time.time().is_leap_second(),
-                  DateTimeAsTAIUnchecked(date_time));
+constexpr Instant FromTT(quantities::Time const& from_j2000) {
+  return J2000 + from_j2000;
 }
 
-// Leap second handling and conversion to UTC.
+constexpr Instant FromTAI(quantities::Time const& tai) {
+  return FromTT(tai + 32.184 * Second);
+}
+
+// Utilities for modern UTC (since 1972).
 
 constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
     +1, +1,  // 1972
@@ -872,32 +939,125 @@ constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
 }};
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
-constexpr quantities::Time UTC_TAI(Date const& utc_date) {
+constexpr quantities::Time ModernUTC_TAI(Date const& utc_date) {
   return utc_date.month() == 1 && utc_date.day() == 1
              ? utc_date.year() == 1972
                    ? -10 * Second
                    : -leap_seconds[(utc_date.year() - 1973) * 2] * Second +
-                     -leap_seconds[(utc_date.year() - 1973) * 2 + 1] * Second +
-                     UTC_TAI(Date::Calendar(utc_date.year() - 1, 1, 1))
+                         -leap_seconds[(utc_date.year() - 1973) * 2 + 1] *
+                             Second +
+                         ModernUTC_TAI(Date::Calendar(utc_date.year() - 1, 1, 1))
              : (utc_date.month() > 6
                     ? -leap_seconds[(utc_date.year() - 1972) * 2] * Second
                     : 0 * Second) +
-               UTC_TAI(Date::Calendar(utc_date.year(), 1, 1));
+                   ModernUTC_TAI(Date::Calendar(utc_date.year(), 1, 1));
 }
 
-// NOTE(egg): no check for invalid UTC in case of negative leap seconds.
-constexpr Instant DateTimeAsUTC(DateTime const& date_time) {
-  return date_time.time().is_end_of_day()
-             ? DateTimeAsUTC(date_time.normalized_end_of_day())
-             : CHECKING(
-                   !date_time.time().is_leap_second() ||
-                   (date_time.date().month() == 6 &&
-                    leap_seconds[(date_time.date().year() - 1972) * 2] == +1) ||
-                   (date_time.date().month() == 12 &&
-                    leap_seconds[(date_time.date().year() - 1972) * 2 + 1] ==
-                        +1),
-                   DateTimeAsTAIUnchecked(date_time) -
-                       UTC_TAI(date_time.date()));
+constexpr bool IsValidModernUTC(DateTime const& date_time) {
+  return !date_time.time().is_leap_second() ||
+         (date_time.date().month() == 6 &&
+          leap_seconds[(date_time.date().year() - 1972) * 2] == +1) ||
+         (date_time.date().month() == 12 &&
+          leap_seconds[(date_time.date().year() - 1972) * 2 + 1] == +1);
+}
+
+// Utilities for stretchy UTC (pre-1972).  This timescale includes rate changes
+// as well as fractional second leaps.
+
+// The (MJD - d) * t term from
+// https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history.
+constexpr quantities::Time RateTermStretchyTAI_UTC(DateTime const& utc) {
+  return utc.date() < "1962-01-01"_Date
+             ? (mjd(TimeScale(utc)) - 37'300) * 0.001'296 * Second
+       : utc.date() < "1964-01-01"_Date
+             ? (mjd(TimeScale(utc)) - 37'665) * 0.001'123'2 * Second
+       : utc.date() < "1965-01-01"_Date
+             ? (mjd(TimeScale(utc)) - 38'761) * 0.001'296 * Second
+             : (mjd(TimeScale(utc)) - 39'126) * 0.002'592 * Second;
+}
+
+// The constant term.
+constexpr quantities::Time OffsetStretchyTAI_UTC(Date const& utc_date) {
+  return utc_date < "1961-08-01"_Date ? 1.422'818'0 * Second
+       : utc_date < "1962-01-01"_Date ? 1.372'818'0 * Second
+       : utc_date < "1963-11-01"_Date ? 1.845'858'0 * Second
+       : utc_date < "1964-01-01"_Date ? 1.945'858'0 * Second
+       : utc_date < "1964-04-01"_Date ? 3.240'130'0 * Second
+       : utc_date < "1964-09-01"_Date ? 3.340'130'0 * Second
+       : utc_date < "1965-01-01"_Date ? 3.440'130'0 * Second
+       : utc_date < "1965-03-01"_Date ? 3.540'130'0 * Second
+       : utc_date < "1965-07-01"_Date ? 3.640'130'0 * Second
+       : utc_date < "1965-09-01"_Date ? 3.740'130'0 * Second
+       : utc_date < "1966-01-01"_Date ? 3.840'130'0 * Second
+       : utc_date < "1968-02-01"_Date ? 4.313'170'0 * Second
+                                      : 4.213'170'0 * Second;
+}
+
+// Returns TAI - UTC at the given point on the UTC timescale.
+constexpr quantities::Time StretchyTAI_UTC(DateTime const& utc) {
+  return OffsetStretchyTAI_UTC(utc.date()) + RateTermStretchyTAI_UTC(utc);
+}
+
+// Returns |true| if |utc| is within a leap of the given number of
+// |milliseconds| inserted before |next_day|.
+constexpr bool IsValidPre1972PositiveUTCLeap(DateTime const& utc,
+                                             Date const& next_day,
+                                             double const& milliseconds) {
+  return utc.time().is_leap_second() && utc.date().next_day() == next_day &&
+         utc.time().millisecond() < milliseconds;
+}
+
+// If |utc| is on the day before |next_day|, returns true its time is consistent
+// with a negative leap of the given number of |milliseconds| before |next_day|.
+// If |utc| is not on the day before |next_day|, returns true.
+constexpr bool IsValidUTCIfOnDayOfNegativeLeap(DateTime const& utc,
+                                               Date const& next_day,
+                                               int const milliseconds) {
+  return CHECKING(milliseconds > 0,
+                  utc.date().next_day() != next_day ||
+                      utc.time().hour() < 23 ||
+                      utc.time().minute() < 59 ||
+                      utc.time().millisecond() < 1000 - milliseconds);
+}
+
+// A list of leaps is found at
+// https://hpiers.obspm.fr/iers/bul/bulc/TimeSteps.history.
+constexpr bool IsValidStretchyUTC(DateTime const& utc) {
+  return utc.date().year() >= 1961 && utc.date().year() < 1972 &&
+         IsValidUTCIfOnDayOfNegativeLeap(utc, "1961-08-01"_Date, 50) &&
+         IsValidUTCIfOnDayOfNegativeLeap(utc, "1968-02-01"_Date, 100) &&
+         (!utc.time().is_leap_second() ||
+          IsValidPre1972PositiveUTCLeap(utc, "1963-11-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1964-04-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1964-09-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1965-01-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1965-03-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1965-07-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1965-09-01"_Date, 100) ||
+          IsValidPre1972PositiveUTCLeap(utc, "1972-01-01"_Date, 107.7580));
+}
+
+// Conversions from |DateTime| to |Instant|.
+
+constexpr Instant DateTimeAsTT(DateTime const& tt) {
+  return CHECKING(!tt.time().is_leap_second(), FromTT(TimeScale(tt)));
+}
+
+constexpr Instant DateTimeAsTAI(DateTime const& tai) {
+  return CHECKING(!tai.time().is_leap_second(), FromTAI(TimeScale(tai)));
+}
+
+constexpr quantities::Time t = StretchyTAI_UTC("1962-03-30T00:00:00"_DateTime);
+
+constexpr Instant DateTimeAsUTC(DateTime const& utc) {
+  return utc.time().is_end_of_day()
+             ? DateTimeAsUTC(utc.normalized_end_of_day())
+             : utc.date().year() < 1972
+                   ? CHECKING(IsValidStretchyUTC(utc),
+                              FromTAI(TimeScale(utc) + StretchyTAI_UTC(utc)))
+                   : CHECKING(
+                         IsValidModernUTC(utc),
+                         FromTAI(TimeScale(utc) - ModernUTC_TAI(utc.date())));
 }
 
 // |Instant| date literals.
