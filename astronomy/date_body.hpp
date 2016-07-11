@@ -983,7 +983,7 @@ constexpr quantities::Time RateTermTAI_UTC(DateTime const& utc) {
              ? (mjd(TimeScale(utc)) - 37'300) * 0.001'296 * Second
        : utc.date() < "1964-01-01"_Date
              ? (mjd(TimeScale(utc)) - 37'665) * 0.001'123'2 * Second
-       : utc.date() < "1965-01-01"_Date
+       : utc.date() < "1966-01-01"_Date
              ? (mjd(TimeScale(utc)) - 38'761) * 0.001'296 * Second
              : (mjd(TimeScale(utc)) - 39'126) * 0.002'592 * Second;
 }
