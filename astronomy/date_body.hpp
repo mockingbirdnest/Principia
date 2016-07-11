@@ -53,7 +53,7 @@ class Date {
 
   constexpr bool operator==(Date const& other) const;
   constexpr bool operator!=(Date const& other) const;
-  
+
   constexpr bool operator<(Date const& other) const;
   constexpr bool operator>(Date const& other) const;
   constexpr bool operator<=(Date const& other) const;
@@ -188,8 +188,8 @@ constexpr int days_in_4_years = days_in_1_year * 4 + 1;
 constexpr int days_in_100_years = days_in_4_years * 25 - 1;
 constexpr int days_in_400_years = days_in_100_years * 4 + 1;
 
-// Given number of days |d| since 0000-01-01 (proleptic Gregorian), returns the
-// Gregorian year.
+// Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
+// the Gregorian year.
 constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
   // NOTE(egg): in order to extend this to the whole proleptic Gregorian
   // calendar (including d ≤ 0), we would need to use |mod| and a division
@@ -206,8 +206,8 @@ constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
           days_in_1_year);
 }
 
-// Given number of days |d| since 0000-01-01 (proleptic Gregorian), returns the
-// ordinal in the current Gregorian year.
+// Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
+// the ordinal in the current Gregorian year.
 constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
   return CHECKING(
       d > 0,
@@ -217,7 +217,7 @@ constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
 
 // The number of days since 0000-01-01 on the first day of |year|, in the
 // proleptic Gregorian calendar.
-// |gregorian_days_to_year| is a left inverse of this function.
+// |gregorian_days_from_0000_01_01_to_year| is a left inverse of this function.
 constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
   return CHECKING(year > 0,
                   1 + (year) * 365 +
@@ -353,7 +353,7 @@ constexpr bool Date::operator==(Date const& other) const {
 }
 
 constexpr bool Date::operator!=(Date const& other) const {
-  return year_ != other.year_ || month_ != other.month_ || day_ != other.day_;
+  return !(*this == other);
 }
 
 constexpr bool Date::operator<(Date const& other) const {
@@ -364,24 +364,15 @@ constexpr bool Date::operator<(Date const& other) const {
 }
 
 constexpr bool Date::operator>(Date const& other) const {
-  return year_ > other.year_ ||
-         (year_ == other.year_ &&
-          (month_ > other.month_ ||
-           (month_ == other.month_ && day_ > other.day_)));
+  return other < *this;
 }
 
 constexpr bool Date::operator<=(Date const& other) const {
-  return year_ < other.year_ ||
-         (year_ == other.year_ &&
-          (month_ < other.month_ ||
-           (month_ == other.month_ && day_ <= other.day_)));
+  return !(*this > other);
 }
 
 constexpr bool Date::operator>=(Date const& other) const {
-  return year_ > other.year_ ||
-         (year_ == other.year_ &&
-          (month_ > other.month_ ||
-           (month_ == other.month_ && day_ >= other.day_)));
+  return !(*this < other);
 }
 
 constexpr Date::Date(int const year,
@@ -871,7 +862,7 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
 // Interpretation utilities.
 
 // Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
-// timescale), not counting any leap seconds that may have occured in the past.
+// timescale), not counting any leap seconds that may have occurred in the past.
 // |date_time| itself may be leap second.
 // Note that this may count non-SI seconds depending on the time scale according
 // to which it is interpreted.
@@ -951,18 +942,19 @@ constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
 }};
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
-constexpr quantities::Time ModernUTC_TAI(Date const& utc_date) {
+constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
   return utc_date.month() == 1 && utc_date.day() == 1
              ? utc_date.year() == 1972
                    ? -10 * Second
                    : -leap_seconds[(utc_date.year() - 1973) * 2] * Second +
                          -leap_seconds[(utc_date.year() - 1973) * 2 + 1] *
                              Second +
-                         ModernUTC_TAI(Date::Calendar(utc_date.year() - 1, 1, 1))
+                         ModernUTCMinusTAI(
+                             Date::Calendar(utc_date.year() - 1, 1, 1))
              : (utc_date.month() > 6
                     ? -leap_seconds[(utc_date.year() - 1972) * 2] * Second
                     : 0 * Second) +
-                   ModernUTC_TAI(Date::Calendar(utc_date.year(), 1, 1));
+                   ModernUTCMinusTAI(Date::Calendar(utc_date.year(), 1, 1));
 }
 
 constexpr bool IsValidModernUTC(DateTime const& date_time) {
@@ -978,7 +970,7 @@ constexpr bool IsValidModernUTC(DateTime const& date_time) {
 
 // The (MJD - d) * t term from
 // https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history.
-constexpr quantities::Time RateTermTAI_UTC(DateTime const& utc) {
+constexpr quantities::Time RateTAIMinusStretchyUTC(DateTime const& utc) {
   return utc.date() < "1962-01-01"_Date
              ? (mjd(TimeScale(utc)) - 37'300) * 0.001'296 * Second
        : utc.date() < "1964-01-01"_Date
@@ -989,7 +981,7 @@ constexpr quantities::Time RateTermTAI_UTC(DateTime const& utc) {
 }
 
 // The constant term.
-constexpr quantities::Time OffsetTAI_UTC(Date const& utc_date) {
+constexpr quantities::Time OffsetTAIMinusStretchyUTC(Date const& utc_date) {
   return utc_date < "1961-08-01"_Date ? 1.422'818'0 * Second
        : utc_date < "1962-01-01"_Date ? 1.372'818'0 * Second
        : utc_date < "1963-11-01"_Date ? 1.845'858'0 * Second
@@ -1006,13 +998,13 @@ constexpr quantities::Time OffsetTAI_UTC(Date const& utc_date) {
 }
 
 // Returns TAI - UTC at the given point on the UTC timescale.
-constexpr quantities::Time StretchyTAI_UTC(DateTime const& utc) {
-  return OffsetTAI_UTC(utc.date()) + RateTermTAI_UTC(utc);
+constexpr quantities::Time TAIMinusStretchyUTC(DateTime const& utc) {
+  return OffsetTAIMinusStretchyUTC(utc.date()) + RateTAIMinusStretchyUTC(utc);
 }
 
 // Returns |true| if |utc| is within a leap of the given number of
 // |milliseconds| inserted before |next_day|.
-constexpr bool IsValidPre1972PositiveUTCLeap(DateTime const& utc,
+constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
                                              Date const& next_day,
                                              double const& milliseconds) {
   return utc.time().is_leap_second() && utc.date().next_day() == next_day &&
@@ -1022,9 +1014,9 @@ constexpr bool IsValidPre1972PositiveUTCLeap(DateTime const& utc,
 // If |utc| is on the day before |next_day|, returns true its time is consistent
 // with a negative leap of the given number of |milliseconds| before |next_day|.
 // If |utc| is not on the day before |next_day|, returns true.
-constexpr bool IsValidUTCIfOnDayOfNegativeLeap(DateTime const& utc,
-                                               Date const& next_day,
-                                               int const milliseconds) {
+constexpr bool IsValidStretchyUTCIfOnDayOfNegativeLeap(DateTime const& utc,
+                                                       Date const& next_day,
+                                                       int const milliseconds) {
   return CHECKING(milliseconds > 0,
                   utc.date().next_day() != next_day ||
                       utc.time().hour() < 23 ||
@@ -1036,17 +1028,17 @@ constexpr bool IsValidUTCIfOnDayOfNegativeLeap(DateTime const& utc,
 // https://hpiers.obspm.fr/iers/bul/bulc/TimeSteps.history.
 constexpr bool IsValidStretchyUTC(DateTime const& utc) {
   return utc.date().year() >= 1961 && utc.date().year() < 1972 &&
-         IsValidUTCIfOnDayOfNegativeLeap(utc, "1961-08-01"_Date, 50) &&
-         IsValidUTCIfOnDayOfNegativeLeap(utc, "1968-02-01"_Date, 100) &&
+         IsValidStretchyUTCIfOnDayOfNegativeLeap(utc, "1961-08-01"_Date, 50) &&
+         IsValidStretchyUTCIfOnDayOfNegativeLeap(utc, "1968-02-01"_Date, 100) &&
          (!utc.time().is_leap_second() ||
-          IsValidPre1972PositiveUTCLeap(utc, "1963-11-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1964-04-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1964-09-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1965-01-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1965-03-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1965-07-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1965-09-01"_Date, 100) ||
-          IsValidPre1972PositiveUTCLeap(utc, "1972-01-01"_Date, 107.7580));
+          IsValidPositiveStretchyUTCLeap(utc, "1963-11-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1964-04-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1964-09-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1965-01-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1965-03-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1965-07-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1965-09-01"_Date, 100) ||
+          IsValidPositiveStretchyUTCLeap(utc, "1972-01-01"_Date, 107.7580));
 }
 
 // Conversions from |DateTime| to |Instant|.
@@ -1063,11 +1055,12 @@ constexpr Instant DateTimeAsUTC(DateTime const& utc) {
   return utc.time().is_end_of_day()
              ? DateTimeAsUTC(utc.normalized_end_of_day())
              : utc.date().year() < 1972
-                   ? CHECKING(IsValidStretchyUTC(utc),
-                              FromTAI(TimeScale(utc) + StretchyTAI_UTC(utc)))
-                   : CHECKING(
-                         IsValidModernUTC(utc),
-                         FromTAI(TimeScale(utc) - ModernUTC_TAI(utc.date())));
+                   ? CHECKING(
+                         IsValidStretchyUTC(utc),
+                         FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc)))
+                   : CHECKING(IsValidModernUTC(utc),
+                              FromTAI(TimeScale(utc) -
+                                      ModernUTCMinusTAI(utc.date())));
 }
 
 // |Instant| date literals.

@@ -18,7 +18,6 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Lt;
-using ::testing::Ne;
 
 class DateTest : public testing::Test {};
 
@@ -54,7 +53,7 @@ TEST_F(DateDeathTest, InvalidDateTime) {
   EXPECT_DEATH("2001-01-01T23:59:60"_TT, "");
 }
 
-TEST_F(DateDeathTest, Pre1972Leaps) {
+TEST_F(DateDeathTest, StretchyLeaps) {
   EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1963-10-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1964-03-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
@@ -145,7 +144,7 @@ TEST_F(DateTest, LeapSecond) {
 // with respect to positive or negative leap seconds, the actual conversion is
 // based exclusively on https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history,
 // so this provides some sort of cross-checking.
-TEST_F(DateTest, Pre1972Leaps) {
+TEST_F(DateTest, StretchyLeaps) {
   EXPECT_THAT(AbsoluteError("1961-07-31T24:00:00,000"_UTC - 0.050 * Second,
                             "1961-07-31T23:59:59,900"_UTC),
               Lt(1 * Micro(Second)));
@@ -217,10 +216,10 @@ TEST_F(DateTest, Pre1972Leaps) {
       Lt(0.5 * Milli(Second)));
 }
 
-TEST_F(DateTest, Pre1972Rates) {
+TEST_F(DateTest, StretchyRates) {
   // Check that cancellations aren't destroying the test.
-  EXPECT_THAT("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
-              Ne("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10)));
+  EXPECT_NE("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
+            "1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10));
 
   quantities::Time utc_minute;
   utc_minute = 1 * Minute / (1 - 150e-10);
