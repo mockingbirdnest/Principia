@@ -53,6 +53,18 @@ TEST_F(DateDeathTest, InvalidDateTime) {
   EXPECT_DEATH("2001-01-01T23:59:60"_TT, "");
 }
 
+TEST_F(DateDeathTest, Pre1972Leaps) {
+  EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1963-10-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1964-03-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1964-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1964-12-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1965-02-28T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1965-06-30T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1965-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1968-01-31T23:59:59,900"_UTC, "IsValidStretchyUTC");
+}
+
 #endif
 
 namespace {
@@ -140,13 +152,6 @@ TEST_F(DateTest, Pre1972Leaps) {
       AbsoluteError("1961-08-01T00:00:00"_UTC, "1961-08-01T00:00:01,648"_TAI),
       Lt(0.5 * Milli(Second)));
 
-  EXPECT_THAT(AbsoluteError("1968-01-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1968-01-31T23:59:59,800"_UTC),
-              Lt(1 * Micro(Second)));
-  EXPECT_THAT(
-      AbsoluteError("1968-02-01T00:00:00"_UTC, "1968-02-01T00:00:06,186"_TAI),
-      Lt(0.5 * Milli(Second)));
-
   EXPECT_THAT(AbsoluteError("1963-10-31T24:00:00,000"_UTC - 0.100 * Second,
                             "1963-10-31T23:59:60,000"_UTC),
               Lt(1 * Micro(Second)));
@@ -194,6 +199,13 @@ TEST_F(DateTest, Pre1972Leaps) {
               Lt(1 * Micro(Second)));
   EXPECT_THAT(
       AbsoluteError("1965-09-01T00:00:00"_UTC, "1965-09-01T00:00:04,155"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1968-01-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1968-01-31T23:59:59,800"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1968-02-01T00:00:00"_UTC, "1968-02-01T00:00:06,186"_TAI),
       Lt(0.5 * Milli(Second)));
 
   EXPECT_THAT(AbsoluteError("1971-12-31T24:00:00,000"_UTC - 0.107'7580 * Second,
