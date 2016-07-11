@@ -11,6 +11,7 @@ namespace astronomy {
 namespace internal_date {
 
 using quantities::si::Micro;
+using quantities::si::Milli;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
@@ -50,6 +51,18 @@ TEST_F(DateDeathTest, InvalidTime) {
 
 TEST_F(DateDeathTest, InvalidDateTime) {
   EXPECT_DEATH("2001-01-01T23:59:60"_TT, "");
+}
+
+TEST_F(DateDeathTest, StretchyLeaps) {
+  EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1963-10-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1964-03-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1964-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1964-12-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1965-02-28T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1965-06-30T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1965-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1968-01-31T23:59:59,900"_UTC, "IsValidStretchyUTC");
 }
 
 #endif
@@ -123,6 +136,122 @@ TEST_F(DateTest, LeapSecond) {
               Eq(36 * Second));
   EXPECT_THAT("2017-01-01T00:00:00"_UTC - "2017-01-01T00:00:00"_TAI,
               Eq(37 * Second));
+}
+
+// See the list of steps at
+// https://hpiers.obspm.fr/iers/bul/bulc/TimeSteps.history.
+// Note that while the same file is used to check that the date string is valid
+// with respect to positive or negative leap seconds, the actual conversion is
+// based exclusively on https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history,
+// so this provides some sort of cross-checking.
+TEST_F(DateTest, StretchyLeaps) {
+  EXPECT_THAT(AbsoluteError("1961-07-31T24:00:00,000"_UTC - 0.050 * Second,
+                            "1961-07-31T23:59:59,900"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1961-08-01T00:00:00"_UTC, "1961-08-01T00:00:01,648"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1963-10-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1963-10-31T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1963-11-01T00:00:00"_UTC, "1963-11-01T00:00:02,697"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1964-03-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1964-03-31T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1964-04-01T00:00:00"_UTC, "1964-04-01T00:00:02,984"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1964-08-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1964-08-31T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1964-09-01T00:00:00"_UTC, "1964-09-01T00:00:03,282"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1964-12-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1964-12-31T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1965-01-01T00:00:00"_UTC, "1965-01-01T00:00:03,540"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1965-02-28T24:00:00,000"_UTC - 0.100 * Second,
+                            "1965-02-28T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1965-03-01T00:00:00"_UTC, "1965-03-01T00:00:03,717"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1965-06-30T24:00:00,000"_UTC - 0.100 * Second,
+                            "1965-06-30T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1965-07-01T00:00:00"_UTC, "1965-07-01T00:00:03,975"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1965-08-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1965-08-31T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1965-09-01T00:00:00"_UTC, "1965-09-01T00:00:04,155"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1968-01-31T24:00:00,000"_UTC - 0.100 * Second,
+                            "1968-01-31T23:59:59,800"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1968-02-01T00:00:00"_UTC, "1968-02-01T00:00:06,186"_TAI),
+      Lt(0.5 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1971-12-31T24:00:00,000"_UTC - 0.107'7580 * Second,
+                            "1971-12-31T23:59:60,000"_UTC),
+              Lt(1 * Micro(Second)));
+  EXPECT_THAT(
+      AbsoluteError("1972-01-01T00:00:00"_UTC, "1972-01-01T00:00:10,000"_TAI),
+      Lt(0.5 * Milli(Second)));
+}
+
+TEST_F(DateTest, StretchyRates) {
+  // Check that cancellations aren't destroying the test.
+  EXPECT_NE("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
+            "1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10));
+
+  quantities::Time utc_minute;
+  utc_minute = 1 * Minute / (1 - 150e-10);
+
+  EXPECT_THAT("1961-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1961-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1961-12-31T23:59:00"_UTC + utc_minute,
+              Eq("1961-12-31T24:00:00"_UTC));
+
+  utc_minute = 1 * Minute / (1 - 130e-10);
+  EXPECT_THAT("1962-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1962-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1963-12-31T23:59:00"_UTC + utc_minute,
+              Eq("1963-12-31T24:00:00"_UTC));
+
+  utc_minute = 1 * Minute / (1 - 150e-10);
+  EXPECT_THAT("1964-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1964-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1965-12-31T23:59:00"_UTC + utc_minute,
+              AlmostEquals("1965-12-31T24:00:00"_UTC, 1));
+
+  utc_minute = 1 * Minute / (1 - 300e-10);
+  EXPECT_THAT("1966-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1966-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1971-12-31T23:58:00"_UTC + utc_minute,
+              Eq("1971-12-31T23:59:00"_UTC));
+
+  utc_minute = 1 * Minute;
+  EXPECT_THAT("1972-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1972-01-01T00:01:00"_UTC));
+  EXPECT_THAT("2000-01-01T00:00:00"_UTC + utc_minute,
+              Eq("2000-01-01T00:01:00"_UTC));
 }
 
 }  // namespace internal_date
