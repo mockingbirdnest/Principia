@@ -272,12 +272,11 @@ constexpr Date add_days_within_year(Date const& date, int const days) {
 
 // The |day|th day of some |year|.  The resulting date need not be in |year|.
 constexpr Date arbitrary_ordinal(int const year, int const day) {
-  return day < 1 ? arbitrary_ordinal(year - 1,
-                                     gregorian_year_length(year - 1) + day)
-                 : day > gregorian_year_length(year)
-                       ? arbitrary_ordinal(year + 1,
-                                           day - gregorian_year_length(year))
-                       : Date::Ordinal(year, day);
+  return Date::Ordinal(
+      gregorian_days_from_0000_01_01_to_year(
+          gregorian_days_from_0000_01_01_at_start_of_year(year) + day - 1),
+      gregorian_days_from_0000_01_01_to_ordinal(
+          (gregorian_days_from_0000_01_01_at_start_of_year(year) + day - 1)));
 }
 
 // Implementation of class |Date|.
