@@ -18,6 +18,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Lt;
+using ::testing::Ne;
 
 class DateTest : public testing::Test {};
 
@@ -214,6 +215,44 @@ TEST_F(DateTest, Pre1972Leaps) {
   EXPECT_THAT(
       AbsoluteError("1972-01-01T00:00:00"_UTC, "1972-01-01T00:00:10,000"_TAI),
       Lt(0.5 * Milli(Second)));
+}
+
+TEST_F(DateTest, Pre1972Rates) {
+  quantities::Time utc_minute;
+  utc_minute = 1 * Minute / (1 - 150e-10);
+
+  // Check that cancellations aren't destroying the test.
+  EXPECT_THAT("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
+              Ne("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10)));
+
+  EXPECT_THAT("1961-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1961-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1961-12-31T23:59:00"_UTC + utc_minute,
+              Eq("1961-12-31T24:00:00"_UTC));
+
+  utc_minute = 1 * Minute / (1 - 130e-10);
+  EXPECT_THAT("1962-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1962-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1963-12-31T23:59:00"_UTC + utc_minute,
+              Eq("1963-12-31T24:00:00"_UTC));
+
+  utc_minute = 1 * Minute / (1 - 150e-10);
+  EXPECT_THAT("1964-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1964-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1965-12-31T23:59:00"_UTC + utc_minute,
+              AlmostEquals("1965-12-31T24:00:00"_UTC, 1));
+
+  utc_minute = 1 * Minute / (1 - 300e-10);
+  EXPECT_THAT("1966-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1966-01-01T00:01:00"_UTC));
+  EXPECT_THAT("1971-12-31T23:58:00"_UTC + utc_minute,
+              Eq("1971-12-31T23:59:00"_UTC));
+
+  utc_minute = 1 * Minute;
+  EXPECT_THAT("1972-01-01T00:00:00"_UTC + utc_minute,
+              Eq("1972-01-01T00:01:00"_UTC));
+  EXPECT_THAT("2000-01-01T00:00:00"_UTC + utc_minute,
+              Eq("2000-01-01T00:01:00"_UTC));
 }
 
 }  // namespace internal_date
