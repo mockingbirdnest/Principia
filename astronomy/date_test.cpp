@@ -218,12 +218,12 @@ TEST_F(DateTest, Pre1972Leaps) {
 }
 
 TEST_F(DateTest, Pre1972Rates) {
-  quantities::Time utc_minute;
-  utc_minute = 1 * Minute / (1 - 150e-10);
-
   // Check that cancellations aren't destroying the test.
   EXPECT_THAT("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
               Ne("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10)));
+
+  quantities::Time utc_minute;
+  utc_minute = 1 * Minute / (1 - 150e-10);
 
   EXPECT_THAT("1961-01-01T00:00:00"_UTC + utc_minute,
               Eq("1961-01-01T00:01:00"_UTC));
