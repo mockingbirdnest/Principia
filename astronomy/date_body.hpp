@@ -357,19 +357,31 @@ constexpr bool Date::operator!=(Date const& other) const {
 }
 
 constexpr bool Date::operator<(Date const& other) const {
-  return year_ < other.year_ || month_ < other.month_ || day_ < other.day_;
+  return year_ < other.year_ ||
+         (year_ == other.year_ &&
+          (month_ < other.month_ ||
+           (month_ == other.month_ && day_ < other.day_)));
 }
 
 constexpr bool Date::operator>(Date const& other) const {
-  return year_ > other.year_ || month_ > other.month_ || day_ > other.day_;
+  return year_ > other.year_ ||
+         (year_ == other.year_ &&
+          (month_ > other.month_ ||
+           (month_ == other.month_ && day_ > other.day_)));
 }
 
 constexpr bool Date::operator<=(Date const& other) const {
-  return !(*this > other);
+  return year_ < other.year_ ||
+         (year_ == other.year_ &&
+          (month_ < other.month_ ||
+           (month_ == other.month_ && day_ <= other.day_)));
 }
 
 constexpr bool Date::operator>=(Date const& other) const {
-  return !(*this < other);
+  return year_ > other.year_ ||
+         (year_ == other.year_ &&
+          (month_ > other.month_ ||
+           (month_ == other.month_ && day_ >= other.day_)));
 }
 
 constexpr Date::Date(int const year,
@@ -966,7 +978,7 @@ constexpr bool IsValidModernUTC(DateTime const& date_time) {
 
 // The (MJD - d) * t term from
 // https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history.
-constexpr quantities::Time RateTermStretchyTAI_UTC(DateTime const& utc) {
+constexpr quantities::Time RateTermTAI_UTC(DateTime const& utc) {
   return utc.date() < "1962-01-01"_Date
              ? (mjd(TimeScale(utc)) - 37'300) * 0.001'296 * Second
        : utc.date() < "1964-01-01"_Date
@@ -977,7 +989,7 @@ constexpr quantities::Time RateTermStretchyTAI_UTC(DateTime const& utc) {
 }
 
 // The constant term.
-constexpr quantities::Time OffsetStretchyTAI_UTC(Date const& utc_date) {
+constexpr quantities::Time OffsetTAI_UTC(Date const& utc_date) {
   return utc_date < "1961-08-01"_Date ? 1.422'818'0 * Second
        : utc_date < "1962-01-01"_Date ? 1.372'818'0 * Second
        : utc_date < "1963-11-01"_Date ? 1.845'858'0 * Second
@@ -995,7 +1007,7 @@ constexpr quantities::Time OffsetStretchyTAI_UTC(Date const& utc_date) {
 
 // Returns TAI - UTC at the given point on the UTC timescale.
 constexpr quantities::Time StretchyTAI_UTC(DateTime const& utc) {
-  return OffsetStretchyTAI_UTC(utc.date()) + RateTermStretchyTAI_UTC(utc);
+  return OffsetTAI_UTC(utc.date()) + RateTermTAI_UTC(utc);
 }
 
 // Returns |true| if |utc| is within a leap of the given number of
@@ -1046,8 +1058,6 @@ constexpr Instant DateTimeAsTT(DateTime const& tt) {
 constexpr Instant DateTimeAsTAI(DateTime const& tai) {
   return CHECKING(!tai.time().is_leap_second(), FromTAI(TimeScale(tai)));
 }
-
-constexpr quantities::Time t = StretchyTAI_UTC("1962-03-30T00:00:00"_DateTime);
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
   return utc.time().is_end_of_day()
