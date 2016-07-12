@@ -6,6 +6,8 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
+#include "eop_series.hpp"
+
 namespace principia {
 namespace astronomy {
 namespace internal_date {
