@@ -6,8 +6,6 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
-#include "eop_series.hpp"
-
 namespace principia {
 namespace astronomy {
 namespace internal_date {
@@ -52,8 +50,16 @@ TEST_F(DateDeathTest, InvalidTime) {
 }
 
 TEST_F(DateDeathTest, InvalidDateTime) {
-  EXPECT_DEATH("2001-01-01T23:59:60"_TT, "");
+  EXPECT_DEATH("2001-01-01T23:59:60"_TT,
+               "date_.day.. == month_length.date_.year.., date_.month..");
 }
+
+/*
+TEST_F(DateDeathTest, LeaplessScales) {
+  EXPECT_DEATH("2016-12-31T23:59:60"_TT, "!tt.time...is_leap_second..");
+  EXPECT_DEATH("2016-12-31T23:59:60"_TAI, "!tai.time...is_leap_second..");
+  EXPECT_DEATH("2016-12-31T23:59:60"_UT1, "!ut1.time...is_leap_second..");
+}*/
 
 TEST_F(DateDeathTest, StretchyLeaps) {
   EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
@@ -65,6 +71,10 @@ TEST_F(DateDeathTest, StretchyLeaps) {
   EXPECT_DEATH("1965-06-30T23:59:60,100"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1965-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1968-01-31T23:59:59,900"_UTC, "IsValidStretchyUTC");
+}
+
+TEST_F(DateDeathTest, ModernLeaps) {
+  EXPECT_DEATH("2015-12-31T23:59:60"_UTC, "IsValidModernUTC");
 }
 
 #endif
@@ -92,6 +102,7 @@ static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
 }  // namespace
 
 TEST_F(DateTest, ReferenceDates) {
+  "2016-12-31T23:59:60"_UT1;
   EXPECT_THAT("1858-11-17T00:00:00"_TT, Eq(ModifiedJulianDate(0)));
   EXPECT_THAT(j2000_week, Eq(J2000));
   EXPECT_THAT(j2000_from_tt, Eq(J2000));
