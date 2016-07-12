@@ -46,6 +46,12 @@ struct UTCToUT1MinusUTC {
     return TimeScale(utc()) + ut1_minus_utc;
   }
 
+  constexpr quantities::Time ut1_minus_tai() const {
+    return utc().date().year() >= 1972
+               ? ut1_minus_utc + ModernUTCMinusTAI(utc().date())
+               : ut1_minus_utc - TAIMinusStretchyUTC(utc());
+  }
+
   int const utc_date;
   quantities::Time const ut1_minus_utc;
 };
@@ -98,28 +104,31 @@ static_assert(lolcat.utc_date==1962'05'23, "");
 // that we cannot use |Barycentre|, because it uses non-constexpr |std::vector|.
 constexpr Instant InterpolatedEOPC04(UTCToUT1MinusUTC const* low,
                                      quantities::Time const& ut1) {
-  // TODO(egg): This has awful cancellations.  We cannot quite do the same thing
-  // as for EOP C02 below, because a "FromUTC" would be ambiguous, but we could
-  // perhaps directly get the TAI.
-  return DateTimeAsUTC(low->utc()) +
-         (ut1 - low->ut1()) *
-             (DateTimeAsUTC((low + 1)->utc()) - DateTimeAsUTC(low->utc())) /
-             ((low + 1)->ut1() - low->ut1());
+  // TODO(egg): figure out whether using the divided difference of the
+  // |p->ut1_minus_tai()|s leads to less catastrophic cancellation than using
+  // the divided difference of the |DateTimeAsUTC(p->utc())|s.
+  return FromTAI(ut1 - (low->ut1_minus_tai() +
+                        (ut1 - low->ut1()) * ((low + 1)->ut1_minus_tai() -
+                                              low->ut1_minus_tai()) /
+                            ((low + 1)->ut1() - low->ut1())));
 }
 
 constexpr Instant InterpolatedExperimentalEOPC02(MJDToUT1MinusTAI const* low,
                                                  quantities::Time const& ut1) {
-  return FromTAI(ut1 +
-                 mjd(ut1) * ((low + 1)->ut1_minus_tai - low->ut1_minus_tai) /
-                     ((low + 1)->ut1_mjd - low->ut1_mjd));
+  return FromTAI(ut1 - (low->ut1_minus_tai +
+                        (mjd(ut1) - low->ut1_mjd) *
+                            ((low + 1)->ut1_minus_tai - low->ut1_minus_tai) /
+                            ((low + 1)->ut1_mjd - low->ut1_mjd)));
 }
 
 // Linear interpolation in the segment between the UT1s |low->ut1_mjd| and
 // |eop_c04[0].ut1()|, used to get continuity when switching between the series.
-constexpr Instant ExperimentalEOPC02ToEOPC04(MJDToUT1MinusTAI const* low, quantities::Time const& ut1) {
-  return FromTAI(ut1 +
-                 mjd(ut1) * (eop_c04[0].ut1_minus_utc - TAIMinusStretchyUTC() - low->ut1_minus_tai) /
-                     ((low + 1)->ut1_mjd - low->ut1_mjd));
+constexpr Instant ExperimentalEOPC02ToEOPC04(MJDToUT1MinusTAI const* low,
+                                             quantities::Time const& ut1) {
+  return FromTAI(ut1 - (low->ut1_minus_tai +
+                        (mjd(ut1) - low->ut1_mjd) *
+                            (eop_c04[0].ut1_minus_tai() - low->ut1_minus_tai) /
+                            ((mjd(eop_c04[0].ut1()) - low->ut1_mjd))));
 }
 
 constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
@@ -128,13 +137,16 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
                            &experimental_eop_c02[0],
                            experimental_eop_c02.size()) +
                  1)->ut1_mjd > mjd(eop_c04[0].ut1())
-                    ?
-                    
+                    ? ExperimentalEOPC02ToEOPC04(
+                          LookupUT1(TimeScale(ut1),
+                                    &experimental_eop_c02[0],
+                                    experimental_eop_c02.size()),
+                          TimeScale(ut1))
                     : InterpolatedExperimentalEOPC02(
-                           LookupUT1(TimeScale(ut1),
-                                     &experimental_eop_c02[0],
-                                     experimental_eop_c02.size()),
-                           TimeScale(ut1)))
+                          LookupUT1(TimeScale(ut1),
+                                    &experimental_eop_c02[0],
+                                    experimental_eop_c02.size()),
+                          TimeScale(ut1)))
              : InterpolatedEOPC04(
                    LookupUT1(TimeScale(ut1), &eop_c04[0], eop_c04.size()),
                    TimeScale(ut1));
