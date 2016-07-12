@@ -67,9 +67,15 @@ TEST_F(DateDeathTest, BeforeRange) {
 }
 
 TEST_F(DateDeathTest, WarWasBeginning) {
-  EXPECT_DEATH("2101-01-01T00:00:00"_UTC, "IsValidModernUTC");
+  EXPECT_DEATH("2101-01-01T00:00:00"_UTC, "leap_seconds.size");
   EXPECT_DEATH("2101-01-01T00:00:00"_UT1,
                "TimeScale.ut1. < eop_c04.back...ut1..");
+}
+
+TEST_F(DateDeathTest, FirstUnknownUTC) {
+  EXPECT_DEATH("2017-06-30T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2017-06-30T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2017-07-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(DateDeathTest, StretchyLeaps) {

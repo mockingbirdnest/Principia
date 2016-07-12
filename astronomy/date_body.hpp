@@ -949,28 +949,35 @@ constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
     +0, +1,  // 2016
 }};
 
+// Returns +1 if a positive leap second was inserted at the end of the given
+// |month| of the given |year|, -1 if a negative leap second was inserted, 0
+// otherwise.
+constexpr int LeapSecond(int const year, int const month) {
+  return month == 6
+             ? CHECKING((year - 1972) * 2 < leap_seconds.size(),
+                        leap_seconds[(year - 1972) * 2])
+             : CHECKING(month == 12,
+                        CHECKING((year - 1972) * 2 + 1 < leap_seconds.size(),
+                                 leap_seconds[(year - 1972) * 2 + 1]));
+}
+
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
 constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
   return utc_date.month() == 1 && utc_date.day() == 1
              ? utc_date.year() == 1972
                    ? -10 * Second
-                   : -leap_seconds.at((utc_date.year() - 1973) * 2) * Second +
-                         -leap_seconds.at((utc_date.year() - 1973) * 2 + 1) *
-                             Second +
+                   : -LeapSecond(utc_date.year() - 1, 6) * Second +
+                         -LeapSecond(utc_date.year() - 1, 12) * Second +
                          ModernUTCMinusTAI(
                              Date::Calendar(utc_date.year() - 1, 1, 1))
-             : (utc_date.month() > 6
-                    ? -leap_seconds.at((utc_date.year() - 1972) * 2) * Second
-                    : 0 * Second) +
+             : (utc_date.month() > 6 ? -LeapSecond(utc_date.year(), 6) * Second
+                                     : 0 * Second) +
                    ModernUTCMinusTAI(Date::Calendar(utc_date.year(), 1, 1));
 }
 
 constexpr bool IsValidModernUTC(DateTime const& date_time) {
   return !date_time.time().is_leap_second() ||
-         (date_time.date().month() == 6 &&
-          leap_seconds.at((date_time.date().year() - 1972) * 2) == +1) ||
-         (date_time.date().month() == 12 &&
-          leap_seconds.at((date_time.date().year() - 1972) * 2 + 1) == +1);
+         LeapSecond(date_time.date().year(), date_time.date().month()) == +1;
 }
 
 // Utilities for stretchy UTC (pre-1972).  This timescale includes rate changes
