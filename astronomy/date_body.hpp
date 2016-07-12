@@ -101,6 +101,8 @@ class Time {
 
 class DateTime {
  public:
+  static constexpr DateTime BeginningOfDay(Date const& date);
+
   constexpr Date const& date() const;
   constexpr Time const& time() const;
 
@@ -436,6 +438,10 @@ constexpr Time const& Time::checked() const {
 
 // Implementation of class DateTime.
 
+constexpr DateTime DateTime::BeginningOfDay(Date const & date) {
+  return DateTime(date, Time::hhmmss_ms(00'00'00, 0));
+}
+
 constexpr Date const& DateTime::date() const {
   return date_;
 }
@@ -445,9 +451,7 @@ constexpr Time const& DateTime::time() const {
 }
 
 constexpr DateTime DateTime::normalized_end_of_day() const {
-  return time_.is_end_of_day()
-             ? DateTime(date_.next_day(), Time::hhmmss_ms(00'00'00, 0))
-             : *this;
+  return time_.is_end_of_day() ? BeginningOfDay(date_.next_day()) : *this;
 }
 
 constexpr DateTime::DateTime(Date const date, Time const time)
