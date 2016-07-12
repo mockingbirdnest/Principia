@@ -54,12 +54,23 @@ TEST_F(DateDeathTest, InvalidDateTime) {
                "date_.day.. == month_length.date_.year.., date_.month..");
 }
 
-/*
 TEST_F(DateDeathTest, LeaplessScales) {
-  EXPECT_DEATH("2016-12-31T23:59:60"_TT, "!tt.time...is_leap_second..");
-  EXPECT_DEATH("2016-12-31T23:59:60"_TAI, "!tai.time...is_leap_second..");
-  EXPECT_DEATH("2016-12-31T23:59:60"_UT1, "!ut1.time...is_leap_second..");
-}*/
+  EXPECT_DEATH("2015-06-30T23:59:60"_TT, "!tt.time...is_leap_second..");
+  EXPECT_DEATH("2015-06-30T23:59:60"_TAI, "!tai.time...is_leap_second..");
+  EXPECT_DEATH("2015-06-30T23:59:60"_UT1, "!ut1.time...is_leap_second..");
+}
+
+TEST_F(DateDeathTest, BeforeRange) {
+  EXPECT_DEATH("1960-12-31T23:59:59,999"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1830-04-10T23:59:59,999"_UT1,
+               "mjd.TimeScale.ut1.. >= experimental_eop_c02.front...ut1_mjd");
+}
+
+TEST_F(DateDeathTest, WarWasBeginning) {
+  EXPECT_DEATH("2101-01-01T00:00:00"_UTC, "IsValidModernUTC");
+  EXPECT_DEATH("2101-01-01T00:00:00"_UT1,
+               "TimeScale.ut1. < eop_c04.back...ut1..");
+}
 
 TEST_F(DateDeathTest, StretchyLeaps) {
   EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
@@ -102,7 +113,6 @@ static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
 }  // namespace
 
 TEST_F(DateTest, ReferenceDates) {
-  "2016-12-31T23:59:60"_UT1;
   EXPECT_THAT("1858-11-17T00:00:00"_TT, Eq(ModifiedJulianDate(0)));
   EXPECT_THAT(j2000_week, Eq(J2000));
   EXPECT_THAT(j2000_from_tt, Eq(J2000));

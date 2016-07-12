@@ -16,21 +16,12 @@
 // is true, evaluates to |expression|.  Otherwise, results in a CHECK failure at
 // runtime and a compilation error due to a call to non-constexpr code at
 // compile time.
-// NOTE(egg): in the failure case, a |reinterpret_cast| is used instead of
-// |expression| itself in order to prevent the compiler from forgetting the
-// check entirely, thinking that side effects don't exist in constexpr code.
-// similarly, we cannot just |reinterpret_cast| nullptr, we have to rely on
-// something non-constexpr...
-// The standard procedure in this case is to just throw, instead of doing this
-// weird casting nonsense, but we are noexcept.
-namespace {
-  static std::uint32_t the_compiler_is_stupid = 0xDEADBEEF;
-}  // namespace
-#define CHECKING(condition, expression)                                        \
-  ((condition) ? (expression)                                                  \
-               : (CHECK(condition),                                            \
-                  *reinterpret_cast<std::add_pointer_t<decltype(expression)>>( \
-                      &the_compiler_is_stupid)))
+// NOTE(egg): in the failure case, the LOG(FATAL) is wrapped in a lambda,
+// because otherwise the compiler sometimes skips it entirely.
+#define CHECKING(condition, expression)                                      \
+  ((condition) ? (expression)                                                \
+               : (([] { LOG(FATAL) << "Check failed: " #condition " "; }()), \
+                  (expression)))
 
 namespace principia {
 namespace astronomy {
@@ -963,13 +954,13 @@ constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
   return utc_date.month() == 1 && utc_date.day() == 1
              ? utc_date.year() == 1972
                    ? -10 * Second
-                   : -leap_seconds[(utc_date.year() - 1973) * 2] * Second +
-                         -leap_seconds[(utc_date.year() - 1973) * 2 + 1] *
+                   : -leap_seconds.at((utc_date.year() - 1973) * 2) * Second +
+                         -leap_seconds.at((utc_date.year() - 1973) * 2 + 1) *
                              Second +
                          ModernUTCMinusTAI(
                              Date::Calendar(utc_date.year() - 1, 1, 1))
              : (utc_date.month() > 6
-                    ? -leap_seconds[(utc_date.year() - 1972) * 2] * Second
+                    ? -leap_seconds.at((utc_date.year() - 1972) * 2) * Second
                     : 0 * Second) +
                    ModernUTCMinusTAI(Date::Calendar(utc_date.year(), 1, 1));
 }
@@ -977,9 +968,9 @@ constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
 constexpr bool IsValidModernUTC(DateTime const& date_time) {
   return !date_time.time().is_leap_second() ||
          (date_time.date().month() == 6 &&
-          leap_seconds[(date_time.date().year() - 1972) * 2] == +1) ||
+          leap_seconds.at((date_time.date().year() - 1972) * 2) == +1) ||
          (date_time.date().month() == 12 &&
-          leap_seconds[(date_time.date().year() - 1972) * 2 + 1] == +1);
+          leap_seconds.at((date_time.date().year() - 1972) * 2 + 1) == +1);
 }
 
 // Utilities for stretchy UTC (pre-1972).  This timescale includes rate changes
@@ -1110,6 +1101,8 @@ constexpr EOPC04Entry::EOPC04Entry(
     : utc_date(utc_date),
       ut1_minus_utc(ut1_minus_utc) {}
 
+// NOTE(egg): these have to be defined here, because they depend on internal
+// classes defined above.
 #include "astronomy/experimental_eop_c02.generated.h"
 #include "astronomy/eop_c04.generated.h"
 
@@ -1229,10 +1222,11 @@ constexpr Instant DateTimeAsUTC(DateTime const& utc) {
 }
 
 constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
-  return //!ut1.time().is_leap_second() ? FromUT1(TimeScale(ut1))
-         //                             : (LOG(FATAL) << "fuck this", FromUT1(TimeScale(ut1)));
-         CHECKING(!ut1.time().is_leap_second(), FromUT1(TimeScale(ut1)));
-      //!ut1.time().is_leap_second() && TimeScale(ut1) < eop_c04.back().ut1(),
+  return CHECKING(
+      !ut1.time().is_leap_second() &&
+          mjd(TimeScale(ut1)) >= experimental_eop_c02.front().ut1_mjd &&
+          TimeScale(ut1) < eop_c04.back().ut1(),
+      FromUT1(TimeScale(ut1)));
 }
 
 // |Instant| date literals.
