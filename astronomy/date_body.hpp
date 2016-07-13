@@ -1160,13 +1160,12 @@ constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
   return LookupUT1(ut1, &experimental_eop_c02[0], experimental_eop_c02.size());
 }
 
-constexpr EOPC04Entry const* LookupInExperimentalEOPC04(
+constexpr EOPC04Entry const* LookupInEOPC04(
     quantities::Time const& ut1) {
   return LookupUT1(ut1, &eop_c04[0], eop_c04.size());
 }
 
-// Linear interpolation on the UT1 range [low->ut1(), (low + 1)->ut1()].  Note
-// that we cannot use |Barycentre|, because it uses non-constexpr |std::vector|.
+// Linear interpolation on the UT1 range [low->ut1(), (low + 1)->ut1()].
 constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
                                      quantities::Time const& ut1) {
   // TODO(egg): figure out whether using the divided difference of the
@@ -1207,7 +1206,7 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
                           LookupInExperimentalEOPC02(ut1), ut1)
                     : InterpolatedExperimentalEOPC02(
                           LookupInExperimentalEOPC02(ut1), ut1))
-             : InterpolatedEOPC04(ExperimentalEOPC02ToEOPC04(ut1), ut1);
+             : InterpolatedEOPC04(LookupInEOPC04(ut1), ut1);
 }
 
 // Conversions from |DateTime| to |Instant|.
