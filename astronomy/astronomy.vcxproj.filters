@@ -99,9 +99,6 @@
     <ClInclude Include="date_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="eop_series.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="eop_c04.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>

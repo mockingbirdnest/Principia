@@ -206,7 +206,6 @@
     <ClInclude Include="date.hpp" />
     <ClInclude Include="date_body.hpp" />
     <ClInclude Include="eop_c04.generated.h" />
-    <ClInclude Include="eop_series.hpp" />
     <ClInclude Include="epoch.hpp" />
     <ClInclude Include="epoch_body.hpp" />
     <ClInclude Include="experimental_eop_c02.generated.h" />

@@ -1151,9 +1151,6 @@ constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
                             : LookupUT1(ut1, begin, size / 2));
 }
 
-constexpr auto lolcat = eop_c04[142];
-static_assert(lolcat.utc_date==1962'05'23, "");
-
 // Linear interpolation on the UT1 range [low->ut1(), (low + 1)->ut1()].  Note
 // that we cannot use |Barycentre|, because it uses non-constexpr |std::vector|.
 constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
