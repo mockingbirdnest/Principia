@@ -39,6 +39,7 @@ constexpr Instant operator""_UT1(char const* str, std::size_t size);
 using internal_date::operator""_TAI;
 using internal_date::operator""_TT;
 using internal_date::operator""_UTC;
+using internal_date::operator""_UT1;
 
 }  // namespace astronomy
 }  // namespace principia
