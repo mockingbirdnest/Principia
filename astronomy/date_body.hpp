@@ -22,7 +22,7 @@
 // enclosing full-expression.  If we simply used the comma operator, the entire
 // ternary |((condition) ? (expression) : (CHECK(condition), (expression)))|
 // would be part of the enclosing full-expression, so that |expression| would
-// get evaluated before the |CHECK| failure, possibly trigerring all sorts of
+// get evaluated before the |CHECK| failure, possibly triggering all sorts of
 // terrible UB or other checks (|DateDeathTest| provides a couple of examples).
 // With the lambda, the full-expression forms the expression statement
 // |LOG(FATAL) << "Check failed: " #condition " ";|, so that failure occurs
