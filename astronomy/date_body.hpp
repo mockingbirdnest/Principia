@@ -34,7 +34,7 @@
                : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
                   (expression)))
 
-    namespace principia {
+namespace principia {
 namespace astronomy {
 namespace internal_date {
 
