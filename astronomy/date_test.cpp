@@ -252,7 +252,6 @@ TEST_F(DateTest, StretchyRates) {
 
   quantities::Time utc_minute;
   utc_minute = 1 * Minute / (1 - 150e-10);
-
   EXPECT_THAT("1961-01-01T00:00:00"_UTC + utc_minute,
               Eq("1961-01-01T00:01:00"_UTC));
   EXPECT_THAT("1961-12-31T23:59:00"_UTC + utc_minute,
@@ -281,6 +280,43 @@ TEST_F(DateTest, StretchyRates) {
               Eq("1972-01-01T00:01:00"_UTC));
   EXPECT_THAT("2000-01-01T00:00:00"_UTC + utc_minute,
               Eq("2000-01-01T00:01:00"_UTC));
+}
+
+TEST_F(DateTest, UT1Continuity) {
+  // Continuity with TAI.  We have a fairly low resolution for UT1 at that time,
+  // as well as high errors (~20 ms), and TAI was synchronized with UT2 anyway,
+  // so it's not going to get much better than 100 ms.
+  EXPECT_THAT(
+      AbsoluteError("1958-01-01T00:00:00"_UT1, "1958-01-01T00:00:00"_TAI),
+      Lt(100 * Milli(Second)));
+
+  // Continuity at the beginning of the EOP C02 series.
+  EXPECT_THAT(AbsoluteError("1961-12-31T23:59:59,000"_UT1,
+                            "1961-12-31T23:59:58,967"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:00,000"_UT1,
+                            "1961-12-31T23:59:59,967"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:00,033"_UT1,
+                            "1962-01-01T00:00:00,000"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:01,033"_UT1,
+                            "1962-01-01T00:00:01,000"_UTC),
+              Lt(0.5 * Milli(Second)));
+
+  // Continuity across a stretchy UTC leap.
+  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,000"_UT1,
+                            "1964-03-31T23:59:59,160"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,900"_UT1,
+                            "1964-03-31T23:59:60,060"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,940"_UT1,
+                            "1964-04-01T00:00:00,000"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1964-04-01T00:00:00,000"_UT1,
+                            "1964-04-01T00:00:00,060"_UTC),
+              Lt(0.5 * Milli(Second)));
 }
 
 }  // namespace internal_date
