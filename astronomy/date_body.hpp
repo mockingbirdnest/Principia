@@ -1144,15 +1144,6 @@ constexpr ExperimentalEOPC02Entry const* LookupUT1(
                             : LookupUT1(ut1, begin, size / 2));
 }
 
-constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
-    quantities::Time const& ut1) {
-  return LookupUT1(ut1, &experimental_eop_c02[0], experimental_eop_c02.size());
-}
-
-// Returns the last entry in [begin, begin + size[ whose UT1 = UTC + (UT1 - UTC)
-// is less than or equal to the given |ut1|.  The range [begin, begin + size[
-// must be sorted by UT1.
-// The result must not be the last entry of |eop_c04|.
 constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
                                        EOPC04Entry const* begin,
                                        std::ptrdiff_t const size) {
@@ -1162,6 +1153,16 @@ constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
                       : (begin + size / 2)->ut1() <= ut1
                             ? LookupUT1(ut1, begin + size / 2, size - size / 2)
                             : LookupUT1(ut1, begin, size / 2));
+}
+
+constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
+    quantities::Time const& ut1) {
+  return LookupUT1(ut1, &experimental_eop_c02[0], experimental_eop_c02.size());
+}
+
+constexpr EOPC04Entry const* LookupInExperimentalEOPC04(
+    quantities::Time const& ut1) {
+  return LookupUT1(ut1, &eop_c04[0], eop_c04.size());
 }
 
 // Linear interpolation on the UT1 range [low->ut1(), (low + 1)->ut1()].  Note
@@ -1187,33 +1188,26 @@ constexpr Instant InterpolatedExperimentalEOPC02(
 }
 
 // Linear interpolation in the segment between the UT1s |low->ut1_mjd| and
-// |eop_c04[0].ut1()|, used to get continuity when switching between the series.
+// |eop_c04.front().ut1()|, used to get continuity when switching between the
+// series.
 constexpr Instant ExperimentalEOPC02ToEOPC04(ExperimentalEOPC02Entry const* low,
                                              quantities::Time const& ut1) {
-  return FromTAI(ut1 - (low->ut1_minus_tai +
-                        (mjd(ut1) - low->ut1_mjd) *
-                            (eop_c04[0].ut1_minus_tai() - low->ut1_minus_tai) /
-                            ((mjd(eop_c04[0].ut1()) - low->ut1_mjd))));
+  return FromTAI(ut1 -
+                 (low->ut1_minus_tai +
+                  (mjd(ut1) - low->ut1_mjd) *
+                      (eop_c04.front().ut1_minus_tai() - low->ut1_minus_tai) /
+                      ((mjd(eop_c04.front().ut1()) - low->ut1_mjd))));
 }
 
 constexpr Instant FromUT1(quantities::Time const ut1) {
-  return ut1 < eop_c04[0].ut1()
-             ? ((LookupUT1(ut1,
-                           &experimental_eop_c02[0],
-                           experimental_eop_c02.size()) +
-                 1)->ut1_mjd > mjd(eop_c04[0].ut1())
+  return ut1 < eop_c04.front().ut1()
+             ? ((LookupInExperimentalEOPC02(ut1) + 1)->ut1_mjd >
+                        mjd(eop_c04.front().ut1())
                     ? ExperimentalEOPC02ToEOPC04(
-                          LookupUT1(ut1,
-                                    &experimental_eop_c02[0],
-                                    experimental_eop_c02.size()),
-                          ut1)
+                          LookupInExperimentalEOPC02(ut1), ut1)
                     : InterpolatedExperimentalEOPC02(
-                          LookupUT1(ut1,
-                                    &experimental_eop_c02[0],
-                                    experimental_eop_c02.size()),
-                          ut1))
-             : InterpolatedEOPC04(LookupUT1(ut1, &eop_c04[0], eop_c04.size()),
-                                  ut1);
+                          LookupInExperimentalEOPC02(ut1), ut1))
+             : InterpolatedEOPC04(ExperimentalEOPC02ToEOPC04(ut1), ut1);
 }
 
 // Conversions from |DateTime| to |Instant|.
