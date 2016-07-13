@@ -24,12 +24,12 @@
 // ternary |((condition) ? (expression) : (CHECK(condition), (expression)))|
 // would be part of the enclosing full-expression, so that |expression| would
 // get evaluated before the |CHECK| failure, possibly trigerring all sorts of
-// terrible UB or other |CHECKS| (|DateDeathTest| provides a couple of
-// examples).  With the lambda, the full-expression forms the expression
-// statement |LOG(FATAL) << "Check failed: " #condition " ";|, so that failure
-// occurs before we return from the lambda's function call operator, and
-// |expression| is never evaluated.  We do not use |CHECK| because that would
-// require capture, but this should produce the same output.
+// terrible UB or other checks (|DateDeathTest| provides a couple of examples).
+// With the lambda, the full-expression forms the expression statement
+// |LOG(FATAL) << "Check failed: " #condition " ";|, so that failure occurs
+// before we return from the lambda's function call operator, and |expression|
+// is never evaluated.  We do not use |CHECK| because that would require
+// capture, but this should produce the same output.
 #define CHECKING(condition, expression)                                      \
   ((condition) ? (expression)                                                \
                : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
