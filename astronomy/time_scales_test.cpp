@@ -29,31 +29,6 @@ using TimeScalesDeathTest = TimeScalesTest;
 #if !((PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && \
       WE_LIKE_N3599)
 
-TEST_F(TimeScalesDeathTest, InvalidCalendarDate) {
-  EXPECT_DEATH("2001-04-00T12:00:00"_TT, "day >= 1");
-  EXPECT_DEATH("2001-02-29T12:00:00"_TT, "day <= month_length");
-  EXPECT_DEATH("2001-03-32T12:00:00"_TT, "day <= month_length");
-  EXPECT_DEATH("2001-04-31T12:00:00"_TT, "day <= month_length");
-  EXPECT_DEATH("2001-00-01T12:00:00"_TT, "month >= 1");
-  EXPECT_DEATH("2001-13-01T12:00:00"_TT, "month <= 12");
-  EXPECT_DEATH("2001-00-01T12:00:00"_TT, "month >= 1");
-  EXPECT_DEATH("1582-01-01T12:00:00"_TT, "year >= 1583");
-}
-
-TEST_F(TimeScalesDeathTest, InvalidTime) {
-  EXPECT_DEATH("2001-01-01T25:00:00"_TT, "hour_ <= 23");
-  EXPECT_DEATH("2001-01-01T24:01:00"_TT, "minute_ == 0");
-  EXPECT_DEATH("2001-01-01T24:00:01"_TT, "second_ == 0");
-  EXPECT_DEATH("2001-01-01T00:60:00"_TT, "minute_ <= 59");
-  EXPECT_DEATH("2001-01-01T00:00:60"_TT, "second_ <= 59");
-  EXPECT_DEATH("2001-01-01T23:59:61"_TT, "second_ == 60");
-}
-
-TEST_F(TimeScalesDeathTest, InvalidDateTime) {
-  EXPECT_DEATH("2001-01-01T23:59:60"_TT,
-               "date_.day.. == month_length.date_.year.., date_.month..");
-}
-
 TEST_F(TimeScalesDeathTest, LeaplessScales) {
   EXPECT_DEATH("2015-06-30T23:59:60"_TT, "!tt.time...is_leap_second..");
   EXPECT_DEATH("2015-06-30T23:59:60"_TAI, "!tai.time...is_leap_second..");
