@@ -7,14 +7,11 @@
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {
 namespace calendar {
 namespace internal_calendar {
-
-using quantities::si::Second;
 
 // Arithmetico-calendrical utility functions.
 
@@ -118,12 +115,6 @@ constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
                       (year - 1) / 4 -
                       (year - 1) / 100 +
                       (year - 1) / 400);
-}
-
-// The signed number of days from 2000-01-01 to the first day of |year|.
-constexpr int days_from_2000_01_01_at_start_of_year(int const year) {
-  return gregorian_days_from_0000_01_01_at_start_of_year(year) -
-         gregorian_days_from_0000_01_01_at_start_of_year(2000);
 }
 
 // Returns the number formed by taking |end - begin| increasingly significant
@@ -233,6 +224,12 @@ constexpr int Date::ordinal() const {
                         ? month_length(year_, month_ - 1) +
                               Date(year_, month_ - 1, 1).ordinal()
                         : 1;
+}
+
+constexpr int Date::mjd() const {
+  return gregorian_days_from_0000_01_01_at_start_of_year(year_) + ordinal() -
+         (gregorian_days_from_0000_01_01_at_start_of_year(1858) +
+          Date::YYYYMMDD(1858'11'17).ordinal());
 }
 
 constexpr Date Date::next_day() const {
@@ -752,17 +749,6 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
           operator""_Date(str, index_of(str, size, 'T')),
           operator""_Time(str + index_of(str, size, 'T') + 1,
                           size - (index_of(str, size, 'T') + 1))).checked());
-}
-
-constexpr quantities::Time TimeScale(DateTime const& date_time) {
-  return (date_time.time().millisecond() / 1e3) * Second +
-         (date_time.time().second() +
-          60 * (date_time.time().minute() +
-                60 * (date_time.time().hour() - 12 +
-                      24 * static_cast<std::int64_t>(
-                               days_from_2000_01_01_at_start_of_year(
-                                   date_time.date().year()) +
-                               date_time.date().ordinal() - 1)))) * Second;
 }
 
 }  // namespace internal_calendar

@@ -23,6 +23,23 @@ using astronomy::calendar::operator""_DateTime;
 using quantities::si::Day;
 using quantities::si::Second;
 
+// Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
+// timescale), not counting any leap seconds that may have occurred in the past.
+// |date_time| itself may be leap second.
+// Note that this may count non-SI seconds depending on the time scale according
+// to which it is interpreted.
+// On a time scale with leap seconds, this is not injective: a positive leap
+// second and the following second map to the same interval.
+constexpr quantities::Time TimeScale(DateTime const& date_time) {
+  return (date_time.time().millisecond() / 1e3) * Second +
+         (date_time.time().second() +
+          60 * (date_time.time().minute() +
+                60 * (date_time.time().hour() - 12 +
+                      24 * static_cast<std::int64_t>(
+                               date_time.date().mjd() -
+                               Date::YYYYMMDD(2000'01'01).mjd())))) * Second;
+}
+
 constexpr double mjd(quantities::Time const& from_j2000) {
   return from_j2000 / Day + 51544.5;
 }

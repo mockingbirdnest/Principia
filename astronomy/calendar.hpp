@@ -4,8 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "quantities/quantities.hpp"
-
 // This file has an additional layer of namespacing for several reasons:
 //   - we are not entirely sure whether we really want to expose this API;
 //   - |astronomy::Time| for a class that represents the time of day is weird;
@@ -34,6 +32,8 @@ class Date {
   constexpr int day() const;
 
   constexpr int ordinal() const;
+
+  constexpr int mjd() const;
 
   constexpr Date next_day() const;
 
@@ -114,16 +114,6 @@ constexpr Date operator""_Date(char const* str, std::size_t size);
 constexpr Time operator""_Time(char const* str, std::size_t size);
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
 
-
-// Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
-// timescale), not counting any leap seconds that may have occurred in the past.
-// |date_time| itself may be leap second.
-// Note that this may count non-SI seconds depending on the time scale according
-// to which it is interpreted.
-// On a time scale with leap seconds, this is not injective: a positive leap
-// second and the following second map to the same interval.
-constexpr quantities::Time TimeScale(DateTime const& date_time);
-
 }  // namespace internal_calendar
 
 using internal_calendar::Date;
@@ -132,7 +122,6 @@ using internal_calendar::operator""_Date;
 using internal_calendar::operator""_DateTime;
 using internal_calendar::operator""_Time;
 using internal_calendar::Time;
-using internal_calendar::TimeScale;
 
 }  // namespace calendar
 }  // namespace astronomy
