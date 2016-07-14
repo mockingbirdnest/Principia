@@ -1,3 +1,7 @@
+# Processes the Experimental EOP C02 time series
+# https://hpiers.obspm.fr/iers/series/longterm/eopc02.1830-now, see also
+# https://hpiers.obspm.fr/iers/series/longterm/eopc02.txt.
+# Field 1 is the MJD, field 4 is UT1 - TAI in seconds.
 BEGIN {
   out = ""; 
   entries = 0

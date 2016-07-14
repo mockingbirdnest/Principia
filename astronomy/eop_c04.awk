@@ -1,3 +1,7 @@
+# Processes the EOP (IERS) 08 C04 time series
+# https://hpiers.obspm.fr/iers/eop/eopc04/eopc04.62-now.
+# Fields 1 through 3 are year, month, and day (representing 00:00:00 UTC on the
+# given date), field 7 is UT1 - UTC in seconds.
 BEGIN {
   out = ""; 
   entries = 0

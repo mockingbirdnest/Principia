@@ -961,8 +961,7 @@ constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
 }};
 
 // Returns +1 if a positive leap second was inserted at the end of the given
-// |month| of the given |year|, -1 if a negative leap second was inserted, 0
-// otherwise.
+// |month| of the given |year|, 0 otherwise.
 constexpr int LeapSecond(int const year, int const month) {
   return month == 6
              ? CHECKING((year - 1972) * 2 < leap_seconds.size(),
@@ -1130,8 +1129,8 @@ constexpr quantities::Time EOPC04Entry::ut1_minus_tai() const {
 // equal to the given |ut1|.  The range [begin, begin + size[ must be sorted by
 // UT1.
 // We have to use |begin| and |size| rather than |begin| and |end| because
-// otherwise the MSVC complains about undefinedness of |end - begin| (even
-// though Intellisense is fine with it).
+// otherwise MSVC complains about undefinedness of |end - begin| (even though
+// Intellisense is fine with it).
 constexpr ExperimentalEOPC02Entry const* LookupUT1(
     quantities::Time const& ut1,
     ExperimentalEOPC02Entry const* begin,
@@ -1177,6 +1176,8 @@ constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
                             ((low + 1)->ut1() - low->ut1())));
 }
 
+// Linear interpolation on the UT1 range given by the range of MJDs
+// [low->ut1_mjd, (low + 1)->ut1_mjd].
 constexpr Instant InterpolatedExperimentalEOPC02(
     ExperimentalEOPC02Entry const* low,
     quantities::Time const& ut1) {
@@ -1186,16 +1187,15 @@ constexpr Instant InterpolatedExperimentalEOPC02(
                             ((low + 1)->ut1_mjd - low->ut1_mjd)));
 }
 
-// Linear interpolation in the segment between the UT1s |low->ut1_mjd| and
-// |eop_c04.front().ut1()|, used to get continuity when switching between the
-// series.
-constexpr Instant ExperimentalEOPC02ToEOPC04(ExperimentalEOPC02Entry const* low,
+// Linear interpolation in the segment between the UT1s |low.ut1_mjd| and
+// |high.ut1()|, used to get continuity when switching between the series.
+constexpr Instant ExperimentalEOPC02ToEOPC04(ExperimentalEOPC02Entry const& low,
+                                             EOPC04Entry const& high,
                                              quantities::Time const& ut1) {
-  return FromTAI(ut1 -
-                 (low->ut1_minus_tai +
-                  (mjd(ut1) - low->ut1_mjd) *
-                      (eop_c04.front().ut1_minus_tai() - low->ut1_minus_tai) /
-                      ((mjd(eop_c04.front().ut1()) - low->ut1_mjd))));
+  return FromTAI(ut1 - (low.ut1_minus_tai +
+                        (mjd(ut1) - low.ut1_mjd) *
+                            (high.ut1_minus_tai() - low.ut1_minus_tai) /
+                            ((mjd(high.ut1()) - low.ut1_mjd))));
 }
 
 constexpr Instant FromUT1(quantities::Time const ut1) {
@@ -1203,7 +1203,9 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
              ? ((LookupInExperimentalEOPC02(ut1) + 1)->ut1_mjd >
                         mjd(eop_c04.front().ut1())
                     ? ExperimentalEOPC02ToEOPC04(
-                          LookupInExperimentalEOPC02(ut1), ut1)
+                          *LookupInExperimentalEOPC02(ut1),
+                          eop_c04.front(),
+                          ut1)
                     : InterpolatedExperimentalEOPC02(
                           LookupInExperimentalEOPC02(ut1), ut1))
              : InterpolatedEOPC04(LookupInEOPC04(ut1), ut1);
