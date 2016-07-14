@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "astronomy/date.hpp"
+#include "astronomy/time_scales.hpp"
 
 #include <array>
 #include <cstdint>
@@ -11,32 +11,9 @@
 #include "glog/logging.h"
 #include "quantities/si.hpp"
 
-// A macro to allow glog checking within C++11 constexpr code.  If |condition|
-// is true, evaluates to |expression|.  Otherwise, results in a CHECK failure at
-// runtime and a compilation error due to a call to non-constexpr code at
-// compile time.
-// NOTE(egg): in the failure case, the |LOG(FATAL)| is wrapped in a lambda.  The
-// reason is that |LOG(FATAL)| constructs a |google::LogMessageFatal|, and
-// |google::LogMessage::Fail()| is called in its destructor.  As a temporary,
-// the |google::LogMessageFatal| is destroyed as the last step in evaluating the
-// enclosing full-expression.  If we simply used the comma operator, the entire
-// ternary |((condition) ? (expression) : (CHECK(condition), (expression)))|
-// would be part of the enclosing full-expression, so that |expression| would
-// get evaluated before the |CHECK| failure, possibly triggering all sorts of
-// terrible UB or other checks (|DateDeathTest| provides a couple of examples).
-// With the lambda, the full-expression forms the expression statement
-// |LOG(FATAL) << "Check failed: " #condition " ";|, so that failure occurs
-// before we return from the lambda's function call operator, and |expression|
-// is never evaluated.  We do not use |CHECK| because that would require
-// capture, but this should produce the same output.
-#define CHECKING(condition, expression)                                      \
-  ((condition) ? (expression)                                                \
-               : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
-                  (expression)))
-
 namespace principia {
 namespace astronomy {
-namespace internal_date {
+namespace internal_time_scales {
 
 using quantities::si::Day;
 using quantities::si::Second;
@@ -1309,6 +1286,6 @@ constexpr Instant operator""_UT1(char const* str, std::size_t size) {
 }
 #endif
 
-}  // namespace internal_date
+}  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia

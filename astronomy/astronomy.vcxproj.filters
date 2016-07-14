@@ -93,17 +93,23 @@
     <ClInclude Include="epoch_body.hpp">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="date.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="date_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="eop_c04.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="experimental_eop_c02.generated.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_scales.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_scales_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -113,7 +119,7 @@
     <ClCompile Include="mercury_perihelion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="date_test.cpp">
+    <ClCompile Include="time_scales_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
