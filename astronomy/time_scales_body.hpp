@@ -37,7 +37,7 @@ constexpr quantities::Time TimeScale(DateTime const& date_time) {
                 60 * (date_time.time().hour() - 12 +
                       24 * static_cast<std::int64_t>(
                                date_time.date().mjd() -
-                               Date::YYYYMMDD(2000'01'01).mjd())))) * Second;
+                               "2000-01-01"_Date.mjd())))) * Second;
 }
 
 constexpr double mjd(quantities::Time const& from_j2000) {

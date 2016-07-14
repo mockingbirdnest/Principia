@@ -12,6 +12,7 @@ namespace internal_time_scales {
 
 using quantities::si::Micro;
 using quantities::si::Milli;
+using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
@@ -90,6 +91,13 @@ static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 
 // Check that week dates that go to the previous year work.
 static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
+
+constexpr Instant j2000_utc = "2000-01-01T00:00:00"_UTC;
+constexpr Instant j2000_utc_from_ut1 =
+    "2000-01-01T00:00:00.355"_UT1 + 509.4 * Micro(Second);
+
+static_assert(j2000_utc - j2000_utc_from_ut1 < 1 * Nano(Second), "");
+static_assert(j2000_utc - j2000_utc_from_ut1 > -1 * Nano(Second), "");
 
 }  // namespace
 
