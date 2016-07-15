@@ -35,6 +35,15 @@
     <None Include="ephemeris.py">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="eop_c04.awk">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="experimental_eop_c02.awk">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="generate_eop_headers.sh">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="gravity_model.proto.txt">
@@ -84,11 +93,23 @@
     <ClInclude Include="epoch_body.hpp">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="date.hpp">
+    <ClInclude Include="eop_c04.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="date_body.hpp">
+    <ClInclude Include="experimental_eop_c02.generated.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_scales.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_scales_body.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_time_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_time.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -98,7 +119,10 @@
     <ClCompile Include="mercury_perihelion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="date_test.cpp">
+    <ClCompile Include="time_scales_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="date_time_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,126 +1,17 @@
 ﻿
 #pragma once
 
-#include "astronomy/date.hpp"
+#include "astronomy/date_time.hpp"
 
 #include <array>
-#include <cstdint>
 
-#include "astronomy/epoch.hpp"
-#include "geometry/named_quantities.hpp"
+#include "base/macros.hpp"
 #include "glog/logging.h"
-#include "quantities/si.hpp"
-
-// A macro to allow glog checking within C++11 constexpr code.  If |condition|
-// is true, evaluates to |expression|.  Otherwise, results in a CHECK failure at
-// runtime and a compilation error due to a call to non-constexpr code at
-// compile time.
-#define CHECKING(condition, expression) \
-  ((condition) ? (expression) : (CHECK(condition), (expression)))
 
 namespace principia {
 namespace astronomy {
-namespace internal_date {
-
-using quantities::si::Day;
-using quantities::si::Second;
-
-// The following is horrendous in part because written in C++11, thus
-// functionally; it should perhaps be reworked once MSVC offers proper C++14
-// constexpr.
-
-// Calendar classes.
-
-class Date {
- public:
-  static constexpr Date YYYYMMDD(std::int64_t const digits);
-  static constexpr Date YYYYwwD(std::int64_t const digits);
-  static constexpr Date YYYYDDD(std::int64_t const digits);
-
-  static constexpr Date Calendar(int const year,
-                                 int const month,
-                                 int const day);
-  static constexpr Date Ordinal(int const year, int const day);
-  static constexpr Date Week(int const year, int const week, int const day);
-
-  constexpr int year() const;
-  constexpr int month() const;
-  constexpr int day() const;
-
-  constexpr int ordinal() const;
-
-  constexpr Date next_day() const;
-
-  constexpr bool operator==(Date const& other) const;
-  constexpr bool operator!=(Date const& other) const;
-
-  constexpr bool operator<(Date const& other) const;
-  constexpr bool operator>(Date const& other) const;
-  constexpr bool operator<=(Date const& other) const;
-  constexpr bool operator>=(Date const& other) const;
-
- private:
-  constexpr Date(int const year,
-                 int const month,
-                 int const day);
-
-  int const year_;
-  int const month_;
-  int const day_;
-};
-
-class Time {
- public:
-  static constexpr Time hhmmss_ms(int const hhmmss, int ms);
-
-  constexpr int hour() const;
-  constexpr int minute() const;
-  constexpr int second() const;
-  constexpr int millisecond() const;
-
-  constexpr bool is_leap_second() const;
-  // Whether |*this| is 24:00:00.
-  constexpr bool is_end_of_day() const;
-
- private:
-  constexpr Time(int const hour,
-                 int const minute,
-                 int const second,
-                 int const millisecond);
-
-  // Checks that this represents a valid time of day as per ISO 8601, thus
-  // that the components are in the normal range, or that the object represents
-  // a time in a leap second, or that it represents the end of the day.
-  constexpr Time const& checked() const;
-
-  int const hour_;
-  int const minute_;
-  int const second_;
-  int const millisecond_;
-};
-
-class DateTime {
- public:
-  constexpr Date const& date() const;
-  constexpr Time const& time() const;
-
-  // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
-  // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
-  constexpr DateTime normalized_end_of_day() const;
-
- private:
-  constexpr DateTime(Date const date, Time const time);
-
-  // Checks that |time| does not represent a leap second unless |date| is the
-  // last day of the month.
-  constexpr DateTime const& checked() const;
-
-  Date const date_;
-  Time const time_;
-
-  friend constexpr DateTime operator""_DateTime(char const* str,
-                                                std::size_t size);
-};
+namespace date_time {
+namespace internal_date_time {
 
 // Arithmetico-calendrical utility functions.
 
@@ -226,12 +117,6 @@ constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
                       (year - 1) / 400);
 }
 
-// The signed number of days from 2000-01-01 to the first day of |year|.
-constexpr int days_from_2000_01_01_at_start_of_year(int const year) {
-  return gregorian_days_from_0000_01_01_at_start_of_year(year) -
-         gregorian_days_from_0000_01_01_at_start_of_year(2000);
-}
-
 // Returns the number formed by taking |end - begin| increasingly significant
 // digits, starting from the digit of the (10 ** |begin|)s.
 constexpr std::int64_t digit_range(std::int64_t const digits,
@@ -272,12 +157,11 @@ constexpr Date add_days_within_year(Date const& date, int const days) {
 
 // The |day|th day of some |year|.  The resulting date need not be in |year|.
 constexpr Date arbitrary_ordinal(int const year, int const day) {
-  return day < 1 ? arbitrary_ordinal(year - 1,
-                                     gregorian_year_length(year - 1) + day)
-                 : day > gregorian_year_length(year)
-                       ? arbitrary_ordinal(year + 1,
-                                           day - gregorian_year_length(year))
-                       : Date::Ordinal(year, day);
+  return Date::Ordinal(
+      gregorian_days_from_0000_01_01_to_year(
+          gregorian_days_from_0000_01_01_at_start_of_year(year) + day - 1),
+      gregorian_days_from_0000_01_01_to_ordinal(
+          (gregorian_days_from_0000_01_01_at_start_of_year(year) + day - 1)));
 }
 
 // Implementation of class |Date|.
@@ -340,6 +224,12 @@ constexpr int Date::ordinal() const {
                         ? month_length(year_, month_ - 1) +
                               Date(year_, month_ - 1, 1).ordinal()
                         : 1;
+}
+
+constexpr int Date::mjd() const {
+  return gregorian_days_from_0000_01_01_at_start_of_year(year_) + ordinal() -
+         (gregorian_days_from_0000_01_01_at_start_of_year(1858) +
+          Date::YYYYMMDD(1858'11'17).ordinal());
 }
 
 constexpr Date Date::next_day() const {
@@ -437,6 +327,10 @@ constexpr Time const& Time::checked() const {
 
 // Implementation of class DateTime.
 
+constexpr DateTime DateTime::BeginningOfDay(Date const & date) {
+  return DateTime(date, Time::hhmmss_ms(00'00'00, 0));
+}
+
 constexpr Date const& DateTime::date() const {
   return date_;
 }
@@ -446,9 +340,7 @@ constexpr Time const& DateTime::time() const {
 }
 
 constexpr DateTime DateTime::normalized_end_of_day() const {
-  return time_.is_end_of_day()
-             ? DateTime(date_.next_day(), Time::hhmmss_ms(00'00'00, 0))
-             : *this;
+  return time_.is_end_of_day() ? BeginningOfDay(date_.next_day()) : *this;
 }
 
 constexpr DateTime::DateTime(Date const date, Time const time)
@@ -859,267 +751,7 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
                           size - (index_of(str, size, 'T') + 1))).checked());
 }
 
-// Interpretation utilities.
-
-// Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
-// timescale), not counting any leap seconds that may have occurred in the past.
-// |date_time| itself may be leap second.
-// Note that this may count non-SI seconds depending on the time scale according
-// to which it is interpreted.
-// On a time scale with leap seconds, this is not injective: a positive leap
-// second and the following second map to the same interval.
-constexpr quantities::Time TimeScale(DateTime const& date_time) {
-  return (date_time.time().millisecond() / 1e3) * Second +
-         (date_time.time().second() +
-          60 * (date_time.time().minute() +
-                60 * (date_time.time().hour() - 12 +
-                      24 * static_cast<std::int64_t>(
-                               days_from_2000_01_01_at_start_of_year(
-                                   date_time.date().year()) +
-                               date_time.date().ordinal() - 1)))) * Second;
-}
-
-constexpr double mjd(quantities::Time const& from_j2000) {
-  return from_j2000 / Day + 51544.5;
-}
-
-constexpr Instant FromTT(quantities::Time const& from_j2000) {
-  return J2000 + from_j2000;
-}
-
-constexpr Instant FromTAI(quantities::Time const& tai) {
-  return FromTT(tai + 32.184 * Second);
-}
-
-// Utilities for modern UTC (since 1972).
-
-constexpr std::array<int, (2017 - 1972) * 2> leap_seconds = {{
-    +1, +1,  // 1972
-    +0, +1,  // 1973
-    +0, +1,  // 1974
-    +0, +1,  // 1975
-    +0, +1,  // 1976
-    +0, +1,  // 1977
-    +0, +1,  // 1978
-    +0, +1,  // 1979
-    +0, +0,  // 1980
-    +1, +0,  // 1981
-    +1, +0,  // 1982
-    +1, +0,  // 1983
-    +0, +0,  // 1984
-    +1, +0,  // 1985
-    +0, +0,  // 1986
-    +0, +1,  // 1987
-    +0, +0,  // 1988
-    +0, +1,  // 1989
-    +0, +1,  // 1990
-    +0, +0,  // 1991
-    +1, +0,  // 1992
-    +1, +0,  // 1993
-    +1, +0,  // 1994
-    +0, +1,  // 1995
-    +0, +0,  // 1996
-    +1, +0,  // 1997
-    +0, +1,  // 1998
-    +0, +0,  // 1999
-    +0, +0,  // 2000
-    +0, +0,  // 2001
-    +0, +0,  // 2002
-    +0, +0,  // 2003
-    +0, +0,  // 2004
-    +0, +1,  // 2005
-    +0, +0,  // 2006
-    +0, +0,  // 2007
-    +0, +1,  // 2008
-    +0, +0,  // 2009
-    +0, +0,  // 2010
-    +0, +0,  // 2011
-    +1, +0,  // 2012
-    +0, +0,  // 2013
-    +0, +0,  // 2014
-    +1, +0,  // 2015
-    +0, +1,  // 2016
-}};
-
-// Returns UTC - TAI on the given UTC day (similar to Bulletin C).
-constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
-  return utc_date.month() == 1 && utc_date.day() == 1
-             ? utc_date.year() == 1972
-                   ? -10 * Second
-                   : -leap_seconds[(utc_date.year() - 1973) * 2] * Second +
-                         -leap_seconds[(utc_date.year() - 1973) * 2 + 1] *
-                             Second +
-                         ModernUTCMinusTAI(
-                             Date::Calendar(utc_date.year() - 1, 1, 1))
-             : (utc_date.month() > 6
-                    ? -leap_seconds[(utc_date.year() - 1972) * 2] * Second
-                    : 0 * Second) +
-                   ModernUTCMinusTAI(Date::Calendar(utc_date.year(), 1, 1));
-}
-
-constexpr bool IsValidModernUTC(DateTime const& date_time) {
-  return !date_time.time().is_leap_second() ||
-         (date_time.date().month() == 6 &&
-          leap_seconds[(date_time.date().year() - 1972) * 2] == +1) ||
-         (date_time.date().month() == 12 &&
-          leap_seconds[(date_time.date().year() - 1972) * 2 + 1] == +1);
-}
-
-// Utilities for stretchy UTC (pre-1972).  This timescale includes rate changes
-// as well as fractional second leaps.
-
-// The (MJD - d) * t term from
-// https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history.
-constexpr quantities::Time RateTAIMinusStretchyUTC(DateTime const& utc) {
-  return utc.date() < "1962-01-01"_Date
-             ? (mjd(TimeScale(utc)) - 37'300) * 0.001'296 * Second
-       : utc.date() < "1964-01-01"_Date
-             ? (mjd(TimeScale(utc)) - 37'665) * 0.001'123'2 * Second
-       : utc.date() < "1966-01-01"_Date
-             ? (mjd(TimeScale(utc)) - 38'761) * 0.001'296 * Second
-             : (mjd(TimeScale(utc)) - 39'126) * 0.002'592 * Second;
-}
-
-// The constant term.
-constexpr quantities::Time OffsetTAIMinusStretchyUTC(Date const& utc_date) {
-  return utc_date < "1961-08-01"_Date ? 1.422'818'0 * Second
-       : utc_date < "1962-01-01"_Date ? 1.372'818'0 * Second
-       : utc_date < "1963-11-01"_Date ? 1.845'858'0 * Second
-       : utc_date < "1964-01-01"_Date ? 1.945'858'0 * Second
-       : utc_date < "1964-04-01"_Date ? 3.240'130'0 * Second
-       : utc_date < "1964-09-01"_Date ? 3.340'130'0 * Second
-       : utc_date < "1965-01-01"_Date ? 3.440'130'0 * Second
-       : utc_date < "1965-03-01"_Date ? 3.540'130'0 * Second
-       : utc_date < "1965-07-01"_Date ? 3.640'130'0 * Second
-       : utc_date < "1965-09-01"_Date ? 3.740'130'0 * Second
-       : utc_date < "1966-01-01"_Date ? 3.840'130'0 * Second
-       : utc_date < "1968-02-01"_Date ? 4.313'170'0 * Second
-                                      : 4.213'170'0 * Second;
-}
-
-// Returns TAI - UTC at the given point on the UTC timescale.
-constexpr quantities::Time TAIMinusStretchyUTC(DateTime const& utc) {
-  return OffsetTAIMinusStretchyUTC(utc.date()) + RateTAIMinusStretchyUTC(utc);
-}
-
-// Returns |true| if |utc| is within a leap of the given number of
-// |milliseconds| inserted before |next_day|.
-constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
-                                             Date const& next_day,
-                                             double const& milliseconds) {
-  return utc.time().is_leap_second() && utc.date().next_day() == next_day &&
-         utc.time().millisecond() < milliseconds;
-}
-
-// If |utc| is on the day before |next_day|, returns true its time is consistent
-// with a negative leap of the given number of |milliseconds| before |next_day|.
-// If |utc| is not on the day before |next_day|, returns true.
-constexpr bool IsValidStretchyUTCIfOnDayOfNegativeLeap(DateTime const& utc,
-                                                       Date const& next_day,
-                                                       int const milliseconds) {
-  return CHECKING(milliseconds > 0,
-                  utc.date().next_day() != next_day ||
-                      utc.time().hour() < 23 ||
-                      utc.time().minute() < 59 ||
-                      utc.time().millisecond() < 1000 - milliseconds);
-}
-
-// A list of leaps is found at
-// https://hpiers.obspm.fr/iers/bul/bulc/TimeSteps.history.
-constexpr bool IsValidStretchyUTC(DateTime const& utc) {
-  return utc.date().year() >= 1961 && utc.date().year() < 1972 &&
-         IsValidStretchyUTCIfOnDayOfNegativeLeap(utc, "1961-08-01"_Date, 50) &&
-         IsValidStretchyUTCIfOnDayOfNegativeLeap(utc, "1968-02-01"_Date, 100) &&
-         (!utc.time().is_leap_second() ||
-          IsValidPositiveStretchyUTCLeap(utc, "1963-11-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1964-04-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1964-09-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1965-01-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1965-03-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1965-07-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1965-09-01"_Date, 100) ||
-          IsValidPositiveStretchyUTCLeap(utc, "1972-01-01"_Date, 107.7580));
-}
-
-// Conversions from |DateTime| to |Instant|.
-
-constexpr Instant DateTimeAsTT(DateTime const& tt) {
-  return CHECKING(!tt.time().is_leap_second(), FromTT(TimeScale(tt)));
-}
-
-constexpr Instant DateTimeAsTAI(DateTime const& tai) {
-  return CHECKING(!tai.time().is_leap_second(), FromTAI(TimeScale(tai)));
-}
-
-constexpr Instant DateTimeAsUTC(DateTime const& utc) {
-  return utc.time().is_end_of_day()
-             ? DateTimeAsUTC(utc.normalized_end_of_day())
-             : utc.date().year() < 1972
-                   ? CHECKING(
-                         IsValidStretchyUTC(utc),
-                         FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc)))
-                   : CHECKING(IsValidModernUTC(utc),
-                              FromTAI(TimeScale(utc) -
-                                      ModernUTCMinusTAI(utc.date())));
-}
-
-// |Instant| date literals.
-
-#if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
-template<typename C, C... str>
-constexpr std::array<C, sizeof...(str)> unpack_as_array() {
-  return std::array<C, sizeof...(str)>{{str...}};
-}
-
-template<typename T>
-constexpr T const& as_const_ref(T const& t) {
-  return t;
-}
-
-template<typename C, std::size_t size>
-constexpr C const* c_str(std::array<C, size> const& array) {
-  // In C++17 this could be |data()|.  For the moment this does the job.
-  return &as_const_ref(array)[0];
-}
-
-// NOTE(egg): In the following three functions, the |constexpr| intermediate
-// variable forces failures to occur at compile time and not as glog |CHECK|
-// failures at evaluation.
-
-template<typename C, C... str>
-constexpr Instant operator""_TAI() {
-  constexpr auto result = DateTimeAsTAI(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_TT() {
-  constexpr auto result = DateTimeAsTT(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_UTC() {
-  constexpr auto result = DateTimeAsUTC(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-#else
-constexpr Instant operator""_TAI(char const* str, std::size_t size) {
-  return DateTimeAsTAI(operator""_DateTime(str, size));
-}
-
-constexpr Instant operator""_TT(char const* str, std::size_t size) {
-  return DateTimeAsTT(operator""_DateTime(str, size));
-}
-
-constexpr Instant operator""_UTC(char const* str, std::size_t size) {
-  return DateTimeAsUTC(operator""_DateTime(str, size));
-}
-#endif
-
-}  // namespace internal_date
+}  // namespace internal_date_time
+}  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia

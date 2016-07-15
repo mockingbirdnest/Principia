@@ -5,7 +5,7 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_date {
+namespace internal_time_scales {
 
 using geometry::Instant;
 
@@ -25,19 +25,23 @@ template<typename C, C... str>
 constexpr Instant operator""_TT();
 template<typename C, C... str>
 constexpr Instant operator""_UTC();
+template<typename C, C... str>
+constexpr Instant operator""_UT1();
 #else
 constexpr Instant operator""_TAI(char const* str, std::size_t size);
 constexpr Instant operator""_TT(char const* str, std::size_t size);
 constexpr Instant operator""_UTC(char const* str, std::size_t size);
+constexpr Instant operator""_UT1(char const* str, std::size_t size);
 #endif
 
-}  // namespace internal_date
+}  // namespace internal_time_scales
 
-using internal_date::operator""_TAI;
-using internal_date::operator""_TT;
-using internal_date::operator""_UTC;
+using internal_time_scales::operator""_TAI;
+using internal_time_scales::operator""_TT;
+using internal_time_scales::operator""_UTC;
+using internal_time_scales::operator""_UT1;
 
 }  // namespace astronomy
 }  // namespace principia
 
-#include "astronomy/date_body.hpp"
+#include "astronomy/time_scales_body.hpp"

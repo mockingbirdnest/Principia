@@ -1,5 +1,5 @@
 
-#include "astronomy/date.hpp"
+#include "astronomy/time_scales.hpp"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -8,10 +8,11 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_date {
+namespace internal_time_scales {
 
 using quantities::si::Micro;
 using quantities::si::Milli;
+using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
@@ -19,9 +20,9 @@ using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Lt;
 
-class DateTest : public testing::Test {};
+class TimeScalesTest : public testing::Test {};
 
-using DateDeathTest = DateTest;
+using TimeScalesDeathTest = TimeScalesTest;
 
 // The checks are giant boolean expressions which are entirely repeated in the
 // error message; we try to match the relevant part.
@@ -29,31 +30,31 @@ using DateDeathTest = DateTest;
 #if !((PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && \
       WE_LIKE_N3599)
 
-TEST_F(DateDeathTest, InvalidCalendarDate) {
-  EXPECT_DEATH("2001-04-00T12:00:00"_TT, "day >= 1");
-  EXPECT_DEATH("2001-02-29T12:00:00"_TT, "day <= month_length");
-  EXPECT_DEATH("2001-03-32T12:00:00"_TT, "day <= month_length");
-  EXPECT_DEATH("2001-04-31T12:00:00"_TT, "day <= month_length");
-  EXPECT_DEATH("2001-00-01T12:00:00"_TT, "month >= 1");
-  EXPECT_DEATH("2001-13-01T12:00:00"_TT, "month <= 12");
-  EXPECT_DEATH("2001-00-01T12:00:00"_TT, "month >= 1");
-  EXPECT_DEATH("1582-01-01T12:00:00"_TT, "year >= 1583");
+TEST_F(TimeScalesDeathTest, LeaplessScales) {
+  EXPECT_DEATH("2015-06-30T23:59:60"_TT, "!tt.time...is_leap_second..");
+  EXPECT_DEATH("2015-06-30T23:59:60"_TAI, "!tai.time...is_leap_second..");
+  EXPECT_DEATH("2015-06-30T23:59:60"_UT1, "!ut1.time...is_leap_second..");
 }
 
-TEST_F(DateDeathTest, InvalidTime) {
-  EXPECT_DEATH("2001-01-01T25:00:00"_TT, "hour_ <= 23");
-  EXPECT_DEATH("2001-01-01T24:01:00"_TT, "minute_ == 0");
-  EXPECT_DEATH("2001-01-01T24:00:01"_TT, "second_ == 0");
-  EXPECT_DEATH("2001-01-01T00:60:00"_TT, "minute_ <= 59");
-  EXPECT_DEATH("2001-01-01T00:00:60"_TT, "second_ <= 59");
-  EXPECT_DEATH("2001-01-01T23:59:61"_TT, "second_ == 60");
+TEST_F(TimeScalesDeathTest, BeforeRange) {
+  EXPECT_DEATH("1960-12-31T23:59:59,999"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH("1830-04-10T23:59:59,999"_UT1,
+               "mjd.TimeScale.ut1.. >= experimental_eop_c02.front...ut1_mjd");
 }
 
-TEST_F(DateDeathTest, InvalidDateTime) {
-  EXPECT_DEATH("2001-01-01T23:59:60"_TT, "");
+TEST_F(TimeScalesDeathTest, WarWasBeginning) {
+  EXPECT_DEATH("2101-01-01T00:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2101-01-01T00:00:00"_UT1,
+               "TimeScale.ut1. < eop_c04.back...ut1..");
 }
 
-TEST_F(DateDeathTest, StretchyLeaps) {
+TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
+  EXPECT_DEATH("2017-06-30T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2017-06-30T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2017-07-01T00:00:00"_UTC, "leap_seconds.size");
+}
+
+TEST_F(TimeScalesDeathTest, StretchyLeaps) {
   EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1963-10-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1964-03-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
@@ -63,6 +64,10 @@ TEST_F(DateDeathTest, StretchyLeaps) {
   EXPECT_DEATH("1965-06-30T23:59:60,100"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1965-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1968-01-31T23:59:59,900"_UTC, "IsValidStretchyUTC");
+}
+
+TEST_F(TimeScalesDeathTest, ModernLeaps) {
+  EXPECT_DEATH("2015-12-31T23:59:60"_UTC, "IsValidModernUTC");
 }
 
 #endif
@@ -87,9 +92,16 @@ static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 // Check that week dates that go to the previous year work.
 static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
 
+constexpr Instant j2000_utc = "2000-01-01T00:00:00"_UTC;
+constexpr Instant j2000_utc_from_ut1 =
+    "2000-01-01T00:00:00.355"_UT1 + 509.4 * Micro(Second);
+
+static_assert(j2000_utc - j2000_utc_from_ut1 < 1 * Nano(Second), "");
+static_assert(j2000_utc - j2000_utc_from_ut1 > -1 * Nano(Second), "");
+
 }  // namespace
 
-TEST_F(DateTest, ReferenceDates) {
+TEST_F(TimeScalesTest, ReferenceDates) {
   EXPECT_THAT("1858-11-17T00:00:00"_TT, Eq(ModifiedJulianDate(0)));
   EXPECT_THAT(j2000_week, Eq(J2000));
   EXPECT_THAT(j2000_from_tt, Eq(J2000));
@@ -112,7 +124,7 @@ TEST_F(DateTest, ReferenceDates) {
               AllOf(Ge(1 * Micro(Second)), Lt(10 * Micro(Second))));
 }
 
-TEST_F(DateTest, LeapSecond) {
+TEST_F(TimeScalesTest, LeapSecond) {
   Instant const eleven_fifty_nine_and_fifty_eight_seconds =
       "2015-06-30T23:59:58"_UTC;
   EXPECT_THAT(eleven_fifty_nine_and_fifty_eight_seconds + 1 * Second,
@@ -144,7 +156,7 @@ TEST_F(DateTest, LeapSecond) {
 // with respect to positive or negative leap seconds, the actual conversion is
 // based exclusively on https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history,
 // so this provides some sort of cross-checking.
-TEST_F(DateTest, StretchyLeaps) {
+TEST_F(TimeScalesTest, StretchyLeaps) {
   EXPECT_THAT(AbsoluteError("1961-07-31T24:00:00,000"_UTC - 0.050 * Second,
                             "1961-07-31T23:59:59,900"_UTC),
               Lt(1 * Micro(Second)));
@@ -216,14 +228,13 @@ TEST_F(DateTest, StretchyLeaps) {
       Lt(0.5 * Milli(Second)));
 }
 
-TEST_F(DateTest, StretchyRates) {
+TEST_F(TimeScalesTest, StretchyRates) {
   // Check that cancellations aren't destroying the test.
   EXPECT_NE("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
             "1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10));
 
   quantities::Time utc_minute;
   utc_minute = 1 * Minute / (1 - 150e-10);
-
   EXPECT_THAT("1961-01-01T00:00:00"_UTC + utc_minute,
               Eq("1961-01-01T00:01:00"_UTC));
   EXPECT_THAT("1961-12-31T23:59:00"_UTC + utc_minute,
@@ -254,6 +265,43 @@ TEST_F(DateTest, StretchyRates) {
               Eq("2000-01-01T00:01:00"_UTC));
 }
 
-}  // namespace internal_date
+TEST_F(TimeScalesTest, UT1Continuity) {
+  // Continuity with TAI.  We have a fairly low resolution for UT1 at that time,
+  // as well as high errors (~20 ms), and TAI was synchronized with UT2 anyway,
+  // so it's not going to get much better than 100 ms.
+  EXPECT_THAT(
+      AbsoluteError("1958-01-01T00:00:00"_UT1, "1958-01-01T00:00:00"_TAI),
+      Lt(100 * Milli(Second)));
+
+  // Continuity at the beginning of the EOP C02 series.
+  EXPECT_THAT(AbsoluteError("1961-12-31T23:59:59,000"_UT1,
+                            "1961-12-31T23:59:58,967"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:00,000"_UT1,
+                            "1961-12-31T23:59:59,967"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:00,033"_UT1,
+                            "1962-01-01T00:00:00,000"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:01,033"_UT1,
+                            "1962-01-01T00:00:01,000"_UTC),
+              Lt(0.5 * Milli(Second)));
+
+  // Continuity across a stretchy UTC leap.
+  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,000"_UT1,
+                            "1964-03-31T23:59:59,160"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,900"_UT1,
+                            "1964-03-31T23:59:60,060"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,940"_UT1,
+                            "1964-04-01T00:00:00,000"_UTC),
+              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1964-04-01T00:00:00,000"_UT1,
+                            "1964-04-01T00:00:00,060"_UTC),
+              Lt(0.5 * Milli(Second)));
+}
+
+}  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia
