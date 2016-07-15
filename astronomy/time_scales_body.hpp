@@ -6,7 +6,7 @@
 #include <array>
 #include <cstdint>
 
-#include "astronomy/calendar.hpp"
+#include "astronomy/date_time.hpp"
 #include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
@@ -16,10 +16,10 @@ namespace principia {
 namespace astronomy {
 namespace internal_time_scales {
 
-using astronomy::calendar::Date;
-using astronomy::calendar::DateTime;
-using astronomy::calendar::operator""_Date;
-using astronomy::calendar::operator""_DateTime;
+using astronomy::date_time::Date;
+using astronomy::date_time::DateTime;
+using astronomy::date_time::operator""_Date;
+using astronomy::date_time::operator""_DateTime;
 using quantities::si::Day;
 using quantities::si::Second;
 

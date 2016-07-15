@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "astronomy/calendar.hpp"
+#include "astronomy/date_time.hpp"
 
 #include <array>
 
@@ -10,8 +10,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace calendar {
-namespace internal_calendar {
+namespace date_time {
+namespace internal_date_time {
 
 // Arithmetico-calendrical utility functions.
 
@@ -751,7 +751,7 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
                           size - (index_of(str, size, 'T') + 1))).checked());
 }
 
-}  // namespace internal_calendar
-}  // namespace calendar
+}  // namespace internal_date_time
+}  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia

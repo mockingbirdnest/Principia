@@ -12,8 +12,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace calendar {
-namespace internal_calendar {
+namespace date_time {
+namespace internal_date_time {
 
 class Date {
  public:
@@ -114,17 +114,17 @@ constexpr Date operator""_Date(char const* str, std::size_t size);
 constexpr Time operator""_Time(char const* str, std::size_t size);
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
 
-}  // namespace internal_calendar
+}  // namespace internal_date_time
 
-using internal_calendar::Date;
-using internal_calendar::DateTime;
-using internal_calendar::operator""_Date;
-using internal_calendar::operator""_DateTime;
-using internal_calendar::operator""_Time;
-using internal_calendar::Time;
+using internal_date_time::Date;
+using internal_date_time::DateTime;
+using internal_date_time::operator""_Date;
+using internal_date_time::operator""_DateTime;
+using internal_date_time::operator""_Time;
+using internal_date_time::Time;
 
-}  // namespace calendar
+}  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia
 
-#include "astronomy/calendar_body.hpp"
+#include "astronomy/date_time_body.hpp"

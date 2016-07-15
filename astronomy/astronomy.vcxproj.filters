@@ -105,11 +105,11 @@
     <ClInclude Include="time_scales_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="calendar.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="calendar_body.hpp">
+    <ClInclude Include="date_time_body.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_time.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,7 +122,7 @@
     <ClCompile Include="time_scales_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="calendar_test.cpp">
+    <ClCompile Include="date_time_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

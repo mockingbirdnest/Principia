@@ -1,13 +1,13 @@
 
-#include "astronomy/calendar.hpp"
+#include "astronomy/date_time.hpp"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace principia {
 namespace astronomy {
-namespace calendar {
-namespace internal_calendar {
+namespace date_time {
+namespace internal_date_time {
 
 class CalendarTest : public testing::Test {};
 
@@ -38,7 +38,7 @@ TEST_F(CalendarDeathTest, InvalidDateTime) {
                "date_.day.. == month_length.date_.year.., date_.month..");
 }
 
-}  // namespace internal_calendar
-}  // namespace calendar
+}  // namespace internal_date_time
+}  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia
