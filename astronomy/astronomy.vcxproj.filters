@@ -32,9 +32,6 @@
     <None Include="initial_state_jd_2433282_500000000.cfg">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ephemeris.py">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="eop_c04.awk">
       <Filter>Resource Files</Filter>
     </None>

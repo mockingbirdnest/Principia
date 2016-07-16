@@ -302,6 +302,63 @@ TEST_F(TimeScalesTest, UT1Continuity) {
               Lt(0.5 * Milli(Second)));
 }
 
+// Check the times of the lunar eclipses in LunarEclipseTest.
+TEST_F(TimeScalesTest, LunarEclipses) {
+  EXPECT_THAT(AbsoluteError("1950-04-02T20:44:34.0"_TT,
+                            "1950-04-02T20:44:04.8"_UT1),
+              Lt(14 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1950-04-02T20:49:16.7"_TT,
+                            "1950-04-02T20:48:47.5"_UT1),
+              Lt(14 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1950-09-26T04:17:11.4"_TT,
+                            "1950-09-26T04:16:42.1"_UT1),
+              Lt(86 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1950-09-26T04:21:55.5"_TT,
+                            "1950-09-26T04:21:26.1"_UT1),
+              Lt(15 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1951-03-23T10:37:33.2"_TT,
+                            "1951-03-23T10:37:03.7"_UT1),
+              Lt(92 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1951-03-23T10:50:16.8"_TT,
+                            "1951-03-23T10:49:47.3"_UT1),
+              Lt(92 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1951-09-15T12:27:06.3"_TT,
+                            "1951-09-15T12:26:36.6"_UT1),
+              Lt(99 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1951-09-15T12:38:51.5"_TT,
+                            "1951-09-15T12:38:21.8"_UT1),
+              Lt(99 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1952-02-11T00:28:39.9"_TT,
+                            "1952-02-11T00:28:10.0"_UT1),
+              Lt(69 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1952-02-11T00:39:47.6"_TT,
+                            "1952-02-11T00:39:17.7"_UT1),
+              Lt(69 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("1952-08-05T19:40:29.4"_TT,
+                            "1952-08-05T19:39:59.3"_UT1),
+              Lt(57 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("1952-08-05T19:47:54.8"_TT,
+                            "1952-08-05T19:47:24.7"_UT1),
+              Lt(57 * Milli(Second)));
+
+  EXPECT_THAT(AbsoluteError("2000-01-21T04:41:30.5"_TT,
+                            "2000-01-21T04:40:26.7"_UT1),
+              Lt(45 * Milli(Second)));
+  EXPECT_THAT(AbsoluteError("2000-01-21T04:44:34.5"_TT,
+                            "2000-01-21T04:43:30.6"_UT1),
+              Lt(56 * Milli(Second)));
+
+  EXPECT_THAT("2048-01-01T06:53:54.8"_TT - "2048-01-01T06:52:23.6"_TT,
+              AlmostEquals(91.2 * Second, 3e6, 4e6));
+  EXPECT_THAT("2048-01-01T06:58:19.8"_TT - "2048-01-01T06:56:48.6"_TT,
+              AlmostEquals(91.2 * Second, 3e6, 4e6));
+}
+
 }  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia
