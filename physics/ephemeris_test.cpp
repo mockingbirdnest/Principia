@@ -51,6 +51,7 @@ using quantities::astronomy::LunarDistance;
 using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
 using quantities::si::AstronomicalUnit;
+using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;

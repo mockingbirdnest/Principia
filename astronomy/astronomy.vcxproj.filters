@@ -87,9 +87,6 @@
     <ClInclude Include="epoch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="epoch_body.hpp">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="eop_c04.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -107,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="date_time.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="epoch_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

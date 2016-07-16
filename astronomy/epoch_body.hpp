@@ -2,8 +2,12 @@
 #pragma once
 
 #include "astronomy/epoch.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
+
+using quantities::si::Day;
+
 namespace astronomy {
 
 Instant const jd0  = J2000 - 2451545.0 * Day;

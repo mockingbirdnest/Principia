@@ -12,6 +12,7 @@ namespace internal_time_scales {
 
 using quantities::si::Micro;
 using quantities::si::Milli;
+using quantities::si::Minute;
 using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;

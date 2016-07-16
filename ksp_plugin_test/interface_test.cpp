@@ -23,7 +23,7 @@
 
 namespace principia {
 
-using astronomy::UnixEpoch;
+using astronomy::ModifiedJulianDate;
 using base::check_not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
@@ -779,9 +779,10 @@ TEST_F(InterfaceTest, Frenet) {
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(UnixEpoch));
+  Instant const mjd0 = ModifiedJulianDate(0);
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(mjd0));
   double const current_time = principia__CurrentTime(plugin_.get());
-  EXPECT_THAT(t0_ + current_time * Second, Eq(UnixEpoch));
+  EXPECT_THAT(t0_ + current_time * Second, Eq(mjd0));
 }
 
 TEST_F(InterfaceTest, SerializePlugin) {
