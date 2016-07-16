@@ -16,7 +16,6 @@
 
 namespace principia {
 
-using astronomy::JulianDate;
 using geometry::AngleBetween;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -30,6 +29,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
 using ::testing::Eq;

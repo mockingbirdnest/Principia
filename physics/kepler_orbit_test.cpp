@@ -19,6 +19,7 @@ using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Gt;
