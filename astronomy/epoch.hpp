@@ -3,6 +3,10 @@
 
 #include "geometry/named_quantities.hpp"
 
+// |geometry::Instant| represents instants of Terrestrial Time (TT).  The
+// utilities in this file provide its standard epoch and two ways of specifying
+// TT dates.
+
 namespace principia {
 
 using geometry::Instant;
@@ -20,11 +24,11 @@ namespace astronomy {
 constexpr Instant J2000;
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
-// days since -4712-01-01-T12:00:00.000 (Terrestrial Time, Julian calendar).
-Instant JulianDate(double const days);
+// days since -4712-01-01T12:00:00,000 (Terrestrial Time, Julian calendar).
+constexpr Instant JulianDate(double const days);
 // The Modified Julian Date MJD |days|. MJD is defined as JD - 2400000.5 days,
 // so |ModifiedJulianDate(0)| is "1858-11-17T00:00:00"_TT.
-Instant ModifiedJulianDate(double const days);
+constexpr Instant ModifiedJulianDate(double const days);
 
 }  // namespace astronomy
 }  // namespace principia
