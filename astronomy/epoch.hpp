@@ -23,7 +23,7 @@ constexpr Instant J2000;
 // days since -4712-01-01-T12:00:00.000 (Terrestrial Time, Julian calendar).
 Instant JulianDate(double const days);
 // The Modified Julian Date MJD |days|. MJD is defined as JD - 2400000.5 days,
-// so |ModifiedJulianDate(0)| is +1858-11-17-T00:00:00.000 (Terrestrial Time).
+// so |ModifiedJulianDate(0)| is "1858-11-17T00:00:00"_TT.
 Instant ModifiedJulianDate(double const days);
 
 }  // namespace astronomy

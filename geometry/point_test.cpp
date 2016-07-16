@@ -149,7 +149,7 @@ TEST_F(PointTest, Barycentres) {
   Instant const b1 = Barycentre<Instant, Volume>({t1, t2},
                                                  {3 * Litre, 1 * Litre});
   Instant const b2 = Barycentre<Instant, double>({t2, t1}, {1, 1});
-  EXPECT_THAT(b1, Eq(mjd0));
+  EXPECT_THAT(b1, AlmostEquals(mjd0, 1));
   EXPECT_THAT(b2, Eq(mjd0 - 1 * Day));
 }
 
