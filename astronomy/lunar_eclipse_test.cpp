@@ -239,7 +239,6 @@ Length LunarEclipseTest::atmospheric_depth_;
 #if !defined(_DEBUG)
 
 TEST_F(LunarEclipseTest, Year1950) {
-  // Times are TDB Julian Day for 1950-04-02.
   LOG(ERROR)<<"1950-04-02T20:48:47.5"_UT1-"1950-04-02T20:49:16.7"_TT;
   {
     constexpr auto P1 = "1950-04-02T18:10:49"_UT1;
@@ -257,7 +256,6 @@ TEST_F(LunarEclipseTest, Year1950) {
     CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 33 * Second);
   }
 
-  // Times are TDB Julian Day for 1950-09-26.
   {
     constexpr auto P1 = "1950-09-26T01:21:43"_UT1;
     constexpr auto U1 = "1950-09-26T02:31:48"_UT1;
@@ -276,7 +274,6 @@ TEST_F(LunarEclipseTest, Year1950) {
 }
 
 TEST_F(LunarEclipseTest, Year1951) {
-  // Times are TDB Julian Day for 1951-03-23.
   {
     constexpr auto P1 = "1951-03-23T08:50:50"_UT1;
     constexpr auto P4 = "1951-03-23T12:24:19"_UT1;
@@ -285,7 +282,6 @@ TEST_F(LunarEclipseTest, Year1951) {
     CheckLunarPenumbralEclipse(P4, U14, 8e-6 * Radian, 27 * Second);
   }
 
-  // Times are TDB Julian Day for 1951-09-15.
   {
     constexpr auto P1 = "1951-09-15T10:29:16"_UT1;
     constexpr auto P4 = "1951-09-15T14:23:52"_UT1;
@@ -296,7 +292,6 @@ TEST_F(LunarEclipseTest, Year1951) {
 }
 
 TEST_F(LunarEclipseTest, Year1952) {
-  // Times are TDB Julian Day for 1952-02-11 (or 10 for P1).
   {
     constexpr auto P1 = "1952-02-10T22:08:20"_UT1;
     constexpr auto U1 = "1952-02-11T00:04:17"_UT1;
@@ -309,7 +304,6 @@ TEST_F(LunarEclipseTest, Year1952) {
     CheckLunarPenumbralEclipse(P4, U14, 2e-5 * Radian, 42 * Second);
   }
 
-  // Times are TDB Julian Day for 1952-08-05.
   {
     constexpr auto P1 = "1952-08-05T17:28:13"_UT1;
     constexpr auto U1 = "1952-08-05T18:33:49"_UT1;
@@ -323,9 +317,8 @@ TEST_F(LunarEclipseTest, Year1952) {
   }
 }
 
-#if 1
+#if 0
 TEST_F(LunarEclipseTest, Year2000) {
-  // Times are TDB Julian Day for 2000-01-21.
   constexpr auto P1 = "2000-01-21T02:04:26"_UT1;
   constexpr auto U1 = "2000-01-21T03:01:50"_UT1;
   constexpr auto U2 = "2000-01-21T04:05:01"_UT1;
@@ -341,22 +334,24 @@ TEST_F(LunarEclipseTest, Year2000) {
   CheckLunarPenumbralEclipse(P4, U14, 8e-5 * Radian, -160 * Second);
 }
 
-//TEST_F(LunarEclipseTest, Year2048) {
-//  // Times are TDB Julian Day for 2048-01-01.
-//  constexpr auto P1 = "2048-01-01T03:52:39"_UT1;
-//  constexpr auto U1 = "2048-01-01T05:05:17"_UT1;
-//  constexpr auto U2 = "2048-01-01T06:24:27"_UT1;
-//  constexpr auto U3 = "2048-01-01T07:20:23"_UT1;
-//  constexpr auto U4 = "2048-01-01T08:39:33"_UT1;
-//  constexpr auto P4 = "2048-01-01T09:52:05"_UT1;
-//
-//  CheckLunarPenumbralEclipse(P1, U14, 2e-4 * Radian, -338 * Second);
-//  CheckLunarUmbralEclipse(U1, U14,    3e-4 * Radian, -336 * Second);
-//  CheckLunarUmbralEclipse(U2, U23,    3e-4 * Radian, -335 * Second);
-//  CheckLunarUmbralEclipse(U3, U23,    3e-4 * Radian, -337 * Second);
-//  CheckLunarUmbralEclipse(U4, U14,    3e-4 * Radian, -336 * Second);
-//  CheckLunarPenumbralEclipse(P4, U14, 2e-4 * Radian, -335 * Second);
-//}
+TEST_F(LunarEclipseTest, Year2048) {
+  // No UT1 in the future, but's that's what NASA gives us (don't ask).  Using
+  // TT plus the ΔT that they use.
+  constexpr Time ΔT = 91.2 * Second;
+  constexpr auto P1 = "2048-01-01T03:52:39"_TT + ΔT;
+  constexpr auto U1 = "2048-01-01T05:05:17"_TT + ΔT;
+  constexpr auto U2 = "2048-01-01T06:24:27"_TT + ΔT;
+  constexpr auto U3 = "2048-01-01T07:20:23"_TT + ΔT;
+  constexpr auto U4 = "2048-01-01T08:39:33"_TT + ΔT;
+  constexpr auto P4 = "2048-01-01T09:52:05"_TT + ΔT;
+
+  CheckLunarPenumbralEclipse(P1, U14, 2e-4 * Radian, -361 * Second);
+  CheckLunarUmbralEclipse(U1, U14,    3e-4 * Radian, -359 * Second);
+  CheckLunarUmbralEclipse(U2, U23,    3e-4 * Radian, -358 * Second);
+  CheckLunarUmbralEclipse(U3, U23,    4e-4 * Radian, -360 * Second);
+  CheckLunarUmbralEclipse(U4, U14,    3e-4 * Radian, -359 * Second);
+  CheckLunarPenumbralEclipse(P4, U14, 2e-4 * Radian, -358 * Second);
+}
 #endif
 
 #endif

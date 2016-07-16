@@ -180,7 +180,6 @@
   <ItemGroup>
     <None Include="eop_c04.awk" />
     <None Include="experimental_eop_c02.awk" />
-    <None Include="ephemeris.py" />
     <None Include="generate_eop_headers.sh" />
     <None Include="generate_initial_state.awk" />
     <None Include="generate_initial_state.sh" />
