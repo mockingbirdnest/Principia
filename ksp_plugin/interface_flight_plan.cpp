@@ -44,7 +44,7 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const* const plugin,
   return {burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
-          Instant() + burn.initial_time * Second,
+          FromGameTime(plugin, burn.initial_time),
           Velocity<Frenet<Navigation>>(
               FromXYZ(burn.delta_v) * (Metre / Second))};
 }
@@ -56,7 +56,8 @@ FlightPlan& GetFlightPlan(Plugin const* const plugin,
   return vessel.flight_plan();
 }
 
-Burn GetBurn(NavigationManœuvre const& manœuvre) {
+Burn GetBurn(Plugin const* const plugin,
+             NavigationManœuvre const& manœuvre) {
   Velocity<Frenet<NavigationFrame>> const Δv =
       manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
                                : manœuvre.Δv() * manœuvre.direction();
@@ -95,7 +96,7 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
-          (manœuvre.initial_time() - Instant()) / Second,
+          ToGameTime(plugin, manœuvre.initial_time()),
           ToXYZ(Δv.coordinates() / (Metre / Second))};
 }
 
@@ -106,7 +107,7 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
       OrthogonalMap<WorldSun, World>::Identity() *
       plugin->BarycentricToWorldSun();
   NavigationManoeuvre result;
-  result.burn = GetBurn(manœuvre);
+  result.burn = GetBurn(plugin, manœuvre);
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
   result.final_mass_in_tonnes = manœuvre.final_mass() / Tonne;
   result.mass_flow = manœuvre.mass_flow() / (Kilogram / Second);
@@ -164,9 +165,9 @@ void principia__FlightPlanCreate(Plugin const* const plugin,
                                                 vessel_guid,
                                                 final_time,
                                                 mass_in_tonnes});
-  CHECK_NOTNULL(plugin)->CreateFlightPlan(vessel_guid,
-                                          Instant() + final_time * Second,
-                                          mass_in_tonnes * Tonne);
+  plugin->CreateFlightPlan(vessel_guid,
+                           FromGameTime(plugin, final_time),
+                           mass_in_tonnes * Tonne);
   return m.Return();
 }
 
@@ -330,7 +331,7 @@ bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
                                                              vessel_guid,
                                                              final_time});
   return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      SetDesiredFinalTime(Instant() + final_time * Second));
+                      SetDesiredFinalTime(FromGameTime(plugin, final_time)));
 }
 
 }  // namespace interface

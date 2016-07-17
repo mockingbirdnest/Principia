@@ -88,6 +88,7 @@ Plugin::Plugin(Instant const& game_epoch,
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
+      game_epoch_(game_epoch),
       current_time_(solar_system_epoch) {}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
@@ -339,8 +340,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      celestial.current_degrees_of_freedom(CurrentTime()) -
-      celestial.parent()->current_degrees_of_freedom(CurrentTime());
+      celestial.current_degrees_of_freedom(current_time_) -
+      celestial.parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Celestial at index " << celestial_index
@@ -620,6 +621,10 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
 
 OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
   return sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget();
+}
+
+Instant Plugin::GameEpoch() const {
+  return game_epoch_;
 }
 
 Instant Plugin::CurrentTime() const {

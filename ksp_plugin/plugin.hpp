@@ -291,6 +291,8 @@ class Plugin {
   // |sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget()|.
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
+  virtual Instant GameEpoch() const;
+
   virtual Instant CurrentTime() const;
 
   // Must be called after initialization.

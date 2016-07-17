@@ -1324,7 +1324,7 @@ public partial class PrincipiaPluginAdapter
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
       for(;;) {
-        plugin_ = Interface.NewPlugin(0,
+        plugin_ = Interface.NewPlugin("0 s", "0 s",
                                       Planetarium.InverseRotAngle);
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");

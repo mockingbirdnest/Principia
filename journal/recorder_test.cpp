@@ -22,7 +22,7 @@ class RecorderTest : public testing::Test {
   RecorderTest()
       : test_name_(
             testing::UnitTest::GetInstance()->current_test_info()->name()),
-        plugin_(interface::principia__NewPlugin(1, 2)),
+        plugin_(interface::principia__NewPlugin("0 s", "0 s", 0)),
         recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }
@@ -53,7 +53,7 @@ using JournalDeathTest = RecorderTest;
 
 TEST_F(JournalDeathTest, Return) {
   EXPECT_DEATH({
-    Method<NewPlugin> m({"1", "2", 3});
+    Method<NewPlugin> m({"1 s", "2 s", 3});
     m.Return(plugin_.get());
     m.Return(plugin_.get());
   },
@@ -66,7 +66,7 @@ TEST_F(JournalDeathTest, Return) {
   },
   "!returned_");
   EXPECT_DEATH({
-    Method<NewPlugin> m({"1", "2", 3});
+    Method<NewPlugin> m({"1 s", "2 s", 3});
   },
   "returned_");
 }
@@ -78,7 +78,7 @@ TEST_F(RecorderTest, Recording) {
     m.Return();
   }
   {
-    Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({"1 s", "2 s", 3});
     m.Return(plugin_.get());
   }
 
@@ -109,8 +109,9 @@ TEST_F(RecorderTest, Recording) {
     auto const& extension =
         it->GetExtension(serialization::NewPlugin::extension);
     EXPECT_TRUE(extension.has_in());
-    EXPECT_EQ(1, extension.in().initial_time());
-    EXPECT_EQ(2, extension.in().planetarium_rotation_in_degrees());
+    EXPECT_EQ("1 s", extension.in().game_epoch());
+    EXPECT_EQ("2 s", extension.in().solar_system_epoch());
+    EXPECT_EQ(3, extension.in().planetarium_rotation_in_degrees());
     EXPECT_FALSE(extension.has_return_());
   }
   ++it;

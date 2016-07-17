@@ -285,7 +285,6 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
                                          solar_system_epoch,
                                          planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
-  Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
       J2000 + ParseQuantity<Time>(game_epoch),
       J2000 + ParseQuantity<Time>(solar_system_epoch),
@@ -430,17 +429,14 @@ void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
-  Instant const t0;
-  CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
-                                     planetarium_rotation * Degree);
+  plugin->AdvanceTime(FromGameTime(plugin, t), planetarium_rotation * Degree);
   return m.Return();
 }
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
   journal::Method<journal::ForgetAllHistoriesBefore> m({plugin, t});
-  Instant const t0;
-  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
+  plugin->ForgetAllHistoriesBefore(FromGameTime(plugin, t));
   return m.Return();
 }
 

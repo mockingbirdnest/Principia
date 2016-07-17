@@ -232,6 +232,16 @@ inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+inline Instant FromGameTime(Plugin const* const plugin,
+                            double const t) {
+  return CHECK_NOTNULL(plugin)->GameEpoch() + t * Second;
+}
+
+inline double ToGameTime(Plugin const* const plugin,
+                         Instant const& t) {
+  return (t - CHECK_NOTNULL(plugin)->GameEpoch()) / Second;
+}
+
 inline not_null<Vessel*> GetVessel(Plugin const* const plugin,
                                    char const* const vessel_guid) {
   CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;

@@ -126,6 +126,11 @@ WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 
 // TODO(phl): These utilities should maybe go into a separate file.
+Instant FromGameTime(Plugin const* const plugin,
+                     double const t);
+double ToGameTime(Plugin const* const plugin,
+                  Instant const& t);
+
 not_null<Vessel*> GetVessel(Plugin const* const plugin,
                             char const* const vessel_guid);
 
