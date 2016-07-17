@@ -12,6 +12,7 @@
 #include <psapi.h>
 #endif
 
+#include "astronomy/epoch.hpp"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
@@ -32,6 +33,7 @@
 
 namespace principia {
 
+using astronomy::J2000;
 using base::Bytes;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
@@ -276,14 +278,17 @@ void principia__LogFatal(char const* const text) {
 
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
-Plugin* principia__NewPlugin(double const initial_time,
+Plugin* principia__NewPlugin(char const* const game_epoch,
+                             char const* const solar_system_epoch,
                              double const planetarium_rotation_in_degrees) {
-  journal::Method<journal::NewPlugin> m({initial_time,
+  journal::Method<journal::NewPlugin> m({game_epoch,
+                                         solar_system_epoch,
                                          planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
   Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
-      t0 + initial_time * Second,
+      J2000 + ParseQuantity<Time>(game_epoch),
+      J2000 + ParseQuantity<Time>(solar_system_epoch),
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return m.Return(result.release());

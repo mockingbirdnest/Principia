@@ -1268,7 +1268,9 @@ public partial class PrincipiaPluginAdapter
         ConfigNode initial_states =
             GameDatabase.Instance.GetConfigs(principia_initial_state_config_name)[0].config;
         plugin_ =
-            Interface.NewPlugin(double.Parse(initial_states.GetValue("epoch")),
+              //TODO(phl):Kompatibilitaet?
+            Interface.NewPlugin(initial_states.GetValue("game_epoch"),
+                                initial_states.GetValue("solar_system_epoch"),
                                 Planetarium.InverseRotAngle);
         var name_to_initial_state =
             initial_states.GetNodes("body").

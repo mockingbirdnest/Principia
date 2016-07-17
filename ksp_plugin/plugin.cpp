@@ -80,14 +80,15 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
 
 }  // namespace
 
-Plugin::Plugin(Instant const& initial_time,
+Plugin::Plugin(Instant const& game_epoch,
+               Instant const& solar_system_epoch,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
       history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
-      current_time_(initial_time) {}
+      current_time_(solar_system_epoch) {}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,

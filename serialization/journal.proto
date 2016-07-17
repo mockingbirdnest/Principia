@@ -899,8 +899,9 @@ message NewPlugin {
     optional NewPlugin extension = 5001;
   }
   message In {
-    required double initial_time = 1;
-    required double planetarium_rotation_in_degrees = 2;
+    required string game_epoch = 1;
+    required string solar_system_epoch = 2;
+    required double planetarium_rotation_in_degrees = 3;
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Plugin",

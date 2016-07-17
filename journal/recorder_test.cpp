@@ -53,7 +53,7 @@ using JournalDeathTest = RecorderTest;
 
 TEST_F(JournalDeathTest, Return) {
   EXPECT_DEATH({
-    Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({"1", "2", 3});
     m.Return(plugin_.get());
     m.Return(plugin_.get());
   },
@@ -66,7 +66,7 @@ TEST_F(JournalDeathTest, Return) {
   },
   "!returned_");
   EXPECT_DEATH({
-    Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({"1", "2", 3});
   },
   "returned_");
 }
