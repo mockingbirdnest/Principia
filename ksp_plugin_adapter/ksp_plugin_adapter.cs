@@ -106,6 +106,8 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture barycentric_navball_texture_;
   private bool navball_changed_ = true;
 
+  private CelestialBody previous_bubble_reference_body_;
+
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
   // It is, as usual for KSP, an ineffable acronym; it is however likely derived
@@ -236,15 +238,19 @@ public partial class PrincipiaPluginAdapter
     // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
         pos     : (Vector3d)from_parent.q +
-                  (Vector3d)from_parent.p * UnityEngine.Time.deltaTime,
+                  (vessel.orbitDriver.offsetPosByAFrame
+                       ? (Vector3d)from_parent.p * UnityEngine.Time.deltaTime
+                       : Vector3d.zero),
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    Vector3d gravity =
-        FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
+    if (FlightIntegrator.GraviticForceMultiplier != 0) {  // sic.
+      Log.Info("Killing stock gravity");
+      FlightIntegrator.GraviticForceMultiplier = 0;
+    }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
         (from part in vessel.parts
@@ -254,7 +260,7 @@ public partial class PrincipiaPluginAdapter
              world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
              mass_in_tonnes =
                  (double)part.mass + (double)part.GetResourceMass(),
-             gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
+             gravitational_acceleration_to_be_applied_by_ksp = default(XYZ),
              id = part.flightID}).ToArray();
     if (parts.Count() > 0) {
       bool inserted = plugin_.InsertOrKeepVessel(
@@ -263,12 +269,14 @@ public partial class PrincipiaPluginAdapter
       if (inserted) {
         // NOTE(egg): this is only used when a (plugin-managed) physics bubble
         // appears with a new vessel (e.g. when exiting the atmosphere).
-        // TODO(egg): these degrees of freedom are off by one Δt and we don't
-        // compensate for the pos/vel synchronization bug.
         plugin_.SetVesselStateOffset(
             vessel_guid : vessel.id.ToString(),
-            from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                                 p = (XYZ)vessel.orbit.vel});
+            from_parent : new QP{
+                q = vessel.orbitDriver.offsetPosByAFrame
+                        ? (XYZ)(vessel.orbit.pos -
+                                vessel.orbit.vel * TimeWarp.fixedDeltaTime)
+                        : (XYZ)vessel.orbit.pos,
+                p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
                                            parts       : parts,
@@ -643,6 +651,10 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
+    if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
+      Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
+      GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
+    }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = plugin_.CurrentTime();
@@ -659,8 +671,17 @@ public partial class PrincipiaPluginAdapter
         return;
       }
       time_is_advancing_ = true;
-      if (has_inertial_physics_bubble_in_space()) {
+      if (has_inertial_physics_bubble_in_space() &&
+          (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
+           previous_bubble_reference_body_ == null)) {
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
+        previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
+      } else {
+        if (FlightIntegrator.GraviticForceMultiplier != 1) {
+          Log.Info("Reinstating stock gravity");
+          FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
+        }
+        previous_bubble_reference_body_ = null;
       }
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
@@ -1268,17 +1289,11 @@ public partial class PrincipiaPluginAdapter
           var body_parameters = new BodyParameters{
               gravitational_parameter =
                   gravity_model.GetValue("gravitational_parameter"),
-              reference_instant       =
-                  double.Parse(gravity_model.GetValue("reference_instant")),
               mean_radius             = gravity_model.GetValue("mean_radius"),
               axis_right_ascension    =
                   gravity_model.GetValue("axis_right_ascension"),
               axis_declination        =
                   gravity_model.GetValue("axis_declination"),
-              reference_angle         =
-                  gravity_model.GetValue("reference_angle"),
-              angular_frequency       =
-                  gravity_model.GetValue("angular_frequency"),
               j2                      = gravity_model.GetValue("j2"),
               reference_radius        =
                   gravity_model.GetValue("reference_radius")};

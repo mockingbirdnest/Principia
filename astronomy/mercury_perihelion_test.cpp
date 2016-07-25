@@ -3,6 +3,7 @@
 #include <numeric>
 
 #include "astronomy/epoch.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
@@ -22,7 +23,6 @@
 
 namespace principia {
 
-using astronomy::JulianDate;
 using base::not_null;
 using geometry::AngleBetween;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -38,6 +38,7 @@ using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Kilo;
+using quantities::si::Minute;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
@@ -67,9 +68,9 @@ class MercuryPerihelionTest : public testing::Test {
   MercuryPerihelionTest()
       : sun_(solar_system_1950_.massive_body(*ephemeris_, "Sun")),
         mercury_(solar_system_1950_.massive_body(*ephemeris_, "Mercury")),
-        t_1950_(JulianDate(2433282.500000000)),
-        t_1960_(JulianDate(2436934.500000000)),
-        t_2050_(JulianDate(2469807.500000000)) {
+        t_1950_("1950-01-01T00:00:00"_TT),
+        t_1960_("1960-01-01T00:00:00"_TT),
+        t_2050_("2050-01-01T00:00:00"_TT) {
     keplerian_elements_1950_.eccentricity = 2.056187274905493e-01;
     keplerian_elements_1950_.semimajor_axis =
         5.790897350196702e+07 * Kilo(Metre);

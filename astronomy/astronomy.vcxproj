@@ -178,7 +178,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ephemeris.py" />
+    <None Include="eop_c04.awk" />
+    <None Include="experimental_eop_c02.awk" />
+    <None Include="generate_eop_headers.sh" />
     <None Include="generate_initial_state.awk" />
     <None Include="generate_initial_state.sh" />
     <None Include="gravity_model.cfg" />
@@ -200,8 +202,14 @@
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="date_time.hpp" />
+    <ClInclude Include="date_time_body.hpp" />
+    <ClInclude Include="time_scales.hpp" />
+    <ClInclude Include="time_scales_body.hpp" />
+    <ClInclude Include="eop_c04.generated.h" />
     <ClInclude Include="epoch.hpp" />
     <ClInclude Include="epoch_body.hpp" />
+    <ClInclude Include="experimental_eop_c02.generated.h" />
     <ClInclude Include="frames.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -210,6 +218,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="date_time_test.cpp" />
+    <ClCompile Include="time_scales_test.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
   </ItemGroup>

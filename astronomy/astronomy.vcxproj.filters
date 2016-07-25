@@ -12,6 +12,9 @@
     <Filter Include="Test Files">
       <UniqueIdentifier>{31add3e9-2183-44db-8904-34f86f3aecad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2f348d01-8c8d-4e0d-8ad2-c4e1d1a62595}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="query.f">
@@ -29,7 +32,13 @@
     <None Include="initial_state_jd_2433282_500000000.cfg">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ephemeris.py">
+    <None Include="eop_c04.awk">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="experimental_eop_c02.awk">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="generate_eop_headers.sh">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -78,8 +87,26 @@
     <ClInclude Include="epoch.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="eop_c04.generated.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="experimental_eop_c02.generated.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_scales.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_scales_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_time_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="date_time.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="epoch_body.hpp">
-      <Filter>Resource Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +114,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="mercury_perihelion_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="time_scales_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="date_time_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
