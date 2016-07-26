@@ -64,8 +64,9 @@ class TypedIterator : public Iterator {
 template<>
 class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
  public:
-  explicit TypedIterator(
-      not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory);
+  TypedIterator(
+      not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+      not_null<Plugin const*> const plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
   // |Interchange| type using |convert|.
@@ -78,9 +79,12 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
   void Increment() override;
   int Size() const override;
 
+  not_null<Plugin const*> plugin() const;
+
  private:
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory_;
   DiscreteTrajectory<World>::Iterator iterator_;
+  not_null<Plugin const*> plugin_;
 };
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
@@ -126,17 +130,17 @@ WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 
 // TODO(phl): These utilities should maybe go into a separate file.
-Instant FromGameTime(Plugin const* const plugin,
+Instant FromGameTime(Plugin const& plugin,
                      double const t);
-double ToGameTime(Plugin const* const plugin,
+double ToGameTime(Plugin const& plugin,
                   Instant const& t);
 
-not_null<Vessel*> GetVessel(Plugin const* const plugin,
+not_null<Vessel*> GetVessel(Plugin const& plugin,
                             char const* const vessel_guid);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
-    Plugin const* const plugin,
+    Plugin const& plugin,
     NavigationFrameParameters const& parameters);
 
 }  // namespace interface

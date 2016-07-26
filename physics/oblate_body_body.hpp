@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 
@@ -13,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_oblate_body {
 
+using astronomy::J2000;
 using geometry::AngularVelocity;
 using geometry::Instant;
 using quantities::si::Radian;
@@ -111,7 +113,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
   typename RotatingBody<Frame>::Parameters
       rotating_body_parameters(Length(),
                                Angle(),
-                               Instant(),
+                               J2000,
                                AngularVelocity<Frame>(
                                    axis.coordinates() * Radian / Second));
   Parameters parameters(Order2ZonalCoefficient::ReadFromMessage(message.j2()));
