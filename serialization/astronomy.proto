@@ -7,10 +7,16 @@ package principia.serialization;
 message GravityModel {
   message Body {
     required string name = 1;
+    // Massive body.
     required string gravitational_parameter = 2;
+    // Rotating body.
+    optional double reference_instant = 10;  // Julian date.
     optional string mean_radius = 7;
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
+    optional string reference_angle = 8;
+    optional string angular_frequency = 9;
+    // Oblate body.
     optional string j2 = 5;
     optional string reference_radius = 6;
   }

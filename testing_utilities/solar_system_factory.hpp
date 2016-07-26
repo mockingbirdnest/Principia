@@ -58,8 +58,15 @@ class SolarSystemFactory {
     Ariel = 23,
     Umbriel = 24,
     Dione = 25,
-    Tethys = 26,
-    LastBody = 26,
+    Ceres = 26,
+    Tethys = 27,
+    Vesta = 28,
+    Enceladus = 29,
+    Miranda = 30,
+    Mimas = 31,
+    Phobos = 32,
+    Deimos = 33,
+    LastBody = 33,
   };
 
   // Specifies the accuracy of the modeling.
@@ -69,7 +76,7 @@ class SolarSystemFactory {
     MajorBodiesOnly,
     // Same as above, with some smaller satellites of the main planets.
     MinorAndMajorBodies,
-    // Same as above, with oblateness for the gas giants.
+    // Same as above, with oblateness.
     AllBodiesAndOblateness,
   };
 
