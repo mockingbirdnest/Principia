@@ -29,6 +29,7 @@ namespace principia {
 namespace physics {
 namespace internal_solar_system {
 
+using astronomy::J2000;
 using astronomy::JulianDate;
 using base::FindOrDie;
 using geometry::Bivector;
@@ -211,7 +212,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
           std::make_unique<typename RotatingBody<Frame>::Parameters>(
               ParseQuantity<Length>(body.mean_radius()),
               Angle(),
-              Instant(),
+              J2000,
               Bivector<double, Frame>(
                   RadiusLatitudeLongitude(
                       1.0,
@@ -224,7 +225,7 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
           std::make_unique<typename RotatingBody<Frame>::Parameters>(
               ParseQuantity<Length>(body.mean_radius()),
               Angle(),
-              Instant(),
+              J2000,
               Bivector<double, Frame>(
                   RadiusLatitudeLongitude(1.0, Angle(), Angle())
                       .ToCartesian()) *

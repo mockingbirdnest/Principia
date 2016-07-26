@@ -18,15 +18,16 @@ AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
     char const* const vessel_guid) {
   journal::Method<journal::VesselGetPredictionAdaptiveStepParameters> m(
       {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
   return m.Return(ToAdaptiveStepParameters(
-      GetVessel(plugin, vessel_guid)->prediction_adaptive_step_parameters()));
+      GetVessel(*plugin, vessel_guid)->prediction_adaptive_step_parameters()));
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
                             char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid).coordinates()));
 }
 
 void principia__VesselSetPredictionAdaptiveStepParameters(
@@ -35,7 +36,8 @@ void principia__VesselSetPredictionAdaptiveStepParameters(
     AdaptiveStepParameters const adaptive_step_parameters) {
   journal::Method<journal::VesselSetPredictionAdaptiveStepParameters> m(
       {plugin, vessel_guid, adaptive_step_parameters});
-  GetVessel(plugin, vessel_guid)
+  CHECK_NOTNULL(plugin);
+  GetVessel(*plugin, vessel_guid)
       ->set_prediction_adaptive_step_parameters(
           FromAdaptiveStepParameters(adaptive_step_parameters));
   return m.Return();
@@ -44,16 +46,16 @@ void principia__VesselSetPredictionAdaptiveStepParameters(
 XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid).coordinates()));
 }
 
 XYZ principia__VesselVelocity(Plugin const* const plugin,
                               char const* const vessel_guid) {
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselVelocity(vessel_guid).coordinates() /
-            (Metre / Second)));
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid).coordinates() /
+                        (Metre / Second)));
 }
 
 }  // namespace interface

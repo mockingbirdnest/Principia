@@ -73,10 +73,12 @@ class Plugin {
   Plugin& operator=(Plugin&&) = delete;
   virtual ~Plugin() = default;
 
-  // Constructs a |Plugin|. The current time of that instance is |initial_time|.
-  // The angle between the axes of |World| and |Barycentric| at |initial_time|
-  // is set to |planetarium_rotation|.
-  Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
+  // Constructs a |Plugin|. The current time of that instance is
+  // |solar_system_epoch|.  The angle between the axes of |World| and
+  // |Barycentric| at |solar_system_epoch| is set to |planetarium_rotation|.
+  Plugin(Instant const& game_epoch,
+         Instant const& solar_system_epoch,
+         Angle const& planetarium_rotation);
 
   // Inserts a celestial body with index |celestial_index| body |body|,
   // giving it the initial state |initial_state|.
@@ -289,6 +291,8 @@ class Plugin {
   // |sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget()|.
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
+  virtual Instant GameEpoch() const;
+
   virtual Instant CurrentTime() const;
 
   // Must be called after initialization.
@@ -407,6 +411,8 @@ class Plugin {
   base::Monostable initializing_;
 
   Angle planetarium_rotation_;
+  // The game epoch in real time.
+  Instant const game_epoch_;
   // The current in-game universal time.
   Instant current_time_;
 

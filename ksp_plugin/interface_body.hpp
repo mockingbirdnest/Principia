@@ -51,9 +51,11 @@ int TypedIterator<Container>::Size() const {
 }
 
 inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
-    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory)
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+    not_null<Plugin const*> const plugin)
     : trajectory_(std::move(trajectory)),
-      iterator_(trajectory_->Begin()) {
+      iterator_(trajectory_->Begin()),
+      plugin_(plugin) {
   CHECK(trajectory_->is_root());
 }
 
@@ -75,6 +77,11 @@ inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
 
 inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
   return trajectory_->Size();
+}
+
+inline not_null<Plugin const*> TypedIterator<
+    DiscreteTrajectory<World>>::plugin() const {
+  return plugin_;
 }
 
 
@@ -232,23 +239,33 @@ inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
-inline not_null<Vessel*> GetVessel(Plugin const* const plugin,
+inline Instant FromGameTime(Plugin const& plugin,
+                            double const t) {
+  return plugin.GameEpoch() + t * Second;
+}
+
+inline double ToGameTime(Plugin const& plugin,
+                         Instant const& t) {
+  return (t - plugin.GameEpoch()) / Second;
+}
+
+inline not_null<Vessel*> GetVessel(Plugin const& plugin,
                                    char const* const vessel_guid) {
-  CHECK(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid)) << vessel_guid;
-  return plugin->GetVessel(vessel_guid);
+  CHECK(plugin.HasVessel(vessel_guid)) << vessel_guid;
+  return plugin.GetVessel(vessel_guid);
 }
 
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
-    Plugin const* const plugin,
+    Plugin const& plugin,
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::BarycentricRotatingDynamicFrame::
         kBarycentricRotatingDynamicFrameFieldNumber:
-      return CHECK_NOTNULL(plugin)->NewBarycentricRotatingNavigationFrame(
+      return plugin.NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredNonRotatingDynamicFrame::
         kBodyCentredNonRotatingDynamicFrameFieldNumber:
-      return CHECK_NOTNULL(plugin)->NewBodyCentredNonRotatingNavigationFrame(
+      return plugin.NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;

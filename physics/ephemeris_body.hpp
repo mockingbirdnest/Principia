@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
@@ -25,6 +26,7 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using astronomy::J2000;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::Displacement;
@@ -958,7 +960,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   CHECK(!trajectories_.empty());
   Instant const t_last_intermediate_state =
       checkpoints_.empty()
-          ? Instant() - std::numeric_limits<double>::infinity() * Second
+          ? J2000 - std::numeric_limits<double>::infinity() * Second
           : checkpoints_.back().system_state.time.value;
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());

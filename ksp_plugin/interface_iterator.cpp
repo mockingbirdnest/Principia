@@ -53,9 +53,10 @@ double principia__IteratorGetTime(Iterator const* const iterator) {
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
+  auto const plugin = typed_iterator->plugin();
   return m.Return(typed_iterator->Get<double>(
-      [](DiscreteTrajectory<World>::Iterator const& iterator) -> double {
-        return (iterator.time() - Instant()) / Second;
+      [plugin](DiscreteTrajectory<World>::Iterator const& iterator) -> double {
+        return ToGameTime(*plugin, iterator.time());
       }));
 }
 

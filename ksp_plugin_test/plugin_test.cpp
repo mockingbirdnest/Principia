@@ -119,9 +119,11 @@ class TestablePlugin : public Plugin {
   std::unique_ptr<StrictMock<MockEphemeris<Barycentric>>> mock_ephemeris_;
 
  public:
-  TestablePlugin(Instant const& initial_time,
+  TestablePlugin(Instant const& game_epoch,
+                 Instant const& solar_system_epoch,
                  Angle const& planetarium_rotation)
-      : Plugin(initial_time,
+      : Plugin(game_epoch,
+               solar_system_epoch,
                planetarium_rotation),
         mock_ephemeris_(
             std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
@@ -191,6 +193,7 @@ class PluginTest : public testing::Test {
                 SolarSystemFactory::name(SolarSystemFactory::Sun))))),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
+                    initial_time_,
                     initial_time_,
                     planetarium_rotation_)) {
     mock_ephemeris_ = plugin_->mock_ephemeris();
@@ -302,6 +305,7 @@ TEST_F(PluginDeathTest, SerializationError) {
     auto plugin =
         make_not_null_unique<Plugin>(
             initial_time_,
+            initial_time_,
             planetarium_rotation_);
     serialization::Plugin message;
     plugin->WriteToMessage(&message);
@@ -313,6 +317,7 @@ TEST_F(PluginTest, Serialization) {
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
   // that's what |ReadFromMessage| returns.
   auto plugin = make_not_null_unique<Plugin>(
+                    initial_time_,
                     initial_time_,
                     planetarium_rotation_);
   plugin->InsertCelestialJacobiKeplerian(
@@ -820,6 +825,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
 TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
+                initial_time_,
                 0 * Radian);
   plugin.InsertCelestialJacobiKeplerian(
       SolarSystemFactory::Sun,
@@ -848,6 +854,7 @@ TEST_F(PluginTest, Navball) {
 TEST_F(PluginTest, Frenet) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
+                initial_time_,
                 0 * Radian);
   auto sun_body = make_not_null_unique<MassiveBody>(
       MassiveBody::Parameters(solar_system_->gravitational_parameter(
