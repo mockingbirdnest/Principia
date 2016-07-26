@@ -17,6 +17,7 @@ namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::J2000;
+using astronomy::JulianDate;
 using physics::SolarSystem;
 using quantities::si::Second;
 
@@ -49,8 +50,16 @@ void GenerateConfiguration(Instant const& game_epoch,
                       << name << "\n";
     gravity_model_cfg << "    gravitational_parameter = "
                       << body.gravitational_parameter() << "\n";
-    gravity_model_cfg << "    mean_radius             = "
-                      << body.mean_radius() << "\n";
+    if (body.has_reference_instant()) {
+      gravity_model_cfg << "    reference_instant       = "
+                        << (JulianDate(body.reference_instant()) - game_epoch) /
+                               Second
+                        << "\n";
+    }
+    if (body.has_mean_radius()) {
+      gravity_model_cfg << "    mean_radius             = "
+                        << body.mean_radius() << "\n";
+    }
     if (body.has_axis_right_ascension()) {
       gravity_model_cfg << "    axis_right_ascension    = "
                         << body.axis_right_ascension() << "\n";
@@ -58,6 +67,14 @@ void GenerateConfiguration(Instant const& game_epoch,
     if (body.has_axis_declination()) {
       gravity_model_cfg << "    axis_declination        = "
                         << body.axis_declination() << "\n";
+    }
+    if (body.has_reference_angle()) {
+      gravity_model_cfg << "    reference_angle         = "
+                        << body.reference_angle() << "\n";
+    }
+    if (body.has_angular_frequency()) {
+      gravity_model_cfg << "    angular_frequency       = "
+                        << body.angular_frequency() << "\n";
     }
     if (body.has_j2()) {
       gravity_model_cfg << "    j2                      = "
