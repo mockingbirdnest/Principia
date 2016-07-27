@@ -324,7 +324,7 @@ gravity_model {
     # Gravitational characteristics from Cassini data,
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Dione"
-    gravitational_parameter : "+7.3116366487320e+01 km^3/s^2"
+    gravitational_parameter : "+7.311636648732e+01 km^3/s^2"
     reference_instant       : 2451545.000000000
     mean_radius             : "561.4 km"
     axis_right_ascension    : "40.66 deg"
