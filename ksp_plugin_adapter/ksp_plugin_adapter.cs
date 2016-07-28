@@ -1343,15 +1343,29 @@ public partial class PrincipiaPluginAdapter
               gravitational_parameter =
                   (gravity_model?.GetValue("gravitational_parameter")).
                       GetValueOrDefault(body.gravParameter + " m^3/s^2"),
-              mean_radius             =
+              // J2000, because that's when we start non-config games.  We
+              // should really parse real-life dates from strings.
+              reference_instant    = double.Parse(
+                  (gravity_model?.GetValue("reference_instant")).
+                      GetValueOrDefault("2451545.0")),
+              mean_radius          =
                   (gravity_model?.GetValue("mean_radius")).
                       GetValueOrDefault(body.Radius + " m"),
-              axis_right_ascension    =
-                  gravity_model?.GetValue("axis_right_ascension"),
-              axis_declination        =
-                  gravity_model?.GetValue("axis_declination"),
-              j2                          = gravity_model?.GetValue("j2"),
-              reference_radius        =
+              axis_right_ascension =
+                  (gravity_model?.GetValue("axis_right_ascension")).
+                      GetValueOrDefault("0.0 deg"),
+              axis_declination     =
+                  (gravity_model?.GetValue("axis_declination")).
+                      GetValueOrDefault("90 deg"),
+              reference_angle      =
+                  (gravity_model?.GetValue("reference_angle")).
+                      GetValueOrDefault(body.initialRotation.ToString() +
+                                        " deg"),
+              angular_frequency    =
+                  (gravity_model?.GetValue("angular_frequency")).
+                      GetValueOrDefault(body.angularV.ToString() + " rad/s"),
+              j2                   = gravity_model?.GetValue("j2"),
+              reference_radius     =
                   gravity_model?.GetValue("reference_radius")};
           plugin_.InsertCelestialJacobiKeplerian(
               celestial_index             : body.flightGlobalsIndex,
