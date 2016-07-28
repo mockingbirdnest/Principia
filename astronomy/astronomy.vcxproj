@@ -196,8 +196,10 @@
     <Text Include="initial_state_jd_2433374_470754460.proto.txt" />
     <Text Include="initial_state_jd_2436116_311504629.proto.txt" />
     <Text Include="initial_state_jd_2436145_604166667.proto.txt" />
+    <Text Include="initial_state_jd_2451545_000000000.proto.txt" />
     <Text Include="initial_state_jd_2451564_587154910.proto.txt" />
     <Text Include="initial_state_jd_2451564_808127140.proto.txt" />
+    <Text Include="initial_state_jd_2455200_500000000.proto.txt" />
     <Text Include="initial_state_two_bodies_circular_test.proto.txt" />
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
   </ItemGroup>

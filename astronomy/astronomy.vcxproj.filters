@@ -79,6 +79,12 @@
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="initial_state_jd_2455200_500000000.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="initial_state_jd_2451545_000000000.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">

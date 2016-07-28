@@ -661,11 +661,21 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 
 TEST_F(EphemerisTest, Спутник1ToСпутник2) {
   auto const at_спутник_1_launch =
-      SolarSystemFactory::AtСпутник1Launch(
-          SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
-  auto const at_спутник_2_launch =
-      SolarSystemFactory::AtСпутник2Launch(
-          SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
+      base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
+  at_спутник_1_launch->Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2451545_000000000.proto.txt");
+
+  //auto const at_спутник_2_launch =
+  //    SolarSystemFactory::AtСпутник2Launch(
+  //        SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
+  auto at_спутник_2_launch =
+      base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
+  at_спутник_2_launch->Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2455200_500000000.proto.txt");
   Instant const& epoch = at_спутник_2_launch->epoch();
   Time const duration = epoch - at_спутник_1_launch->epoch();
 
@@ -677,12 +687,13 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
               /*step=*/10 * Minute));
 
   ephemeris->Prolong(epoch);
-  //TODO(egg): A data structure or something saner than this...
-  for (int parent_index = 1; parent_index <= SolarSystemFactory::LastBody;
-       ++parent_index) {
-    if (SolarSystemFactory::parent(parent_index) != SolarSystemFactory::Sun) {
-      continue;
+  std::vector<int> bodies_orbiting_the_sun;
+  for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
+    if (SolarSystemFactory::parent(i) == SolarSystemFactory::Sun) {
+      bodies_orbiting_the_sun.emplace_back(i);
     }
+  }
+  for (int parent_index : bodies_orbiting_the_sun) {
   LOG(ERROR)<<"***"<<SolarSystemFactory::name(parent_index)<<"***";
   for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
     if (SolarSystemFactory::parent(i) != parent_index) {
@@ -757,11 +768,15 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                                 actual_elements.inclination) /
                       ArcSecond / orbits
                << u8"″/orbit";
-    LOG(ERROR) << u8"Δ(ε/μ) =" << std::fixed
-               << AbsoluteError(1 / (2 * *expected_elements.semimajor_axis),
-                                1 / (2 * *actual_elements.semimajor_axis)) *
-                      quantities::astronomy::Parsec / orbits
-               << u8"pc⁻¹/orbit";
+    LOG(ERROR) << u8"i =" << std::fixed << actual_elements.inclination / Degree
+               << u8"°";
+    if (actual_elements.inclination > 0.1 * Degree) {
+      LOG(ERROR) << u8"ΔΩ =" << std::fixed
+                 << AbsoluteError(expected_elements.longitude_of_ascending_node,
+                                  actual_elements.longitude_of_ascending_node) /
+                        ArcSecond / orbits
+                 << u8"″/orbit";
+    }
   }
   }
 }
