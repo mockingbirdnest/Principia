@@ -667,35 +667,6 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
       SOLUTION_DIR / "astronomy" /
           "initial_state_jd_2451545_000000000.proto.txt");
 
-  for (char const* moon : {"Phobos", "Deimos"}) {
-    LOG(ERROR) << moon;
-    LOG(ERROR) << solar_system_at_j2000->initial_state(moon) -
-                      solar_system_at_j2000->initial_state("Mars");
-  }
-  LOG(ERROR) << solar_system_at_j2000->initial_state("Mars") +
-                    RelativeDegreesOfFreedom<ICRFJ2000Equator>{
-                        Displacement<ICRFJ2000Equator>(
-                            {-1990.872 * Kilo(Metre),
-                             -8743.206 * Kilo(Metre),
-                             -3181.352 * Kilo(Metre)}),
-                        Velocity<ICRFJ2000Equator>(
-                            {159248.83332 * Kilo(Metre) / Day,
-                             -3755.33951 * Kilo(Metre) / Day,
-                             -87980.50904 * Kilo(Metre) / Day})};
-  LOG(ERROR) << solar_system_at_j2000->initial_state("Mars") +
-                    RelativeDegreesOfFreedom<ICRFJ2000Equator>{
-                        Displacement<ICRFJ2000Equator>(
-                            {10369.110 * Kilo(Metre),
-                             -15744.941 * Kilo(Metre),
-                             -13945.810 * Kilo(Metre)}),
-                        Velocity<ICRFJ2000Equator>(
-                            {89930.01056 * Kilo(Metre) / Day,
-                             72888.04208 * Kilo(Metre) / Day,
-                             -15435.52496 * Kilo(Metre) / Day})};
-
-  //auto const at_спутник_2_launch =
-  //    SolarSystemFactory::AtСпутник2Launch(
-  //        SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
   auto at_спутник_2_launch =
       base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
   at_спутник_2_launch->Initialize(
@@ -782,6 +753,13 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
     Time const period = 2 * π * Radian / *actual_elements.mean_motion;
     double const orbits = duration / period;
     LOG(ERROR)<<"==="<<SolarSystemFactory::name(i)<<"===";
+    LOG(ERROR) << std::fixed
+               << geometry::AngleBetween(
+                      actual_dof.position() - actual_parent_dof.position(),
+                      expected_dof.position() -
+                          expected_parent_dof.position()) /
+                      ArcSecond
+               << u8"″";
     LOG(ERROR) << std::fixed
                << geometry::AngleBetween(
                       actual_dof.position() - actual_parent_dof.position(),
