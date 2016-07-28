@@ -660,12 +660,38 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 }
 
 TEST_F(EphemerisTest, Спутник1ToСпутник2) {
-  auto const at_спутник_1_launch =
+  auto const solar_system_at_j2000 =
       base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>();
-  at_спутник_1_launch->Initialize(
+  solar_system_at_j2000->Initialize(
       SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "initial_state_jd_2451545_000000000.proto.txt");
+
+  for (char const* moon : {"Phobos", "Deimos"}) {
+    LOG(ERROR) << moon;
+    LOG(ERROR) << solar_system_at_j2000->initial_state(moon) -
+                      solar_system_at_j2000->initial_state("Mars");
+  }
+  LOG(ERROR) << solar_system_at_j2000->initial_state("Mars") +
+                    RelativeDegreesOfFreedom<ICRFJ2000Equator>{
+                        Displacement<ICRFJ2000Equator>(
+                            {-1990.872 * Kilo(Metre),
+                             -8743.206 * Kilo(Metre),
+                             -3181.352 * Kilo(Metre)}),
+                        Velocity<ICRFJ2000Equator>(
+                            {159248.83332 * Kilo(Metre) / Day,
+                             -3755.33951 * Kilo(Metre) / Day,
+                             -87980.50904 * Kilo(Metre) / Day})};
+  LOG(ERROR) << solar_system_at_j2000->initial_state("Mars") +
+                    RelativeDegreesOfFreedom<ICRFJ2000Equator>{
+                        Displacement<ICRFJ2000Equator>(
+                            {10369.110 * Kilo(Metre),
+                             -15744.941 * Kilo(Metre),
+                             -13945.810 * Kilo(Metre)}),
+                        Velocity<ICRFJ2000Equator>(
+                            {89930.01056 * Kilo(Metre) / Day,
+                             72888.04208 * Kilo(Metre) / Day,
+                             -15435.52496 * Kilo(Metre) / Day})};
 
   //auto const at_спутник_2_launch =
   //    SolarSystemFactory::AtСпутник2Launch(
@@ -675,12 +701,12 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
   at_спутник_2_launch->Initialize(
       SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2455200_500000000.proto.txt");
+          "initial_state_jd_2451564_587154910.proto.txt");
   Instant const& epoch = at_спутник_2_launch->epoch();
-  Time const duration = epoch - at_спутник_1_launch->epoch();
+  Time const duration = epoch - solar_system_at_j2000->epoch();
 
   auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(
+      solar_system_at_j2000->MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
               integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
@@ -702,10 +728,10 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
     auto const name = SolarSystemFactory::name(i);
     auto const parent_name =
         SolarSystemFactory::name(SolarSystemFactory::parent(i));
-    auto const body = at_спутник_1_launch->massive_body(*ephemeris, name);
+    auto const body = solar_system_at_j2000->massive_body(*ephemeris, name);
     auto const* const parent =
         dynamic_cast<RotatingBody<ICRFJ2000Equator> const*>(
-            &*at_спутник_1_launch->massive_body(*ephemeris, parent_name));
+            &*solar_system_at_j2000->massive_body(*ephemeris, parent_name));
 
     auto const actual_dof =
         ephemeris->trajectory(body)->
@@ -763,15 +789,15 @@ TEST_F(EphemerisTest, Спутник1ToСпутник2) {
                           expected_parent_dof.position()) /
                       ArcSecond / orbits
                << u8"″/orbit";
-    LOG(ERROR) << u8"Δi =" << std::fixed
+    LOG(ERROR) << u8"Δi = " << std::fixed
                << AbsoluteError(expected_elements.inclination,
                                 actual_elements.inclination) /
                       ArcSecond / orbits
                << u8"″/orbit";
-    LOG(ERROR) << u8"i =" << std::fixed << actual_elements.inclination / Degree
+    LOG(ERROR) << u8"i  = " << std::fixed << actual_elements.inclination / Degree
                << u8"°";
     if (actual_elements.inclination > 0.1 * Degree) {
-      LOG(ERROR) << u8"ΔΩ =" << std::fixed
+      LOG(ERROR) << u8"ΔΩ = " << std::fixed
                  << AbsoluteError(expected_elements.longitude_of_ascending_node,
                                   actual_elements.longitude_of_ascending_node) /
                         ArcSecond / orbits
