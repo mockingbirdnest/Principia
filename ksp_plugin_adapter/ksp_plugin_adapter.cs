@@ -1268,7 +1268,8 @@ public partial class PrincipiaPluginAdapter
         ConfigNode initial_states =
             GameDatabase.Instance.GetConfigs(principia_initial_state_config_name)[0].config;
         plugin_ =
-            Interface.NewPlugin(double.Parse(initial_states.GetValue("epoch")),
+            Interface.NewPlugin(initial_states.GetValue("game_epoch"),
+                                initial_states.GetValue("solar_system_epoch"),
                                 Planetarium.InverseRotAngle);
         var name_to_initial_state =
             initial_states.GetNodes("body").
@@ -1289,11 +1290,17 @@ public partial class PrincipiaPluginAdapter
           var body_parameters = new BodyParameters{
               gravitational_parameter =
                   gravity_model.GetValue("gravitational_parameter"),
+              reference_instant       =
+                  double.Parse(gravity_model.GetValue("reference_instant")),
               mean_radius             = gravity_model.GetValue("mean_radius"),
               axis_right_ascension    =
                   gravity_model.GetValue("axis_right_ascension"),
               axis_declination        =
                   gravity_model.GetValue("axis_declination"),
+              reference_angle         =
+                  gravity_model.GetValue("reference_angle"),
+              angular_frequency       =
+                  gravity_model.GetValue("angular_frequency"),
               j2                      = gravity_model.GetValue("j2"),
               reference_radius        =
                   gravity_model.GetValue("reference_radius")};
@@ -1322,7 +1329,7 @@ public partial class PrincipiaPluginAdapter
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
       for(;;) {
-        plugin_ = Interface.NewPlugin(0,
+        plugin_ = Interface.NewPlugin("0 s", "0 s",
                                       Planetarium.InverseRotAngle);
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");

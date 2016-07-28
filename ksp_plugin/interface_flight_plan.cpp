@@ -39,24 +39,25 @@ namespace interface {
 
 namespace {
 
-ksp_plugin::Burn FromInterfaceBurn(Plugin const* const plugin,
+ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
                                    Burn const& burn) {
   return {burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
-          Instant() + burn.initial_time * Second,
+          FromGameTime(plugin, burn.initial_time),
           Velocity<Frenet<Navigation>>(
               FromXYZ(burn.delta_v) * (Metre / Second))};
 }
 
-FlightPlan& GetFlightPlan(Plugin const* const plugin,
+FlightPlan& GetFlightPlan(Plugin const& plugin,
                           char const* const vessel_guid) {
   Vessel const& vessel = *GetVessel(plugin, vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   return vessel.flight_plan();
 }
 
-Burn GetBurn(NavigationManœuvre const& manœuvre) {
+Burn GetBurn(Plugin const& plugin,
+             NavigationManœuvre const& manœuvre) {
   Velocity<Frenet<NavigationFrame>> const Δv =
       manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
                                : manœuvre.Δv() * manœuvre.direction();
@@ -95,25 +96,24 @@ Burn GetBurn(NavigationManœuvre const& manœuvre) {
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
-          (manœuvre.initial_time() - Instant()) / Second,
+          ToGameTime(plugin, manœuvre.initial_time()),
           ToXYZ(Δv.coordinates() / (Metre / Second))};
 }
 
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(
-    Plugin const* const plugin,
+    Plugin const& plugin,
     NavigationManœuvre const& manœuvre) {
   OrthogonalMap<Barycentric, World> const barycentric_to_world =
       OrthogonalMap<WorldSun, World>::Identity() *
-      plugin->BarycentricToWorldSun();
+      plugin.BarycentricToWorldSun();
   NavigationManoeuvre result;
-  result.burn = GetBurn(manœuvre);
+  result.burn = GetBurn(plugin, manœuvre);
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
   result.final_mass_in_tonnes = manœuvre.final_mass() / Tonne;
   result.mass_flow = manœuvre.mass_flow() / (Kilogram / Second);
   result.duration = manœuvre.duration() / Second;
-  result.final_time = (manœuvre.final_time() - Instant()) / Second;
-  result.time_of_half_delta_v =
-      (manœuvre.time_of_half_Δv() - Instant()) / Second;
+  result.final_time = ToGameTime(plugin, manœuvre.final_time());
+  result.time_of_half_delta_v = ToGameTime(plugin, manœuvre.time_of_half_Δv());
   result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
   Vector<double, Barycentric> const barycentric_inertial_direction =
       manœuvre.InertialDirection();
@@ -123,12 +123,12 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
 
   OrthogonalMap<Frenet<Navigation>, Barycentric> frenet_to_barycentric =
       manœuvre.FrenetFrame();
-  Instant const current_time = plugin->CurrentTime();
+  Instant const current_time = plugin.CurrentTime();
   Instant const initial_time = manœuvre.initial_time();
   // TODO(egg): a separate |Frame| for plotted geometry (for now plotting goes
   // from |Barycentric| to itself, so it's easily forgotten), an utility for
   // plotting |Vector|s like the one for |Position|s.
-  auto const plotting_frame = plugin->GetPlottingFrame();
+  auto const plotting_frame = plugin.GetPlottingFrame();
   OrthogonalMap<Frenet<Navigation>, World> frenet_to_plotted_world =
       barycentric_to_world *
       plotting_frame->FromThisFrameAtTime(current_time).orthogonal_map() *
@@ -152,8 +152,9 @@ bool principia__FlightPlanAppend(Plugin const* const plugin,
                                  char const* const vessel_guid,
                                  Burn const burn) {
   journal::Method<journal::FlightPlanAppend> m({plugin, vessel_guid, burn});
-  return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      Append(FromInterfaceBurn(plugin, burn)));
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).
+                      Append(FromInterfaceBurn(*plugin, burn)));
 }
 
 void principia__FlightPlanCreate(Plugin const* const plugin,
@@ -164,16 +165,18 @@ void principia__FlightPlanCreate(Plugin const* const plugin,
                                                 vessel_guid,
                                                 final_time,
                                                 mass_in_tonnes});
-  CHECK_NOTNULL(plugin)->CreateFlightPlan(vessel_guid,
-                                          Instant() + final_time * Second,
-                                          mass_in_tonnes * Tonne);
+  CHECK_NOTNULL(plugin);
+  plugin->CreateFlightPlan(vessel_guid,
+                           FromGameTime(*plugin, final_time),
+                           mass_in_tonnes * Tonne);
   return m.Return();
 }
 
 void principia__FlightPlanDelete(Plugin const* const plugin,
                                  char const* const vessel_guid) {
   journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
-  GetVessel(plugin, vessel_guid)->DeleteFlightPlan();
+  CHECK_NOTNULL(plugin);
+  GetVessel(*plugin, vessel_guid)->DeleteFlightPlan();
   return m.Return();
 }
 
@@ -181,7 +184,8 @@ bool principia__FlightPlanExists(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanExists> m({plugin, vessel_guid});
-  return m.Return(GetVessel(plugin, vessel_guid)->has_flight_plan());
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetVessel(*plugin, vessel_guid)->has_flight_plan());
 }
 
 AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
@@ -189,8 +193,9 @@ AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetAdaptiveStepParameters> m(
       {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
   return m.Return(ToAdaptiveStepParameters(
-      GetFlightPlan(plugin, vessel_guid).adaptive_step_parameters()));
+      GetFlightPlan(*plugin, vessel_guid).adaptive_step_parameters()));
 }
 
 double principia__FlightPlanGetActualFinalTime(Plugin const* const plugin,
@@ -198,24 +203,27 @@ double principia__FlightPlanGetActualFinalTime(Plugin const* const plugin,
   journal::Method<journal::FlightPlanGetActualFinalTime> m(
       {plugin, vessel_guid});
   return m.Return(
-      (GetFlightPlan(plugin, vessel_guid).actual_final_time() - Instant()) /
-      Second);
+      ToGameTime(*plugin,
+                 GetFlightPlan(*plugin, vessel_guid).actual_final_time()));
 }
 
 double principia__FlightPlanGetDesiredFinalTime(Plugin const* const plugin,
                                                 char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetDesiredFinalTime> m(
       {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
   return m.Return(
-      (GetFlightPlan(plugin, vessel_guid).desired_final_time() - Instant()) /
-      Second);
+      ToGameTime(*plugin,
+                 GetFlightPlan(*plugin, vessel_guid).desired_final_time()));
 }
 
 double principia__FlightPlanGetInitialTime(Plugin const* const plugin,
                                            char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetInitialTime> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
   return m.Return(
-      (GetFlightPlan(plugin, vessel_guid).initial_time() - Instant()) / Second);
+      ToGameTime(*plugin,
+                 GetFlightPlan(*plugin, vessel_guid).initial_time()));
 }
 
 NavigationManoeuvre principia__FlightPlanGetManoeuvre(
@@ -225,28 +233,32 @@ NavigationManoeuvre principia__FlightPlanGetManoeuvre(
   journal::Method<journal::FlightPlanGetManoeuvre> m({plugin,
                                                       vessel_guid,
                                                       index});
+  CHECK_NOTNULL(plugin);
   return m.Return(ToInterfaceNavigationManoeuvre(
-                      plugin,
-                      GetFlightPlan(plugin, vessel_guid).GetManœuvre(index)));
+                      *plugin,
+                      GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index)));
 }
 
 int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,
                                             char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
                                                             vessel_guid});
-  return m.Return(GetFlightPlan(plugin, vessel_guid).number_of_manœuvres());
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_manœuvres());
 }
 
 int principia__FlightPlanNumberOfSegments(Plugin const* const plugin,
                                           char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfSegments> m({plugin, vessel_guid});
-  return m.Return(GetFlightPlan(plugin, vessel_guid).number_of_segments());
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
 void principia__FlightPlanRemoveLast(Plugin const* const plugin,
                                      char const* const vessel_guid) {
   journal::Method<journal::FlightPlanRemoveLast> m({plugin, vessel_guid});
-  GetFlightPlan(plugin, vessel_guid).RemoveLast();
+  CHECK_NOTNULL(plugin);
+  GetFlightPlan(*plugin, vessel_guid).RemoveLast();
   return m.Return();
 }
 
@@ -259,10 +271,10 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   journal::Method<journal::FlightPlanRenderedApsides> m(
       {plugin, vessel_guid, celestial_index, sun_world_position},
       {apoapsides, periapsides});
+  CHECK_NOTNULL(plugin);
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
-  CHECK_NOTNULL(plugin);
-  GetFlightPlan(plugin, vessel_guid).GetAllSegments(&begin, &end);
+  GetFlightPlan(*plugin, vessel_guid).GetAllSegments(&begin, &end);
   Position<World> q_sun =
       World::origin +
       Displacement<World>(FromXYZ(sun_world_position) * Metre);
@@ -274,9 +286,11 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
                                   rendered_apoapsides,
                                   rendered_periapsides);
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_apoapsides)));
+      check_not_null(std::move(rendered_apoapsides)),
+      plugin);
   *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
-      check_not_null(std::move(rendered_periapsides)));
+      check_not_null(std::move(rendered_periapsides)),
+      plugin);
   return m.Return();
 }
 
@@ -289,16 +303,18 @@ Iterator* principia__FlightPlanRenderedSegment(
                                                          vessel_guid,
                                                          sun_world_position,
                                                          index});
+  CHECK_NOTNULL(plugin);
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
-  GetFlightPlan(plugin, vessel_guid).GetSegment(index, &begin, &end);
+  GetFlightPlan(*plugin, vessel_guid).GetSegment(index, &begin, &end);
   auto rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedTrajectoryFromIterators(
           begin, end,
           World::origin + Displacement<World>(
                               FromXYZ(sun_world_position) * Metre));
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_trajectory)));
+      std::move(rendered_trajectory),
+      plugin));
 }
 
 bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
@@ -307,8 +323,9 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
   journal::Method<journal::FlightPlanReplaceLast> m({plugin,
                                                      vessel_guid,
                                                      burn});
-  return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      ReplaceLast(FromInterfaceBurn(plugin, burn)));
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).
+                      ReplaceLast(FromInterfaceBurn(*plugin, burn)));
 }
 
 bool principia__FlightPlanSetAdaptiveStepParameters(
@@ -317,8 +334,9 @@ bool principia__FlightPlanSetAdaptiveStepParameters(
     AdaptiveStepParameters const adaptive_step_parameters) {
   journal::Method<journal::FlightPlanSetAdaptiveStepParameters> m(
       {plugin, vessel_guid, adaptive_step_parameters});
+  CHECK_NOTNULL(plugin);
   return m.Return(
-      GetFlightPlan(plugin, vessel_guid).
+      GetFlightPlan(*plugin, vessel_guid).
           SetAdaptiveStepParameters(
               FromAdaptiveStepParameters(adaptive_step_parameters)));
 }
@@ -329,8 +347,9 @@ bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,
   journal::Method<journal::FlightPlanSetDesiredFinalTime> m({plugin,
                                                              vessel_guid,
                                                              final_time});
-  return m.Return(GetFlightPlan(plugin, vessel_guid).
-                      SetDesiredFinalTime(Instant() + final_time * Second));
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetFlightPlan(*plugin, vessel_guid).
+                      SetDesiredFinalTime(FromGameTime(*plugin, final_time)));
 }
 
 }  // namespace interface

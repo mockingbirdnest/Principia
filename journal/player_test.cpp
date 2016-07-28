@@ -39,7 +39,7 @@ class PlayerTest : public ::testing::Test {
       : test_info_(testing::UnitTest::GetInstance()->current_test_info()),
         test_case_name_(test_info_->test_case_name()),
         test_name_(test_info_->name()),
-        plugin_(interface::principia__NewPlugin(1, 2)),
+        plugin_(interface::principia__NewPlugin("0 s", "0 s", 0)),
         recorder_(new Recorder(test_name_ + ".journal.hex")) {
     Recorder::Activate(recorder_);
   }
@@ -64,7 +64,7 @@ class PlayerTest : public ::testing::Test {
 
 TEST_F(PlayerTest, PlayTiny) {
   {
-    Method<NewPlugin> m({1, 2});
+    Method<NewPlugin> m({"1 s", "2 s", 3});
     m.Return(plugin_.get());
   }
   {

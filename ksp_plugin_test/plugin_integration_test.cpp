@@ -54,13 +54,14 @@ class PluginIntegrationTest : public testing::Test {
         looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
-                SolarSystemFactory::Accuracy::AllBodiesAndOblateness)),
+                SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
         initial_time_(Instant() + 42 * Second),
         sun_body_(make_not_null_unique<MassiveBody>(
             MassiveBody::Parameters(solar_system_->gravitational_parameter(
                 SolarSystemFactory::name(SolarSystemFactory::Sun))))),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
+                                             initial_time_,
                                              planetarium_rotation_)) {
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
@@ -348,7 +349,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Length const a = 1 * Kilo(Metre);
   Speed const v0 = 1 * Kilo(Metre) / Day;
   Instant t;
-  Plugin plugin(t, 0 * Radian);
+  Plugin plugin(t, t, 0 * Radian);
   auto sun_body = make_not_null_unique<MassiveBody>(
       MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)));
   plugin.InsertCelestialJacobiKeplerian(
@@ -603,7 +604,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
-  Plugin plugin(Instant(), 0 * Radian);
+  Plugin plugin(Instant(), Instant(), 0 * Radian);
   auto sun_body = make_not_null_unique<MassiveBody>(
       MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()));
   plugin.InsertCelestialJacobiKeplerian(

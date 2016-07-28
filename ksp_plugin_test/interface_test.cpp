@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <limits>
 #include <string>
 
 #include "astronomy/epoch.hpp"
@@ -232,7 +233,8 @@ TEST_F(InterfaceTest, Log) {
 
 TEST_F(InterfaceTest, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     time,
+                                     "1 s",
+                                     "2 s",
                                      planetarium_rotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
@@ -262,15 +264,17 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
-                             1.2345e6 * SIUnit<GravitationalParameter>()),
-                    Property(&MassiveBody::mean_radius,
-                             666 * Kilo(Metre))))));
-  BodyParameters const body_parameters = {"1.2345e6  m^3/s^2",
-                                          "666 km",
-                                          /*axis_right_ascension=*/nullptr,
-                                          /*axis_declination=*/nullptr,
-                                          /*j2=*/nullptr,
-                                          /*reference_radius=*/nullptr};
+                             1.2345e6 * SIUnit<GravitationalParameter>())))));
+  BodyParameters const body_parameters = {
+      "1.2345e6  m^3/s^2",
+      std::numeric_limits<double>::quiet_NaN(),
+      /*mean_radius=*/nullptr,
+      /*axis_right_ascension=*/nullptr,
+      /*axis_declination=*/nullptr,
+      /*reference_angle=*/nullptr,
+      /*angular_velocity=*/nullptr,
+      /*j2=*/nullptr,
+      /*reference_radius=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -307,9 +311,12 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                     Property(&MassiveBody::mean_radius,
                              666 * Kilo(Metre))))));
   BodyParameters const body_parameters = {"1.2345e6  km^3 / s^2",
+                                          999,
                                           "666 km",
                                           "42 deg",
                                           u8"8°",
+                                          "2 rad",
+                                          "0.3 rad / d",
                                           "123e-6",
                                           "1000 km"};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),

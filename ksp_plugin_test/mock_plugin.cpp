@@ -8,7 +8,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-MockPlugin::MockPlugin() : Plugin(Instant(), Angle()) {}
+MockPlugin::MockPlugin() : Plugin(Instant(), Instant(), Angle()) {}
 
 void MockPlugin::InsertCelestialAbsoluteCartesian(
       Index const celestial_index,
