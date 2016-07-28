@@ -49,6 +49,7 @@ using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
 using physics::RelativeDegreesOfFreedom;
+using physics::RotatingBody;
 using quantities::Angle;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -425,6 +426,8 @@ class Plugin {
   // Used for detecting and patching the stock system.
   std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
   bool is_ksp_stock_system_ = false;
+
+  RotatingBody<Barycentric> const* main_body_ = nullptr;
 
   friend class TestablePlugin;
 };

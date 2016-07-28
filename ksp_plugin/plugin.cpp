@@ -854,9 +854,29 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentric, AliceSun>(
-      planetarium_rotation_,
-      Bivector<double, Barycentric>({0, 0, -1}));
+  // The z axis of |PlanetariumFrame| is the axis of |main_body_|, and x axis is
+  // the origin of body rotation (the intersection between the |Barycentric| xy
+  // plane and the plane of |main_body_|'s equator, or the x axis of
+  // |Barycentric| if they coincide).
+  struct PlanetariumFrame;
+  
+  Bivector<double, Barycentric> const planetarium_z =
+      geometry::Normalize(main_body_->angular_velocity());
+  Bivector<double, Barycentric> const z({0, 0, 1});
+  Bivector<double, Barycentric> const planetarium_x =
+      geometry::Normalize(geometry::Commutator(z, planetarium_z));
+  Bivector<double, Barycentric> const planetarium_y =
+      geometry::Commutator(planetarium_z, planetarium_x);
+  Rotation<Barycentric, PlanetariumFrame> to_planetarium =
+      z == planetarium_z
+          ? Rotation<Barycentric, PlanetariumFrame>::Identity()
+          : Rotation<Barycentric, PlanetariumFrame>(
+                geometry::R3x3Matrix(planetarium_x.coordinates(),
+                                     planetarium_y.coordinates(),
+                                     planetarium_z.coordinates()));
+  return Rotation<PlanetariumFrame, AliceSun>(
+             planetarium_rotation_,
+             Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;
 }
 
 void Plugin::FreeVessels() {
