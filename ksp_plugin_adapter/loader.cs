@@ -72,14 +72,14 @@ internal static class Loader {
 
   private static bool IsVCRedistInstalled(bool is_32_bit) {
     // NOTE(phl): These GUIDs are specific to:
-    //   Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.23918
-    //   Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.23918
+    //   Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24212
+    //   Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.24212
     // They will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
          @"Software\Classes\Installer\Dependencies\" +
-             (is_32_bit ? "{2e085fd2-a3e4-4b39-8e10-6b8d35f55244}"
-                        : "{dab68466-3a7d-41a8-a5cf-415e3ff8ef71}"),
+             (is_32_bit ? "{462f63a8-6347-4894-a1b3-dbfe3a4c981d}"
+                        : "{323dad84-0974-4d90-a1c1-e006c7fdbb7d}"),
          writable : false);
     if (key == null) {
       return false;
@@ -87,7 +87,7 @@ internal static class Loader {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.0.23918.0";
+      return version != null && version == "14.0.24212.0";
     }
   }
 
