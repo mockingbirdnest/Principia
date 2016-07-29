@@ -128,5 +128,8 @@
     <ClCompile Include="date_time_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="solar_system_dynamics_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
