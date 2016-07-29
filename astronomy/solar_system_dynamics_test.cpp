@@ -295,6 +295,35 @@ TEST_F(SolarSystemDynamicsTest, TwentyDaysFromJ2000) {
 
     EXPECT_THAT(error.inclination_drift_per_orbit, Lt(0.5 * Milli(ArcSecond)));
   }
+
+  for (int const planet_or_minor_planet :
+       bodies_orbiting_[SolarSystemFactory::Sun]) {
+    if (bodies_orbiting_[planet_or_minor_planet].empty()) {
+      continue;
+    }
+    LOG(INFO) << ">>>>>> Moons of "
+              << SolarSystemFactory::name(planet_or_minor_planet);
+    for (int const moon : bodies_orbiting_[planet_or_minor_planet]) {
+      LOG(INFO) << "=== " << SolarSystemFactory::name(moon);
+      auto const error = CompareOrbits(
+          moon, *ephemeris, solar_system_at_j2000, twenty_days_later);
+      LOG(INFO) << "separation = " << std::fixed
+                << error.separation_per_orbit / ArcSecond << u8"″/orbit";
+      LOG(INFO) << u8"Δi         = " << std::fixed
+                << error.inclination_drift_per_orbit / ArcSecond << u8"″/orbit";
+      if (error.longitude_of_ascending_node_drift_per_orbit) {
+        LOG(INFO) << u8"ΔΩ         = " << std::fixed
+                  << *error.longitude_of_ascending_node_drift_per_orbit /
+                         ArcSecond
+                  << u8"″/orbit";
+      }
+      if (error.argument_of_periapsis_drift_per_orbit) {
+        LOG(INFO) << u8"Δω         = " << std::fixed
+                  << *error.argument_of_periapsis_drift_per_orbit / ArcSecond
+                  << u8"″/orbit";
+      }
+    }
+  }
 }
 
 TEST_F(SolarSystemDynamicsTest, Спутник1ToСпутник2) {
