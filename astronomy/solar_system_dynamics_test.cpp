@@ -52,6 +52,8 @@ class SolarSystemDynamicsTest : public testing::Test {
     Angle inclination_drift_per_orbit;
     std::experimental::optional<Angle>
         longitude_of_ascending_node_drift_per_orbit;
+    std::experimental::optional<Angle>
+        argument_of_periapsis_drift_per_orbit;
   };
 
   SolarSystemDynamicsTest() {
@@ -208,6 +210,12 @@ class SolarSystemDynamicsTest : public testing::Test {
       result.longitude_of_ascending_node_drift_per_orbit =
           AbsoluteError(expected_elements.longitude_of_ascending_node,
                         actual_elements.longitude_of_ascending_node) / orbits;
+
+      if (actual_elements.eccentricity > 0.1) {
+        result.argument_of_periapsis_drift_per_orbit =
+            AbsoluteError(expected_elements.argument_of_periapsis,
+                          actual_elements.argument_of_periapsis) / orbits;
+      }
     }
     return result;
   }
@@ -226,14 +234,14 @@ TEST_F(SolarSystemDynamicsTest, TwentyDaysFromJ2000) {
   twenty_days_later.Initialize(
       SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2451564_587154910.proto.txt");
+          "initial_state_jd_2455200_500000000.proto.txt");
 
   auto const ephemeris =
       solar_system_at_j2000.MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
               integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
-              /*step=*/10 * Minute));
+              /*step=*/45 * Minute));
   ephemeris->Prolong(twenty_days_later.epoch());
 
   for (int const planet_or_minor_planet :
@@ -253,6 +261,39 @@ TEST_F(SolarSystemDynamicsTest, TwentyDaysFromJ2000) {
                        ArcSecond
                 << u8"″/orbit";
     }
+    if (error.argument_of_periapsis_drift_per_orbit) {
+      LOG(INFO) << u8"Δω         = " << std::fixed
+                << *error.argument_of_periapsis_drift_per_orbit /
+                       ArcSecond
+                << u8"″/orbit";
+    }
+
+    // This is about the order of magnitude we'd expect from GR for either of
+    // those bodies; since it's a combination of perihelion precession and
+    // change in anomaly, it's hard to get an exact figure for that.
+    if (planet_or_minor_planet == SolarSystemFactory::Mercury ||
+        planet_or_minor_planet == SolarSystemFactory::Venus) {
+      EXPECT_THAT(
+          error.separation_per_orbit,
+          AllOf(Gt(100 * Milli(ArcSecond)), Lt(200 * Milli(ArcSecond))));
+    }
+    else {
+      EXPECT_THAT(error.separation_per_orbit, Lt(100 * Milli(ArcSecond)));
+    }
+
+    if (error.argument_of_periapsis_drift_per_orbit) {
+      if (planet_or_minor_planet == SolarSystemFactory::Mercury) {
+        // This is what we expect from GR to the last sigfig.
+        EXPECT_THAT(
+          *error.argument_of_periapsis_drift_per_orbit,
+          AllOf(Gt(102 * Milli(ArcSecond)), Lt(104 * Milli(ArcSecond))));
+      } else {
+        EXPECT_THAT(*error.argument_of_periapsis_drift_per_orbit,
+                    Lt(50 * Milli(ArcSecond)));
+      }
+    }
+
+    EXPECT_THAT(error.inclination_drift_per_orbit, Lt(0.5 * Milli(ArcSecond)));
   }
 }
 
