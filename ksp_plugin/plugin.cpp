@@ -240,13 +240,37 @@ void Plugin::SetMainBody(Index const index) {
       &*FindOrDie(celestials_, index)->body());
 }
 
-Rotation<Plugin::BodyFixed, World> Plugin::CelestialRotation(
+Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
+  struct BodyFixed;
+  struct BodyEquatorial;
+  Permutation<BodyWorld, BodyFixed> const body_mirror(
+      Permutation<BodyWorld, BodyFixed>::XZY);
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, index)->body());
-  Rotation<Plugin::BodyFixed, Barycentric> body_fixed_to_barycentric(
-      geometry::R3x3Matrix(geometry::Normalize(body->angular_velocity()))
-          .Transpose());
+  Rotation<BodyFixed, BodyEquatorial> const body_rotation(
+      -body.AngleAt(current_time_),
+      Bivector<double, BodyFixed>({0, 0, 1}));
+  Bivector<double, Barycentric> const body_equatorial_z =
+      Normalize(main_body_->angular_velocity());
+  Bivector<double, Barycentric> const z({0, 0, 1});
+  Bivector<double, Barycentric> const body_equatorial_x =
+      Normalize(geometry::Commutator(z, body_equatorial_z));
+  Bivector<double, Barycentric> const body_equatorial_y =
+      geometry::Commutator(body_equatorial_z, body_equatorial_x);
+  Rotation<BodyEquatorial, Barycentric> from_body_equatorial =
+      z == body_equatorial_z
+          ? Rotation<BodyEquatorial, Barycentric>::Identity()
+          : Rotation<BodyEquatorial, Barycentric>(body_equatorial_x,
+                                                  body_equatorial_y,
+                                                  body_equatorial_z);
+  OrthogonalMap<BodyWorld, World> const result =
+      OrthogonalMap<WorldSun, World>::Identity() *
+      sun_looking_glass.Inverse().Forget() *
+      (PlanetariumRotation() * from_body_equatorial * body_rotation).Forget() *
+      body_mirror.Forget();
+  CHECK(result.Determinant().Positive());
+  return result.rotation();
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -887,10 +911,9 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   Rotation<Barycentric, PlanetariumFrame> to_planetarium =
       z == planetarium_z
           ? Rotation<Barycentric, PlanetariumFrame>::Identity()
-          : Rotation<Barycentric, PlanetariumFrame>(
-                geometry::R3x3Matrix(planetarium_x.coordinates(),
-                                     planetarium_y.coordinates(),
-                                     planetarium_z.coordinates()));
+          : Rotation<Barycentric, PlanetariumFrame>(planetarium_x,
+                                                    planetarium_y,
+                                                    planetarium_z);
   return Rotation<PlanetariumFrame, AliceSun>(
              planetarium_rotation_,
              Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;

@@ -118,8 +118,8 @@ class Plugin {
   // Sets the celestial whose axis of rotation will coincide with the |AliceSun|
   // z axis.
   virtual void SetMainBody(Index const index);
-  struct BodyFixed;
-  virtual Rotation<BodyFixed, World> CelestialRotation(Index const index) const;
+  struct BodyWorld;
+  virtual Rotation<BodyWorld, World> CelestialRotation(Index const index) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
