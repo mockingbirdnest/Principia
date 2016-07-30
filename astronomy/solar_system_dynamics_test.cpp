@@ -2,7 +2,9 @@
 #pragma once
 
 #include <experimental/optional>
+#include <map>
 #include <string>
+#include <vector>
 
 #include "astronomy/frames.hpp"
 #include "gmock/gmock.h"
@@ -57,11 +59,11 @@ class SolarSystemDynamicsTest : public testing::Test {
   };
 
   SolarSystemDynamicsTest() {
-#if 1
     google::LogToStderr();
-#endif
     for (int primary = 0; primary <= SolarSystemFactory::LastBody; ++primary) {
-      for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
+      for (int i = SolarSystemFactory::Sun + 1;
+           i <= SolarSystemFactory::LastBody;
+           ++i) {
         if (SolarSystemFactory::parent(i) == primary) {
           bodies_orbiting_[primary].emplace_back(i);
         }
@@ -97,7 +99,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     expected_subsystem_barycentre.Add(expected_system.initial_state(name),
                                       body->gravitational_parameter());
     for (int const moon_index : bodies_orbiting_[index]) {
-      auto const moon_name = SolarSystemFactory::name(moon_index);
+      std::string  moon_name = SolarSystemFactory::name(moon_index);
       auto const moon = system.massive_body(ephemeris, moon_name);
       actual_subsystem_barycentre.Add(
           ephemeris.trajectory(moon)->
@@ -133,7 +135,9 @@ class SolarSystemDynamicsTest : public testing::Test {
     if (SolarSystemFactory::parent(index) == SolarSystemFactory::Sun) {
       Bivector<AngularMomentum, ICRFJ2000Equator>
           solar_system_angular_momentum;
-      for (int i = 1; i <= SolarSystemFactory::LastBody; ++i) {
+      for (int i = SolarSystemFactory::Sun + 1;
+           i <= SolarSystemFactory::LastBody;
+           ++i) {
         auto const body_name = SolarSystemFactory::name(i);
         auto const body = system.massive_body(ephemeris, body_name);
         RelativeDegreesOfFreedom<ICRFJ2000Equator> const
@@ -146,7 +150,7 @@ class SolarSystemDynamicsTest : public testing::Test {
                   body->mass() * from_solar_system_barycentre.velocity()) *
             Radian;
       }
-      auto const normal =
+      Bivector<double, ICRFJ2000Equator> const normal =
           Commutator(Normalize(solar_system_angular_momentum), z);
       // Check that we computed the invariable plane properly by computing its
       // angle to the Sun's equator.
@@ -164,7 +168,8 @@ class SolarSystemDynamicsTest : public testing::Test {
               normal);
     } else {
       auto const ω = parent->angular_velocity();
-      auto const normal = Commutator(Normalize(ω), z);
+      Bivector<double, ICRFJ2000Equator> const normal =
+          Commutator(Normalize(ω), z);
       auto const parent_axis_declination = AngleBetween(ω, z);
       rotation =
           Rotation<ICRFJ2000Equator, ParentEquator>(parent_axis_declination,
@@ -277,8 +282,7 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
       EXPECT_THAT(
           error.separation_per_orbit,
           AllOf(Gt(100 * Milli(ArcSecond)), Lt(200 * Milli(ArcSecond))));
-    }
-    else if (planet_or_minor_planet != SolarSystemFactory::Pluto) {
+    } else if (planet_or_minor_planet != SolarSystemFactory::Pluto) {
       EXPECT_THAT(error.separation_per_orbit, Lt(100 * Milli(ArcSecond)));
     }
 
