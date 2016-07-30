@@ -33,9 +33,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   // Construct a rotation from the axes of |ToFrame|, expressed in |FromFrame|.
   template<int rank_x, int rank_y, int rank_z,
-           typename = std::enable_if_t<
-                          (rank_x + rank_y + rank_z) % 2 == 0 &&
-                          !std::is_same<FromFrame, ToFrame>::value>>
+           typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<!std::is_same<F, T>::value>>
   Rotation(Multivector<double, FromFrame, rank_x> x_to_frame,
            Multivector<double, FromFrame, rank_y> y_to_frame,
            Multivector<double, FromFrame, rank_z> z_to_frame);
@@ -45,9 +45,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   // is a problem when instantiating the class, even though they are both
   // disabled by |enable_if|).
   template<int rank_x, int rank_y, int rank_z,
-           typename = std::enable_if_t<
-                          (rank_x + rank_y + rank_z) % 2 == 0 &&
-                          !std::is_same<FromFrame, ToFrame>::value>,
+           typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<!std::is_same<F, T>::value>,
            typename = void>
   Rotation(Multivector<double, ToFrame, rank_x> x_from_frame,
            Multivector<double, ToFrame, rank_y> y_from_frame,

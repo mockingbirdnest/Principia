@@ -260,20 +260,17 @@ TEST_F(RotationTest, Basis) {
 
   Rotation<World, World1> const to_world1(a, b, c);
   EXPECT_THAT(to_world1(a),
-              Componentwise(
-                  AlmostEquals(1, 1),
-                  AlmostEquals(0, 0),
-                  VanishesBefore(1, 0)));
+              Componentwise(AlmostEquals(1, 1),
+                            AlmostEquals(0, 0),
+                            VanishesBefore(1, 0)));
   EXPECT_THAT(to_world1(b),
-              Componentwise(
-                  AlmostEquals(0, 0),
-                  AlmostEquals(1, 0),
-                  VanishesBefore(1, 0)));
+              Componentwise(AlmostEquals(0, 0),
+                            AlmostEquals(1, 0),
+                            VanishesBefore(1, 0)));
   EXPECT_THAT(to_world1(c),
-              Componentwise(
-                  VanishesBefore(1, 2),
-                  AlmostEquals(0, 0),
-                  AlmostEquals(1, 0)));
+              Componentwise(VanishesBefore(1, 2),
+                            AlmostEquals(0, 0),
+                            AlmostEquals(1, 0)));
 
   Rotation<World1, World> const to_world(a, b, c);
   EXPECT_THAT(to_world(Vector<double, World1>({1, 0, 0})), AlmostEquals(a, 1));
