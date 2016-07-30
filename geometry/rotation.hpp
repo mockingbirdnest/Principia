@@ -87,7 +87,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:
-
   template<typename Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
