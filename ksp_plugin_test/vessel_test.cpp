@@ -207,8 +207,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           /*speed_integration_tolerance=*/1 * Metre / Second));
   Instant previous_t_max = ephemeris_->t_max();
   for (int i = 0; i < 10; ++i) {
-    vessel_->UpdatePrediction(t2_ +
-                              std::numeric_limits<double>::infinity() * Second);
+    vessel_->UpdatePrediction(astronomy::InfiniteFuture);
   }
   // We stop prolonging when the ephemeris gets long enough (in this case, a
   // single prolongation suffices).
@@ -225,8 +224,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           /*speed_integration_tolerance=*/1 * Metre / Second));
   previous_t_max = ephemeris_->t_max();
   for (int i = 0; i < 10; ++i) {
-    vessel_->UpdatePrediction(t2_ +
-                              std::numeric_limits<double>::infinity() * Second);
+    vessel_->UpdatePrediction(astronomy::InfiniteFuture);
   }
   // Here the ephemeris isn't long enough yet; we have prolonged every time.
   EXPECT_THAT((ephemeris_->t_max() - previous_t_max) /

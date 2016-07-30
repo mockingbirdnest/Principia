@@ -960,7 +960,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   CHECK(!trajectories_.empty());
   Instant const t_last_intermediate_state =
       checkpoints_.empty()
-          ? J2000 - std::numeric_limits<double>::infinity() * Second
+          ? astronomy::InfinitePast
           : checkpoints_.back().system_state.time.value;
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
