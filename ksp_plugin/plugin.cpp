@@ -858,8 +858,11 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   // the origin of body rotation (the intersection between the |Barycentric| xy
   // plane and the plane of |main_body_|'s equator, or the x axis of
   // |Barycentric| if they coincide).
+  // NOTE(egg): this is likely to be incorrect for planets with retrograde
+  // rotation, though it should be correct for small bodies.  See figures 1 and
+  // 2 of http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   struct PlanetariumFrame;
-  
+
   Bivector<double, Barycentric> const planetarium_z =
       geometry::Normalize(main_body_->angular_velocity());
   Bivector<double, Barycentric> const z({0, 0, 1});
