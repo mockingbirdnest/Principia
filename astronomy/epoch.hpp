@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <limits>
+
 #include "geometry/named_quantities.hpp"
 #include "quantities/si.hpp"
 
