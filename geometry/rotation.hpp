@@ -27,10 +27,32 @@ template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:
   explicit Rotation(Quaternion const& quaternion);
-  explicit Rotation(R3x3Matrix const& matrix);
   template<typename Scalar>
   Rotation(quantities::Angle const& angle,
            Bivector<Scalar, FromFrame> const& axis);
+
+  // Construct a rotation from the axes of |ToFrame|, expressed in |FromFrame|.
+  template<int rank_x, int rank_y, int rank_z,
+           typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<!std::is_same<F, T>::value>>
+  Rotation(Multivector<double, FromFrame, rank_x> x_to_frame,
+           Multivector<double, FromFrame, rank_y> y_to_frame,
+           Multivector<double, FromFrame, rank_z> z_to_frame);
+  // Construct a rotation from the axes of |FromFrame|, expressed in |ToFrame|.
+  // The |typename = void| template parameter gives it a different signature
+  // from the above when |FromFrame| and |ToFrame| are the same (otherwise this
+  // is a problem when instantiating the class, even though they are both
+  // disabled by |enable_if|).
+  template<int rank_x, int rank_y, int rank_z,
+           typename F = FromFrame,
+           typename T = ToFrame,
+           typename = std::enable_if_t<!std::is_same<F, T>::value>,
+           typename = void>
+  Rotation(Multivector<double, ToFrame, rank_x> x_from_frame,
+           Multivector<double, ToFrame, rank_y> y_from_frame,
+           Multivector<double, ToFrame, rank_z> z_from_frame);
+
   ~Rotation() override = default;
 
   Sign Determinant() const override;
@@ -80,7 +102,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   friend std::ostream& operator<<<>(std::ostream& out,  // NOLINT
                                     Rotation const& rotation);
-  friend class RotationTests;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
