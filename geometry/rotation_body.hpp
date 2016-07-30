@@ -19,6 +19,8 @@ namespace {
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.
 FORCE_INLINE Quaternion ToQuaternion(R3x3Matrix const& matrix) {
+  // TODO(egg): this should probably contain some checks that |matrix| is
+  // roughly orthogonal and has positive determinant...
   double const t = matrix.Trace();
   double real_part;
   R3Element<double> imaginary_part;
@@ -64,10 +66,6 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame>::Rotation(R3x3Matrix const& matrix)
-    : Rotation(ToQuaternion(matrix)) {}
-
-template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Rotation<FromFrame, ToFrame>::Rotation(
     quantities::Angle const& angle,
@@ -81,6 +79,28 @@ Rotation<FromFrame, ToFrame>::Rotation(
   R3Element<double> const unit_axis = coordinates / norm;
   quaternion_ = Quaternion(cos, sin * unit_axis);
 }
+
+template<typename FromFrame, typename ToFrame>
+template<int rank_x, int rank_y, int rank_z, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Multivector<double, FromFrame, rank_x> x_to_frame,
+    Multivector<double, FromFrame, rank_y> y_to_frame,
+    Multivector<double, FromFrame, rank_z> z_to_frame)
+    : Rotation<FromFrame, ToFrame>(
+          ToQuaternion(R3x3Matrix(x_to_frame.coordinates(),
+                                  y_to_frame.coordinates(),
+                                  z_to_frame.coordinates()))) {}
+
+template<typename FromFrame, typename ToFrame>
+template<int rank_x, int rank_y, int rank_z, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Multivector<double, ToFrame, rank_x> x_from_frame,
+    Multivector<double, ToFrame, rank_y> y_from_frame,
+    Multivector<double, ToFrame, rank_z> z_from_frame)
+    : Rotation<FromFrame, ToFrame>(
+          ToQuaternion(R3x3Matrix(x_from_frame.coordinates(),
+                                  y_from_frame.coordinates(),
+                                  z_from_frame.coordinates()).Transpose())) {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {
