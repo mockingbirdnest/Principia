@@ -115,6 +115,12 @@ class Plugin {
   virtual void UpdateCelestialHierarchy(Index const celestial_index,
                                         Index const parent_index) const;
 
+  // Sets the celestial whose axis of rotation will coincide with the |AliceSun|
+  // z axis.
+  virtual void SetMainBody(Index const index);
+  struct BodyFixed;
+  virtual Rotation<BodyFixed, World> CelestialRotation(Index const index) const;
+
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
   // |AdvanceTime|. The parent body for the vessel is set to the one with index

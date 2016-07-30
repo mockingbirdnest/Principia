@@ -235,6 +235,20 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
       FindOrDie(celestials_, parent_index).get());
 }
 
+void Plugin::SetMainBody(Index const index) {
+  main_body_ = dynamic_cast<RotatingBody<Barycentric> const*>(
+      &*FindOrDie(celestials_, index)->body());
+}
+
+Rotation<Plugin::BodyFixed, World> Plugin::CelestialRotation(
+    Index const index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, index)->body());
+  Rotation<Plugin::BodyFixed, Barycentric> body_fixed_to_barycentric(
+      geometry::R3x3Matrix(geometry::Normalize(body->angular_velocity()))
+          .Transpose());
+}
+
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 Index const parent_index) {
   VLOG(1) << __FUNCTION__ << '\n'
