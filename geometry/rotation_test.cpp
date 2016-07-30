@@ -12,20 +12,26 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
 using quantities::si::Degree;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 
 namespace geometry {
 
 class RotationTest : public testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+  using World =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+  using World1 =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 
@@ -245,6 +251,35 @@ TEST_F(RotationTest, SerializationSuccess) {
   EXPECT_EQ(0.5, extension.quaternion().imaginary_part().z().double_());
   Rot const r = Rot::ReadFromMessage(message);
   EXPECT_EQ(rotation_a_(vector_), r(vector_));
+}
+
+TEST_F(RotationTest, Basis) {
+  Vector<double, World> a = Normalize(Vector<double, World>({1, 1, -1}));
+  Vector<double, World> b = Normalize(Vector<double, World>({1, 0, 1}));
+  Bivector<double, World> c = Wedge(a, b);
+
+  Rotation<World, World1> const to_world1(a, b, c);
+  EXPECT_THAT(to_world1(a),
+              Componentwise(
+                  AlmostEquals(1, 1),
+                  AlmostEquals(0, 0),
+                  VanishesBefore(1, 0)));
+  EXPECT_THAT(to_world1(b),
+              Componentwise(
+                  AlmostEquals(0, 0),
+                  AlmostEquals(1, 0),
+                  VanishesBefore(1, 0)));
+  EXPECT_THAT(to_world1(c),
+              Componentwise(
+                  VanishesBefore(1, 2),
+                  AlmostEquals(0, 0),
+                  AlmostEquals(1, 0)));
+
+  Rotation<World1, World> const to_world(a, b, c);
+  EXPECT_THAT(to_world(Vector<double, World1>({1, 0, 0})), AlmostEquals(a, 1));
+  EXPECT_THAT(to_world(Vector<double, World1>({0, 1, 0})), AlmostEquals(b, 2));
+  EXPECT_THAT(to_world(Bivector<double, World1>({0, 0, 1})),
+              AlmostEquals(c, 4));
 }
 
 }  // namespace geometry
