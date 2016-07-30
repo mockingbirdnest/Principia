@@ -2,7 +2,6 @@
 #pragma once
 
 #include "astronomy/epoch.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 

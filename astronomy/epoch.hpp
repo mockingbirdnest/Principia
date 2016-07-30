@@ -2,6 +2,7 @@
 #pragma once
 
 #include "geometry/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 // |geometry::Instant| represents instants of Terrestrial Time (TT).  The
 // utilities in this file provide its standard epoch and two ways of specifying
@@ -10,6 +11,7 @@
 namespace principia {
 
 using geometry::Instant;
+using quantities::si::Second;
 
 namespace astronomy {
 
@@ -22,6 +24,11 @@ namespace astronomy {
 // "2000-01-01T11:59:27,816"_TAI
 // "2000-01-01T11:58:55,816"_UTC
 constexpr Instant J2000;
+
+constexpr Instant InfinitePast =
+    J2000 - std::numeric_limits<double>::infinity() * Second;
+constexpr Instant InfiniteFuture =
+    J2000 + std::numeric_limits<double>::infinity() * Second;
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
 // days since -4712-01-01T12:00:00,000 (Terrestrial Time, Julian calendar).

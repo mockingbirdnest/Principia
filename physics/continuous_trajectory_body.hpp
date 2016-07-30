@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "glog/stl_logging.h"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/si.hpp"
@@ -46,8 +47,7 @@ bool ContinuousTrajectory<Frame>::empty() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   if (empty()) {
-    Instant const t0;
-    return t0 + std::numeric_limits<double>::infinity() * Second;
+    return astronomy::InfiniteFuture;
   }
   return *first_time_;
 }
@@ -55,8 +55,7 @@ Instant ContinuousTrajectory<Frame>::t_min() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max() const {
   if (empty()) {
-    Instant const t0;
-    return t0 - std::numeric_limits<double>::infinity() * Second;
+    return astronomy::InfinitePast;
   }
   return series_.back().t_max();
 }
