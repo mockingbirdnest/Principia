@@ -33,8 +33,6 @@ gravity_model {
   }
 
   # Gas giants.
-  # Gravitational parameters from
-  # http://ssd.jpl.nasa.gov/?gravity_fields_op, retrieved 2015-08-03.
   body {
     name                    : "Jupiter"
     gravitational_parameter : "1.266865349218008e+08 km^3/s^2"

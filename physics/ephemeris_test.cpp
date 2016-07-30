@@ -14,8 +14,10 @@
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -37,6 +39,7 @@ using astronomy::SolarSystemBarycentreEquator;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -654,212 +657,6 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
               Eq(q_probe1));
   EXPECT_THAT(probe2_positions.back().coordinates().y,
               Eq(q_probe2));
-}
-
-TEST_F(EphemerisTest, Спутник1ToСпутник2) {
-  auto const at_спутник_1_launch =
-      SolarSystemFactory::AtСпутник1Launch(
-          SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
-  auto const at_спутник_2_launch =
-      SolarSystemFactory::AtСпутник2Launch(
-          SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
-
-  auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(
-          /*fitting_tolerance=*/5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
-
-  ephemeris->Prolong(at_спутник_2_launch->epoch());
-
-  // Upper bounds, tight to the nearest order of magnitude.
-  // TODO(phl): Fill these.
-  static std::map<SolarSystemFactory::Index,
-                  Angle> const expected_angle_error = {{}};
-  static std::map<SolarSystemFactory::Index,
-                  double> const expected_parent_distance_error = {{}};
-  static std::map<SolarSystemFactory::Index,
-                  double> const expected_parent_offset_error = {
-      {SolarSystemFactory::Phobos, 1e-0},
-      {SolarSystemFactory::Deimos, 1e-2},
-      {SolarSystemFactory::Enceladus, 1e-2},
-      {SolarSystemFactory::Mimas, 1e-2},
-      {SolarSystemFactory::Dione, 1e-3},
-      {SolarSystemFactory::Io, 1e-3},
-      {SolarSystemFactory::Tethys, 1e-3},
-      {SolarSystemFactory::Charon, 1e-4},
-      {SolarSystemFactory::Europa, 1e-4},
-      {SolarSystemFactory::Miranda, 1e-4},
-      {SolarSystemFactory::Rhea, 1e-4},
-      {SolarSystemFactory::Triton, 1e-4},
-      {SolarSystemFactory::Ariel, 1e-5},
-      {SolarSystemFactory::Ganymede, 1e-5},
-      {SolarSystemFactory::Iapetus, 1e-6},
-      {SolarSystemFactory::Mercury, 1e-6},  // NOTE(egg): General relativity.
-      {SolarSystemFactory::Moon, 1e-6},  // What is this?
-      {SolarSystemFactory::Titan, 1e-6},
-      {SolarSystemFactory::Umbriel, 1e-6},
-      {SolarSystemFactory::Callisto, 1e-7},
-      {SolarSystemFactory::Oberon, 1e-7},
-      {SolarSystemFactory::Titania, 1e-7},
-      {SolarSystemFactory::Venus, 1e-7},
-      {SolarSystemFactory::Earth, 1e-8},
-      {SolarSystemFactory::Jupiter, 1e-9},
-      {SolarSystemFactory::Mars, 1e-9},
-      {SolarSystemFactory::Pluto, 1e-9},
-      {SolarSystemFactory::Vesta, 1e-9},
-      {SolarSystemFactory::Ceres, 1e-10},
-      {SolarSystemFactory::Saturn, 1e-10},
-      {SolarSystemFactory::Uranus, 1e-11},
-      {SolarSystemFactory::Neptune, 1e-12},
-      {SolarSystemFactory::Eris, 1e-13}};
-  static std::map<SolarSystemFactory::Index,
-                  double> const expected_position_error = {
-      {SolarSystemFactory::Phobos, 1e-5},
-      {SolarSystemFactory::Deimos, 1e-6},
-      {SolarSystemFactory::Enceladus, 1e-6},
-      {SolarSystemFactory::Mercury, 1e-6},  // NOTE(egg): General relativity.
-      {SolarSystemFactory::Io, 1e-6},
-      {SolarSystemFactory::Mimas, 1e-6},
-      {SolarSystemFactory::Tethys, 1e-6},
-      {SolarSystemFactory::Dione, 1e-7},
-      {SolarSystemFactory::Europa, 1e-7},
-      {SolarSystemFactory::Venus, 1e-7},
-      {SolarSystemFactory::Earth, 1e-8},
-      {SolarSystemFactory::Ganymede, 1e-8},
-      {SolarSystemFactory::Miranda, 1e-8},
-      {SolarSystemFactory::Moon, 1e-8},
-      {SolarSystemFactory::Rhea, 1e-8},
-      {SolarSystemFactory::Triton, 1e-8},
-      {SolarSystemFactory::Ariel, 1e-9},
-      {SolarSystemFactory::Callisto, 1e-9},
-      {SolarSystemFactory::Charon, 1e-9},
-      {SolarSystemFactory::Iapetus, 1e-9},
-      {SolarSystemFactory::Jupiter, 1e-9},
-      {SolarSystemFactory::Mars, 1e-9},
-      {SolarSystemFactory::Pluto, 1e-9},
-      {SolarSystemFactory::Sun, 1e-9},
-      {SolarSystemFactory::Titan, 1e-9},
-      {SolarSystemFactory::Vesta, 1e-9},
-      {SolarSystemFactory::Ceres, 1e-10},
-      {SolarSystemFactory::Oberon, 1e-10},
-      {SolarSystemFactory::Umbriel, 1e-10},
-      {SolarSystemFactory::Saturn, 1e-10},
-      {SolarSystemFactory::Titania, 1e-11},
-      {SolarSystemFactory::Uranus, 1e-11},
-      {SolarSystemFactory::Neptune, 1e-12},
-      {SolarSystemFactory::Eris, 1e-13}};
-  static std::map<SolarSystemFactory::Index,
-                  double> const expected_velocity_error = {
-      {SolarSystemFactory::Phobos, 1e-1},
-      {SolarSystemFactory::Enceladus, 1e-2},
-      {SolarSystemFactory::Mimas, 1e-2},
-      {SolarSystemFactory::Deimos, 1e-3},
-      {SolarSystemFactory::Dione, 1e-3},
-      {SolarSystemFactory::Io, 1e-3},
-      {SolarSystemFactory::Tethys, 1e-3},
-      {SolarSystemFactory::Europa, 1e-4},
-      {SolarSystemFactory::Miranda, 1e-4},
-      {SolarSystemFactory::Rhea, 1e-4},
-      {SolarSystemFactory::Triton, 1e-4},
-      {SolarSystemFactory::Ariel, 1e-5},
-      {SolarSystemFactory::Charon, 1e-5},
-      {SolarSystemFactory::Ganymede, 1e-6},
-      {SolarSystemFactory::Mercury, 1e-6},  // NOTE(egg): General relativity.
-      {SolarSystemFactory::Pluto, 1e-6},
-      {SolarSystemFactory::Titan, 1e-6},
-      {SolarSystemFactory::Umbriel, 1e-6},
-      {SolarSystemFactory::Callisto, 1e-7},
-      {SolarSystemFactory::Earth, 1e-7},
-      {SolarSystemFactory::Iapetus, 1e-7},
-      {SolarSystemFactory::Jupiter, 1e-7},
-      {SolarSystemFactory::Moon, 1e-7},
-      {SolarSystemFactory::Oberon, 1e-7},
-      {SolarSystemFactory::Saturn, 1e-7},
-      {SolarSystemFactory::Sun, 1e-7},
-      {SolarSystemFactory::Venus, 1e-7},
-      {SolarSystemFactory::Ceres, 1e-8},
-      {SolarSystemFactory::Mars, 1e-8},
-      {SolarSystemFactory::Neptune, 1e-8},
-      {SolarSystemFactory::Titania, 1e-8},
-      {SolarSystemFactory::Uranus, 1e-8},
-      {SolarSystemFactory::Vesta, 1e-8},
-      {SolarSystemFactory::Eris, 1e-10}};
-
-  for (int i = SolarSystemFactory::Sun;
-       i <= SolarSystemFactory::LastBody;
-       ++i) {
-    SolarSystemFactory::Index const index =
-        static_cast<SolarSystemFactory::Index>(i);
-    ContinuousTrajectory<ICRFJ2000Equator> const& trajectory =
-        at_спутник_1_launch->trajectory(*ephemeris,
-                                        SolarSystemFactory::name(i));
-    DegreesOfFreedom<ICRFJ2000Equator> final_state =
-        at_спутник_2_launch->initial_state(SolarSystemFactory::name(i));
-    double const position_error = RelativeError(
-        final_state.position() - SolarSystemBarycentreEquator,
-        trajectory.EvaluatePosition(at_спутник_2_launch->epoch(), nullptr) -
-            SolarSystemBarycentreEquator);
-    double const velocity_error = RelativeError(
-        final_state.velocity(),
-        trajectory.EvaluateVelocity(at_спутник_2_launch->epoch(), nullptr));
-    EXPECT_THAT(position_error, Lt(expected_position_error.at(index)))
-        << SolarSystemFactory::name(i);
-    EXPECT_THAT(position_error, Gt(expected_position_error.at(index) / 10.0))
-        << SolarSystemFactory::name(i);
-    EXPECT_THAT(velocity_error, Lt(expected_velocity_error.at(index)))
-        << SolarSystemFactory::name(i);
-    EXPECT_THAT(velocity_error, Gt(expected_velocity_error.at(index) / 10.0))
-        << SolarSystemFactory::name(i);
-    if (i != SolarSystemFactory::Sun) {
-      // Look at the error in the position relative to the parent.
-      Vector<Length, ICRFJ2000Equator> const expected =
-          final_state.position() -
-          at_спутник_2_launch->initial_state(
-              SolarSystemFactory::name(SolarSystemFactory::parent(i))).
-              position();
-      Vector<Length, ICRFJ2000Equator> const actual =
-          trajectory.EvaluatePosition(at_спутник_2_launch->epoch(), nullptr) -
-          at_спутник_1_launch->trajectory(
-              *ephemeris,
-              SolarSystemFactory::name(SolarSystemFactory::parent(i))).
-                  EvaluatePosition(at_спутник_2_launch->epoch(), nullptr);
-      if (expected_angle_error.find(index) != expected_angle_error.end()) {
-        Area const product_of_norms = expected.Norm() * actual.Norm();
-        Angle const angle = ArcTan(
-            Wedge(expected, actual).Norm() / product_of_norms,
-            InnerProduct(expected, actual) / product_of_norms);
-        EXPECT_THAT(angle / Degree,
-                    Gt(expected_angle_error.at(index) / Degree * 0.9))
-            << SolarSystemFactory::name(i);
-        EXPECT_THAT(angle / Degree,
-                    Lt(expected_angle_error.at(index) / Degree * 1.1))
-            << SolarSystemFactory::name(i);
-      }
-      if (expected_parent_distance_error.find(index) !=
-          expected_parent_distance_error.end()) {
-        double const parent_distance_error = RelativeError(expected.Norm(),
-                                                           actual.Norm());
-        EXPECT_THAT(parent_distance_error,
-                    Lt(expected_parent_distance_error.at(index)))
-            << SolarSystemFactory::name(i);
-        EXPECT_THAT(parent_distance_error,
-                    Gt(expected_parent_distance_error.at(index) / 10.0))
-            << SolarSystemFactory::name(i);
-      }
-      if (expected_parent_offset_error.find(index) !=
-          expected_parent_offset_error.end()) {
-        double const parent_offset_error =  RelativeError(expected, actual);
-        EXPECT_THAT(parent_offset_error,
-                    Lt(expected_parent_offset_error.at(index)))
-            << SolarSystemFactory::name(i);
-        EXPECT_THAT(parent_offset_error,
-                    Gt(expected_parent_offset_error.at(index) / 10.0))
-            << SolarSystemFactory::name(i);
-      }
-    }
-  }
 }
 
 TEST_F(EphemerisTest, Serialization) {
