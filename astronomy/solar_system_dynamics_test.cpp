@@ -223,7 +223,7 @@ class SolarSystemDynamicsTest : public testing::Test {
   std::map<int, std::vector<int>> bodies_orbiting_;
 };
 
-#if 1  // This takes a minute to run.
+#if 0  // This takes a minute to run.
 TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
   SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
   solar_system_at_j2000.Initialize(
