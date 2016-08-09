@@ -61,6 +61,19 @@ Instant ContinuousTrajectory<Frame>::t_max() const {
 }
 
 template<typename Frame>
+double ContinuousTrajectory<Frame>::average_degree() const {
+  if (empty()) {
+    return 0;
+  } else {
+    double total = 0;
+    for (auto const& series : series_) {
+      total += series.degree();
+    }
+    return total / series_.size();
+  }
+}
+
+template<typename Frame>
 void ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
@@ -358,7 +371,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // won't be able to reliably do better than that.
   if (error_estimate >= previous_error_estimate) {
     if (degree_ > min_degree) {
-    --degree_;
+      --degree_;
     }
     VLOG(1) << "Reverting to degree " << degree_ << " for " << this
             << " because error estimate increased (" << error_estimate

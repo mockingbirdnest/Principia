@@ -62,6 +62,8 @@ class ЧебышёвSeries {
   Instant const& t_min() const;
   Instant const& t_max() const;
 
+  int degree() const;
+
   // The value of the last coefficient of the series.  Smaller values indicate a
   // a better approximation.
   Vector last_coefficient() const;

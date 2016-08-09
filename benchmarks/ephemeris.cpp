@@ -113,6 +113,14 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   ephemeris->Prolong(final_time);
 
+  double total = 0;
+  for (auto const& body : ephemeris->bodies()) {
+    total += ephemeris->trajectory(body)->average_degree();
+    LOG(INFO) << "Degree for " << body << ": "
+              << ephemeris->trajectory(body)->average_degree();
+  }
+  LOG(INFO) << "Total: " << total;
+
   while (state->KeepRunning()) {
     state->PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
