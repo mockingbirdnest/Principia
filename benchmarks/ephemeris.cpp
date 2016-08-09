@@ -1,55 +1,7 @@
 ﻿
-// .\Release\x64\benchmarks.exe  --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
-// Benchmarking on 1 X 3310 MHz CPU
-// 2015/06/14-18:27:09
-// Benchmark                                              Time(ns)    CPU(ns) Iterations                                                                // NOLINT(whitespace/line_length)
-// -------------------------------------------------------------------------------------                                                                // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly               23768936371 23540550900          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly               23454743838 23368949800          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly               24137182211 24070954300          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly_mean          23786954140 23660151667          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly_stddev          278895456   298809680          0                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies           50229173397 50123121300          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies           48035647129 47892307000          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies           47750342106 47611505200          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies_mean      48671720878 48542311167          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies_stddev     1107427500  1123664517          0                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness        59442244744 59202379500          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness        59101695275 58781176800          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness        59863012289 59545581700          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness_mean   59468984103 59176379333          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness_stddev   311380950   312608082          0                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly                   1450373864 1404009000          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly                   1389765715 1357208700          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly                   1367264723 1372808800          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly_mean              1402468101 1378008833          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly_stddev              35097913   19456743          0                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies               2176579451 2184014000          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies               2166758513 2168413900          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies               2167771077 2168413900          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies_mean          2170369680 2173613933          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies_stddev           4410386    7353958          0                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness            2190737223 2184014000          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness            2176962828 2168413900          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness            2180941796 2184014000          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness_mean       2182880616 2178813967          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness_stddev        5788077    7353958          0                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly                  6446595644 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly                  6440181708 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly                  6433291172 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly_mean             6440022841 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly_stddev              5432689          0          0                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies              10039601302 10046464400          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies              10045879816 10030864300          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies              10041628813 10046464400          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies_mean         10042369977 10041264367          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies_stddev           2616222     7353958          0                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness           10186283326 10186865300          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness           10175492739 10186865300          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness           10179186081 10155665100          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness_mean      10180320715 10176465233          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness_stddev        4477703    14707915          0                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
 
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -109,6 +61,7 @@ namespace {
 
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                    not_null<benchmark::State*> const state) {
+  Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
   Length error;
   while (state->KeepRunning()) {
     state->PauseTiming();
@@ -118,7 +71,7 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
     auto const ephemeris =
         at_спутник_1_launch->MakeEphemeris(
-            /*fitting_tolerance=*/5 * Milli(Metre),
+            fitting_tolerance,
             Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
                 McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
                 /*step=*/45 * Minute));
@@ -142,6 +95,7 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                not_null<benchmark::State*> const state) {
+  Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -152,7 +106,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
-          /*fitting_tolerance=*/5 * Milli(Metre),
+          fitting_tolerance,
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
               McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
               /*step=*/45 * Minute));
@@ -230,6 +184,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                 not_null<benchmark::State*> const state) {
+  Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -240,7 +195,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(
-          /*fitting_tolerance=*/5 * Milli(Metre),
+          fitting_tolerance,
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
               McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
               /*step=*/45 * Minute));
@@ -368,15 +323,23 @@ void BM_EphemerisLEOProbeAllBodiesAndOblateness(
       &state);
 }
 
-BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly);
-BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies);
-BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness);
-BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly);
-BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies);
-BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness);
-BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly);
-BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies);
-BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness);
+void BM_EphemerisFittingTolerance(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                            &state);
+}
+
+BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly)->Arg(-3);
+BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies)->Arg(-3);
+BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness)->Arg(-3);
+BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly)->Arg(-3);
+BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies)->Arg(-3);
+BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness)->Arg(-3);
+BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly)->Arg(-3);
+BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies)->Arg(-3);
+BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness)->Arg(-3);
+
+BENCHMARK(BM_EphemerisFittingTolerance)->DenseRange(-4, 4);
 
 }  // namespace physics
 }  // namespace principia
