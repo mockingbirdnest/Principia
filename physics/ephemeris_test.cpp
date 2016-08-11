@@ -173,10 +173,8 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
       ephemeris.planetary_integrator(),
       Ref(McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>()));
 
-  EXPECT_EQ(t0_ - std::numeric_limits<double>::infinity() * Second,
-            ephemeris.t_max());
-  EXPECT_EQ(t0_ + std::numeric_limits<double>::infinity() * Second,
-            ephemeris.t_min());
+  EXPECT_EQ(astronomy::InfinitePast, ephemeris.t_max());
+  EXPECT_EQ(astronomy::InfiniteFuture, ephemeris.t_min());
 
   EXPECT_TRUE(ephemeris.empty());
   ephemeris.Prolong(t0_ + period);

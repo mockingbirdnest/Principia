@@ -334,6 +334,7 @@ class Plugin {
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_parameters,
          Angle planetarium_rotation,
+         Instant game_epoch,
          Instant current_time,
          Index sun_index);
 
