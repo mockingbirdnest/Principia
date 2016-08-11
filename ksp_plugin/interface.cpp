@@ -483,6 +483,19 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
+void principia__SetMainBody(Plugin* const plugin, int const index) {
+  journal::Method<journal::SetMainBody> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  plugin->SetMainBody(index);
+  return m.Return();
+}
+
+WXYZ principia__CelestialRotation(Plugin const* const plugin, int const index) {
+  journal::Method<journal::CelestialRotation> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
+}
+
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 // TODO(phl): The parameter should be named |centre_index|.
