@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -113,13 +114,12 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   ephemeris->Prolong(final_time);
 
-  double total = 0;
+  // Compute the total degree of the underlying polynomials.  Useful for
+  // benchmarking the effect of the fitting tolerance.
+  double total_degree = 0;
   for (auto const& body : ephemeris->bodies()) {
-    total += ephemeris->trajectory(body)->average_degree();
-    LOG(INFO) << "Degree for " << body << ": "
-              << ephemeris->trajectory(body)->average_degree();
+    total_degree += ephemeris->trajectory(body)->average_degree();
   }
-  LOG(INFO) << "Total: " << total;
 
   while (state->KeepRunning()) {
     state->PauseTiming();
@@ -187,7 +187,8 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                   quantities::DebugString(sun_error / AstronomicalUnit) +
                   " ua, " +
                   quantities::DebugString(earth_error / AstronomicalUnit) +
-                  " ua");
+                  " ua, degree " +
+                  std::to_string(total_degree));
 }
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
