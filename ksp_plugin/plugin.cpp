@@ -201,6 +201,8 @@ void Plugin::EndInitialization() {
   }
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
+  main_body_ = CHECK_NOTNULL(
+      dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
   initializing_.Flop();
 
   InitializeEphemerisAndSetCelestialTrajectories();
@@ -238,6 +240,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 void Plugin::SetMainBody(Index const index) {
   main_body_ = dynamic_cast<RotatingBody<Barycentric> const*>(
       &*FindOrDie(celestials_, index)->body());
+  LOG_IF(FATAL, main_body_ == nullptr) << index;
 }
 
 Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
@@ -249,10 +252,10 @@ Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, index)->body());
   Rotation<BodyFixed, BodyEquatorial> const body_rotation(
-      -body.AngleAt(current_time_),
+      body.AngleAt(current_time_),
       Bivector<double, BodyFixed>({0, 0, 1}));
   Bivector<double, Barycentric> const body_equatorial_z =
-      Normalize(main_body_->angular_velocity());
+      Normalize(body.angular_velocity());
   Bivector<double, Barycentric> const z({0, 0, 1});
   Bivector<double, Barycentric> const body_equatorial_x =
       Normalize(geometry::Commutator(z, body_equatorial_z));
@@ -271,6 +274,18 @@ Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
       body_mirror.Forget();
   CHECK(result.Determinant().Positive());
   return result.rotation();
+}
+
+Time Plugin::RotationPeriod(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  return 2 * π * Radian / body.angular_velocity().Norm();
+}
+
+Angle Plugin::InitialRotation(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  return body.AngleAt(game_epoch_);
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -854,6 +869,8 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
     auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());
   }
+  main_body_ = CHECK_NOTNULL(
+      dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
   initializing_.Flop();
 }
 

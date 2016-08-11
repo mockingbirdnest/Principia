@@ -93,7 +93,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5098.
+  extensions 5000 to 5999;  // Last used: 5100.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -640,6 +640,22 @@ message HasVessel {
   optional Return return = 3;
 }
 
+message InitialRotationInDegrees {
+  extend Method {
+    optional InitialRotationInDegrees extension = 5100;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message InsertCelestialAbsoluteCartesian {
   extend Method {
     optional InsertCelestialAbsoluteCartesian extension = 5003;
@@ -996,6 +1012,22 @@ message RenderedVesselTrajectory {
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Iterator",
                                  (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message RotationPeriod {
+  extend Method {
+    optional RotationPeriod extension = 5099;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required double result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

@@ -536,6 +536,18 @@ public partial class PrincipiaPluginAdapter
           PlanetariumCamera.Camera.gameObject.AddComponent<MapRenderer>();
       map_renderer_.post_render = RenderTrajectories;
     }
+
+    // Orient the celestial bodies.
+    if (PluginRunning()) {
+      foreach (var body in FlightGlobals.Bodies) {
+        body.scaledBody.transform.rotation =
+            (UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                body.flightGlobalsIndex);
+        //Log.Info(body.name + " rotation quaternion : " +
+        //         body.scaledBody.transform.rotation);
+      }
+    }
+
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null &&
@@ -566,15 +578,6 @@ public partial class PrincipiaPluginAdapter
           set_navball_texture(inertial_navball_texture_);
         } else {
           set_navball_texture(barycentric_navball_texture_);
-        }
-      }
-
-      // Orient the celestial bodies.
-      if (PluginRunning()) {
-        foreach(var body in FlightGlobals.Bodies) {
-          body.transform.localRotation =
-              (UnityEngine.QuaternionD)plugin_.CelestialRotation(
-                  body.flightGlobalsIndex);
         }
       }
 
@@ -721,6 +724,13 @@ public partial class PrincipiaPluginAdapter
       }
       plugin_.ForgetAllHistoriesBefore(
           universal_time - history_lengths_[history_length_index_]);
+      if (FlightGlobals.currentMainBody != null) {
+        FlightGlobals.currentMainBody.rotationPeriod = plugin_.RotationPeriod(
+            FlightGlobals.currentMainBody.flightGlobalsIndex);
+        FlightGlobals.currentMainBody.initialRotation =
+            plugin_.InitialRotationInDegrees(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+      }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
@@ -1330,9 +1340,6 @@ public partial class PrincipiaPluginAdapter
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
         plugin_.EndInitialization();
-        plugin_.SetMainBody(
-            FlightGlobals.currentMainBody.GetValueOrDefault(
-                FlightGlobals.GetHomeBody()).flightGlobalsIndex);
         plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                             Planetarium.InverseRotAngle);
       } catch (Exception e) {
@@ -1392,9 +1399,6 @@ public partial class PrincipiaPluginAdapter
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
         plugin_.EndInitialization();
-        plugin_.SetMainBody(
-            FlightGlobals.currentMainBody.GetValueOrDefault(
-                FlightGlobals.GetHomeBody()).flightGlobalsIndex);
         if (plugin_.IsKspStockSystem()) {
           Interface.DeletePlugin(ref plugin_);
           Fix631();

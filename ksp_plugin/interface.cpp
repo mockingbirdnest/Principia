@@ -496,6 +496,22 @@ WXYZ principia__CelestialRotation(Plugin const* const plugin, int const index) {
   return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
 }
 
+double principia__RotationPeriod(
+    Plugin const* const plugin,
+    int const celestial_index) {
+  journal::Method<journal::RotationPeriod> m({plugin, celestial_index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->RotationPeriod(celestial_index) / Second);
+}
+
+double principia__InitialRotationInDegrees(Plugin const* const plugin,
+                                           int const celestial_index) {
+  journal::Method<journal::InitialRotationInDegrees> m(
+      {plugin, celestial_index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->InitialRotation(celestial_index) / Degree);
+}
+
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 // TODO(phl): The parameter should be named |centre_index|.

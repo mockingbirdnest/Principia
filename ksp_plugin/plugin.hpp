@@ -121,6 +121,9 @@ class Plugin {
   struct BodyWorld;
   virtual Rotation<BodyWorld, World> CelestialRotation(Index const index) const;
 
+  virtual Time RotationPeriod(Index const celestial_index) const;
+  virtual Angle InitialRotation(Index const celestial_index) const;
+
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
   // |AdvanceTime|. The parent body for the vessel is set to the one with index
