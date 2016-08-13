@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DRAW_BODY_AXES
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -540,6 +542,7 @@ public partial class PrincipiaPluginAdapter
     // Orient the celestial bodies.
     if (PluginRunning()) {
       foreach (var body in FlightGlobals.Bodies) {
+        Log.Info(body.name);
         body.scaledBody.transform.rotation =
             (UnityEngine.QuaternionD)plugin_.CelestialRotation(
                 body.flightGlobalsIndex);
@@ -817,6 +820,47 @@ public partial class PrincipiaPluginAdapter
     if (!PluginRunning()) {
       return;
     }
+
+    #if DRAW_BODY_AXES
+    foreach(var body in FlightGlobals.Bodies) {
+      GLLines.Draw(() => {
+        // Body axes.
+        UnityEngine.GL.Color(UnityEngine.Color.red);
+        GLLines.AddSegment(
+            body.position,
+            body.position +
+                (Vector3d)body.scaledBody.transform.right * 3 * body.Radius,
+            false);
+        UnityEngine.GL.Color(UnityEngine.Color.green);
+        GLLines.AddSegment(
+            body.position,
+            body.position +
+                (Vector3d)body.scaledBody.transform.up * 3 * body.Radius,
+            false);
+        UnityEngine.GL.Color(UnityEngine.Color.blue);
+        GLLines.AddSegment(
+            body.position,
+            body.position +
+                (Vector3d)body.scaledBody.transform.forward * 3 * body.Radius,
+            false);
+        // Earth axes.
+        var home = FlightGlobals.GetHomeBody();
+        UnityEngine.GL.Color(UnityEngine.Color.magenta);
+        GLLines.AddSegment(
+            body.position,
+            body.position +
+                (Vector3d)home.scaledBody.transform.right * 2 * body.Radius,
+            false);
+        UnityEngine.GL.Color(UnityEngine.Color.cyan);
+        GLLines.AddSegment(
+            body.position,
+            body.position +
+                (Vector3d)home.scaledBody.transform.up * 2 * body.Radius,
+            false);
+      });
+    }
+    #endif
+
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel == null) {
       return;
@@ -824,7 +868,7 @@ public partial class PrincipiaPluginAdapter
     string active_vessel_guid = active_vessel.id.ToString();
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
-        plugin_.HasVessel(active_vessel_guid); 
+        plugin_.HasVessel(active_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       RemoveStockTrajectoriesIfNeeded(active_vessel);
 
