@@ -65,7 +65,7 @@ FORCE_INLINE Vector<Quotient<Acceleration,
     Displacement<Frame> const& r,
     Exponentiation<Length, -2> const& one_over_r_squared,
     Exponentiation<Length, -3> const& one_over_r_cubed) {
-  Vector<double, Frame> const& axis = body.axis();
+  Vector<double, Frame> const& axis = body.polar_axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth =
       body.j2_over_μ() * one_over_r_cubed * one_over_r_squared;

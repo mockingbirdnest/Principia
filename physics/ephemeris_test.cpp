@@ -816,10 +816,9 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
                                             1 * Metre,
                                             1 * Radian,
                                             t0_,
-                                            AngularVelocity<World>({
-                                                0 * Radian / Second,
-                                                0 * Radian / Second,
-                                                4 * Radian / Second})),
+                                            4 * Radian / Second,
+                                            0 * Radian,
+                                            π / 2 * Radian),
                                         OblateBody<World>::Parameters(
                                             j2, radius));
   auto const b1 = new MassiveBody(m1);
@@ -895,7 +894,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            0 * SIUnit<Acceleration>(),
            0 * SIUnit<Acceleration>()});
   EXPECT_THAT(actual_acceleration1,
-              AlmostEquals(expected_acceleration1, 0, 2));
+              AlmostEquals(expected_acceleration1, 0, 4));
 
   Vector<Acceleration, World> actual_acceleration2 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b2, t0_);
