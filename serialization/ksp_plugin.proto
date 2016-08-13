@@ -107,6 +107,7 @@ message Plugin {
   required PhysicsBubble bubble = 3;
   optional Ephemeris ephemeris = 7;  // required
   required Quantity planetarium_rotation = 4;
+  optional Point game_epoch = 15;  // required
   required Point current_time = 5;
   required int32 sun_index = 6;
   optional DynamicFrame plotting_frame = 11;  // required

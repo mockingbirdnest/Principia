@@ -681,6 +681,7 @@ void Plugin::WriteToMessage(
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
+  game_epoch_.WriteToMessage(message->mutable_game_epoch());
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
@@ -754,6 +755,11 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
               message.prediction_parameters());
 
+  bool const is_pre_cardano = !message.has_game_epoch();
+  Instant const game_epoch =
+      is_pre_cardano ? astronomy::J2000
+                     : Instant::ReadFromMessage(message.game_epoch());
+
   // Can't use |make_unique| here without implementation-dependent friendships.
   auto plugin = std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
@@ -764,6 +770,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  prolongation_parameters,
                  prediction_parameters,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
+                 game_epoch,
                  current_time,
                  message.sun_index()));
   std::unique_ptr<NavigationFrame> plotting_frame =
@@ -780,19 +787,19 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   return std::move(plugin);
 }
 
-Plugin::Plugin(GUIDToOwnedVessel vessels,
-               IndexToOwnedCelestial celestials,
-               not_null<std::unique_ptr<PhysicsBubble>> bubble,
-               std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-               Ephemeris<Barycentric>::FixedStepParameters const&
-                   history_parameters,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                   prolongation_parameters,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                   prediction_parameters,
-               Angle planetarium_rotation,
-               Instant current_time,
-               Index sun_index)
+Plugin::Plugin(
+    GUIDToOwnedVessel vessels,
+    IndexToOwnedCelestial celestials,
+    not_null<std::unique_ptr<PhysicsBubble>> bubble,
+    std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
+    Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prolongation_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters,
+    Angle const& planetarium_rotation,
+    Instant const& game_epoch,
+    Instant const& current_time,
+    Index sun_index)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
       bubble_(std::move(bubble)),
@@ -801,6 +808,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       prolongation_parameters_(prolongation_parameters),
       prediction_parameters_(prediction_parameters),
       planetarium_rotation_(planetarium_rotation),
+      game_epoch_(game_epoch),
       current_time_(current_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
   for (auto const& pair : vessels_) {
