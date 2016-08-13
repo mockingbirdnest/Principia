@@ -204,6 +204,11 @@ Instant const& ЧебышёвSeries<Vector>::t_max() const {
 }
 
 template<typename Vector>
+int ЧебышёвSeries<Vector>::degree() const {
+  return helper_.degree();
+}
+
+template<typename Vector>
 Vector ЧебышёвSeries<Vector>::last_coefficient() const {
   return helper_.coefficients(helper_.degree());
 }

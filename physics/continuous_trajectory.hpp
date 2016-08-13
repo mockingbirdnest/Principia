@@ -63,6 +63,10 @@ class ContinuousTrajectory {
   Instant t_min() const;
   Instant t_max() const;
 
+  // The average degree of the polynomials for the trajectory.  Only useful for
+  // benchmarking or analyzing performance.  Do not use in real code.
+  double average_degree() const;
+
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given

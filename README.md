@@ -10,4 +10,6 @@ to go to the Mun with Principia in an energy-efficient manner.
 
 The [FAQ](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions) explain how to install, how to report bugs and documents the known issues and limitations.
 
-The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) gives a fairly detailed descriptions of the new features in each release.
+The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) gives a fairly detailed description of the new features in each release.
+
+Download the binary (Ubuntu and Windows) [here](https://goo.gl/eZbr4e) or, if you don't trust our binary, build the mod from the [Cantor](https://github.com/mockingbirdnest/Principia/releases/tag/2016081314-Cantor) release.
