@@ -330,15 +330,14 @@ class Plugin {
          IndexToOwnedCelestial celestials,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
          std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             history_parameters,
+         Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prolongation_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_parameters,
-         Angle planetarium_rotation,
-         Instant game_epoch,
-         Instant current_time,
+         Angle const& planetarium_rotation,
+         Instant const& game_epoch,
+         Instant const& current_time,
          Index sun_index);
 
   // We virtualize this function for testing purposes.

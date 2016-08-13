@@ -840,20 +840,19 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   return std::move(plugin);
 }
 
-Plugin::Plugin(GUIDToOwnedVessel vessels,
-               IndexToOwnedCelestial celestials,
-               not_null<std::unique_ptr<PhysicsBubble>> bubble,
-               std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-               Ephemeris<Barycentric>::FixedStepParameters const&
-                   history_parameters,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                   prolongation_parameters,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                   prediction_parameters,
-               Angle planetarium_rotation,
-               Instant game_epoch,
-               Instant current_time,
-               Index sun_index)
+Plugin::Plugin(
+    GUIDToOwnedVessel vessels,
+    IndexToOwnedCelestial celestials,
+    not_null<std::unique_ptr<PhysicsBubble>> bubble,
+    std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
+    Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prolongation_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters,
+    Angle const& planetarium_rotation,
+    Instant const& game_epoch,
+    Instant const& current_time,
+    Index sun_index)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
       bubble_(std::move(bubble)),
