@@ -39,9 +39,7 @@ OblateBody<Frame>::OblateBody(
     typename RotatingBody<Frame>::Parameters const& rotating_body_parameters,
     Parameters const& parameters)
     : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
-      parameters_(parameters),
-      axis_(Vector<double, Frame>(
-                Normalize(this->angular_velocity()).coordinates())) {
+      parameters_(parameters) {
   if (parameters_.j2_) {
     parameters_.j2_over_μ_ = *parameters_.j2_ / this->gravitational_parameter();
   }
@@ -59,11 +57,6 @@ template<typename Frame>
 Quotient<Order2ZonalCoefficient,
          GravitationalParameter> const& OblateBody<Frame>::j2_over_μ() const {
   return *parameters_.j2_over_μ_;
-}
-
-template<typename Frame>
-Vector<double, Frame> const& OblateBody<Frame>::axis() const {
-  return axis_;
 }
 
 template<typename Frame>
@@ -110,12 +103,14 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
     serialization::PreBrouwerOblateBody const& message,
     MassiveBody::Parameters const& massive_body_parameters) {
   auto const axis = Vector<double, Frame>::ReadFromMessage(message.axis());
+  auto const axis_spherical_coordinates = axis.coordinates().ToSpherical();
   typename RotatingBody<Frame>::Parameters
       rotating_body_parameters(Length(),
                                Angle(),
                                J2000,
-                               AngularVelocity<Frame>(
-                                   axis.coordinates() * Radian / Second));
+                               1 * Radian / Second,
+                               axis_spherical_coordinates.longitude,
+                               axis_spherical_coordinates.latitude);
   Parameters parameters(Order2ZonalCoefficient::ReadFromMessage(message.j2()));
 
   return std::make_unique<OblateBody<Frame>>(massive_body_parameters,

@@ -220,13 +220,9 @@ std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
             ParseQuantity<Length>(body.mean_radius()),
             ParseQuantity<Angle>(body.reference_angle()),
             JulianDate(body.reference_instant()),
-            Bivector<double, Frame>(
-                RadiusLatitudeLongitude(
-                    1.0,
-                    ParseQuantity<Angle>(body.axis_declination()),
-                    ParseQuantity<Angle>(body.axis_right_ascension()))
-                    .ToCartesian()) *
-                ParseQuantity<AngularFrequency>(body.angular_frequency()));
+            ParseQuantity<AngularFrequency>(body.angular_frequency()),
+            ParseQuantity<Angle>(body.axis_right_ascension()),
+            ParseQuantity<Angle>(body.axis_declination()));
     if (body.has_j2()) {
       typename OblateBody<Frame>::Parameters oblate_body_parameters(
           ParseQuantity<double>(body.j2()),
