@@ -227,6 +227,14 @@ quantities::Angle OrientedAngleBetween(
     Vector<RScalar, Frame> const& w,
     Bivector<PScalar, Frame> const& positive);
 
+// The result is in [-π, π]; the function is anticommutative, the result is in
+// [0, π] if |InnerProduct(Commutator(v, w), positive) >= 0|.
+template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
+quantities::Angle OrientedAngleBetween(
+    Bivector<LScalar, Frame> const& v,
+    Bivector<RScalar, Frame> const& w,
+    Bivector<PScalar, Frame> const& positive);
+
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
