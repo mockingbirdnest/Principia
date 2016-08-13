@@ -66,9 +66,14 @@ class RotatingBody : public MassiveBody {
   // Returns the radius passed at construction.
   Length mean_radius() const override;
 
-  // Returns the axis passed at construction.
+  // Returns the direction defined by the right ascension and declination passed
+  // at construction.
   Vector<double, Frame> const& polar_axis() const;
+
+  // Returns the right ascension passed at construction.
   Angle const& right_ascension_of_pole() const;
+
+  // Returns the declination at construction.
   Angle const& declination_of_pole() const;
 
   // Returns the angular velocity passed at construction.

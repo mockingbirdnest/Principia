@@ -34,7 +34,7 @@ RotatingBody<Frame>::Parameters::Parameters(
       << "Rotating body cannot have zero angular velocity";
 }
 
-template <typename Frame>
+template<typename Frame>
 RotatingBody<Frame>::RotatingBody(
     MassiveBody::Parameters const& massive_body_parameters,
     Parameters const& parameters)

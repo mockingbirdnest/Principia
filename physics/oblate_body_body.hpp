@@ -108,7 +108,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
       rotating_body_parameters(Length(),
                                Angle(),
                                J2000,
-                               Radian / Second,
+                               1 * Radian / Second,
                                axis_spherical_coordinates.longitude,
                                axis_spherical_coordinates.latitude);
   Parameters parameters(Order2ZonalCoefficient::ReadFromMessage(message.j2()));
