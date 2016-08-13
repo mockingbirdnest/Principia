@@ -14,18 +14,23 @@ namespace physics {
 namespace internal_rotating_body {
 
 using geometry::Exp;
+using geometry::RadiusLatitudeLongitude;
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(
     Length const& mean_radius,
     Angle const& reference_angle,
     Instant const& reference_instant,
-    AngularVelocity<Frame> const& angular_velocity)
+    AngularFrequency const& angular_frequency,
+    Angle const& right_ascension_of_pole,
+    Angle const& declination_of_pole)
     : mean_radius_(mean_radius),
       reference_angle_(reference_angle),
       reference_instant_(reference_instant),
-      angular_velocity_(angular_velocity) {
-  CHECK_NE(angular_velocity_.Norm(), 0.0 * SIUnit<AngularFrequency>())
+      angular_frequency_(angular_frequency),
+      right_ascension_of_pole_(right_ascension_of_pole),
+      declination_of_pole_(declination_of_pole) {
+  CHECK_NE(angular_velocity_, 0.0 * SIUnit<AngularFrequency>())
       << "Rotating body cannot have zero angular velocity";
 }
 
@@ -34,7 +39,12 @@ RotatingBody<Frame>::RotatingBody(
     MassiveBody::Parameters const& massive_body_parameters,
     Parameters const& parameters)
     : MassiveBody(massive_body_parameters),
-      parameters_(parameters) {}
+      parameters_(parameters),
+      polar_axis_(RadiusLatitudeLongitude(1.0,
+                                          parameters.declination_of_pole_,
+                                          parameters.right_ascension_of_pole_)),
+      angular_velocity_(polar_axis_.coordinates() *
+                        parameters.angular_frequency_) {}
 
 template<typename Frame>
 Length RotatingBody<Frame>::mean_radius() const {
@@ -42,8 +52,24 @@ Length RotatingBody<Frame>::mean_radius() const {
 }
 
 template<typename Frame>
+Vector<double, Frame> const& RotatingBody<Frame>::polar_axis() const {
+  return polar_axis_;
+}
+
+template<typename Frame>
+Angle const& RotatingBody<Frame>::right_ascension_of_pole() const {
+  return parameters_.right_ascension_of_pole_;
+}
+
+
+template<typename Frame>
+Angle const& RotatingBody<Frame>::declination_of_pole() const {
+  return parameters_.declination_of_pole_;
+}
+
+template<typename Frame>
 AngularVelocity<Frame> const& RotatingBody<Frame>::angular_velocity() const {
-  return parameters_.angular_velocity_;
+  return angular_velocity_;
 }
 
 template<typename Frame>
@@ -86,8 +112,12 @@ void RotatingBody<Frame>::WriteToMessage(
       rotating_body->mutable_reference_angle());
   parameters_.reference_instant_.WriteToMessage(
       rotating_body->mutable_reference_instant());
-  parameters_.angular_velocity_.WriteToMessage(
-      rotating_body->mutable_angular_velocity());
+  parameters_.angular_frequency_.WriteToMessage(
+      rotating_body->mutable_angular_frequency());
+  parameters_.right_ascension_of_pole_.WriteToMessage(
+      rotating_body->mutable_right_ascension_of_pole());
+  parameters_.declination_of_pole_.WriteToMessage(
+      rotating_body->mutable_declination_of_pole());
 }
 
 template<typename Frame>
@@ -96,14 +126,16 @@ RotatingBody<Frame>::ReadFromMessage(
     serialization::RotatingBody const& message,
     MassiveBody::Parameters const& massive_body_parameters) {
   // For pre-Buffon compatibility, build a point mass.
+  // TODO(phl): pre-Cardano compatibility.
   Parameters parameters(
                  message.has_mean_radius()
                      ? Length::ReadFromMessage(message.mean_radius())
                      : Length(),
                  Angle::ReadFromMessage(message.reference_angle()),
                  Instant::ReadFromMessage(message.reference_instant()),
-                 AngularVelocity<Frame>::ReadFromMessage(
-                     message.angular_velocity()));
+                 AngularFrequency::ReadFromMessage(message.angular_frequency()),
+                 Angle::ReadFromMessage(message.right_ascension_of_pole()),
+                 Angle::ReadFromMessage(message.declination_of_pole()));
 
   if (message.HasExtension(serialization::OblateBody::extension)) {
     serialization::OblateBody const& extension =

@@ -36,18 +36,25 @@ class RotatingBody : public MassiveBody {
   class Parameters {
    public:
     // |reference_angle| is the angle of the prime meridian at
-    // |reference_instant|.  |angular_velocity| gives the direction and speed of
-    // the rotation of the body.
+    // |reference_instant|.  |angular_frequency| gives the rate of rotation of
+    // the body around the pole (it may be negative, as is the convention for
+    // planets and satellites whose rotation is retrograde).  The direction of
+    // the pole is specified in |Frame| using |right_ascension_of_pole| and
+    // |declination_of_pole|.
     Parameters(Length const& mean_radius,
                Angle const& reference_angle,
                Instant const& reference_instant,
-               AngularVelocity<Frame> const& angular_velocity);
+               AngularFrequency const& angular_frequency,
+               Angle const& right_ascension_of_pole,
+               Angle const& declination_of_pole);
 
    private:
     Length const mean_radius_;
     Angle const reference_angle_;
     Instant const reference_instant_;
-    AngularVelocity<Frame> const angular_velocity_;
+    AngularFrequency const angular_frequency_;
+    Angle const right_ascension_of_pole_;
+    Angle const declination_of_pole_;
     template<typename F>
     friend class RotatingBody;
   };
@@ -58,6 +65,11 @@ class RotatingBody : public MassiveBody {
 
   // Returns the radius passed at construction.
   Length mean_radius() const override;
+
+  // Returns the axis passed at construction.
+  Vector<double, Frame> const& polar_axis() const;
+  Angle const& right_ascension_of_pole() const;
+  Angle const& declination_of_pole() const;
 
   // Returns the angular velocity passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;
@@ -86,6 +98,8 @@ class RotatingBody : public MassiveBody {
 
  private:
   Parameters const parameters_;
+  Vector<double, Frame> const polar_axis_;
+  AngularVelocity<Frame> const angular_velocity_;
 };
 
 }  // namespace internal_rotating_body
