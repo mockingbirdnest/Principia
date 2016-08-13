@@ -30,19 +30,20 @@ RotatingBody<Frame>::Parameters::Parameters(
       angular_frequency_(angular_frequency),
       right_ascension_of_pole_(right_ascension_of_pole),
       declination_of_pole_(declination_of_pole) {
-  CHECK_NE(angular_velocity_, 0.0 * SIUnit<AngularFrequency>())
+  CHECK_NE(angular_frequency_, 0.0 * SIUnit<AngularFrequency>())
       << "Rotating body cannot have zero angular velocity";
 }
 
-template<typename Frame>
+template <typename Frame>
 RotatingBody<Frame>::RotatingBody(
     MassiveBody::Parameters const& massive_body_parameters,
     Parameters const& parameters)
     : MassiveBody(massive_body_parameters),
       parameters_(parameters),
-      polar_axis_(RadiusLatitudeLongitude(1.0,
-                                          parameters.declination_of_pole_,
-                                          parameters.right_ascension_of_pole_)),
+      polar_axis_(RadiusLatitudeLongitude(
+                      1.0,
+                      parameters.declination_of_pole_,
+                      parameters.right_ascension_of_pole_).ToCartesian()),
       angular_velocity_(polar_axis_.coordinates() *
                         parameters.angular_frequency_) {}
 
@@ -76,7 +77,7 @@ template<typename Frame>
 Angle RotatingBody<Frame>::AngleAt(Instant const& t) const {
   return parameters_.reference_angle_ +
          (t - parameters_.reference_instant_) *
-             parameters_.angular_velocity_.Norm();
+             angular_velocity_.Norm();
 }
 
 template<typename Frame>

@@ -39,9 +39,7 @@ OblateBody<Frame>::OblateBody(
     typename RotatingBody<Frame>::Parameters const& rotating_body_parameters,
     Parameters const& parameters)
     : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
-      parameters_(parameters),
-      axis_(Vector<double, Frame>(
-                Normalize(this->angular_velocity()).coordinates())) {
+      parameters_(parameters) {
   if (parameters_.j2_) {
     parameters_.j2_over_μ_ = *parameters_.j2_ / this->gravitational_parameter();
   }

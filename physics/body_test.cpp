@@ -10,6 +10,7 @@
 #include "physics/rotating_body.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace physics {
@@ -19,12 +20,16 @@ using geometry::AngularVelocity;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Normalize;
+using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
+using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Order2ZonalCoefficient;
+using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 using ::testing::IsNull;
 using ::testing::NotNull;
 
@@ -40,17 +45,15 @@ class BodyTest : public testing::Test {
   void TestRotatingBody() {
     using F = Frame<Tag, tag, true>;
 
-    AngularVelocity<F> const angular_velocity =
-        AngularVelocity<F>({-1 * Radian / Second,
-                            2 * Radian / Second,
-                            5 * Radian / Second});
     auto const rotating_body =
         RotatingBody<F>(17 * SIUnit<GravitationalParameter>(),
                         typename RotatingBody<F>::Parameters(
                             2 * Metre,
                             3 * Radian,
                             Instant() + 4 * Second,
-                            angular_velocity));
+                            angular_frequency_,
+                            right_ascension_of_pole_,
+                            declination_of_pole_));
 
     serialization::Body message;
     RotatingBody<F> const* cast_rotating_body;
@@ -68,10 +71,10 @@ class BodyTest : public testing::Test {
     EXPECT_THAT(cast_rotating_body, NotNull());
   }
 
-  AngularVelocity<World> angular_velocity_ =
-      AngularVelocity<World>({-1 * Radian / Second,
-                              2 * Radian / Second,
-                              5 * Radian / Second});
+  AngularFrequency const angular_frequency_ = -1.5 * Radian / Second;
+  Angle const right_ascension_of_pole_ = 37 * Degree;
+  Angle const declination_of_pole_ = 123 * Degree;
+
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
       MassiveBody(42 * SIUnit<GravitationalParameter>());
@@ -81,14 +84,18 @@ class BodyTest : public testing::Test {
                               1 * Metre,
                               3 * Radian,
                               Instant() + 4 * Second,
-                              angular_velocity_));
+                              angular_frequency_,
+                              right_ascension_of_pole_,
+                              declination_of_pole_));
   OblateBody<World> oblate_body_ =
       OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
                         RotatingBody<World>::Parameters(
                             1 * Metre,
                             3 * Radian,
                             Instant() + 4 * Second,
-                            angular_velocity_),
+                            angular_frequency_,
+                            right_ascension_of_pole_,
+                            declination_of_pole_),
                         OblateBody<World>::Parameters(
                             163 * SIUnit<Order2ZonalCoefficient>()));
 };
@@ -160,9 +167,15 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
   EXPECT_EQ(3, rotating_body_extension.reference_angle().magnitude());
   EXPECT_EQ(4,
             rotating_body_extension.reference_instant().scalar().magnitude());
-  EXPECT_EQ(angular_velocity_,
-            AngularVelocity<World>::ReadFromMessage(
-                rotating_body_extension.angular_velocity()));
+  EXPECT_EQ(angular_frequency_,
+            AngularFrequency::ReadFromMessage(
+                rotating_body_extension.angular_frequency()));
+  EXPECT_EQ(right_ascension_of_pole_,
+            Angle::ReadFromMessage(
+                rotating_body_extension.right_ascension_of_pole()));
+  EXPECT_EQ(declination_of_pole_,
+            Angle::ReadFromMessage(
+                rotating_body_extension.declination_of_pole()));
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
@@ -220,7 +233,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
+  EXPECT_EQ(oblate_body_.polar_axis(), cast_oblate_body->polar_axis());
 
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body const>> const body =
@@ -230,7 +243,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
+  EXPECT_EQ(oblate_body_.polar_axis(), cast_oblate_body->polar_axis());
 }
 
 TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
@@ -263,16 +276,16 @@ TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
   pre_brouwer_oblate_body->mutable_j2()->CopyFrom(
       post_brouwer_oblate_body.j2());
   pre_brouwer_oblate_body->mutable_axis()->mutable_frame()->CopyFrom(
-      post_brouwer_rotating_body.angular_velocity().frame());
-  auto const normalized_angular_velocity = Normalize(angular_velocity_);
+      post_brouwer_rotating_body.frame());
+  auto const axis_coordinates = RadiusLatitudeLongitude(
+                                    1.0,
+                                    declination_of_pole_,
+                                    right_ascension_of_pole_).ToCartesian();
   auto* const pre_brouwer_axis_r3_element =
     pre_brouwer_oblate_body->mutable_axis()->mutable_vector();
-  pre_brouwer_axis_r3_element->mutable_x()->set_double_(
-      normalized_angular_velocity.coordinates().x);
-  pre_brouwer_axis_r3_element->mutable_y()->set_double_(
-      normalized_angular_velocity.coordinates().y);
-  pre_brouwer_axis_r3_element->mutable_z()->set_double_(
-      normalized_angular_velocity.coordinates().z);
+  pre_brouwer_axis_r3_element->mutable_x()->set_double_(axis_coordinates.x);
+  pre_brouwer_axis_r3_element->mutable_y()->set_double_(axis_coordinates.y);
+  pre_brouwer_axis_r3_element->mutable_z()->set_double_(axis_coordinates.z);
 
   // Deserialize both.
   auto const post_brouwer = Body::ReadFromMessage(post_brouwer_body);
@@ -282,7 +295,8 @@ TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
   auto const* const cast_pre_brouwer =
       dynamic_cast<OblateBody<World> const*>(&*pre_brouwer);
   EXPECT_EQ(cast_post_brouwer->mass(), cast_pre_brouwer->mass());
-  EXPECT_EQ(cast_post_brouwer->axis(), cast_pre_brouwer->axis());
+  EXPECT_THAT(cast_post_brouwer->polar_axis(),
+              AlmostEquals(cast_pre_brouwer->polar_axis(), 2));
   EXPECT_EQ(cast_post_brouwer->j2(), cast_pre_brouwer->j2());
 }
 
