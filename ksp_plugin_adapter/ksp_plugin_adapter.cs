@@ -542,12 +542,9 @@ public partial class PrincipiaPluginAdapter
     // Orient the celestial bodies.
     if (PluginRunning()) {
       foreach (var body in FlightGlobals.Bodies) {
-        Log.Info(body.name);
         body.scaledBody.transform.rotation =
             (UnityEngine.QuaternionD)plugin_.CelestialRotation(
                 body.flightGlobalsIndex);
-        //Log.Info(body.name + " rotation quaternion : " +
-        //         body.scaledBody.transform.rotation);
       }
     }
 

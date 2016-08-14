@@ -256,14 +256,13 @@ Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
 
   // TODO(egg): Euler angles.
   Rotation<BodyFixed, Barycentric> body_orientation =
-      Rotation<BodyFixed, Barycentric>(body.AngleAt(current_time_), z) *
+      Rotation<BodyFixed, Barycentric>(π / 2 * Radian +
+                                         body.right_ascension_of_pole(),
+                                     z) *
       Rotation<BodyFixed, BodyFixed>(π / 2 * Radian -
                                          body.declination_of_pole(),
                                      x) *
-      Rotation<BodyFixed, BodyFixed>(body.AngleAt(current_time_), z) *
-      Rotation<BodyFixed, BodyFixed>(π / 2 * Radian +
-                                         body.right_ascension_of_pole(),
-                                     z);
+      Rotation<BodyFixed, BodyFixed>(body.AngleAt(current_time_), z);
 
   OrthogonalMap<BodyWorld, World> const result =
       OrthogonalMap<WorldSun, World>::Identity() *
@@ -930,11 +929,11 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   // third one is 0 here).
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
       (Rotation<PlanetariumFrame, Barycentric>(
-           /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
-           /*axis=*/x) *
-       Rotation<PlanetariumFrame, PlanetariumFrame>(
            /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
-           /*axis=*/z)).Inverse();
+           /*axis=*/z) *
+       Rotation<PlanetariumFrame, PlanetariumFrame>(
+           /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
+           /*axis=*/x)).Inverse();
   return Rotation<PlanetariumFrame, AliceSun>(
              planetarium_rotation_,
              Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;
