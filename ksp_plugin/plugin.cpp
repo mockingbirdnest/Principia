@@ -246,31 +246,29 @@ void Plugin::SetMainBody(Index const index) {
 Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
   struct BodyFixed;
-  struct BodyEquatorial;
   Permutation<BodyWorld, BodyFixed> const body_mirror(
       Permutation<BodyWorld, BodyFixed>::XZY);
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, index)->body());
-  Rotation<BodyFixed, BodyEquatorial> const body_rotation(
-      body.AngleAt(current_time_),
-      Bivector<double, BodyFixed>({0, 0, 1}));
-  Bivector<double, Barycentric> const body_equatorial_z =
-      Normalize(body.angular_velocity());
-  Bivector<double, Barycentric> const z({0, 0, 1});
-  Bivector<double, Barycentric> const body_equatorial_x =
-      Normalize(geometry::Commutator(z, body_equatorial_z));
-  Bivector<double, Barycentric> const body_equatorial_y =
-      geometry::Commutator(body_equatorial_z, body_equatorial_x);
-  Rotation<BodyEquatorial, Barycentric> from_body_equatorial =
-      z == body_equatorial_z
-          ? Rotation<BodyEquatorial, Barycentric>::Identity()
-          : Rotation<BodyEquatorial, Barycentric>(body_equatorial_x,
-                                                  body_equatorial_y,
-                                                  body_equatorial_z);
+
+  Bivector<double, BodyFixed> z({0, 0, 1});
+  Bivector<double, BodyFixed> x({1, 0, 0});
+
+  // TODO(egg): Euler angles.
+  Rotation<BodyFixed, Barycentric> body_orientation =
+      Rotation<BodyFixed, Barycentric>(body.AngleAt(current_time_), z) *
+      Rotation<BodyFixed, BodyFixed>(π / 2 * Radian -
+                                         body.declination_of_pole(),
+                                     x) *
+      Rotation<BodyFixed, BodyFixed>(body.AngleAt(current_time_), z) *
+      Rotation<BodyFixed, BodyFixed>(π / 2 * Radian +
+                                         body.right_ascension_of_pole(),
+                                     z);
+
   OrthogonalMap<BodyWorld, World> const result =
       OrthogonalMap<WorldSun, World>::Identity() *
       sun_looking_glass.Inverse().Forget() *
-      (PlanetariumRotation() * from_body_equatorial * body_rotation).Forget() *
+      (PlanetariumRotation() * body_orientation).Forget() *
       body_mirror.Forget();
   CHECK(result.Determinant().Positive());
   return result.rotation();
@@ -734,7 +732,7 @@ void Plugin::WriteToMessage(
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
-  game_epoch_.WriteToMessage(message->mutable_game_epoch());
+  game_epoch_.WriteToMessage(message->mutable_game_epoch()); 
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
@@ -917,28 +915,26 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
-  // The z axis of |PlanetariumFrame| is the axis of |main_body_|, and x axis is
+  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and x axis is
   // the origin of body rotation (the intersection between the |Barycentric| xy
-  // plane and the plane of |main_body_|'s equator, or the x axis of
+  // plane and the plane of |main_body_|'s equator, or the y axis of
   // |Barycentric| if they coincide).
-  // NOTE(egg): this is likely to be incorrect for planets with retrograde
-  // rotation, though it should be correct for small bodies.  See figures 1 and
-  // 2 of http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
+  // This can be expressed using Euler angles, see figures 1 and 2 of
+  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   struct PlanetariumFrame;
 
-  Bivector<double, Barycentric> const planetarium_z =
-      geometry::Normalize(main_body_->angular_velocity());
-  Bivector<double, Barycentric> const z({0, 0, 1});
-  Bivector<double, Barycentric> const planetarium_x =
-      geometry::Normalize(geometry::Commutator(z, planetarium_z));
-  Bivector<double, Barycentric> const planetarium_y =
-      geometry::Commutator(planetarium_z, planetarium_x);
-  Rotation<Barycentric, PlanetariumFrame> to_planetarium =
-      z == planetarium_z
-          ? Rotation<Barycentric, PlanetariumFrame>::Identity()
-          : Rotation<Barycentric, PlanetariumFrame>(planetarium_x,
-                                                    planetarium_y,
-                                                    planetarium_z);
+  Bivector<double, PlanetariumFrame> z({0, 0, 1});
+  Bivector<double, PlanetariumFrame> x({1, 0, 0});
+
+  // TODO(egg): this would be more clearly expressed using zxz euler angles (the
+  // third one is 0 here).
+  Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
+      (Rotation<PlanetariumFrame, Barycentric>(
+           /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
+           /*axis=*/x) *
+       Rotation<PlanetariumFrame, PlanetariumFrame>(
+           /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
+           /*axis=*/z)).Inverse();
   return Rotation<PlanetariumFrame, AliceSun>(
              planetarium_rotation_,
              Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;

@@ -76,8 +76,7 @@ AngularVelocity<Frame> const& RotatingBody<Frame>::angular_velocity() const {
 template<typename Frame>
 Angle RotatingBody<Frame>::AngleAt(Instant const& t) const {
   return parameters_.reference_angle_ +
-         (t - parameters_.reference_instant_) *
-             angular_velocity_.Norm();
+         (t - parameters_.reference_instant_) * parameters_.angular_frequency_;
 }
 
 template<typename Frame>
