@@ -840,20 +840,6 @@ public partial class PrincipiaPluginAdapter
             body.position +
                 (Vector3d)body.scaledBody.transform.forward * 3 * body.Radius,
             false);
-        // Earth axes.
-        var home = FlightGlobals.GetHomeBody();
-        UnityEngine.GL.Color(UnityEngine.Color.magenta);
-        GLLines.AddSegment(
-            body.position,
-            body.position +
-                (Vector3d)home.scaledBody.transform.right * 2 * body.Radius,
-            false);
-        UnityEngine.GL.Color(UnityEngine.Color.cyan);
-        GLLines.AddSegment(
-            body.position,
-            body.position +
-                (Vector3d)home.scaledBody.transform.up * 2 * body.Radius,
-            false);
       });
     }
     #endif
