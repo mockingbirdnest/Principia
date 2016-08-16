@@ -1411,6 +1411,9 @@ public partial class PrincipiaPluginAdapter
                       GetValueOrDefault(body.gravParameter + " m^3/s^2"),
               // J2000, because that's when we start non-config games.  We
               // should really parse real-life dates from strings.
+              // The origin of rotation in KSP is the x of Barycentric, rather
+              // than the y axis as is the case for Earth, so the right
+              // ascension is -90 deg.
               reference_instant    = double.Parse(
                   (gravity_model?.GetValue("reference_instant")).
                       GetValueOrDefault("2451545.0")),
@@ -1419,7 +1422,7 @@ public partial class PrincipiaPluginAdapter
                       GetValueOrDefault(body.Radius + " m"),
               axis_right_ascension =
                   (gravity_model?.GetValue("axis_right_ascension")).
-                      GetValueOrDefault("0.0 deg"),
+                      GetValueOrDefault("-90 deg"),
               axis_declination     =
                   (gravity_model?.GetValue("axis_declination")).
                       GetValueOrDefault("90 deg"),
