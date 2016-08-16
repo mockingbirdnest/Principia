@@ -115,11 +115,13 @@ class Plugin {
   virtual void UpdateCelestialHierarchy(Index const celestial_index,
                                         Index const parent_index) const;
 
-  // Sets the celestial whose axis of rotation will coincide with the |AliceSun|
+  // Sets the celestial whose axis of rotation will coincide with the |Alice|
   // z axis.
   virtual void SetMainBody(Index const index);
   struct BodyWorld;
   virtual Rotation<BodyWorld, World> CelestialRotation(Index const index) const;
+  struct CelestialSphere;
+  virtual Rotation<CelestialSphere, World> CelestialSphereRotation() const;
 
   virtual Time RotationPeriod(Index const celestial_index) const;
   virtual Angle InitialRotation(Index const celestial_index) const;

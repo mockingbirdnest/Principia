@@ -496,6 +496,12 @@ WXYZ principia__CelestialRotation(Plugin const* const plugin, int const index) {
   return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
 }
 
+WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
+  journal::Method<journal::CelestialSphereRotation> m({plugin});
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
+}
+
 double principia__RotationPeriod(
     Plugin const* const plugin,
     int const celestial_index) {

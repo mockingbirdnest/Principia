@@ -93,7 +93,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5100.
+  extensions 5000 to 5999;  // Last used: 5101.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -176,6 +176,21 @@ message CelestialRotation {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required int32 index = 2;
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialSphereRotation {
+  extend Method {
+    optional CelestialSphereRotation extension = 5101;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
   }
   message Return {
     required WXYZ result = 1;

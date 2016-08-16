@@ -90,7 +90,8 @@ public partial class PrincipiaPluginAdapter
 
   private DateTime plugin_construction_;
 
-  private MapRenderer map_renderer_;
+  private RenderingActions map_renderer_;
+  private RenderingActions galaxy_cube_rotator_;
 
   private enum PluginSource {
    SAVED_STATE,
@@ -531,10 +532,16 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LateUpdate() {
-    if (MapView.MapIsEnabled && map_renderer_ == null) {
+    if (map_renderer_ == null) {
       map_renderer_ =
-          PlanetariumCamera.Camera.gameObject.AddComponent<MapRenderer>();
+          PlanetariumCamera.Camera.gameObject.AddComponent<RenderingActions>();
       map_renderer_.post_render = RenderTrajectories;
+    }
+
+    if (galaxy_cube_rotator_ == null) {
+      galaxy_cube_rotator_ = ScaledCamera.Instance.galaxyCamera.gameObject
+                                 .AddComponent<RenderingActions>();
+      galaxy_cube_rotator_.pre_cull = RotateGalaxyCube;
     }
 
     // Orient the celestial bodies.
@@ -773,6 +780,18 @@ public partial class PrincipiaPluginAdapter
          UnityEngine.Mathf.Clamp01(UnityEngine.Vector3.Dot(
              vector.localPosition.normalized,
              UnityEngine.Vector3.forward)));
+  }
+
+  private void RotateGalaxyCube() {
+    if (PluginRunning()) {
+      var initial_rotation =
+          UnityEngine.QuaternionD.Inverse(Planetarium.Rotation) *
+          (UnityEngine.QuaternionD)
+              GalaxyCubeControl.Instance.transform.rotation;
+      GalaxyCubeControl.Instance.transform.rotation =
+          (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
+          initial_rotation;
+    }
   }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {

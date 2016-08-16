@@ -273,6 +273,18 @@ Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
   return result.rotation();
 }
 
+Rotation<Plugin::CelestialSphere, World> Plugin::CelestialSphereRotation()
+    const {
+  Permutation<CelestialSphere, Barycentric> const celestial_mirror(
+      Permutation<CelestialSphere, Barycentric>::XZY);
+  auto const result = OrthogonalMap<WorldSun, World>::Identity() *
+                      sun_looking_glass.Inverse().Forget() *
+                      PlanetariumRotation().Forget() *
+                      celestial_mirror.Forget();
+  CHECK(result.Determinant().Positive());
+  return result.rotation();
+}
+
 Time Plugin::RotationPeriod(Index const celestial_index) const {
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, celestial_index)->body());
