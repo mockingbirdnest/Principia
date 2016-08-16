@@ -627,6 +627,10 @@ Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }
 
+bool Plugin::MustRotateBodies() const {
+  return !is_pre_cardano_;
+}
+
 Instant Plugin::CurrentTime() const {
   return current_time_;
 }
@@ -772,7 +776,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  game_epoch,
                  current_time,
-                 message.sun_index()));
+                 message.sun_index(),
+                 is_pre_cardano));
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
                                        message.plotting_frame());
@@ -799,7 +804,8 @@ Plugin::Plugin(
     Angle const& planetarium_rotation,
     Instant const& game_epoch,
     Instant const& current_time,
-    Index sun_index)
+    Index const sun_index,
+    bool const is_pre_cardano)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
       bubble_(std::move(bubble)),
@@ -810,7 +816,8 @@ Plugin::Plugin(
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
       current_time_(current_time),
-      sun_(FindOrDie(celestials_, sun_index).get()) {
+      sun_(FindOrDie(celestials_, sun_index).get()),
+      is_pre_cardano_(is_pre_cardano) {
   for (auto const& pair : vessels_) {
     auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());

@@ -292,6 +292,7 @@ class Plugin {
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
   virtual Instant GameEpoch() const;
+  virtual bool MustRotateBodies() const;
 
   virtual Instant CurrentTime() const;
 
@@ -328,7 +329,8 @@ class Plugin {
          Angle const& planetarium_rotation,
          Instant const& game_epoch,
          Instant const& current_time,
-         Index sun_index);
+         Index const sun_index,
+         bool const is_pre_cardano);
 
   // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
@@ -425,6 +427,9 @@ class Plugin {
   // Used for detecting and patching the stock system.
   std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
   bool is_ksp_stock_system_ = false;
+
+  // Compatibility.
+  bool is_pre_cardano_ = false;
 
   friend class TestablePlugin;
 };
