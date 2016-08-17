@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "geometry/r3_element.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
 
@@ -15,6 +16,7 @@ namespace internal_rotating_body {
 
 using geometry::Exp;
 using geometry::RadiusLatitudeLongitude;
+using geometry::SphericalCoordinates;
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(
@@ -127,16 +129,33 @@ RotatingBody<Frame>::ReadFromMessage(
     serialization::RotatingBody const& message,
     MassiveBody::Parameters const& massive_body_parameters) {
   // For pre-Buffon compatibility, build a point mass.
-  // TODO(phl): pre-Cardano compatibility.
-  Parameters parameters(
-                 message.has_mean_radius()
-                     ? Length::ReadFromMessage(message.mean_radius())
-                     : Length(),
-                 Angle::ReadFromMessage(message.reference_angle()),
-                 Instant::ReadFromMessage(message.reference_instant()),
-                 AngularFrequency::ReadFromMessage(message.angular_frequency()),
-                 Angle::ReadFromMessage(message.right_ascension_of_pole()),
-                 Angle::ReadFromMessage(message.declination_of_pole()));
+  bool const is_pre_buffon = !message.has_mean_radius();
+  Length const radius =
+      is_pre_buffon ? Length() : Length::ReadFromMessage(message.mean_radius());
+
+  bool const is_pre_cardano = message.has_angular_velocity();
+  std::unique_ptr<Parameters> parameters;
+  if (is_pre_cardano) {
+    AngularVelocity<Frame> angular_velocity =
+        AngularVelocity<Frame>::ReadFromMessage(message.angular_velocity());
+    SphericalCoordinates<AngularFrequency> spherical_angular_velocity =
+        angular_velocity.coordinates().ToSpherical();
+    parameters = std::make_unique<Parameters>(
+        radius,
+        Angle::ReadFromMessage(message.reference_angle()),
+        Instant::ReadFromMessage(message.reference_instant()),
+        SIUnit<AngularFrequency>(),
+        spherical_angular_velocity.longitude,
+        spherical_angular_velocity.latitude);
+  } else {
+    parameters = std::make_unique<Parameters>(
+        radius,
+        Angle::ReadFromMessage(message.reference_angle()),
+        Instant::ReadFromMessage(message.reference_instant()),
+        AngularFrequency::ReadFromMessage(message.angular_frequency()),
+        Angle::ReadFromMessage(message.right_ascension_of_pole()),
+        Angle::ReadFromMessage(message.declination_of_pole()));
+  }
 
   if (message.HasExtension(serialization::OblateBody::extension)) {
     serialization::OblateBody const& extension =
@@ -144,10 +163,10 @@ RotatingBody<Frame>::ReadFromMessage(
 
     return OblateBody<Frame>::ReadFromMessage(extension,
                                               massive_body_parameters,
-                                              parameters);
+                                              *parameters);
   } else {
     return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
-                                                 parameters);
+                                                 *parameters);
   }
 }
 
