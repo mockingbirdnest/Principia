@@ -138,7 +138,7 @@ RotatingBody<Frame>::ReadFromMessage(
   if (is_pre_cardano) {
     AngularVelocity<Frame> angular_velocity =
         AngularVelocity<Frame>::ReadFromMessage(message.angular_velocity());
-    SphericalCoordinates<AngularFrequency> spherical_angular_velocity = 
+    SphericalCoordinates<AngularFrequency> spherical_angular_velocity =
         angular_velocity.coordinates().ToSpherical();
     parameters = std::make_unique<Parameters>(
         radius,
