@@ -46,7 +46,8 @@ TEST_F(NotNullTest, Move) {
 #if !PRINCIPIA_COMPILER_MSVC ||     \
     !(_MSC_FULL_VER == 190023506 || \
       _MSC_FULL_VER == 190023918 || \
-      _MSC_FULL_VER == 190024210)
+      _MSC_FULL_VER == 190024210 || \
+      _MSC_FULL_VER == 190024213)
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
 #endif
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);

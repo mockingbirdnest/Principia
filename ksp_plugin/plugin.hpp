@@ -302,6 +302,7 @@ class Plugin {
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
   virtual Instant GameEpoch() const;
+  virtual bool MustRotateBodies() const;
 
   virtual Instant CurrentTime() const;
 
@@ -338,7 +339,8 @@ class Plugin {
          Angle const& planetarium_rotation,
          Instant const& game_epoch,
          Instant const& current_time,
-         Index sun_index);
+         Index const sun_index,
+         bool const is_pre_cardano);
 
   // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
@@ -437,6 +439,9 @@ class Plugin {
   bool is_ksp_stock_system_ = false;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
+
+  // Compatibility.
+  bool is_pre_cardano_ = false;
 
   friend class TestablePlugin;
 };

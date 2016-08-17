@@ -107,8 +107,8 @@ message KeplerianElements {
 }
 
 message MassiveBody {
-  required Quantity gravitational_parameter = 1;
   extensions 2000 to 2999;  // Last used: 2002.
+  required Quantity gravitational_parameter = 1;
 }
 
 message MasslessBody {}
@@ -133,17 +133,16 @@ message RotatingBody {
   extend MassiveBody {
     optional RotatingBody extension = 2002;
   }
+  extensions 4000 to 4999;  // Last used: 4000.
   required Frame frame = 1;
   optional Quantity mean_radius = 5;
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
-  // angular_velocity is deprecated, and does not contain the angular velocity
-  // in any released version; its norm is 1 rad/s.
+  optional Quantity angular_frequency = 6;  // required
+  optional Quantity right_ascension_of_pole = 7;  // required
+  optional Quantity declination_of_pole = 8;  // required
+
+  // Pre-Cardano: |angular_velocity| is deprecated, and does not contain the
+  // angular velocity in any released version; its norm is 1 rad/s.
   optional Multivector angular_velocity = 4;
-  // The following three should probably be made optional for pre-Cardano
-  // compatibility.
-  required Quantity angular_frequency = 6;
-  required Quantity right_ascension_of_pole = 7;
-  required Quantity declination_of_pole = 8;
-  extensions 4000 to 4999;  // Last used: 4000.
 }

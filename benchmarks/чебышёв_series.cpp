@@ -19,7 +19,7 @@
 // BM_EvaluateDisplacement/18     225181     225494       2283
 // BM_EvaluateDisplacement/19     236922     237237       2170
 
-// .\Release\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/24-13:16:32
 // Benchmark                    Time(ns)    CPU(ns) Iterations
