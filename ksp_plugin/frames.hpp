@@ -37,14 +37,18 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
 
 // The barycentric reference frame of the solar system.
 // The basis is the basis of |AliceWorld| at |UniversalTimeEpoch|.
-// TODO(egg): it *should* be the barycentric frame. For the moment we're using
-// the velocity of the sun at the time of construction as our reference.
-// The origin is the position of the sun at the instant |initial_time| passed at
-// construction.
-// TODO(phl): this has been flipped, change the value of the protobuf enum and
-// make a compatibility handler in order not to flip the universe...
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
+
+// |Barycentric|, with its y and z axes swapped; the basis is left-handed.
+using CelestialSphere = Frame<serialization::Frame::PluginTag,
+                              serialization::Frame::CELESTIAL_SPHERE, true>;
+
+// The surface frame of a celestial, with the x axis pointing to the origin of
+// latitude and longitude, the y axis pointing to the pole with positive
+// latitude, and the z axis oriented to form a left-handed basis.
+using BodyWorld = Frame<serialization::Frame::PluginTag,
+                        serialization::Frame::BODY_WORLD, false>;
 
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.

@@ -243,11 +243,14 @@ void Plugin::SetMainBody(Index const index) {
   LOG_IF(FATAL, main_body_ == nullptr) << index;
 }
 
-Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
+Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
+  // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
+  // The basis is right-handed.
   struct BodyFixed;
   Permutation<BodyWorld, BodyFixed> const body_mirror(
       Permutation<BodyWorld, BodyFixed>::XZY);
+
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, index)->body());
 
@@ -273,7 +276,7 @@ Rotation<Plugin::BodyWorld, World> Plugin::CelestialRotation(
   return result.rotation();
 }
 
-Rotation<Plugin::CelestialSphere, World> Plugin::CelestialSphereRotation()
+Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
     const {
   Permutation<CelestialSphere, Barycentric> const celestial_mirror(
       Permutation<CelestialSphere, Barycentric>::XZY);
