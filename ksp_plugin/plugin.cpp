@@ -288,16 +288,16 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
   return result.rotation();
 }
 
-Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
-  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
-      *FindOrDie(celestials_, celestial_index)->body());
-  return 2 * π * Radian / body.angular_velocity().Norm();
-}
-
 Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, celestial_index)->body());
   return body.AngleAt(game_epoch_);
+}
+
+Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  return 2 * π * Radian / body.angular_velocity().Norm();
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,

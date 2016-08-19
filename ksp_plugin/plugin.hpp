@@ -121,8 +121,8 @@ class Plugin {
   virtual Rotation<BodyWorld, World> CelestialRotation(Index const index) const;
   virtual Rotation<CelestialSphere, World> CelestialSphereRotation() const;
 
-  virtual Time CelestialRotationPeriod(Index const celestial_index) const;
   virtual Angle CelestialInitialRotation(Index const celestial_index) const;
+  virtual Time CelestialRotationPeriod(Index const celestial_index) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
