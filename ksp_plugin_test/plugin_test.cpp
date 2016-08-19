@@ -115,6 +115,9 @@ ACTION(AppendToDiscreteTrajectory) {
 }  // namespace
 
 class TestablePlugin : public Plugin {
+  // Someone has to own the bodies; normally it would be the ephemeris, but
+  // since we mock it, we keep them here instead.
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>>  bodies_;
   std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
   std::unique_ptr<StrictMock<MockEphemeris<Barycentric>>> mock_ephemeris_;
 
@@ -150,7 +153,6 @@ class TestablePlugin : public Plugin {
   // |MockEphemeris| rather than an |Ephemeris|, and in order to fill in the
   // continuous trajectories ourselves.
   void InitializeEphemerisAndSetCelestialTrajectories() override {
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Barycentric>> initial_state;
     auto bodies_it = absolute_initialization_->bodies.begin();
     for (auto const& pair : absolute_initialization_->initial_state) {
@@ -170,8 +172,10 @@ class TestablePlugin : public Plugin {
                  i * 45 * Minute * degree_of_freedom.velocity(),
              degree_of_freedom.velocity()});
       }
+      bodies_.emplace_back(std::move(bodies_it->second));
       ++bodies_it;
     }
+
     absolute_initialization_ = std::experimental::nullopt;
     ephemeris_ = std::move(mock_ephemeris_);
     for (auto const& pair : celestials_) {
@@ -185,12 +189,19 @@ class TestablePlugin : public Plugin {
 class PluginTest : public testing::Test {
  protected:
   PluginTest()
-      : solar_system_(SolarSystemFactory::AtСпутник1Launch(
+      : body_rotation_(/*mean_radius=*/1 * Metre,
+                       /*reference_angle=*/0 * Degree,
+                       /*reference_instant=*/astronomy::J2000,
+                       /*angular_frequency=*/1 * Radian / Second,
+                       /*right_ascension_of_pole=*/0 * Degree,
+                       /*declination_of_pole=*/90 * Degree),
+        solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
         initial_time_(Instant() + 42 * Second),
-        sun_body_(make_not_null_unique<MassiveBody>(
+        sun_body_(make_not_null_unique<RotatingBody<Barycentric>>(
             MassiveBody::Parameters(solar_system_->gravitational_parameter(
-                SolarSystemFactory::name(SolarSystemFactory::Sun))))),
+                SolarSystemFactory::name(SolarSystemFactory::Sun))),
+            body_rotation_)),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
@@ -236,8 +247,8 @@ class PluginTest : public testing::Test {
           parent_index,
           id_icrf_barycentric_(
               solar_system_->initial_state(SolarSystemFactory::name(index))),
-          make_not_null_unique<MassiveBody>(
-              solar_system_->gravitational_parameter(name)));
+          SolarSystem<Barycentric>::MakeMassiveBody(
+              solar_system_->gravity_model_message(name)));
     }
   }
 
@@ -274,6 +285,7 @@ class PluginTest : public testing::Test {
     ++*number_of_new_vessels;
   }
 
+  RotatingBody<Barycentric>::Parameters body_rotation_;
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
@@ -336,8 +348,9 @@ TEST_F(PluginTest, Serialization) {
             solar_system_->initial_state(name) -
             solar_system_->initial_state(parent_name));
     Instant const t;
-    auto body = make_not_null_unique<MassiveBody>(
-        solar_system_->gravitational_parameter(name));
+    auto body = make_not_null_unique<RotatingBody<Barycentric>>(
+        solar_system_->gravitational_parameter(name),
+        body_rotation_);
     KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
         /*primary=*/MassiveBody(
             solar_system_->gravitational_parameter(parent_name)),
@@ -456,8 +469,9 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   // 2     1     1     2
   //   |<   7/3 m   >|
   // S0    P2    M3    P1
-  auto sun_body = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()));
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
+      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()),
+      body_rotation_);
   plugin_->InsertCelestialJacobiKeplerian(
       0,
       /*parent_index=*/std::experimental::nullopt,
@@ -468,25 +482,31 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       /*celestial_index=*/1,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(2 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<RotatingBody<Barycentric>>(
+          2 * SIUnit<GravitationalParameter>(),
+          body_rotation_));
   elements.semimajor_axis = 1 * Metre;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/2,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<RotatingBody<Barycentric>>(
+          1 * SIUnit<GravitationalParameter>(),
+          body_rotation_));
   elements.mean_anomaly = π * Radian;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/3,
       /*parent_index=*/1,
       elements,
-      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<RotatingBody<Barycentric>>(
+          1 * SIUnit<GravitationalParameter>(),
+          body_rotation_));
   EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3.0 * Metre, 1));
+              AlmostEquals(3.0 * Metre, 0));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
               Eq(1 * Metre));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
@@ -761,6 +781,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
+  google::LogToStderr();
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystemFactory::Earth);
   EXPECT_TRUE(inserted);
@@ -856,9 +877,10 @@ TEST_F(PluginTest, Frenet) {
   Plugin plugin(initial_time_,
                 initial_time_,
                 0 * Radian);
-  auto sun_body = make_not_null_unique<MassiveBody>(
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
       MassiveBody::Parameters(solar_system_->gravitational_parameter(
-          SolarSystemFactory::name(SolarSystemFactory::Earth))));
+          SolarSystemFactory::name(SolarSystemFactory::Earth))),
+      body_rotation_);
   plugin.InsertCelestialJacobiKeplerian(
       SolarSystemFactory::Earth,
       /*parent_index=*/std::experimental::nullopt,

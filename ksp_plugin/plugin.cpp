@@ -750,7 +750,11 @@ void Plugin::WriteToMessage(
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
-  game_epoch_.WriteToMessage(message->mutable_game_epoch());
+  if (!is_pre_cardano_) {
+    // A pre-Cardano save stays pre-Cardano; we cannot pull rotational
+    // properties out of thin air.
+    game_epoch_.WriteToMessage(message->mutable_game_epoch());
+  }
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
@@ -887,8 +891,10 @@ Plugin::Plugin(
     auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());
   }
-  main_body_ = CHECK_NOTNULL(
-      dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
+  if (!is_pre_cardano_) {
+    main_body_ = CHECK_NOTNULL(
+        dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
+  }
   initializing_.Flop();
 }
 
@@ -947,18 +953,24 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   Bivector<double, PlanetariumFrame> z({0, 0, 1});
   Bivector<double, PlanetariumFrame> x({1, 0, 0});
 
-  // TODO(egg): this would be more clearly expressed using zxz Euler angles (the
-  // third one is 0 here).  See #810.
-  Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
-      (Rotation<PlanetariumFrame, Barycentric>(
-           /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
-           /*axis=*/z) *
-       Rotation<PlanetariumFrame, PlanetariumFrame>(
-           /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
-           /*axis=*/x)).Inverse();
-  return Rotation<PlanetariumFrame, AliceSun>(
-             planetarium_rotation_,
-             Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;
+  if (is_pre_cardano_) {
+    return Rotation<Barycentric, AliceSun>(
+        planetarium_rotation_, Bivector<double, Barycentric>({0, 0, -1}));
+  } else {
+    CHECK_NOTNULL(main_body_);
+    // TODO(egg): this would be more clearly expressed using zxz Euler angles
+    // (the third one is 0 here).  See #810.
+    Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
+        (Rotation<PlanetariumFrame, Barycentric>(
+             /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
+             /*axis=*/z) *
+         Rotation<PlanetariumFrame, PlanetariumFrame>(
+             /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
+             /*axis=*/x)).Inverse();
+    return Rotation<PlanetariumFrame, AliceSun>(
+               planetarium_rotation_,
+               Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;
+  }
 }
 
 void Plugin::FreeVessels() {
