@@ -505,7 +505,8 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 double principia__CelestialRotationPeriod(
     Plugin const* const plugin,
     int const celestial_index) {
-  journal::Method<journal::CelestialRotationPeriod> m({plugin, celestial_index});
+  journal::Method<journal::CelestialRotationPeriod> m(
+      {plugin, celestial_index});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->CelestialRotationPeriod(celestial_index) / Second);
 }
