@@ -355,8 +355,15 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Speed const v0 = 1 * Kilo(Metre) / Day;
   Instant t;
   Plugin plugin(t, t, 0 * Radian);
-  auto sun_body = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)));
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
+      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)),
+      RotatingBody<Barycentric>::Parameters(
+          /*mean_radius=*/1 * Metre,
+          /*reference_angle=*/1 * Radian,
+          /*reference_instant=*/astronomy::J2000,
+          /*angular_frequency=*/1 * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Degree,
+          /*declination_of_pole=*/90 * Degree));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
       /*parent_index=*/std::experimental::nullopt,
@@ -610,8 +617,15 @@ TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(), Instant(), 0 * Radian);
-  auto sun_body = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()));
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
+      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()),
+      RotatingBody<Barycentric>::Parameters(
+          /*mean_radius=*/1 * Metre,
+          /*reference_angle=*/1 * Radian,
+          /*reference_instant=*/astronomy::J2000,
+          /*angular_frequency=*/1 * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Degree,
+          /*declination_of_pole=*/90 * Degree));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
       /*parent_index=*/std::experimental::nullopt,
