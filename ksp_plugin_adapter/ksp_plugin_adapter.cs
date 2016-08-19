@@ -730,10 +730,11 @@ public partial class PrincipiaPluginAdapter
       plugin_.ForgetAllHistoriesBefore(
           universal_time - history_lengths_[history_length_index_]);
       if (FlightGlobals.currentMainBody != null) {
-        FlightGlobals.currentMainBody.rotationPeriod = plugin_.RotationPeriod(
-            FlightGlobals.currentMainBody.flightGlobalsIndex);
+        FlightGlobals.currentMainBody.rotationPeriod =
+            plugin_.CelestialRotationPeriod(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
         FlightGlobals.currentMainBody.initialRotation =
-            plugin_.InitialRotationInDegrees(
+            plugin_.CelestialInitialRotationInDegrees(
                 FlightGlobals.currentMainBody.flightGlobalsIndex);
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
@@ -834,33 +835,6 @@ public partial class PrincipiaPluginAdapter
     if (!PluginRunning()) {
       return;
     }
-
-    #if DRAW_BODY_AXES
-    foreach(var body in FlightGlobals.Bodies) {
-      GLLines.Draw(() => {
-        // Body axes.
-        UnityEngine.GL.Color(UnityEngine.Color.red);
-        GLLines.AddSegment(
-            body.position,
-            body.position +
-                (Vector3d)body.scaledBody.transform.right * 3 * body.Radius,
-            false);
-        UnityEngine.GL.Color(UnityEngine.Color.green);
-        GLLines.AddSegment(
-            body.position,
-            body.position +
-                (Vector3d)body.scaledBody.transform.up * 3 * body.Radius,
-            false);
-        UnityEngine.GL.Color(UnityEngine.Color.blue);
-        GLLines.AddSegment(
-            body.position,
-            body.position +
-                (Vector3d)body.scaledBody.transform.forward * 3 * body.Radius,
-            false);
-      });
-    }
-    #endif
-
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel == null) {
       return;

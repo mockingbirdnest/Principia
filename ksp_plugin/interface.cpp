@@ -502,20 +502,20 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
   return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
 }
 
-double principia__RotationPeriod(
+double principia__CelestialRotationPeriod(
     Plugin const* const plugin,
     int const celestial_index) {
-  journal::Method<journal::RotationPeriod> m({plugin, celestial_index});
+  journal::Method<journal::CelestialRotationPeriod> m({plugin, celestial_index});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->RotationPeriod(celestial_index) / Second);
+  return m.Return(plugin->CelestialRotationPeriod(celestial_index) / Second);
 }
 
-double principia__InitialRotationInDegrees(Plugin const* const plugin,
-                                           int const celestial_index) {
-  journal::Method<journal::InitialRotationInDegrees> m(
+double principia__CelestialInitialRotationInDegrees(Plugin const* const plugin,
+                                                    int const celestial_index) {
+  journal::Method<journal::CelestialInitialRotationInDegrees> m(
       {plugin, celestial_index});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->InitialRotation(celestial_index) / Degree);
+  return m.Return(plugin->CelestialInitialRotation(celestial_index) / Degree);
 }
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.

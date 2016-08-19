@@ -257,7 +257,7 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
   Bivector<double, BodyFixed> z({0, 0, 1});
   Bivector<double, BodyFixed> x({1, 0, 0});
 
-  // TODO(egg): Euler angles.
+  // TODO(egg): Euler angles (#810).
   Rotation<BodyFixed, Barycentric> body_orientation =
       Rotation<BodyFixed, Barycentric>(π / 2 * Radian +
                                          body.right_ascension_of_pole(),
@@ -288,13 +288,13 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
   return result.rotation();
 }
 
-Time Plugin::RotationPeriod(Index const celestial_index) const {
+Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, celestial_index)->body());
   return 2 * π * Radian / body.angular_velocity().Norm();
 }
 
-Angle Plugin::InitialRotation(Index const celestial_index) const {
+Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, celestial_index)->body());
   return body.AngleAt(game_epoch_);
@@ -936,10 +936,10 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
-  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and x axis is
-  // the origin of body rotation (the intersection between the |Barycentric| xy
-  // plane and the plane of |main_body_|'s equator, or the y axis of
-  // |Barycentric| if they coincide).
+  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
+  // axis is the origin of body rotation (the intersection between the
+  // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
+  // axis of |Barycentric| if they coincide).
   // This can be expressed using Euler angles, see figures 1 and 2 of
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   struct PlanetariumFrame;
@@ -947,8 +947,8 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   Bivector<double, PlanetariumFrame> z({0, 0, 1});
   Bivector<double, PlanetariumFrame> x({1, 0, 0});
 
-  // TODO(egg): this would be more clearly expressed using zxz euler angles (the
-  // third one is 0 here).
+  // TODO(egg): this would be more clearly expressed using zxz Euler angles (the
+  // third one is 0 here).  See #810.
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
       (Rotation<PlanetariumFrame, Barycentric>(
            /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
