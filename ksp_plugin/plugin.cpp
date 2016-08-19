@@ -750,7 +750,7 @@ void Plugin::WriteToMessage(
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
-  game_epoch_.WriteToMessage(message->mutable_game_epoch()); 
+  game_epoch_.WriteToMessage(message->mutable_game_epoch());
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
