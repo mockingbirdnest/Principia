@@ -297,6 +297,8 @@ Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
 Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, celestial_index)->body());
+  // The result will be negative if the pole is the negative pole
+  // (e.g. for Venus).  This is the convention KSP uses for retrograde rotation.
   return 2 * π * Radian / body.angular_frequency();
 }
 
