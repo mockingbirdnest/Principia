@@ -297,7 +297,7 @@ Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
 Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, celestial_index)->body());
-  return 2 * π * Radian / body.angular_velocity().Norm();
+  return 2 * π * Radian / body.angular_frequency();
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,

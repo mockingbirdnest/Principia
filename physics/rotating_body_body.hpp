@@ -71,6 +71,11 @@ Angle const& RotatingBody<Frame>::declination_of_pole() const {
 }
 
 template<typename Frame>
+AngularFrequency const& RotatingBody<Frame>::angular_frequency() const {
+  return parameters_.angular_frequency_;
+}
+
+template<typename Frame>
 AngularVelocity<Frame> const& RotatingBody<Frame>::angular_velocity() const {
   return angular_velocity_;
 }

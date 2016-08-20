@@ -76,7 +76,11 @@ class RotatingBody : public MassiveBody {
   // Returns the declination at construction.
   Angle const& declination_of_pole() const;
 
-  // Returns the angular velocity passed at construction.
+  // Returns the angular frequency passed at construction.
+  AngularFrequency const& angular_frequency() const;
+
+  // Returns the angular velocity defined by the right ascension, declination,
+  // and angular frequency passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;
 
   // Returns the position at time |t|.
