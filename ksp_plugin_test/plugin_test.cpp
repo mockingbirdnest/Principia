@@ -510,9 +510,9 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
               AlmostEquals(3.0 * Metre, 3));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              AlmostEquals(1 * Metre, 2));
+              AlmostEquals(1 * Metre, 2, 3));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              AlmostEquals(1 * Metre, 2));
+              AlmostEquals(1 * Metre, 2, 3));
 }
 
 TEST_F(PluginDeathTest, SunError) {
@@ -907,12 +907,12 @@ TEST_F(PluginTest, Frenet) {
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);
-  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 17));
-  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 11));
-  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 1));
+  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 17));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 4, 11));
+  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 1, 6));
   EXPECT_THAT(
       plugin.VesselVelocity(satellite),
-      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 15));
+      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 15));
 }
 
 }  // namespace ksp_plugin
