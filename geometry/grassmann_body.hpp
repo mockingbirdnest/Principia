@@ -333,6 +333,14 @@ quantities::Angle OrientedAngleBetween(
   return Sign(InnerProduct(Wedge(v, w), positive)) * AngleBetween(v, w);
 }
 
+template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
+quantities::Angle OrientedAngleBetween(
+    Bivector<LScalar, Frame> const& v,
+    Bivector<RScalar, Frame> const& w,
+    Bivector<PScalar, Frame> const& positive) {
+  return Sign(InnerProduct(Commutator(v, w), positive)) * AngleBetween(v, w);
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,

@@ -56,9 +56,6 @@ class PluginIntegrationTest : public testing::Test {
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
         initial_time_(Instant() + 42 * Second),
-        sun_body_(make_not_null_unique<MassiveBody>(
-            MassiveBody::Parameters(solar_system_->gravitational_parameter(
-                SolarSystemFactory::name(SolarSystemFactory::Sun))))),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              initial_time_,
@@ -100,13 +97,22 @@ class PluginIntegrationTest : public testing::Test {
       DegreesOfFreedom<Barycentric> const initial_state =
           ICRFToBarycentric(
               solar_system_->initial_state(SolarSystemFactory::name(index)));
-    plugin_->InsertCelestialAbsoluteCartesian(
-        index,
-        parent_index,
-        initial_state,
-        SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-            solar_system_->gravity_model_message(
-                SolarSystemFactory::name(index))));
+      // |MakeMassiveBody| will return a pointer to a
+      // |RotatingBody<ICRFJ2000Equator>| as a pointer to a |MassiveBody|.
+      // The plugin wants a |RotatingBody<Barycentric>| and will |dynamic_cast|
+      // to check, so we reinterpret (which has no effect, and thus wouldn't
+      // make the |dynamic_cast| work), then copy into a properly-constructed
+      // |RotatingBody<Barycentric>|.
+      // I threw up in my mouth a little bit.
+      plugin_->InsertCelestialAbsoluteCartesian(
+          index,
+          parent_index,
+          initial_state,
+          std::make_unique<RotatingBody<Barycentric>>(
+              reinterpret_cast<RotatingBody<Barycentric> const&>(
+                  *SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
+                      solar_system_->gravity_model_message(
+                          SolarSystemFactory::name(index))))));
     }
   }
 
@@ -118,7 +124,6 @@ class PluginIntegrationTest : public testing::Test {
   Permutation<ICRFJ2000Equator, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant initial_time_;
-  not_null<std::unique_ptr<MassiveBody>> sun_body_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<Plugin>> plugin_;
@@ -350,8 +355,15 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Speed const v0 = 1 * Kilo(Metre) / Day;
   Instant t;
   Plugin plugin(t, t, 0 * Radian);
-  auto sun_body = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)));
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
+      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)),
+      RotatingBody<Barycentric>::Parameters(
+          /*mean_radius=*/1 * Metre,
+          /*reference_angle=*/1 * Radian,
+          /*reference_instant=*/astronomy::J2000,
+          /*angular_frequency=*/1 * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Degree,
+          /*declination_of_pole=*/90 * Degree));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
       /*parent_index=*/std::experimental::nullopt,
@@ -605,8 +617,15 @@ TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(), Instant(), 0 * Radian);
-  auto sun_body = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()));
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
+      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()),
+      RotatingBody<Barycentric>::Parameters(
+          /*mean_radius=*/1 * Metre,
+          /*reference_angle=*/1 * Radian,
+          /*reference_instant=*/astronomy::J2000,
+          /*angular_frequency=*/1 * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Degree,
+          /*declination_of_pole=*/90 * Degree));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
       /*parent_index=*/std::experimental::nullopt,

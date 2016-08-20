@@ -74,7 +74,7 @@
     <Compile Include="loader.cs" />
     <Compile Include="logging.cs" />
     <Compile Include="map_node_pool.cs" />
-    <Compile Include="map_renderer.cs" />
+    <Compile Include="rendering_actions.cs" />
     <Compile Include="null_extensions.cs" />
     <Compile Include="optional_marshaler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -90,7 +90,8 @@ public partial class PrincipiaPluginAdapter
 
   private DateTime plugin_construction_;
 
-  private MapRenderer map_renderer_;
+  private RenderingActions map_renderer_;
+  private RenderingActions galaxy_cube_rotator_;
 
   private enum PluginSource {
    SAVED_STATE,
@@ -531,11 +532,27 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LateUpdate() {
-    if (MapView.MapIsEnabled && map_renderer_ == null) {
+    if (map_renderer_ == null) {
       map_renderer_ =
-          PlanetariumCamera.Camera.gameObject.AddComponent<MapRenderer>();
+          PlanetariumCamera.Camera.gameObject.AddComponent<RenderingActions>();
       map_renderer_.post_render = RenderTrajectories;
     }
+
+    if (galaxy_cube_rotator_ == null) {
+      galaxy_cube_rotator_ = ScaledCamera.Instance.galaxyCamera.gameObject
+                                 .AddComponent<RenderingActions>();
+      galaxy_cube_rotator_.pre_cull = RotateGalaxyCube;
+    }
+
+    // Orient the celestial bodies.
+    if (PluginRunning()) {
+      foreach (var body in FlightGlobals.Bodies) {
+        body.scaledBody.transform.rotation =
+            (UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                body.flightGlobalsIndex);
+      }
+    }
+
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null &&
@@ -671,6 +688,9 @@ public partial class PrincipiaPluginAdapter
         return;
       }
       time_is_advancing_ = true;
+      plugin_.SetMainBody(
+          FlightGlobals.currentMainBody.GetValueOrDefault(
+              FlightGlobals.GetHomeBody()).flightGlobalsIndex);
       if (has_inertial_physics_bubble_in_space() &&
           (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
            previous_bubble_reference_body_ == null)) {
@@ -709,6 +729,14 @@ public partial class PrincipiaPluginAdapter
       }
       plugin_.ForgetAllHistoriesBefore(
           universal_time - history_lengths_[history_length_index_]);
+      if (FlightGlobals.currentMainBody != null) {
+        FlightGlobals.currentMainBody.rotationPeriod =
+            plugin_.CelestialRotationPeriod(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+        FlightGlobals.currentMainBody.initialRotation =
+            plugin_.CelestialInitialRotationInDegrees(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+      }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
@@ -753,6 +781,18 @@ public partial class PrincipiaPluginAdapter
          UnityEngine.Mathf.Clamp01(UnityEngine.Vector3.Dot(
              vector.localPosition.normalized,
              UnityEngine.Vector3.forward)));
+  }
+
+  private void RotateGalaxyCube() {
+    if (PluginRunning()) {
+      var initial_rotation =
+          UnityEngine.QuaternionD.Inverse(Planetarium.Rotation) *
+          (UnityEngine.QuaternionD)
+              GalaxyCubeControl.Instance.transform.rotation;
+      GalaxyCubeControl.Instance.transform.rotation =
+          (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
+          initial_rotation;
+    }
   }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
@@ -802,7 +842,7 @@ public partial class PrincipiaPluginAdapter
     string active_vessel_guid = active_vessel.id.ToString();
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
-        plugin_.HasVessel(active_vessel_guid); 
+        plugin_.HasVessel(active_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       RemoveStockTrajectoriesIfNeeded(active_vessel);
 
@@ -1345,6 +1385,9 @@ public partial class PrincipiaPluginAdapter
                       GetValueOrDefault(body.gravParameter + " m^3/s^2"),
               // J2000, because that's when we start non-config games.  We
               // should really parse real-life dates from strings.
+              // The origin of rotation in KSP is the x of Barycentric, rather
+              // than the y axis as is the case for Earth, so the right
+              // ascension is -90 deg.
               reference_instant    = double.Parse(
                   (gravity_model?.GetValue("reference_instant")).
                       GetValueOrDefault("2451545.0")),
@@ -1353,7 +1396,7 @@ public partial class PrincipiaPluginAdapter
                       GetValueOrDefault(body.Radius + " m"),
               axis_right_ascension =
                   (gravity_model?.GetValue("axis_right_ascension")).
-                      GetValueOrDefault("0.0 deg"),
+                      GetValueOrDefault("-90 deg"),
               axis_declination     =
                   (gravity_model?.GetValue("axis_declination")).
                       GetValueOrDefault("90 deg"),

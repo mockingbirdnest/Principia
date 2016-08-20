@@ -2,6 +2,8 @@
 #include "tools/generate_configuration.hpp"
 
 #include <experimental/filesystem>
+#include <iomanip>
+#include <limits>
 #include <string>
 
 #include "astronomy/epoch.hpp"
@@ -51,10 +53,10 @@ void GenerateConfiguration(Instant const& game_epoch,
     gravity_model_cfg << "    gravitational_parameter = "
                       << body.gravitational_parameter() << "\n";
     if (body.has_reference_instant()) {
-      gravity_model_cfg << "    reference_instant       = "
-                        << (JulianDate(body.reference_instant()) - game_epoch) /
-                               Second
-                        << "\n";
+      gravity_model_cfg << "    reference_instant       = " << std::fixed
+                        << std::setprecision(
+                               std::numeric_limits<long double>::digits10 + 1)
+                        << body.reference_instant() << "\n";
     }
     if (body.has_mean_radius()) {
       gravity_model_cfg << "    mean_radius             = "

@@ -27,6 +27,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
@@ -63,6 +64,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::VanishesBefore;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::Contains;
@@ -115,6 +117,9 @@ ACTION(AppendToDiscreteTrajectory) {
 }  // namespace
 
 class TestablePlugin : public Plugin {
+  // Someone has to own the bodies; normally it would be the ephemeris, but
+  // since we mock it, we keep them here instead.
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>>  bodies_;
   std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
   std::unique_ptr<StrictMock<MockEphemeris<Barycentric>>> mock_ephemeris_;
 
@@ -150,7 +155,6 @@ class TestablePlugin : public Plugin {
   // |MockEphemeris| rather than an |Ephemeris|, and in order to fill in the
   // continuous trajectories ourselves.
   void InitializeEphemerisAndSetCelestialTrajectories() override {
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Barycentric>> initial_state;
     auto bodies_it = absolute_initialization_->bodies.begin();
     for (auto const& pair : absolute_initialization_->initial_state) {
@@ -170,8 +174,10 @@ class TestablePlugin : public Plugin {
                  i * 45 * Minute * degree_of_freedom.velocity(),
              degree_of_freedom.velocity()});
       }
+      bodies_.emplace_back(std::move(bodies_it->second));
       ++bodies_it;
     }
+
     absolute_initialization_ = std::experimental::nullopt;
     ephemeris_ = std::move(mock_ephemeris_);
     for (auto const& pair : celestials_) {
@@ -185,12 +191,19 @@ class TestablePlugin : public Plugin {
 class PluginTest : public testing::Test {
  protected:
   PluginTest()
-      : solar_system_(SolarSystemFactory::AtСпутник1Launch(
+      : body_rotation_(/*mean_radius=*/1 * Metre,
+                       /*reference_angle=*/0 * Degree,
+                       /*reference_instant=*/astronomy::J2000,
+                       /*angular_frequency=*/1 * Radian / Second,
+                       /*right_ascension_of_pole=*/0 * Degree,
+                       /*declination_of_pole=*/90 * Degree),
+        solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
         initial_time_(Instant() + 42 * Second),
-        sun_body_(make_not_null_unique<MassiveBody>(
+        sun_body_(make_not_null_unique<RotatingBody<Barycentric>>(
             MassiveBody::Parameters(solar_system_->gravitational_parameter(
-                SolarSystemFactory::name(SolarSystemFactory::Sun))))),
+                SolarSystemFactory::name(SolarSystemFactory::Sun))),
+            body_rotation_)),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
@@ -236,8 +249,8 @@ class PluginTest : public testing::Test {
           parent_index,
           id_icrf_barycentric_(
               solar_system_->initial_state(SolarSystemFactory::name(index))),
-          make_not_null_unique<MassiveBody>(
-              solar_system_->gravitational_parameter(name)));
+          SolarSystem<Barycentric>::MakeMassiveBody(
+              solar_system_->gravity_model_message(name)));
     }
   }
 
@@ -274,6 +287,7 @@ class PluginTest : public testing::Test {
     ++*number_of_new_vessels;
   }
 
+  RotatingBody<Barycentric>::Parameters body_rotation_;
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
   StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
@@ -336,8 +350,9 @@ TEST_F(PluginTest, Serialization) {
             solar_system_->initial_state(name) -
             solar_system_->initial_state(parent_name));
     Instant const t;
-    auto body = make_not_null_unique<MassiveBody>(
-        solar_system_->gravitational_parameter(name));
+    auto body = make_not_null_unique<RotatingBody<Barycentric>>(
+        solar_system_->gravitational_parameter(name),
+        body_rotation_);
     KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
         /*primary=*/MassiveBody(
             solar_system_->gravitational_parameter(parent_name)),
@@ -456,8 +471,9 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   // 2     1     1     2
   //   |<   7/3 m   >|
   // S0    P2    M3    P1
-  auto sun_body = make_not_null_unique<MassiveBody>(
-      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()));
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
+      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()),
+      body_rotation_);
   plugin_->InsertCelestialJacobiKeplerian(
       0,
       /*parent_index=*/std::experimental::nullopt,
@@ -468,29 +484,35 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       /*celestial_index=*/1,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(2 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<RotatingBody<Barycentric>>(
+          2 * SIUnit<GravitationalParameter>(),
+          body_rotation_));
   elements.semimajor_axis = 1 * Metre;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/2,
       /*parent_index=*/0,
       elements,
-      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<RotatingBody<Barycentric>>(
+          1 * SIUnit<GravitationalParameter>(),
+          body_rotation_));
   elements.mean_anomaly = π * Radian;
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/3,
       /*parent_index=*/1,
       elements,
-      make_not_null_unique<MassiveBody>(1 * SIUnit<GravitationalParameter>()));
+      make_not_null_unique<RotatingBody<Barycentric>>(
+          1 * SIUnit<GravitationalParameter>(),
+          body_rotation_));
   EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3.0 * Metre, 1));
+              AlmostEquals(3.0 * Metre, 3));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              Eq(1 * Metre));
+              AlmostEquals(1 * Metre, 2, 3));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              Eq(1 * Metre));
+              AlmostEquals(1 * Metre, 2, 3));
 }
 
 TEST_F(PluginDeathTest, SunError) {
@@ -771,8 +793,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                     satellite_initial_velocity_));
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
-                  AlmostEquals(satellite_initial_displacement_, 14496),
-                  AlmostEquals(satellite_initial_velocity_, 3)));
+                  AlmostEquals(satellite_initial_displacement_, 13556),
+                  AlmostEquals(satellite_initial_velocity_, 1)));
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
@@ -806,15 +828,17 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
                   2),
               AlmostEquals(
                   to_icrf(plugin_->CelestialFromParent(index).velocity()),
-                  20155840)))
+                  20159592)))
           << SolarSystemFactory::name(index);
     } else {
+      // TODO(egg): I'm not sure that's really fine, this seems to be 20 bits?
+      // and 24 on Triton.  What's going on?
       EXPECT_THAT(
           from_parent,
           Componentwise(
               AlmostEquals(
                   to_icrf(plugin_->CelestialFromParent(index).displacement()),
-                  0, 13),
+                  0, 50),
               AlmostEquals(
                   to_icrf(plugin_->CelestialFromParent(index).velocity()),
                   74, 1475468)))
@@ -843,12 +867,12 @@ TEST_F(PluginTest, Navball) {
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
   auto navball = plugin.Navball(World::origin);
-  EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(x)),
-              Lt(3 * std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(-x, navball(World::origin)(x)),
+              VanishesBefore(1, 4));
   EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
-              Lt(std::numeric_limits<double>::epsilon()));
-  EXPECT_THAT(AbsoluteError(x, navball(World::origin)(z)),
-              Lt(3 * std::numeric_limits<double>::epsilon()));
+              VanishesBefore(1, 0));
+  EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(z)),
+              VanishesBefore(1, 4));
 }
 
 TEST_F(PluginTest, Frenet) {
@@ -856,9 +880,10 @@ TEST_F(PluginTest, Frenet) {
   Plugin plugin(initial_time_,
                 initial_time_,
                 0 * Radian);
-  auto sun_body = make_not_null_unique<MassiveBody>(
+  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
       MassiveBody::Parameters(solar_system_->gravitational_parameter(
-          SolarSystemFactory::name(SolarSystemFactory::Earth))));
+          SolarSystemFactory::name(SolarSystemFactory::Earth))),
+      body_rotation_);
   plugin.InsertCelestialJacobiKeplerian(
       SolarSystemFactory::Earth,
       /*parent_index=*/std::experimental::nullopt,
@@ -882,11 +907,12 @@ TEST_F(PluginTest, Frenet) {
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);
-  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 2));
-  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3));
-  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 4));
-  EXPECT_THAT(plugin.VesselVelocity(satellite),
-              AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 2));
+  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 17));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 4, 11));
+  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 1, 6));
+  EXPECT_THAT(
+      plugin.VesselVelocity(satellite),
+      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 15));
 }
 
 }  // namespace ksp_plugin

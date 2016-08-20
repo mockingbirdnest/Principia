@@ -201,6 +201,8 @@ void Plugin::EndInitialization() {
   }
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
+  main_body_ = CHECK_NOTNULL(
+      dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
   initializing_.Flop();
 
   InitializeEphemerisAndSetCelestialTrajectories();
@@ -233,6 +235,69 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
   CHECK(!initializing_);
   FindOrDie(celestials_, celestial_index)->set_parent(
       FindOrDie(celestials_, parent_index).get());
+}
+
+void Plugin::SetMainBody(Index const index) {
+  main_body_ = dynamic_cast<RotatingBody<Barycentric> const*>(
+      &*FindOrDie(celestials_, index)->body());
+  LOG_IF(FATAL, main_body_ == nullptr) << index;
+}
+
+Rotation<BodyWorld, World> Plugin::CelestialRotation(
+    Index const index) const {
+  // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
+  // The basis is right-handed.
+  struct BodyFixed;
+  Permutation<BodyWorld, BodyFixed> const body_mirror(
+      Permutation<BodyWorld, BodyFixed>::XZY);
+
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, index)->body());
+
+  Bivector<double, BodyFixed> z({0, 0, 1});
+  Bivector<double, BodyFixed> x({1, 0, 0});
+
+  // TODO(egg): Euler angles (#810).
+  Rotation<BodyFixed, Barycentric> body_orientation =
+      Rotation<BodyFixed, Barycentric>(π / 2 * Radian +
+                                         body.right_ascension_of_pole(),
+                                     z) *
+      Rotation<BodyFixed, BodyFixed>(π / 2 * Radian -
+                                         body.declination_of_pole(),
+                                     x) *
+      Rotation<BodyFixed, BodyFixed>(body.AngleAt(current_time_), z);
+
+  OrthogonalMap<BodyWorld, World> const result =
+      OrthogonalMap<WorldSun, World>::Identity() *
+      sun_looking_glass.Inverse().Forget() *
+      (PlanetariumRotation() * body_orientation).Forget() *
+      body_mirror.Forget();
+  CHECK(result.Determinant().Positive());
+  return result.rotation();
+}
+
+Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
+    const {
+  Permutation<CelestialSphere, Barycentric> const celestial_mirror(
+      Permutation<CelestialSphere, Barycentric>::XZY);
+  auto const result = OrthogonalMap<WorldSun, World>::Identity() *
+                      sun_looking_glass.Inverse().Forget() *
+                      PlanetariumRotation().Forget() *
+                      celestial_mirror.Forget();
+  CHECK(result.Determinant().Positive());
+  return result.rotation();
+}
+
+Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  return body.AngleAt(game_epoch_);
+}
+
+Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  return 2 * π * Radian / body.angular_velocity().Norm();
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -685,7 +750,11 @@ void Plugin::WriteToMessage(
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
-  game_epoch_.WriteToMessage(message->mutable_game_epoch());
+  if (!is_pre_cardano_) {
+    // A pre-Cardano save stays pre-Cardano; we cannot pull rotational
+    // properties out of thin air.
+    game_epoch_.WriteToMessage(message->mutable_game_epoch());
+  }
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
@@ -822,6 +891,10 @@ Plugin::Plugin(
     auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());
   }
+  if (!is_pre_cardano_) {
+    main_body_ = CHECK_NOTNULL(
+        dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
+  }
   initializing_.Flop();
 }
 
@@ -869,9 +942,35 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentric, AliceSun>(
-      planetarium_rotation_,
-      Bivector<double, Barycentric>({0, 0, -1}));
+  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
+  // axis is the origin of body rotation (the intersection between the
+  // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
+  // axis of |Barycentric| if they coincide).
+  // This can be expressed using Euler angles, see figures 1 and 2 of
+  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
+  struct PlanetariumFrame;
+
+  Bivector<double, PlanetariumFrame> z({0, 0, 1});
+  Bivector<double, PlanetariumFrame> x({1, 0, 0});
+
+  if (is_pre_cardano_) {
+    return Rotation<Barycentric, AliceSun>(
+        planetarium_rotation_, Bivector<double, Barycentric>({0, 0, -1}));
+  } else {
+    CHECK_NOTNULL(main_body_);
+    // TODO(egg): this would be more clearly expressed using zxz Euler angles
+    // (the third one is 0 here).  See #810.
+    Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
+        (Rotation<PlanetariumFrame, Barycentric>(
+             /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
+             /*axis=*/z) *
+         Rotation<PlanetariumFrame, PlanetariumFrame>(
+             /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
+             /*axis=*/x)).Inverse();
+    return Rotation<PlanetariumFrame, AliceSun>(
+               planetarium_rotation_,
+               Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;
+  }
 }
 
 void Plugin::FreeVessels() {
