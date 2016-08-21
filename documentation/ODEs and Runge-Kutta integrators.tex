@@ -299,7 +299,7 @@ Recall that $\vk_i$ is an approximation for $\vg\of{t_0 + c_i\increment t}$, the
 y_0 + \pa{a_{i1}\vk_1 + a_{i2}\vk_2 + \dotsb + a_{i,i-1}\vk_{i-1}} \increment t
 \] are themselves linear approximations obtained by weighted averages of approximated derivatives.
 
-Note that each $k_i$ only depends on the $k_j$ for $j<i$, so that they can be computed in order.\footnote{This is why we call the method \emph{explicity}. In an implicit method, each $k_i$ can depend on all the $k_j$, so that you need to solve a system of algebraic equations in order to compute them.}
+Note that each $\vk_i$ only depends on the $\vk_j$ for $j<i$, so that they can be computed in order.\footnote{This is why we call the method \emph{explicity}. In an implicit method, each $k_i$ can depend on all the $k_j$, so that you need to solve a system of algebraic equations in order to compute them.}
 
 Note that all of the methods described above were Runge-Kutta methods. We invite the reader to check that the $\vk_i$ described in the relevant sections correspond to the following tableaux:
 Euler's method has Butcher tableau\[
@@ -363,7 +363,7 @@ In order for that to work however, we need $\vy_1\approx\hat{\vy}_1$ to be fourt
 
 We have $\vk_1=\vg\of{t_0}$.
 If we compute $\vk_2$, we see that it is \emph{only} a second-order approximation for $\vg\of{t_0 + \frac{\increment t}{2}}$,
-\marginnote{The fourth line follows from (\ref{TaylorF2}), the fifth by taking the Taylor expansion of $\deriv\vy\vf\of{t,\vy\of{t}}$ at a function of $t$.}
+\marginnote{The fourth line follows from (\ref{TaylorF2}), the fifth by taking the Taylor expansion of $\deriv\vy\vf\of{t,\vy\of{t}}$ as a function of $t$.}
 \begin{alignat*}{2}
 \vk_2 &=\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \vk_1 \frac{\increment t}{2}} \\
     &=\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \deriv t \vy \of{t_0} \frac{\increment t}{2}} \\
@@ -377,7 +377,7 @@ If we compute $\vk_2$, we see that it is \emph{only} a second-order approximatio
     &= \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \deriv[2] t \vy\of{t_0} \frac{\increment t}{2}} } 
      - \deriv \vy\vf \of{t_0, \vy\of{t_0}}
        \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8} + \BigO\of{\increment t^3} \\
-    &= \vg\of{t_0 +\increment t} 
+    &= \vg\of{t_0 +\frac{\increment t}{2}} 
      - \deriv \vy\vf \of{t_0, \vy\of{t_0}} 
        \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8} + \BigO\of{\increment t^3} \text,
 \end{alignat*}
