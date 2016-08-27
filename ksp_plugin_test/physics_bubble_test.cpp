@@ -51,7 +51,8 @@ class PhysicsBubbleTest : public testing::Test {
     : rotation_(
           Rotation<Barycentric, WorldSun>(
               90 * Degree,
-              Bivector<double, Barycentric>({0, 0, 1})).Forget()),
+              Bivector<double, Barycentric>({0, 0, -1}),
+              DefinesFrame<WorldSun>{}).Forget()),
       celestial_dof_(Barycentric::origin + Displacement<Barycentric>(
                                                {-4 * SIUnit<Length>(),
                                                 -5 * SIUnit<Length>(),
