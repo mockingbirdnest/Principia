@@ -49,7 +49,8 @@ geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
     equatorial_to_ecliptic =
         geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
             23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
-            geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
+            geometry::Bivector<double, ICRFJ2000Equator>({1, 0, 0}),
+            geometry::DefinesFrame<ICRFJ2000Ecliptic>{});
 
 geometry::Position<ICRFJ2000Ecliptic> const SolarSystemBarycentreEcliptic;
 geometry::Position<ICRFJ2000Equator> const SolarSystemBarycentreEquator;

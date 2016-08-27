@@ -41,13 +41,7 @@ enum class CardanAngles {
 };
 
 template<typename Frame>
-struct DefinesFrameTag {
-  constexpr DefinesFrameTag() = default;
-  ~DefinesFrameTag() = delete;
-};
-
-template<typename Frame>
-constexpr DefinesFrameTag<Frame> DefinesFrame{};
+struct DefinesFrame {};
 
 // An orientation-preserving orthogonal map between the inner product spaces
 // |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
@@ -97,9 +91,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   // confusing, and Euler angles are a constant trap.  We therefore require a
   // tag that specifies which frame is being defined by the given angle and
   // axis.
-  // These constructors come in pairs (with either value of DefinesFrameTag),
-  // like the matrix constructors above.  For each pair, one of the constructors
-  // has an additional |typename = void|, see above.
+  // These constructors come in pairs (with either value of DefinesFrame), like
+  // the matrix constructors above.  For each pair, one of the constructors has
+  // an additional |typename = void|, see above.
 
   template<typename Scalar,
            typename F = FromFrame,
@@ -107,7 +101,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename = std::enable_if_t<!std::is_same<F, T>::value>>
   Rotation(Angle const& angle,
            Bivector<Scalar, FromFrame> const& axis,
-           DefinesFrameTag<ToFrame> tag);
+           DefinesFrame<ToFrame> tag);
 
   template<typename Scalar,
            typename F = FromFrame,
@@ -116,17 +110,17 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename = void>
   Rotation(Angle const& angle,
            Bivector<Scalar, ToFrame> const& axis,
-           DefinesFrameTag<FromFrame> tag);
+           DefinesFrame<FromFrame> tag);
 
   // Constructors from Euler angles.
   // Example: if |Orbit| is the frame of an orbit (x towards the periapsis,
   // z the positive normal to the orbit plane), and Ω, i, and ω are the elements
   // in some |Reference| frame,
   //   Rotation<Reference, Orbit>(Ω, i, ω, EulerAngles::ZXZ,
-  //                              DefinesFrame<Orbit>)
+  //                              DefinesFrame<Orbit>{})
   // and
   //   Rotation<Orbit, Reference>(Ω, i, ω, EulerAngles::ZXZ,
-  //                              DefinesFrame<Orbit>)
+  //                              DefinesFrame<Orbit>{})
   // are the transformations between |Reference| and |Orbit|.
 
   template<typename F = FromFrame,
@@ -134,7 +128,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename = std::enable_if_t<!std::is_same<F, T>::value>>
   Rotation(Angle const& α, Angle const& β, Angle const& γ,
            EulerAngles const axes,
-           DefinesFrameTag<ToFrame> tag);
+           DefinesFrame<ToFrame> tag);
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -142,7 +136,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename = void>
   Rotation(Angle const& α, Angle const& β, Angle const& γ,
            EulerAngles const axes,
-           DefinesFrameTag<FromFrame> tag);
+           DefinesFrame<FromFrame> tag);
 
   // Constructors from Cardan angles.
   // Example: if |Aircraft| is the frame of an aircraft (x forward, y right,
@@ -150,10 +144,10 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   // y East, z Down), given the |heading|, |elevation|, and |bank| of the
   // aircraft,
   //   Rotation<Ground, Aircraft>(heading, elevation, bank, CardanAngles::ZYX,
-  //                              DefinesFrame<Aircraft>)
+  //                              DefinesFrame<Aircraft>{})
   // and
   //   Rotation<Aircraft, Ground>(heading, elevation, bank, CardanAngles::ZYX,
-  //                              DefinesFrame<Aircraft>)
+  //                              DefinesFrame<Aircraft>{})
   // are the transformations between |Aircraft| and |Ground|.
 
   template<typename F = FromFrame,
@@ -161,7 +155,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename = std::enable_if_t<!std::is_same<F, T>::value>>
   Rotation(Angle const& α, Angle const& β, Angle const& γ,
            CardanAngles const axes,
-           DefinesFrameTag<ToFrame> tag);
+           DefinesFrame<ToFrame> tag);
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -169,7 +163,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename = void>
   Rotation(Angle const& α, Angle const& β, Angle const& γ,
            CardanAngles const axes,
-           DefinesFrameTag<FromFrame> tag);
+           DefinesFrame<FromFrame> tag);
 
   ~Rotation() override = default;
 
