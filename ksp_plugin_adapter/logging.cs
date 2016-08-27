@@ -6,7 +6,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class Log {
-  internal static String[] kSeverityNames = {"INFO", "WARNING", "ERROR",
+  internal static String[] severity_names = {"INFO", "WARNING", "ERROR",
                                              "FATAL"};
 
   internal static void InitGoogleLogging() {

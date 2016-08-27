@@ -7,7 +7,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal {
+namespace internal_forkable {
 
 template<typename Tr4jectory, typename It3rator>
 bool ForkableIterator<Tr4jectory, It3rator>::operator==(
@@ -111,8 +111,6 @@ void ForkableIterator<Tr4jectory, It3rator>::CheckNormalizedIfEnd() {
         ancestry_.size() == 1);
 }
 
-}  // namespace internal
-
 template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::DeleteFork(
     not_null<Tr4jectory**> const trajectory) {
@@ -120,8 +118,7 @@ void Forkable<Tr4jectory, It3rator>::DeleteFork(
   auto const fork_it = (*trajectory)->Fork();
   // Find the position of |*trajectory| among our children and remove it.
   auto const range =
-      children_.equal_range(
-          internal::ForkableTraits<Tr4jectory>::time(fork_it.current_));
+      children_.equal_range(ForkableTraits<Tr4jectory>::time(fork_it.current_));
   for (auto it = range.first; it != range.second; ++it) {
     if (it->second.get() == *trajectory) {
       children_.erase(it);
@@ -193,8 +190,7 @@ It3rator Forkable<Tr4jectory, It3rator>::Find(Instant const& time) const {
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
-        internal::ForkableTraits<Tr4jectory>::time(
-            ancestor->timeline_begin()) <= time) {
+        ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
       iterator.current_ = ancestor->timeline_find(time);  // May be at end.
       break;
     }
@@ -218,8 +214,7 @@ It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
-        internal::ForkableTraits<Tr4jectory>::time(
-            ancestor->timeline_begin()) <= time) {
+        ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
       iterator.current_ =
           ancestor->timeline_lower_bound(time);  // May be at end.
       break;
@@ -283,7 +278,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
     CHECK(!is_root());
     time = (*position_in_parent_children_)->first;
   } else {
-    time = internal::ForkableTraits<Tr4jectory>::time(timeline_it);
+    time = ForkableTraits<Tr4jectory>::time(timeline_it);
   }
   auto const child_it = children_.emplace(time, std::make_unique<Tr4jectory>());
 
@@ -318,7 +313,7 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
   // Insert |fork| in the |children_| of this object.
   auto const child_it = children_.emplace_hint(
       children_.end(),
-      internal::ForkableTraits<Tr4jectory>::time(fork_timeline_begin),
+      ForkableTraits<Tr4jectory>::time(fork_timeline_begin),
       std::move(fork));
 
   // Set the pointer into this object.  Note that |fork| is no longer usable.
@@ -359,8 +354,7 @@ void Forkable<Tr4jectory, It3rator>::DeleteAllForksAfter(Instant const& time) {
   // Get an iterator denoting the first entry with time > |time|.  Remove that
   // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
-  CHECK(is_root() ||
-        time >= internal::ForkableTraits<Tr4jectory>::time(Fork().current_))
+  CHECK(is_root() || time >= ForkableTraits<Tr4jectory>::time(Fork().current_))
       << "DeleteAllForksAfter before the fork time";
   auto const it = children_.upper_bound(time);
   children_.erase(it, children_.end());
@@ -455,5 +449,6 @@ It3rator Forkable<Tr4jectory, It3rator>::Wrap(
   base::noreturn();
 }
 
+}  // namespace internal_forkable
 }  // namespace physics
 }  // namespace principia

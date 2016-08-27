@@ -15,6 +15,10 @@
 
 namespace principia {
 namespace physics {
+namespace internal_solar_system {
+
+using quantities::GravitationalParameter;
+using quantities::Length;
 
 template<typename Frame>
 class SolarSystem {
@@ -63,9 +67,9 @@ class SolarSystem {
       std::string const& name) const;
 
   // The configuration protocol buffers for the body named |name|.
-  serialization::InitialState::Body const& initial_state_message(
-      std::string const& name) const;
   serialization::GravityModel::Body const& gravity_model_message(
+      std::string const& name) const;
+  serialization::InitialState::Body const& initial_state_message(
       std::string const& name) const;
 
   // Factory functions for converting configuration protocol buffers into
@@ -82,7 +86,7 @@ class SolarSystem {
 
  private:
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-      MakeAllMassiveBodies();
+  MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
   // Note that the maps below hold pointers into these protocol buffers.
@@ -92,10 +96,14 @@ class SolarSystem {
   Instant epoch_;
   std::vector<std::string> names_;
   std::map<std::string,
-           serialization::InitialState::Body const*> initial_state_map_;
-  std::map<std::string,
            serialization::GravityModel::Body*> gravity_model_map_;
+  std::map<std::string,
+           serialization::InitialState::Body const*> initial_state_map_;
 };
+
+}  // namespace internal_solar_system
+
+using internal_solar_system::SolarSystem;
 
 }  // namespace physics
 }  // namespace principia

@@ -19,7 +19,13 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
+using geometry::BarycentreCalculator;
+using geometry::Frame;
+using geometry::Position;
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -27,6 +33,8 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::Componentwise;
 using testing_utilities::RelativeError;
 using ::testing::AllOf;
@@ -50,7 +58,7 @@ class KSPSystemTest : public ::testing::Test {
 
   KSPSystemTest() {
     sun_.owned_body = std::make_unique<MassiveBody>(
-        1.1723327948324908E+18 * SIUnit<GravitationalParameter>());
+        1.1723327948324908e+18 * SIUnit<GravitationalParameter>());
     eeloo_.owned_body = std::make_unique<MassiveBody>(
         74410814527.049576 * SIUnit<GravitationalParameter>());
     jool_.owned_body = std::make_unique<MassiveBody>(
@@ -317,12 +325,12 @@ class KSPSystemTest : public ::testing::Test {
 };
 
 TEST_F(KSPSystemTest, KerbalSystem) {
+#if NDEBUG
   google::LogToStderr();
 
   auto const moons = {&laythe_, &vall_, &tylo_, &pol_, &bop_};
 
   auto const ephemeris = MakeEphemeris();
-#if NDEBUG
 #if 0
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
 #else  // A small century so the tests don't take too long.

@@ -170,8 +170,7 @@ template<typename Vector>
   CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
   // Precomputed to save operations at the expense of some accuracy loss.
   Time const duration = t_max_ - t_min_;
-  t_mean_ = t_min_ + 0.5 * duration;
-  two_over_duration_ = 2 / duration;
+  one_over_duration_ = 1 / duration;
 }
 
 
@@ -205,13 +204,20 @@ Instant const& ЧебышёвSeries<Vector>::t_max() const {
 }
 
 template<typename Vector>
+int ЧебышёвSeries<Vector>::degree() const {
+  return helper_.degree();
+}
+
+template<typename Vector>
 Vector ЧебышёвSeries<Vector>::last_coefficient() const {
   return helper_.coefficients(helper_.degree());
 }
 
 template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
-  double const scaled_t = (t - t_mean_) * two_over_duration_;
+  // This formula ensures continuity at the edges by producing -1 or +1 within
+  // 2 ulps for |t_min_| and |t_max_|.
+  double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
   // TODO(phl): This should use DCHECK but these macros don't work because the
@@ -227,11 +233,9 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
 template<typename Vector>
 Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
     Instant const& t) const {
-  double const scaled_t = (t - t_mean_) * two_over_duration_;
+  // See comments above.
+  double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;
-  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
-  // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): See above.
 #ifdef _DEBUG
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
@@ -250,7 +254,7 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
     b_kplus1 = last_b_k;
   }
   return (helper_.coefficients(1) + two_scaled_t * *b_kplus1 - *b_kplus2) *
-             two_over_duration_;
+             (one_over_duration_ + one_over_duration_);
 }
 
 template<typename Vector>
@@ -293,17 +297,17 @@ template<typename Vector>
     Instant const& t_min,
     Instant const& t_max) {
   // Only supports 8 divisions for now.
-  int const kDivisions = 8;
-  CHECK_EQ(kDivisions + 1, q.size());
-  CHECK_EQ(kDivisions + 1, v.size());
+  int const divisions = 8;
+  CHECK_EQ(divisions + 1, q.size());
+  CHECK_EQ(divisions + 1, v.size());
 
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Vector, 2 * kDivisions + 2> qv;
-  for (int i = 0, j = 2 * kDivisions;
-       i < kDivisions + 1 && j >= 0;
+  FixedVector<Vector, 2 * divisions + 2> qv;
+  for (int i = 0, j = 2 * divisions;
+       i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
     qv[j] = q[i];
     qv[j + 1] = v[i] * duration_over_two;

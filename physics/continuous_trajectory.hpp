@@ -12,13 +12,16 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_continuous_trajectory {
 
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::Position;
+using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
 using numerics::ЧебышёвSeries;
-
-namespace physics {
 
 template<typename Frame>
 class ContinuousTrajectory {
@@ -28,6 +31,13 @@ class ContinuousTrajectory {
   // of the |time| parameter, evaluation may be faster if the same |Hint| object
   // is passed to all the calls.
   class Hint;
+
+  // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
+  // state that gets incrementally updated as the Чебышёв polynomials are
+  // constructed.  The client may get a |Checkpoint| at any time and use it to
+  // serialize the trajectory up to and including the time designated by the
+  // |Checkpoint|.
+  class Checkpoint;
 
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
   // polynomials have values in the range [-1, 1], the error resulting of
@@ -53,19 +63,16 @@ class ContinuousTrajectory {
   Instant t_min() const;
   Instant t_max() const;
 
+  // The average degree of the polynomials for the trajectory.  Only useful for
+  // benchmarking or analyzing performance.  Do not use in real code.
+  double average_degree() const;
+
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
   // at construction.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
-
-  // Removes all data for times strictly greater than |time|.  |time| must
-  // either be greater that |t_max()| or be a value returned by a previous call
-  // to |t_max()|.  The |degrees_of_freedom| must be the ones originally passed
-  // to Append for the given |time|.
-  void ForgetAfter(Instant const& time,
-                   DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times strictly less than |time|.
   void ForgetBefore(Instant const& time);
@@ -82,8 +89,17 @@ class ContinuousTrajectory {
       Instant const& time,
       Hint* const hint) const;
 
+  // Returns a checkpoint for the current state of this object.
+  Checkpoint GetCheckpoint() const;
+
+  // Serializes the current state of this object.
   void WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const;
+  // Serializes the state of this object as it existed when the checkpoint was
+  // taken.
+  void WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message,
+      Checkpoint const& checkpoint) const;
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
@@ -94,6 +110,31 @@ class ContinuousTrajectory {
     Hint();
    private:
     int index_;
+    friend class ContinuousTrajectory<Frame>;
+  };
+
+  // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
+  // state that gets incrementally updated as the Чебышёв polynomials are
+  // constructed.  The client may get a |Checkpoint| at any time and use it to
+  // serialize the trajectory up to and including the time designated by the
+  // |Checkpoint|.  The only thing that clients may do with |Checkpoint| objects
+  // is to initialize them with GetCheckpoint.
+  class Checkpoint {
+    // The members have the same meaning as those of class
+    // |ContinuousTrajectory|.
+    Checkpoint(Instant const& t_max,
+               Length const& adjusted_tolerance,
+               bool const is_unstable,
+               int const degree,
+               int const degree_age,
+               std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> const&
+                   last_points);
+    Instant t_max_;
+    Length adjusted_tolerance_;
+    bool is_unstable_;
+    int degree_;
+    int degree_age_;
+    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
     friend class ContinuousTrajectory<Frame>;
   };
 
@@ -155,6 +196,10 @@ class ContinuousTrajectory {
 
   friend class ContinuousTrajectoryTest;
 };
+
+}  // namespace internal_continuous_trajectory
+
+using internal_continuous_trajectory::ContinuousTrajectory;
 
 }  // namespace physics
 }  // namespace principia

@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace physics {
+namespace internal_body {
 
 template<typename Frame>
 bool Body::is_compatible_with() const {
@@ -54,5 +55,6 @@ bool Body::CompatibilityHelper<Frame, true>::is_compatible_with(
             static_cast<Body const*>(body)) != nullptr;
 }
 
+}  // namespace internal_body
 }  // namespace physics
 }  // namespace principia

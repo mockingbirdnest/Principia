@@ -16,40 +16,40 @@ namespace base {
 // TODO(phl): See whether that |COMPILER_MSVC| macro can be removed from port.h.
 #if defined(_MSC_VER) && defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG_CL 1
-char const* const kCompilerName = "Clang-cl";
-char const* const kCompilerVersion = __VERSION__;
+char const* const CompilerName = "Clang-cl";
+char const* const CompilerVersion = __VERSION__;
 #elif defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG 1
-char const* const kCompilerName = "Clang";
-char const* const kCompilerVersion = __VERSION__;
+char const* const CompilerName = "Clang";
+char const* const CompilerVersion = __VERSION__;
 #elif defined(_MSC_VER)
 #define PRINCIPIA_COMPILER_MSVC 1
-char const* const kCompilerName = "Microsoft Visual C++";
-char const* const kCompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
+char const* const CompilerName = "Microsoft Visual C++";
+char const* const CompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
-char const* const kCompilerName = "Intel C++ Compiler";
-char const* const kCompilerVersion = __VERSION__;
+char const* const CompilerName = "Intel C++ Compiler";
+char const* const CompilerVersion = __VERSION__;
 #elif defined(__GNUC__)
 #define PRINCIPIA_COMPILER_GCC 1
-char const* const kCompilerName = "G++";
-char const* const kCompilerVersion = __VERSION__;
+char const* const CompilerName = "G++";
+char const* const CompilerVersion = __VERSION__;
 #else
 #error "What is this, Borland C++?"
 #endif
 
 #if defined(__APPLE__)
 #define OS_MACOSX 1
-char const* const kOperatingSystem = "OS X";
+char const* const OperatingSystem = "OS X";
 #elif defined(__linux__)
 #define OS_LINUX 1
-char const* const kOperatingSystem = "Linux";
+char const* const OperatingSystem = "Linux";
 #elif defined(__FreeBSD__)
 #define OS_FREEBSD 1
-char const* const kOperatingSystem = "FreeBSD";
+char const* const OperatingSystem = "FreeBSD";
 #elif defined(_WIN32)
 #define OS_WIN 1
-char const* const kOperatingSystem = "Windows";
+char const* const OperatingSystem = "Windows";
 #else
 #error "Try OS/360."
 #endif
@@ -59,13 +59,13 @@ char const* const kOperatingSystem = "Windows";
 #define ARCH_CPU_X86 1
 #define ARCH_CPU_32_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-char const* const kArchitecture = "x86";
+char const* const Architecture = "x86";
 #elif defined(_M_X64) || defined(__x86_64__)
 #define ARCH_CPU_X86_FAMILY 1
 #define ARCH_CPU_X86_64 1
 #define ARCH_CPU_64_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-char const* const kArchitecture = "x86-64";
+char const* const Architecture = "x86-64";
 #else
 #error "Have you tried a Cray-1?"
 #endif
@@ -160,6 +160,29 @@ inline void noreturn() { std::exit(0); }
   } while (false)
 
 #define NAMED(expression) #expression << ": " << (expression)
+
+// A macro to allow glog checking within C++11 constexpr code.  If |condition|
+// is true, evaluates to |expression|.  Otherwise, results in a CHECK failure at
+// runtime and a compilation error due to a call to non-constexpr code at
+// compile time.
+// NOTE(egg): in the failure case, the |LOG(FATAL)| is wrapped in a lambda.  The
+// reason is that |LOG(FATAL)| constructs a |google::LogMessageFatal|, and
+// |google::LogMessage::Fail()| is called in its destructor.  As a temporary,
+// the |google::LogMessageFatal| is destroyed as the last step in evaluating the
+// enclosing full-expression.  If we simply used the comma operator, the entire
+// ternary |((condition) ? (expression) : (CHECK(condition), (expression)))|
+// would be part of the enclosing full-expression, so that |expression| would
+// get evaluated before the |CHECK| failure, possibly triggering all sorts of
+// terrible UB or other checks (|DateDeathTest| provides a couple of examples).
+// With the lambda, the full-expression forms the expression statement
+// |LOG(FATAL) << "Check failed: " #condition " ";|, so that failure occurs
+// before we return from the lambda's function call operator, and |expression|
+// is never evaluated.  We do not use |CHECK| because that would require
+// capture, but this should produce the same output.
+#define CHECKING(condition, expression)                                      \
+  ((condition) ? (expression)                                                \
+               : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
+                  (expression)))
 
 // We preserve issue #228 in Bourbaki because we don't have trajectory
 // decimation yet.

@@ -62,6 +62,10 @@ class ЧебышёвSeries {
   Instant const& t_min() const;
   Instant const& t_max() const;
 
+  // Only useful for benchmarking or analyzing performance.  Do not use in real
+  // code.
+  int degree() const;
+
   // The value of the last coefficient of the series.  Smaller values indicate a
   // a better approximation.
   Vector last_coefficient() const;
@@ -87,8 +91,7 @@ class ЧебышёвSeries {
  private:
   Instant t_min_;
   Instant t_max_;
-  Instant t_mean_;
-  Time::Inverse two_over_duration_;
+  Time::Inverse one_over_duration_;
   internal::EvaluationHelper<Vector> helper_;
 };
 

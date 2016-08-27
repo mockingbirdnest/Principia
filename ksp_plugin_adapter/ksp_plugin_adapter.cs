@@ -16,10 +16,12 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
 
-  private const String kPrincipiaKey = "serialized_plugin";
-  private const String kPrincipiaInitialState = "principia_initial_state";
-  private const String kPrincipiaGravityModel = "principia_gravity_model";
-  private const double kΔt = 10;
+  private const String principia_key = "serialized_plugin";
+  private const String principia_initial_state_config_name =
+      "principia_initial_state";
+  private const String principia_gravity_model_config_name =
+      "principia_gravity_model";
+  private const double Δt = 10;
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
@@ -44,7 +46,7 @@ public partial class PrincipiaPluginAdapter
   private bool fix_navball_in_plotting_frame_ = true;
 
   private readonly double[] prediction_length_tolerances_ =
-      {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
+      {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
   [KSPField(isPersistant = true)]
   private int prediction_length_tolerance_index_ = 1;
   private readonly double[] prediction_steps_ =
@@ -88,7 +90,8 @@ public partial class PrincipiaPluginAdapter
 
   private DateTime plugin_construction_;
 
-  private MapRenderer map_renderer_;
+  private RenderingActions map_renderer_;
+  private RenderingActions galaxy_cube_rotator_;
 
   private enum PluginSource {
    SAVED_STATE,
@@ -103,6 +106,8 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
   private bool navball_changed_ = true;
+
+  private CelestialBody previous_bubble_reference_body_;
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -234,15 +239,19 @@ public partial class PrincipiaPluginAdapter
     // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
         pos     : (Vector3d)from_parent.q +
-                  (Vector3d)from_parent.p * UnityEngine.Time.deltaTime,
+                  (vessel.orbitDriver.offsetPosByAFrame
+                       ? (Vector3d)from_parent.p * UnityEngine.Time.deltaTime
+                       : Vector3d.zero),
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    Vector3d gravity =
-        FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
+    if (FlightIntegrator.GraviticForceMultiplier != 0) {  // sic.
+      Log.Info("Killing stock gravity");
+      FlightIntegrator.GraviticForceMultiplier = 0;
+    }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
         (from part in vessel.parts
@@ -252,7 +261,7 @@ public partial class PrincipiaPluginAdapter
              world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
              mass_in_tonnes =
                  (double)part.mass + (double)part.GetResourceMass(),
-             gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
+             gravitational_acceleration_to_be_applied_by_ksp = default(XYZ),
              id = part.flightID}).ToArray();
     if (parts.Count() > 0) {
       bool inserted = plugin_.InsertOrKeepVessel(
@@ -261,12 +270,14 @@ public partial class PrincipiaPluginAdapter
       if (inserted) {
         // NOTE(egg): this is only used when a (plugin-managed) physics bubble
         // appears with a new vessel (e.g. when exiting the atmosphere).
-        // TODO(egg): these degrees of freedom are off by one Δt and we don't
-        // compensate for the pos/vel synchronization bug.
         plugin_.SetVesselStateOffset(
             vessel_guid : vessel.id.ToString(),
-            from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                                 p = (XYZ)vessel.orbit.vel});
+            from_parent : new QP{
+                q = vessel.orbitDriver.offsetPosByAFrame
+                        ? (XYZ)(vessel.orbit.pos -
+                                vessel.orbit.vel * TimeWarp.fixedDeltaTime)
+                        : (XYZ)vessel.orbit.pos,
+                p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
                                            parts       : parts,
@@ -388,7 +399,6 @@ public partial class PrincipiaPluginAdapter
                       t    : celestial.orbit.epoch,
                       body : celestial.orbit.referenceBody));
       }
-      Fix631();
     }
 
     GameEvents.onShowUI.Add(ShowGUI);
@@ -406,7 +416,7 @@ public partial class PrincipiaPluginAdapter
           if (serialization == IntPtr.Zero) {
             break;
           }
-          node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+          node.AddValue(principia_key, Marshal.PtrToStringAnsi(serialization));
         } finally {
           Interface.DeletePluginSerialization(ref serialization);
         }
@@ -419,7 +429,7 @@ public partial class PrincipiaPluginAdapter
     if (must_record_journal_) {
       Log.ActivateRecorder(true);
     }
-    if (node.HasValue(kPrincipiaKey)) {
+    if (node.HasValue(principia_key)) {
       Cleanup();
       SetRotatingFrameThresholds();
       RemoveBuggyTidalLocking();
@@ -429,7 +439,7 @@ public partial class PrincipiaPluginAdapter
       Log.SetVerboseLogging(verbose_logging_);
 
       IntPtr deserializer = IntPtr.Zero;
-      String[] serializations = node.GetValues(kPrincipiaKey);
+      String[] serializations = node.GetValues(principia_key);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
         Log.Info("serialization is " + serialization.Length +
@@ -521,12 +531,28 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void Update() {
-    if (MapView.MapIsEnabled && map_renderer_ == null) {
+  private void LateUpdate() {
+    if (map_renderer_ == null) {
       map_renderer_ =
-          PlanetariumCamera.Camera.gameObject.AddComponent<MapRenderer>();
+          PlanetariumCamera.Camera.gameObject.AddComponent<RenderingActions>();
       map_renderer_.post_render = RenderTrajectories;
     }
+
+    if (galaxy_cube_rotator_ == null) {
+      galaxy_cube_rotator_ = ScaledCamera.Instance.galaxyCamera.gameObject
+                                 .AddComponent<RenderingActions>();
+      galaxy_cube_rotator_.pre_cull = RotateGalaxyCube;
+    }
+
+    // Orient the celestial bodies.
+    if (PluginRunning()) {
+      foreach (var body in FlightGlobals.Bodies) {
+        body.scaledBody.transform.rotation =
+            (UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                body.flightGlobalsIndex);
+      }
+    }
+
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null &&
@@ -560,72 +586,81 @@ public partial class PrincipiaPluginAdapter
         }
       }
 
+      // Orient the ball.
       if (PluginRunning() && fix_navball_in_plotting_frame_) {
-        // Orient the ball.
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-                (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-                    (XYZ)Planetarium.fetch.Sun.position,
-                    (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-        // TODO(egg): the navball should be independent from the frame of the
-        // Frenet trihedron (seeing your body-centric velocity with a compass
-        // navball like in stock makes sense, so does seeing your velocity in
-        // any reference frame with the fixed stars navball), although the
-        // Frenet trihedron should be in the same frame as the map view
-        // trajectory.  Right now when in space the navball is always linked to
-        // the frame of the Frenet trihedron and the trajectory.
-        if (has_active_vessel_in_space() &&
-          plugin_.HasVessel(active_vessel.id.ToString())) {
-          // Orient the Frenet trihedron.
-          Vector3d prograde =
-              (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString());
-          Vector3d radial =
-              (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString());
-          // Yes, the astrodynamicist's normal is the mathematician's binormal.
-          // Don't ask.
-          Vector3d normal =
-              (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
+            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+                (XYZ)Planetarium.fetch.Sun.position,
+                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+      }
 
-          SetNavballVector(navball_.progradeVector, prograde);
-          SetNavballVector(navball_.radialInVector, radial);
-          SetNavballVector(navball_.normalVector, normal);
-          SetNavballVector(navball_.retrogradeVector, -prograde);
-          SetNavballVector(navball_.radialOutVector, -radial);
-          SetNavballVector(navball_.antiNormalVector, -normal);
-          // Make the autopilot target our Frenet trihedron.
-          if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
-              (Delegate)(FlightInputCallback)OverrideRSASTarget) {
-            Log.Info("Prepending RSAS override");
-            active_vessel.OnAutopilotUpdate =
-                (FlightInputCallback)Delegate.Combine(
-                    new FlightInputCallback(OverrideRSASTarget),
-                    active_vessel.OnAutopilotUpdate);
-          }
-          if (active_vessel.Autopilot.Enabled) {
-            override_rsas_target_ = true;
-            switch (active_vessel.Autopilot.Mode) {
-              case VesselAutopilot.AutopilotMode.Prograde:
-                rsas_target_ = prograde;
-                break;
-              case VesselAutopilot.AutopilotMode.Retrograde:
-                rsas_target_ = -prograde;
-                break;
-              case VesselAutopilot.AutopilotMode.RadialIn:
-                rsas_target_ = radial;
-                break;
-              case VesselAutopilot.AutopilotMode.RadialOut:
-                rsas_target_ = -radial;
-                break;
-              case VesselAutopilot.AutopilotMode.Normal:
-                rsas_target_ = normal;
-                break;
-              case VesselAutopilot.AutopilotMode.Antinormal:
-                rsas_target_ = -normal;
-                break;
-              default:
-                override_rsas_target_ = false;
-                break;
-            }
+      if (PluginRunning() &&
+          has_active_vessel_in_space() &&
+          plugin_.HasVessel(active_vessel.id.ToString()) &&
+          FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Orbit) {
+        KSP.UI.Screens.Flight.SpeedDisplay speed_display =
+            KSP.UI.Screens.Flight.SpeedDisplay.Instance;
+        if (speed_display?.textTitle != null &&
+            speed_display?.textSpeed != null) {
+          speed_display.textTitle.text =
+              plotting_frame_selector_.get().ShortName();
+          speed_display.textSpeed.text =
+              ((Vector3d)plugin_.VesselVelocity(active_vessel.id.ToString()))
+                  .magnitude.ToString("F1") + "m/s";
+        }
+
+        // Orient the Frenet trihedron.
+        Vector3d prograde =
+            (Vector3d)plugin_.VesselTangent(active_vessel.id.ToString());
+        Vector3d radial =
+            (Vector3d)plugin_.VesselNormal(active_vessel.id.ToString());
+        // Yes, the astrodynamicist's normal is the mathematician's binormal.
+        // Don't ask.
+        Vector3d normal =
+            (Vector3d)plugin_.VesselBinormal(active_vessel.id.ToString());
+
+        SetNavballVector(navball_.progradeVector, prograde);
+        SetNavballVector(navball_.radialInVector, radial);
+        SetNavballVector(navball_.normalVector, normal);
+        SetNavballVector(navball_.retrogradeVector, -prograde);
+        SetNavballVector(navball_.radialOutVector, -radial);
+        SetNavballVector(navball_.antiNormalVector, -normal);
+
+        // Make the autopilot target our Frenet trihedron.
+        if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
+            (Delegate)(FlightInputCallback)OverrideRSASTarget) {
+          Log.Info("Prepending RSAS override");
+          active_vessel.OnAutopilotUpdate =
+              (FlightInputCallback)Delegate.Combine(
+                  new FlightInputCallback(OverrideRSASTarget),
+                  active_vessel.OnAutopilotUpdate);
+        }
+        if (active_vessel.Autopilot.Enabled) {
+          override_rsas_target_ = true;
+          switch (active_vessel.Autopilot.Mode) {
+            case VesselAutopilot.AutopilotMode.Prograde:
+              rsas_target_ = prograde;
+              break;
+            case VesselAutopilot.AutopilotMode.Retrograde:
+              rsas_target_ = -prograde;
+              break;
+            case VesselAutopilot.AutopilotMode.RadialIn:
+              rsas_target_ = radial;
+              break;
+            case VesselAutopilot.AutopilotMode.RadialOut:
+              rsas_target_ = -radial;
+              break;
+            case VesselAutopilot.AutopilotMode.Normal:
+              rsas_target_ = normal;
+              break;
+            case VesselAutopilot.AutopilotMode.Antinormal:
+              rsas_target_ = -normal;
+              break;
+            default:
+              override_rsas_target_ = false;
+              break;
           }
         }
       }
@@ -633,6 +668,10 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
+    if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
+      Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
+      GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
+    }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = plugin_.CurrentTime();
@@ -649,8 +688,20 @@ public partial class PrincipiaPluginAdapter
         return;
       }
       time_is_advancing_ = true;
-      if (has_inertial_physics_bubble_in_space()) {
+      plugin_.SetMainBody(
+          FlightGlobals.currentMainBody.GetValueOrDefault(
+              FlightGlobals.GetHomeBody()).flightGlobalsIndex);
+      if (has_inertial_physics_bubble_in_space() &&
+          (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
+           previous_bubble_reference_body_ == null)) {
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
+        previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
+      } else {
+        if (FlightIntegrator.GraviticForceMultiplier != 1) {
+          Log.Info("Reinstating stock gravity");
+          FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
+        }
+        previous_bubble_reference_body_ = null;
       }
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
@@ -668,7 +719,8 @@ public partial class PrincipiaPluginAdapter
               speed_integration_tolerance =
                   prediction_length_tolerances_[
                       prediction_length_tolerance_index_]};
-        plugin_.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
+        plugin_.VesselSetPredictionAdaptiveStepParameters(
+            active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
@@ -677,6 +729,14 @@ public partial class PrincipiaPluginAdapter
       }
       plugin_.ForgetAllHistoriesBefore(
           universal_time - history_lengths_[history_length_index_]);
+      if (FlightGlobals.currentMainBody != null) {
+        FlightGlobals.currentMainBody.rotationPeriod =
+            plugin_.CelestialRotationPeriod(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+        FlightGlobals.currentMainBody.initialRotation =
+            plugin_.CelestialInitialRotationInDegrees(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+      }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
@@ -721,6 +781,18 @@ public partial class PrincipiaPluginAdapter
          UnityEngine.Mathf.Clamp01(UnityEngine.Vector3.Dot(
              vector.localPosition.normalized,
              UnityEngine.Vector3.forward)));
+  }
+
+  private void RotateGalaxyCube() {
+    if (PluginRunning()) {
+      var initial_rotation =
+          UnityEngine.QuaternionD.Inverse(Planetarium.Rotation) *
+          (UnityEngine.QuaternionD)
+              GalaxyCubeControl.Instance.transform.rotation;
+      GalaxyCubeControl.Instance.transform.rotation =
+          (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
+          initial_rotation;
+    }
   }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
@@ -770,7 +842,7 @@ public partial class PrincipiaPluginAdapter
     string active_vessel_guid = active_vessel.id.ToString();
     bool ready_to_draw_active_vessel_trajectory =
         draw_active_vessel_trajectory() &&
-        plugin_.HasVessel(active_vessel_guid); 
+        plugin_.HasVessel(active_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       RemoveStockTrajectoriesIfNeeded(active_vessel);
 
@@ -794,31 +866,28 @@ public partial class PrincipiaPluginAdapter
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
+            var rendered_segments = plugin_.FlightPlanRenderedSegment(
+                active_vessel_guid, sun_world_position, i);
+            Vector3d position_at_start =
+                (Vector3d)rendered_segments.IteratorGetXYZ();
             GLLines.RenderAndDeleteTrajectory(
-                plugin_.FlightPlanRenderedSegment(active_vessel_guid,
-                                                  sun_world_position,
-                                                  i),
+                rendered_segments,
                 is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
                 is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
             if (is_burn) {
-              Vector3d position_at_ignition =
-                  (Vector3d)plugin_.FlightPlanRenderedSegmentEndpoints(
-                                active_vessel_guid,
-                                sun_world_position,
-                                i).begin;
               int manoeuvre_index = i / 2;
               NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
                                                   active_vessel_guid,
                                                   manoeuvre_index);
               double scale = (ScaledSpace.ScaledToLocalSpace(
                                   MapView.MapCamera.transform.position) -
-                              position_at_ignition).magnitude * 0.015;
+                              position_at_start).magnitude * 0.015;
               Action<XYZ, UnityEngine.Color> add_vector =
                   (world_direction, colour) => {
                 UnityEngine.GL.Color(colour);
                 GLLines.AddSegment(
-                    position_at_ignition,
-                    position_at_ignition + scale * (Vector3d)world_direction,
+                    position_at_start,
+                    position_at_start + scale * (Vector3d)world_direction,
                     hide_behind_bodies : false);
               };
               add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
@@ -1142,7 +1211,7 @@ public partial class PrincipiaPluginAdapter
     for (int severity = 0; severity <= 3; ++severity) {
       UnityEngine.GUILayout.BeginHorizontal();
       UnityEngine.GUILayout.Label(
-          text    : Log.kSeverityNames[severity],
+          text    : Log.severity_names[severity],
           options : UnityEngine.GUILayout.Width(column_width));
       UnityEngine.GUILayout.Toggle(
           value   : severity >= Log.GetSuppressedLogging(),
@@ -1213,65 +1282,78 @@ public partial class PrincipiaPluginAdapter
     SetRotatingFrameThresholds();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
-    if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
+    Dictionary<String, ConfigNode> name_to_gravity_model = null;
+    var gravity_model_configs =
+        GameDatabase.Instance.GetConfigs(principia_gravity_model_config_name);
+    var cartesian_configs =
+        GameDatabase.Instance.GetConfigs(principia_initial_state_config_name);
+    if (gravity_model_configs.Length == 1) {
+      name_to_gravity_model =
+          gravity_model_configs[0].config.GetNodes("body").
+              ToDictionary(node => node.GetValue("name"));
+    } else if (gravity_model_configs.Length > 1) {
+      Log.Fatal("too many gravity models (" + gravity_model_configs.Length +
+                ")");
+    }
+    if (cartesian_configs.Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
-      if (GameDatabase.Instance.GetConfigs(
-              kPrincipiaGravityModel).Length == 0) {
-        Log.Fatal("missing gravity models");
+      if (cartesian_configs.Length > 1) {
+        Log.Fatal("too many Cartesian configs (" + cartesian_configs.Length +
+                  ")");
       }
-      if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 1 ||
-          GameDatabase.Instance.GetConfigs(
-              kPrincipiaGravityModel).Length > 1) {
-        Log.Fatal("too many configs");
+      if (name_to_gravity_model == null) {
+        Log.Fatal("Cartesian config without gravity models");
       }
       try {
         ConfigNode initial_states =
-            GameDatabase.Instance.GetConfigs(kPrincipiaInitialState)[0].config;
-        ConfigNode gravity_models =
-            GameDatabase.Instance.GetConfigs(kPrincipiaGravityModel)[0].config;
+            GameDatabase.Instance.GetConfigs(principia_initial_state_config_name)[0].config;
         plugin_ =
-            Interface.NewPlugin(double.Parse(initial_states.GetValue("epoch")),
+            Interface.NewPlugin(initial_states.GetValue("game_epoch"),
+                                initial_states.GetValue("solar_system_epoch"),
                                 Planetarium.InverseRotAngle);
-        var name_to_initial_state = new Dictionary<String, ConfigNode>();
-        var name_to_gravity_model = new Dictionary<String, ConfigNode>();
-        foreach (ConfigNode node in initial_states.GetNodes("body")) {
-          name_to_initial_state.Add(node.GetValue("name"), node);
-        }
-        foreach (ConfigNode node in gravity_models.GetNodes("body")) {
-          name_to_gravity_model.Add(node.GetValue("name"), node);
-        }
+        var name_to_initial_state =
+            initial_states.GetNodes("body").
+                ToDictionary(node => node.GetValue("name"));
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
-          ConfigNode gravity_model = name_to_gravity_model[body.name];
-          ConfigNode initial_state = name_to_initial_state[body.name];
-          int? parent_index = null;
-          if (body.orbit != null) {
-            parent_index = body.orbit.referenceBody.flightGlobalsIndex;
+          ConfigNode gravity_model;
+          if (!name_to_gravity_model.TryGetValue(body.name,
+                                                 out gravity_model)) {
+             Log.Fatal("missing gravity model for " + body.name);
           }
-          plugin_.InsertCelestialAbsoluteCartesian(
-              celestial_index: body.flightGlobalsIndex,
-              parent_index: parent_index,
-              gravitational_parameter:
+          ConfigNode initial_state;
+          if (!name_to_initial_state.TryGetValue(body.name,
+                                                 out initial_state)) {
+             Log.Fatal("missing Cartesian initial state for " + body.name);
+          }
+          int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
+          var body_parameters = new BodyParameters{
+              gravitational_parameter =
                   gravity_model.GetValue("gravitational_parameter"),
-              mean_radius:
-                  gravity_model.GetValue("mean_radius"),
-              axis_right_ascension:
-                  gravity_model.HasValue("axis_right_ascension") ?
-                  gravity_model.GetValue("axis_right_ascension") : null,
-              axis_declination:
-                  gravity_model.HasValue("axis_declination") ?
-                  gravity_model.GetValue("axis_declination") : null,
-              j2: gravity_model.HasValue("j2") ?
-                  gravity_model.GetValue("j2") : null,
-              reference_radius:
-                  gravity_model.HasValue("reference_radius") ?
-                  gravity_model.GetValue("reference_radius") : null,
-              x: initial_state.GetValue("x"),
-              y: initial_state.GetValue("y"),
-              z: initial_state.GetValue("z"),
-              vx: initial_state.GetValue("vx"),
-              vy: initial_state.GetValue("vy"),
-              vz: initial_state.GetValue("vz"));
+              reference_instant       =
+                  double.Parse(gravity_model.GetValue("reference_instant")),
+              mean_radius             = gravity_model.GetValue("mean_radius"),
+              axis_right_ascension    =
+                  gravity_model.GetValue("axis_right_ascension"),
+              axis_declination        =
+                  gravity_model.GetValue("axis_declination"),
+              reference_angle         =
+                  gravity_model.GetValue("reference_angle"),
+              angular_frequency       =
+                  gravity_model.GetValue("angular_frequency"),
+              j2                      = gravity_model.GetValue("j2"),
+              reference_radius        =
+                  gravity_model.GetValue("reference_radius")};
+          plugin_.InsertCelestialAbsoluteCartesian(
+              celestial_index         : body.flightGlobalsIndex,
+              parent_index            : parent_index,
+              body_parameters         : body_parameters,
+              x                       : initial_state.GetValue("x"),
+              y                       : initial_state.GetValue("y"),
+              z                       : initial_state.GetValue("z"),
+              vx                      : initial_state.GetValue("vx"),
+              vy                      : initial_state.GetValue("vy"),
+              vz                      : initial_state.GetValue("vz"));
         };
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
@@ -1286,34 +1368,65 @@ public partial class PrincipiaPluginAdapter
       // We create the plugin at time 0, rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
-      plugin_ = Interface.NewPlugin(0,
-                                    Planetarium.InverseRotAngle);
-      plugin_.InsertSun(Planetarium.fetch.Sun.flightGlobalsIndex,
-                        Planetarium.fetch.Sun.gravParameter,
-                        Planetarium.fetch.Sun.Radius);
-      BodyProcessor insert_body = body => {
-        Log.Info("Inserting " + body.name + "...");
-        Orbit orbit = unmodified_orbits_[body];
-        double mean_motion = 2 * Math.PI / orbit.period;
-        plugin_.InsertCelestialJacobiKeplerian(
-            celestial_index             : body.flightGlobalsIndex,
-            parent_index                : body.referenceBody.flightGlobalsIndex,
-            gravitational_parameter     : body.gravParameter + " m^3/s^2",
-            mean_radius                 : body.Radius + " m",
-            axis_right_ascension        : null,
-            axis_declination            : null,
-            j2                          : null,
-            reference_radius            : null,
-            eccentricity                : orbit.eccentricity,
-            mean_motion                 : mean_motion + " rad/s",
-            inclination                 : orbit.inclination + " deg",
-            longitude_of_ascending_node : orbit.LAN + " deg",
-            argument_of_periapsis       : orbit.argumentOfPeriapsis + " deg",
-            mean_anomaly                : orbit.meanAnomalyAtEpoch -
-                                          orbit.epoch * mean_motion + " rad");
-      };
-      ApplyToBodyTree(insert_body);
-      plugin_.EndInitialization();
+      for(;;) {
+        plugin_ = Interface.NewPlugin("0 s", "0 s",
+                                      Planetarium.InverseRotAngle);
+        BodyProcessor insert_body = body => {
+          Log.Info("Inserting " + body.name + "...");
+          ConfigNode gravity_model = null;
+          if (name_to_gravity_model?.TryGetValue(body.name,
+                                                 out gravity_model) == true) {
+            Log.Info("using custom gravity model");
+          }
+          Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
+          var body_parameters = new BodyParameters{
+              gravitational_parameter =
+                  (gravity_model?.GetValue("gravitational_parameter")).
+                      GetValueOrDefault(body.gravParameter + " m^3/s^2"),
+              // J2000, because that's when we start non-config games.  We
+              // should really parse real-life dates from strings.
+              // The origin of rotation in KSP is the x of Barycentric, rather
+              // than the y axis as is the case for Earth, so the right
+              // ascension is -90 deg.
+              reference_instant    = double.Parse(
+                  (gravity_model?.GetValue("reference_instant")).
+                      GetValueOrDefault("2451545.0")),
+              mean_radius          =
+                  (gravity_model?.GetValue("mean_radius")).
+                      GetValueOrDefault(body.Radius + " m"),
+              axis_right_ascension =
+                  (gravity_model?.GetValue("axis_right_ascension")).
+                      GetValueOrDefault("-90 deg"),
+              axis_declination     =
+                  (gravity_model?.GetValue("axis_declination")).
+                      GetValueOrDefault("90 deg"),
+              reference_angle      =
+                  (gravity_model?.GetValue("reference_angle")).
+                      GetValueOrDefault(body.initialRotation.ToString() +
+                                        " deg"),
+              angular_frequency    =
+                  (gravity_model?.GetValue("angular_frequency")).
+                      GetValueOrDefault(body.angularV.ToString() + " rad/s"),
+              j2                   = gravity_model?.GetValue("j2"),
+              reference_radius     =
+                  gravity_model?.GetValue("reference_radius")};
+          plugin_.InsertCelestialJacobiKeplerian(
+              celestial_index             : body.flightGlobalsIndex,
+              parent_index                :
+                  orbit?.referenceBody.flightGlobalsIndex,
+              body_parameters             : body_parameters,
+              keplerian_elements          : orbit?.Elements());
+        };
+        insert_body(Planetarium.fetch.Sun);
+        ApplyToBodyTree(insert_body);
+        plugin_.EndInitialization();
+        if (plugin_.IsKspStockSystem()) {
+          Interface.DeletePlugin(ref plugin_);
+          Fix631();
+        } else {
+          break;
+        }
+      }
     }
     plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
@@ -1350,44 +1463,12 @@ public partial class PrincipiaPluginAdapter
 
   // Deals with issue #631, unstability of the Jool system's resonance.
   private void Fix631() {
-    // Check whether this looks like stock.
-    if (FlightGlobals.Bodies.Count < 15) {
-      return;
-    }
-    Func<CelestialBody, double> mean_longitude =
-        (celestial) =>
-            (celestial.orbit.LAN + celestial.orbit.argumentOfPeriapsis) *
-                180 / Math.PI +
-            celestial.orbit.meanAnomalyAtEpoch;
     CelestialBody jool = FlightGlobals.Bodies[8];
     CelestialBody laythe = FlightGlobals.Bodies[9];
     CelestialBody vall = FlightGlobals.Bodies[10];
     CelestialBody bop = FlightGlobals.Bodies[11];
     CelestialBody tylo = FlightGlobals.Bodies[12];
     CelestialBody pol = FlightGlobals.Bodies[14];
-    bool is_stock = true;
-    is_stock &= jool.orbitingBodies.Count == 5;
-    is_stock &= jool.name   == "Jool";
-    is_stock &= laythe.name == "Laythe";
-    is_stock &= vall.name   == "Vall";
-    is_stock &= bop.name    == "Bop";
-    is_stock &= tylo.name   == "Tylo";
-    is_stock &= pol.name    == "Pol";
-    is_stock &= laythe.referenceBody == jool;
-    is_stock &= vall.referenceBody   == jool;
-    is_stock &= tylo.referenceBody   == jool;
-    is_stock &= (float)laythe.orbit.semiMajorAxis == 27184000f;
-    is_stock &= (float)vall.orbit.semiMajorAxis   == 43152000f;
-    is_stock &= (float)tylo.orbit.semiMajorAxis   == 68500000f;
-    is_stock &= (float)laythe.orbit.inclination == 0f;
-    is_stock &= (float)vall.orbit.inclination   == 0f;
-    is_stock &= (float)tylo.orbit.inclination   == 0.025f;
-    is_stock &= (float)mean_longitude(laythe) == 3.14f;
-    is_stock &= (float)mean_longitude(vall)   == 0.9f;
-    is_stock &= (float)mean_longitude(tylo)   == 3.14f;
-    if (!is_stock) {
-      return;
-    }
     const double φ = 1.61803398875;
     // The |unmodified_orbits_| are unmodified in the sense that they are
     // unaffected by the plugin's computation; they are the orbits from which
@@ -1444,8 +1525,10 @@ public partial class PrincipiaPluginAdapter
       body.orbit.referenceBody = unmodified_orbits_[body].referenceBody;
       body.orbit.Init();
       body.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
+      body.tidallyLocked = true;
       body.CBUpdate();
     }
+    RemoveBuggyTidalLocking();
   }
 
 }

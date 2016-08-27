@@ -20,14 +20,17 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace physics {
+namespace internal_ephemeris {
 
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
-
-namespace physics {
+using quantities::Acceleration;
+using quantities::Length;
+using quantities::Speed;
 
 template<typename Frame>
 class Ephemeris {
@@ -36,9 +39,9 @@ class Ephemeris {
  public:
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
-  static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
+  static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
-  static IntrinsicAccelerations const kNoIntrinsicAccelerations;
+  static IntrinsicAccelerations const NoIntrinsicAccelerations;
   static std::int64_t constexpr unlimited_max_ephemeris_steps =
       std::numeric_limits<std::int64_t>::max();
 
@@ -132,10 +135,6 @@ class Ephemeris {
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
 
-  // Calls |ForgetAfter| on all trajectories for a time which is greater than or
-  // equal to |t|, and less than 6 months after |t|.  On return |t_max() >= t|.
-  virtual void ForgetAfter(Instant const& t);
-
   // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
   virtual void ForgetBefore(Instant const& t);
 
@@ -195,6 +194,17 @@ class Ephemeris {
       DiscreteTrajectory<Frame>& apoapsides,
       DiscreteTrajectory<Frame>& periapsides);
 
+  // Computes the apsides of the relative trajectory of |body1| and |body2}.
+  // Appends to the given trajectories two point for each apsis, one for |body1|
+  // and one for |body2|.  The times of |apoapsides1| and |apoapsideds2| are
+  // identical (are similarly for |periapsides1| and |periapsides2|).
+  virtual void ComputeApsides(not_null<MassiveBody const*> const body1,
+                              not_null<MassiveBody const*> const body2,
+                              DiscreteTrajectory<Frame>& apoapsides1,
+                              DiscreteTrajectory<Frame>& periapsides1,
+                              DiscreteTrajectory<Frame>& apoapsides2,
+                              DiscreteTrajectory<Frame>& periapsides2);
+
   // Returns the index of the given body in the serialization produced by
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
   // suitable for other uses.
@@ -222,23 +232,35 @@ class Ephemeris {
   Ephemeris();
 
  private:
+  // The state of the integration and of the continuous trajectory at a
+  // particular time that we might want to use for compact serialization.
+  struct Checkpoint {
+    typename NewtonianMotionEquation::SystemState system_state;
+    std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
+  };
+
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
-  // Computes the acceleration due to one body, |body1| (with index |b1| in the
-  // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
-  // indices [b2_begin, b2_end[ in the |positions| and |accelerations| arrays).
-  // The template parameters specify what we know about the bodies, and
-  // therefore what forces apply.
+  Checkpoint GetCheckpoint();
+
+  // Computes the accelerations between one body, |body1| (with index |b1| in
+  // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
+  // indices [b2_begin, b2_end[ in the |bodies2|, |positions| and
+  // |accelerations| arrays).  The template parameters specify what we know
+  // about the bodies, and therefore what forces apply.  Works for both owning
+  // and non-owning pointers thanks to the |MassiveBodyConstPtr| template
+  // parameter.
   template<bool body1_is_oblate,
-           bool body2_is_oblate>
+           bool body2_is_oblate,
+           typename MassiveBodyConstPtr>
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
       size_t const b1,
-      std::vector<not_null<MassiveBody const*>> const& bodies2,
+      std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
@@ -303,12 +325,6 @@ class Ephemeris {
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
 
-  // The indices in |bodies_| correspond to those in |oblate_bodies_| and
-  // |spherical_bodies_|, in sequence.  The elements of |oblate_bodies_| are
-  // really |OblateBody<Frame>| but it's inconvenient to express.
-  std::vector<not_null<MassiveBody const*>> oblate_bodies_;
-  std::vector<not_null<MassiveBody const*>> spherical_bodies_;
-
   // The indices in |bodies_| correspond to those in |trajectories_|.
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
 
@@ -320,17 +336,19 @@ class Ephemeris {
   Length const fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
 
-  // These are the states other that the last which we preserve in order to be
-  // to implement ForgetAfter.  The |state.time.value| are |t_max()| values for
-  // all the underlying trajectories.
-  std::vector<typename NewtonianMotionEquation::SystemState>
-      intermediate_states_;
+  // These are the states other that the last which we preserve in order to
+  // implement compact serialization.  The vector is time-ordered.
+  std::vector<Checkpoint> checkpoints_;
 
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
 };
+
+}  // namespace internal_ephemeris
+
+using internal_ephemeris::Ephemeris;
 
 }  // namespace physics
 }  // namespace principia

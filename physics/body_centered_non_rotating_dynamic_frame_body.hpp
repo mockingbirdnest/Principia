@@ -6,10 +6,11 @@
 #include "geometry/identity.hpp"
 
 namespace principia {
-
-using geometry::Identity;
-
 namespace physics {
+namespace internal_body_centred_non_rotating_dynamic_frame {
+
+using geometry::AngularVelocity;
+using geometry::Identity;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
@@ -37,37 +38,6 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-RigidMotion<ThisFrame, InertialFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
-FromThisFrameAtTime(Instant const& t) const {
-  return ToThisFrameAtTime(t).Inverse();
-}
-
-template<typename InertialFrame, typename ThisFrame>
-Vector<Acceleration, ThisFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
-GeometricAcceleration(
-    Instant const& t,
-    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  auto const to_this_frame = ToThisFrameAtTime(t);
-  auto const from_this_frame = to_this_frame.Inverse();
-
-  Vector<Acceleration, ThisFrame> const gravitational_acceleration_at_point =
-      to_this_frame.orthogonal_map()(
-          ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
-              from_this_frame.rigid_transformation()(
-                  degrees_of_freedom.position()), t));
-  Vector<Acceleration, ThisFrame> const linear_acceleration =
-      to_this_frame.orthogonal_map()(
-          -ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
-              centre_, t));
-
-  Vector<Acceleration, ThisFrame> const& fictitious_acceleration =
-      linear_acceleration;
-  return gravitational_acceleration_at_point + fictitious_acceleration;
-}
-
-template<typename InertialFrame, typename ThisFrame>
 void BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   message->MutableExtension(
@@ -87,5 +57,25 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
              ephemeris->body_for_serialization_index(message.centre()));
 }
 
+template<typename InertialFrame, typename ThisFrame>
+Vector<Acceleration, InertialFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+    GravitationalAcceleration(Instant const& t,
+                              Position<InertialFrame> const& q) const {
+  return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+AcceleratedRigidMotion<InertialFrame, ThisFrame>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
+    Instant const& t) const {
+  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
+             ToThisFrameAtTime(t),
+             /*angular_acceleration_of_to_frame=*/{},
+             /*acceleration_of_to_frame_origin=*/ephemeris_->
+                 ComputeGravitationalAccelerationOnMassiveBody(centre_, t));
+}
+
+}  // namespace internal_body_centred_non_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

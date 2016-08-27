@@ -57,9 +57,16 @@ class FlightPlanner : WindowRenderer {
     UnityEngine.GUI.skin = null;
     UnityEngine.GUILayout.BeginVertical();
 
-    if (vessel_ == null || vessel_ != FlightGlobals.ActiveVessel ||
-        !plugin_.HasVessel(vessel_.id.ToString())) {
-      Reset();
+    {
+      string vessel_guid = vessel_?.id.ToString();
+      if (vessel_guid == null ||
+          vessel_ != FlightGlobals.ActiveVessel ||
+          !plugin_.HasVessel(vessel_guid) ||
+          !plugin_.FlightPlanExists(vessel_guid) ||
+          plugin_.FlightPlanNumberOfManoeuvres(vessel_guid) !=
+              burn_editors_?.Count) {
+        Reset();
+      }
     }
 
     if (vessel_ != null) {
@@ -319,8 +326,11 @@ class FlightPlanner : WindowRenderer {
   }
 
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
-    return span.Days.ToString("000;000") + " d " +
-           span.Hours.ToString("00;00") + " h " +
+    return (GameSettings.KERBIN_TIME
+                ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
+                      " d₆ " + (span.Hours % 6).ToString("0;0" + " h ")
+                : span.Days.ToString("000;000") + " d " +
+                      span.Hours.ToString("00;00") + " h ") +
            span.Minutes.ToString("00;00") + " min " +
            (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
            " s";

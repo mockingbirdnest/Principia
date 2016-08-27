@@ -112,11 +112,11 @@ void TestTermination(
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
   switch (integrator.composition) {
-    case kBA:
-    case kABA:
+    case BA:
+    case ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case kBAB:
+    case BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -170,11 +170,11 @@ void Test1000SecondsAt1Millisecond(
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
-    case kBA:
-    case kABA:
+    case BA:
+    case ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case kBAB:
+    case BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -226,7 +226,7 @@ void TestConvergence(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -301,7 +301,7 @@ void TestSymplecticity(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -329,10 +329,10 @@ void TestSymplecticity(Integrator const& integrator,
   double const correlation =
       PearsonProductMomentCorrelationCoefficient(time, energy_error);
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
-  EXPECT_THAT(correlation, Lt(2E-3));
+  EXPECT_THAT(correlation, Lt(2e-3));
   Power const slope = Slope(time, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(Abs(slope), Lt(2E-6 * SIUnit<Power>()));
+  EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
   EXPECT_EQ(expected_energy_error, max_energy_error);
@@ -354,7 +354,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr /*evaluations*/);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -381,10 +381,10 @@ void TestTimeReversibility(Integrator const& integrator) {
   } else {
     EXPECT_THAT(AbsoluteError(q_initial,
                               final_state.positions[0].value),
-                Gt(1E-4 * Metre));
+                Gt(1e-4 * Metre));
     EXPECT_THAT(AbsoluteError(v_initial,
                               final_state.velocities[0].value),
-                Gt(1E-4 * Metre / Second));
+                Gt(1e-4 * Metre / Second));
   }
 }
 

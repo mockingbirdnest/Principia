@@ -12,12 +12,10 @@
 #include "glog/logging.h"
 
 namespace principia {
-
-using base::make_not_null_unique;
-using geometry::Instant;
-
 namespace physics {
-namespace internal {
+namespace internal_forkable {
+
+using geometry::Instant;
 
 template<typename Frame>
 Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
@@ -48,26 +46,12 @@ DiscreteTrajectoryIterator<Frame>::that() const {
   return this;
 }
 
-}  // namespace internal
+}  // namespace internal_forkable
 
-template<typename Frame>
-DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
-  if (on_destroy_) {
-    on_destroy_(this);
-  }
-}
+namespace internal_discrete_trajectory {
 
-template<typename Frame>
-void DiscreteTrajectory<Frame>::set_on_destroy(
-    OnDestroyCallback on_destroy) {
-  on_destroy_ = on_destroy;
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::OnDestroyCallback
-DiscreteTrajectory<Frame>::get_on_destroy() const {
-  return on_destroy_;
-}
+using base::make_not_null_unique;
+using geometry::Instant;
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
@@ -299,5 +283,6 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                                                                  forks);
 }
 
+}  // namespace internal_discrete_trajectory
 }  // namespace physics
 }  // namespace principia

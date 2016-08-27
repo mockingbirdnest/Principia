@@ -134,8 +134,10 @@ message Frame {
     ALICE_SUN = 1;
     ALICE_WORLD = 2;
     BARYCENTRIC = 7;
-    PRE_BOREL_BARYCENTRIC = 3;
+    BODY_WORLD = 9;
+    CELESTIAL_SPHERE = 8;
     NAVIGATION = 4;
+    PRE_BOREL_BARYCENTRIC = 3;
     WORLD = 5;
     WORLD_SUN = 6;
   }

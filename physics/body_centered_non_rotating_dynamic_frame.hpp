@@ -21,13 +21,14 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Vector;
 using quantities::Acceleration;
-
-namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingDynamicFrame
@@ -39,11 +40,6 @@ class BodyCentredNonRotatingDynamicFrame
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
-  RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
-      Instant const& t) const override;
-  Vector<Acceleration, ThisFrame> GeometricAcceleration(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> const message) const override;
@@ -54,11 +50,23 @@ class BodyCentredNonRotatingDynamicFrame
           serialization::BodyCentredNonRotatingDynamicFrame const& message);
 
  private:
+  Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const override;
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
+      Instant const& t) const override;
+
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
   mutable typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };
+
+
+}  // namespace internal_body_centred_non_rotating_dynamic_frame
+
+using internal_body_centred_non_rotating_dynamic_frame::
+    BodyCentredNonRotatingDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia

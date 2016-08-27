@@ -2,7 +2,7 @@ syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
 
-package principia.serialization;
+package principia.journal.serialization;
 
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
@@ -25,12 +25,34 @@ message AdaptiveStepParameters {
   required double speed_integration_tolerance = 3;
 }
 
+message BodyParameters {
+  required string gravitational_parameter = 1;
+  required double reference_instant = 7 [default = nan];  // Optional.
+  optional string mean_radius = 2;
+  optional string axis_right_ascension = 3;
+  optional string axis_declination = 4;
+  optional string reference_angle = 8;
+  optional string angular_frequency = 9;
+  optional string j2 = 5;
+  optional string reference_radius = 6;
+}
+
 message Burn {
   required double thrust_in_kilonewtons = 1;
   required double specific_impulse_in_seconds_g0 = 2;
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
   required XYZ delta_v = 5;
+}
+
+message KeplerianElements {
+  required double eccentricity = 1;
+  required double semimajor_axis = 2 [default = nan];  // Optional.
+  required double mean_motion = 3 [default = nan];     // Optional.
+  required double inclination_in_degrees = 4;
+  required double longitude_of_ascending_node_in_degrees = 5;
+  required double argument_of_periapsis_in_degrees = 6;
+  required double mean_anomaly = 7;
 }
 
 message NavigationManoeuvre {
@@ -70,13 +92,8 @@ message WXYZ {
   required double z = 4;
 }
 
-message XYZSegment {
-  required XYZ begin = 1;
-  required XYZ end = 2;
-}
-
 message Method {
-  extensions 5000 to 5999;  // Last used: 5089.
+  extensions 5000 to 5999;  // Last used: 5101.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -146,6 +163,69 @@ message CelestialFromParent {
   }
   message Return {
     required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialInitialRotationInDegrees {
+  extend Method {
+    optional CelestialInitialRotationInDegrees extension = 5100;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialRotation {
+  extend Method {
+    optional CelestialRotation extension = 5098;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 index = 2;
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialRotationPeriod {
+  extend Method {
+    optional CelestialRotationPeriod extension = 5099;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialSphereRotation {
+  extend Method {
+    optional CelestialSphereRotation extension = 5101;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required WXYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -452,24 +532,6 @@ message FlightPlanRenderedSegment {
   optional Return return = 3;
 }
 
-message FlightPlanRenderedSegmentEndpoints {
-  extend Method {
-    optional FlightPlanRenderedSegmentEndpoints extension = 5077;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required XYZ sun_world_position = 3;
-    required int32 index = 4;
-  }
-  message Return {
-    required XYZSegment result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message FlightPlanReplaceLast{
   extend Method {
     optional FlightPlanReplaceLast extension = 5066;
@@ -633,12 +695,7 @@ message InsertCelestialAbsoluteCartesian {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 celestial_index = 2;
     optional int32 parent_index = 3;
-    required string gravitational_parameter = 4;
-    required string mean_radius = 15;
-    optional string axis_right_ascension = 5;
-    optional string axis_declination = 6;
-    optional string j2 = 7;
-    optional string reference_radius = 8;
+    required BodyParameters body_parameters = 16;
     required string x = 9;
     required string y = 10;
     required string z = 11;
@@ -651,24 +708,14 @@ message InsertCelestialAbsoluteCartesian {
 
 message InsertCelestialJacobiKeplerian {
   extend Method {
-    optional InsertCelestialJacobiKeplerian extension = 5073;
+    optional InsertCelestialJacobiKeplerian extension = 5092;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required int32 celestial_index = 2;
-    required int32 parent_index = 3;
-    required string gravitational_parameter = 4;
-    required string mean_radius = 15;
-    optional string axis_right_ascension = 5;
-    optional string axis_declination = 6;
-    optional string j2 = 7;
-    optional string reference_radius = 8;
-    required double eccentricity = 9;
-    required string mean_motion = 10;
-    required string inclination = 11;
-    required string longitude_of_ascending_node = 12;
-    required string argument_of_periapsis = 13;
-    required string mean_anomaly = 14;
+    optional int32 parent_index = 3;
+    required BodyParameters body_parameters = 16;
+    optional KeplerianElements keplerian_elements = 9;
   }
   optional In in = 1;
 }
@@ -689,17 +736,18 @@ message InsertOrKeepVessel {
   optional Return return = 3;
 }
 
-message InsertSun {
+message IsKspStockSystem {
   extend Method {
-    optional InsertSun extension = 5023;
+    optional IsKspStockSystem extension = 5096;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required int32 celestial_index = 2;
-    required double gravitational_parameter = 3;
-    required double mean_radius = 4;
+  }
+  message Return {
+    required bool result = 1;
   }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message IteratorAtEnd {
@@ -730,6 +778,36 @@ message IteratorDelete {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message IteratorGetQP {
+  extend Method {
+    optional IteratorGetQP extension = 5093;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetTime {
+  extend Method {
+    optional IteratorGetTime extension = 5094;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message IteratorGetXYZ {
@@ -887,8 +965,9 @@ message NewPlugin {
     optional NewPlugin extension = 5001;
   }
   message In {
-    required double initial_time = 1;
-    required double planetarium_rotation_in_degrees = 2;
+    required string game_epoch = 1;
+    required string solar_system_epoch = 2;
+    required double planetarium_rotation_in_degrees = 3;
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Plugin",
@@ -1025,6 +1104,17 @@ message SetBufferedLogging {
   optional In in = 1;
 }
 
+message SetMainBody {
+  extend Method {
+    optional SetMainBody extension = 5097;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required int32 index = 2;
+  }
+  optional In in = 1;
+}
+
 message SetPlottingFrame {
   extend Method {
     optional SetPlottingFrame extension = 5059;
@@ -1048,17 +1138,6 @@ message SetPredictionLength {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double t = 2;
-  }
-  optional In in = 1;
-}
-
-message SetPredictionAdaptiveStepParameters {
-  extend Method {
-    optional SetPredictionAdaptiveStepParameters extension = 5089;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required AdaptiveStepParameters adaptive_step_parameters = 2;
   }
   optional In in = 1;
 }
@@ -1162,6 +1241,22 @@ message VesselFromParent {
   optional Return return = 3;
 }
 
+message VesselGetPredictionAdaptiveStepParameters {
+  extend Method {
+    optional VesselGetPredictionAdaptiveStepParameters extension = 5090;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required AdaptiveStepParameters adaptive_step_parameters = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message VesselNormal {
   extend Method {
     optional VesselNormal extension = 5056;
@@ -1178,9 +1273,38 @@ message VesselNormal {
   optional Return return = 3;
 }
 
+message VesselSetPredictionAdaptiveStepParameters {
+  extend Method {
+    optional VesselSetPredictionAdaptiveStepParameters extension = 5091;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required AdaptiveStepParameters adaptive_step_parameters = 3;
+  }
+  optional In in = 1;
+}
+
 message VesselTangent {
   extend Method {
     optional VesselTangent extension = 5057;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselVelocity{
+  extend Method {
+    optional VesselVelocity extension = 5095;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",

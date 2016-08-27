@@ -12,13 +12,15 @@
 #include <psapi.h>
 #endif
 
+#include "astronomy/epoch.hpp"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/optional_logging.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "base/version.hpp"
+#include "base/version.generated.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
@@ -31,6 +33,7 @@
 
 namespace principia {
 
+using astronomy::J2000;
 using base::Bytes;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
@@ -43,9 +46,7 @@ using geometry::RadiusLatitudeLongitude;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
-using ksp_plugin::Positions;
 using ksp_plugin::World;
-using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::OblateBody;
 using physics::RotatingBody;
@@ -65,30 +66,58 @@ namespace interface {
 
 namespace {
 
-int const kChunkSize = 64 << 10;
-int const kNumberOfChunks = 8;
+int const chunk_size = 64 << 10;
+int const number_of_chunks = 8;
 
 base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
-    char const* const gravitational_parameter,
-    char const* const mean_radius,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius) {
+    BodyParameters const& body_parameters) {
+  // Logging operators would dereference a null C string.
+  auto const make_optional_c_string = [](char const* const c_string) {
+    return (c_string == nullptr) ? std::experimental::nullopt
+                                 : std::experimental::make_optional(c_string);
+  };
+  LOG(INFO)
+      << __FUNCTION__ << "\n"
+      << NAMED(make_optional_c_string(body_parameters.gravitational_parameter))
+      << "\n"
+      << NAMED(body_parameters.reference_instant) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.mean_radius)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.axis_right_ascension))
+      << "\n"
+      << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.reference_angle)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.angular_frequency))
+      << "\n"
+      << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.reference_radius));
   serialization::GravityModel::Body gravity_model;
-  gravity_model.set_gravitational_parameter(gravitational_parameter);
-  gravity_model.set_mean_radius(mean_radius);
-  if (axis_right_ascension != nullptr) {
-    gravity_model.set_axis_right_ascension(axis_right_ascension);
+  gravity_model.set_gravitational_parameter(
+      body_parameters.gravitational_parameter);
+  if (!std::isnan(body_parameters.reference_instant)) {
+    gravity_model.set_reference_instant(body_parameters.reference_instant);
   }
-  if (axis_declination != nullptr) {
-    gravity_model.set_axis_declination(axis_declination);
+  if (body_parameters.mean_radius != nullptr) {
+    gravity_model.set_mean_radius(body_parameters.mean_radius);
   }
-  if (j2 != nullptr) {
-    gravity_model.set_j2(j2);
+  if (body_parameters.axis_right_ascension != nullptr) {
+    gravity_model.set_axis_right_ascension(
+        body_parameters.axis_right_ascension);
   }
-  if (reference_radius != nullptr) {
-    gravity_model.set_reference_radius(reference_radius);
+  if (body_parameters.axis_declination != nullptr) {
+    gravity_model.set_axis_declination(body_parameters.axis_declination);
+  }
+  if (body_parameters.reference_angle != nullptr) {
+    gravity_model.set_reference_angle(body_parameters.reference_angle);
+  }
+  if (body_parameters.angular_frequency!= nullptr) {
+    gravity_model.set_angular_frequency(
+        body_parameters.angular_frequency);
+  }
+  if (body_parameters.j2 != nullptr) {
+    gravity_model.set_j2(body_parameters.j2);
+  }
+  if (body_parameters.reference_radius != nullptr) {
+    gravity_model.set_reference_radius(body_parameters.reference_radius);
   }
   return SolarSystem<Barycentric>::MakeMassiveBody(gravity_model);
 }
@@ -128,12 +157,12 @@ void principia__InitGoogleLogging() {
         });
 
     LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << principia::base::kVersion
-              << " built on " << principia::base::kBuildDate
-              << " by " << principia::base::kCompilerName
-              << " version " << principia::base::kCompilerVersion
-              << " for " << principia::base::kOperatingSystem
-              << " " << principia::base::kArchitecture;
+    LOG(INFO) << "Principia version " << principia::base::Version
+              << " built on " << principia::base::BuildDate
+              << " by " << principia::base::CompilerName
+              << " version " << principia::base::CompilerVersion
+              << " for " << principia::base::OperatingSystem
+              << " " << principia::base::Architecture;
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));
@@ -265,14 +294,16 @@ void principia__LogFatal(char const* const text) {
 
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
-Plugin* principia__NewPlugin(double const initial_time,
+Plugin* principia__NewPlugin(char const* const game_epoch,
+                             char const* const solar_system_epoch,
                              double const planetarium_rotation_in_degrees) {
-  journal::Method<journal::NewPlugin> m({initial_time,
+  journal::Method<journal::NewPlugin> m({game_epoch,
+                                         solar_system_epoch,
                                          planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
-  Instant const t0;
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
-      t0 + initial_time * Second,
+      J2000 + ParseQuantity<Time>(game_epoch),
+      J2000 + ParseQuantity<Time>(solar_system_epoch),
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return m.Return(result.release());
@@ -298,12 +329,7 @@ void principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
-    char const* const gravitational_parameter,
-    char const* const mean_radius,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius,
+    BodyParameters const body_parameters,
     char const* const x,
     char const* const y,
     char const* const z,
@@ -314,14 +340,10 @@ void principia__InsertCelestialAbsoluteCartesian(
       {plugin,
        celestial_index,
        parent_index,
-       gravitational_parameter,
-       mean_radius,
-       axis_right_ascension,
-       axis_declination,
-       j2,
-       reference_radius,
+       body_parameters,
        x, y, z,
        vx, vy, vz});
+  CHECK_NOTNULL(plugin);
   serialization::InitialState::Body initial_state;
   initial_state.set_x(x);
   initial_state.set_y(y);
@@ -329,89 +351,37 @@ void principia__InsertCelestialAbsoluteCartesian(
   initial_state.set_vx(vx);
   initial_state.set_vy(vy);
   initial_state.set_vz(vz);
-  CHECK_NOTNULL(plugin)
-      ->InsertCelestialAbsoluteCartesian(
-          celestial_index,
-          parent_index == nullptr
-              ? std::experimental::nullopt
-              : std::experimental::make_optional(*parent_index),
-          SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
-          MakeMassiveBody(gravitational_parameter,
-                          mean_radius,
-                          axis_right_ascension,
-                          axis_declination,
-                          j2,
-                          reference_radius));
+  plugin->InsertCelestialAbsoluteCartesian(
+      celestial_index,
+      parent_index == nullptr ? std::experimental::nullopt
+                              : std::experimental::make_optional(*parent_index),
+      SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
+      MakeMassiveBody(body_parameters));
   return m.Return();
 }
 
 void principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
-    int const parent_index,
-    char const* const gravitational_parameter,
-    char const* const mean_radius,
-    char const* const axis_right_ascension,
-    char const* const axis_declination,
-    char const* const j2,
-    char const* const reference_radius,
-    double const eccentricity,
-    char const* const mean_motion,
-    char const* const inclination,
-    char const* const longitude_of_ascending_node,
-    char const* const argument_of_periapsis,
-    char const* const mean_anomaly) {
+    int const* const parent_index,
+    BodyParameters const body_parameters,
+    KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
        celestial_index,
        parent_index,
-       gravitational_parameter,
-       mean_radius,
-       axis_right_ascension,
-       axis_declination,
-       j2,
-       reference_radius,
-       eccentricity,
-       mean_motion,
-       inclination,
-       longitude_of_ascending_node,
-       argument_of_periapsis,
-       mean_anomaly});
-  KeplerianElements<Barycentric> keplerian_elements;
-  keplerian_elements.eccentricity = eccentricity;
-  keplerian_elements.mean_motion = ParseQuantity<AngularFrequency>(mean_motion);
-  keplerian_elements.inclination = ParseQuantity<Angle>(inclination);
-  keplerian_elements.longitude_of_ascending_node =
-      ParseQuantity<Angle>(longitude_of_ascending_node);
-  keplerian_elements.argument_of_periapsis =
-      ParseQuantity<Angle>(argument_of_periapsis);
-  keplerian_elements.mean_anomaly = ParseQuantity<Angle>(mean_anomaly);
-  CHECK_NOTNULL(plugin)
-      ->InsertCelestialJacobiKeplerian(
-          celestial_index,
-          parent_index,
-          keplerian_elements,
-          MakeMassiveBody(gravitational_parameter,
-                          mean_radius,
-                          axis_right_ascension,
-                          axis_declination,
-                          j2,
-                          reference_radius));
-  return m.Return();
-}
-
-void principia__InsertSun(Plugin* const plugin,
-                          int const celestial_index,
-                          double const gravitational_parameter,
-                          double const mean_radius) {
-  journal::Method<journal::InsertSun> m({plugin,
-                                         celestial_index,
-                                         gravitational_parameter,
-                                         mean_radius});
-  CHECK_NOTNULL(plugin)->InsertSun(
+       body_parameters,
+       keplerian_elements});
+  CHECK_NOTNULL(plugin);
+  plugin->InsertCelestialJacobiKeplerian(
       celestial_index,
-      gravitational_parameter * SIUnit<GravitationalParameter>(),
-      mean_radius * Metre);
+      parent_index == nullptr ? std::experimental::nullopt
+                              : std::experimental::make_optional(*parent_index),
+      keplerian_elements == nullptr
+          ? std::experimental::nullopt
+          : std::experimental::make_optional(
+                FromKeplerianElements(*keplerian_elements)),
+      MakeMassiveBody(body_parameters));
   return m.Return();
 }
 
@@ -423,8 +393,8 @@ void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
   journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
                                                         celestial_index,
                                                         parent_index});
-  CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
-                                                  parent_index);
+  CHECK_NOTNULL(plugin);
+  plugin->UpdateCelestialHierarchy(celestial_index, parent_index);
   return m.Return();
 }
 
@@ -432,8 +402,15 @@ void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
 // |plugin| must not be null.  No transfer of ownership.
 void principia__EndInitialization(Plugin* const plugin) {
   journal::Method<journal::EndInitialization> m({plugin});
-  CHECK_NOTNULL(plugin)->EndInitialization();
+  CHECK_NOTNULL(plugin);
+  plugin->EndInitialization();
   return m.Return();
+}
+
+bool principia__IsKspStockSystem(Plugin* const plugin) {
+  journal::Method<journal::IsKspStockSystem> m({plugin});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->IsKspStockSystem());
 }
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
@@ -444,8 +421,8 @@ bool principia__InsertOrKeepVessel(Plugin* const plugin,
   journal::Method<journal::InsertOrKeepVessel> m({plugin,
                                                   vessel_guid,
                                                   parent_index});
-  return m.Return(
-      CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index));
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->InsertOrKeepVessel(vessel_guid, parent_index));
 }
 
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
@@ -456,7 +433,8 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
   journal::Method<journal::SetVesselStateOffset> m({plugin,
                                                     vessel_guid,
                                                     from_parent});
-  CHECK_NOTNULL(plugin)->SetVesselStateOffset(
+  CHECK_NOTNULL(plugin);
+  plugin->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
@@ -468,17 +446,16 @@ void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
-  Instant const t0;
-  CHECK_NOTNULL(plugin)->AdvanceTime(t0 + t * Second,
-                                     planetarium_rotation * Degree);
+  CHECK_NOTNULL(plugin);
+  plugin->AdvanceTime(FromGameTime(*plugin, t), planetarium_rotation * Degree);
   return m.Return();
 }
 
 void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
                                          double const t) {
   journal::Method<journal::ForgetAllHistoriesBefore> m({plugin, t});
-  Instant const t0;
-  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(t0 + t * Second);
+  CHECK_NOTNULL(plugin);
+  plugin->ForgetAllHistoriesBefore(FromGameTime(*plugin, t));
   return m.Return();
 }
 
@@ -487,8 +464,9 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
 QP principia__VesselFromParent(Plugin const* const plugin,
                                char const* const vessel_guid) {
   journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
   RelativeDegreesOfFreedom<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
+      plugin->VesselFromParent(vessel_guid);
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
@@ -498,10 +476,47 @@ QP principia__VesselFromParent(Plugin const* const plugin,
 QP principia__CelestialFromParent(Plugin const* const plugin,
                                   int const celestial_index) {
   journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
+  CHECK_NOTNULL(plugin);
   RelativeDegreesOfFreedom<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
+      plugin->CelestialFromParent(celestial_index);
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
+}
+
+void principia__SetMainBody(Plugin* const plugin, int const index) {
+  journal::Method<journal::SetMainBody> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  plugin->SetMainBody(index);
+  return m.Return();
+}
+
+WXYZ principia__CelestialRotation(Plugin const* const plugin, int const index) {
+  journal::Method<journal::CelestialRotation> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
+}
+
+WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
+  journal::Method<journal::CelestialSphereRotation> m({plugin});
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
+}
+
+double principia__CelestialRotationPeriod(
+    Plugin const* const plugin,
+    int const celestial_index) {
+  journal::Method<journal::CelestialRotationPeriod> m(
+      {plugin, celestial_index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->CelestialRotationPeriod(celestial_index) / Second);
+}
+
+double principia__CelestialInitialRotationInDegrees(Plugin const* const plugin,
+                                                    int const celestial_index) {
+  journal::Method<journal::CelestialInitialRotationInDegrees> m(
+      {plugin, celestial_index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->CelestialInitialRotation(celestial_index) / Degree);
 }
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
@@ -512,7 +527,8 @@ NavigationFrame* principia__NewBodyCentredNonRotatingNavigationFrame(
     int const reference_body_index) {
   journal::Method<journal::NewBodyCentredNonRotatingNavigationFrame> m(
       {plugin, reference_body_index});
-  return m.Return(CHECK_NOTNULL(plugin)->
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->
       NewBodyCentredNonRotatingNavigationFrame(reference_body_index).release());
 }
 
@@ -524,7 +540,8 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
     int const secondary_index) {
   journal::Method<journal::NewBarycentricRotatingNavigationFrame> m(
       {plugin, primary_index, secondary_index});
-  return m.Return(CHECK_NOTNULL(plugin)->
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->
       NewBarycentricRotatingNavigationFrame(primary_index,
                                            secondary_index).release());
 }
@@ -534,7 +551,8 @@ NavigationFrame* principia__NewNavigationFrame(
     Plugin const* const plugin,
     NavigationFrameParameters const parameters) {
   journal::Method<journal::NewNavigationFrame> m({plugin, parameters});
-  return m.Return(NewNavigationFrame(plugin, parameters).release());
+  CHECK_NOTNULL(plugin);
+  return m.Return(NewNavigationFrame(*plugin, parameters).release());
 }
 
 // |navigation_frame| must not be null.  No transfer of ownership of
@@ -544,7 +562,8 @@ void principia__SetPlottingFrame(Plugin* const plugin,
                                  NavigationFrame** const navigation_frame) {
   journal::Method<journal::SetPlottingFrame> m({plugin, navigation_frame},
                                                {navigation_frame});
-  CHECK_NOTNULL(plugin)->SetPlottingFrame(TakeOwnership(navigation_frame));
+  CHECK_NOTNULL(plugin);
+  plugin->SetPlottingFrame(TakeOwnership(navigation_frame));
   return m.Return();
 }
 
@@ -558,7 +577,8 @@ NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
+  CHECK_NOTNULL(plugin);
+  plugin->UpdatePrediction(vessel_guid);
   return m.Return();
 }
 
@@ -573,13 +593,13 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
   journal::Method<journal::RenderedVesselTrajectory> m({plugin,
                                                         vessel_guid,
                                                         sun_world_position});
-  Positions<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
-      RenderedVesselTrajectory(
-          vessel_guid,
-          World::origin + Displacement<World>(
-                              FromXYZ(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<Positions<World>>(
-      std::move(rendered_trajectory)));
+  CHECK_NOTNULL(plugin);
+  auto rendered_trajectory = plugin->RenderedVesselTrajectory(
+      vessel_guid,
+      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre));
+  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
+      std::move(rendered_trajectory),
+      plugin));
 }
 
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
@@ -588,13 +608,13 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
   journal::Method<journal::RenderedPrediction> m({plugin,
                                                   vessel_guid,
                                                   sun_world_position});
-  Positions<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
-      RenderedPrediction(
-          vessel_guid,
-          World::origin + Displacement<World>(
-                              FromXYZ(sun_world_position) * Metre));
-  return m.Return(new TypedIterator<Positions<World>>(
-      std::move(rendered_trajectory)));
+  CHECK_NOTNULL(plugin);
+  auto rendered_trajectory = plugin->RenderedPrediction(
+      vessel_guid,
+      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre));
+  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
+      std::move(rendered_trajectory),
+      plugin));
 }
 
 void principia__RenderedPredictionApsides(Plugin const* const plugin,
@@ -611,18 +631,20 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   Position<World> q_sun =
       World::origin +
       Displacement<World>(FromXYZ(sun_world_position) * Metre);
-  Positions<World> rendered_apoapsides;
-  Positions<World> rendered_periapsides;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   prediction.Fork(),
                                   prediction.End(),
                                   q_sun,
                                   rendered_apoapsides,
                                   rendered_periapsides);
-  *apoapsides = new TypedIterator<Positions<World>>(
-      std::move(rendered_apoapsides));
-  *periapsides = new TypedIterator<Positions<World>>(
-      std::move(rendered_periapsides));
+  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_apoapsides)),
+      plugin);
+  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_periapsides)),
+      plugin);
   return m.Return();
 }
 
@@ -630,25 +652,16 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
 void principia__SetPredictionLength(Plugin* const plugin,
                                     double const t) {
   journal::Method<journal::SetPredictionLength> m({plugin, t});
-  CHECK_NOTNULL(plugin)->SetPredictionLength(t * Second);
-  return m.Return();
-}
-
-void principia__SetPredictionAdaptiveStepParameters(
-    Plugin* const plugin,
-    AdaptiveStepParameters const adaptive_step_parameters) {
-  journal::Method<journal::SetPredictionAdaptiveStepParameters> m(
-      {plugin, adaptive_step_parameters});
-  CHECK_NOTNULL(plugin)
-      ->SetPredictionAdaptiveStepParameters(
-          FromAdaptiveStepParameters(adaptive_step_parameters));
+  CHECK_NOTNULL(plugin);
+  plugin->SetPredictionLength(t * Second);
   return m.Return();
 }
 
 bool principia__HasVessel(Plugin* const plugin,
                           char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
-  return m.Return(CHECK_NOTNULL(plugin)->HasVessel(vessel_guid));
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->HasVessel(vessel_guid));
 }
 
 void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
@@ -660,6 +673,7 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                                             parts,
                                                             count});
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
+  CHECK_NOTNULL(plugin);
   std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
   for (KSPPart const* part = parts; part < parts + count; ++part) {
@@ -679,24 +693,24 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                         part->gravitational_acceleration_to_be_applied_by_ksp) *
                     (Metre / Pow<2>(Second))))));
   }
-  CHECK_NOTNULL(plugin)->AddVesselToNextPhysicsBubble(vessel_guid,
-                                                      std::move(vessel_parts));
+  plugin->AddVesselToNextPhysicsBubble(vessel_guid, std::move(vessel_parts));
   return m.Return();
 }
 
 bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
   journal::Method<journal::PhysicsBubbleIsEmpty> m({plugin});
-  return m.Return(CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty());
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->PhysicsBubbleIsEmpty());
 }
 
 XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
                                             XYZ const sun_position) {
   journal::Method<journal::BubbleDisplacementCorrection> m({plugin,
                                                             sun_position});
+  CHECK_NOTNULL(plugin);
   Displacement<World> const result =
-      CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
-          World::origin + Displacement<World>(
-                              FromXYZ(sun_position) * Metre));
+      plugin->BubbleDisplacementCorrection(
+          World::origin + Displacement<World>(FromXYZ(sun_position) * Metre));
   return m.Return(ToXYZ(result.coordinates() / Metre));
 }
 
@@ -704,8 +718,9 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                         int const reference_body_index) {
   journal::Method<journal::BubbleVelocityCorrection> m({plugin,
                                                         reference_body_index});
+  CHECK_NOTNULL(plugin);
   Velocity<World> const result =
-      CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
+      plugin->BubbleVelocityCorrection(reference_body_index);
   return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
 }
 
@@ -716,7 +731,8 @@ WXYZ principia__NavballOrientation(
   journal::Method<journal::NavballOrientation> m({plugin,
                                                   sun_world_position,
                                                   ship_world_position});
-  FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
+  CHECK_NOTNULL(plugin);
+  FrameField<World> const frame_field = plugin->Navball(
       World::origin +
           Displacement<World>(FromXYZ(sun_world_position) * Metre));
   return m.Return(ToWXYZ(
@@ -726,30 +742,10 @@ WXYZ principia__NavballOrientation(
                   FromXYZ(ship_world_position) * Metre)).quaternion()));
 }
 
-XYZ principia__VesselTangent(Plugin const* const plugin,
-                             char const* const vessel_guid) {
-  journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselTangent(vessel_guid).coordinates()));
-}
-
-XYZ principia__VesselNormal(Plugin const* const plugin,
-                            char const* const vessel_guid) {
-  journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselNormal(vessel_guid).coordinates()));
-}
-
-XYZ principia__VesselBinormal(Plugin const* const plugin,
-                              char const* const vessel_guid) {
-  journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
-}
-
 double principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
-  return m.Return((CHECK_NOTNULL(plugin)->CurrentTime() - Instant()) / Second);
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToGameTime(*plugin, plugin->CurrentTime()));
 }
 
 // |plugin| must not be null.  The caller takes ownership of the result, except
@@ -766,7 +762,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
-    *serializer = new PullSerializer(kChunkSize, kNumberOfChunks);
+    *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
     (*serializer)->Start(std::move(message));
@@ -824,7 +820,7 @@ void principia__DeserializePlugin(char const* const serialization,
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
-    *deserializer = new PushDeserializer(kChunkSize, kNumberOfChunks);
+    *deserializer = new PushDeserializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
         std::move(message),
@@ -866,8 +862,8 @@ void principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
-  *CHECK_NOTNULL(build_date) = base::kBuildDate;
-  *CHECK_NOTNULL(version) = base::kVersion;
+  *CHECK_NOTNULL(build_date) = base::BuildDate;
+  *CHECK_NOTNULL(version) = base::Version;
   return m.Return();
 }
 

@@ -3,31 +3,29 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "glog/stl_logging.h"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_continuous_trajectory {
 
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::ULPDistance;
 
-namespace physics {
-
-namespace {
-
-int const kMaxDegree = 17;
-int const kMinDegree = 3;
-int const kMaxDegreeAge = 100;
+int const max_degree = 17;
+int const min_degree = 3;
+int const max_degree_age = 100;
 
 // Only supports 8 divisions for now.
-int const kDivisions = 8;
-
-}  // namespace
+int const divisions = 8;
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
@@ -36,7 +34,7 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
       tolerance_(tolerance),
       adjusted_tolerance_(tolerance_),
       is_unstable_(false),
-      degree_(kMinDegree),
+      degree_(min_degree),
       degree_age_(0) {
   CHECK_LT(0 * Metre, tolerance_);
 }
@@ -49,8 +47,7 @@ bool ContinuousTrajectory<Frame>::empty() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   if (empty()) {
-    Instant const t0;
-    return t0 + std::numeric_limits<double>::infinity() * Second;
+    return astronomy::InfiniteFuture;
   }
   return *first_time_;
 }
@@ -58,10 +55,22 @@ Instant ContinuousTrajectory<Frame>::t_min() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max() const {
   if (empty()) {
-    Instant const t0;
-    return t0 - std::numeric_limits<double>::infinity() * Second;
+    return astronomy::InfinitePast;
   }
   return series_.back().t_max();
+}
+
+template<typename Frame>
+double ContinuousTrajectory<Frame>::average_degree() const {
+  if (empty()) {
+    return 0;
+  } else {
+    double total = 0;
+    for (auto const& series : series_) {
+      total += series.degree();
+    }
+    return total / series_.size();
+  }
 }
 
 template<typename Frame>
@@ -80,11 +89,11 @@ void ContinuousTrajectory<Frame>::Append(
     first_time_ = time;
   }
 
-  if (last_points_.size() == kDivisions) {
+  if (last_points_.size() == divisions) {
     // These vectors are static to avoid deallocation/reallocation each time we
     // go through this code path.
-    static std::vector<Displacement<Frame>> q(kDivisions + 1);
-    static std::vector<Velocity<Frame>> v(kDivisions + 1);
+    static std::vector<Displacement<Frame>> q(divisions + 1);
+    static std::vector<Velocity<Frame>> v(divisions + 1);
     q.clear();
     v.clear();
 
@@ -107,22 +116,6 @@ void ContinuousTrajectory<Frame>::Append(
   // approximation, because clearing the map is much more efficient than erasing
   // every element but one.
   last_points_.emplace_back(time, degrees_of_freedom);
-}
-
-template<typename Frame>
-void ContinuousTrajectory<Frame>::ForgetAfter(
-    Instant const & time,
-    DegreesOfFreedom<Frame> const & degrees_of_freedom) {
-  if (time > t_max()) {
-    return;
-  }
-  auto it = FindSeriesForInstant(time);
-  if (it != series_.end()) {
-    CHECK_EQ(time, it->t_max());
-    last_points_.clear();
-    last_points_.emplace_back(time, degrees_of_freedom);
-    series_.erase(++it, series_.end());
-  }
 }
 
 template<typename Frame>
@@ -202,24 +195,49 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+typename ContinuousTrajectory<Frame>::Checkpoint
+ContinuousTrajectory<Frame>::GetCheckpoint() const {
+  return {t_max(),
+          adjusted_tolerance_,
+          is_unstable_,
+          degree_,
+          degree_age_,
+          last_points_};
+}
+
+template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
+  WriteToMessage(message, GetCheckpoint());
+}
+
+template<typename Frame>
+void ContinuousTrajectory<Frame>::WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message,
+      Checkpoint const& checkpoint) const {
   LOG(INFO) << __FUNCTION__;
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
-  adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
-  message->set_is_unstable(is_unstable_);
-  message->set_degree(degree_);
-  message->set_degree_age(degree_age_);
+  checkpoint.adjusted_tolerance_.WriteToMessage(
+      message->mutable_adjusted_tolerance());
+  message->set_is_unstable(checkpoint.is_unstable_);
+  message->set_degree(checkpoint.degree_);
+  message->set_degree_age(checkpoint.degree_age_);
   for (auto const& s : series_) {
-    s.WriteToMessage(message->add_series());
+    if (s.t_max() <= checkpoint.t_max_) {
+      s.WriteToMessage(message->add_series());
+    }
+    if (s.t_max() == checkpoint.t_max_) {
+      break;
+    }
+    CHECK_LT(s.t_max(), checkpoint.t_max_);
   }
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
-  for (auto const& l : last_points_) {
-    Instant const& instant = l.first;
-    DegreesOfFreedom<Frame> degrees_of_freedom = l.second;
+  for (auto const& pair : checkpoint.last_points_) {
+    Instant const& instant = pair.first;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
     not_null<
         serialization::ContinuousTrajectory::InstantaneousDegreesOfFreedom*>
         const instantaneous_degrees_of_freedom = message->add_last_point();
@@ -266,6 +284,21 @@ ContinuousTrajectory<Frame>::Hint::Hint()
     : index_(std::numeric_limits<int>::max()) {}
 
 template<typename Frame>
+ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
+    Instant const& t_max,
+    Length const& adjusted_tolerance,
+    bool const is_unstable,
+    int const degree,
+    int const degree_age,
+    std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> const& last_points)
+    : t_max_(t_max),
+      adjusted_tolerance_(adjusted_tolerance),
+      is_unstable_(is_unstable),
+      degree_(degree),
+      degree_age_(degree_age),
+      last_points_(last_points) {}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory() {}
 
 template<typename Frame>
@@ -283,12 +316,12 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // If the degree is too old, restart from the lowest degree.  This ensures
   // that we use the lowest possible degree at a small computational cost.
-  if (degree_age_ >= kMaxDegreeAge) {
+  if (degree_age_ >= max_degree_age) {
     VLOG(1) << "Lowering degree for " << this << " from " << degree_
-            << " to " << kMinDegree << " because the approximation is too old";
+            << " to " << min_degree << " because the approximation is too old";
     is_unstable_ = false;
     adjusted_tolerance_ = tolerance_;
-    degree_ = kMinDegree;
+    degree_ = min_degree;
     degree_age_ = 0;
   }
 
@@ -305,13 +338,13 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // tolerance, restart from the lowest degree.
   if (is_unstable_ && error_estimate > adjusted_tolerance_) {
     VLOG(1) << "Lowering degree for " << this << " from " << degree_
-            << " to " << kMinDegree
+            << " to " << min_degree
             << " because error estimate " << error_estimate
             << " exceeds adjusted tolerance " << adjusted_tolerance_
             << " and computations are unstable";
     is_unstable_ = false;
     adjusted_tolerance_ = tolerance_;
-    degree_ = kMinDegree - 1;
+    degree_ = min_degree - 1;
     degree_age_ = 0;
     previous_error_estimate = std::numeric_limits<double>::max() * Metre;
     error_estimate = 0.5 * previous_error_estimate;
@@ -322,7 +355,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // decreasing.
   while (error_estimate > adjusted_tolerance_ &&
          error_estimate < previous_error_estimate &&
-         degree_ < kMaxDegree) {
+         degree_ < max_degree) {
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
@@ -337,8 +370,8 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // point where the error was decreasing and nudge the tolerance since we
   // won't be able to reliably do better than that.
   if (error_estimate >= previous_error_estimate) {
-    if (degree_ > kMinDegree) {
-    --degree_;
+    if (degree_ > min_degree) {
+      --degree_;
     }
     VLOG(1) << "Reverting to degree " << degree_ << " for " << this
             << " because error estimate increased (" << error_estimate
@@ -352,7 +385,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   }
 
   // A check that the tolerance did not explode.
-  CHECK_LT(adjusted_tolerance_, 1E6 * previous_adjusted_tolerance)
+  CHECK_LT(adjusted_tolerance_, 1e6 * previous_adjusted_tolerance)
       << "Apocalypse occurred at " << time
       << ", displacements are: " << q
       << ", velocities are: " << v;
@@ -396,5 +429,6 @@ bool ContinuousTrajectory<Frame>::MayUseHint(Instant const& time,
   return false;
 }
 
+}  // namespace internal_continuous_trajectory
 }  // namespace physics
 }  // namespace principia

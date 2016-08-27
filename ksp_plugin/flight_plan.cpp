@@ -9,7 +9,10 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
+using quantities::si::Metre;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 
@@ -292,11 +295,11 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     }
     // We need to forcefully prolong, otherwise we might exceed the ephemeris
     // step limit while recomputing the segments and fail the check.
-    flight_plan->ephemeris_->Prolong(flight_plan->start_of_last_coast());
+    flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
     CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
   }
 
-  return std::move(flight_plan);
+  return flight_plan;
 }
 
 FlightPlan::FlightPlan()
@@ -364,7 +367,7 @@ void FlightPlan::CoastLastSegment(Instant const& desired_final_time) {
     bool const reached_desired_final_time =
         ephemeris_->FlowWithAdaptiveStep(
                         segments_.back(),
-                        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+                        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                         desired_final_time,
                         adaptive_step_parameters_,
                         max_ephemeris_steps_per_frame);
@@ -419,7 +422,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
   bool const reached_manœuvre_initial_time =
       ephemeris_->FlowWithAdaptiveStep(
           recomputed_coast,
-          Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           manœuvre.initial_time(),
           adaptive_step_parameters_,
           max_ephemeris_steps_per_frame);
@@ -434,6 +437,7 @@ Instant FlightPlan::start_of_last_coast() const {
 }
 
 Instant FlightPlan::start_of_penultimate_coast() const {
+  CHECK(!manœuvres_.empty());
   return manœuvres_.size() == 1
              ? initial_time_
              : manœuvres_[manœuvres_.size() - 2].final_time();

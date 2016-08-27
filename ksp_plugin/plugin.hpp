@@ -34,6 +34,7 @@
 
 namespace principia {
 
+using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Point;
@@ -47,8 +48,8 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
-using physics::KeplerianElements;
 using physics::RelativeDegreesOfFreedom;
+using physics::RotatingBody;
 using quantities::Angle;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -64,10 +65,6 @@ using GUID = std::string;
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
 
-// We render trajectories as polygons.
-template<typename Frame>
-using Positions = std::vector<Position<Frame>>;
-
 class Plugin {
  public:
   Plugin() = delete;
@@ -77,19 +74,12 @@ class Plugin {
   Plugin& operator=(Plugin&&) = delete;
   virtual ~Plugin() = default;
 
-  // Constructs a |Plugin|. The current time of that instance is |initial_time|.
-  // The angle between the axes of |World| and |Barycentric| at |initial_time|
-  // is set to |planetarium_rotation|.
-  Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
-
-  // Inserts a celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|.  If this is called, it must be the
-  // first call during initialization; it initiates hierarchical initialization.
-  // TODO(phl): fuse with InsertCelestialJacobiKeplerian?
-  virtual void InsertSun(
-    Index const celestial_index,
-    GravitationalParameter const& gravitational_parameter,
-    Length const& mean_radius);
+  // Constructs a |Plugin|. The current time of that instance is
+  // |solar_system_epoch|.  The angle between the axes of |World| and
+  // |Barycentric| at |solar_system_epoch| is set to |planetarium_rotation|.
+  Plugin(Instant const& game_epoch,
+         Instant const& solar_system_epoch,
+         Angle const& planetarium_rotation);
 
   // Inserts a celestial body with index |celestial_index| body |body|,
   // giving it the initial state |initial_state|.
@@ -97,20 +87,25 @@ class Plugin {
   // body is the body with index |*parent_index|, which must already have been
   // inserted.  Hierarchical initialization must not be ongoing.
   virtual void InsertCelestialAbsoluteCartesian(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    DegreesOfFreedom<Barycentric> const& initial_state,
-    base::not_null<std::unique_ptr<MassiveBody const>> body);
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      DegreesOfFreedom<Barycentric> const& initial_state,
+      not_null<std::unique_ptr<MassiveBody const>> body);
 
   // Hierarchical initialization must be ongoing.
   virtual void InsertCelestialJacobiKeplerian(
-    Index const celestial_index,
-    Index const parent_index,
-    KeplerianElements<Barycentric> const& keplerian_elements,
-    base::not_null<std::unique_ptr<MassiveBody>> body);
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      std::experimental::optional<
+          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
+      not_null<std::unique_ptr<MassiveBody>> body);
 
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
+
+  // Returns true iff this is the unstable KSP stock system.  Must be called
+  // after initialization.
+  virtual bool IsKspStockSystem() const;
 
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies must already have been
@@ -119,6 +114,15 @@ class Plugin {
   // |b.flightGlobalsIndex|, |b.orbit.referenceBody.flightGlobalsIndex|.
   virtual void UpdateCelestialHierarchy(Index const celestial_index,
                                         Index const parent_index) const;
+
+  // Sets the celestial whose axis of rotation will coincide with the |Alice|
+  // z axis.
+  virtual void SetMainBody(Index const index);
+  virtual Rotation<BodyWorld, World> CelestialRotation(Index const index) const;
+  virtual Rotation<CelestialSphere, World> CelestialSphereRotation() const;
+
+  virtual Angle CelestialInitialRotation(Index const celestial_index) const;
+  virtual Time CelestialRotationPeriod(Index const celestial_index) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
@@ -194,9 +198,9 @@ class Plugin {
   // |sun_world_position| is the current position of the sun in |World| space as
   // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
   // relation between |WorldSun| and |World|.  No transfer of ownership.
-  virtual Positions<World> RenderedVesselTrajectory(
-      GUID const& vessel_guid,
-      Position<World> const& sun_world_position) const;
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  RenderedVesselTrajectory(GUID const& vessel_guid,
+                           Position<World> const& sun_world_position) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |CurrentTime()| to
@@ -207,31 +211,28 @@ class Plugin {
   // No transfer of ownership.
   // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
   // called after |predicted_vessel_| was set.
-  virtual Positions<World> RenderedPrediction(
-      GUID const& vessel_guid,
-      Position<World> const& sun_world_position) const;
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  RenderedPrediction(GUID const& vessel_guid,
+                     Position<World> const& sun_world_position) const;
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
   // returns a |Positions| object corresponding to the trajectory defined by
   // |begin| and |end|, as seen in the current |plotting_frame_|.
   // TODO(phl): Use this directly in the interface and remove the other
   // |Rendered...|.
-  virtual Positions<World> RenderedTrajectoryFromIterators(
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  RenderedTrajectoryFromIterators(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
-
-  virtual Positions<World> RenderApsides(
-      Position<World> const& sun_world_position,
-      DiscreteTrajectory<Barycentric>& apsides) const;
 
   virtual void ComputeAndRenderApsides(
       Index const celestial_index,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
-      Positions<World>& apoapsides,
-      Positions<World>& periapsides) const;
+      std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
+      std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
 
   virtual void SetPredictionLength(Time const& t);
 
@@ -294,9 +295,14 @@ class Plugin {
   virtual Vector<double, World> VesselNormal(GUID const& vessel_guid) const;
   virtual Vector<double, World> VesselBinormal(GUID const& vessel_guid) const;
 
+  virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
+
   // Returns
-  // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
+  // |sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget()|.
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
+
+  virtual Instant GameEpoch() const;
+  virtual bool MustRotateBodies() const;
 
   virtual Instant CurrentTime() const;
 
@@ -314,7 +320,7 @@ class Plugin {
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
   using IndexToMassiveBody =
-      std::map<Index, base::not_null<std::unique_ptr<MassiveBody const>>>;
+      std::map<Index, not_null<std::unique_ptr<MassiveBody const>>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
@@ -325,15 +331,16 @@ class Plugin {
          IndexToOwnedCelestial celestials,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
          std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             history_parameters,
+         Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prolongation_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_parameters,
-         Angle planetarium_rotation,
-         Instant current_time,
-         Index sun_index);
+         Angle const& planetarium_rotation,
+         Instant const& game_epoch,
+         Instant const& current_time,
+         Index const sun_index,
+         bool const is_pre_cardano);
 
   // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
@@ -366,6 +373,15 @@ class Plugin {
     Ephemeris<Barycentric> const& ephemeris,
     google::protobuf::RepeatedPtrField<T> const& celestial_messages,
     not_null<IndexToOwnedCelestial*> const celestials);
+
+  // Computes a fingerprint for the parameters passed to
+  // |InsertCelestialJacobiKeplerian|.
+  static std::uint64_t FingerprintCelestialJacobiKeplerian(
+      Index const celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      std::experimental::optional<
+          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
+      MassiveBody const& body);
 
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
@@ -407,6 +423,8 @@ class Plugin {
   base::Monostable initializing_;
 
   Angle planetarium_rotation_;
+  // The game epoch in real time.
+  Instant const game_epoch_;
   // The current in-game universal time.
   Instant current_time_;
 
@@ -415,6 +433,15 @@ class Plugin {
   // Not null after initialization. |EndInitialization| sets it to the
   // heliocentric frame.
   std::unique_ptr<NavigationFrame> plotting_frame_;
+
+  // Used for detecting and patching the stock system.
+  std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
+  bool is_ksp_stock_system_ = false;
+
+  RotatingBody<Barycentric> const* main_body_ = nullptr;
+
+  // Compatibility.
+  bool is_pre_cardano_ = false;
 
   friend class TestablePlugin;
 };

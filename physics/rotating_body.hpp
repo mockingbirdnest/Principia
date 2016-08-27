@@ -17,6 +17,8 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rotating_body {
 
 using geometry::AngularVelocity;
 using geometry::Instant;
@@ -24,8 +26,7 @@ using geometry::Rotation;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
-
-namespace physics {
+using quantities::Length;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {
@@ -35,18 +36,25 @@ class RotatingBody : public MassiveBody {
   class Parameters {
    public:
     // |reference_angle| is the angle of the prime meridian at
-    // |reference_instant|.  |angular_velocity| gives the direction and speed of
-    // the rotation of the body.
+    // |reference_instant|.  |angular_frequency| gives the rate of rotation of
+    // the body around the pole (it may be negative, as is the convention for
+    // planets and satellites whose rotation is retrograde).  The direction of
+    // the pole is specified in |Frame| using |right_ascension_of_pole| and
+    // |declination_of_pole|.
     Parameters(Length const& mean_radius,
                Angle const& reference_angle,
                Instant const& reference_instant,
-               AngularVelocity<Frame> const& angular_velocity);
+               AngularFrequency const& angular_frequency,
+               Angle const& right_ascension_of_pole,
+               Angle const& declination_of_pole);
 
    private:
     Length const mean_radius_;
     Angle const reference_angle_;
     Instant const reference_instant_;
-    AngularVelocity<Frame> const angular_velocity_;
+    AngularFrequency const angular_frequency_;
+    Angle const right_ascension_of_pole_;
+    Angle const declination_of_pole_;
     template<typename F>
     friend class RotatingBody;
   };
@@ -58,7 +66,21 @@ class RotatingBody : public MassiveBody {
   // Returns the radius passed at construction.
   Length mean_radius() const override;
 
-  // Returns the angular velocity passed at construction.
+  // Returns the direction defined by the right ascension and declination passed
+  // at construction.
+  Vector<double, Frame> const& polar_axis() const;
+
+  // Returns the right ascension passed at construction.
+  Angle const& right_ascension_of_pole() const;
+
+  // Returns the declination at construction.
+  Angle const& declination_of_pole() const;
+
+  // Returns the angular frequency passed at construction.
+  AngularFrequency const& angular_frequency() const;
+
+  // Returns the angular velocity defined by the right ascension, declination,
+  // and angular frequency passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;
 
   // Returns the position at time |t|.
@@ -85,7 +107,13 @@ class RotatingBody : public MassiveBody {
 
  private:
   Parameters const parameters_;
+  Vector<double, Frame> const polar_axis_;
+  AngularVelocity<Frame> const angular_velocity_;
 };
+
+}  // namespace internal_rotating_body
+
+using internal_rotating_body::RotatingBody;
 
 }  // namespace physics
 }  // namespace principia

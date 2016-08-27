@@ -57,6 +57,12 @@ END {
 
   for (i = 0; i < n; ++i) {
     b = bodies[i]
+    sub(/E/, "e", x[b])
+    sub(/E/, "e", y[b])
+    sub(/E/, "e", z[b])
+    sub(/E/, "e", vx[b])
+    sub(/E/, "e", vy[b])
+    sub(/E/, "e", vz[b])
     print "  body {"
     print "    name : \"" b "\""
     print "    x    : \"" x[b] " km\""

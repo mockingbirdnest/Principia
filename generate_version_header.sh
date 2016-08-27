@@ -5,8 +5,8 @@ VERSION_TEMPLATE="\xef\xbb\xbf
 namespace principia {
 namespace base {
 
-char const kBuildDate[] = \"%%DATE%%\";
-char const kVersion[] =
+char const BuildDate[] = \"%%DATE%%\";
+char const Version[] =
     u8\"%%VERSION%%\";
 
 }  // namespace base
@@ -14,4 +14,4 @@ char const kVersion[] =
 
 echo -e "$VERSION_TEMPLATE" | 
 sed "s/%%DATE%%/`date -u +%Y-%m-%dT%H:%M:%SZ`/" |
-sed "s/%%VERSION%%/`git describe --tags --always --dirty --abbrev=40 --long`/" > base/version.hpp
+sed "s/%%VERSION%%/`git describe --tags --always --dirty --abbrev=40 --long`/" > base/version.generated.h

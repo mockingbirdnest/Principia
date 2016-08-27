@@ -22,15 +22,16 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_barycentric_rotating_dynamic_frame {
 
 using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
-
-namespace physics {
 
 template<typename InertialFrame, typename ThisFrame>
 class BarycentricRotatingDynamicFrame
@@ -43,11 +44,6 @@ class BarycentricRotatingDynamicFrame
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
-  RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
-      Instant const& t) const override;
-  Vector<Acceleration, ThisFrame> GeometricAcceleration(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> const message) const override;
@@ -58,6 +54,12 @@ class BarycentricRotatingDynamicFrame
           serialization::BarycentricRotatingDynamicFrame const& message);
 
  private:
+  Vector<Acceleration, InertialFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<InertialFrame> const& q) const override;
+  AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
+      Instant const& t) const override;
+
   // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
   // to the basis of |ThisFrame|.  Fills |*angular_frequency| with the
   // corresponding angular velocity.
@@ -77,6 +79,11 @@ class BarycentricRotatingDynamicFrame
   mutable typename ContinuousTrajectory<InertialFrame>::Hint primary_hint_;
   mutable typename ContinuousTrajectory<InertialFrame>::Hint secondary_hint_;
 };
+
+}  // namespace internal_barycentric_rotating_dynamic_frame
+
+using internal_barycentric_rotating_dynamic_frame::
+    BarycentricRotatingDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia

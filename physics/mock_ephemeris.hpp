@@ -8,6 +8,7 @@
 
 namespace principia {
 namespace physics {
+namespace internal_ephemeris {
 
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {
@@ -32,13 +33,14 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
-  MOCK_METHOD4_T(
+  MOCK_METHOD5_T(
       FlowWithAdaptiveStep,
       bool(not_null<DiscreteTrajectory<Frame>*> const trajectory,
            typename Ephemeris<Frame>::IntrinsicAcceleration
                intrinsic_acceleration,
            Instant const& t,
-           AdaptiveStepParameters const& parameters));
+           AdaptiveStepParameters const& parameters,
+           std::int64_t const max_ephemeris_steps));
   MOCK_METHOD4_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
@@ -77,6 +79,10 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));
 };
+
+}  // namespace internal_ephemeris
+
+using internal_ephemeris::MockEphemeris;
 
 }  // namespace physics
 }  // namespace principia

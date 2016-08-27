@@ -3,7 +3,7 @@
 These instructions are for Visual Studio 2015, using the git
 Powershell provided by [GitHub for Windows](https://windows.github.com/).
 
-We assume a working installation of Kerbal Space Program version 1.0.4 is
+We assume a working installation of Kerbal Space Program version 1.1.2 is
 found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.

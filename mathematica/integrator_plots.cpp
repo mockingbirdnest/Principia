@@ -28,6 +28,7 @@ using astronomy::ICRFJ2000Equator;
 using base::not_null;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
+using geometry::Velocity;
 using integrators::SRKNIntegrator;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -313,9 +314,9 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
   {
     auto const solar_system =
         SolarSystemFactory::AtСпутник1Launch(
-            SolarSystemFactory::Accuracy::kMajorBodiesOnly);
-    for (int i = SolarSystemFactory::kSun;
-         i <= SolarSystemFactory::kLastMajorBody;
+            SolarSystemFactory::Accuracy::MajorBodiesOnly);
+    for (int i = SolarSystemFactory::Sun;
+         i <= SolarSystemFactory::LastMajorBody;
          ++i) {
       bodies.emplace_back(*solar_system->MakeMassiveBody(
           solar_system->gravity_model_message(SolarSystemFactory::name(i))));
@@ -329,8 +330,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
       initial_energy += 0.5 * body.mass() * InnerProduct(v, v);
     }
 
-    for (int i = SolarSystemFactory::kSun;
-         i <= SolarSystemFactory::kLastMajorBody;
+    for (int i = SolarSystemFactory::Sun;
+         i <= SolarSystemFactory::LastMajorBody;
          ++i) {
       for (int j = 0; j < i; ++j) {
         // Potential energy.
@@ -373,8 +374,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     for (int i = 0; i < reference_size; ++i) {
       reference_solution.emplace_back();
     }
-    for (int b = SolarSystemFactory::kSun;
-         b <= SolarSystemFactory::kLastMajorBody;
+    for (int b = SolarSystemFactory::Sun;
+         b <= SolarSystemFactory::LastMajorBody;
          ++b) {
       for (int i = 0; i < reference_size; ++i) {
         BarycentreCalculator<Position<ICRFJ2000Equator>, double> reference_q;
@@ -423,8 +424,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
       Energy e_error;
       for (auto const& system_state : solution) {
         Energy energy;
-        for (int body = SolarSystemFactory::kSun;
-             body <= SolarSystemFactory::kLastMajorBody;
+        for (int body = SolarSystemFactory::Sun;
+             body <= SolarSystemFactory::LastMajorBody;
              ++body) {
           int t = static_cast<int>(
                       std::round(system_state.time.value / Δt_reference)) - 1;
@@ -441,8 +442,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
                         InnerProduct(system_state.momenta[body].value,
                                      system_state.momenta[body].value);
         }
-        for (int b = SolarSystemFactory::kSun;
-             b <= SolarSystemFactory::kLastMajorBody;
+        for (int b = SolarSystemFactory::Sun;
+             b <= SolarSystemFactory::LastMajorBody;
              ++b) {
           for (int j = 0; j < i; ++j) {
             // Potential energy.

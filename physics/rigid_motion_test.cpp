@@ -13,25 +13,24 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rigid_motion {
 
 using geometry::AngularVelocity;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;
 using geometry::Permutation;
 using geometry::Wedge;
 using quantities::AngularFrequency;
-using quantities::Length;
 using quantities::Speed;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;
-using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
-
-namespace physics {
 
 class RigidMotionTest : public testing::Test {
  protected:
@@ -189,6 +188,6 @@ TEST_F(RigidMotionTest, GroupoidInverse) {
   EXPECT_THAT(d2.velocity(), AlmostEquals(degrees_of_freedom_.velocity(), 6));
 }
 
-
+}  // namespace internal_rigid_motion
 }  // namespace physics
 }  // namespace principia

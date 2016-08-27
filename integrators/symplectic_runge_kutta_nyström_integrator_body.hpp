@@ -35,14 +35,14 @@ SymplecticRungeKuttaNyströmIntegrator(
     c_i.Increment(a_[i]);
   }
   CHECK_LE(ULPDistance(1.0, c_i.value), 2);
-  if (composition == kABA) {
+  if (composition == ABA) {
     CHECK_EQ(0.0, b_[0]);
-  } else if (composition == kBAB) {
+  } else if (composition == BAB) {
     CHECK_EQ(0.0, a_[stages_ - 1]);
   }
   if (time_reversible) {
     switch (composition) {
-      case kABA:
+      case ABA:
         for (int i = 0; i < stages_; ++i) {
           CHECK_EQ(a_[i], a_[stages_ - 1 - i]);
         }
@@ -50,7 +50,7 @@ SymplecticRungeKuttaNyströmIntegrator(
           CHECK_EQ(b_[i + 1], b_[stages_ - 1 - i]);
         }
         break;
-      case kBAB:
+      case BAB:
         for (int i = 0; i < stages_ - 1; ++i) {
           CHECK_EQ(a_[i], a_[stages_ - 2 - i]);
         }
@@ -58,7 +58,7 @@ SymplecticRungeKuttaNyströmIntegrator(
           CHECK_EQ(b_[i], b_[stages_ - 1 - i]);
         }
         break;
-      case kBA:
+      case BA:
         LOG(FATAL) << "Time-reversible compositions have the FSAL property";
         break;
       default:
@@ -118,11 +118,11 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
   // The first full stage of the step, i.e. the first stage where
   // exp(bᵢ h B) exp(aᵢ h A) must be entirely computed.
-  // Always 0 in the non-FSAL kBA case, always 1 in the kABA case since b₀ = 0,
+  // Always 0 in the non-FSAL BA case, always 1 in the ABA case since b₀ = 0,
   // means the first stage is only exp(a₀ h A), and 1 after the first step
-  // in the kBAB case, since the last right-hand-side evaluation can be used for
+  // in the BAB case, since the last right-hand-side evaluation can be used for
   // exp(bᵢ h B).
-  int first_stage = composition == kABA ? 1 : 0;
+  int first_stage = composition == ABA ? 1 : 0;
 
   while (abs_h <= Abs((problem.t_final - t.value) - t.error)) {
     std::fill(Δq.begin(), Δq.end(), Displacement{});
@@ -130,7 +130,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
     if (first_stage == 1) {
       for (int k = 0; k < dimension; ++k) {
-        if (composition == kBAB) {
+        if (composition == BAB) {
           // exp(b₀ h B)
           Δv[k] += h * b_[0] * g[k];
         }
@@ -152,7 +152,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       }
     }
 
-    if (composition == kBAB) {
+    if (composition == BAB) {
       first_stage = 1;
     }
 
@@ -167,10 +167,10 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, kBA> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, BA> const&
 McLachlanAtela1992Order4Optimal() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 4, false, 4, kBA> const integrator(
+             Position, 4, false, 4, BA> const integrator(
       serialization::FixedStepSizeIntegrator::
           MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL,
       { 0.5153528374311229364,
@@ -185,10 +185,10 @@ McLachlanAtela1992Order4Optimal() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 4, kABA> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 4, ABA> const&
 McLachlan1995SB3A4() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 4, true, 4, kABA> const integrator(
+             Position, 4, true, 4, ABA> const integrator(
       serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_4,
       { 0.18819521776883821787,
        -0.021528551102171551201,
@@ -204,10 +204,10 @@ McLachlan1995SB3A4() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 5, kABA> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 5, ABA> const&
 McLachlan1995SB3A5() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 4, true, 5, kABA> const integrator(
+             Position, 4, true, 5, ABA> const integrator(
       serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_5,
       { 0.4051886183952522772,
        -0.2871440408165240890,
@@ -225,10 +225,10 @@ McLachlan1995SB3A5() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 6, kBAB> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 6, BAB> const&
 BlanesMoan2002SRKN6B() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 4, true, 6, kBAB> const integrator(
+             Position, 4, true, 6, BAB> const integrator(
       serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_6B,
       { 0.24529895718427100,
         0.60487266571108000,
@@ -248,10 +248,10 @@ BlanesMoan2002SRKN6B() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 5, false, 6, kBA> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 5, false, 6, BA> const&
 McLachlanAtela1992Order5Optimal() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 5, false, 6, kBA> const integrator(
+             Position, 5, false, 6, BA> const integrator(
       serialization::FixedStepSizeIntegrator::
           MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL,
       { 0.339839625839110000,
@@ -270,10 +270,10 @@ McLachlanAtela1992Order5Optimal() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 7, kABA> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 7, ABA> const&
 OkunborSkeel1994Order6Method13() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 6, true, 7, kABA> const integrator(
+             Position, 6, true, 7, ABA> const integrator(
       serialization::FixedStepSizeIntegrator::
           OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13,
       {-1.0130879789171747298,
@@ -296,10 +296,10 @@ OkunborSkeel1994Order6Method13() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 11, kBAB> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 11, BAB> const&
 BlanesMoan2002SRKN11B() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 6, true, 11, kBAB> const integrator(
+             Position, 6, true, 11, BAB> const integrator(
       serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_11B,
       { 0.12322977594627100,
         0.29055379779955800,
@@ -329,10 +329,10 @@ BlanesMoan2002SRKN11B() {
 }
 
 template<typename Position>
-SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 14, kABA> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 14, ABA> const&
 BlanesMoan2002SRKN14A() {
   static SymplecticRungeKuttaNyströmIntegrator<
-             Position, 6, true, 14, kABA> const integrator(
+             Position, 6, true, 14, ABA> const integrator(
       serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_14A,
       { 0.037859319840611600,
         0.10263563310243500,

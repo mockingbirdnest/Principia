@@ -7,10 +7,10 @@
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_degrees_of_freedom {
 
 using geometry::BarycentreCalculator;
-
-namespace physics {
 
 template<typename Frame>
 DegreesOfFreedom<Frame>::DegreesOfFreedom(Position<Frame> const& position,
@@ -88,6 +88,7 @@ std::ostream& operator<<(
   return out;
 }
 
+}  // namespace internal_degrees_of_freedom
 }  // namespace physics
 
 namespace base {

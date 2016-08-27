@@ -12,20 +12,26 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
 using quantities::si::Degree;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 
 namespace geometry {
 
 class RotationTest : public testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+  using World =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
+  using World1 =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 
@@ -42,9 +48,9 @@ class RotationTest : public testing::Test {
         e3_(Vector<double, World>(R3Element<double>({0, 0, 1}))),
         rotation_a_(Rot(120 * Degree, Bivector<double, World>({1, 1, 1}))),
         rotation_b_(Rot(90 * Degree, Bivector<double, World>({1, 0, 0}))),
-        rotation_c_(Rot(R3x3Matrix({{0.5, 0.5 * sqrt(3), 0},
-                                    {-0.5 * sqrt(3), 0.5, 0},
-                                    {0, 0, 1}}))) {}
+        rotation_c_(Rot(ToQuaternion(R3x3Matrix({{0.5, 0.5 * sqrt(3), 0},
+                                                 {-0.5 * sqrt(3), 0.5, 0},
+                                                 {0, 0, 1}})))) {}
 
   Vector<quantities::Length, World> vector_;
   Bivector<quantities::Length, World> bivector_;
@@ -165,7 +171,7 @@ TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m.Transpose());
+  Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
@@ -180,7 +186,7 @@ TEST_F(RotationTest, ToQuaternion2) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m.Transpose());
+  Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
@@ -195,7 +201,7 @@ TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m.Transpose());
+  Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 2));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 1));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 12));
@@ -210,7 +216,7 @@ TEST_F(RotationTest, ToQuaternion4) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m.Transpose());
+  Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 1));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 2));
@@ -245,6 +251,32 @@ TEST_F(RotationTest, SerializationSuccess) {
   EXPECT_EQ(0.5, extension.quaternion().imaginary_part().z().double_());
   Rot const r = Rot::ReadFromMessage(message);
   EXPECT_EQ(rotation_a_(vector_), r(vector_));
+}
+
+TEST_F(RotationTest, Basis) {
+  Vector<double, World> a = Normalize(Vector<double, World>({1, 1, -1}));
+  Vector<double, World> b = Normalize(Vector<double, World>({1, 0, 1}));
+  Bivector<double, World> c = Wedge(a, b);
+
+  Rotation<World, World1> const to_world1(a, b, c);
+  EXPECT_THAT(to_world1(a),
+              Componentwise(AlmostEquals(1, 1),
+                            AlmostEquals(0, 0),
+                            VanishesBefore(1, 0)));
+  EXPECT_THAT(to_world1(b),
+              Componentwise(AlmostEquals(0, 0),
+                            AlmostEquals(1, 0),
+                            VanishesBefore(1, 0)));
+  EXPECT_THAT(to_world1(c),
+              Componentwise(VanishesBefore(1, 2),
+                            AlmostEquals(0, 0),
+                            AlmostEquals(1, 0)));
+
+  Rotation<World1, World> const to_world(a, b, c);
+  EXPECT_THAT(to_world(Vector<double, World1>({1, 0, 0})), AlmostEquals(a, 1));
+  EXPECT_THAT(to_world(Vector<double, World1>({0, 1, 0})), AlmostEquals(b, 2));
+  EXPECT_THAT(to_world(Bivector<double, World1>({0, 0, 1})),
+              AlmostEquals(c, 4));
 }
 
 }  // namespace geometry

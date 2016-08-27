@@ -15,12 +15,24 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
+using geometry::AngularVelocity;
+using geometry::BarycentreCalculator;
+using geometry::OrthogonalMap;
+using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;
+using numerics::Bisect;
+using quantities::GravitationalParameter;
+using quantities::Mass;
+using quantities::Pow;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Minute;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::RelativeError;
 
 namespace physics {
@@ -33,13 +45,13 @@ class ResonanceTest : public ::testing::Test {
 
   // Gravitational parameters from the KSP wiki.
   ResonanceTest()
-      : sun_(AddBody(1.1723328E+18 * Pow<3>(Metre) / Pow<2>(Second))),
-        jool_(AddBody(2.8252800E+14 * Pow<3>(Metre) / Pow<2>(Second))),
-        laythe_(AddBody(1.9620000E+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        vall_(AddBody(2.0748150E+11 * Pow<3>(Metre) / Pow<2>(Second))),
-        tylo_(AddBody(2.8252800E+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        bop_(AddBody(2.4868349E+09 * Pow<3>(Metre) / Pow<2>(Second))),
-        pol_(AddBody(7.2170208E+08 * Pow<3>(Metre) / Pow<2>(Second))),
+      : sun_(AddBody(1.1723328e+18 * Pow<3>(Metre) / Pow<2>(Second))),
+        jool_(AddBody(2.8252800e+14 * Pow<3>(Metre) / Pow<2>(Second))),
+        laythe_(AddBody(1.9620000e+12 * Pow<3>(Metre) / Pow<2>(Second))),
+        vall_(AddBody(2.0748150e+11 * Pow<3>(Metre) / Pow<2>(Second))),
+        tylo_(AddBody(2.8252800e+12 * Pow<3>(Metre) / Pow<2>(Second))),
+        bop_(AddBody(2.4868349e+09 * Pow<3>(Metre) / Pow<2>(Second))),
+        pol_(AddBody(7.2170208e+08 * Pow<3>(Metre) / Pow<2>(Second))),
         bodies_({sun_, jool_, laythe_, vall_, tylo_, bop_, pol_}),
         jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
         joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {
@@ -234,7 +246,7 @@ class ResonanceTest : public ::testing::Test {
                                    *elements_[moon].mean_motion;
       LOG(INFO) << "actual period   : " << actual_period;
       LOG(INFO) << "expected period : " << expected_period;
-      LOG(INFO) << "error           :"
+      LOG(INFO) << "error           : "
                 << RelativeError(expected_period, actual_period);
     }
   }

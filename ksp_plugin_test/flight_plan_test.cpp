@@ -15,6 +15,8 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
+using geometry::Displacement;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -22,8 +24,11 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Newton;
+using quantities::Pow;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
@@ -160,7 +165,7 @@ TEST_F(FlightPlanTest, Singular) {
   flight_plan_->GetSegment(0, &begin, &end);
   DiscreteTrajectory<Barycentric>::Iterator back = end;
   --back;
-  EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1E-4 * Second));
+  EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1e-4 * Second));
   // Attempting to put a burn past the singularity fails.
   EXPECT_FALSE(
       flight_plan_->Append(

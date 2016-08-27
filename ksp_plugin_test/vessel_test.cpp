@@ -10,6 +10,7 @@
 
 namespace principia {
 
+using geometry::Displacement;
 using physics::Ephemeris;
 using physics::SolarSystem;
 using quantities::si::Kilo;
@@ -40,7 +41,8 @@ class VesselTest : public testing::Test {
             /*step=*/1 * Second) {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
-        SOLUTION_DIR / "astronomy" / "initial_state_two_bodies_test.proto.txt");
+        SOLUTION_DIR / "astronomy" /
+            "initial_state_two_bodies_circular_test.proto.txt");
     ephemeris_ = solar_system_.MakeEphemeris(
         /*fitting_tolerance=*/1 * Metre, ephemeris_fixed_parameters_);
     earth_ = std::make_unique<Celestial>(
@@ -205,8 +207,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           /*speed_integration_tolerance=*/1 * Metre / Second));
   Instant previous_t_max = ephemeris_->t_max();
   for (int i = 0; i < 10; ++i) {
-    vessel_->UpdatePrediction(t2_ +
-                              std::numeric_limits<double>::infinity() * Second);
+    vessel_->UpdatePrediction(astronomy::InfiniteFuture);
   }
   // We stop prolonging when the ephemeris gets long enough (in this case, a
   // single prolongation suffices).
@@ -223,8 +224,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
           /*speed_integration_tolerance=*/1 * Metre / Second));
   previous_t_max = ephemeris_->t_max();
   for (int i = 0; i < 10; ++i) {
-    vessel_->UpdatePrediction(t2_ +
-                              std::numeric_limits<double>::infinity() * Second);
+    vessel_->UpdatePrediction(astronomy::InfiniteFuture);
   }
   // Here the ephemeris isn't long enough yet; we have prolonged every time.
   EXPECT_THAT((ephemeris_->t_max() - previous_t_max) /

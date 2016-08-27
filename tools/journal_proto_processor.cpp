@@ -18,10 +18,10 @@ namespace tools {
 
 namespace {
 
-char const kMethod[] = "Method";
-char const kIn[] = "In";
-char const kReturn[] = "Return";
-char const kOut[] = "Out";
+char const method_message_name[] = "Method";
+char const in_message_name[] = "In";
+char const return_message_name[] = "Return";
+char const out_message_name[] = "Out";
 
 template<typename Container>
 bool Contains(Container const& container,
@@ -63,7 +63,8 @@ std::string ToLower(std::string const& s) {
 
 void JournalProtoProcessor::ProcessMessages() {
   // Get the file containing |Method|.
-  Descriptor const* method_descriptor = serialization::Method::descriptor();
+  Descriptor const* method_descriptor =
+      journal::serialization::Method::descriptor();
   FileDescriptor const* file_descriptor = method_descriptor->file();
 
   // Process all the messages in that file.
@@ -73,7 +74,7 @@ void JournalProtoProcessor::ProcessMessages() {
     if (message_descriptor->extension_range_count() > 0) {
       // Only the |Method| message should have a range.  Don't generate any code
       // for it.
-      CHECK_EQ(kMethod, message_descriptor_name)
+      CHECK_EQ(method_message_name, message_descriptor_name)
           << message_descriptor_name << " should not have extension ranges";
       continue;
     }
@@ -186,9 +187,10 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   std::string const& message_type_name = descriptor->message_type()->name();
 
   FieldOptions const& options = descriptor->options();
-  CHECK(options.HasExtension(serialization::size))
+  CHECK(options.HasExtension(journal::serialization::size))
       << descriptor->full_name() << " is missing a (size) option";
-  size_member_name_[descriptor] = options.GetExtension(serialization::size);
+  size_member_name_[descriptor] =
+      options.GetExtension(journal::serialization::size);
   field_cs_type_[descriptor] = message_type_name + "[]";
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
@@ -233,19 +235,22 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       };
 }
 
-void JournalProtoProcessor::ProcessOptionalInt32Field(
-    FieldDescriptor const* descriptor) {
-  // It is not possible to use a custom marshaler on an |int?|, as this raises
+void JournalProtoProcessor::ProcessOptionalNonStringField(
+    FieldDescriptor const* descriptor,
+    std::string const& cs_boxed_type,
+    std::string const& cs_unboxed_type,
+    std::string const& cxx_type) {
+  // It is not possible to use a custom marshaler on an |T?|, as this raises
   // |System.Runtime.InteropServices.MarshalDirectiveException| with the message
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
-  // value types.".  We could use a boxed |int|, whose type would be |object|,
-  // but we would lose static typing.  We use a custom strongly-typed boxed type
+  // value types.".  We could use a boxed |T|, whose type would be |object|, but
+  // we would lose static typing.  We use a custom strongly-typed boxed type
   // instead.
-  field_cs_type_[descriptor] = "BoxedInt32";
+  field_cs_type_[descriptor] = cs_boxed_type;
   field_cs_marshal_[descriptor] =
       "[MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(OptionalMarshaler<int>))]";
-  field_cxx_type_[descriptor] = "int const*";
+      "MarshalTypeRef = typeof(OptionalMarshaler<" + cs_unboxed_type + ">))]";
+  field_cxx_type_[descriptor] = cxx_type + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
@@ -255,24 +260,67 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
       [](std::string const& expr) {
         return "*" + expr;
       };
-  field_cxx_optional_pointer_fn_[descriptor] =
-      [this, descriptor](std::string const& condition,
+  field_cxx_optional_pointer_fn_[descriptor] = [this, cxx_type, descriptor](
+      std::string const& condition,
+      std::string const& expr) {
+    // Tricky.  We need a heap allocation to obtain a pointer to the value.
+    return condition + " ? std::make_unique<" + cxx_type + " const>(" + expr +
+           ") : nullptr";
+  };
+}
+
+void JournalProtoProcessor::ProcessOptionalDoubleField(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedDouble",
+      /*cs_unboxed_type=*/"double",
+      /*cxx_type=*/"double");
+}
+
+void JournalProtoProcessor::ProcessOptionalInt32Field(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedInt32",
+      /*cs_unboxed_type=*/"int",
+      /*cxx_type=*/"int");
+}
+
+void JournalProtoProcessor::ProcessOptionalMessageField(
+    FieldDescriptor const* descriptor) {
+  std::string const& message_type_name = descriptor->message_type()->name();
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"Boxed" + message_type_name,
+      /*cs_unboxed_type=*/message_type_name,
+      /*cxx_type=*/message_type_name);
+
+  field_cxx_assignment_fn_[descriptor] =
+      [this, descriptor](std::string const& prefix,
                          std::string const& expr) {
-        // Tricky.  We need a heap allocation to obtain a pointer to the value.
-        return condition + " ? std::make_unique<int const>(" + expr +
-               ") : nullptr";
+        return "  *" + prefix + "mutable_" + descriptor->name() +
+               "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
+      };
+  field_cxx_deserializer_fn_[descriptor] =
+      [message_type_name](std::string const& expr) {
+        return "Deserialize" + message_type_name + "(" + expr + ")";
+      };
+  field_cxx_serializer_fn_[descriptor] =
+      [message_type_name](std::string const& expr) {
+        return "Serialize" + message_type_name + "(" + expr + ")";
       };
 }
 
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
-  CHECK(options.HasExtension(serialization::pointer_to))
+  CHECK(options.HasExtension(journal::serialization::pointer_to))
       << descriptor->full_name() << " is missing a (pointer_to) option";
   std::string const& pointer_to =
-      options.GetExtension(serialization::pointer_to);
-  if (options.HasExtension(serialization::is_subject)) {
-    CHECK(options.GetExtension(serialization::is_subject))
+      options.GetExtension(journal::serialization::pointer_to);
+  if (options.HasExtension(journal::serialization::is_subject)) {
+    CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
     field_cs_type_[descriptor] = "this IntPtr";
   } else {
@@ -281,46 +329,46 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   field_cxx_type_[descriptor] = pointer_to + "*";
 
   if (Contains(out_, descriptor) && !Contains(in_out_, descriptor)) {
-    CHECK(!options.HasExtension(serialization::is_consumed) &&
-          !options.HasExtension(serialization::is_consumed_if))
+    CHECK(!options.HasExtension(journal::serialization::is_consumed) &&
+          !options.HasExtension(journal::serialization::is_consumed_if))
         << "out parameter " + descriptor->full_name() + " cannot be consumed";
   }
 
-  if (options.HasExtension(serialization::is_consumed)) {
-    CHECK(options.GetExtension(serialization::is_consumed))
+  if (options.HasExtension(journal::serialization::is_consumed)) {
+    CHECK(options.GetExtension(journal::serialization::is_consumed))
         << descriptor->full_name() << " has incorrect (is_consumed) option";
     field_cxx_deleter_fn_[descriptor] =
         [](std::string const& expr) {
           return "  Delete(pointer_map, " + expr + ");\n";
         };
   }
-  if (options.HasExtension(serialization::is_consumed_if)) {
-    CHECK(!options.HasExtension(serialization::is_consumed))
+  if (options.HasExtension(journal::serialization::is_consumed_if)) {
+    CHECK(!options.HasExtension(journal::serialization::is_consumed))
         << descriptor->full_name()
         << " has incorrect (is_consumed) and (is_consumed_if) options";
     field_cxx_deleter_fn_[descriptor] =
         [options](std::string const& expr) {
           return "  if (" +
-                 options.GetExtension(serialization::is_consumed_if) +
+                 options.GetExtension(journal::serialization::is_consumed_if) +
                  ") {\n    Delete(pointer_map, " + expr + ");\n  }\n";
         };
   }
-  if (options.HasExtension(serialization::is_produced)) {
-    CHECK(options.GetExtension(serialization::is_produced))
+  if (options.HasExtension(journal::serialization::is_produced)) {
+    CHECK(options.GetExtension(journal::serialization::is_produced))
         << descriptor->full_name() << " has incorrect (is_produced) option";
     field_cxx_inserter_fn_[descriptor] =
         [](std::string const& expr1, std::string const& expr2) {
           return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
         };
   }
-  if (options.HasExtension(serialization::is_produced_if)) {
-    CHECK(!options.HasExtension(serialization::is_produced))
+  if (options.HasExtension(journal::serialization::is_produced_if)) {
+    CHECK(!options.HasExtension(journal::serialization::is_produced))
         << descriptor->full_name()
         << " has incorrect (is_produced) and (is_produced_if) options";
     field_cxx_inserter_fn_[descriptor] =
         [options](std::string const& expr1, std::string const& expr2) {
           return "  if (" +
-                 options.GetExtension(serialization::is_produced_if) +
+                 options.GetExtension(journal::serialization::is_produced_if) +
                  ") {\n    Insert(pointer_map, " + expr1 + ", " + expr2 +
                  ");\n  }\n";
         };
@@ -399,8 +447,9 @@ void JournalProtoProcessor::ProcessSingleStringField(
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
   FieldOptions const& options = descriptor->options();
-  if (options.HasExtension(serialization::size)) {
-    size_member_name_[descriptor] = options.GetExtension(serialization::size);
+  if (options.HasExtension(journal::serialization::size)) {
+    size_member_name_[descriptor] =
+        options.GetExtension(journal::serialization::size);
 
     field_cxx_arguments_fn_[descriptor] =
         [](std::string const& identifier) -> std::vector<std::string> {
@@ -435,8 +484,14 @@ void JournalProtoProcessor::ProcessOptionalField(
         return condition + " ? " + expr + " : nullptr";
       };
   switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_DOUBLE:
+      ProcessOptionalDoubleField(descriptor);
+      break;
     case FieldDescriptor::TYPE_INT32:
       ProcessOptionalInt32Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      ProcessOptionalMessageField(descriptor);
       break;
     case FieldDescriptor::TYPE_STRING:
       ProcessSingleStringField(descriptor);
@@ -616,7 +671,7 @@ void JournalProtoProcessor::ProcessInOut(
     // For in-out parameters, the code is generated only once, on the in
     // occurrence.
     bool const must_generate_code =
-        name == kIn || !Contains(in_out_, field_descriptor);
+        name == in_message_name || !Contains(in_out_, field_descriptor);
 
     std::string const cxx_fill_member_name =
         ToLower(name) + "." + field_descriptor_name;
@@ -754,7 +809,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     deserialized_expressions.push_back(
         field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter));
     cxx_serialize_definition_[descriptor] +=
-        field_cxx_assignment_fn_[field_descriptor]("m.", serialize_member_name);
+        field_cxx_optional_assignment_fn_[field_descriptor](
+            serialize_member_name,
+            field_cxx_assignment_fn_[field_descriptor](
+                "m.", serialize_member_name));
 
     cs_interface_type_declaration_[descriptor] +=
         "  public " + field_cs_type_[field_descriptor] + " " +
@@ -787,10 +845,10 @@ void JournalProtoProcessor::ProcessMethodExtension(
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
-    if (nested_name == kIn) {
+    if (nested_name == in_message_name) {
       has_in = true;
       ProcessInOut(nested_descriptor, &field_descriptors);
-    } else if (nested_name == kOut) {
+    } else if (nested_name == out_message_name) {
       has_out = true;
       std::vector<FieldDescriptor const*> out_field_descriptors;
       ProcessInOut(nested_descriptor, &out_field_descriptors);
@@ -798,7 +856,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(out_field_descriptors.begin(),
                 out_field_descriptors.end(),
                 std::back_inserter(field_descriptors));
-    } else if (nested_name == kReturn) {
+    } else if (nested_name == return_message_name) {
       has_return = true;
     } else {
       LOG(FATAL) << "Unexpected nested message "
@@ -834,7 +892,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
-    if (nested_name == kIn) {
+    if (nested_name == in_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cxx_functions_implementation_[descriptor] +=
           "void " + name + "::Fill(In const& in, "
@@ -851,7 +909,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(cxx_run_arguments_[nested_descriptor].begin(),
                 cxx_run_arguments_[nested_descriptor].end(),
                 std::back_inserter(cxx_run_arguments));
-    } else if (nested_name == kOut) {
+    } else if (nested_name == out_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       cxx_functions_implementation_[descriptor] +=
           "void " + name + "::Fill(Out const& out, "
@@ -868,7 +926,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(cxx_run_arguments_[nested_descriptor].begin(),
                 cxx_run_arguments_[nested_descriptor].end(),
                 std::back_inserter(cxx_run_arguments));
-    } else if (nested_name == kReturn) {
+    } else if (nested_name == return_message_name) {
       ProcessReturn(nested_descriptor);
       cxx_functions_implementation_[descriptor] +=
           "void " + name + "::Fill("
@@ -929,7 +987,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
   cs_interface_method_declaration_[descriptor] =
-      "  [DllImport(dllName           : kDllPath,\n"
+      "  [DllImport(dllName           : dll_path,\n"
       "             EntryPoint        = \"principia__" + name + "\",\n"
       "             CallingConvention = CallingConvention.Cdecl)]\n"
       "  internal static extern " + cs_interface_return_type + " " + name + "(";

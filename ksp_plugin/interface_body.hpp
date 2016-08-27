@@ -7,6 +7,10 @@
 #include <limits>
 
 namespace principia {
+
+using quantities::si::Degree;
+using quantities::si::Radian;
+
 namespace interface {
 
 namespace {
@@ -22,8 +26,8 @@ TypedIterator<Container>::TypedIterator(Container container)
     : container_(std::move(container)),
       iterator_(container_.begin()) {}
 
-template <typename Container>
-template <typename Interchange>
+template<typename Container>
+template<typename Interchange>
 Interchange TypedIterator<Container>::Get(
     std::function<Interchange(typename Container::value_type const&)> const&
         convert) const {
@@ -45,6 +49,41 @@ template<typename Container>
 int TypedIterator<Container>::Size() const {
   return container_.size();
 }
+
+inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
+    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+    not_null<Plugin const*> const plugin)
+    : trajectory_(std::move(trajectory)),
+      iterator_(trajectory_->Begin()),
+      plugin_(plugin) {
+  CHECK(trajectory_->is_root());
+}
+
+template<typename Interchange>
+Interchange TypedIterator<DiscreteTrajectory<World>>::Get(
+    std::function<Interchange(
+        DiscreteTrajectory<World>::Iterator const&)> const& convert) const {
+  CHECK(iterator_ != trajectory_->End());
+  return convert(iterator_);
+}
+
+inline bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {
+  return iterator_ == trajectory_->End();
+}
+
+inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
+  ++iterator_;
+}
+
+inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
+  return trajectory_->Size();
+}
+
+inline not_null<Plugin const*> TypedIterator<
+    DiscreteTrajectory<World>>::plugin() const {
+  return plugin_;
+}
+
 
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
@@ -126,11 +165,7 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
          NaNIndependentEq(left.z, right.z);
 }
 
-inline bool operator==(XYZSegment const& left, XYZSegment const& right) {
-  return left.begin == right.begin && left.end == right.end;
-}
-
-inline Ephemeris<Barycentric>::AdaptiveStepParameters
+inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
@@ -140,32 +175,97 @@ FromAdaptiveStepParameters(
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
 }
 
-inline R3Element<double> FromXYZ(XYZ const& xyz) {
+inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
+    KeplerianElements const& keplerian_elements) {
+  physics::KeplerianElements<Barycentric> barycentric_keplerian_elements;
+  barycentric_keplerian_elements.eccentricity = keplerian_elements.eccentricity;
+  barycentric_keplerian_elements.semimajor_axis =
+      std::isnan(keplerian_elements.semimajor_axis)
+          ? std::experimental::nullopt
+          : std::experimental::make_optional(keplerian_elements.semimajor_axis *
+                                             Metre);
+  barycentric_keplerian_elements.mean_motion =
+      std::isnan(keplerian_elements.mean_motion)
+          ? std::experimental::nullopt
+          : std::experimental::make_optional(keplerian_elements.mean_motion *
+                                             Radian / Second);
+  barycentric_keplerian_elements.inclination =
+      keplerian_elements.inclination_in_degrees * Degree;
+  barycentric_keplerian_elements.longitude_of_ascending_node =
+      keplerian_elements.longitude_of_ascending_node_in_degrees * Degree;
+  barycentric_keplerian_elements.argument_of_periapsis =
+      keplerian_elements.argument_of_periapsis_in_degrees * Degree;
+  barycentric_keplerian_elements.mean_anomaly =
+      keplerian_elements.mean_anomaly * Radian;
+  return barycentric_keplerian_elements;
+}
+
+inline geometry::R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
 
-inline WXYZ ToWXYZ(Quaternion const& quaternion) {
+inline AdaptiveStepParameters ToAdaptiveStepParameters(
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters) {
+  return {adaptive_step_parameters.max_steps(),
+          adaptive_step_parameters.length_integration_tolerance() / Metre,
+          adaptive_step_parameters.speed_integration_tolerance() /
+              (Metre / Second)};
+}
+
+inline KeplerianElements ToKeplerianElements(
+    physics::KeplerianElements<Barycentric> const& keplerian_elements) {
+  return {keplerian_elements.eccentricity,
+          keplerian_elements.semimajor_axis
+              ? *keplerian_elements.semimajor_axis / Metre
+              : std::numeric_limits<double>::quiet_NaN(),
+          keplerian_elements.mean_motion
+              ? *keplerian_elements.mean_motion / (Radian / Second)
+              : std::numeric_limits<double>::quiet_NaN(),
+          keplerian_elements.inclination / Degree,
+          keplerian_elements.longitude_of_ascending_node / Degree,
+          keplerian_elements.argument_of_periapsis / Degree,
+          keplerian_elements.mean_anomaly / Radian};
+}
+
+inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
 }
 
-inline XYZ ToXYZ(R3Element<double> const& r3_element) {
+inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+inline Instant FromGameTime(Plugin const& plugin,
+                            double const t) {
+  return plugin.GameEpoch() + t * Second;
+}
+
+inline double ToGameTime(Plugin const& plugin,
+                         Instant const& t) {
+  return (t - plugin.GameEpoch()) / Second;
+}
+
+inline not_null<Vessel*> GetVessel(Plugin const& plugin,
+                                   char const* const vessel_guid) {
+  CHECK(plugin.HasVessel(vessel_guid)) << vessel_guid;
+  return plugin.GetVessel(vessel_guid);
+}
+
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
-    Plugin const* const plugin,
+    Plugin const& plugin,
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::BarycentricRotatingDynamicFrame::
         kBarycentricRotatingDynamicFrameFieldNumber:
-      return CHECK_NOTNULL(plugin)->NewBarycentricRotatingNavigationFrame(
+      return plugin.NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredNonRotatingDynamicFrame::
         kBodyCentredNonRotatingDynamicFrameFieldNumber:
-      return CHECK_NOTNULL(plugin)->NewBodyCentredNonRotatingNavigationFrame(
+      return plugin.NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;

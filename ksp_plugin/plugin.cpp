@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ios>
 #include <limits>
 #include <map>
 #include <string>
@@ -10,6 +11,7 @@
 #include <vector>
 #include <set>
 
+#include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
@@ -31,7 +33,9 @@
 namespace principia {
 
 using base::FindOrDie;
+using base::FingerprintCat2011;
 using base::make_not_null_unique;
+using base::not_null;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -46,6 +50,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DynamicFrame;
 using physics::Frenet;
+using physics::KeplerianElements;
 using physics::RotatingBody;
 using quantities::Force;
 using quantities::si::Milli;
@@ -58,15 +63,14 @@ using ::operator<<;
 
 namespace {
 
-// The map between the vector spaces of |World| and |AliceWorld|.
-Permutation<World, AliceWorld> const kWorldLookingGlass(
-    Permutation<World, AliceWorld>::CoordinatePermutation::XZY);
+Length const fitting_tolerance = 1 * Milli(Metre);
+
+std::uint64_t const ksp_stock_system_fingerprint = 0xB0C5DF211A8E6008u;
+std::uint64_t const ksp_fixed_system_fingerprint = 0x2491936A92E3111Eu;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
-Permutation<WorldSun, AliceSun> const kSunLookingGlass(
+Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
-
-Length const kFittingTolerance = 1 * Milli(Metre);
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
@@ -76,59 +80,30 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
 
 }  // namespace
 
-Plugin::Plugin(Instant const& initial_time,
+Plugin::Plugin(Instant const& game_epoch,
+               Instant const& solar_system_epoch,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
       history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
-      current_time_(initial_time) {}
-
-// The three celestial-inserting functions log at the INFO level.  This is not
-// a concern since they are only called at initialization, which should happen
-// once per game.
-
-void Plugin::InsertSun(Index const celestial_index,
-                       GravitationalParameter const& gravitational_parameter,
-                       Length const& mean_radius) {
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  CHECK(!absolute_initialization_);
-  CHECK(!hierarchical_initialization_);
-  LOG(INFO) << __FUNCTION__ << "\n"
-            << NAMED(celestial_index) << "\n"
-            << NAMED(gravitational_parameter);
-  auto sun = make_not_null_unique<RotatingBody<Barycentric>>(
-      gravitational_parameter,
-      RotatingBody<Barycentric>::Parameters(
-          mean_radius,
-          Angle(),
-          Instant(),
-          AngularVelocity<Barycentric>({1 * Radian / Second,
-                                        1 * Radian / Second,
-                                        1 * Radian / Second})));
-  auto const unowned_sun = sun.get();
-  hierarchical_initialization_.emplace(std::move(sun));
-  hierarchical_initialization_->indices_to_bodies[celestial_index] =
-      unowned_sun;
-  hierarchical_initialization_->parents[celestial_index] =
-      std::experimental::nullopt;
-}
+      game_epoch_(game_epoch),
+      current_time_(solar_system_epoch) {}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    base::not_null<std::unique_ptr<MassiveBody const>> body) {
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  CHECK(!hierarchical_initialization_);
+    not_null<std::unique_ptr<MassiveBody const>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(parent_index) << "\n"
             << NAMED(initial_state) << "\n"
             << NAMED(body);
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  CHECK(!hierarchical_initialization_);
   if (!absolute_initialization_) {
     absolute_initialization_.emplace();
   }
@@ -152,32 +127,60 @@ void Plugin::InsertCelestialAbsoluteCartesian(
 
 void Plugin::InsertCelestialJacobiKeplerian(
     Index const celestial_index,
-    Index const parent_index,
-    KeplerianElements<Barycentric> const& keplerian_elements,
-    base::not_null<std::unique_ptr<MassiveBody>> body) {
+    std::experimental::optional<Index> const& parent_index,
+    std::experimental::optional<KeplerianElements<Barycentric>> const&
+        keplerian_elements,
+    not_null<std::unique_ptr<MassiveBody>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(parent_index) << "\n"
             << NAMED(keplerian_elements) << "\n"
             << NAMED(body);
-  CHECK(initializing_);
-  CHECK(hierarchical_initialization_);
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  CHECK(!absolute_initialization_);
+  CHECK_EQ((bool)parent_index, (bool)keplerian_elements);
+  CHECK_EQ((bool)parent_index, (bool)hierarchical_initialization_);
+  MassiveBody* const unowned_body = body.get();
+  if (hierarchical_initialization_) {
+    hierarchical_initialization_->system.Add(
+        std::move(body),
+        hierarchical_initialization_->indices_to_bodies[*parent_index],
+        *keplerian_elements);
+  } else {
+    hierarchical_initialization_.emplace(std::move(body));
+  }
   bool inserted =
       hierarchical_initialization_->parents.emplace(celestial_index,
                                                     parent_index).second;
   inserted &=
       hierarchical_initialization_->
-          indices_to_bodies.emplace(celestial_index, body.get()).second;
+          indices_to_bodies.emplace(celestial_index, unowned_body).second;
   CHECK(inserted);
-  hierarchical_initialization_->system.Add(
-      std::move(body),
-      hierarchical_initialization_->indices_to_bodies[parent_index],
-      keplerian_elements);
+
+  // Record the fingerprints of the parameters to detect if we are in KSP stock.
+  CHECK(celestial_jacobi_keplerian_fingerprints_.insert(
+            FingerprintCelestialJacobiKeplerian(celestial_index,
+                                                parent_index,
+                                                keplerian_elements,
+                                                *unowned_body)).second);
 }
 
 void Plugin::EndInitialization() {
   CHECK(initializing_);
   if (hierarchical_initialization_) {
+    std::uint64_t system_fingerprint = 0;
+    for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
+      system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
+    }
+    LOG(INFO) << "System fingerprint is " << std::hex << system_fingerprint;
+    if (system_fingerprint == ksp_stock_system_fingerprint) {
+      is_ksp_stock_system_ = true;
+      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+    } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
+      LOG(INFO) << "This is the fixed KSP system, all hail retrobop!";
+    }
+
     HierarchicalSystem<Barycentric>::BarycentricSystem system =
         hierarchical_initialization_->system.ConsumeBarycentricSystem();
     std::map<not_null<MassiveBody const*>, Index> bodies_to_indices;
@@ -198,9 +201,31 @@ void Plugin::EndInitialization() {
   }
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
+  main_body_ = CHECK_NOTNULL(
+      dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
   initializing_.Flop();
 
   InitializeEphemerisAndSetCelestialTrajectories();
+
+  // Log the serialized ephemeris.
+  serialization::Ephemeris ephemeris_message;
+  ephemeris_->WriteToMessage(&ephemeris_message);
+  std::string const bytes = ephemeris_message.SerializeAsString();
+  base::UniqueArray<std::uint8_t> const hex((bytes.size() << 1) + 1);
+  base::HexadecimalEncode(
+      base::Array<std::uint8_t const>(
+          reinterpret_cast<std::uint8_t const*>(bytes.data()), bytes.size()),
+      hex.get());
+  hex.data[hex.size - 1] = 0;
+  // Begin and end markers to make sure the hex did not get clipped (this might
+  // happen if the message is very big).
+  LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
+            << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
+}
+
+bool Plugin::IsKspStockSystem() const {
+  CHECK(!initializing_);
+  return is_ksp_stock_system_;
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
@@ -210,6 +235,71 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
   CHECK(!initializing_);
   FindOrDie(celestials_, celestial_index)->set_parent(
       FindOrDie(celestials_, parent_index).get());
+}
+
+void Plugin::SetMainBody(Index const index) {
+  main_body_ = dynamic_cast<RotatingBody<Barycentric> const*>(
+      &*FindOrDie(celestials_, index)->body());
+  LOG_IF(FATAL, main_body_ == nullptr) << index;
+}
+
+Rotation<BodyWorld, World> Plugin::CelestialRotation(
+    Index const index) const {
+  // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
+  // The basis is right-handed.
+  struct BodyFixed;
+  Permutation<BodyWorld, BodyFixed> const body_mirror(
+      Permutation<BodyWorld, BodyFixed>::XZY);
+
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, index)->body());
+
+  Bivector<double, BodyFixed> z({0, 0, 1});
+  Bivector<double, BodyFixed> x({1, 0, 0});
+
+  // TODO(egg): Euler angles (#810).
+  Rotation<BodyFixed, Barycentric> body_orientation =
+      Rotation<BodyFixed, Barycentric>(π / 2 * Radian +
+                                         body.right_ascension_of_pole(),
+                                     z) *
+      Rotation<BodyFixed, BodyFixed>(π / 2 * Radian -
+                                         body.declination_of_pole(),
+                                     x) *
+      Rotation<BodyFixed, BodyFixed>(body.AngleAt(current_time_), z);
+
+  OrthogonalMap<BodyWorld, World> const result =
+      OrthogonalMap<WorldSun, World>::Identity() *
+      sun_looking_glass.Inverse().Forget() *
+      (PlanetariumRotation() * body_orientation).Forget() *
+      body_mirror.Forget();
+  CHECK(result.Determinant().Positive());
+  return result.rotation();
+}
+
+Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
+    const {
+  Permutation<CelestialSphere, Barycentric> const celestial_mirror(
+      Permutation<CelestialSphere, Barycentric>::XZY);
+  auto const result = OrthogonalMap<WorldSun, World>::Identity() *
+                      sun_looking_glass.Inverse().Forget() *
+                      PlanetariumRotation().Forget() *
+                      celestial_mirror.Forget();
+  CHECK(result.Determinant().Positive());
+  return result.rotation();
+}
+
+Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  return body.AngleAt(game_epoch_);
+}
+
+Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
+  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
+      *FindOrDie(celestials_, celestial_index)->body());
+  // The result will be negative if the pole is the negative pole
+  // (e.g. for Venus).  This is the convention KSP uses for retrograde rotation.
+  return 2 * π * Radian / body.angular_frequency();
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -317,8 +407,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      celestial.current_degrees_of_freedom(CurrentTime()) -
-      celestial.parent()->current_degrees_of_freedom(CurrentTime());
+      celestial.current_degrees_of_freedom(current_time_) -
+      celestial.parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Celestial at index " << celestial_index
@@ -343,7 +433,8 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
       prediction_parameters_);
 }
 
-Positions<World> Plugin::RenderedVesselTrajectory(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
@@ -356,23 +447,22 @@ Positions<World> Plugin::RenderedVesselTrajectory(
                                          sun_world_position);
 }
 
-Positions<World> Plugin::RenderedPrediction(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  Positions<World> result =
-      RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
-                                      vessel.prediction().End(),
-                                      sun_world_position);
-  return result;
+  return RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
+                                         vessel.prediction().End(),
+                                         sun_world_position);
 }
 
-Positions<World> Plugin::RenderedTrajectoryFromIterators(
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Plugin::RenderedTrajectoryFromIterators(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  Positions<World> result;
+  auto result = make_not_null_unique<DiscreteTrajectory<World>>();
   auto const to_world =
       AffineMap<Barycentric, World, Length, OrthogonalMap>(
           sun_->current_position(current_time_),
@@ -398,35 +488,18 @@ Positions<World> Plugin::RenderedTrajectoryFromIterators(
   for (auto intermediate_it = intermediate_trajectory.Begin();
        intermediate_it != intermediate_end;
        ++intermediate_it) {
-    result.emplace_back(from_navigation_frame_to_world_at_current_time(
-        intermediate_it.degrees_of_freedom().position()));
+    DegreesOfFreedom<Navigation> const navigation_degrees_of_freedom =
+        intermediate_it.degrees_of_freedom();
+    DegreesOfFreedom<World> const world_degrees_of_freedom =
+        DegreesOfFreedom<World>(
+            from_navigation_frame_to_world_at_current_time(
+                navigation_degrees_of_freedom.position()),
+            from_navigation_frame_to_world_at_current_time.linear_map()(
+                navigation_degrees_of_freedom.velocity()));
+    result->Append(intermediate_it.time(), world_degrees_of_freedom);
   }
-  VLOG(1) << "Returning a " << result.size() << "-point trajectory";
+  VLOG(1) << "Returning a " << result->Size() << "-point trajectory";
   return result;
-}
-
-Positions<World> Plugin::RenderApsides(
-      Position<World> const& sun_world_position,
-      DiscreteTrajectory<Barycentric>& apsides) const {
-  // NOTE(egg): this guarantees a bijection between segment |begin|s and
-  // apsides.  We will eventually switch to a saner API.  We cannot even put
-  // the extra point at infinity because it will be rendered with respect to
-  // the ephemeris (actually this method may result in horrible edge cases).
-  if (apsides.Size() > 0) {
-    apsides.Append(
-        apsides.last().time() + 1e-3 * Second,
-        {Barycentric::origin +
-             Displacement<Barycentric>(
-                 {std::numeric_limits<double>::quiet_NaN() * Metre,
-                  std::numeric_limits<double>::quiet_NaN() * Metre,
-                  std::numeric_limits<double>::quiet_NaN() * Metre}),
-         Velocity<Barycentric>(
-             {std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
-              std::numeric_limits<double>::quiet_NaN() * (Metre / Second),
-              std::numeric_limits<double>::quiet_NaN() * (Metre / Second)})});
-  }
-  return RenderedTrajectoryFromIterators(
-      apsides.Begin(), apsides.End(), sun_world_position);
 }
 
 void Plugin::ComputeAndRenderApsides(
@@ -434,16 +507,20 @@ void Plugin::ComputeAndRenderApsides(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
-    Positions<World>& apoapsides,
-    Positions<World>& periapsides) const {
+    std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
+    std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const {
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ephemeris_->ComputeApsides(FindOrDie(celestials_, celestial_index)->body(),
                              begin, end,
                              apoapsides_trajectory,
                              periapsides_trajectory);
-  apoapsides = RenderApsides(sun_world_position, apoapsides_trajectory);
-  periapsides = RenderApsides(sun_world_position, periapsides_trajectory);
+  apoapsides = RenderedTrajectoryFromIterators(apoapsides_trajectory.Begin(),
+                                               apoapsides_trajectory.End(),
+                                               sun_world_position);
+  periapsides = RenderedTrajectoryFromIterators(periapsides_trajectory.Begin(),
+                                                periapsides_trajectory.End(),
+                                                sun_world_position);
 }
 
 void Plugin::SetPredictionLength(Time const& t) {
@@ -596,8 +673,29 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
                                Vector<double, Frenet<Navigation>>({0, 0, 1}));
 }
 
+Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
+  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  auto const& last = vessel.prolongation().last();
+  Instant const& time = last.time();
+  DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
+      last.degrees_of_freedom();
+  DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
+      plotting_frame_->ToThisFrameAtTime(time)(barycentric_degrees_of_freedom);
+  return Identity<WorldSun, World>()(BarycentricToWorldSun()(
+      plotting_frame_->FromThisFrameAtTime(time).orthogonal_map()(
+          plotting_frame_degrees_of_freedom.velocity())));
+}
+
 OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
-  return kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget();
+  return sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget();
+}
+
+Instant Plugin::GameEpoch() const {
+  return game_epoch_;
+}
+
+bool Plugin::MustRotateBodies() const {
+  return !is_pre_cardano_;
 }
 
 Instant Plugin::CurrentTime() const {
@@ -610,25 +708,26 @@ void Plugin::WriteToMessage(
   CHECK(!initializing_);
   ephemeris_->Prolong(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
-  for (auto const& index_celestial : celestials_) {
-    celestial_to_index.emplace(index_celestial.second.get(),
-                               index_celestial.first);
+  for (auto const& pair : celestials_) {
+    Index const index = pair.first;
+    auto const& owned_celestial = pair.second;
+    celestial_to_index.emplace(owned_celestial.get(), index);
   }
-  for (auto const& index_celestial : celestials_) {
-    Index const index = index_celestial.first;
-    not_null<Celestial const*> const celestial = index_celestial.second.get();
+  for (auto const& pair : celestials_) {
+    Index const index = pair.first;
+    auto const& owned_celestial = pair.second.get();
     auto* const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
-    if (celestial->has_parent()) {
+    if (owned_celestial->has_parent()) {
       Index const parent_index =
-          FindOrDie(celestial_to_index, celestial->parent());
+          FindOrDie(celestial_to_index, owned_celestial->parent());
       celestial_message->set_parent_index(parent_index);
     }
   }
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
-  for (auto const& guid_vessel : vessels_) {
-    std::string const& guid = guid_vessel.first;
-    not_null<Vessel*> const vessel = guid_vessel.second.get();
+  for (auto const& pair : vessels_) {
+    std::string const& guid = pair.first;
+    not_null<Vessel*> const vessel = pair.second.get();
     vessel_to_guid.emplace(vessel, guid);
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
@@ -653,6 +752,11 @@ void Plugin::WriteToMessage(
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
+  if (!is_pre_cardano_) {
+    // A pre-Cardano save stays pre-Cardano; we cannot pull rotational
+    // properties out of thin air.
+    game_epoch_.WriteToMessage(message->mutable_game_epoch());
+  }
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
@@ -671,7 +775,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   if (is_pre_bourbaki) {
     ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
         message.pre_bourbaki_celestial(),
-        kFittingTolerance,
+        fitting_tolerance,
         DefaultEphemerisParameters());
     ReadCelestialsFromMessages(*ephemeris,
                                message.pre_bourbaki_celestial(),
@@ -726,6 +830,11 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
               message.prediction_parameters());
 
+  bool const is_pre_cardano = !message.has_game_epoch();
+  Instant const game_epoch =
+      is_pre_cardano ? astronomy::J2000
+                     : Instant::ReadFromMessage(message.game_epoch());
+
   // Can't use |make_unique| here without implementation-dependent friendships.
   auto plugin = std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
@@ -736,8 +845,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  prolongation_parameters,
                  prediction_parameters,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
+                 game_epoch,
                  current_time,
-                 message.sun_index()));
+                 message.sun_index(),
+                 is_pre_cardano));
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
                                        message.plotting_frame());
@@ -752,19 +863,20 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   return std::move(plugin);
 }
 
-Plugin::Plugin(GUIDToOwnedVessel vessels,
-               IndexToOwnedCelestial celestials,
-               not_null<std::unique_ptr<PhysicsBubble>> bubble,
-               std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-               Ephemeris<Barycentric>::FixedStepParameters const&
-                   history_parameters,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                   prolongation_parameters,
-               Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                   prediction_parameters,
-               Angle planetarium_rotation,
-               Instant current_time,
-               Index sun_index)
+Plugin::Plugin(
+    GUIDToOwnedVessel vessels,
+    IndexToOwnedCelestial celestials,
+    not_null<std::unique_ptr<PhysicsBubble>> bubble,
+    std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
+    Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prolongation_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters,
+    Angle const& planetarium_rotation,
+    Instant const& game_epoch,
+    Instant const& current_time,
+    Index const sun_index,
+    bool const is_pre_cardano)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
       bubble_(std::move(bubble)),
@@ -773,11 +885,17 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       prolongation_parameters_(prolongation_parameters),
       prediction_parameters_(prediction_parameters),
       planetarium_rotation_(planetarium_rotation),
+      game_epoch_(game_epoch),
       current_time_(current_time),
-      sun_(FindOrDie(celestials_, sun_index).get()) {
-  for (auto const& guid_vessel : vessels_) {
-    auto const& vessel = guid_vessel.second;
+      sun_(FindOrDie(celestials_, sun_index).get()),
+      is_pre_cardano_(is_pre_cardano) {
+  for (auto const& pair : vessels_) {
+    auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());
+  }
+  if (!is_pre_cardano_) {
+    main_body_ = CHECK_NOTNULL(
+        dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
   }
   initializing_.Flop();
 }
@@ -790,15 +908,16 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
     auto& body = pair.second;
     bodies.emplace_back(std::move(body));
   }
-  for (auto const& state : absolute_initialization_->initial_state) {
-    initial_state.emplace_back(state.second);
+  for (auto const& pair : absolute_initialization_->initial_state) {
+    auto const& degrees_of_freedom = pair.second;
+    initial_state.emplace_back(degrees_of_freedom);
   }
   absolute_initialization_ = std::experimental::nullopt;
   ephemeris_ =
       std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
                                                initial_state,
                                                current_time_,
-                                               kFittingTolerance,
+                                               fitting_tolerance,
                                                DefaultEphemerisParameters());
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
@@ -825,9 +944,35 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentric, AliceSun>(
-      planetarium_rotation_,
-      Bivector<double, Barycentric>({0, 0, -1}));
+  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
+  // axis is the origin of body rotation (the intersection between the
+  // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
+  // axis of |Barycentric| if they coincide).
+  // This can be expressed using Euler angles, see figures 1 and 2 of
+  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
+  struct PlanetariumFrame;
+
+  Bivector<double, PlanetariumFrame> z({0, 0, 1});
+  Bivector<double, PlanetariumFrame> x({1, 0, 0});
+
+  if (is_pre_cardano_) {
+    return Rotation<Barycentric, AliceSun>(
+        planetarium_rotation_, Bivector<double, Barycentric>({0, 0, -1}));
+  } else {
+    CHECK_NOTNULL(main_body_);
+    // TODO(egg): this would be more clearly expressed using zxz Euler angles
+    // (the third one is 0 here).  See #810.
+    Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
+        (Rotation<PlanetariumFrame, Barycentric>(
+             /*angle=*/π / 2 * Radian + main_body_->right_ascension_of_pole(),
+             /*axis=*/z) *
+         Rotation<PlanetariumFrame, PlanetariumFrame>(
+             /*angle=*/π / 2 * Radian - main_body_->declination_of_pole(),
+             /*axis=*/x)).Inverse();
+    return Rotation<PlanetariumFrame, AliceSun>(
+               planetarium_rotation_,
+               Bivector<double, PlanetariumFrame>({0, 0, -1})) * to_planetarium;
+  }
 }
 
 void Plugin::FreeVessels() {
@@ -923,6 +1068,26 @@ void Plugin::ReadCelestialsFromMessages(
       celestial->set_parent(parent);
     }
   }
+}
+
+std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    std::experimental::optional<physics::KeplerianElements<Barycentric>> const&
+        keplerian_elements,
+    MassiveBody const& body) {
+  serialization::CelestialJacobiKeplerian message;
+  message.set_celestial_index(celestial_index);
+  if (parent_index) {
+    message.set_parent_index(*parent_index);
+  }
+  if (keplerian_elements) {
+    keplerian_elements->WriteToMessage(message.mutable_keplerian_elements());
+  }
+  body.WriteToMessage(message.mutable_body());
+
+  const std::string serialized = message.SerializeAsString();
+  return Fingerprint2011(serialized.c_str(), serialized.size());
 }
 
 }  // namespace ksp_plugin

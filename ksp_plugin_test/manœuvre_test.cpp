@@ -18,7 +18,11 @@
 
 namespace principia {
 
+using base::make_not_null_unique;
+using geometry::AngularVelocity;
+using geometry::Displacement;
 using geometry::Frame;
+using geometry::Velocity;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -60,7 +64,7 @@ class ManœuvreTest : public ::testing::Test {
     auto owned_mock_dynamic_frame =
         make_not_null_unique<StrictMock<MockDynamicFrame<World, Rendering>>>();
     mock_dynamic_frame_ = owned_mock_dynamic_frame.get();
-    return std::move(owned_mock_dynamic_frame);
+    return owned_mock_dynamic_frame;
   }
 
   Instant const t0_;
@@ -88,10 +92,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
 
   Manœuvre<World, Rendering> manœuvre(
-      1 * Newton /*thrust*/,
-      2 * Kilogram /*initial_mass*/,
-      1 * Newton * Second / Kilogram /*specific_impulse*/,
-      2 * e_y /*direction*/,
+      /*thrust=*/1 * Newton,
+      /*initial_mass=*/2 * Kilogram,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
+      /*direction=*/2 * e_y,
       MakeMockDynamicFrame());
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
@@ -139,10 +143,10 @@ TEST_F(ManœuvreTest, TimedBurn) {
 TEST_F(ManœuvreTest, TargetΔv) {
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
-      1 * Newton /*thrust*/,
-      2 * Kilogram /*initial_mass*/,
-      1 * Newton * Second / Kilogram /*specific_impulse*/,
-      e_y /*direction*/,
+      /*thrust=*/1 * Newton,
+      /*initial_mass=*/2 * Kilogram,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
+      /*direction=*/e_y,
       MakeMockDynamicFrame());
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
@@ -229,12 +233,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       MakeMockDynamicFrame());
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_burn.mass_flow()),
-              Lt(1E-4));
+              Lt(1e-4));
 
   first_burn.set_duration(s_ivb_1st_eco - s_ivb_1st_90_percent_thrust);
   EXPECT_THAT(
       RelativeError(total_vehicle_at_s_ivb_1st_eco, first_burn.final_mass()),
-      Lt(1E-3));
+      Lt(1e-3));
 
   first_burn.set_initial_time(s_ivb_1st_90_percent_thrust);
   EXPECT_EQ(s_ivb_1st_eco, first_burn.final_time());
@@ -270,12 +274,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       MakeMockDynamicFrame());
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_burn.mass_flow()),
-              Lt(2E-4));
+              Lt(2e-4));
 
   second_burn.set_duration(s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust);
   EXPECT_THAT(
       RelativeError(total_vehicle_at_s_ivb_2nd_eco, second_burn.final_mass()),
-      Lt(2E-3));
+      Lt(2e-3));
 
   second_burn.set_initial_time(s_ivb_2nd_90_percent_thrust);
   EXPECT_EQ(s_ivb_2nd_eco, second_burn.final_time());
@@ -326,10 +330,10 @@ TEST_F(ManœuvreTest, Serialization) {
   auto const unowned_dynamic_frame = mock_dynamic_frame.get();
   Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
   Manœuvre<World, Rendering> manœuvre(
-      1 * Newton /*thrust*/,
-      2 * Kilogram /*initial_mass*/,
-      1 * Newton * Second / Kilogram /*specific_impulse*/,
-      e_y /*direction*/,
+      /*thrust=*/1 * Newton,
+      /*initial_mass=*/2 * Kilogram,
+      /*specific_impulse=*/1 * Newton * Second / Kilogram,
+      /*direction=*/e_y,
       std::move(mock_dynamic_frame));
   manœuvre.set_Δv(1 * Metre / Second);
   manœuvre.set_time_of_half_Δv(t0_);

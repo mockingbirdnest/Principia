@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "geometry/epoch.hpp"
+#include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "quantities/parser.hpp"
@@ -26,7 +26,7 @@ int main(int argc, char const* argv[]) {
       return 2;
     }
     principia::geometry::Instant game_epoch =
-        principia::geometry::JulianDate(
+        principia::astronomy::JulianDate(
             principia::quantities::ParseQuantity<double>(argv[2]));
     std::string const gravity_model_stem = argv[3];
     std::string const initial_state_stem = argv[4];

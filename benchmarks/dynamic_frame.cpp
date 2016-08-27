@@ -44,7 +44,9 @@ using geometry::Position;
 using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::AngularFrequency;
+using quantities::Length;
 using quantities::SIUnit;
+using quantities::Speed;
 using quantities::Time;
 using quantities::astronomy::EarthMass;
 using quantities::astronomy::JulianYear;
@@ -59,7 +61,7 @@ using quantities::si::Second;
 namespace physics {
 
 namespace {
-const Length kTolerance = 0.01 * Metre;
+const Length tolerance = 0.01 * Metre;
 }  // namespace
 
 using Rendering = Frame<serialization::Frame::TestTag,
@@ -220,10 +222,10 @@ void BM_BarycentricRotatingDynamicFrame(
   }
 }
 
-int const kIter = (1000 << 10) + 1;
+int const iterations = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(kIter);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(kIter);
+BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)->Arg(iterations);
+BENCHMARK(BM_BarycentricRotatingDynamicFrame)->Arg(iterations);
 
 }  // namespace physics
 }  // namespace principia

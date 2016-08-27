@@ -12,12 +12,12 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_massive_body {
 
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
-
-namespace physics {
 
 class MassiveBody : public Body {
  public:
@@ -76,6 +76,10 @@ class MassiveBody : public Body {
  private:
   Parameters const parameters_;
 };
+
+}  // namespace internal_massive_body
+
+using internal_massive_body::MassiveBody;
 
 }  // namespace physics
 }  // namespace principia

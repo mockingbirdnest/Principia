@@ -11,18 +11,20 @@
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/vessel.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
 
 using base::PullSerializer;
 using base::PushDeserializer;
-using geometry::Quaternion;
-using geometry::R3Element;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
-using physics::Ephemeris;
+using ksp_plugin::Vessel;
+using ksp_plugin::World;
+using physics::DiscreteTrajectory;
 
 namespace interface {
 
@@ -44,7 +46,7 @@ class TypedIterator : public Iterator {
 
   // Obtains the element denoted by this iterator and converts it to some
   // |Interchange| type using |convert|.
-  template <typename Interchange>
+  template<typename Interchange>
   Interchange Get(
       std::function<Interchange(typename Container::value_type const&)> const&
           convert) const;
@@ -56,6 +58,33 @@ class TypedIterator : public Iterator {
  private:
   Container container_;
   typename Container::const_iterator iterator_;
+};
+
+// A specialization for |DiscreteTrajectory<World>|.
+template<>
+class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
+ public:
+  TypedIterator(
+      not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+      not_null<Plugin const*> const plugin);
+
+  // Obtains the element denoted by this iterator and converts it to some
+  // |Interchange| type using |convert|.
+  template<typename Interchange>
+  Interchange Get(
+      std::function<Interchange(
+          DiscreteTrajectory<World>::Iterator const&)> const& convert) const;
+
+  bool AtEnd() const override;
+  void Increment() override;
+  int Size() const override;
+
+  not_null<Plugin const*> plugin() const;
+
+ private:
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory_;
+  DiscreteTrajectory<World>::Iterator iterator_;
+  not_null<Plugin const*> plugin_;
 };
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
@@ -84,18 +113,34 @@ bool operator==(NavigationManoeuvre const& left,
 bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
-bool operator==(XYZSegment const& left, XYZSegment const& right);
 
-Ephemeris<Barycentric>::AdaptiveStepParameters FromAdaptiveStepParameters(
+physics::Ephemeris<Barycentric>::AdaptiveStepParameters
+FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
-R3Element<double> FromXYZ(XYZ const& xyz);
+physics::KeplerianElements<Barycentric> FromKeplerianElements(
+    KeplerianElements const& keplerian_elements);
+geometry::R3Element<double> FromXYZ(XYZ const& xyz);
 
-WXYZ ToWXYZ(Quaternion const& quaternion);
-XYZ ToXYZ(R3Element<double> const& r3_element);
+AdaptiveStepParameters ToAdaptiveStepParameters(
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters);
+KeplerianElements ToKeplerianElements(
+    physics::KeplerianElements<Barycentric> const& keplerian_elements);
+WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
+XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
+
+// TODO(phl): These utilities should maybe go into a separate file.
+Instant FromGameTime(Plugin const& plugin,
+                     double const t);
+double ToGameTime(Plugin const& plugin,
+                  Instant const& t);
+
+not_null<Vessel*> GetVessel(Plugin const& plugin,
+                            char const* const vessel_guid);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
-    Plugin const* const plugin,
+    Plugin const& plugin,
     NavigationFrameParameters const& parameters);
 
 }  // namespace interface

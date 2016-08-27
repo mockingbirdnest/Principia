@@ -11,18 +11,21 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_rigid_motion {
 
 using geometry::AffineMap;
 using geometry::AngularVelocity;
+using geometry::Bivector;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Vector;
+using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Length;
+using quantities::Variation;
 using quantities::si::Radian;
-
-namespace physics {
 
 // An arbitrary rigid transformation.  Simultaneous positions between two frames
 // are always related by such a transformation.
@@ -74,6 +77,37 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame> operator*(
     RigidMotion<ThroughFrame, ToFrame> const& left,
     RigidMotion<FromFrame, ThroughFrame> const& right);
+
+// A |RigidTransformation|, its first derivative (a |RigidMotion|), and its
+// second derivative (angular and linear accelerations).
+template<typename FromFrame, typename ToFrame>
+class AcceleratedRigidMotion {
+ public:
+  AcceleratedRigidMotion(
+      RigidMotion<FromFrame, ToFrame> const& rigid_motion,
+      Variation<AngularVelocity<FromFrame>> const&
+          angular_acceleration_of_to_frame,
+      Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin);
+
+  RigidMotion<FromFrame, ToFrame> const& rigid_motion() const;
+  Variation<AngularVelocity<FromFrame>> const&
+  angular_acceleration_of_to_frame() const;
+  Vector<Acceleration, FromFrame> const& acceleration_of_to_frame_origin()
+      const;
+
+ private:
+  RigidMotion<FromFrame, ToFrame> const rigid_motion_;
+  // d/dt rigid_motion_.angular_velocity_of_to_frame().
+  Variation<AngularVelocity<FromFrame>> const angular_acceleration_of_to_frame_;
+  // d/dt rigid_motion_.velocity_of_to_frame_origin().
+  Vector<Acceleration, FromFrame> const acceleration_of_to_frame_origin_;
+};
+
+}  // namespace internal_rigid_motion
+
+using internal_rigid_motion::AcceleratedRigidMotion;
+using internal_rigid_motion::RigidMotion;
+using internal_rigid_motion::RigidTransformation;
 
 }  // namespace physics
 }  // namespace principia

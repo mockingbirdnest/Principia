@@ -10,7 +10,7 @@
 namespace principia {
 namespace base {
 
-static char const kByteToHexadecimalDigits[] =
+static char const byte_to_hexadecimal_digits[] =
     "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F2021222324"
     "25262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F40414243444546474849"
     "4A4B4C4D4E4F505152535455565758595A5B5C5D5E5F606162636465666768696A6B6C6D6E"
@@ -26,7 +26,7 @@ static char const kByteToHexadecimalDigits[] =
 #define SKIP_26 SKIP_7, SKIP_7, SKIP_7, 0, 0, 0, 0, 0
 #define SKIP_48 SKIP_26, SKIP_7, SKIP_7, SKIP_7, 0
 
-static uint8_t const kHexadecimalDigitsToNibble[256] = {
+static uint8_t const hexadecimal_digits_to_nibble[256] = {
     SKIP_48, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
     SKIP_7, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf',
     SKIP_26, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf'};
@@ -55,7 +55,7 @@ void HexadecimalEncode(Array<std::uint8_t const> input,
   for (std::uint8_t const* const input_rend = input.data - input.size;
        input.data != input_rend;
        --input.data, output.data -= 2) {
-    std::memcpy(output.data, &kByteToHexadecimalDigits[*input.data << 1], 2);
+    std::memcpy(output.data, &byte_to_hexadecimal_digits[*input.data << 1], 2);
   }
 }
 
@@ -75,8 +75,8 @@ void HexadecimalDecode(Array<std::uint8_t const> input,
   for (uint8_t const* const input_end = input.data + input.size;
        input.data != input_end;
        input.data += 2, ++output.data) {
-    *output.data = (kHexadecimalDigitsToNibble[*input.data] << 4) |
-                   kHexadecimalDigitsToNibble[*(input.data + 1)];
+    *output.data = (hexadecimal_digits_to_nibble[*input.data] << 4) |
+                   hexadecimal_digits_to_nibble[*(input.data + 1)];
   }
 }
 

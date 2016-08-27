@@ -22,24 +22,39 @@ namespace geometry {
 template<typename Vector>
 class Point {
  public:
-  Point();
-  ~Point() = default;
+  constexpr Point();
 
-  Vector operator-(Point const& from) const;
+#if PRINCIPIA_COMPILER_MSVC && !__INTELLISENSE__
+  // Explicitly define constexpr default copy and move constructors because
+  // otherwise MSVC fails to initialize constant expressions.  In addition,
+  // Intellisense gets confused by these (because of course MSVC and
+  // Intellisense are different compilers and have bugs in different places).
+  constexpr Point(Point const& other);
+  constexpr Point(Point&& other);
+  Point& operator=(Point const& other) = default;
+  Point& operator=(Point&& other) = default;
+#endif
 
-  Point operator+(Vector const& translation) const;
-  Point operator-(Vector const& translation) const;
+  constexpr Vector operator-(Point const& from) const;
+
+  constexpr Point operator+(Vector const& translation) const;
+  constexpr Point operator-(Vector const& translation) const;
 
   Point& operator+=(Vector const& translation);
   Point& operator-=(Vector const& translation);
 
-  bool operator==(Point const& right) const;
-  bool operator!=(Point const& right) const;
+  constexpr bool operator==(Point const& right) const;
+  constexpr bool operator!=(Point const& right) const;
 
   void WriteToMessage(not_null<serialization::Point*> const message) const;
   static Point ReadFromMessage(serialization::Point const& message);
 
  private:
+  // This constructor allows for C++11 functional constexpr operators, and
+  // possibly move-magic.
+  // TODO(egg): We may want to reconsider this after we truly have C++14.
+  constexpr Point(Vector const& coordinates);
+
   Vector coordinates_;
 
   template<typename V>
@@ -65,6 +80,7 @@ class Point {
   friend class BarycentreCalculator;
 };
 
+// TODO(egg): constexpr these operators.
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);

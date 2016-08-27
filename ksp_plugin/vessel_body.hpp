@@ -17,7 +17,9 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::IsFinite;
 using quantities::si::Kilogram;
+using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Second;
 
 namespace ksp_plugin {
 
@@ -293,7 +295,7 @@ inline void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
 inline void Vessel::FlowHistory(Instant const& time) {
   ephemeris_->FlowWithFixedStep(
       {history_.get()},
-      Ephemeris<Barycentric>::kNoIntrinsicAccelerations,
+      Ephemeris<Barycentric>::NoIntrinsicAccelerations,
       time,
       history_fixed_step_parameters_);
 }
@@ -306,7 +308,7 @@ inline void Vessel::FlowProlongation(Instant const& time) {
   }
   ephemeris_->FlowWithAdaptiveStep(
       prolongation_,
-      Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       time,
       prolongation_adaptive_step_parameters_,
       Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
@@ -320,7 +322,7 @@ inline void Vessel::FlowPrediction(Instant const& time) {
     // so if it is finite).
     bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
         prediction_,
-        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         t,
         prediction_adaptive_step_parameters_,
         FlightPlan::max_ephemeris_steps_per_frame);
@@ -328,7 +330,7 @@ inline void Vessel::FlowPrediction(Instant const& time) {
       // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
       ephemeris_->FlowWithAdaptiveStep(
         prediction_,
-        Ephemeris<Barycentric>::kNoIntrinsicAcceleration,
+        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         time,
         prediction_adaptive_step_parameters_,
         FlightPlan::max_ephemeris_steps_per_frame);

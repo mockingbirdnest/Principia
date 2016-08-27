@@ -564,16 +564,16 @@ void SPRKIntegrator::SolveIncrement(
     Parameters<Position, Momentum> const& parameters,
     not_null<Solution<Position, Momentum>*> const solution) const {
   switch (vanishing_coefficients_) {
-    case kNone:
-      SolveIncrementOptimized<kNone, Position, Momentum>(
+    case None:
+      SolveIncrementOptimized<None, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
-    case kFirstBVanishes:
-      SolveIncrementOptimized<kFirstBVanishes, Position, Momentum>(
+    case FirstBVanishes:
+      SolveIncrementOptimized<FirstBVanishes, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
-    case kLastAVanishes:
-      SolveIncrementOptimized<kLastAVanishes, Position, Momentum>(
+    case LastAVanishes:
+      SolveIncrementOptimized<LastAVanishes, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
     default:
@@ -667,13 +667,13 @@ void SPRKIntegrator::SolveIncrementOptimized(
       q_stage[k] = q_last[k].value;
     }
 
-    if (vanishing_coefficients != kNone) {
+    if (vanishing_coefficients != None) {
       should_synchronize = at_end ||
                            (parameters.sampling_period != 0 &&
                             sampling_phase % parameters.sampling_period == 0);
     }
 
-    if (vanishing_coefficients == kFirstBVanishes &&
+    if (vanishing_coefficients == FirstBVanishes &&
         q_and_p_are_synchronized) {
       // Desynchronize.
       std::swap(Δqstage_current, Δqstage_previous);
@@ -692,7 +692,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
 
       // By using |tn.error| below we get a time value which is possibly a wee
       // bit more precise.
-      if (vanishing_coefficients == kLastAVanishes &&
+      if (vanishing_coefficients == LastAVanishes &&
           q_and_p_are_synchronized && i == 0) {
         ADVANCE_ΔPSTAGE(first_same_as_last_->first * h,
                         tn.value);
@@ -701,7 +701,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
         ADVANCE_ΔPSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
 
-      if (vanishing_coefficients == kFirstBVanishes &&
+      if (vanishing_coefficients == FirstBVanishes &&
           should_synchronize && i == stages_ - 1) {
         ADVANCE_ΔQSTAGE(first_same_as_last_->last * h);
         q_and_p_are_synchronized = true;
@@ -709,7 +709,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
         ADVANCE_ΔQSTAGE(a_[i] * h);
       }
     }
-    if (vanishing_coefficients == kLastAVanishes && should_synchronize) {
+    if (vanishing_coefficients == LastAVanishes && should_synchronize) {
       std::swap(Δpstage_current, Δpstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
       ADVANCE_ΔPSTAGE(first_same_as_last_->last * h,

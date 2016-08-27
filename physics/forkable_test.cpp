@@ -10,17 +10,15 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_forkable {
 
 using base::make_not_null_unique;
 using geometry::Instant;
 using quantities::si::Second;
 using ::testing::ElementsAre;
 
-namespace physics {
-
 class FakeTrajectory;
-
-namespace internal {
 
 template<>
 struct ForkableTraits<FakeTrajectory> {
@@ -38,12 +36,10 @@ class FakeTrajectoryIterator
   not_null<FakeTrajectoryIterator const*> that() const override;
 };
 
-}  // namespace internal
-
 class FakeTrajectory : public Forkable<FakeTrajectory,
-                                       internal::FakeTrajectoryIterator> {
+                                       FakeTrajectoryIterator> {
  public:
-  using Iterator = internal::FakeTrajectoryIterator;
+  using Iterator = FakeTrajectoryIterator;
 
   FakeTrajectory() = default;
 
@@ -73,12 +69,10 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   std::list<Instant> timeline_;
 
   template<typename, typename>
-  friend class internal::ForkableIterator;
+  friend class ForkableIterator;
   template<typename, typename>
   friend class Forkable;
 };
-
-namespace internal {
 
 Instant const& ForkableTraits<FakeTrajectory>::time(
     TimelineConstIterator const it) {
@@ -92,8 +86,6 @@ not_null<FakeTrajectoryIterator*> FakeTrajectoryIterator::that() {
 not_null<FakeTrajectoryIterator const*> FakeTrajectoryIterator::that() const {
   return this;
 }
-
-}  // namespace internal
 
 void FakeTrajectory::pop_front() {
   timeline_.pop_front();
@@ -681,5 +673,6 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   EXPECT_EQ(it, fork->End());
 }
 
+}  // namespace internal_forkable
 }  // namespace physics
 }  // namespace principia

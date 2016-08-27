@@ -9,15 +9,22 @@
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_dynamic_frame {
 
+using geometry::AngularVelocity;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::InnerProduct;
+using geometry::OrthogonalMap;
+using geometry::Position;
+using geometry::Velocity;
 using quantities::GravitationalParameter;
 using quantities::Sqrt;
+using quantities::si::Metre;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
-
-namespace physics {
 
 namespace {
 
@@ -47,20 +54,17 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
 
   RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
-  RigidMotion<ThisFrame, OtherFrame> FromThisFrameAtTime(
-      Instant const& t) const override;
-
-  // The acceleration due to gravity.
-  // A particle in free fall follows a trajectory whose second derivative
-  // is |GeometricAcceleration|.
-  Vector<Acceleration, ThisFrame> GeometricAcceleration(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> message) const override;
 
  private:
+  Vector<Acceleration, OtherFrame> GravitationalAcceleration(
+      Instant const& t,
+      Position<OtherFrame> const& q) const override;
+  AcceleratedRigidMotion<OtherFrame, ThisFrame> MotionOfThisFrame(
+      Instant const& t) const override;
+
   DegreesOfFreedom<OtherFrame> const origin_degrees_of_freedom_at_epoch_;
   Instant const epoch_;
   OrthogonalMap<OtherFrame, ThisFrame> const orthogonal_map_;
@@ -98,24 +102,26 @@ InertialFrame<OtherFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename OtherFrame, typename ThisFrame>
-RigidMotion<ThisFrame, OtherFrame>
-InertialFrame<OtherFrame, ThisFrame>::FromThisFrameAtTime(
-    Instant const& t) const {
-  return ToThisFrameAtTime(t).Inverse();
-}
-
-template<typename OtherFrame, typename ThisFrame>
-Vector<Acceleration, ThisFrame>
-InertialFrame<OtherFrame, ThisFrame>::GeometricAcceleration(
-    Instant const& t,
-    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  return orthogonal_map_(
-      gravity_(t, FromThisFrameAtTime(t)(degrees_of_freedom).position()));
-}
-
-template<typename OtherFrame, typename ThisFrame>
 void InertialFrame<OtherFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::DynamicFrame*> message) const {}
+
+template<typename OtherFrame, typename ThisFrame>
+Vector<Acceleration, OtherFrame>
+InertialFrame<OtherFrame, ThisFrame>::GravitationalAcceleration(
+    Instant const& t,
+    Position<OtherFrame> const& q) const {
+  return gravity_(t, q);
+}
+
+template<typename OtherFrame, typename ThisFrame>
+AcceleratedRigidMotion<OtherFrame, ThisFrame>
+InertialFrame<OtherFrame, ThisFrame>::MotionOfThisFrame(
+    Instant const& t) const {
+  return AcceleratedRigidMotion<OtherFrame, ThisFrame>(
+      ToThisFrameAtTime(t),
+      /*angular_acceleration_of_to_frame=*/{},
+      /*acceleration_of_to_frame_origin=*/{});
+}
 
 }  // namespace
 
@@ -132,7 +138,7 @@ class DynamicFrameTest : public testing::Test {
           {Circular::origin,
            Velocity<Circular>(
                {0 * Metre / Second, 0 * Metre / Second, 1 * Metre / Second})},
-          Instant() /*epoch*/,
+          /*epoch=*/Instant() ,
           OrthogonalMap<Circular, Helical>::Identity(),
           &Gravity);
 };
@@ -152,5 +158,6 @@ TEST_F(DynamicFrameTest, Helix) {
                             AlmostEquals(-Sqrt(0.5), 1)));
 }
 
+}  // namespace internal_dynamic_frame
 }  // namespace physics
 }  // namespace principia

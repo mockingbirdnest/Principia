@@ -16,14 +16,14 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace physics {
+namespace internal_oblate_body {
 
 using geometry::Vector;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Order2ZonalCoefficient;
 using quantities::Quotient;
-
-namespace physics {
 
 template<typename Frame>
 class OblateBody : public RotatingBody<Frame> {
@@ -57,9 +57,6 @@ class OblateBody : public RotatingBody<Frame> {
   Quotient<Order2ZonalCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
 
-  // Returns the axis passed at construction.
-  Vector<double, Frame> const& axis() const;
-
   // Returns false.
   bool is_massless() const override;
 
@@ -82,8 +79,11 @@ class OblateBody : public RotatingBody<Frame> {
 
  private:
   Parameters parameters_;
-  Vector<double, Frame> const axis_;
 };
+
+}  // namespace internal_oblate_body
+
+using internal_oblate_body::OblateBody;
 
 }  // namespace physics
 }  // namespace principia
