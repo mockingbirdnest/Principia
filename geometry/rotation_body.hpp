@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "geometry/rotation.hpp"
+
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
@@ -66,7 +68,7 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<typename Scalar, typename F, typename T, typename>
 Rotation<FromFrame, ToFrame>::Rotation(
     quantities::Angle const& angle,
     Bivector<Scalar, FromFrame> const& axis) {
