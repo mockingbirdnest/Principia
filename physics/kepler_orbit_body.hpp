@@ -16,7 +16,9 @@ namespace internal_kepler_orbit {
 using geometry::AngleBetween;
 using geometry::Bivector;
 using geometry::Commutator;
+using geometry::DefinesFrame;
 using geometry::Displacement;
+using geometry::EulerAngles;
 using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::OrientedAngleBetween;
@@ -210,21 +212,18 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
     Bivector<double, Frame> const x({1, 0, 0});
     Bivector<double, Frame> const y({0, 1, 0});
     Bivector<double, Frame> const z({0, 0, 1});
-    // It would be nice to have a local frame, rather than make this a rotation
-    // Frame -> Frame.
-    // TODO(egg): Constructor for |Rotation| using Euler angles.
-    Rotation<Frame, Frame> const from_orbit_plane =
-        (Rotation<Frame, Frame>(Ω, z) *
-         Rotation<Frame, Frame>(i, x) *
-         Rotation<Frame, Frame>(ω, z));
+    struct OrbitPlane;
+    Rotation<OrbitPlane, Frame> const from_orbit_plane(
+        Ω, i, ω,
+        EulerAngles::ZXZ,
+        DefinesFrame<OrbitPlane>{});
     Length const distance = a * (1 - eccentricity * Cos(eccentric_anomaly));
     Displacement<Frame> const r =
-        distance * from_orbit_plane(Vector<double, Frame>({Cos(true_anomaly),
-                                                           Sin(true_anomaly),
-                                                           0}));
+        distance * from_orbit_plane(Vector<double, OrbitPlane>(
+                       {Cos(true_anomaly), Sin(true_anomaly), 0}));
     Velocity<Frame> const v =
         Sqrt(μ * a) / distance *
-        from_orbit_plane(Vector<double, Frame>(
+        from_orbit_plane(Vector<double, OrbitPlane>(
             {-Sin(eccentric_anomaly),
              Sqrt(1 - Pow<2>(eccentricity)) * Cos(eccentric_anomaly),
              0}));
