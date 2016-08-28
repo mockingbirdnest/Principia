@@ -184,6 +184,14 @@ inline void noreturn() { std::exit(0); }
                : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
                   (expression)))
 
+// Clang for some reason doesn't like FP arithmetic that yields infinities in
+// constexpr code (MSVC and GCC are fine with that).
+#ifdef PRINCIPIA_COMPILER_CLANG
+#  define CONSTEXPR_INFINITY const
+#else
+#  define CONSTEXPR_INFINITY constexpr
+#endif
+
 // We preserve issue #228 in Bourbaki because we don't have trajectory
 // decimation yet.
 #define WE_LOVE_228
