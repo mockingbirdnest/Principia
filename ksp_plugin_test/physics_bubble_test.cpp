@@ -28,6 +28,7 @@ namespace principia {
 using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::DefinesFrame;
 using geometry::Rotation;
 using physics::MockEphemeris;
 using quantities::Acceleration;

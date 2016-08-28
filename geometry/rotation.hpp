@@ -20,6 +20,9 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
+// |EulerAngles| and |CardanAngles| have values in binary-coded ternary
+// representing the sequence of rotation axes.
+
 enum class EulerAngles {
   // |ZXZ| is The most common convention, e.g. orbital elements (Ω, i, ω),
   // rotational elements (90˚ + α₀, 90˚ - δ₀, W).
