@@ -112,6 +112,54 @@ Rotation<FromFrame, ToFrame>::Rotation(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename Scalar, typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
+                                       Bivector<Scalar, FromFrame> const& axis,
+                                       DefinesFrame<ToFrame> tag) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar, typename F, typename T, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
+                                       Bivector<Scalar, ToFrame> const& axis,
+                                       DefinesFrame<FromFrame> tag) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    EulerAngles const axes,
+    DefinesFrame<ToFrame> tag) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    EulerAngles const axes,
+    DefinesFrame<FromFrame> tag) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    CardanAngles const axes,
+    DefinesFrame<ToFrame> tag) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    CardanAngles const axes,
+    DefinesFrame<FromFrame> tag) {}
+
+template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {
   return Sign(1);
 }

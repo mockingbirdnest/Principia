@@ -126,7 +126,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<!std::is_same<F, T>::value>>
-  Rotation(Angle const& α, Angle const& β, Angle const& γ,
+  Rotation(Angle const& α,
+           Angle const& β,
+           Angle const& γ,
            EulerAngles const axes,
            DefinesFrame<ToFrame> tag);
 
@@ -134,7 +136,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename T = ToFrame,
            typename = std::enable_if_t<!std::is_same<F, T>::value>,
            typename = void>
-  Rotation(Angle const& α, Angle const& β, Angle const& γ,
+  Rotation(Angle const& α,
+           Angle const& β,
+           Angle const& γ,
            EulerAngles const axes,
            DefinesFrame<FromFrame> tag);
 
@@ -153,7 +157,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<!std::is_same<F, T>::value>>
-  Rotation(Angle const& α, Angle const& β, Angle const& γ,
+  Rotation(Angle const& α,
+           Angle const& β,
+           Angle const& γ,
            CardanAngles const axes,
            DefinesFrame<ToFrame> tag);
 
@@ -161,7 +167,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            typename T = ToFrame,
            typename = std::enable_if_t<!std::is_same<F, T>::value>,
            typename = void>
-  Rotation(Angle const& α, Angle const& β, Angle const& γ,
+  Rotation(Angle const& α,
+           Angle const& β,
+           Angle const& γ,
            CardanAngles const axes,
            DefinesFrame<FromFrame> tag);
 
