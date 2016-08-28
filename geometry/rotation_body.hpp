@@ -61,6 +61,19 @@ FORCE_INLINE Quaternion ToQuaternion(R3x3Matrix const& matrix) {
   return Quaternion(real_part, imaginary_part);
 }
 
+// Returns a rotation of |angle| around |axis|.  |axis| must be normalized.
+Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
+  quantities::Angle const half_angle = 0.5 * angle;
+  return Quaternion(Cos(half_angle), Sin(half_angle) * axis);
+}
+
+// Returns a rotation of |angle| around the |axis_index|th axis.
+Quaternion AngleAxis(Angle const& angle, int const axis_index) {
+  R3Element<double> axis{0, 0, 0};
+  axis[axis_index] = 1;
+  return AngleAxis(angle, axis);
+}
+
 }  // namespace
 
 template<typename FromFrame, typename ToFrame>
@@ -69,18 +82,9 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar, typename F, typename T, typename>
-Rotation<FromFrame, ToFrame>::Rotation(
-    quantities::Angle const& angle,
-    Bivector<Scalar, FromFrame> const& axis) {
-  quantities::Angle const half_angle = 0.5 * angle;
-  double const cos = Cos(half_angle);
-  double const sin = Sin(half_angle);
-  R3Element<Scalar> const coordinates = axis.coordinates();
-  Scalar const norm = coordinates.Norm();
-  CHECK_NE(0.0 * SIUnit<Scalar>(), norm);
-  R3Element<double> const unit_axis = coordinates / norm;
-  quaternion_ = Quaternion(cos, sin * unit_axis);
-}
+Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
+                                       Bivector<Scalar, FromFrame> const& axis)
+    : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
 template<int rank_x, int rank_y, int rank_z, typename F, typename T, typename>
@@ -115,13 +119,15 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar, typename F, typename T, typename>
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, FromFrame> const& axis,
-                                       DefinesFrame<ToFrame> tag) {}
+                                       DefinesFrame<ToFrame> tag)
+    : Rotation(AngleAxis(-angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar, typename F, typename T, typename, typename>
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, ToFrame> const& axis,
-                                       DefinesFrame<FromFrame> tag) {}
+                                       DefinesFrame<FromFrame> tag)
+    : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
@@ -130,7 +136,8 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     EulerAngles const axes,
-    DefinesFrame<ToFrame> tag) {}
+    DefinesFrame<ToFrame> tag)
+    : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename, typename>
@@ -139,7 +146,10 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     EulerAngles const axes,
-    DefinesFrame<FromFrame> tag) {}
+    DefinesFrame<FromFrame> tag)
+    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) % 2) *
+               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) % 2) *
+               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) % 2)) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
@@ -148,7 +158,8 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     CardanAngles const axes,
-    DefinesFrame<ToFrame> tag) {}
+    DefinesFrame<ToFrame> tag)
+    : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename, typename>
@@ -157,7 +168,10 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     CardanAngles const axes,
-    DefinesFrame<FromFrame> tag) {}
+    DefinesFrame<FromFrame> tag)
+    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) % 2) *
+               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) % 2) *
+               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) % 2)) {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {
