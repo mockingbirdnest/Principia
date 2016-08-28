@@ -147,9 +147,9 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& γ,
     EulerAngles const axes,
     DefinesFrame<FromFrame> tag)
-    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) % 2) *
-               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) % 2) *
-               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) % 2)) {}
+    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) & 0b11) *
+               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) & 0b11) *
+               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) & 0b11)) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
@@ -169,9 +169,9 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& γ,
     CardanAngles const axes,
     DefinesFrame<FromFrame> tag)
-    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) % 2) *
-               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) % 2) *
-               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) % 2)) {}
+    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) & 0b11) *
+               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) & 0b11) *
+               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) & 0b11)) {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {
