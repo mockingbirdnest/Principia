@@ -284,6 +284,47 @@ TEST_F(RotationTest, Basis) {
               AlmostEquals(c, 4));
 }
 
+TEST_F(RotationTest, EulerAngles) {
+  // Angles defining an orbit.
+  Angle const Ω = 30 * Degree;
+  Angle const i = 20 * Degree;
+  Angle const ω = 100 * Degree;
+
+  // The frame in which the above elements are given.
+  struct Reference;
+  // |Nodes| shares its z axis with |Reference|, and has the ascending node of
+  // the orbit as its positive x direction.
+  struct Nodes;
+  // |Plane| also has the ascending node of the orbit as its positive x
+  // direction, and has the orbital plane as its xy plane (with z being the
+  // positive orbit normal).
+  struct Plane;
+  // |Orbit| has its x axis towards the periapsis, and its z axis towards the
+  // positive orbit normal.
+  struct Orbit;
+
+  Bivector<double, Reference> const celestial_pole({0, 0, 1});
+  Bivector<double, Nodes> const ascending_node({1, 0, 0});
+  Bivector<double, Plane> const orbit_normal({0, 0, 1});
+
+  Rotation<Reference, Nodes> const to_nodes(Ω,
+                                            celestial_pole,
+                                            DefinesFrame<Nodes>{});
+  Rotation<Nodes, Plane> const to_plane(i,
+                                        ascending_node,
+                                        DefinesFrame<Plane>{});
+  Rotation<Plane, Orbit> const to_orbit(ω,
+                                        orbit_normal,
+                                        DefinesFrame<Orbit>{});
+
+  Rotation<Reference, Orbit> const to_orbit_direct(Ω, i, ω,
+                                                   EulerAngles::ZXZ,
+                                                   DefinesFrame<Orbit>{});
+
+  EXPECT_THAT(to_orbit_direct.quaternion(),
+              AlmostEquals((to_orbit * to_plane * to_nodes).quaternion(), 2));
+}
+
 TEST_F(RotationTest, CardanAngles) {
   struct Ground;
   Vector<double, Ground> north({1, 0, 0});
