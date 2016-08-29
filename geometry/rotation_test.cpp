@@ -514,8 +514,8 @@ TEST_F(RotationTest, CardanAngles) {
     Angle const angle_of_attack = spherical_aircraft_velocity.latitude;
     Angle const sideslip = spherical_aircraft_velocity.longitude;
 
-    EXPECT_THAT(angle_of_attack, AlmostEquals(heading, 3));
-    EXPECT_THAT(sideslip, AlmostEquals(pitch, 2));
+    EXPECT_THAT(angle_of_attack, AlmostEquals(heading, 3, 5));
+    EXPECT_THAT(sideslip, AlmostEquals(pitch, 0, 2));
   }
 }
 
