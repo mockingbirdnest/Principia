@@ -296,10 +296,14 @@ TEST_F(RotationTest, CardanAngles) {
   Vector<double, Aircraft> right({0, 1, 0});
   Vector<double, Aircraft> bottom({0, 0, 1});
 
+  Angle const heading = 1 * Degree;
+  Angle const pitch = 5 * Degree;
+
+  // Level flight North.
+  Velocity<Ground> const v = north * 100 * Metre / Second;
+
   {
     // No roll.
-    Angle const heading = 1 * Degree;
-    Angle const pitch = 5 * Degree;
     Angle const roll = 0 * Degree;
     Rotation<Aircraft, Ground> const to_ground(heading,
                                                pitch,
@@ -319,7 +323,6 @@ TEST_F(RotationTest, CardanAngles) {
     // No roll, the wings point to the horizon.
     EXPECT_THAT(InnerProduct(to_ground(right), down), Eq(0));
 
-    Velocity<Ground> const v = north * 100 * Metre / Second;
     Velocity<Aircraft> const v_aircraft = to_aircraft(v);
     auto const spherical_aircraft_velocity =
         v_aircraft.coordinates().ToSpherical();
@@ -334,9 +337,6 @@ TEST_F(RotationTest, CardanAngles) {
   }
 
   {
-    // No sideslip, using some spherical trigonometry.
-    Angle const heading = 1 * Degree;
-    Angle const pitch = 5 * Degree;
     // The angle between forward and north.  This is almost certainly a terrible
     // formula for that, cf. "A Case Study of Bits Lost in Space", in Kahan's
     // How Futile are Mindless Assessments of Roundoff in Floating-Point
@@ -358,7 +358,7 @@ TEST_F(RotationTest, CardanAngles) {
                                                  DefinesFrame<Aircraft>{});
 
     EXPECT_THAT(AngleBetween(to_ground(forward), north),
-                AlmostEquals(angle_to_north, 0));
+                AlmostEquals(angle_to_north, 52));
 
     // Positive pitch is up.
     EXPECT_THAT(InnerProduct(to_ground(forward), up), Gt(0));
@@ -367,24 +367,18 @@ TEST_F(RotationTest, CardanAngles) {
     // Positive roll, the right wing points down.
     EXPECT_THAT(InnerProduct(to_ground(right), down), Gt(0));
 
-    Velocity<Ground> const v = north * 100 * Metre / Second;
     Velocity<Aircraft> const v_aircraft = to_aircraft(v);
     auto const spherical_aircraft_velocity =
         v_aircraft.coordinates().ToSpherical();
     Angle const angle_of_attack = spherical_aircraft_velocity.latitude;
     Angle const sideslip = spherical_aircraft_velocity.longitude;
 
-    EXPECT_THAT(angle_of_attack, AlmostEquals(angle_to_north, 0));
-    // Positive angle of attack results in positive z velocity.
-    EXPECT_THAT(v_aircraft.coordinates().z, Gt(0 * Metre / Second));
-
-    EXPECT_THAT(sideslip, Eq(0 * Degree));
+    EXPECT_THAT(angle_of_attack, AlmostEquals(angle_to_north, 52));
+    EXPECT_THAT(sideslip, VanishesBefore(1 * Radian, 1));
   }
 
   {
     // Flying sideways (positive roll, right wing points down).
-    Angle const heading = 1 * Degree;
-    Angle const pitch = 5 * Degree;
     Angle const roll = π / 2 * Radian;
     Rotation<Aircraft, Ground> const to_ground(heading,
                                                pitch,
@@ -402,21 +396,16 @@ TEST_F(RotationTest, CardanAngles) {
     // Small heading is slightly East from North.
     EXPECT_THAT(InnerProduct(to_ground(forward), east), Gt(0));
     // Positive roll makes the right wing point down.
-    EXPECT_THAT(AngleBetween(to_ground(right), down), Eq(pitch));
+    EXPECT_THAT(AngleBetween(to_ground(right), down), AlmostEquals(pitch, 1));
 
-    Velocity<Ground> const v = north * 100 * Metre / Second;
     Velocity<Aircraft> const v_aircraft = to_aircraft(v);
     auto const spherical_aircraft_velocity =
         v_aircraft.coordinates().ToSpherical();
     Angle const angle_of_attack = spherical_aircraft_velocity.latitude;
     Angle const sideslip = spherical_aircraft_velocity.longitude;
 
-    // Horizontal flight.
-    EXPECT_THAT(angle_of_attack, Eq(heading));
-    // Positive angle of attack results in positive z velocity.
-    EXPECT_THAT(v_aircraft.coordinates().z, Gt(0 * Metre / Second));
-
-    EXPECT_THAT(sideslip, Eq(pitch));
+    EXPECT_THAT(angle_of_attack, AlmostEquals(heading, 3));
+    EXPECT_THAT(sideslip, AlmostEquals(pitch, 2));
   }
 }
 
