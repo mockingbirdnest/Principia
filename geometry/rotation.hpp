@@ -148,12 +148,11 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   // Constructors from Cardan angles.
   // Example: if |Aircraft| is the frame of an aircraft (x forward, y right,
   // z down), and |Ground| is a local-vertical, local-horizontal frame (x North,
-  // y East, z Down), given the |heading|, |elevation|, and |bank| of the
-  // aircraft,
-  //   Rotation<Ground, Aircraft>(heading, elevation, bank, CardanAngles::ZYX,
+  // y East, z Down), given the |heading|, |pitch|, and |roll| of the aircraft,
+  //   Rotation<Ground, Aircraft>(heading, pitch, roll, CardanAngles::ZYX,
   //                              DefinesFrame<Aircraft>{})
   // and
-  //   Rotation<Aircraft, Ground>(heading, elevation, bank, CardanAngles::ZYX,
+  //   Rotation<Aircraft, Ground>(heading, pitch, roll, CardanAngles::ZYX,
   //                              DefinesFrame<Aircraft>{})
   // are the transformations between |Aircraft| and |Ground|.
 
