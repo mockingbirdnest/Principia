@@ -284,6 +284,75 @@ TEST_F(RotationTest, Basis) {
               AlmostEquals(c, 4));
 }
 
+TEST_F(RotationTest, Enums) {
+  Angle const α = 30 * Degree;
+  Angle const β = 20 * Degree;
+  Angle const γ = 100 * Degree;
+  Rotation<World, World1> const zxz_euler(α, β, γ,
+                                          EulerAngles::ZXZ,
+                                          DefinesFrame<World1>{});
+
+  // Checks that using the convention |axes| for Euler angles, conjugated by the
+  // given |permutation|, and with appropriate sign changes, is equivalent to
+  // the ZXZ convention.
+  auto const check_euler_angles = [&α, &β, &γ, &zxz_euler, this](
+      EulerAngles axes,
+      Permutation<World, World>::CoordinatePermutation permutation) {
+    Permutation<World, World> const σ(permutation);
+    Permutation<World1, World1> const τ =
+        (Permutation<World, World1>::Identity() * σ *
+         Permutation<World1, World>::Identity()).Inverse();
+    Rotation<World, World1> const euler(σ.Determinant() * α,
+                                        σ.Determinant() * β,
+                                        σ.Determinant() * γ,
+                                        axes,
+                                        DefinesFrame<World1>{});
+    EXPECT_THAT(τ(euler(σ(e1_))), Eq(zxz_euler(e1_)));
+    EXPECT_THAT(τ(euler(σ(e2_))), Eq(zxz_euler(e2_)));
+    EXPECT_THAT(τ(euler(σ(e3_))), Eq(zxz_euler(e3_)));
+  };
+
+  check_euler_angles(EulerAngles::ZXZ, Permutation<World, World>::XYZ);
+  check_euler_angles(EulerAngles::XYX, Permutation<World, World>::ZXY);
+  check_euler_angles(EulerAngles::YZY, Permutation<World, World>::YZX);
+
+  check_euler_angles(EulerAngles::ZYZ, Permutation<World, World>::YXZ);
+  check_euler_angles(EulerAngles::XZX, Permutation<World, World>::ZYX);
+  check_euler_angles(EulerAngles::YXY, Permutation<World, World>::XZY);
+
+  Rotation<World, World1> const xyz_cardan(α, β, γ,
+                                           CardanAngles::XYZ,
+                                           DefinesFrame<World1>{});
+
+  // Checks that using the convention |axes| for Cardan angles, conjugated by
+  // the given |permutation|, and with appropriate sign changes, is equivalent
+  // to the XYZ convention.
+  auto const check_cardan_angles = [&α, &β, &γ, &xyz_cardan, this](
+      CardanAngles axes,
+      Permutation<World, World>::CoordinatePermutation permutation) {
+    Permutation<World, World> const σ(permutation);
+    Permutation<World1, World1> const τ =
+        (Permutation<World, World1>::Identity() * σ *
+         Permutation<World1, World>::Identity()).Inverse();
+    Rotation<World, World1> const cardan(σ.Determinant() * α,
+                                         σ.Determinant() * β,
+                                         σ.Determinant() * γ,
+                                         axes,
+                                         DefinesFrame<World1>{});
+    EXPECT_THAT(τ(cardan(σ(e1_))), Eq(xyz_cardan(e1_)));
+    EXPECT_THAT(τ(cardan(σ(e2_))), Eq(xyz_cardan(e2_)));
+    EXPECT_THAT(τ(cardan(σ(e3_))), Eq(xyz_cardan(e3_)));
+  };
+
+  check_cardan_angles(CardanAngles::XYZ, Permutation<World, World>::XYZ);
+  check_cardan_angles(CardanAngles::YZX, Permutation<World, World>::ZXY);
+  check_cardan_angles(CardanAngles::ZXY, Permutation<World, World>::YZX);
+
+  check_cardan_angles(CardanAngles::XZY, Permutation<World, World>::XZY);
+  check_cardan_angles(CardanAngles::ZYX, Permutation<World, World>::ZYX);
+  check_cardan_angles(CardanAngles::YXZ, Permutation<World, World>::YXZ);
+}
+
 TEST_F(RotationTest, EulerAngles) {
   // Angles defining an orbit.
   Angle const Ω = 30 * Degree;
