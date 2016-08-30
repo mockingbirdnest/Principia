@@ -28,7 +28,7 @@ std::ostream& operator<<(std::ostream& out,
 constexpr int AxisConvention(int const first_axis,
                              int const second_axis,
                              int const third_axis) {
-  return (((first_axis << 2) + second_axis) << 2 + third_axis);
+  return ((((first_axis << 2) + second_axis) << 2) + third_axis);
 }
 
 constexpr int X = 0;
