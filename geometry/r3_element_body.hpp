@@ -312,5 +312,19 @@ quantities::Product<LScalar, RScalar> Dot(
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
+inline R3Element<double> BasisVector(int const i) {
+  switch (i) {
+    case 0:
+      return {1, 0, 0};
+    case 1:
+      return {0, 1, 0};
+    case 2:
+      return {0, 0, 1};
+    default:
+      LOG(FATAL) << FUNCTION_SIGNATURE << ": " << NAMED(i);
+      base::noreturn();
+  }
+}
+
 }  // namespace geometry
 }  // namespace principia

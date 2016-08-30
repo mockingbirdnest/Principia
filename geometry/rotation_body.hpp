@@ -67,11 +67,12 @@ Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
   return Quaternion(Cos(half_angle), Sin(half_angle) * axis);
 }
 
-// Returns a rotation of |angle| around the |axis_index|th axis.
-Quaternion AngleAxis(Angle const& angle, int const axis_index) {
-  R3Element<double> axis{0, 0, 0};
-  axis[axis_index] = 1;
-  return AngleAxis(angle, axis);
+// Returns the digits of the 3ⁿs from the given |BinaryCodedTernary number|.
+// Note that this does not check that |number| is valid binary-coded ternary,
+// nor that the result is between 1 and 3.
+template<typename BinaryCodedTernary>
+int BinaryCodedTernaryDigit(int n, BinaryCodedTernary number) {
+  return (static_cast<int>(number) >> (2 * n)) & 0b11;
 }
 
 }  // namespace
@@ -147,9 +148,9 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& γ,
     EulerAngles const axes,
     DefinesFrame<FromFrame> tag)
-    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) & 0b11) *
-               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) & 0b11) *
-               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) & 0b11)) {}
+    : Rotation(AngleAxis(α, BasisVector(BinaryCodedTernaryDigit(2, axes))) *
+               AngleAxis(β, BasisVector(BinaryCodedTernaryDigit(1, axes))) *
+               AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
@@ -169,9 +170,9 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& γ,
     CardanoAngles const axes,
     DefinesFrame<FromFrame> tag)
-    : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) & 0b11) *
-               AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) & 0b11) *
-               AngleAxis(γ, (static_cast<int>(axes) >> (2 * 0)) & 0b11)) {}
+    : Rotation(AngleAxis(α, BasisVector(BinaryCodedTernaryDigit(2, axes))) *
+               AngleAxis(β, BasisVector(BinaryCodedTernaryDigit(1, axes))) *
+               AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {

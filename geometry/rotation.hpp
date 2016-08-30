@@ -21,26 +21,38 @@ std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
 // |EulerAngles| and |CardanoAngles| have values in binary-coded ternary
-// representing the sequence of rotation axes (X = 0b00, Y = 0b01, Z = 0b11).
+// representing the sequence of rotation axes.
+
+// |AxisConvention| concatenates ternary digits.  Implementation here so it is
+// defined by the time we use it as a constant expression.
+constexpr int AxisConvention(int const first_axis,
+                             int const second_axis,
+                             int const third_axis) {
+  return (((first_axis << 2) + second_axis) << 2 + third_axis);
+}
+
+constexpr int X = 0;
+constexpr int Y = 1;
+constexpr int Z = 2;
 
 enum class EulerAngles {
   // |ZXZ| is The most common convention, e.g. orbital elements (Ω, i, ω),
   // rotational elements (90˚ + α₀, 90˚ - δ₀, W).
-  ZXZ = 0b10'00'10,
-  XYX = 0b00'01'00,
-  YZY = 0b01'10'01,
-  ZYZ = 0b10'01'10,
-  XZX = 0b00'10'00,
-  YXY = 0b01'00'01,
+  ZXZ = AxisConvention(Z, X, Z),
+  XYX = AxisConvention(X, Y, X),
+  YZY = AxisConvention(Y, Z, Y),
+  ZYZ = AxisConvention(Z, Y, Z),
+  XZX = AxisConvention(X, Z, X),
+  YXY = AxisConvention(Y, X, Y),
 };
 
 enum class CardanoAngles {
-  XYZ = 0b00'01'10,
-  YZX = 0b01'10'00,
-  ZXY = 0b10'00'01,
-  XZY = 0b00'10'01,
-  ZYX = 0b10'01'00,  // Yaw, Pitch, Roll.
-  YXZ = 0b01'00'10,
+  XYZ = AxisConvention(X, Y, Z),
+  YZX = AxisConvention(Y, Z, X),
+  ZXY = AxisConvention(Z, X, Y),
+  XZY = AxisConvention(X, Z, Y),
+  ZYX = AxisConvention(Z, Y, X),  // Yaw, Pitch, Roll.
+  YXZ = AxisConvention(Y, X, Z),
 };
 
 template<typename Frame>
