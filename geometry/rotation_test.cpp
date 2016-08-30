@@ -320,37 +320,37 @@ TEST_F(RotationTest, Enums) {
   check_euler_angles(EulerAngles::XZX, Permutation<World, World>::ZYX);
   check_euler_angles(EulerAngles::YXY, Permutation<World, World>::XZY);
 
-  Rotation<World, World1> const xyz_cardan(α, β, γ,
-                                           CardanAngles::XYZ,
-                                           DefinesFrame<World1>{});
+  Rotation<World, World1> const xyz_cardano(α, β, γ,
+                                            CardanoAngles::XYZ,
+                                            DefinesFrame<World1>{});
 
-  // Checks that using the convention |axes| for Cardan angles, conjugated by
+  // Checks that using the convention |axes| for Cardano angles, conjugated by
   // the given |permutation|, and with appropriate sign changes, is equivalent
   // to the XYZ convention.
-  auto const check_cardan_angles = [&α, &β, &γ, &xyz_cardan, this](
-      CardanAngles axes,
+  auto const check_cardano_angles = [&α, &β, &γ, &xyz_cardano, this](
+      CardanoAngles axes,
       Permutation<World, World>::CoordinatePermutation permutation) {
     Permutation<World, World> const σ(permutation);
     Permutation<World1, World1> const τ =
         (Permutation<World, World1>::Identity() * σ *
          Permutation<World1, World>::Identity()).Inverse();
-    Rotation<World, World1> const cardan(σ.Determinant() * α,
+    Rotation<World, World1> const cardano(σ.Determinant() * α,
                                          σ.Determinant() * β,
                                          σ.Determinant() * γ,
                                          axes,
                                          DefinesFrame<World1>{});
-    EXPECT_THAT(τ(cardan(σ(e1_))), Eq(xyz_cardan(e1_)));
-    EXPECT_THAT(τ(cardan(σ(e2_))), Eq(xyz_cardan(e2_)));
-    EXPECT_THAT(τ(cardan(σ(e3_))), Eq(xyz_cardan(e3_)));
+    EXPECT_THAT(τ(cardano(σ(e1_))), Eq(xyz_cardano(e1_)));
+    EXPECT_THAT(τ(cardano(σ(e2_))), Eq(xyz_cardano(e2_)));
+    EXPECT_THAT(τ(cardano(σ(e3_))), Eq(xyz_cardano(e3_)));
   };
 
-  check_cardan_angles(CardanAngles::XYZ, Permutation<World, World>::XYZ);
-  check_cardan_angles(CardanAngles::YZX, Permutation<World, World>::ZXY);
-  check_cardan_angles(CardanAngles::ZXY, Permutation<World, World>::YZX);
+  check_cardano_angles(CardanoAngles::XYZ, Permutation<World, World>::XYZ);
+  check_cardano_angles(CardanoAngles::YZX, Permutation<World, World>::ZXY);
+  check_cardano_angles(CardanoAngles::ZXY, Permutation<World, World>::YZX);
 
-  check_cardan_angles(CardanAngles::XZY, Permutation<World, World>::XZY);
-  check_cardan_angles(CardanAngles::ZYX, Permutation<World, World>::ZYX);
-  check_cardan_angles(CardanAngles::YXZ, Permutation<World, World>::YXZ);
+  check_cardano_angles(CardanoAngles::XZY, Permutation<World, World>::XZY);
+  check_cardano_angles(CardanoAngles::ZYX, Permutation<World, World>::ZYX);
+  check_cardano_angles(CardanoAngles::YXZ, Permutation<World, World>::YXZ);
 }
 
 TEST_F(RotationTest, EulerAngles) {
@@ -394,7 +394,7 @@ TEST_F(RotationTest, EulerAngles) {
               AlmostEquals((to_orbit * to_plane * to_nodes).quaternion(), 2));
 }
 
-TEST_F(RotationTest, CardanAngles) {
+TEST_F(RotationTest, CardanoAngles) {
   struct Ground;
   Vector<double, Ground> north({1, 0, 0});
   Vector<double, Ground> east({0, 1, 0});
@@ -418,12 +418,12 @@ TEST_F(RotationTest, CardanAngles) {
     Rotation<Aircraft, Ground> const to_ground(heading,
                                                pitch,
                                                roll,
-                                               CardanAngles::ZYX,
+                                               CardanoAngles::ZYX,
                                                DefinesFrame<Aircraft>{});
     Rotation<Ground, Aircraft> const to_aircraft(heading,
                                                  pitch,
                                                  roll,
-                                                 CardanAngles::ZYX,
+                                                 CardanoAngles::ZYX,
                                                  DefinesFrame<Aircraft>{});
 
     // Positive pitch is up.
@@ -449,8 +449,8 @@ TEST_F(RotationTest, CardanAngles) {
   {
     // The angle between forward and north.  This is almost certainly a terrible
     // formula for that, cf. "A Case Study of Bits Lost in Space", in Kahan's
-    // How Futile are Mindless Assessments of Roundoff in Floating-Point
-    // Computation?.
+    // "How Futile are Mindless Assessments of Roundoff in Floating-Point
+    // Computation?".
     Angle const angle_to_north = ArcCos(Cos(heading) * Cos(pitch));
     // This eliminates sideslip.
     Angle const roll = ArcSin(Sin(heading) / Sin(angle_to_north));
@@ -459,12 +459,12 @@ TEST_F(RotationTest, CardanAngles) {
     Rotation<Aircraft, Ground> const to_ground(heading,
                                                pitch,
                                                roll,
-                                               CardanAngles::ZYX,
+                                               CardanoAngles::ZYX,
                                                DefinesFrame<Aircraft>{});
     Rotation<Ground, Aircraft> const to_aircraft(heading,
                                                  pitch,
                                                  roll,
-                                                 CardanAngles::ZYX,
+                                                 CardanoAngles::ZYX,
                                                  DefinesFrame<Aircraft>{});
 
     EXPECT_THAT(AngleBetween(to_ground(forward), north),
@@ -493,12 +493,12 @@ TEST_F(RotationTest, CardanAngles) {
     Rotation<Aircraft, Ground> const to_ground(heading,
                                                pitch,
                                                roll,
-                                               CardanAngles::ZYX,
+                                               CardanoAngles::ZYX,
                                                DefinesFrame<Aircraft>{});
     Rotation<Ground, Aircraft> const to_aircraft(heading,
                                                  pitch,
                                                  roll,
-                                                 CardanAngles::ZYX,
+                                                 CardanoAngles::ZYX,
                                                  DefinesFrame<Aircraft>{});
 
     // Positive pitch is up.

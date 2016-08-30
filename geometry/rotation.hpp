@@ -20,8 +20,8 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
-// |EulerAngles| and |CardanAngles| have values in binary-coded ternary
-// representing the sequence of rotation axes.
+// |EulerAngles| and |CardanoAngles| have values in binary-coded ternary
+// representing the sequence of rotation axes (X = 0b00, Y = 0b01, Z = 0b11).
 
 enum class EulerAngles {
   // |ZXZ| is The most common convention, e.g. orbital elements (Ω, i, ω),
@@ -34,7 +34,7 @@ enum class EulerAngles {
   YXY = 0b01'00'01,
 };
 
-enum class CardanAngles {
+enum class CardanoAngles {
   XYZ = 0b00'01'10,
   YZX = 0b01'10'00,
   ZXY = 0b10'00'01,
@@ -145,14 +145,14 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            EulerAngles const axes,
            DefinesFrame<FromFrame> tag);
 
-  // Constructors from Cardan angles.
+  // Constructors from Cardano angles.
   // Example: if |Aircraft| is the frame of an aircraft (x forward, y right,
   // z down), and |Ground| is a local-vertical, local-horizontal frame (x North,
   // y East, z Down), given the |heading|, |pitch|, and |roll| of the aircraft,
-  //   Rotation<Ground, Aircraft>(heading, pitch, roll, CardanAngles::ZYX,
+  //   Rotation<Ground, Aircraft>(heading, pitch, roll, CardanoAngles::ZYX,
   //                              DefinesFrame<Aircraft>{})
   // and
-  //   Rotation<Aircraft, Ground>(heading, pitch, roll, CardanAngles::ZYX,
+  //   Rotation<Aircraft, Ground>(heading, pitch, roll, CardanoAngles::ZYX,
   //                              DefinesFrame<Aircraft>{})
   // are the transformations between |Aircraft| and |Ground|.
 
@@ -162,7 +162,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
-           CardanAngles const axes,
+           CardanoAngles const axes,
            DefinesFrame<ToFrame> tag);
 
   template<typename F = FromFrame,
@@ -172,7 +172,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
-           CardanAngles const axes,
+           CardanoAngles const axes,
            DefinesFrame<FromFrame> tag);
 
   ~Rotation() override = default;

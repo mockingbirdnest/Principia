@@ -157,7 +157,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& α,
     Angle const& β,
     Angle const& γ,
-    CardanAngles const axes,
+    CardanoAngles const axes,
     DefinesFrame<ToFrame> tag)
     : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
 
@@ -167,7 +167,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& α,
     Angle const& β,
     Angle const& γ,
-    CardanAngles const axes,
+    CardanoAngles const axes,
     DefinesFrame<FromFrame> tag)
     : Rotation(AngleAxis(α, (static_cast<int>(axes) >> (2 * 2)) & 0b11) *
                AngleAxis(β, (static_cast<int>(axes) >> (2 * 1)) & 0b11) *
