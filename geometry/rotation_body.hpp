@@ -69,7 +69,7 @@ Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
 
 // Returns the digits of the 3ⁿs from the given |BinaryCodedTernary number|.
 // Note that this does not check that |number| is valid binary-coded ternary,
-// nor that the result is between 1 and 3.
+// nor that the result is between 1 and 2.
 template<typename BinaryCodedTernary>
 int BinaryCodedTernaryDigit(int n, BinaryCodedTernary number) {
   return (static_cast<int>(number) >> (2 * n)) & 0b11;

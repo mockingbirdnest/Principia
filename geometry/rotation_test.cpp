@@ -335,10 +335,10 @@ TEST_F(RotationTest, Enums) {
         (Permutation<World, World1>::Identity() * σ *
          Permutation<World1, World>::Identity()).Inverse();
     Rotation<World, World1> const cardano(σ.Determinant() * α,
-                                         σ.Determinant() * β,
-                                         σ.Determinant() * γ,
-                                         axes,
-                                         DefinesFrame<World1>{});
+                                          σ.Determinant() * β,
+                                          σ.Determinant() * γ,
+                                          axes,
+                                          DefinesFrame<World1>{});
     EXPECT_THAT(τ(cardano(σ(e1_))), Eq(xyz_cardano(e1_)));
     EXPECT_THAT(τ(cardano(σ(e2_))), Eq(xyz_cardano(e2_)));
     EXPECT_THAT(τ(cardano(σ(e3_))), Eq(xyz_cardano(e3_)));

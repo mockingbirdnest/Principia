@@ -313,17 +313,9 @@ quantities::Product<LScalar, RScalar> Dot(
 }
 
 inline R3Element<double> BasisVector(int const i) {
-  switch (i) {
-    case 0:
-      return {1, 0, 0};
-    case 1:
-      return {0, 1, 0};
-    case 2:
-      return {0, 0, 1};
-    default:
-      LOG(FATAL) << FUNCTION_SIGNATURE << ": " << NAMED(i);
-      base::noreturn();
-  }
+  DCHECK_GE(i, 0) << i;
+  DCHECK_LT(i, 3) << i;
+  return {i == 0, i == 1, i == 2};
 }
 
 }  // namespace geometry

@@ -145,7 +145,7 @@ quantities::Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                                           R3Element<RScalar> const& right);
 
 // Returns the |i|th basis vector, whose |i|th coordinate is 1, and whose
-// other coordinates are 0.  |i| must be in [0, 3].
+// other coordinates are 0.  |i| must be in [0, 2].
 R3Element<double> BasisVector(int const i);
 
 }  // namespace geometry
