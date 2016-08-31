@@ -22,6 +22,7 @@ using geometry::AngleBetween;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Commutator;
+using geometry::DefinesFrame;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -151,7 +152,7 @@ class SolarSystemDynamicsTest : public testing::Test {
             Radian;
       }
       Bivector<double, ICRFJ2000Equator> const normal =
-          Commutator(Normalize(solar_system_angular_momentum), z);
+          Commutator(z, Normalize(solar_system_angular_momentum));
       // Check that we computed the invariable plane properly by computing its
       // angle to the Sun's equator.
       // The actual figure is "almost exactly 6 deg", see Bailey, Batygin, and
@@ -161,19 +162,21 @@ class SolarSystemDynamicsTest : public testing::Test {
                                parent->angular_velocity()),
                   AllOf(Gt(5.9 * Degree), Lt(6.0 * Degree)));
       auto const declination_of_invariable_plane =
-          AngleBetween(solar_system_angular_momentum, z);
+          OrientedAngleBetween(z, solar_system_angular_momentum, normal);
+      EXPECT_THAT(declination_of_invariable_plane, Gt(0 * Radian));
       rotation =
           Rotation<ICRFJ2000Equator, ParentEquator>(
               declination_of_invariable_plane,
-              normal);
+              normal,
+              DefinesFrame<ParentEquator>{});
     } else {
       auto const ω = parent->angular_velocity();
       Bivector<double, ICRFJ2000Equator> const normal =
-          Commutator(Normalize(ω), z);
-      auto const parent_axis_declination = AngleBetween(ω, z);
-      rotation =
-          Rotation<ICRFJ2000Equator, ParentEquator>(parent_axis_declination,
-                                                    normal);
+          Commutator(z, Normalize(ω));
+      auto const parent_axis_declination = OrientedAngleBetween(z, ω, normal);
+      EXPECT_THAT(parent_axis_declination, Gt(0 * Radian));
+      rotation = Rotation<ICRFJ2000Equator, ParentEquator>(
+          parent_axis_declination, normal, DefinesFrame<ParentEquator>{});
     }
     RigidMotion<ICRFJ2000Equator, ParentEquator> const
         to_parent_equator(
