@@ -11,7 +11,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_barycentric_rotating_dynamic_frame {
+namespace internal_body_centred_body_direction_dynamic_frame {
 
 using geometry::Barycentre;
 using geometry::Bivector;
@@ -46,12 +46,6 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
       primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
-  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
-          {primary_degrees_of_freedom,
-           secondary_degrees_of_freedom},
-          {primary_->gravitational_parameter(),
-           secondary_->gravitational_parameter()});
 
   Rotation<InertialFrame, ThisFrame> rotation =
           Rotation<InertialFrame, ThisFrame>::Identity();
@@ -62,13 +56,13 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
                                  &angular_velocity);
 
   RigidTransformation<InertialFrame, ThisFrame> const
-      rigid_transformation(barycentre_degrees_of_freedom.position(),
+      rigid_transformation(primary_degrees_of_freedom.position(),
                            ThisFrame::origin,
                            rotation.Forget());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
              angular_velocity,
-             barycentre_degrees_of_freedom.velocity());
+             primary_degrees_of_freedom.velocity());
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -77,7 +71,7 @@ WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   auto* const extension =
       message->MutableExtension(
           serialization::BodyCentredBodyDirectionDynamicFrame::
-              barycentric_rotating_dynamic_frame);
+              body_centred_body_direction_dynamic_frame);
   extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
   extension->set_secondary(
       ephemeris_->serialization_index_for_body(secondary_));
@@ -133,11 +127,8 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFram
           (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) /
           InnerProduct(r, r);
 
-  Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
-      Barycentre<Vector<Acceleration, InertialFrame>, GravitationalParameter>(
-          {primary_acceleration, secondary_acceleration},
-          {primary_->gravitational_parameter(),
-           secondary_->gravitational_parameter()});
+  Vector<Acceleration, InertialFrame> const& acceleration_of_to_frame_origin =
+      primary_acceleration;
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              to_this_frame,
              angular_acceleration_of_to_frame,
@@ -166,6 +157,6 @@ ComputeAngularDegreesOfFreedom(
                       InnerProduct(reference_direction, reference_direction);
 }
 
-}  // namespace internal_barycentric_rotating_dynamic_frame
+}  // namespace internal_body_centred_body_direction_dynamic_frame
 }  // namespace physics
 }  // namespace principia

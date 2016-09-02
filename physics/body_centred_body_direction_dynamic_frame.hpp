@@ -23,7 +23,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_barycentric_rotating_dynamic_frame {
+namespace internal_body_centred_body_direction_dynamic_frame {
 
 using base::not_null;
 using geometry::AngularVelocity;
@@ -80,15 +80,15 @@ class BodyCentredBodyDirectionDynamicFrame
   mutable typename ContinuousTrajectory<InertialFrame>::Hint secondary_hint_;
 };
 
-}  // namespace internal_barycentric_rotating_dynamic_frame
+}  // namespace internal_body_centred_body_direction_dynamic_frame
 
-using internal_barycentric_rotating_dynamic_frame::
+using internal_body_centred_body_direction_dynamic_frame::
     BodyCentredBodyDirectionDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/barycentric_rotating_dynamic_frame_body.hpp"
+#include "physics/body_centred_body_direction_dynamic_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_CENTRED_BODY_DIRECTION_DYNAMIC_FRAME_HPP_
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
