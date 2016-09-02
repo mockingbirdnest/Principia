@@ -426,12 +426,11 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_FALSE(message.bubble().has_current());
   EXPECT_TRUE(message.has_plotting_frame());
   EXPECT_TRUE(message.plotting_frame().HasExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::
-          body_centred_non_rotating_dynamic_frame));
+      serialization::BodyCentredNonRotatingDynamicFrame::extension));
   EXPECT_EQ(SolarSystemFactory::Sun + 1,
             message.plotting_frame().GetExtension(
-                serialization::BodyCentredNonRotatingDynamicFrame::
-                    body_centred_non_rotating_dynamic_frame).centre());
+                serialization::BodyCentredNonRotatingDynamicFrame::extension).
+                    centre());
 }
 
 TEST_F(PluginTest, Initialization) {

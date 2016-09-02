@@ -74,10 +74,8 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
-  auto* const extension =
-      message->MutableExtension(
-          serialization::BarycentricRotatingDynamicFrame::
-              barycentric_rotating_dynamic_frame);
+  auto* const extension = message->MutableExtension(
+      serialization::BarycentricRotatingDynamicFrame::extension);
   extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
   extension->set_secondary(
       ephemeris_->serialization_index_for_body(secondary_));

@@ -503,11 +503,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
   big_small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
-      serialization::BarycentricRotatingDynamicFrame::
-          barycentric_rotating_dynamic_frame));
-  auto const extension =
-      message.GetExtension(serialization::BarycentricRotatingDynamicFrame::
-                               barycentric_rotating_dynamic_frame);
+      serialization::BarycentricRotatingDynamicFrame::extension));
+  auto const extension = message.GetExtension(
+      serialization::BarycentricRotatingDynamicFrame::extension);
   EXPECT_TRUE(extension.has_primary());
   EXPECT_TRUE(extension.has_secondary());
   EXPECT_EQ(0, extension.primary());

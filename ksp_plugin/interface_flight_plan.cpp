@@ -72,24 +72,20 @@ Burn GetBurn(Plugin const& plugin,
   serialization::DynamicFrame message;
   manœuvre.frame()->WriteToMessage(&message);
   if (message.HasExtension(
-          serialization::BarycentricRotatingDynamicFrame::
-              barycentric_rotating_dynamic_frame)) {
+          serialization::BarycentricRotatingDynamicFrame::extension)) {
     auto const& extension = message.GetExtension(
-        serialization::BarycentricRotatingDynamicFrame::
-            barycentric_rotating_dynamic_frame);
+        serialization::BarycentricRotatingDynamicFrame::extension);
     parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                               kBarycentricRotatingDynamicFrameFieldNumber;
+                               kExtensionFieldNumber;
     parameters.primary_index = extension.primary();
     parameters.secondary_index = extension.secondary();
   }
   if (message.HasExtension(
-          serialization::BodyCentredNonRotatingDynamicFrame::
-              body_centred_non_rotating_dynamic_frame)) {
+          serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
     auto const& extension = message.GetExtension(
-        serialization::BodyCentredNonRotatingDynamicFrame::
-            body_centred_non_rotating_dynamic_frame);
+        serialization::BodyCentredNonRotatingDynamicFrame::extension);
     parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                               kBodyCentredNonRotatingDynamicFrameFieldNumber;
+                               kExtensionFieldNumber;
     parameters.centre_index = extension.centre();
   }
 

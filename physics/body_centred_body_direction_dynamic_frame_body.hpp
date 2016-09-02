@@ -92,15 +92,15 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, InertialFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
-    GravitationalAcceleration(Instant const& t,
-                              Position<InertialFrame> const& q) const {
+GravitationalAcceleration(Instant const& t,
+                          Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
 }
 
 template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
-BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
-    Instant const& t) const {
+BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
+MotionOfThisFrame(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
       primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =

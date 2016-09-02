@@ -341,7 +341,7 @@ TEST_F(ManœuvreTest, Serialization) {
   serialization::DynamicFrame serialized_mock_dynamic_frame;
   serialized_mock_dynamic_frame.MutableExtension(
       serialization::BodyCentredNonRotatingDynamicFrame::
-          body_centred_non_rotating_dynamic_frame)->set_centre(666);
+          extension)->set_centre(666);
   EXPECT_CALL(*unowned_dynamic_frame, WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(serialized_mock_dynamic_frame));
   serialization::Manoeuvre message;
