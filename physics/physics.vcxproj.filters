@@ -137,6 +137,12 @@
     <ClInclude Include="hierarchical_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="body_centred_body_direction_dynamic_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_body_direction_dynamic_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
