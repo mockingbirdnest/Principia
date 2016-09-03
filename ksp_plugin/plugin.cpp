@@ -256,20 +256,11 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
   auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
       *FindOrDie(celestials_, index)->body());
 
-  Bivector<double, BodyFixed> z({0, 0, 1});
-  Bivector<double, BodyFixed> x({1, 0, 0});
-
-  Rotation<BodyFixed, Barycentric> body_orientation(
-      π / 2 * Radian + body.right_ascension_of_pole(),
-      π / 2 * Radian - body.declination_of_pole(),
-      body.AngleAt(current_time_),
-      EulerAngles::ZXZ,
-      DefinesFrame<BodyFixed>{});
-
   OrthogonalMap<BodyWorld, World> const result =
       OrthogonalMap<WorldSun, World>::Identity() *
       sun_looking_glass.Inverse().Forget() *
-      (PlanetariumRotation() * body_orientation).Forget() *
+      (PlanetariumRotation() *
+       body.FromSurfaceFrame<BodyFixed>(current_time_)).Forget() *
       body_mirror.Forget();
   CHECK(result.Determinant().Positive());
   return result.rotation();
@@ -951,9 +942,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   struct PlanetariumFrame;
 
-  Bivector<double, PlanetariumFrame> z({0, 0, 1});
-  Bivector<double, PlanetariumFrame> x({1, 0, 0});
-
   if (is_pre_cardano_) {
     return Rotation<Barycentric, AliceSun>(
         planetarium_rotation_,
@@ -961,8 +949,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
         DefinesFrame<AliceSun>{});
   } else {
     CHECK_NOTNULL(main_body_);
-    // TODO(egg): this would be more clearly expressed using zxz Euler angles
-    // (the third one is 0 here).  See #810.
     Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
         π / 2 * Radian + main_body_->right_ascension_of_pole(),
         π / 2 * Radian - main_body_->declination_of_pole(),
