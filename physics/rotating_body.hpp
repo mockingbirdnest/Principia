@@ -86,7 +86,7 @@ class RotatingBody : public MassiveBody {
   // Returns the position at time |t|.
   Angle AngleAt(Instant const& t) const;
 
-  // Returns the rotation relating the reference frame of the surface of this
+  // Returns the rotation relating the reference frame of the surface of this
   // body to |Frame|.  The reference frame of the surface is defined as follows:
   //   - the z axis is the |polar_axis|;
   //   - the x axis points from the centre of the body to the reference
