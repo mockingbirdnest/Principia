@@ -93,7 +93,7 @@ Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
   return Rotation<SurfaceFrame, Frame>(
       π / 2 * Radian + right_ascension_of_pole(),
       π / 2 * Radian - declination_of_pole(),
-      AngleAt(current_time_),
+      AngleAt(t),
       EulerAngles::ZXZ,
       DefinesFrame<SurfaceFrame>{});
 }
