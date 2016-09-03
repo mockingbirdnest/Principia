@@ -360,7 +360,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (1e3 + 2e3) * Metre / Pow<2>(Second),
                                (2e3 - 1e3) * Metre / Pow<2>(Second),
-                               0 * Metre / Pow<2>(Second)}), 1));
+                               0 * Metre / Pow<2>(Second)}), 0));
 }
 
 // A linear acceleration identical for both bodies.  The test point doesn't
@@ -374,25 +374,17 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
                             0 * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const big_dof =
-      {Displacement<ICRFJ2000Equator>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
+      {Displacement<ICRFJ2000Equator>({0 * Metre, 0 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
-       Velocity<ICRFJ2000Equator>({-16 * Metre / Second,
-                                   12 * Metre / Second,
+       Velocity<ICRFJ2000Equator>({0 * Metre / Second,
+                                   0 * Metre / Second,
                                    0 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const small_dof =
-      {Displacement<ICRFJ2000Equator>({5 * Metre, 5 * Metre, 0 * Metre}) +
+      {Displacement<ICRFJ2000Equator>({3 * Metre, 4 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>({40 * Metre / Second,
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
-  DegreesOfFreedom<ICRFJ2000Equator> const barycentre_dof =
-      Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
-          {big_dof, small_dof},
-          {big_gravitational_parameter_, small_gravitational_parameter_});
-  EXPECT_THAT(barycentre_dof.position() - ICRFJ2000Equator::origin,
-              Eq(Displacement<ICRFJ2000Equator>(
-                     {2 * Metre, 1 * Metre, 0 * Metre})));
-  EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRFJ2000Equator>()));
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
       .Times(2)
@@ -407,8 +399,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
-                             (-160 + 120) * Metre / Pow<2>(Second),
-                             (120 + 160) * Metre / Pow<2>(Second),
+                             -160 * Metre / Pow<2>(Second),
+                             120 * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
@@ -425,8 +417,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
   // The acceleration is linear + centrifugal.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1e3 * Metre / Pow<2>(Second),
-                               (-200 + 2e3) * Metre / Pow<2>(Second),
+                               (-160 + 1e3) * Metre / Pow<2>(Second),
+                               (120 + 2e3) * Metre / Pow<2>(Second),
                                300 * Metre / Pow<2>(Second)}), 2));
 }
 
