@@ -942,9 +942,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   struct PlanetariumFrame;
 
-  Bivector<double, PlanetariumFrame> z({0, 0, 1});
-  Bivector<double, PlanetariumFrame> x({1, 0, 0});
-
   if (is_pre_cardano_) {
     return Rotation<Barycentric, AliceSun>(
         planetarium_rotation_,
@@ -952,8 +949,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
         DefinesFrame<AliceSun>{});
   } else {
     CHECK_NOTNULL(main_body_);
-    // TODO(egg): this would be more clearly expressed using zxz Euler angles
-    // (the third one is 0 here).  See #810.
     Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
         π / 2 * Radian + main_body_->right_ascension_of_pole(),
         π / 2 * Radian - main_body_->declination_of_pole(),
