@@ -417,9 +417,9 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
   // The acceleration is linear + centrifugal.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               (-160 + 1e3) * Metre / Pow<2>(Second),
-                               (120 + 2e3) * Metre / Pow<2>(Second),
-                               300 * Metre / Pow<2>(Second)}), 2));
+                               1e3 * Metre / Pow<2>(Second),
+                               (200 + 2e3) * Metre / Pow<2>(Second),
+                               300 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
