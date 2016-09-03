@@ -30,6 +30,8 @@ using geometry::Position;
 using geometry::Vector;
 using quantities::Acceleration;
 
+// The origin of the frame is the centre of mass of the body.  The axis are
+// those of |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {

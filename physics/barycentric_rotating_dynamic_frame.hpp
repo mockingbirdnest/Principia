@@ -33,6 +33,11 @@ using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
 
+// The origin of the frame is the barycentre of the two bodies.  The X axis
+// points to the secondary.  The Y axis is in the direction of the velocity of
+// the secondary with respect to the primary.  The Z axis is in the direction of
+// the angular velocity of the system.  The basis has the same orientation as
+// |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
 class BarycentricRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {

@@ -193,5 +193,8 @@
     <ClCompile Include="ksp_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

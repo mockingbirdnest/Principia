@@ -70,8 +70,7 @@ void BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   auto* const extension =
       message->MutableExtension(
-          serialization::BodyCentredBodyDirectionDynamicFrame::
-              body_centred_body_direction_dynamic_frame);
+          serialization::BodyCentredBodyDirectionDynamicFrame::extension);
   extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
   extension->set_secondary(
       ephemeris_->serialization_index_for_body(secondary_));
@@ -143,7 +142,7 @@ ComputeAngularDegreesOfFreedom(
     not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
     not_null<AngularVelocity<InertialFrame>*> const angular_velocity) {
   RelativeDegreesOfFreedom<InertialFrame> const reference =
-      primary_degrees_of_freedom - secondary_degrees_of_freedom;
+       secondary_degrees_of_freedom - primary_degrees_of_freedom;
   Displacement<InertialFrame> const& reference_direction =
       reference.displacement();
   Velocity<InertialFrame> reference_normal = reference.velocity();
