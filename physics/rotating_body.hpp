@@ -99,6 +99,7 @@ class RotatingBody : public MassiveBody {
   // used for planetographic coordinates, which use a latitude defined from
   // a reference ellipsoid, and a longitude around the negative pole---except
   // for the Earth, the Moon, and the Sun.
+  // In the case of the Earth, see geodetic vs. geocentric latitudes.
   template<typename SurfaceFrame>
   Rotation<SurfaceFrame, Frame> FromSurfaceFrame(Instant const& t) const;
 
