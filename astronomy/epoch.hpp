@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/macros.hpp"
 #include <limits>
 
 #include "geometry/named_quantities.hpp"
@@ -27,9 +28,9 @@ namespace astronomy {
 // "2000-01-01T11:58:55,816"_UTC
 constexpr Instant J2000;
 
-constexpr Instant InfinitePast =
+CONSTEXPR_INFINITY Instant InfinitePast =
     J2000 - std::numeric_limits<double>::infinity() * Second;
-constexpr Instant InfiniteFuture =
+CONSTEXPR_INFINITY Instant InfiniteFuture =
     J2000 + std::numeric_limits<double>::infinity() * Second;
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of

@@ -28,6 +28,7 @@ namespace internal_body_centred_non_rotating_dynamic_frame {
 using astronomy::ICRFJ2000Equator;
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -134,8 +135,9 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
             EvaluateDegreesOfFreedom(t, &hint);
 
     auto const rotation_in_big_frame_at_t =
-        Rotation<ICRFJ2000Equator, Big>(-2 * π * (t - t0_) * Radian / period_,
-                                        axis);
+        Rotation<ICRFJ2000Equator, Big>(2 * π * (t - t0_) * Radian / period_,
+                                        axis,
+                                        DefinesFrame<Big>{});
     DegreesOfFreedom<Big> const small_in_big_frame_at_t(
         rotation_in_big_frame_at_t(initial_big_to_small.displacement()) +
             Big::origin,

@@ -86,6 +86,23 @@ class RotatingBody : public MassiveBody {
   // Returns the position at time |t|.
   Angle AngleAt(Instant const& t) const;
 
+  // Returns the rotation relating the reference frame of the surface of this
+  // body to |Frame|.  The reference frame of the surface is defined as follows:
+  //   - the z axis is the |polar_axis|;
+  //   - the x axis points from the centre of the body to the reference
+  //     meridian;
+  //   - the reference frame has the same handedness as |Frame|.
+  // Following this definition,
+  //   Displacement<SurfaceFrame>(RadiusLatitudeLongitude(r, φ, λ))
+  // converts planetocentric coordinates to a displacement from the body centre
+  // in the surface frame.  Note that RadiusLatitudeLongitude should *not* be
+  // used for planetographic coordinates, which use a latitude defined from
+  // a reference ellipsoid, and a longitude around the negative pole---except
+  // for the Earth, the Moon, and the Sun.
+  // In the case of the Earth, see geodetic vs. geocentric latitudes.
+  template<typename SurfaceFrame>
+  Rotation<SurfaceFrame, Frame> FromSurfaceFrame(Instant const& t) const;
+
   // Returns the rotation at time |t|.
   Rotation<Frame, Frame> RotationAt(Instant const& t) const;
 

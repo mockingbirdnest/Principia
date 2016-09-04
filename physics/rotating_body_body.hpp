@@ -87,6 +87,18 @@ Angle RotatingBody<Frame>::AngleAt(Instant const& t) const {
 }
 
 template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
+    Instant const& t) const {
+  return Rotation<SurfaceFrame, Frame>(
+      π / 2 * Radian + right_ascension_of_pole(),
+      π / 2 * Radian - declination_of_pole(),
+      AngleAt(t),
+      EulerAngles::ZXZ,
+      DefinesFrame<SurfaceFrame>{});
+}
+
+template<typename Frame>
 Rotation<Frame, Frame> RotatingBody<Frame>::RotationAt(Instant const& t) const {
   return Exp((t - parameters_.reference_instant_) *
                  parameters_.angular_velocity_);

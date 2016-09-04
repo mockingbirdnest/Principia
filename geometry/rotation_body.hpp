@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "geometry/rotation.hpp"
+
 #include <algorithm>
 
 #include "geometry/grassmann.hpp"
@@ -59,6 +61,20 @@ FORCE_INLINE Quaternion ToQuaternion(R3x3Matrix const& matrix) {
   return Quaternion(real_part, imaginary_part);
 }
 
+// Returns a rotation of |angle| around |axis|.  |axis| must be normalized.
+Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
+  quantities::Angle const half_angle = 0.5 * angle;
+  return Quaternion(Cos(half_angle), Sin(half_angle) * axis);
+}
+
+// Returns the digits of the 3ⁿs from the given |BinaryCodedTernary number|.
+// Note that this does not check that |number| is valid binary-coded ternary,
+// nor that the result is between 1 and 2.
+template<typename BinaryCodedTernary>
+int BinaryCodedTernaryDigit(int const n, BinaryCodedTernary const number) {
+  return (static_cast<int>(number) >> (2 * n)) & 0b11;
+}
+
 }  // namespace
 
 template<typename FromFrame, typename ToFrame>
@@ -66,19 +82,10 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-Rotation<FromFrame, ToFrame>::Rotation(
-    quantities::Angle const& angle,
-    Bivector<Scalar, FromFrame> const& axis) {
-  quantities::Angle const half_angle = 0.5 * angle;
-  double const cos = Cos(half_angle);
-  double const sin = Sin(half_angle);
-  R3Element<Scalar> const coordinates = axis.coordinates();
-  Scalar const norm = coordinates.Norm();
-  CHECK_NE(0.0 * SIUnit<Scalar>(), norm);
-  R3Element<double> const unit_axis = coordinates / norm;
-  quaternion_ = Quaternion(cos, sin * unit_axis);
-}
+template<typename Scalar, typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
+                                       Bivector<Scalar, FromFrame> const& axis)
+    : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
 template<int rank_x, int rank_y, int rank_z, typename F, typename T, typename>
@@ -108,6 +115,64 @@ Rotation<FromFrame, ToFrame>::Rotation(
   static_assert((rank_x + rank_y + rank_z) % 2 == 0, "chiral basis");
   static_assert(rank_x < 3 && rank_y < 3 && rank_z < 3, "bad dimension");
 }
+
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar, typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
+                                       Bivector<Scalar, FromFrame> const& axis,
+                                       DefinesFrame<ToFrame> tag)
+    : Rotation(AngleAxis(-angle, Normalize(axis).coordinates())) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar, typename F, typename T, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
+                                       Bivector<Scalar, ToFrame> const& axis,
+                                       DefinesFrame<FromFrame> tag)
+    : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    EulerAngles const axes,
+    DefinesFrame<ToFrame> tag)
+    : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    EulerAngles const axes,
+    DefinesFrame<FromFrame> tag)
+    : Rotation(AngleAxis(α, BasisVector(BinaryCodedTernaryDigit(2, axes))) *
+               AngleAxis(β, BasisVector(BinaryCodedTernaryDigit(1, axes))) *
+               AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    CardanoAngles const axes,
+    DefinesFrame<ToFrame> tag)
+    : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename, typename>
+Rotation<FromFrame, ToFrame>::Rotation(
+    Angle const& α,
+    Angle const& β,
+    Angle const& γ,
+    CardanoAngles const axes,
+    DefinesFrame<FromFrame> tag)
+    : Rotation(AngleAxis(α, BasisVector(BinaryCodedTernaryDigit(2, axes))) *
+               AngleAxis(β, BasisVector(BinaryCodedTernaryDigit(1, axes))) *
+               AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {

@@ -17,12 +17,17 @@
 
 namespace principia {
 
+using quantities::ArcCos;
 using quantities::si::Degree;
 using quantities::si::Metre;
+using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
 
 namespace geometry {
 
@@ -277,6 +282,241 @@ TEST_F(RotationTest, Basis) {
   EXPECT_THAT(to_world(Vector<double, World1>({0, 1, 0})), AlmostEquals(b, 2));
   EXPECT_THAT(to_world(Bivector<double, World1>({0, 0, 1})),
               AlmostEquals(c, 4));
+}
+
+TEST_F(RotationTest, Enums) {
+  Angle const α = 30 * Degree;
+  Angle const β = 20 * Degree;
+  Angle const γ = 100 * Degree;
+  Rotation<World, World1> const zxz_euler(α, β, γ,
+                                          EulerAngles::ZXZ,
+                                          DefinesFrame<World1>{});
+
+  // Checks that using the convention |axes| for Euler angles, conjugated by the
+  // given |permutation|, and with appropriate sign changes, is equivalent to
+  // the ZXZ convention.
+  auto const check_euler_angles = [&α, &β, &γ, &zxz_euler, this](
+      EulerAngles axes,
+      Permutation<World, World>::CoordinatePermutation permutation) {
+    Permutation<World, World> const σ(permutation);
+    Permutation<World1, World1> const τ =
+        (Permutation<World, World1>::Identity() * σ *
+         Permutation<World1, World>::Identity()).Inverse();
+    Rotation<World, World1> const euler(σ.Determinant() * α,
+                                        σ.Determinant() * β,
+                                        σ.Determinant() * γ,
+                                        axes,
+                                        DefinesFrame<World1>{});
+    EXPECT_THAT(τ(euler(σ(e1_))), Eq(zxz_euler(e1_)));
+    EXPECT_THAT(τ(euler(σ(e2_))), Eq(zxz_euler(e2_)));
+    EXPECT_THAT(τ(euler(σ(e3_))), Eq(zxz_euler(e3_)));
+  };
+
+  check_euler_angles(EulerAngles::ZXZ, Permutation<World, World>::XYZ);
+  check_euler_angles(EulerAngles::XYX, Permutation<World, World>::ZXY);
+  check_euler_angles(EulerAngles::YZY, Permutation<World, World>::YZX);
+
+  check_euler_angles(EulerAngles::ZYZ, Permutation<World, World>::YXZ);
+  check_euler_angles(EulerAngles::XZX, Permutation<World, World>::ZYX);
+  check_euler_angles(EulerAngles::YXY, Permutation<World, World>::XZY);
+
+  Rotation<World, World1> const xyz_cardano(α, β, γ,
+                                            CardanoAngles::XYZ,
+                                            DefinesFrame<World1>{});
+
+  // Checks that using the convention |axes| for Cardano angles, conjugated by
+  // the given |permutation|, and with appropriate sign changes, is equivalent
+  // to the XYZ convention.
+  auto const check_cardano_angles = [&α, &β, &γ, &xyz_cardano, this](
+      CardanoAngles axes,
+      Permutation<World, World>::CoordinatePermutation permutation) {
+    Permutation<World, World> const σ(permutation);
+    Permutation<World1, World1> const τ =
+        (Permutation<World, World1>::Identity() * σ *
+         Permutation<World1, World>::Identity()).Inverse();
+    Rotation<World, World1> const cardano(σ.Determinant() * α,
+                                          σ.Determinant() * β,
+                                          σ.Determinant() * γ,
+                                          axes,
+                                          DefinesFrame<World1>{});
+    EXPECT_THAT(τ(cardano(σ(e1_))), Eq(xyz_cardano(e1_)));
+    EXPECT_THAT(τ(cardano(σ(e2_))), Eq(xyz_cardano(e2_)));
+    EXPECT_THAT(τ(cardano(σ(e3_))), Eq(xyz_cardano(e3_)));
+  };
+
+  check_cardano_angles(CardanoAngles::XYZ, Permutation<World, World>::XYZ);
+  check_cardano_angles(CardanoAngles::YZX, Permutation<World, World>::ZXY);
+  check_cardano_angles(CardanoAngles::ZXY, Permutation<World, World>::YZX);
+
+  check_cardano_angles(CardanoAngles::XZY, Permutation<World, World>::XZY);
+  check_cardano_angles(CardanoAngles::ZYX, Permutation<World, World>::ZYX);
+  check_cardano_angles(CardanoAngles::YXZ, Permutation<World, World>::YXZ);
+}
+
+TEST_F(RotationTest, EulerAngles) {
+  // Angles defining an orbit.
+  Angle const Ω = 30 * Degree;
+  Angle const i = 20 * Degree;
+  Angle const ω = 100 * Degree;
+
+  // The frame in which the above elements are given.
+  struct Reference;
+  // |Nodes| shares its z axis with |Reference|, and has the ascending node of
+  // the orbit as its positive x direction.
+  struct Nodes;
+  // |Plane| also has the ascending node of the orbit as its positive x
+  // direction, and has the orbital plane as its xy plane (with z being the
+  // positive orbit normal).
+  struct Plane;
+  // |Orbit| has its x axis towards the periapsis, and its z axis towards the
+  // positive orbit normal.
+  struct Orbit;
+
+  Bivector<double, Reference> const celestial_pole({0, 0, 1});
+  Bivector<double, Nodes> const ascending_node({1, 0, 0});
+  Bivector<double, Plane> const orbit_normal({0, 0, 1});
+
+  Rotation<Reference, Nodes> const to_nodes(Ω,
+                                            celestial_pole,
+                                            DefinesFrame<Nodes>{});
+  Rotation<Nodes, Plane> const to_plane(i,
+                                        ascending_node,
+                                        DefinesFrame<Plane>{});
+  Rotation<Plane, Orbit> const to_orbit(ω,
+                                        orbit_normal,
+                                        DefinesFrame<Orbit>{});
+
+  Rotation<Reference, Orbit> const to_orbit_direct(Ω, i, ω,
+                                                   EulerAngles::ZXZ,
+                                                   DefinesFrame<Orbit>{});
+
+  EXPECT_THAT(to_orbit_direct.quaternion(),
+              AlmostEquals((to_orbit * to_plane * to_nodes).quaternion(), 2));
+}
+
+TEST_F(RotationTest, CardanoAngles) {
+  struct Ground;
+  Vector<double, Ground> north({1, 0, 0});
+  Vector<double, Ground> east({0, 1, 0});
+  Vector<double, Ground> down({0, 0, 1});
+  auto const up = -down;
+
+  struct Aircraft;
+  Vector<double, Aircraft> forward({1, 0, 0});
+  Vector<double, Aircraft> right({0, 1, 0});
+  Vector<double, Aircraft> bottom({0, 0, 1});
+
+  Angle const heading = 1 * Degree;
+  Angle const pitch = 5 * Degree;
+
+  // Level flight North.
+  Velocity<Ground> const v = north * 100 * Metre / Second;
+
+  {
+    // No roll.
+    Angle const roll = 0 * Degree;
+    Rotation<Aircraft, Ground> const to_ground(heading,
+                                               pitch,
+                                               roll,
+                                               CardanoAngles::ZYX,
+                                               DefinesFrame<Aircraft>{});
+    Rotation<Ground, Aircraft> const to_aircraft(heading,
+                                                 pitch,
+                                                 roll,
+                                                 CardanoAngles::ZYX,
+                                                 DefinesFrame<Aircraft>{});
+
+    // Positive pitch is up.
+    EXPECT_THAT(InnerProduct(to_ground(forward), up), Gt(0));
+    // Small heading is slightly East from North.
+    EXPECT_THAT(InnerProduct(to_ground(forward), east), Gt(0));
+    // No roll, the wings point to the horizon.
+    EXPECT_THAT(InnerProduct(to_ground(right), down), Eq(0));
+
+    Velocity<Aircraft> const v_aircraft = to_aircraft(v);
+    auto const spherical_aircraft_velocity =
+        v_aircraft.coordinates().ToSpherical();
+    Angle const angle_of_attack = spherical_aircraft_velocity.latitude;
+    Angle const sideslip = spherical_aircraft_velocity.longitude;
+
+    EXPECT_THAT(angle_of_attack, Gt(0 * Degree));
+    // Positive angle of attack results in positive z velocity.
+    EXPECT_THAT(v_aircraft.coordinates().z, Gt(0 * Metre / Second));
+
+    EXPECT_THAT(sideslip, Lt(0 * Degree));
+  }
+
+  {
+    // The angle between forward and north.  This is almost certainly a terrible
+    // formula for that, cf. "A Case Study of Bits Lost in Space", in Kahan's
+    // "How Futile are Mindless Assessments of Roundoff in Floating-Point
+    // Computation?".
+    Angle const angle_to_north = ArcCos(Cos(heading) * Cos(pitch));
+    // This eliminates sideslip.
+    Angle const roll = ArcSin(Sin(heading) / Sin(angle_to_north));
+    EXPECT_THAT(roll, Gt(0 * Degree));
+
+    Rotation<Aircraft, Ground> const to_ground(heading,
+                                               pitch,
+                                               roll,
+                                               CardanoAngles::ZYX,
+                                               DefinesFrame<Aircraft>{});
+    Rotation<Ground, Aircraft> const to_aircraft(heading,
+                                                 pitch,
+                                                 roll,
+                                                 CardanoAngles::ZYX,
+                                                 DefinesFrame<Aircraft>{});
+
+    EXPECT_THAT(AngleBetween(to_ground(forward), north),
+                AlmostEquals(angle_to_north, 52));
+
+    // Positive pitch is up.
+    EXPECT_THAT(InnerProduct(to_ground(forward), up), Gt(0));
+    // Small heading is slightly East from North.
+    EXPECT_THAT(InnerProduct(to_ground(forward), east), Gt(0));
+    // Positive roll, the right wing points down.
+    EXPECT_THAT(InnerProduct(to_ground(right), down), Gt(0));
+
+    Velocity<Aircraft> const v_aircraft = to_aircraft(v);
+    auto const spherical_aircraft_velocity =
+        v_aircraft.coordinates().ToSpherical();
+    Angle const angle_of_attack = spherical_aircraft_velocity.latitude;
+    Angle const sideslip = spherical_aircraft_velocity.longitude;
+
+    EXPECT_THAT(angle_of_attack, AlmostEquals(angle_to_north, 52));
+    EXPECT_THAT(sideslip, VanishesBefore(1 * Radian, 1));
+  }
+
+  {
+    // Flying sideways (positive roll, right wing points down).
+    Angle const roll = π / 2 * Radian;
+    Rotation<Aircraft, Ground> const to_ground(heading,
+                                               pitch,
+                                               roll,
+                                               CardanoAngles::ZYX,
+                                               DefinesFrame<Aircraft>{});
+    Rotation<Ground, Aircraft> const to_aircraft(heading,
+                                                 pitch,
+                                                 roll,
+                                                 CardanoAngles::ZYX,
+                                                 DefinesFrame<Aircraft>{});
+
+    // Positive pitch is up.
+    EXPECT_THAT(InnerProduct(to_ground(forward), up), Gt(0));
+    // Small heading is slightly East from North.
+    EXPECT_THAT(InnerProduct(to_ground(forward), east), Gt(0));
+    // Positive roll makes the right wing point down.
+    EXPECT_THAT(AngleBetween(to_ground(right), down), AlmostEquals(pitch, 1));
+
+    Velocity<Aircraft> const v_aircraft = to_aircraft(v);
+    auto const spherical_aircraft_velocity =
+        v_aircraft.coordinates().ToSpherical();
+    Angle const angle_of_attack = spherical_aircraft_velocity.latitude;
+    Angle const sideslip = spherical_aircraft_velocity.longitude;
+
+    EXPECT_THAT(angle_of_attack, AlmostEquals(heading, 3, 5));
+    EXPECT_THAT(sideslip, AlmostEquals(pitch, 0, 2));
+  }
 }
 
 }  // namespace geometry
