@@ -83,12 +83,6 @@
     <ClInclude Include="version.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="smart_casts.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="smart_casts_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
