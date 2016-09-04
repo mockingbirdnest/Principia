@@ -3,7 +3,7 @@
 
 // This code comes from:
 // https://code.google.com/p/or-tools/source/browse/trunk/src/base/fingerprint2011.h
-// and was adapted to Visual Studio 2013 and to the needs of this project.
+// and was adapted to Visual Studio and to the needs of this project.
 
 // Copyright 2010-2014 Google
 // Licensed under the Apache License, Version 2.0 (the "License");

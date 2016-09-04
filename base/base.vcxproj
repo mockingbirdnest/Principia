@@ -275,6 +275,9 @@
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
+    <ClInclude Include="status.h" />
+    <ClInclude Include="statusor.h" />
+    <ClInclude Include="status_macros.h" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />
@@ -284,6 +287,10 @@
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
+    <ClCompile Include="status.cc" />
+    <ClCompile Include="statusor.cc" />
+    <ClCompile Include="statusor_test.cc" />
+    <ClCompile Include="status_test.cc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
