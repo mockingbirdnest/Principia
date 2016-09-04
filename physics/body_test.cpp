@@ -67,7 +67,8 @@ class BodyTest : public testing::Test {
         MassiveBody::ReadFromMessage(message);
     EXPECT_EQ(rotating_body.gravitational_parameter(),
               massive_body->gravitational_parameter());
-    cast_rotating_body = dynamic_cast<RotatingBody<F> const*>(&*massive_body);
+    cast_rotating_body =
+        dynamic_cast_not_null<RotatingBody<F> const*>(massive_body.get());
     EXPECT_THAT(cast_rotating_body, NotNull());
   }
 
@@ -118,9 +119,8 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
 
   // Dispatching from |Body|.  Need two steps to add const and remove
   // |not_null|.
-  std::unique_ptr<Body const> const body =
-      not_null<std::unique_ptr<Body const>>(Body::ReadFromMessage(message));
-  cast_massless_body = dynamic_cast<MasslessBody const*>(body.get());
+  not_null<std::unique_ptr<Body const>> body = Body::ReadFromMessage(message);
+  cast_massless_body = dynamic_cast_not_null<MasslessBody const*>(body.get());
   EXPECT_THAT(cast_massless_body, NotNull());
 }
 
@@ -143,7 +143,7 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
 
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body>> body = Body::ReadFromMessage(message);
-  cast_massive_body = dynamic_cast<MassiveBody*>(&*body);
+  cast_massive_body = dynamic_cast_not_null<MassiveBody*>(body.get());
   EXPECT_THAT(cast_massive_body, NotNull());
   EXPECT_EQ(massive_body_.gravitational_parameter(),
             cast_massive_body->gravitational_parameter());
@@ -182,7 +182,8 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
       MassiveBody::ReadFromMessage(message);
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
             massive_body->gravitational_parameter());
-  cast_rotating_body = dynamic_cast<RotatingBody<World> const*>(&*massive_body);
+  cast_rotating_body =
+      dynamic_cast_not_null<RotatingBody<World> const*>(massive_body.get());
   EXPECT_THAT(cast_rotating_body, NotNull());
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
             cast_rotating_body->gravitational_parameter());
@@ -194,7 +195,8 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
-  cast_rotating_body = dynamic_cast<RotatingBody<World> const*>(&*body);
+  cast_rotating_body =
+      dynamic_cast_not_null<RotatingBody<World> const*>(body.get());
   EXPECT_THAT(cast_rotating_body, NotNull());
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
             cast_rotating_body->gravitational_parameter());
@@ -228,7 +230,8 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       MassiveBody::ReadFromMessage(message);
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             massive_body->gravitational_parameter());
-  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
+  cast_oblate_body =
+      dynamic_cast_not_null<OblateBody<World> const*>(massive_body.get());
   EXPECT_THAT(cast_oblate_body, NotNull());
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
@@ -238,7 +241,8 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
-  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
+  cast_oblate_body =
+      dynamic_cast_not_null<OblateBody<World> const*>(body.get());
   EXPECT_THAT(cast_oblate_body, NotNull());
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
@@ -291,9 +295,9 @@ TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
   auto const post_brouwer = Body::ReadFromMessage(post_brouwer_body);
   auto const pre_brouwer = Body::ReadFromMessage(pre_brouwer_body);
   auto const* const cast_post_brouwer =
-      dynamic_cast<OblateBody<World> const*>(&*post_brouwer);
+      dynamic_cast_not_null<OblateBody<World> const*>(post_brouwer.get());
   auto const* const cast_pre_brouwer =
-      dynamic_cast<OblateBody<World> const*>(&*pre_brouwer);
+      dynamic_cast_not_null<OblateBody<World> const*>(pre_brouwer.get());
   EXPECT_EQ(cast_post_brouwer->mass(), cast_pre_brouwer->mass());
   EXPECT_THAT(cast_post_brouwer->polar_axis(),
               AlmostEquals(cast_pre_brouwer->polar_axis(), 2));

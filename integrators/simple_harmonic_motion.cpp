@@ -18,6 +18,7 @@
 
 namespace principia {
 
+using base::dynamic_cast_not_null;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -237,7 +238,7 @@ TEST_P(SimpleHarmonicMotionTest, Error) {
 
   // Check consistency with the more general integration schemes.
   SPRKIntegrator const* const sprk =
-      dynamic_cast<SPRKIntegrator const*>(&*integrator_);
+      dynamic_cast_not_null<SPRKIntegrator const*>(integrator_);
   if (sprk != nullptr) {
     SPRKIntegrator::Parameters<Length, Momentum> parameters;
     parameters.initial.momenta.emplace_back(
