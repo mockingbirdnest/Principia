@@ -13,18 +13,26 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_plugin {
 
 using astronomy::ICRFJ2000Equator;
+using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
 using physics::KeplerianElements;
 using quantities::Abs;
+using quantities::Acceleration;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::Speed;
 using quantities::Sqrt;
 using quantities::si::Day;
 using quantities::si::Hour;
@@ -42,8 +50,6 @@ using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
-
-namespace ksp_plugin {
 
 class PluginIntegrationTest : public testing::Test {
  protected:
@@ -671,5 +677,6 @@ TEST_F(PluginIntegrationTest, Prediction) {
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
 }
 
+}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

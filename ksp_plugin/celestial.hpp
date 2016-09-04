@@ -13,17 +13,18 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_celestial {
 
 using base::not_null;
 using base::make_not_null_unique;
+using geometry::Position;
 using geometry::Velocity;
 using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using quantities::GravitationalParameter;
-
-namespace ksp_plugin {
 
 // Represents a KSP |CelestialBody|.
 class Celestial {
@@ -59,6 +60,10 @@ class Celestial {
       std::unique_ptr<
           ContinuousTrajectory<Barycentric>::Hint>> current_time_hint_;
 };
+
+}  // namespace internal_celestial
+
+using internal_celestial::Celestial;
 
 }  // namespace ksp_plugin
 }  // namespace principia

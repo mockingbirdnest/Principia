@@ -5,6 +5,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_celestial {
 
 inline Celestial::Celestial(not_null<MassiveBody const*> body)
     : body_(body),
@@ -67,5 +68,6 @@ inline void Celestial::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
+}  // namespace internal_celestial
 }  // namespace ksp_plugin
 }  // namespace principia

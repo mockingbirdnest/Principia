@@ -7,19 +7,18 @@
 #include <limits>
 
 namespace principia {
-
-using quantities::si::Degree;
-using quantities::si::Radian;
-
 namespace interface {
 
-namespace {
+using geometry::Position;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+using physics::Ephemeris;
+using quantities::si::Degree;
+using quantities::si::Metre;
+using quantities::si::Radian;
 
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
-
-}  // namespace
 
 template<typename Container>
 TypedIterator<Container>::TypedIterator(Container container)

@@ -13,6 +13,8 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_part {
 
 using geometry::Position;
 using geometry::Vector;
@@ -21,11 +23,9 @@ using physics::DegreesOfFreedom;
 using quantities::Acceleration;
 using quantities::Mass;
 
-namespace ksp_plugin {
-
 // Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|
 // corresponds to |uint32_t|.
-using PartId = uint32_t;
+using PartId = std::uint32_t;
 
 // Represents a KSP part.
 template<typename Frame>
@@ -59,6 +59,13 @@ std::ostream& operator<<(std::ostream& out, Part<Frame> const& part);
 using PartIdToOwnedPart = std::map<PartId,
                                    not_null<std::unique_ptr<Part<World>>>>;
 using IdAndOwnedPart = PartIdToOwnedPart::value_type;
+
+}  // namespace internal_part
+
+using internal_part::IdAndOwnedPart;
+using internal_part::Part;
+using internal_part::PartId;
+using internal_part::PartIdToOwnedPart;
 
 }  // namespace ksp_plugin
 }  // namespace principia

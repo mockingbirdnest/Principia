@@ -33,30 +33,37 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_plugin {
 
 using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
+using geometry::OrthogonalMap;
 using geometry::Point;
+using geometry::Position;
 using geometry::Rotation;
+using geometry::Vector;
+using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
+using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
+using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
+using quantities::Mass;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
-
-namespace ksp_plugin {
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -445,6 +452,12 @@ class Plugin {
 
   friend class TestablePlugin;
 };
+
+}  // namespace internal_plugin
+
+using internal_plugin::GUID;
+using internal_plugin::Index;
+using internal_plugin::Plugin;
 
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -8,10 +8,8 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
-
-using base::not_null;
-
 namespace ksp_plugin {
+namespace internal_plugin {
 
 class MockPlugin : public Plugin {
  public:
@@ -185,6 +183,10 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Plugin*> const message));
 };
+
+}  // namespace internal_plugin
+
+using internal_plugin::MockPlugin;
 
 }  // namespace ksp_plugin
 }  // namespace principia

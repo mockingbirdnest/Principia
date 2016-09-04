@@ -31,6 +31,8 @@
 #include "physics/rotating_body.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_plugin {
 
 using base::FindOrDie;
 using base::FingerprintCat2011;
@@ -55,12 +57,10 @@ using physics::Frenet;
 using physics::KeplerianElements;
 using physics::RotatingBody;
 using quantities::Force;
+using quantities::Length;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
-
-namespace ksp_plugin {
-
 using ::operator<<;
 
 namespace {
@@ -1077,5 +1077,6 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
   return Fingerprint2011(serialized.c_str(), serialized.size());
 }
 
+}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
