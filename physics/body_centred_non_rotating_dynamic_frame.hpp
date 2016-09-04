@@ -73,7 +73,7 @@ using internal_body_centred_non_rotating_dynamic_frame::
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/body_centered_non_rotating_dynamic_frame_body.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

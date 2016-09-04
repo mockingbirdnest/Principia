@@ -3,8 +3,8 @@ initial_state {
   # This is 1950-Jan-01 00:00:00.0000 TDB.
   epoch : 2433282.500000000
 
-  # The two bodies are on circular orbits around their center of mass.  The
-  # center of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
+  # The two bodies are on circular orbits around their centre of mass.  The
+  # centre of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
   # period is 10 Pi Sqrt[5/7] s.
   body {
     name : "Big"

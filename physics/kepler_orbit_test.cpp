@@ -28,7 +28,7 @@ using ::testing::Lt;
 class KeplerOrbitTest : public ::testing::Test {};
 
 // Target body name : Moon(301) { source: DE431mx }
-// Center body name : Earth(399) { source: DE431mx }
+// Centre body name : Earth(399) { source: DE431mx }
 // Output units    : KM-S, deg, Julian day number (Tp)
 // Reference frame : ICRF / J2000.0
 // Coordinate systm : Earth Mean Equator and Equinox of Reference Epoch

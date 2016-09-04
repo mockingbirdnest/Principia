@@ -85,7 +85,7 @@ class LunarEclipseTest : public testing::Test {
     auto const moon = solar_system_1950_.massive_body(*ephemeris_, "Moon");
 
     // Angle formed by a right circular cone with sides defined by tangent lines
-    // between Sun and Earth, and axis running through the centers of each.
+    // between Sun and Earth, and axis running through the centres of each.
     auto const umbral_half_aperture = [this, earth, moon, sun](
         Instant const& t) {
       auto const q_sun =

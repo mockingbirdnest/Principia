@@ -33,7 +33,7 @@ using geometry::Rotation;
 using geometry::Vector;
 using quantities::Acceleration;
 
-// The origin of the frame is the center of mass of the primary body.  The X
+// The origin of the frame is the centre of mass of the primary body.  The X
 // axis points to the secondary.  The Y axis is in the direction of the velocity
 // of the secondary with respect to the primary.  The Z axis is in the direction
 // of the angular velocity of the system.  The basis has the same orientation as

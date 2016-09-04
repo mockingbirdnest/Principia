@@ -26,7 +26,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
-#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/rotating_body.hpp"
 
@@ -853,8 +853,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
                                        message.plotting_frame());
   if (plotting_frame == nullptr) {
-    // In the pre-Brouwer compatibility case you get a plotting frame centered
-    // on the Sun.
+    // In the pre-Brouwer compatibility case you get a plotting frame centred on
+    // the Sun.
     plugin->SetPlottingFrame(
         plugin->NewBodyCentredNonRotatingNavigationFrame(message.sun_index()));
   } else {
