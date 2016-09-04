@@ -28,7 +28,8 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
 
-  Rotation<InertialFrame, ThisFrame> rotation = centre_->ToSurfaceFrame(t);
+  Rotation<InertialFrame, ThisFrame> rotation =
+      centre_->ToSurfaceFrame<ThisFrame>(t);
   AngularVelocity<InertialFrame> angular_velocity = centre_->angular_velocity();
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
@@ -72,7 +73,7 @@ AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
-      centre_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
   Vector<Acceleration, InertialFrame> const centre_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(centre_, t);
 
