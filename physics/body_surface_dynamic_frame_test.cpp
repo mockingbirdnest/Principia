@@ -284,48 +284,7 @@ TEST_F(BodySurfaceDynamicFrameTest, CentrifugalAcceleration) {
                             VanishesBefore(1 * Metre / Pow<2>(Second), 552)));
 }
 
-// A tangential acceleration that increases the rotational speed.  The test
-// point doesn't move.  The resulting acceleration combines centrifugal and
-// Euler.
-TEST_F(BodySurfaceDynamicFrameTest, EulerAcceleration) {
-  Instant const t = t0_ + 0 * Second;
-  DegreesOfFreedom<MockFrame> const point_dof =
-      {Displacement<MockFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
-           MockFrame::origin,
-       Velocity<MockFrame>({0 * Metre / Second,
-                            0 * Metre / Second,
-                            0 * Metre / Second})};
-  DegreesOfFreedom<ICRFJ2000Equator> const centre_dof =
-      {Displacement<ICRFJ2000Equator>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           ICRFJ2000Equator::origin,
-       Velocity<ICRFJ2000Equator>({0 * Metre / Second,
-                                   0 * Metre / Second,
-                                   0 * Metre / Second})};
-  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t, _))
-      .Times(2)
-      .WillRepeatedly(Return(centre_dof));
-  {
-    // The acceleration is centripetal + tangential.
-    InSequence s;
-    EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(massive_centre_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMasslessBody(_, t))
-        .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
-  }
-
-  // The acceleration is centrifugal + Euler.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
-              AlmostEquals(Vector<Acceleration, MockFrame>({
-                               (1e3 + 2e3) * Metre / Pow<2>(Second),
-                               (2e3 - 1e3) * Metre / Pow<2>(Second),
-                               0 * Metre / Pow<2>(Second)}), 0));
-}
+// No Euler acceleration in this dynamic frame.
 
 // A linear acceleration identical for both bodies.  The test point doesn't
 // move.  The resulting acceleration combines centrifugal and linear.
@@ -365,9 +324,9 @@ TEST_F(BodySurfaceDynamicFrameTest, LinearAcceleration) {
   // The acceleration is linear + centrifugal.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               1e3 * Metre / Pow<2>(Second),
-                               (200 + 2e3) * Metre / Pow<2>(Second),
-                               300 * Metre / Pow<2>(Second)}), 0));
+                               (-120 + 1e3) * Metre / Pow<2>(Second),
+                               (-160 + 2e3) * Metre / Pow<2>(Second),
+                               -300 * Metre / Pow<2>(Second)}), 2));
 }
 
 TEST_F(BodySurfaceDynamicFrameTest, GeometricAcceleration) {
@@ -382,9 +341,9 @@ TEST_F(BodySurfaceDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  -9.54502614154907060e5 * Metre / Pow<2>(Second),
-                  -1.90900949256416666e6 * Metre / Pow<2>(Second),
-                  -2.86351378905829135e6 * Metre / Pow<2>(Second)}), 0));
+                  -9.54504983899937710e5 * Metre / Pow<2>(Second),
+                  -1.90900569196062256e6 * Metre / Pow<2>(Second),
+                  -2.86351379198155506e6 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BodySurfaceDynamicFrameTest, Serialization) {
