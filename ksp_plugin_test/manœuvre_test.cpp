@@ -17,6 +17,8 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_manœuvre {
 
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
@@ -49,8 +51,6 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
-
-namespace ksp_plugin {
 
 class ManœuvreTest : public ::testing::Test {
  protected:
@@ -379,5 +379,6 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_EQ(t0_, manœuvre_read.time_of_half_Δv());
 }
 
+}  // namespace internal_manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia

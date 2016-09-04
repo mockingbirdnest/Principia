@@ -3,6 +3,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_burn {
 
 NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass) {
   NavigationManœuvre manœuvre(burn.thrust,
@@ -15,5 +16,6 @@ NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass)
   return manœuvre;
 }
 
+}  // namespace internal_burn
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -19,6 +19,8 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_plugin {
 
 using base::Array;
 using base::UniqueBytes;
@@ -35,8 +37,6 @@ using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Gt;
 using ::testing::Lt;
-
-namespace ksp_plugin {
 
 class TestablePlugin : public Plugin {
  public:
@@ -219,5 +219,6 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
   plugin = TestablePlugin::ReadFromMessage(post_буняковский_serialized_plugin);
 }
 
+}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

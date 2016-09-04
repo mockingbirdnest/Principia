@@ -14,13 +14,15 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_vessel {
 
+using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::MasslessBody;
 using quantities::GravitationalParameter;
-
-namespace ksp_plugin {
+using quantities::Mass;
 
 // Represents a KSP |Vessel|.
 class Vessel {
@@ -162,6 +164,13 @@ class Vessel {
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
+
+}  // namespace internal_vessel
+
+using internal_vessel::DefaultHistoryParameters;
+using internal_vessel::DefaultPredictionParameters;
+using internal_vessel::DefaultProlongationParameters;
+using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
 }  // namespace principia

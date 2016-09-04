@@ -16,6 +16,11 @@
 #include "physics/ephemeris.hpp"
 
 namespace principia {
+namespace interface {
+
+// This is used for interfacing, and should only appear in C++ code in tests
+// and generated code; we allow ourselves to pollute the |interface| namespace
+// with convenience |using|s.
 
 using base::PullSerializer;
 using base::PushDeserializer;
@@ -25,8 +30,6 @@ using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using physics::DiscreteTrajectory;
-
-namespace interface {
 
 // A wrapper for a container and an iterator into that container.
 class Iterator {

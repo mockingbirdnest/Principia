@@ -9,18 +9,11 @@
 #include "physics/dynamic_frame.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_frames {
 
 using geometry::Frame;
-using geometry::Instant;
-using geometry::Position;
 using physics::DynamicFrame;
-
-namespace ksp_plugin {
-
-// Universal time 0, time of game creation.
-// Putting the origin here makes the instants we use equal to the corresponding
-// KSP universal time doubles.
-Instant const UniversalTimeEpoch;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
@@ -36,7 +29,6 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
                          serialization::Frame::ALICE_WORLD, false>;
 
 // The barycentric reference frame of the solar system.
-// The basis is the basis of |AliceWorld| at |UniversalTimeEpoch|.
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
 
@@ -73,6 +65,19 @@ using WorldSun = Frame<serialization::Frame::PluginTag,
 // Convenient instances of types from |physics| for the above frames.
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
+
+}  // namespace internal_frames
+
+using internal_frames::AliceSun;
+using internal_frames::AliceWorld;
+using internal_frames::Barycentric;
+using internal_frames::BodyWorld;
+using internal_frames::CelestialSphere;
+using internal_frames::Navigation;
+using internal_frames::NavigationFrame;
+using internal_frames::NavigationManœuvre;
+using internal_frames::World;
+using internal_frames::WorldSun;
 
 }  // namespace ksp_plugin
 }  // namespace principia

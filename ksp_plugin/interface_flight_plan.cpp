@@ -15,9 +15,15 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace interface {
 
+using base::check_not_null;
 using base::not_null;
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::OrthogonalMap;
+using geometry::Vector;
+using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
@@ -27,6 +33,8 @@ using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
 using physics::Ephemeris;
+using physics::Frenet;
+using quantities::Speed;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -34,8 +42,6 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
-
-namespace interface {
 
 namespace {
 

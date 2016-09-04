@@ -23,14 +23,18 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace interface {
 
 using astronomy::ModifiedJulianDate;
 using base::check_not_null;
+using base::make_not_null_unique;
 using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
+using geometry::OrthogonalMap;
+using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
@@ -46,10 +50,18 @@ using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
+using physics::DegreesOfFreedom;
+using physics::DynamicFrame;
 using physics::Frenet;
+using physics::MassiveBody;
 using physics::MockDynamicFrame;
+using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
 using physics::RigidTransformation;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Pow;
+using quantities::Speed;
 using quantities::constants::StandardGravity;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
@@ -75,8 +87,6 @@ using ::testing::ReturnRef;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
-
-namespace interface {
 
 char const serialized_boring_plugin[] =
     "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
