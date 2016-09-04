@@ -12,6 +12,8 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_manœuvre {
 
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -26,8 +28,6 @@ using quantities::SpecificImpulse;
 using quantities::Speed;
 using quantities::Time;
 using quantities::Variation;
-
-namespace ksp_plugin {
 
 // This class represents a constant-thrust inertial burn.  |InertialFrame| is
 // an underlying inertial reference frame, |Frame| is the reference frame used
@@ -125,6 +125,10 @@ class Manœuvre {
   not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
+
+}  // namespace internal_manœuvre
+
+using internal_manœuvre::Manœuvre;
 
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -8,13 +8,13 @@
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_flight_plan {
 
 using base::make_not_null_unique;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using quantities::si::Metre;
 using quantities::si::Second;
-
-namespace ksp_plugin {
 
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
@@ -452,5 +452,6 @@ DiscreteTrajectory<Barycentric>& FlightPlan::penultimate_coast() {
   return *segments_[segments_.size() - 3];
 }
 
+}  // namespace internal_flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia

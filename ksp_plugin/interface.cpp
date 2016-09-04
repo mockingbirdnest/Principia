@@ -32,6 +32,7 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace interface {
 
 using astronomy::J2000;
 using base::Bytes;
@@ -61,8 +62,6 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
-
-namespace interface {
 
 namespace {
 

@@ -17,6 +17,8 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_flight_plan {
 
 using base::not_null;
 using geometry::Instant;
@@ -27,8 +29,6 @@ using physics::Ephemeris;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Speed;
-
-namespace ksp_plugin {
 
 // A stack of |Burn|s that manages a chain of trajectories obtained by executing
 // the corresponding |NavigationManœuvre|s.
@@ -182,6 +182,10 @@ class FlightPlan {
   // anomalous.
   int anomalous_segments_ = 0;
 };
+
+}  // namespace internal_flight_plan
+
+using internal_flight_plan::FlightPlan;
 
 }  // namespace ksp_plugin
 }  // namespace principia

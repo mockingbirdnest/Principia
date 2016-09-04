@@ -5,6 +5,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_part {
 
 template<typename Frame>
 Part<Frame>::Part(
@@ -59,5 +60,6 @@ std::ostream& operator<<(std::ostream& out, Part<Frame> const& part) {
       << part.gravitational_acceleration_to_be_applied_by_ksp() << "}";
 }
 
+}  // namespace internal_part
 }  // namespace ksp_plugin
 }  // namespace principia

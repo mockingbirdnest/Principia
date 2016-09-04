@@ -8,10 +8,9 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
+namespace interface {
 
 using ksp_plugin::World;
-
-namespace interface {
 
 bool principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});

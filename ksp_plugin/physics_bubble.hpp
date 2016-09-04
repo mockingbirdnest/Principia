@@ -18,14 +18,21 @@
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_physics_bubble {
 
 using base::not_null;
 using geometry::Displacement;
 using geometry::OrthogonalMap;
+using geometry::Vector;
+using geometry::Velocity;
+using geometry::Position;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
+using physics::Ephemeris;
+using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
-
-namespace ksp_plugin {
+using quantities::Acceleration;
 
 class PhysicsBubble {
  public:
@@ -169,6 +176,10 @@ class PhysicsBubble {
 
   MasslessBody const body_;
 };
+
+}  // namespace internal_physics_bubble
+
+using internal_physics_bubble::PhysicsBubble;
 
 }  // namespace ksp_plugin
 }  // namespace principia

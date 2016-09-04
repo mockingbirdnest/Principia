@@ -17,13 +17,13 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_physics_bubble {
 
 using base::FindOrDie;
 using geometry::BarycentreCalculator;
 using geometry::Identity;
 using quantities::Time;
-
-namespace ksp_plugin {
 
 PhysicsBubble::PhysicsBubble()
     : body_() {}
@@ -480,5 +480,6 @@ void PhysicsBubble::Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
                                    Identity<World, WorldSun>()(change)));
 }
 
+}  // namespace internal_physics_bubble
 }  // namespace ksp_plugin
 }  // namespace principia

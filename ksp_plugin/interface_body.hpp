@@ -7,19 +7,14 @@
 #include <limits>
 
 namespace principia {
+namespace interface {
 
 using quantities::si::Degree;
 using quantities::si::Radian;
 
-namespace interface {
-
-namespace {
-
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
-
-}  // namespace
 
 template<typename Container>
 TypedIterator<Container>::TypedIterator(Container container)

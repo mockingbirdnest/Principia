@@ -15,6 +15,7 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace interface {
 
 using base::not_null;
 using geometry::Instant;
@@ -34,8 +35,6 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
-
-namespace interface {
 
 namespace {
 

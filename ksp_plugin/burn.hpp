@@ -9,14 +9,15 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_burn {
 
 using geometry::Instant;
 using geometry::Velocity;
 using physics::Frenet;
 using quantities::Force;
+using quantities::Mass;
 using quantities::SpecificImpulse;
-
-namespace ksp_plugin {
 
 // Parameters for constructing a |NavigationManœuvre|, excluding the initial
 // mass.  This owns a |NavigationFrame| and is therefore not copyable.
@@ -29,6 +30,11 @@ struct Burn {
 };
 
 NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass);
+
+}  // namespace internal_burn
+
+using internal_burn::Burn;
+using internal_burn::MakeNavigationManœuvre;
 
 }  // namespace ksp_plugin
 }  // namespace principia
