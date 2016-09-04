@@ -118,12 +118,12 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
   auto const to_this_frame = ToThisFrameAtTime(t);
 
   // TODO(egg): TeX and reference.
-  RelativeDegreesOfFreedom<InertialFrame> const primary_secondary =
-      primary_degrees_of_freedom - secondary_degrees_of_freedom;
-  Displacement<InertialFrame> const& r = primary_secondary.displacement();
-  Velocity<InertialFrame> const& ṙ = primary_secondary.velocity();
+  RelativeDegreesOfFreedom<InertialFrame> const secondary_primary =
+      secondary_degrees_of_freedom - primary_degrees_of_freedom;
+  Displacement<InertialFrame> const& r = secondary_primary.displacement();
+  Velocity<InertialFrame> const& ṙ = secondary_primary.velocity();
   Vector<Acceleration, InertialFrame> const r̈ =
-      primary_acceleration - secondary_acceleration;
+      secondary_acceleration - primary_acceleration;
   AngularVelocity<InertialFrame> const& ω =
       to_this_frame.angular_velocity_of_to_frame();
   Variation<AngularVelocity<InertialFrame>> const

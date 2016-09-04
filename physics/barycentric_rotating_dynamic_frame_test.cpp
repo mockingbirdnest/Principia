@@ -174,7 +174,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
         to_big_small_frame_at_t(small_in_inertial_frame_at_t);
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
-                                  10.0 / 7.0 * Kilo(Metre),
+                                  -10.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0e-6 * Metre));
@@ -183,7 +183,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                 Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
-                                  -25.0 / 7.0 * Kilo(Metre),
+                                  25.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
                 Lt(1.0e-5 * Metre));
@@ -477,7 +477,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                1e3 * Metre / Pow<2>(Second),
-                               (-200 + 2e3) * Metre / Pow<2>(Second),
+                               (200 + 2e3) * Metre / Pow<2>(Second),
                                300 * Metre / Pow<2>(Second)}), 2));
 }
 
@@ -493,9 +493,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  2.32786248002527236e3 * Metre / Pow<2>(Second),
-                  -3.61670567977415587e1 * Metre / Pow<2>(Second),
-                  -5.38007972376415182e1 * Metre / Pow<2>(Second)}), 0));
+                  -2.25461792868978955e3 * Metre / Pow<2>(Second),
+                  -3.47432622325071563e1 * Metre / Pow<2>(Second),
+                  -5.16651053897897441e1 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
