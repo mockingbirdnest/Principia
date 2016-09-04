@@ -61,7 +61,7 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   return std::make_unique<BodySurfaceDynamicFrame>(
              ephemeris,
              dynamic_cast_not_null<RotatingBody<InertialFrame> const*>(
-                 ephemeris->body_for_serialization_index(message.centre()))));
+                 ephemeris->body_for_serialization_index(message.centre())));
 }
 
 template<typename InertialFrame, typename ThisFrame>
