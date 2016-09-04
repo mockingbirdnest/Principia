@@ -3,14 +3,14 @@
 
 #include "physics/body_surface_dynamic_frame.hpp"
 
-#include "geometry/identity.hpp"
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
 using geometry::AngularVelocity;
-using geometry::Identity;
+using geometry::Rotation;
 
 template<typename InertialFrame, typename ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
@@ -27,14 +27,16 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
-  //TODO(phl):Change
+
+  Rotation<InertialFrame, ThisFrame> rotation = centre_->ToSurfaceFrame(t);
+  AngularVelocity<InertialFrame> angular_velocity = centre_->angular_velocity();
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,
-                           Identity<InertialFrame, ThisFrame>().Forget());
+                           rotation.Forget());
   return RigidMotion<InertialFrame, ThisFrame>(
              rigid_transformation,
-             AngularVelocity<InertialFrame>(),
+             angular_velocity,
              centre_degrees_of_freedom.velocity());
 }
 

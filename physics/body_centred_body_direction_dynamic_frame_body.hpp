@@ -46,7 +46,7 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
 
   Rotation<InertialFrame, ThisFrame> rotation =
-          Rotation<InertialFrame, ThisFrame>::Identity();
+      Rotation<InertialFrame, ThisFrame>::Identity();
   AngularVelocity<InertialFrame> angular_velocity;
   ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
                                  secondary_degrees_of_freedom,
