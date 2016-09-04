@@ -206,11 +206,9 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
   small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::
-          body_centred_non_rotating_dynamic_frame));
-  auto const extension =
-      message.GetExtension(serialization::BodyCentredNonRotatingDynamicFrame::
-                               body_centred_non_rotating_dynamic_frame);
+      serialization::BodyCentredNonRotatingDynamicFrame::extension));
+  auto const extension = message.GetExtension(
+      serialization::BodyCentredNonRotatingDynamicFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(1, extension.centre());
 

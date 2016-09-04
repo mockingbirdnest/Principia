@@ -3,6 +3,7 @@
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -107,18 +108,29 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   int extensions_found = 0;
   // NOTE(egg): the |static_cast|ing below is needed on MSVC, because the silly
   // compiler doesn't see the |operator std::unique_ptr<DynamicFrame>() &&|.
-  if (message.HasExtension(serialization::BarycentricRotatingDynamicFrame::
-                               barycentric_rotating_dynamic_frame)) {
+  if (message.HasExtension(
+          serialization::BarycentricRotatingDynamicFrame::extension)) {
     ++extensions_found;
     result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
         BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
             ReadFromMessage(ephemeris,
                             message.GetExtension(
                                 serialization::BarycentricRotatingDynamicFrame::
-                                    barycentric_rotating_dynamic_frame)));
+                                    extension)));
   }
-  if (message.HasExtension(serialization::BodyCentredNonRotatingDynamicFrame::
-                               body_centred_non_rotating_dynamic_frame)) {
+  if (message.HasExtension(
+          serialization::BodyCentredBodyDirectionDynamicFrame::extension)) {
+    ++extensions_found;
+    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
+        BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
+            ReadFromMessage(
+                ephemeris,
+                message.GetExtension(
+                    serialization::BodyCentredBodyDirectionDynamicFrame::
+                        extension)));
+  }
+  if (message.HasExtension(
+          serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
     ++extensions_found;
     result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
         BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
@@ -126,7 +138,7 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                 ephemeris,
                 message.GetExtension(
                     serialization::BodyCentredNonRotatingDynamicFrame::
-                        body_centred_non_rotating_dynamic_frame)));
+                        extension)));
   }
   CHECK_LE(extensions_found, 1) << message.DebugString();
   // For pre-Brouwer compatibility, return a null pointer if no extension is

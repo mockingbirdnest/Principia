@@ -41,9 +41,8 @@ template<typename InertialFrame, typename ThisFrame>
 void BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   message->MutableExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::
-          body_centred_non_rotating_dynamic_frame)->set_centre(
-              ephemeris_->serialization_index_for_body(centre_));
+      serialization::BodyCentredNonRotatingDynamicFrame::extension)->set_centre(
+          ephemeris_->serialization_index_for_body(centre_));
 }
 
 template<typename InertialFrame, typename ThisFrame>

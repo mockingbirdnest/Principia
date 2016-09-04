@@ -456,8 +456,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
           new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
 
   NavigationFrameParameters parameters;
-  parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                             kBarycentricRotatingDynamicFrameFieldNumber;
+  parameters.extension =
+      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber;
   parameters.primary_index = celestial_index;
   parameters.secondary_index = parent_index;
 
@@ -470,8 +470,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       principia__NewNavigationFrame(plugin_.get(), parameters));
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 
-  parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                             kBodyCentredNonRotatingDynamicFrameFieldNumber;
+  parameters.extension =
+      serialization::BodyCentredNonRotatingDynamicFrame::kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
 
   EXPECT_CALL(*plugin_,

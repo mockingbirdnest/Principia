@@ -260,11 +260,11 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::BarycentricRotatingDynamicFrame::
-        kBarycentricRotatingDynamicFrameFieldNumber:
+        kExtensionFieldNumber:
       return plugin.NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredNonRotatingDynamicFrame::
-        kBodyCentredNonRotatingDynamicFrameFieldNumber:
+        kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
     default:

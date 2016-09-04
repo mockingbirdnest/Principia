@@ -9,8 +9,7 @@ package principia.serialization;
 
 message BarycentricRotatingDynamicFrame {
   extend DynamicFrame {
-    optional BarycentricRotatingDynamicFrame
-        barycentric_rotating_dynamic_frame = 6001;
+    optional BarycentricRotatingDynamicFrame extension = 6001;
   }
   required int32 primary = 1;
   required int32 secondary = 2;
@@ -23,10 +22,17 @@ message Body {
   }
 }
 
+message BodyCentredBodyDirectionDynamicFrame {
+  extend DynamicFrame {
+    optional BodyCentredBodyDirectionDynamicFrame extension = 6002;
+  }
+  required int32 primary = 1;
+  required int32 secondary = 2;
+}
+
 message BodyCentredNonRotatingDynamicFrame {
   extend DynamicFrame {
-    optional BodyCentredNonRotatingDynamicFrame
-        body_centred_non_rotating_dynamic_frame = 6000;
+    optional BodyCentredNonRotatingDynamicFrame extension = 6000;
   }
   required int32 centre = 1;
 }
@@ -69,7 +75,7 @@ message DiscreteTrajectory {
 }
 
 message DynamicFrame {
-  extensions 6000 to 6999;  // Last used: 6000.
+  extensions 6000 to 6999;  // Last used: 6002.
 }
 
 message Ephemeris {
