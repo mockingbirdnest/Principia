@@ -21,8 +21,10 @@ namespace ksp_plugin {
 namespace internal_physics_bubble {
 
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
 using geometry::Identity;
+using quantities::Mass;
 using quantities::Time;
 
 PhysicsBubble::PhysicsBubble()

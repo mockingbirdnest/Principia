@@ -10,6 +10,9 @@
 namespace principia {
 namespace interface {
 
+using physics::DegreesOfFreedom;
+
+using base::check_not_null;
 using ksp_plugin::World;
 
 bool principia__IteratorAtEnd(Iterator const* const iterator) {

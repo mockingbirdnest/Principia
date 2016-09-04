@@ -14,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
+using geometry::DefinesFrame;
 using geometry::EulerAngles;
 using geometry::Exp;
 using geometry::RadiusLatitudeLongitude;

@@ -36,6 +36,7 @@ namespace interface {
 
 using astronomy::J2000;
 using base::Bytes;
+using base::check_not_null;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
@@ -44,14 +45,20 @@ using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
+using geometry::Vector;
+using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::World;
+using physics::FrameField;
+using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::OblateBody;
+using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using physics::SolarSystem;
+using quantities::Acceleration;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::si::AstronomicalUnit;

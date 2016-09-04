@@ -9,7 +9,11 @@
 namespace principia {
 namespace interface {
 
+using geometry::Position;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+using physics::Ephemeris;
 using quantities::si::Degree;
+using quantities::si::Metre;
 using quantities::si::Radian;
 
 inline bool NaNIndependentEq(double const left, double const right) {

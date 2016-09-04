@@ -12,6 +12,8 @@ namespace ksp_plugin {
 namespace internal_flight_plan {
 
 using base::make_not_null_unique;
+using geometry::Position;
+using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using quantities::si::Metre;
 using quantities::si::Second;
