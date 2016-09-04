@@ -275,6 +275,8 @@
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
+    <ClInclude Include="smart_casts.hpp" />
+    <ClInclude Include="smart_casts_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />
