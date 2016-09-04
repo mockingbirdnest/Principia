@@ -24,9 +24,9 @@ namespace internal_physics_bubble {
 using base::not_null;
 using geometry::Displacement;
 using geometry::OrthogonalMap;
+using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
-using geometry::Position;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
