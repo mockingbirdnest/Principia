@@ -9,8 +9,11 @@
 #include "physics/solar_system.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_vessel {
 
 using geometry::Displacement;
+using geometry::Velocity;
 using physics::Ephemeris;
 using physics::SolarSystem;
 using quantities::si::Kilo;
@@ -22,8 +25,6 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
-
-namespace ksp_plugin {
 
 class VesselTest : public testing::Test {
  protected:
@@ -234,5 +235,6 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
   EXPECT_THAT(vessel_->prediction().last().time(), Eq(ephemeris_->t_max()));
 }
 
+}  // namespace internal_vessel
 }  // namespace ksp_plugin
 }  // namespace principia

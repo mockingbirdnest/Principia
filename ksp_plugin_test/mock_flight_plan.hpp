@@ -6,6 +6,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_flight_plan {
 
 class MockFlightPlan : public FlightPlan {
  public:
@@ -45,6 +46,10 @@ class MockFlightPlan : public FlightPlan {
            not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
            not_null<DiscreteTrajectory<Barycentric>::Iterator*> end));
 };
+
+}  // namespace internal_flight_plan
+
+using internal_flight_plan::MockFlightPlan;
 
 }  // namespace ksp_plugin
 }  // namespace principia

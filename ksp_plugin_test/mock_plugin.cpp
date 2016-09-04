@@ -7,6 +7,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_plugin {
 
 MockPlugin::MockPlugin() : Plugin(Instant(), Instant(), Angle()) {}
 
@@ -81,5 +82,6 @@ void MockPlugin::AddVesselToNextPhysicsBubble(
   AddVesselToNextPhysicsBubbleConstRef(vessel_guid, parts);
 }
 
+}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

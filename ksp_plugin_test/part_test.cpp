@@ -5,13 +5,13 @@
 #include "gtest/gtest.h"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_part {
 
 using geometry::Displacement;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
-
-namespace ksp_plugin {
 
 class PartTest : public testing::Test {
  protected:
@@ -76,5 +76,6 @@ TEST_F(PartTest, Serialization) {
             p.gravitational_acceleration_to_be_applied_by_ksp());
 }
 
+}  // namespace internal_part
 }  // namespace ksp_plugin
 }  // namespace principia
