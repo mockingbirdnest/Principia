@@ -6,8 +6,8 @@
 #ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
 #include "physics/dynamic_frame.hpp"
 #else
-#ifndef PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -22,7 +22,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_non_rotating_dynamic_frame {
+namespace internal_body_surface_dynamic_frame {
 
 using base::not_null;
 using geometry::Instant;
@@ -33,10 +33,10 @@ using quantities::Acceleration;
 // The origin of the frame is the centre of mass of the body.  The axes are
 // those of |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
-class BodyCentredNonRotatingDynamicFrame
+class BodySurfaceDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
-  BodyCentredNonRotatingDynamicFrame(
+  BodySurfaceDynamicFrame(
       not_null<Ephemeris<InertialFrame> const*> const ephemeris,
       not_null<MassiveBody const*> const centre);
 
@@ -46,10 +46,10 @@ class BodyCentredNonRotatingDynamicFrame
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> const message) const override;
 
-  static not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>
+  static not_null<std::unique_ptr<BodySurfaceDynamicFrame>>
       ReadFromMessage(
           not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-          serialization::BodyCentredNonRotatingDynamicFrame const& message);
+          serialization::BodySurfaceDynamicFrame const& message);
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
@@ -65,15 +65,15 @@ class BodyCentredNonRotatingDynamicFrame
 };
 
 
-}  // namespace internal_body_centred_non_rotating_dynamic_frame
+}  // namespace internal_body_surface_dynamic_frame
 
-using internal_body_centred_non_rotating_dynamic_frame::
-    BodyCentredNonRotatingDynamicFrame;
+using internal_body_surface_dynamic_frame::
+    BodySurfaceDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/body_centred_non_rotating_dynamic_frame_body.hpp"
+#include "physics/body_surface_dynamic_frame_body.hpp"
 
-#endif  // PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

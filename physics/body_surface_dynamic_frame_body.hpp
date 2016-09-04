@@ -1,20 +1,20 @@
 
 #pragma once
 
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_surface_dynamic_frame.hpp"
 
 #include "geometry/identity.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_non_rotating_dynamic_frame {
+namespace internal_body_surface_dynamic_frame {
 
 using geometry::AngularVelocity;
 using geometry::Identity;
 
 template<typename InertialFrame, typename ThisFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
-BodyCentredNonRotatingDynamicFrame(
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+BodySurfaceDynamicFrame(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     not_null<MassiveBody const*> const centre)
     : ephemeris_(ephemeris),
@@ -23,7 +23,7 @@ BodyCentredNonRotatingDynamicFrame(
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
@@ -38,27 +38,27 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-void BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+void BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   message->MutableExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::extension)->set_centre(
+      serialization::BodySurfaceDynamicFrame::extension)->set_centre(
           ephemeris_->serialization_index_for_body(centre_));
 }
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<std::unique_ptr<
-    BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>>>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    BodySurfaceDynamicFrame<InertialFrame, ThisFrame>>>
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    serialization::BodyCentredNonRotatingDynamicFrame const& message) {
-  return std::make_unique<BodyCentredNonRotatingDynamicFrame>(
+    serialization::BodySurfaceDynamicFrame const& message) {
+  return std::make_unique<BodySurfaceDynamicFrame>(
              ephemeris,
              ephemeris->body_for_serialization_index(message.centre()));
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, InertialFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
     GravitationalAcceleration(Instant const& t,
                               Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
@@ -66,7 +66,7 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
 
 template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
-BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              ToThisFrameAtTime(t),
@@ -75,6 +75,6 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
                  ComputeGravitationalAccelerationOnMassiveBody(centre_, t));
 }
 
-}  // namespace internal_body_centred_non_rotating_dynamic_frame
+}  // namespace internal_body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia
