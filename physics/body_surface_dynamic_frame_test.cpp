@@ -31,6 +31,7 @@ namespace internal_body_surface_dynamic_frame {
 
 using astronomy::ICRFJ2000Equator;
 using base::check_not_null;
+using base::dynamic_cast_not_null;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::Instant;
@@ -91,8 +92,8 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                         integrators::McLachlanAtela1992Order4Optimal<
                             Position<ICRFJ2000Equator>>(),
                         /*step=*/10 * Milli(Second)));
-    big_ = dynamic_cast<RotatingBody<ICRFJ2000Equator> const*>(
-        &*solar_system_.massive_body(*ephemeris_, big));
+    big_ = dynamic_cast_not_null<RotatingBody<ICRFJ2000Equator> const*>(
+               solar_system_.massive_body(*ephemeris_, big));
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_initial_state_ = solar_system_.initial_state(big);
     big_gravitational_parameter_ = solar_system_.gravitational_parameter(big);
