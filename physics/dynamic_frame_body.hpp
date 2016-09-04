@@ -119,6 +119,17 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                                     extension)));
   }
   if (message.HasExtension(
+          serialization::BodyCentredBodyDirectionDynamicFrame::extension)) {
+    ++extensions_found;
+    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
+        BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
+            ReadFromMessage(
+                ephemeris,
+                message.GetExtension(
+                    serialization::BodyCentredBodyDirectionDynamicFrame::
+                        extension)));
+  }
+  if (message.HasExtension(
           serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
     ++extensions_found;
     result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(

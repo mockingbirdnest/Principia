@@ -158,7 +158,6 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
     EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
                 Lt(1.0e-4 * Metre / Second));
-    LOG(ERROR)<<small_in_big_small_at_t.position();
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
                                   5.0 * Kilo(Metre),
@@ -199,15 +198,15 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
   DegreesOfFreedom<MockFrame> const point_dof =
       {Displacement<MockFrame>({0 * Metre, 0 * Metre, 0 * Metre}) +
            MockFrame::origin,
-       Velocity<MockFrame>({(80 - 30) * Metre / Second,
-                            (-60 - 40) * Metre / Second,
-                            0 * Metre / Second})};
+       Velocity<MockFrame>({10 * Metre / Second,
+                            20 * Metre / Second,
+                            30 * Metre / Second})};
   DegreesOfFreedom<ICRFJ2000Equator> const big_dof =
       {Displacement<ICRFJ2000Equator>({0 * Metre, 0 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>()};
   DegreesOfFreedom<ICRFJ2000Equator> const small_dof =
-      {Displacement<ICRFJ2000Equator>({5 * Metre, 5 * Metre, 0 * Metre}) +
+      {Displacement<ICRFJ2000Equator>({3 * Metre, 4 * Metre, 0 * Metre}) +
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>({40 * Metre / Second,
                                    -30 * Metre / Second,
@@ -225,8 +224,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
-                             120 * Metre / Pow<2>(Second),
-                             160 * Metre / Pow<2>(Second),
+                             0 * Metre / Pow<2>(Second),
+                             0 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(*mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
@@ -243,8 +242,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
   // The Coriolis acceleration is towards the centre and opposed to the motion.
   EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
-                               (-1200 - 800) * Metre / Pow<2>(Second),
-                               (-1600 + 600) * Metre / Pow<2>(Second),
+                               400 * Metre / Pow<2>(Second),
+                               -200 * Metre / Pow<2>(Second),
                                0 * Metre / Pow<2>(Second)}), 0));
 }
 
@@ -434,9 +433,9 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  2.32786248002527236e3 * Metre / Pow<2>(Second),
-                  -3.61670567977415587e1 * Metre / Pow<2>(Second),
-                  -5.38007972376415182e1 * Metre / Pow<2>(Second)}), 0));
+                  -9.54502614154907060e5 * Metre / Pow<2>(Second),
+                  -1.90900949256416666e6 * Metre / Pow<2>(Second),
+                  -2.86351378905829135e6 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
