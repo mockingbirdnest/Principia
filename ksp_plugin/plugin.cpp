@@ -34,6 +34,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
+using base::dynamic_cast_not_null;
 using base::FindOrDie;
 using base::FingerprintCat2011;
 using base::make_not_null_unique;
@@ -204,7 +205,7 @@ void Plugin::EndInitialization() {
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
   main_body_ = CHECK_NOTNULL(
-      dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
+      dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
   initializing_.Flop();
 
   InitializeEphemerisAndSetCelestialTrajectories();
@@ -240,8 +241,8 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 }
 
 void Plugin::SetMainBody(Index const index) {
-  main_body_ = dynamic_cast<RotatingBody<Barycentric> const*>(
-      &*FindOrDie(celestials_, index)->body());
+  main_body_ = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+      FindOrDie(celestials_, index)->body());
   LOG_IF(FATAL, main_body_ == nullptr) << index;
 }
 
@@ -885,7 +886,7 @@ Plugin::Plugin(
   }
   if (!is_pre_cardano_) {
     main_body_ = CHECK_NOTNULL(
-        dynamic_cast<RotatingBody<Barycentric> const*>(&*sun_->body()));
+        dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
   }
   initializing_.Flop();
 }
