@@ -16,7 +16,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/massive_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -30,15 +30,17 @@ using geometry::Position;
 using geometry::Vector;
 using quantities::Acceleration;
 
-// The origin of the frame is the centre of mass of the body.  The axes are
-// those of |InertialFrame|.
+// The origin of the frame is the centre of mass of the body.  The X axis is at
+// the intersection of the equator and the prime meridian.  The Z axis is the
+// |polar_axis|.  The Y axis in on the equator so that the frame has the same
+// orientation as |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
 class BodySurfaceDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
   BodySurfaceDynamicFrame(
       not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-      not_null<MassiveBody const*> const centre);
+      not_null<RotatingBody<InertialFrame> const*> const centre);
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
@@ -59,7 +61,7 @@ class BodySurfaceDynamicFrame
       Instant const& t) const override;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
-  not_null<MassiveBody const*> const centre_;
+  not_null<RotatingBody<InertialFrame> const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
   mutable typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };

@@ -37,6 +37,13 @@ message BodyCentredNonRotatingDynamicFrame {
   required int32 centre = 1;
 }
 
+message BodySurfaceDynamicFrame {
+  extend DynamicFrame {
+    optional BodySurfaceDynamicFrame extension = 6003;
+  }
+  required int32 centre = 1;
+}
+
 message ContinuousTrajectory {
   message InstantaneousDegreesOfFreedom {
     required Point instant = 1;
@@ -75,7 +82,7 @@ message DiscreteTrajectory {
 }
 
 message DynamicFrame {
-  extensions 6000 to 6999;  // Last used: 6002.
+  extensions 6000 to 6999;  // Last used: 6003.
 }
 
 message Ephemeris {

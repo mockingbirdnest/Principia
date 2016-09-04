@@ -99,6 +99,13 @@ Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
 }
 
 template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
+    Instant const& t) const {
+  return FromSurfaceFrame(t).Inverse();
+}
+
+template<typename Frame>
 Rotation<Frame, Frame> RotatingBody<Frame>::RotationAt(Instant const& t) const {
   return Exp((t - parameters_.reference_instant_) *
                  parameters_.angular_velocity_);

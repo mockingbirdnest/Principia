@@ -16,7 +16,7 @@ template<typename InertialFrame, typename ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
 BodySurfaceDynamicFrame(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const centre)
+    not_null<RotatingBody<InertialFrame> const*> const centre)
     : ephemeris_(ephemeris),
       centre_(centre),
       centre_trajectory_(ephemeris_->trajectory(centre_)) {}
@@ -27,6 +27,7 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
+  //TODO(phl):Change
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,
@@ -68,6 +69,7 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
+  //TODO(phl):Change
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              ToThisFrameAtTime(t),
              /*angular_acceleration_of_to_frame=*/{},
