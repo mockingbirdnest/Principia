@@ -209,7 +209,6 @@ std::ostream& operator<<(std::ostream& stream,
 
 template<typename Result, typename Pointer>
 Result dynamic_cast_not_null(Pointer const pointer) {
-
   static_assert(is_not_null_non_owner<Pointer>::value,
                 "|pointer| should be |not_null<T*>|");
   return dynamic_cast<Result>(static_cast<typename Pointer::pointer>(pointer));
