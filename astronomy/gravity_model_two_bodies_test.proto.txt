@@ -1,13 +1,15 @@
+# The rotation of big is Sqrt[7 / 5] / 5 rad/s.  This makes it synchronous with
+# the circular rotation of small around big.
 gravity_model {
   body {
     name                    : "Big"
     gravitational_parameter : "5 km^3/s^2"
-    reference_instant       : 10.000000000
+    reference_instant       : 2433282.500000000
     mean_radius             : "500 m"
-    axis_right_ascension    : "30 deg"
-    axis_declination        : "45 deg"
-    reference_angle         : "72 deg"
-    angular_frequency       : "120 deg / d"
+    axis_right_ascension    : "0 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "-90 deg"
+    angular_frequency       : "-0.23664319132398464170 rad/s"
   }
   body {
     name                    : "Small"

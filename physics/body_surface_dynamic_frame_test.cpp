@@ -139,7 +139,8 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
 
-    // Check that the bodies don't move and are at the right locations.
+    // Check that the big body is at the origin and doesn't move.  Check that
+    // the small body is at a fixed position in the sky.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, big).
             EvaluateDegreesOfFreedom(t, &big_hint);
@@ -159,13 +160,13 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
                 Lt(1.0e-4 * Metre / Second));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
                               Displacement<BigSmallFrame>({
-                                  5.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
+                                  5.0 * Kilo(Metre),
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(1.0e-5 * Metre));
+                Lt(2.0e-4 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
-                Lt(1.0e-4 * Metre / Second));
+                Lt(4.0e-3 * Metre / Second));
   }
 }
 
