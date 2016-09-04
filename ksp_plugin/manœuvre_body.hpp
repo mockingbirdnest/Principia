@@ -9,14 +9,14 @@
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_manœuvre {
 
 using base::check_not_null;
 using geometry::Rotation;
 using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Sqrt;
-
-namespace ksp_plugin {
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(
@@ -217,5 +217,6 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
   return manœuvre;
 }
 
+}  // namespace internal_manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia

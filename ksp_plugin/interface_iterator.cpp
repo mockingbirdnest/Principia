@@ -8,10 +8,11 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
-
-using ksp_plugin::World;
-
 namespace interface {
+
+using base::check_not_null;
+using ksp_plugin::World;
+using physics::DegreesOfFreedom;
 
 bool principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});
@@ -77,7 +78,6 @@ int principia__IteratorSize(Iterator const* const iterator) {
   journal::Method<journal::IteratorSize> m({iterator});
   return m.Return(CHECK_NOTNULL(iterator)->Size());
 }
-
 
 }  // namespace interface
 }  // namespace principia

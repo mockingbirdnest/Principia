@@ -30,9 +30,12 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_plugin {
 
 using astronomy::ICRFJ2000Equator;
 using base::FindOrDie;
+using base::make_not_null_unique;
 using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -45,16 +48,20 @@ using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
+using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::si::Day;
 using quantities::si::Hour;
 using quantities::si::Kilo;
+using quantities::si::Kilogram;
 using quantities::si::Minute;
 using quantities::si::Newton;
 using quantities::si::Radian;
@@ -82,8 +89,6 @@ using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
-
-namespace ksp_plugin {
 
 namespace {
 
@@ -914,5 +919,6 @@ TEST_F(PluginTest, Frenet) {
       AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 15));
 }
 
+}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

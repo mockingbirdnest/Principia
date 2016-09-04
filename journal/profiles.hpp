@@ -9,6 +9,8 @@
 namespace principia {
 
 using base::not_null;
+using base::PullSerializer;
+using base::PushDeserializer;
 using interface::AdaptiveStepParameters;
 using interface::BodyParameters;
 using interface::Burn;
@@ -20,6 +22,8 @@ using interface::NavigationManoeuvre;
 using interface::QP;
 using interface::WXYZ;
 using interface::XYZ;
+using ksp_plugin::NavigationFrame;
+using ksp_plugin::Plugin;
 
 namespace journal {
 

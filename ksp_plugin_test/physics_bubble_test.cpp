@@ -24,25 +24,32 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_physics_bubble {
 
 using base::make_not_null_unique;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Rotation;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::McLachlanAtela1992Order5Optimal;
+using physics::ContinuousTrajectory;
+using physics::MassiveBody;
 using physics::MockEphemeris;
 using quantities::Acceleration;
+using quantities::Length;
+using quantities::Mass;
 using quantities::Speed;
 using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Degree;
+using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
-
-namespace ksp_plugin {
 
 // All the numerical values in the tests below were computed exactly based on
 // the formulae in the code and the data set up at construction.
@@ -721,6 +728,6 @@ TEST_F(PhysicsBubbleTest, Serialization) {
   CheckOneVesselDegreesOfFreedom(*bubble);
 }
 
-
+}  // namespace internal_physics_bubble
 }  // namespace ksp_plugin
 }  // namespace principia

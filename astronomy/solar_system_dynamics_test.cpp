@@ -18,6 +18,7 @@
 
 namespace principia {
 
+using base::dynamic_cast_not_null;
 using geometry::AngleBetween;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
@@ -85,8 +86,8 @@ class SolarSystemDynamicsTest : public testing::Test {
         SolarSystemFactory::name(SolarSystemFactory::parent(index));
     auto const body = system.massive_body(ephemeris, name);
     auto const* const parent =
-        dynamic_cast<RotatingBody<ICRFJ2000Equator> const*>(
-            &*system.massive_body(ephemeris, parent_name));
+        dynamic_cast_not_null<RotatingBody<ICRFJ2000Equator> const*>(
+            system.massive_body(ephemeris, parent_name));
 
     BarycentreCalculator<DegreesOfFreedom<ICRFJ2000Equator>,
                          GravitationalParameter> actual_subsystem_barycentre;

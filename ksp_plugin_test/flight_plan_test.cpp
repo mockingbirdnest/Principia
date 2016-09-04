@@ -14,20 +14,27 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_flight_plan {
 
 using base::make_not_null_unique;
 using geometry::Displacement;
+using geometry::Position;
+using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::Frenet;
 using physics::MassiveBody;
+using quantities::Force;
+using quantities::Pow;
+using quantities::SpecificImpulse;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Newton;
-using quantities::Pow;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
@@ -36,8 +43,6 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::MockFunction;
-
-namespace ksp_plugin {
 
 class FlightPlanTest : public testing::Test {
  protected:
@@ -439,5 +444,6 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_EQ(5, flight_plan_read->number_of_segments());
 }
 
+}  // namespace internal_flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia

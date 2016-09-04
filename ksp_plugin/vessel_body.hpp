@@ -12,7 +12,11 @@
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace internal_vessel {
 
+using base::make_not_null_unique;
+using geometry::Position;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::IsFinite;
@@ -20,8 +24,6 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
-
-namespace ksp_plugin {
 
 inline Vessel::Vessel(not_null<Celestial const*> const parent,
                       not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -362,5 +364,6 @@ DefaultPredictionParameters() {
              /*speed_integration_tolerance=*/1 * Metre / Second);
 }
 
+}  // namespace internal_vessel
 }  // namespace ksp_plugin
 }  // namespace principia

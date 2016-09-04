@@ -6,6 +6,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_vessel {
 
 class MockVessel : public Vessel {
  public:
@@ -48,6 +49,10 @@ class MockVessel : public Vessel {
   MOCK_CONST_METHOD1(WriteToMessage, void(
       not_null<serialization::Vessel*> const message));
 };
+
+}  // namespace internal_vessel
+
+using internal_vessel::MockVessel;
 
 }  // namespace ksp_plugin
 }  // namespace principia
