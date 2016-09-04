@@ -87,6 +87,7 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                             Position<ICRFJ2000Equator>>(),
                         /*step=*/10 * Milli(Second)));
     big_ = solar_system_.massive_body(*ephemeris_, big);
+    rotating_big_ = dynamic_cast<RotatingBody<ICRFJ2000Equator> const*>(big_);
     small_ = solar_system_.massive_body(*ephemeris_, small);
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_initial_state_ = solar_system_.initial_state(big);
@@ -96,24 +97,22 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
         solar_system_.gravitational_parameter(small);
     big_frame_ = std::make_unique<
         BodySurfaceDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
-        ephemeris_.get(), big_);
+        ephemeris_.get(), rotating_big_);
 
     mock_ephemeris_ =
        std::make_unique<StrictMock<MockEphemeris<ICRFJ2000Equator>>>();
     EXPECT_CALL(*mock_ephemeris_,
                 trajectory(solar_system_.massive_body(*ephemeris_, big)))
         .WillOnce(Return(&mock_big_trajectory_));
-    EXPECT_CALL(*mock_ephemeris_,
-                trajectory(solar_system_.massive_body(*ephemeris_, small)))
-        .WillOnce(Return(&mock_small_trajectory_));
     mock_frame_ = std::make_unique<StrictMock<
         BodySurfaceDynamicFrame<ICRFJ2000Equator, MockFrame>>>(
-        mock_ephemeris_.get(), big_);
+        mock_ephemeris_.get(), rotating_big_);
   }
 
   Time const period_;
   Instant t0_;
   MassiveBody const* big_;
+  RotatingBody<ICRFJ2000Equator> const* rotating_big_;
   MassiveBody const* small_;
   DegreesOfFreedom<ICRFJ2000Equator> big_initial_state_;
   DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;

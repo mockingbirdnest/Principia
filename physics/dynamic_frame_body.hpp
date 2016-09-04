@@ -141,6 +141,16 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                     serialization::BodyCentredNonRotatingDynamicFrame::
                         extension)));
   }
+  if (message.HasExtension(
+          serialization::BodySurfaceDynamicFrame::extension)) {
+    ++extensions_found;
+    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
+        BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+            ReadFromMessage(
+                ephemeris,
+                message.GetExtension(
+                    serialization::BodySurfaceDynamicFrame::extension)));
+  }
   CHECK_LE(extensions_found, 1) << message.DebugString();
   // For pre-Brouwer compatibility, return a null pointer if no extension is
   // found.

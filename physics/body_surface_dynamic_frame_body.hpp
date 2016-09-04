@@ -3,12 +3,14 @@
 
 #include "physics/body_surface_dynamic_frame.hpp"
 
+#include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
+using base::check_not_null;
 using geometry::AngularVelocity;
 using geometry::Rotation;
 
@@ -57,7 +59,10 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     serialization::BodySurfaceDynamicFrame const& message) {
   return std::make_unique<BodySurfaceDynamicFrame>(
              ephemeris,
-             ephemeris->body_for_serialization_index(message.centre()));
+             check_not_null(
+                 dynamic_cast<RotatingBody<InertialFrame> const*>(
+                     &*ephemeris->body_for_serialization_index(
+                         message.centre()))));
 }
 
 template<typename InertialFrame, typename ThisFrame>

@@ -7,16 +7,21 @@
 #include <vector>
 
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
+using geometry::DefinesFrame;
 using geometry::Exp;
 using geometry::RadiusLatitudeLongitude;
+using geometry::EulerAngles;
 using geometry::SphericalCoordinates;
+using quantities::si::Radian;
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(
@@ -102,7 +107,7 @@ template<typename Frame>
 template<typename SurfaceFrame>
 Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
     Instant const& t) const {
-  return FromSurfaceFrame(t).Inverse();
+  return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
 }
 
 template<typename Frame>

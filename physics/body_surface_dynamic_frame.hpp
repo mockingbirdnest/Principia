@@ -69,8 +69,7 @@ class BodySurfaceDynamicFrame
 
 }  // namespace internal_body_surface_dynamic_frame
 
-using internal_body_surface_dynamic_frame::
-    BodySurfaceDynamicFrame;
+using internal_body_surface_dynamic_frame::BodySurfaceDynamicFrame;
 
 }  // namespace physics
 }  // namespace principia
