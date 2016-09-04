@@ -150,7 +150,7 @@ ComputeAngularDegreesOfFreedom(
     not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
     not_null<AngularVelocity<InertialFrame>*> const angular_velocity) {
   RelativeDegreesOfFreedom<InertialFrame> const reference =
-       secondary_degrees_of_freedom - primary_degrees_of_freedom;
+      secondary_degrees_of_freedom - primary_degrees_of_freedom;
   Displacement<InertialFrame> const& reference_direction =
       reference.displacement();
   Velocity<InertialFrame> reference_normal = reference.velocity();

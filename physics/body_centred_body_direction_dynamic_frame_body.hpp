@@ -3,7 +3,6 @@
 
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/quantities.hpp"
@@ -13,7 +12,6 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_body_direction_dynamic_frame {
 
-using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::R3x3Matrix;

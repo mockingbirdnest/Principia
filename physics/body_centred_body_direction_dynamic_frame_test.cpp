@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -30,7 +29,6 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 
 using astronomy::ICRFJ2000Equator;
 using base::check_not_null;
-using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Instant;
 using geometry::Rotation;
