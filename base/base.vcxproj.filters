@@ -83,13 +83,13 @@
     <ClInclude Include="version.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="status.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="status_macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="statusor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="status.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -106,9 +106,6 @@
     <ClCompile Include="push_deserializer_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="status.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="statusor.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,6 +114,9 @@
     </ClCompile>
     <ClCompile Include="statusor_test.cc">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="status_body.hpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -33,7 +33,8 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#include <google/protobuf/stubs/status.h>
+
+#include "base/status.hpp"
 
 #include <ostream>
 #include <stdint.h>
@@ -41,101 +42,106 @@
 #include <string>
 #include <utility>
 
-namespace google {
-namespace protobuf {
-namespace util {
-namespace error {
-inline string CodeEnumToString(error::Code code) {
-  switch (code) {
-    case OK:
+#include "base/macros.hpp"
+
+namespace principia {
+namespace base {
+
+inline std::string ErrorToString(Error const error) {
+  switch (error) {
+    case Error::OK:
       return "OK";
-    case CANCELLED:
+    case Error::CANCELLED:
       return "CANCELLED";
-    case UNKNOWN:
+    case Error::UNKNOWN:
       return "UNKNOWN";
-    case INVALID_ARGUMENT:
+    case Error::INVALID_ARGUMENT:
       return "INVALID_ARGUMENT";
-    case DEADLINE_EXCEEDED:
+    case Error::DEADLINE_EXCEEDED:
       return "DEADLINE_EXCEEDED";
-    case NOT_FOUND:
+    case Error::NOT_FOUND:
       return "NOT_FOUND";
-    case ALREADY_EXISTS:
+    case Error::ALREADY_EXISTS:
       return "ALREADY_EXISTS";
-    case PERMISSION_DENIED:
+    case Error::PERMISSION_DENIED:
       return "PERMISSION_DENIED";
-    case UNAUTHENTICATED:
+    case Error::UNAUTHENTICATED:
       return "UNAUTHENTICATED";
-    case RESOURCE_EXHAUSTED:
+    case Error::RESOURCE_EXHAUSTED:
       return "RESOURCE_EXHAUSTED";
-    case FAILED_PRECONDITION:
+    case Error::FAILED_PRECONDITION:
       return "FAILED_PRECONDITION";
-    case ABORTED:
+    case Error::ABORTED:
       return "ABORTED";
-    case OUT_OF_RANGE:
+    case Error::OUT_OF_RANGE:
       return "OUT_OF_RANGE";
-    case UNIMPLEMENTED:
+    case Error::UNIMPLEMENTED:
       return "UNIMPLEMENTED";
-    case INTERNAL:
+    case Error::INTERNAL:
       return "INTERNAL";
-    case UNAVAILABLE:
+    case Error::UNAVAILABLE:
       return "UNAVAILABLE";
-    case DATA_LOSS:
+    case Error::DATA_LOSS:
       return "DATA_LOSS";
   }
-
-  // No default clause, clang will abort if a code is missing from
-  // above switch.
-  return "UNKNOWN";
+  noreturn();
 }
-}  // namespace error.
+
+constexpr inline Status::Status() : error_(Error::OK), message_() {}
+
+constexpr inline Status::Status(Error const error, std::string const& message)
+    : error_(error_),
+      message_(error == Error::OK ? "" : message) {}
+
+constexpr inline Status::Status(Status const& other)
+    : error_(other.error_),message_(other.message_) {}
+
+inline Status::~Status() {}
 
 const Status Status::OK = Status();
-const Status Status::CANCELLED = Status(error::CANCELLED, "");
-const Status Status::UNKNOWN = Status(error::UNKNOWN, "");
+const Status Status::CANCELLED = Status(Error::CANCELLED, "");
+const Status Status::UNKNOWN = Status(Error::UNKNOWN, "");
 
-Status::Status() : error_code_(error::OK) {
+inline bool Status::ok() const {
+  return error_ == Error::OK;
 }
 
-Status::Status(error::Code error_code, StringPiece error_message)
-    : error_code_(error_code) {
-  if (error_code != error::OK) {
-    error_message_ = error_message.ToString();
-  }
+inline Error Status::error() const {
+  return error_;
 }
 
-Status::Status(const Status& other)
-    : error_code_(other.error_code_), error_message_(other.error_message_) {
+inline std::string const& Status::message() const {
+  return message_;
 }
 
-Status& Status::operator=(const Status& other) {
-  error_code_ = other.error_code_;
-  error_message_ = other.error_message_;
+Status& Status::operator=(Status const& other) {
+  error_ = other.error_;
+  message_ = other.message_;
   return *this;
 }
 
-bool Status::operator==(const Status& x) const {
-  return error_code_ == x.error_code_ &&
-      error_message_ == x.error_message_;
+bool Status::operator==(Status const& x) const {
+  return error_ == x.error_ && message_ == x.message_;
 }
 
-string Status::ToString() const {
-  if (error_code_ == error::OK) {
+bool Status::operator!=(Status const& x) const {
+  return !operator==(x);
+}
+
+std::string Status::ToString() const {
+  if (error_ == Error::OK) {
     return "OK";
+  } else if (message_.empty()) {
+    return ErrorToString(error_);
   } else {
-    if (error_message_.empty()) {
-      return error::CodeEnumToString(error_code_);
-    } else {
-      return error::CodeEnumToString(error_code_) + ":" +
-          error_message_;
-    }
+    return ErrorToString(error_) + ":" + message_;
   }
 }
 
-ostream& operator<<(ostream& os, const Status& x) {
+std::ostream& operator<<(std::ostream& os, Status const& x) {
   os << x.ToString();
   return os;
 }
 
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+}  // namespace base
+}  // namespace principia
