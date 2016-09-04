@@ -66,7 +66,6 @@ class BodySurfaceDynamicFrame
   mutable typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };
 
-
 }  // namespace internal_body_surface_dynamic_frame
 
 using internal_body_surface_dynamic_frame::BodySurfaceDynamicFrame;
