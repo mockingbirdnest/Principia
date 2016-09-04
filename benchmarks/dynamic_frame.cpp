@@ -19,7 +19,7 @@
 #include "quantities/si.hpp"
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/body.hpp"
-#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"

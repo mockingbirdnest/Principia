@@ -1,5 +1,5 @@
 ﻿
-#include "physics/body_centered_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 
 #include <memory>
 

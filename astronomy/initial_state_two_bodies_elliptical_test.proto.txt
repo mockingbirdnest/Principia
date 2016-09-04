@@ -3,8 +3,8 @@ initial_state {
   # This is 1950-Jan-01 00:00:00.0000 TDB.
   epoch : 2433282.500000000
 
-  # The two bodies are on elliptical orbits around their center of mass.  The
-  # center of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
+  # The two bodies are on elliptical orbits around their centre of mass.  The
+  # centre of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital
   # period is 16000 Pi / (Sqrt[7] (73 - 8 Sqrt[35])^(3/2)) s, the semi major
   # axis is 400 / (73 - 8 Sqrt[35]) km, the excentricity is
   # (7 + 8 Sqrt[35]) / 80.
