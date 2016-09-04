@@ -114,21 +114,21 @@ inline std::string const& Status::message() const {
   return message_;
 }
 
-Status& Status::operator=(Status const& other) {
+inline Status& Status::operator=(Status const& other) {
   error_ = other.error_;
   message_ = other.message_;
   return *this;
 }
 
-bool Status::operator==(Status const& x) const {
+inline bool Status::operator==(Status const& x) const {
   return error_ == x.error_ && message_ == x.message_;
 }
 
-bool Status::operator!=(Status const& x) const {
+inline bool Status::operator!=(Status const& x) const {
   return !operator==(x);
 }
 
-std::string Status::ToString() const {
+inline std::string Status::ToString() const {
   if (error_ == Error::OK) {
     return "OK";
   } else if (message_.empty()) {
@@ -138,7 +138,7 @@ std::string Status::ToString() const {
   }
 }
 
-std::ostream& operator<<(std::ostream& os, Status const& x) {
+inline std::ostream& operator<<(std::ostream& os, Status const& x) {
   os << x.ToString();
   return os;
 }

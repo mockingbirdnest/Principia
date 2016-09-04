@@ -92,6 +92,9 @@
     <ClInclude Include="status.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="status_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -114,9 +117,6 @@
     </ClCompile>
     <ClCompile Include="statusor_test.cc">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="status_body.hpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
