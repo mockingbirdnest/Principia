@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include "physics/body_surface_dynamic_frame.hpp"
@@ -71,12 +71,21 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  //TODO(phl):Change
+  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
+      centre_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+  Vector<Acceleration, InertialFrame> const centre_acceleration =
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(centre_, t);
+
+  auto const to_this_frame = ToThisFrameAtTime(t);
+
+  Variation<AngularVelocity<InertialFrame>> const
+      angular_acceleration_of_to_frame;
+  Vector<Acceleration, InertialFrame> const& acceleration_of_to_frame_origin =
+      centre_acceleration;
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
-             ToThisFrameAtTime(t),
-             /*angular_acceleration_of_to_frame=*/{},
-             /*acceleration_of_to_frame_origin=*/ephemeris_->
-                 ComputeGravitationalAccelerationOnMassiveBody(centre_, t));
+             to_this_frame,
+             angular_acceleration_of_to_frame,
+             acceleration_of_to_frame_origin);
 }
 
 }  // namespace internal_body_surface_dynamic_frame
