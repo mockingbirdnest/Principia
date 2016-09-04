@@ -112,6 +112,12 @@ using _checked_not_null = typename std::enable_if<
 template<typename Pointer>
 using is_instance_of_not_null = is_instance_of<not_null, Pointer>;
 
+template<typename Pointer>
+using is_not_null_non_owner : std::false_type {};
+
+template<typename T>
+struct is_not_null_non_owner<not_null<T*>> : std::true_type {};
+
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
 // be a const, reference, rvalue reference, or |not_null|.  |not_null<Pointer>|
@@ -322,6 +328,11 @@ not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer);
+
+template<typename Result,
+         typename Pointer,
+         typename = std::enable_if_t<is_not_null_non_owner<Pointer>>>
+Result dynamic_cast_not_null(Pointer const pointer);
 
 }  // namespace base
 }  // namespace principia

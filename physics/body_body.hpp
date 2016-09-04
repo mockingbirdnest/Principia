@@ -3,7 +3,6 @@
 
 #include "physics/body.hpp"
 
-#include "base/smart_casts.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "base/macros.hpp"
-#include "base/smart_casts.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

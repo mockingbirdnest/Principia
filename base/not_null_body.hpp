@@ -207,5 +207,10 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << &*pointer;
 }
 
+template<typename Result, typename Pointer, typename>
+Result dynamic_cast_not_null(Pointer const pointer) {
+  return dynamic_cast<Result>(static_cast<typename Pointer::pointer>(pointer));
+}
+
 }  // namespace base
 }  // namespace principia
