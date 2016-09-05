@@ -33,105 +33,97 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#include <google/protobuf/stubs/status.h>
+#include "base/status.hpp"
 
 #include <stdio.h>
 
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
-namespace google {
-namespace protobuf {
-namespace {
+namespace principia {
+namespace base {
+
 TEST(Status, Empty) {
-  util::Status status;
-  EXPECT_EQ(util::error::OK, util::Status::OK.error_code());
-  EXPECT_EQ("OK", util::Status::OK.ToString());
+  Status status;
+  EXPECT_EQ(Error::OK, Status::OK.error());
+  EXPECT_EQ("OK", Status::OK.ToString());
 }
 
 TEST(Status, GenericCodes) {
-  EXPECT_EQ(util::error::OK, util::Status::OK.error_code());
-  EXPECT_EQ(util::error::CANCELLED, util::Status::CANCELLED.error_code());
-  EXPECT_EQ(util::error::UNKNOWN, util::Status::UNKNOWN.error_code());
+  EXPECT_EQ(Error::OK, Status::OK.error());
+  EXPECT_EQ(Error::CANCELLED, Status::CANCELLED.error());
+  EXPECT_EQ(Error::UNKNOWN, Status::UNKNOWN.error());
 }
 
 TEST(Status, ConstructorZero) {
-  util::Status status(util::error::OK, "msg");
+  Status status(Error::OK, "msg");
   EXPECT_TRUE(status.ok());
   EXPECT_EQ("OK", status.ToString());
 }
 
-TEST(Status, CheckOK) {
-  util::Status status;
-  GOOGLE_CHECK_OK(status);
-  GOOGLE_CHECK_OK(status) << "Failed";
-  GOOGLE_DCHECK_OK(status) << "Failed";
-}
-
-TEST(Status, ErrorMessage) {
-  util::Status status(util::error::INVALID_ARGUMENT, "");
+TEST(Status, Message) {
+  Status status(Error::INVALID_ARGUMENT, "");
   EXPECT_FALSE(status.ok());
-  EXPECT_EQ("", status.error_message().ToString());
+  EXPECT_EQ("", status.message());
   EXPECT_EQ("INVALID_ARGUMENT", status.ToString());
-  status = util::Status(util::error::INVALID_ARGUMENT, "msg");
+  status = Status(Error::INVALID_ARGUMENT, "msg");
   EXPECT_FALSE(status.ok());
-  EXPECT_EQ("msg", status.error_message().ToString());
+  EXPECT_EQ("msg", status.message());
   EXPECT_EQ("INVALID_ARGUMENT:msg", status.ToString());
-  status = util::Status(util::error::OK, "msg");
+  status = Status(Error::OK, "msg");
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ("", status.error_message().ToString());
+  EXPECT_EQ("", status.message());
   EXPECT_EQ("OK", status.ToString());
 }
 
 TEST(Status, Copy) {
-  util::Status a(util::error::UNKNOWN, "message");
-  util::Status b(a);
+  Status a(Error::UNKNOWN, "message");
+  Status b(a);
   ASSERT_EQ(a.ToString(), b.ToString());
 }
 
 TEST(Status, Assign) {
-  util::Status a(util::error::UNKNOWN, "message");
-  util::Status b;
+  Status a(Error::UNKNOWN, "message");
+  Status b;
   b = a;
   ASSERT_EQ(a.ToString(), b.ToString());
 }
 
 TEST(Status, AssignEmpty) {
-  util::Status a(util::error::UNKNOWN, "message");
-  util::Status b;
+  Status a(Error::UNKNOWN, "message");
+  Status b;
   a = b;
-  ASSERT_EQ(string("OK"), a.ToString());
+  ASSERT_EQ(std::string("OK"), a.ToString());
   ASSERT_TRUE(b.ok());
   ASSERT_TRUE(a.ok());
 }
 
 TEST(Status, EqualsOK) {
-  ASSERT_EQ(util::Status::OK, util::Status());
+  ASSERT_EQ(Status::OK, Status());
 }
 
 TEST(Status, EqualsSame) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = util::Status(util::error::CANCELLED, "message");
+  const Status a = Status(Error::CANCELLED, "message");
+  const Status b = Status(Error::CANCELLED, "message");
   ASSERT_EQ(a, b);
 }
 
 TEST(Status, EqualsCopy) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = a;
+  const Status a = Status(Error::CANCELLED, "message");
+  const Status b = a;
   ASSERT_EQ(a, b);
 }
 
 TEST(Status, EqualsDifferentCode) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = util::Status(util::error::UNKNOWN, "message");
+  const Status a = Status(Error::CANCELLED, "message");
+  const Status b = Status(Error::UNKNOWN, "message");
   ASSERT_NE(a, b);
 }
 
 TEST(Status, EqualsDifferentMessage) {
-  const util::Status a = util::Status(util::error::CANCELLED, "message");
-  const util::Status b = util::Status(util::error::CANCELLED, "another");
+  const Status a = Status(Error::CANCELLED, "message");
+  const Status b = Status(Error::CANCELLED, "another");
   ASSERT_NE(a, b);
 }
-}  // namespace
-}  // namespace protobuf
-}  // namespace google
+
+}  // namespace base
+}  // namespace principia

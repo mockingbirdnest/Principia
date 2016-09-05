@@ -90,7 +90,7 @@ inline std::string ErrorToString(Error const error) {
 constexpr inline Status::Status() : error_(Error::OK), message_() {}
 
 constexpr inline Status::Status(Error const error, std::string const& message)
-    : error_(error_),
+    : error_(error),
       message_(error == Error::OK ? "" : message) {}
 
 constexpr inline Status::Status(Status const& other)
