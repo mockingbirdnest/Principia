@@ -7,8 +7,10 @@
 #include <vector>
 
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -99,6 +101,13 @@ Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
       AngleAt(t),
       EulerAngles::ZXZ,
       DefinesFrame<SurfaceFrame>{});
+}
+
+template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
+    Instant const& t) const {
+  return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
 }
 
 template<typename Frame>

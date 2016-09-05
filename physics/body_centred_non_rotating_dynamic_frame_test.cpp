@@ -66,8 +66,6 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
 
   BodyCentredNonRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
-        centre_of_mass_initial_state_(Position<ICRFJ2000Equator>(),
-                                      Velocity<ICRFJ2000Equator>()),
         big_initial_state_(Position<ICRFJ2000Equator>(),
                            Velocity<ICRFJ2000Equator>()),
         small_initial_state_(Position<ICRFJ2000Equator>(),
@@ -98,15 +96,10 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                                                         Small>>(
                          ephemeris_.get(),
                          solar_system_.massive_body(*ephemeris_, small));
-    centre_of_mass_initial_state_ =
-        Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
-            {big_initial_state_, small_initial_state_},
-            {big_gravitational_parameter_, small_gravitational_parameter_});
   }
 
   Time const period_;
   Instant t0_;
-  DegreesOfFreedom<ICRFJ2000Equator> centre_of_mass_initial_state_;
   DegreesOfFreedom<ICRFJ2000Equator> big_initial_state_;
   DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
   GravitationalParameter big_gravitational_parameter_;

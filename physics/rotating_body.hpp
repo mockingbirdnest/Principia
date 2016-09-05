@@ -102,6 +102,8 @@ class RotatingBody : public MassiveBody {
   // In the case of the Earth, see geodetic vs. geocentric latitudes.
   template<typename SurfaceFrame>
   Rotation<SurfaceFrame, Frame> FromSurfaceFrame(Instant const& t) const;
+  template<typename SurfaceFrame>
+  Rotation<Frame, SurfaceFrame> ToSurfaceFrame(Instant const& t) const;
 
   // Returns the rotation at time |t|.
   Rotation<Frame, Frame> RotationAt(Instant const& t) const;
@@ -109,7 +111,7 @@ class RotatingBody : public MassiveBody {
   // Returns false.
   bool is_massless() const override;
 
-  // Returns true.
+  // Returns false.
   bool is_oblate() const override;
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;

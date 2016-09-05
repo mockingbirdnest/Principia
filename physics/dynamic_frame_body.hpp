@@ -4,6 +4,7 @@
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -139,6 +140,16 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                 message.GetExtension(
                     serialization::BodyCentredNonRotatingDynamicFrame::
                         extension)));
+  }
+  if (message.HasExtension(
+          serialization::BodySurfaceDynamicFrame::extension)) {
+    ++extensions_found;
+    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
+        BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+            ReadFromMessage(
+                ephemeris,
+                message.GetExtension(
+                    serialization::BodySurfaceDynamicFrame::extension)));
   }
   CHECK_LE(extensions_found, 1) << message.DebugString();
   // For pre-Brouwer compatibility, return a null pointer if no extension is
