@@ -87,20 +87,14 @@ inline std::string ErrorToString(Error const error) {
   noreturn();
 }
 
-constexpr inline Status::Status() : error_(Error::OK), message_() {}
+constexpr inline Status::Status() : error_(Error::OK) {}
 
 constexpr inline Status::Status(Error const error, std::string const& message)
-    : error_(error),
+    : error_(error), 
       message_(error == Error::OK ? "" : message) {}
 
 constexpr inline Status::Status(Status const& other)
     : error_(other.error_),message_(other.message_) {}
-
-inline Status::~Status() {}
-
-const Status Status::OK = Status();
-const Status Status::CANCELLED = Status(Error::CANCELLED, "");
-const Status Status::UNKNOWN = Status(Error::UNKNOWN, "");
 
 inline bool Status::ok() const {
   return error_ == Error::OK;
@@ -142,6 +136,10 @@ inline std::ostream& operator<<(std::ostream& os, Status const& x) {
   os << x.ToString();
   return os;
 }
+
+constexpr Status Status::OK = Status();
+const Status Status::CANCELLED = Status(Error::CANCELLED, "");
+const Status Status::UNKNOWN = Status(Error::UNKNOWN, "");
 
 }  // namespace base
 }  // namespace principia

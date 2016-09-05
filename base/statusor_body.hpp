@@ -34,68 +34,104 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <iosfwd>
-#include <string>
+#include "base/statusor.hpp"
+#include "glog/logging.h"
 
 namespace principia {
 namespace base {
 
-enum class Error {
-  OK = 0,
-  CANCELLED = 1,
-  UNKNOWN = 2,
-  INVALID_ARGUMENT = 3,
-  DEADLINE_EXCEEDED = 4,
-  NOT_FOUND = 5,
-  ALREADY_EXISTS = 6,
-  PERMISSION_DENIED = 7,
-  UNAUTHENTICATED = 16,
-  RESOURCE_EXHAUSTED = 8,
-  FAILED_PRECONDITION = 9,
-  ABORTED = 10,
-  OUT_OF_RANGE = 11,
-  UNIMPLEMENTED = 12,
-  INTERNAL = 13,
-  UNAVAILABLE = 14,
-  DATA_LOSS = 15,
-};
+namespace {
 
-class Status {
+template<typename T>
+class StatusOrTrait {
  public:
-  // Creates a "successful" status.
-  constexpr Status();
-
-  constexpr Status(Error const error, std::string const& message);
-  constexpr Status(Status const&);
-  Status& operator=(Status const& x);
-
-  // Some pre-defined Status objects
-  static const Status OK;
-  static const Status CANCELLED;
-  static const Status UNKNOWN;
-
-  // Accessor
-  bool ok() const;
-  Error error() const;
-  std::string const& message() const;
-
-  bool operator==(Status const& x) const;
-  bool operator!=(Status const& x) const;
-
-  // Returns a combination of the error code name and message.
-  std::string ToString() const;
-
- private:
-  Error error_;
-  std::string message_;
+  static bool IsNullptr(T const& t);
 };
 
-// Prints a human-readable representation of 'x' to 'os'.
-std::ostream& operator<<(std::ostream& os, Status const& x);
+template<typename T>
+class StatusOrTrait<T*> {
+ public:
+  static bool IsNullptr(T* const t);
+};
 
-//TODO(phl):#define EXPECT_OK(value) EXPECT_TRUE((value).ok())
+template<typename T>
+bool StatusOrTrait<T>::IsNullptr(T const& t) {
+  return false;
+}
+
+template<typename T>
+bool StatusOrTrait<T*>::IsNullptr(T* const t) {
+  return t == nullptr;
+}
+
+}  // namespace
+
+template<typename T>
+StatusOr<T>::StatusOr()
+    : status_(Status::UNKNOWN) {}
+
+template<typename T>
+StatusOr<T>::StatusOr(Status const& status) {
+  if (status.ok()) {
+    status_ = Status(Error::INTERNAL, "Status::OK is not a valid argument.");
+  } else {
+    status_ = status;
+  }
+}
+
+template<typename T>
+StatusOr<T>::StatusOr(T const& value) {
+  if (StatusOrTrait<T>::IsNullptr(value)) {
+    status_ = Status(Error::INTERNAL, "nullptr is not a vaild argument.");
+  } else {
+    status_ = Status::OK;
+    value_ = value;
+  }
+}
+
+template<typename T>
+StatusOr<T>::StatusOr(StatusOr<T> const& other)
+    : status_(other.status_),
+      value_(other.value_) {}
+
+template<typename T>
+StatusOr<T>& StatusOr<T>::operator=(StatusOr<T> const& other) {
+  status_ = other.status_;
+  value_ = other.value_;
+  return *this;
+}
+
+template<typename T>
+template<typename U>
+StatusOr<T>::StatusOr(StatusOr<U> const& other)
+    : status_(other.status_), value_(other.value_) {
+}
+
+template<typename T>
+template<typename U>
+StatusOr<T>& StatusOr<T>::operator=(StatusOr<U> const& other) {
+  status_ = other.status_;
+  value_ = other.value_;
+  return *this;
+}
+
+template<typename T>
+Status const& StatusOr<T>::status() const {
+  return status_;
+}
+
+template<typename T>
+bool StatusOr<T>::ok() const {
+  return status().ok();
+}
+
+template<typename T>
+T const& StatusOr<T>::ValueOrDie() const {
+  if (!status_.ok()) {
+    LOG(FATAL) <<status_;
+  }
+  return value_;
+}
 
 }  // namespace base
 }  // namespace principia
-
-#include "base/status_body.hpp"

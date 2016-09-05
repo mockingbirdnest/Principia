@@ -34,18 +34,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/stubs/statusor.h>
+#include "base/statusor.hpp"
 
 #include <errno.h>
 #include <memory>
 
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
-namespace google {
-namespace protobuf {
-namespace util {
-namespace {
+namespace principia {
+namespace base {
 
 class Base1 {
  public:
@@ -87,15 +84,15 @@ TEST(StatusOr, TestStatusCtor) {
 }
 
 TEST(StatusOr, TestValueCtor) {
-  const int kI = 4;
-  StatusOr<int> thing(kI);
+  const int i = 4;
+  StatusOr<int> thing(i);
   EXPECT_TRUE(thing.ok());
-  EXPECT_EQ(kI, thing.ValueOrDie());
+  EXPECT_EQ(i, thing.ValueOrDie());
 }
 
 TEST(StatusOr, TestCopyCtorStatusOk) {
-  const int kI = 4;
-  StatusOr<int> original(kI);
+  const int i = 4;
+  StatusOr<int> original(i);
   StatusOr<int> copy(original);
   EXPECT_EQ(original.status(), copy.status());
   EXPECT_EQ(original.ValueOrDie(), copy.ValueOrDie());
@@ -108,22 +105,22 @@ TEST(StatusOr, TestCopyCtorStatusNotOk) {
 }
 
 TEST(StatusOr, TestCopyCtorStatusOKConverting) {
-  const int kI = 4;
-  StatusOr<int>    original(kI);
+  const int i = 4;
+  StatusOr<int> original(i);
   StatusOr<double> copy(original);
   EXPECT_EQ(original.status(), copy.status());
   EXPECT_EQ(original.ValueOrDie(), copy.ValueOrDie());
 }
 
 TEST(StatusOr, TestCopyCtorStatusNotOkConverting) {
-  StatusOr<int>    original(Status::CANCELLED);
+  StatusOr<int> original(Status::CANCELLED);
   StatusOr<double> copy(original);
   EXPECT_EQ(original.status(), copy.status());
 }
 
 TEST(StatusOr, TestAssignmentStatusOk) {
-  const int kI = 4;
-  StatusOr<int> source(kI);
+  const int i = 4;
+  StatusOr<int> source(i);
   StatusOr<int> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
@@ -138,8 +135,8 @@ TEST(StatusOr, TestAssignmentStatusNotOk) {
 }
 
 TEST(StatusOr, TestAssignmentStatusOKConverting) {
-  const int kI = 4;
-  StatusOr<int>    source(kI);
+  const int i = 4;
+  StatusOr<int> source(i);
   StatusOr<double> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
@@ -147,7 +144,7 @@ TEST(StatusOr, TestAssignmentStatusOKConverting) {
 }
 
 TEST(StatusOr, TestAssignmentStatusNotOkConverting) {
-  StatusOr<int>    source(Status::CANCELLED);
+  StatusOr<int> source(Status::CANCELLED);
   StatusOr<double> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
@@ -162,15 +159,15 @@ TEST(StatusOr, TestStatus) {
 }
 
 TEST(StatusOr, TestValue) {
-  const int kI = 4;
-  StatusOr<int> thing(kI);
-  EXPECT_EQ(kI, thing.ValueOrDie());
+  const int i = 4;
+  StatusOr<int> thing(i);
+  EXPECT_EQ(i, thing.ValueOrDie());
 }
 
 TEST(StatusOr, TestValueConst) {
-  const int kI = 4;
-  const StatusOr<int> thing(kI);
-  EXPECT_EQ(kI, thing.ValueOrDie());
+  const int i = 4;
+  const StatusOr<int> thing(i);
+  EXPECT_EQ(i, thing.ValueOrDie());
 }
 
 TEST(StatusOr, TestPointerDefaultCtor) {
@@ -186,15 +183,15 @@ TEST(StatusOr, TestPointerStatusCtor) {
 }
 
 TEST(StatusOr, TestPointerValueCtor) {
-  const int kI = 4;
-  StatusOr<const int*> thing(&kI);
+  const int i = 4;
+  StatusOr<const int*> thing(&i);
   EXPECT_TRUE(thing.ok());
-  EXPECT_EQ(&kI, thing.ValueOrDie());
+  EXPECT_EQ(&i, thing.ValueOrDie());
 }
 
 TEST(StatusOr, TestPointerCopyCtorStatusOk) {
-  const int kI = 0;
-  StatusOr<const int*> original(&kI);
+  const int i = 0;
+  StatusOr<const int*> original(&i);
   StatusOr<const int*> copy(original);
   EXPECT_EQ(original.status(), copy.status());
   EXPECT_EQ(original.ValueOrDie(), copy.ValueOrDie());
@@ -209,7 +206,7 @@ TEST(StatusOr, TestPointerCopyCtorStatusNotOk) {
 TEST(StatusOr, TestPointerCopyCtorStatusOKConverting) {
   Derived derived;
   StatusOr<Derived*> original(&derived);
-  StatusOr<Base2*>   copy(original);
+  StatusOr<Base2*> copy(original);
   EXPECT_EQ(original.status(), copy.status());
   EXPECT_EQ(static_cast<const Base2*>(original.ValueOrDie()),
             copy.ValueOrDie());
@@ -217,13 +214,13 @@ TEST(StatusOr, TestPointerCopyCtorStatusOKConverting) {
 
 TEST(StatusOr, TestPointerCopyCtorStatusNotOkConverting) {
   StatusOr<Derived*> original(Status::CANCELLED);
-  StatusOr<Base2*>   copy(original);
+  StatusOr<Base2*> copy(original);
   EXPECT_EQ(original.status(), copy.status());
 }
 
 TEST(StatusOr, TestPointerAssignmentStatusOk) {
-  const int kI = 0;
-  StatusOr<const int*> source(&kI);
+  const int i = 0;
+  StatusOr<const int*> source(&i);
   StatusOr<const int*> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
@@ -240,7 +237,7 @@ TEST(StatusOr, TestPointerAssignmentStatusNotOk) {
 TEST(StatusOr, TestPointerAssignmentStatusOKConverting) {
   Derived derived;
   StatusOr<Derived*> source(&derived);
-  StatusOr<Base2*>   target;
+  StatusOr<Base2*> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
   EXPECT_EQ(static_cast<const Base2*>(source.ValueOrDie()),
@@ -249,32 +246,30 @@ TEST(StatusOr, TestPointerAssignmentStatusOKConverting) {
 
 TEST(StatusOr, TestPointerAssignmentStatusNotOkConverting) {
   StatusOr<Derived*> source(Status::CANCELLED);
-  StatusOr<Base2*>   target;
+  StatusOr<Base2*> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
 }
 
 TEST(StatusOr, TestPointerStatus) {
-  const int kI = 0;
-  StatusOr<const int*> good(&kI);
+  const int i = 0;
+  StatusOr<const int*> good(&i);
   EXPECT_TRUE(good.ok());
   StatusOr<const int*> bad(Status::CANCELLED);
   EXPECT_EQ(Status::CANCELLED, bad.status());
 }
 
 TEST(StatusOr, TestPointerValue) {
-  const int kI = 0;
-  StatusOr<const int*> thing(&kI);
-  EXPECT_EQ(&kI, thing.ValueOrDie());
+  const int i = 0;
+  StatusOr<const int*> thing(&i);
+  EXPECT_EQ(&i, thing.ValueOrDie());
 }
 
 TEST(StatusOr, TestPointerValueConst) {
-  const int kI = 0;
-  const StatusOr<const int*> thing(&kI);
-  EXPECT_EQ(&kI, thing.ValueOrDie());
+  const int i = 0;
+  const StatusOr<const int*> thing(&i);
+  EXPECT_EQ(&i, thing.ValueOrDie());
 }
 
-}  // namespace
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
+}  // namespace base
+}  // namespace principia
