@@ -83,9 +83,6 @@
     <ClInclude Include="version.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="status_macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="status.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -277,7 +277,6 @@
     <ClInclude Include="push_deserializer_body.hpp" />
     <ClInclude Include="status.hpp" />
     <ClInclude Include="statusor.hpp" />
-    <ClInclude Include="status_macros.h" />
     <ClInclude Include="statusor_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
