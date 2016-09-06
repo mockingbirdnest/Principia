@@ -36,6 +36,7 @@
 #include "base/status.hpp"
 
 #include <stdio.h>
+#include <string>
 
 #include "gtest/gtest.h"
 

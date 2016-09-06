@@ -112,7 +112,7 @@ class StatusOr {
   // REQUIRES: status != Status::OK. This requirement is DCHECKed.
   // In optimized builds, passing Status::OK here will have the effect
   // of passing PosixErrorSpace::EINVAL as a fallback.
-  StatusOr(Status const& status);
+  StatusOr(Status const& status);  // NOLINT
 
   // Construct a new StatusOr with the given value. If T is a plain pointer,
   // value must not be NULL. After calling this constructor, calls to
@@ -121,11 +121,7 @@ class StatusOr {
   // NOTE: Not explicit - we want to use StatusOr<T> as a return type
   // so it is convenient and sensible to be able to do 'return T()'
   // when when the return type is StatusOr<T>.
-  //
-  // REQUIRES: if T is a plain pointer, value != NULL. This requirement is
-  // DCHECKed. In optimized builds, passing a NULL pointer here will have
-  // the effect of passing PosixErrorSpace::EINVAL as a fallback.
-  StatusOr(T const& value);
+  StatusOr(T const& value);  // NOLINT
 
   // Copy constructor.
   StatusOr(StatusOr const& other) = default;

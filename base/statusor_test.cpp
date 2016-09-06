@@ -214,7 +214,7 @@ TEST(StatusOr, TestPointerCopyCtorStatusOKConverting) {
 
 TEST(StatusOr, TestPointerCopyCtorStatusNotOkConverting) {
   StatusOr<Derived*> original(Status::CANCELLED);
-  StatusOr<Base2*> copy(original);
+  StatusOr<Base2*> copy(original);  // NOLINT
   EXPECT_EQ(original.status(), copy.status());
 }
 
