@@ -40,32 +40,6 @@
 namespace principia {
 namespace base {
 
-namespace {
-
-template<typename T>
-class StatusOrTrait {
- public:
-  static bool IsNullptr(T const& t);
-};
-
-template<typename T>
-class StatusOrTrait<T*> {
- public:
-  static bool IsNullptr(T* const t);
-};
-
-template<typename T>
-bool StatusOrTrait<T>::IsNullptr(T const& t) {
-  return false;
-}
-
-template<typename T>
-bool StatusOrTrait<T*>::IsNullptr(T* const t) {
-  return t == nullptr;
-}
-
-}  // namespace
-
 template<typename T>
 StatusOr<T>::StatusOr()
     : status_(Status::UNKNOWN) {}
@@ -81,37 +55,23 @@ StatusOr<T>::StatusOr(Status const& status) {
 
 template<typename T>
 StatusOr<T>::StatusOr(T const& value) {
-  if (StatusOrTrait<T>::IsNullptr(value)) {
-    status_ = Status(Error::INTERNAL, "nullptr is not a vaild argument.");
-  } else {
-    status_ = Status::OK;
-    value_ = value;
-  }
-}
-
-template<typename T>
-StatusOr<T>::StatusOr(StatusOr<T> const& other)
-    : status_(other.status_),
-      value_(other.value_) {}
-
-template<typename T>
-StatusOr<T>& StatusOr<T>::operator=(StatusOr<T> const& other) {
-  status_ = other.status_;
-  value_ = other.value_;
-  return *this;
+  status_ = Status::OK;
+  value_ = value;
 }
 
 template<typename T>
 template<typename U>
 StatusOr<T>::StatusOr(StatusOr<U> const& other)
-    : status_(other.status_), value_(other.value_) {
+    : status_(other.status_), value_(*other.value_) {
 }
 
 template<typename T>
 template<typename U>
 StatusOr<T>& StatusOr<T>::operator=(StatusOr<U> const& other) {
   status_ = other.status_;
-  value_ = other.value_;
+  if (other.value_) {
+    value_ = *other.value_;
+  }
   return *this;
 }
 
@@ -130,7 +90,7 @@ T const& StatusOr<T>::ValueOrDie() const {
   if (!status_.ok()) {
     LOG(FATAL) <<status_;
   }
-  return value_;
+  return *value_;
 }
 
 }  // namespace base

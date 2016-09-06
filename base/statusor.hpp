@@ -86,6 +86,7 @@
 //  }
 //
 
+#include <experimental/optional>
 #include <new>
 #include <string>
 #include <utility>
@@ -127,16 +128,16 @@ class StatusOr {
   StatusOr(T const& value);
 
   // Copy constructor.
-  StatusOr(StatusOr const& other);
+  StatusOr(StatusOr const& other) = default;
 
-  // Conversion copy constructor, T must be copy constructible from U
+  // Conversion copy constructor, T must be copy constructible from U.
   template<typename U>
   StatusOr(StatusOr<U> const& other);
 
   // Assignment operator.
-  StatusOr& operator=(StatusOr const& other);
+  StatusOr& operator=(StatusOr const& other) = default;
 
-  // Conversion assignment operator, T must be assignable from U
+  // Conversion assignment operator, T must be assignable from U.
   template<typename U>
   StatusOr& operator=(StatusOr<U> const& other);
 
@@ -144,7 +145,7 @@ class StatusOr {
   // returns Status::OK.
   Status const& status() const;
 
-  // Returns this->status().ok()
+  // Returns this->status().ok().
   bool ok() const;
 
   // Returns a reference to our current value, or CHECK-fails if !this->ok().
@@ -154,7 +155,7 @@ class StatusOr {
 
  private:
   Status status_;
-  T value_;
+  std::experimental::optional<T> value_;
 
   template <typename U>
   friend class StatusOr;

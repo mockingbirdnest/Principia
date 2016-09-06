@@ -68,15 +68,13 @@ class Status {
   Status();
 
   Status(Error const error, std::string const& message);
-  Status(Status const&);
-  Status& operator=(Status const& x);
 
-  // Some pre-defined Status objects
+  // Some pre-defined Status objects.
   static const Status OK;
   static const Status CANCELLED;
   static const Status UNKNOWN;
 
-  // Accessor
+  // Accessors.
   bool ok() const;
   Error error() const;
   std::string const& message() const;

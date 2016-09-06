@@ -91,9 +91,6 @@ Status::Status(Error const error, std::string const& message)
     : error_(error), 
       message_(error == Error::OK ? "" : message) {}
 
-Status::Status(Status const& other)
-    : error_(other.error_),message_(other.message_) {}
-
 bool Status::ok() const {
   return error_ == Error::OK;
 }
@@ -104,12 +101,6 @@ Error Status::error() const {
 
 std::string const& Status::message() const {
   return message_;
-}
-
-Status& Status::operator=(Status const& other) {
-  error_ = other.error_;
-  message_ = other.message_;
-  return *this;
 }
 
 bool Status::operator==(Status const& x) const {
