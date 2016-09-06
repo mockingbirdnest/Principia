@@ -1,5 +1,3 @@
-#pragma once
-
 // This code comes from:
 // https://github.com/google/protobuf/tree/master/src/google/protobuf/stubs
 // and was adapted to Visual Studio and to the needs of this project.
@@ -87,42 +85,42 @@ inline std::string ErrorToString(Error const error) {
   noreturn();
 }
 
-constexpr inline Status::Status() : error_(Error::OK) {}
+Status::Status() : error_(Error::OK) {}
 
-constexpr inline Status::Status(Error const error, std::string const& message)
+Status::Status(Error const error, std::string const& message)
     : error_(error), 
       message_(error == Error::OK ? "" : message) {}
 
-constexpr inline Status::Status(Status const& other)
+Status::Status(Status const& other)
     : error_(other.error_),message_(other.message_) {}
 
-inline bool Status::ok() const {
+bool Status::ok() const {
   return error_ == Error::OK;
 }
 
-inline Error Status::error() const {
+Error Status::error() const {
   return error_;
 }
 
-inline std::string const& Status::message() const {
+std::string const& Status::message() const {
   return message_;
 }
 
-inline Status& Status::operator=(Status const& other) {
+Status& Status::operator=(Status const& other) {
   error_ = other.error_;
   message_ = other.message_;
   return *this;
 }
 
-inline bool Status::operator==(Status const& x) const {
+bool Status::operator==(Status const& x) const {
   return error_ == x.error_ && message_ == x.message_;
 }
 
-inline bool Status::operator!=(Status const& x) const {
+bool Status::operator!=(Status const& x) const {
   return !operator==(x);
 }
 
-inline std::string Status::ToString() const {
+std::string Status::ToString() const {
   if (error_ == Error::OK) {
     return "OK";
   } else if (message_.empty()) {
@@ -132,12 +130,12 @@ inline std::string Status::ToString() const {
   }
 }
 
-inline std::ostream& operator<<(std::ostream& os, Status const& x) {
+std::ostream& operator<<(std::ostream& os, Status const& x) {
   os << x.ToString();
   return os;
 }
 
-constexpr Status Status::OK = Status();
+const Status Status::OK = Status();
 const Status Status::CANCELLED = Status(Error::CANCELLED, "");
 const Status Status::UNKNOWN = Status(Error::UNKNOWN, "");
 

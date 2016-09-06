@@ -63,10 +63,10 @@ enum class Error {
 class Status {
  public:
   // Creates a "successful" status.
-  constexpr Status();
+  Status();
 
-  constexpr Status(Error const error, std::string const& message);
-  constexpr Status(Status const&);
+  Status(Error const error, std::string const& message);
+  Status(Status const&);
   Status& operator=(Status const& x);
 
   // Some pre-defined Status objects
@@ -97,5 +97,3 @@ std::ostream& operator<<(std::ostream& os, Status const& x);
 
 }  // namespace base
 }  // namespace principia
-
-#include "base/status_body.hpp"
