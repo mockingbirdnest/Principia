@@ -102,15 +102,15 @@ class StatusOr {
   StatusOr();
 
   // Construct a new object with the given non-ok status. After calling
-  // this constructor, calls to |ValueOrDie()| will-fail.
+  // this constructor, calls to |ValueOrDie()| will fail.
   //
   // NOTE: Not explicit - we want to use |StatusOr<T>| as a return
   // value, so it is convenient and sensible to be able to do |return Status();|
   // when the return type is |StatusOr<T>|.
   StatusOr(Status const& status);  // NOLINT
 
-  // Construct a new StatusOr with the given value. After calling this
-  // constructor, calls to |ValueOrDie()| will succeed, and calls to status()
+  // Construct a new object with the given value. After calling this
+  // constructor, calls to |ValueOrDie()| will succeed, and calls to |status()|
   // will return |Status::OK|.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return type
@@ -121,14 +121,14 @@ class StatusOr {
   // Copy constructor.
   StatusOr(StatusOr const& other) = default;
 
-  // Conversion copy constructor, |T| must be copy constructible from |U|.
+  // Conversion copy constructor, |T| must be copy-constructible from |U|.
   template<typename U>
   StatusOr(StatusOr<U> const& other);
 
   // Assignment operator.
   StatusOr& operator=(StatusOr const& other) = default;
 
-  // Conversion assignment operator, |T| must be assignable from |U|.
+  // Conversion assignment operator, |T| must be copy-assignable from |U|.
   template<typename U>
   StatusOr& operator=(StatusOr<U> const& other);
 
