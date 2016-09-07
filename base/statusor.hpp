@@ -38,8 +38,7 @@
 // object. StatusOr models the concept of an object that is either a
 // usable value, or an error Status explaining why such a value is
 // not present. To this end, StatusOr<T> does not allow its Status
-// value to be Status::OK. Further, StatusOr<T*> does not allow the
-// contained pointer to be NULL.
+// value to be Status::OK.
 //
 // The primary use-case for StatusOr<T> is as the return value of a
 // function which may fail.
@@ -102,51 +101,45 @@ class StatusOr {
   // Construct a new StatusOr with Status::UNKNOWN status
   StatusOr();
 
-  // Construct a new StatusOr with the given non-ok status. After calling
-  // this constructor, calls to ValueOrDie() will CHECK-fail.
+  // Construct a new object with the given non-ok status. After calling
+  // this constructor, calls to |ValueOrDie()| will-fail.
   //
-  // NOTE: Not explicit - we want to use StatusOr<T> as a return
-  // value, so it is convenient and sensible to be able to do 'return
-  // Status()' when the return type is StatusOr<T>.
-  //
-  // REQUIRES: status != Status::OK. This requirement is DCHECKed.
-  // In optimized builds, passing Status::OK here will have the effect
-  // of passing PosixErrorSpace::EINVAL as a fallback.
+  // NOTE: Not explicit - we want to use |StatusOr<T>| as a return
+  // value, so it is convenient and sensible to be able to do |return Status();|
+  // when the return type is |StatusOr<T>|.
   StatusOr(Status const& status);  // NOLINT
 
-  // Construct a new StatusOr with the given value. If T is a plain pointer,
-  // value must not be NULL. After calling this constructor, calls to
-  // ValueOrDie() will succeed, and calls to status() will return OK.
+  // Construct a new StatusOr with the given value. After calling this
+  // constructor, calls to |ValueOrDie()| will succeed, and calls to status()
+  // will return |Status::OK|.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return type
-  // so it is convenient and sensible to be able to do 'return T()'
-  // when when the return type is StatusOr<T>.
+  // so it is convenient and sensible to be able to do |return T()|
+  // when when the return type is |StatusOr<T>|.
   StatusOr(T const& value);  // NOLINT
 
   // Copy constructor.
   StatusOr(StatusOr const& other) = default;
 
-  // Conversion copy constructor, T must be copy constructible from U.
+  // Conversion copy constructor, |T| must be copy constructible from |U|.
   template<typename U>
   StatusOr(StatusOr<U> const& other);
 
   // Assignment operator.
   StatusOr& operator=(StatusOr const& other) = default;
 
-  // Conversion assignment operator, T must be assignable from U.
+  // Conversion assignment operator, |T| must be assignable from |U|.
   template<typename U>
   StatusOr& operator=(StatusOr<U> const& other);
 
-  // Returns a reference to our status. If this contains a T, then
-  // returns Status::OK.
+  // Returns a reference to our status. If this contains a |T|, then
+  // returns |Status::OK|.
   Status const& status() const;
 
-  // Returns this->status().ok().
+  // Returns true iff the status is OK (and |ValueOrDie()| may be called).
   bool ok() const;
 
-  // Returns a reference to our current value, or CHECK-fails if !this->ok().
-  // If you need to initialize a T object from the stored value,
-  // ConsumeValueOrDie() may be more efficient.
+  // Returns a reference to our current value, or fails if the status is not OK.
   T const& ValueOrDie() const;
 
  private:

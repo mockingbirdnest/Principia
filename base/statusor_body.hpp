@@ -45,12 +45,8 @@ StatusOr<T>::StatusOr()
     : status_(Status::UNKNOWN) {}
 
 template<typename T>
-StatusOr<T>::StatusOr(Status const& status) {
-  if (status.ok()) {
-    status_ = Status(Error::INTERNAL, "Status::OK is not a valid argument.");
-  } else {
-    status_ = status;
-  }
+StatusOr<T>::StatusOr(Status const& status) : status_(status) {
+  CHECK(!status_.ok()) << "Status::OK is not a valid argument";
 }
 
 template<typename T>
