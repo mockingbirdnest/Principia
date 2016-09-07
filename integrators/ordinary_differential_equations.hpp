@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/named_quantities.hpp"
@@ -15,7 +16,9 @@
 
 namespace principia {
 
+using base::Error;
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Time;
@@ -132,11 +135,14 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
-enum class TerminationCondition {
-  Done,
-  ReachedMaximalStepCount,
-  VanishingStepSize,
-};
+namespace termination_condition {
+constexpr Error Done = Error::OK;
+// The integration may be retried with the same arguments and progress will
+// happen.
+constexpr Error ReachedMaximalStepCount = Error::ABORTED;
+// A singularity.
+constexpr Error VanishingStepSize = Error::FAILED_PRECONDITION;
+}  // namespace termination_condition
 
 // An integrator using a fixed step size.
 template<typename DifferentialEquation>
@@ -145,7 +151,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   using ODE = DifferentialEquation;
   // The last call to |problem.append_state| will have
   // |state.time.value == problem.t_final|.
-  virtual TerminationCondition Solve(
+  virtual Status Solve(
       IntegrationProblem<ODE> const& problem,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 

@@ -15,6 +15,7 @@
 namespace principia {
 
 using geometry::Sign;
+using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
 
@@ -81,12 +82,11 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-TerminationCondition
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::Solve(
+Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                                   higher_order,
+                                                   lower_order,
+                                                   stages,
+                                                   first_same_as_last>::Solve(
     IntegrationProblem<ODE> const& problem,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   using Displacement = typename ODE::Displacement;
@@ -170,7 +170,10 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
       if (t.value + (t.error + h) == t.value) {
-        return TerminationCondition::VanishingStepSize;
+        return Status(termination_condition::VanishingStepSize,
+                      "At time " + DebugString(t.value) +
+                          ", step size is effectively zero.  Singularity or "
+                          "stiff system suspected.");
       }
 
     runge_kutta_nyström_step:
@@ -239,10 +242,15 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     problem.append_state(current_state);
     ++step_count;
     if (step_count == adaptive_step_size.max_steps && !at_end) {
-      return TerminationCondition::ReachedMaximalStepCount;
+      return Status(termination_condition::ReachedMaximalStepCount,
+                    "Reached maximum step count " +
+                        std::to_string(adaptive_step_size.max_steps) +
+                        " at time " + DebugString(t.value) +
+                        "; problem t_final is " + DebugString(problem.t_final) +
+                        ".");
     }
   }
-  return TerminationCondition::Done;
+  return Status(termination_condition::Done, "");
 }
 
 }  // namespace integrators

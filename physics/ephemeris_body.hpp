@@ -429,7 +429,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
-  return outcome == integrators::TerminationCondition::Done && t_final == t;
+  return outcome == integrators::termination_condition::Done && t_final == t;
 }
 
 template<typename Frame>

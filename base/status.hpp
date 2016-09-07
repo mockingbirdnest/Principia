@@ -42,6 +42,8 @@
 namespace principia {
 namespace base {
 
+// See https://cloud.google.com/vision/reference/rest/v1/Code for recommended
+// usage of these codes.
 enum class Error {
   OK = 0,
   CANCELLED = 1,
