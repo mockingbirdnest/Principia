@@ -58,7 +58,10 @@ StatusOr<T>::StatusOr(T const& value) {
 template<typename T>
 template<typename U>
 StatusOr<T>::StatusOr(StatusOr<U> const& other)
-    : status_(other.status_), value_(*other.value_) {
+    : status_(other.status_) {
+  if (other.value_) {
+    value_ = *other.value_;
+  }
 }
 
 template<typename T>
