@@ -429,6 +429,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
+  // TODO(phl): Consider returning a |Status| here.
   return status.ok() && t_final == t;
 }
 
@@ -945,15 +946,25 @@ Ephemeris<Frame>::Ephemeris()
     : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
 
 template<typename Frame>
-void Ephemeris<Frame>::AppendMassiveBodiesState(
+Status Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
-  for (auto& trajectory : trajectories_) {
-    trajectory->Append(
+  Status overall_status;
+  for (int i = 0; i < trajectories_.size(); ++i) {
+    auto const& trajectory = trajectories_[i];
+    auto const status = trajectory->Append(
         state.time.value,
         DegreesOfFreedom<Frame>(state.positions[index].value,
                                 state.velocities[index].value));
+
+    // Handle the apocalypse.
+    //TODO(phl): Body name.
+    if (!status.ok() && overall_status.ok()) {
+      overall_status = Status(
+          status.error(), "Error extending trajectory. " + status.message());
+    }
+
     ++index;
   }
 
@@ -966,6 +977,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
   }
+
+  return overall_status;
 }
 
 template<typename Frame>

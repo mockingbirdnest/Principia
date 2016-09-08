@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
@@ -23,6 +24,7 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using base::Status;
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
@@ -239,7 +241,7 @@ class Ephemeris {
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
 
-  void AppendMassiveBodiesState(
+  Status AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
