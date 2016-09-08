@@ -230,7 +230,7 @@ Ephemeris<Frame>::Ephemeris(
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory =
         inserted.first->second.get();
-    trajectory->Append(initial_time, degrees_of_freedom);
+    CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
     VLOG(1) << "Constructed trajectory " << trajectory
             << " for body with mass " << body->mass();
@@ -423,13 +423,13 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, _2);
   step_size.max_steps = parameters.max_steps_;
 
-  auto const outcome = parameters.integrator_->Solve(problem, step_size);
+  auto const status = parameters.integrator_->Solve(problem, step_size);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
-  return outcome == integrators::termination_condition::Done && t_final == t;
+  return status.ok() && t_final == t;
 }
 
 template<typename Frame>
@@ -912,7 +912,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         // trajectory.
         last_time = it.time();
         last_degrees_of_freedom = it.degrees_of_freedom();
-        continuous_trajectory->Append(last_time, last_degrees_of_freedom);
+        CHECK_OK(continuous_trajectory->Append(last_time,
+                                               last_degrees_of_freedom));
       } else if (duration_since_last_time > fixed_parameters.step_) {
         // A time in the discrete trajectory that is not aligned on the
         // continuous trajectory.  Stop here, we'll use prolong to recompute the

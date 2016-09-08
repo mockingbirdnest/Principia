@@ -16,6 +16,8 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using base::Error;
+using quantities::DebugString;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::ULPDistance;
@@ -74,7 +76,7 @@ double ContinuousTrajectory<Frame>::average_degree() const {
 }
 
 template<typename Frame>
-void ContinuousTrajectory<Frame>::Append(
+Status ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   // Consistency checks.
@@ -89,6 +91,7 @@ void ContinuousTrajectory<Frame>::Append(
     first_time_ = time;
   }
 
+  Status status;
   if (last_points_.size() == divisions) {
     // These vectors are static to avoid deallocation/reallocation each time we
     // go through this code path.
@@ -105,7 +108,7 @@ void ContinuousTrajectory<Frame>::Append(
     q.push_back(degrees_of_freedom.position() - Frame::origin);
     v.push_back(degrees_of_freedom.velocity());
 
-    ComputeBestNewhallApproximation(
+    status = ComputeBestNewhallApproximation(
         time, q, v, &ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation);
 
     // Wipe-out the points that have just been incorporated in a series.
@@ -116,6 +119,8 @@ void ContinuousTrajectory<Frame>::Append(
   // approximation, because clearing the map is much more efficient than erasing
   // every element but one.
   last_points_.emplace_back(time, degrees_of_freedom);
+
+  return status;
 }
 
 template<typename Frame>
@@ -302,7 +307,7 @@ template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory() {}
 
 template<typename Frame>
-void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
+Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
@@ -384,13 +389,21 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " with error estimate " << error_estimate;
   }
 
-  // A check that the tolerance did not explode.
-  CHECK_LT(adjusted_tolerance_, 1e6 * previous_adjusted_tolerance)
-      << "Apocalypse occurred at " << time
-      << ", displacements are: " << q
-      << ", velocities are: " << v;
-
   ++degree_age_;
+
+  // Check that the tolerance did not explode.
+  if (adjusted_tolerance_ < 1e6 * previous_adjusted_tolerance) {
+    return Status::OK;
+  } else {
+    return Status(Error::FAILED_PRECONDITION,
+                  "Error trying to fit a smooth polynomial to the trajectory. "
+                  "The approximation error jumped from " +
+                      DebugString(previous_adjusted_tolerance) + " to " +
+                      DebugString(adjusted_tolerance_) + " at time " +
+                      DebugString(time) +
+                      ". This is an apocalyse and two celestials probably "
+                      "collided because your solar system is unstable.");
+  }
 }
 
 template<typename Frame>
