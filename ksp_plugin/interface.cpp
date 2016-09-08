@@ -97,6 +97,7 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
       << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.reference_radius));
   serialization::GravityModel::Body gravity_model;
+  gravity_model.set_name(body_parameters.name);
   gravity_model.set_gravitational_parameter(
       body_parameters.gravitational_parameter);
   if (!std::isnan(body_parameters.reference_instant)) {

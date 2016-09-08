@@ -1328,6 +1328,7 @@ public partial class PrincipiaPluginAdapter
           }
           int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
           var body_parameters = new BodyParameters{
+              name = body.name,
               gravitational_parameter =
                   gravity_model.GetValue("gravitational_parameter"),
               reference_instant       =
@@ -1380,6 +1381,7 @@ public partial class PrincipiaPluginAdapter
           }
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
           var body_parameters = new BodyParameters{
+              name = body.name,
               gravitational_parameter =
                   (gravity_model?.GetValue("gravitational_parameter")).
                       GetValueOrDefault(body.gravParameter + " m^3/s^2"),
