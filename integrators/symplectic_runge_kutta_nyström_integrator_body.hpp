@@ -164,6 +164,7 @@ Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     }
     RETURN_IF_ERROR(problem.append_state(current_state));
   }
+  return Status::OK;
 }
 
 template<typename Position>

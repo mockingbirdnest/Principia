@@ -317,6 +317,11 @@ Ephemeris<Frame>::planetary_integrator() const {
 }
 
 template<typename Frame>
+Status Ephemeris<Frame>::last_severe_integration_status() const {
+  return last_severe_integration_status_;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   auto it = std::upper_bound(
                 checkpoints_.begin(), checkpoints_.end(), t,
@@ -358,7 +363,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   while (t_max() < t) {
     auto const status =
         parameters_.integrator_->Solve(problem, parameters_.step_);
-    AnalyseSolveStatus(status);
+    AnalyseIntegrationStatus(status);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -429,7 +434,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   step_size.max_steps = parameters.max_steps_;
 
   auto const status = parameters.integrator_->Solve(problem, step_size);
-  AnalyseSolveStatus(status);
+  AnalyseIntegrationStatus(status);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
@@ -487,7 +492,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   problem.initial_state = &initial_state;
 
   auto const status = parameters.integrator_->Solve(problem, parameters.step_);
-  AnalyseSolveStatus(status);
+  AnalyseIntegrationStatus(status);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
@@ -954,14 +959,14 @@ Ephemeris<Frame>::Ephemeris()
     : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
 
 template<typename Frame>
-void Ephemeris<Frame>::AnalyseSolveStatus(Status const& status) {
+void Ephemeris<Frame>::AnalyseIntegrationStatus(Status const& status) {
   switch (status.error()) {
     case termination_condition::Done:
     case termination_condition::ReachedMaximalStepCount:
     case termination_condition::VanishingStepSize:;
     default:
-      if (last_severe_solve_status_.ok()) {
-        last_severe_solve_status_ = status;
+      if (last_severe_integration_status_.ok()) {
+        last_severe_integration_status_ = status;
       }
   }
 }

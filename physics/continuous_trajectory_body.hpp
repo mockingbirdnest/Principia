@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -395,14 +396,15 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   if (adjusted_tolerance_ < 1e6 * previous_adjusted_tolerance) {
     return Status::OK;
   } else {
-    return Status(Error::FAILED_PRECONDITION,
-                  "Error trying to fit a smooth polynomial to the trajectory. "
-                  "The approximation error jumped from " +
-                      DebugString(previous_adjusted_tolerance) + " to " +
-                      DebugString(adjusted_tolerance_) + " at time " +
-                      DebugString(time) +
-                      ". This is an apocalyse and two celestials probably "
-                      "collided because your solar system is unstable.");
+    std::stringstream message;
+    message << "Error trying to fit a smooth polynomial to the trajectory. "
+            << "The approximation error jumped from "
+            << previous_adjusted_tolerance << " to " << adjusted_tolerance_
+            << " at time " << time << ". The last position is " << q.back()
+            << " and the last velocity is " << v.back()
+            << ". An apocalypse occurred and two celestials probably "
+            << "collided because your solar system is unstable.";
+    return Status(Error::INVALID_ARGUMENT, message.str());
   }
 }
 

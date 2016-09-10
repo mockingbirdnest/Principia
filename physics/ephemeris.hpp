@@ -139,6 +139,8 @@ class Ephemeris {
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
 
+  virtual Status last_severe_integration_status() const;
+
   // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
   virtual void ForgetBefore(Instant const& t);
 
@@ -243,8 +245,8 @@ class Ephemeris {
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
 
-  // Sets |last_severe_solve_status_| if needed.
-  void AnalyseSolveStatus(Status const& status);
+  // Sets |last_severe_integration_status_| if needed.
+  void AnalyseIntegrationStatus(Status const& status);
 
   Status AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
@@ -352,7 +354,7 @@ class Ephemeris {
 
   NewtonianMotionEquation massive_bodies_equation_;
 
-  Status last_severe_solve_status_;
+  Status last_severe_integration_status_;
 };
 
 }  // namespace internal_ephemeris
