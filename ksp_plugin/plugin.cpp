@@ -68,8 +68,8 @@ namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
 
-std::uint64_t const ksp_stock_system_fingerprint = 0xB0C5DF211A8E6008u;
-std::uint64_t const ksp_fixed_system_fingerprint = 0x2491936A92E3111Eu;
+std::uint64_t const ksp_stock_system_fingerprint = 0xD9B6630a9E20077Fu;
+std::uint64_t const ksp_fixed_system_fingerprint = 0xA5ECC13F11D5C8BBu;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
