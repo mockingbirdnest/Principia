@@ -69,8 +69,8 @@ SymplecticRungeKuttaNyströmIntegrator(
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
-void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
-                                           evaluations, composition>::Solve(
+Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                             evaluations, composition>::Solve(
     IntegrationProblem<ODE> const& problem,
     Time const& step) const {
   using Displacement = typename ODE::Displacement;
@@ -162,7 +162,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
-    problem.append_state(current_state);
+    RETURN_IF_ERROR(problem.append_state(current_state));
   }
 }
 

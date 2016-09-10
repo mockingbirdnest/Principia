@@ -9,11 +9,13 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
+#include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
 
+using base::Status;
 using numerics::FixedVector;
 
 namespace integrators {
@@ -81,8 +83,8 @@ class SymplecticRungeKuttaNyströmIntegrator
       FixedVector<double, stages_> const& a,
                                         FixedVector<double, stages_> const& b);
 
-  void Solve(IntegrationProblem<ODE> const& problem,
-             Time const& step) const override;
+  Status Solve(IntegrationProblem<ODE> const& problem,
+               Time const& step) const override;
 
   static int const order = order_;
   static bool const time_reversible = time_reversible_;

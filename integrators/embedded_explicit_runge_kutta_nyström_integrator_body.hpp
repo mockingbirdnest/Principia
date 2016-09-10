@@ -239,7 +239,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       q_hat[k].Increment(Δq_hat[k]);
       v_hat[k].Increment(Δv_hat[k]);
     }
-    problem.append_state(current_state);
+    RETURN_IF_ERROR(problem.append_state(current_state));
     ++step_count;
     if (step_count == adaptive_step_size.max_steps && !at_end) {
       return Status(termination_condition::ReachedMaximalStepCount,

@@ -97,5 +97,13 @@ std::ostream& operator<<(std::ostream& os, Status const& x);
 
 #define CHECK_OK(value) CHECK((value).ok()) << (value)
 
+#define RETURN_IF_ERROR(expr)                                                \
+  do {                                                                       \
+    /* Using _status below to avoid capture problems if expr is "status". */ \
+    const ::principia::base::Status _status = (expr);                        \
+    if (!_status.ok())                                                       \
+      return _status;                                                        \
+  } while (0)
+
 }  // namespace base
 }  // namespace principia

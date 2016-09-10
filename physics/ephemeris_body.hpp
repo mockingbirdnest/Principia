@@ -91,9 +91,10 @@ class DummyIntegrator
       serialization::FixedStepSizeIntegrator::DUMMY) {}
 
  public:
-  void Solve(IntegrationProblem<ODE> const& problem,
-             Time const& step) const override {
+  Status Solve(IntegrationProblem<ODE> const& problem,
+               Time const& step) const override {
     LOG(FATAL) << "dummy";
+    base::noreturn();
   }
 
   static DummyIntegrator const& Instance() {
