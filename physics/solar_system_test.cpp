@@ -84,6 +84,7 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth->mass()), 6e-9);
   auto const& earth_trajectory = solar_system_.trajectory(*ephemeris, "Earth");
   EXPECT_TRUE(earth_trajectory.empty());
+  EXPECT_EQ("Earth", earth->name());
 
   auto const& sun_initial_state = solar_system_.initial_state_message("Sun");
   EXPECT_EQ("+1.309126697236264e+05 km", sun_initial_state.x());

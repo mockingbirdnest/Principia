@@ -276,6 +276,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345e6 * SIUnit<GravitationalParameter>())))));
   BodyParameters const body_parameters = {
+      "Brian",
       "1.2345e6  m^3/s^2",
       std::numeric_limits<double>::quiet_NaN(),
       /*mean_radius=*/nullptr,
@@ -320,7 +321,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                  Pow<3>(Kilo(Metre)) / Pow<2>(Second)),
                     Property(&MassiveBody::mean_radius,
                              666 * Kilo(Metre))))));
-  BodyParameters const body_parameters = {"1.2345e6  km^3 / s^2",
+  BodyParameters const body_parameters = {"that is called Brian",
+                                          "1.2345e6  km^3 / s^2",
                                           999,
                                           "666 km",
                                           "42 deg",

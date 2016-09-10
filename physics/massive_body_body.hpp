@@ -23,20 +23,35 @@ using geometry::ReadFrameFromMessage;
 
 inline MassiveBody::Parameters::Parameters(
     GravitationalParameter const& gravitational_parameter)
-    : gravitational_parameter_(gravitational_parameter),
+    : Parameters(/*name=*/"", gravitational_parameter) {}
+
+inline MassiveBody::Parameters::Parameters(
+    std::string const& name,
+    GravitationalParameter const& gravitational_parameter)
+    : name_(name),
+      gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant) {
   CHECK_NE(gravitational_parameter, GravitationalParameter())
       << "Massive body cannot have zero gravitational parameter";
 }
 
 inline MassiveBody::Parameters::Parameters(Mass const& mass)
-    : gravitational_parameter_(mass * GravitationalConstant),
+    : Parameters(/*name=*/"", mass) {}
+
+inline MassiveBody::Parameters::Parameters(std::string const& name,
+                                           Mass const& mass)
+    : name_(name),
+      gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass) {
   CHECK_NE(mass, Mass()) << "Massive body cannot have zero mass";
 }
 
 inline MassiveBody::MassiveBody(Parameters const& parameters)
     : parameters_(parameters) {}
+
+inline std::string const& MassiveBody::name() const {
+  return parameters_.name_;
+}
 
 inline GravitationalParameter const&
 MassiveBody::gravitational_parameter() const {
@@ -66,6 +81,7 @@ inline void MassiveBody::WriteToMessage(
 
 inline void MassiveBody::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
+  message->set_name(parameters_.name_);
   parameters_.gravitational_parameter_.WriteToMessage(
       message->mutable_gravitational_parameter());
 }
@@ -93,7 +109,8 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
-  Parameters const parameters(GravitationalParameter::ReadFromMessage(
+  Parameters const parameters(message.name(),
+                              GravitationalParameter::ReadFromMessage(
                                   message.gravitational_parameter()));
 
   // First see if we have an extension that has a frame and if so read the

@@ -122,6 +122,7 @@ message KeplerianElements {
 message MassiveBody {
   extensions 2000 to 2999;  // Last used: 2002.
   required Quantity gravitational_parameter = 1;
+  optional string name = 2;  // required.
 }
 
 message MasslessBody {}

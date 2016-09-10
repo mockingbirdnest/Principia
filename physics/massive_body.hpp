@@ -8,6 +8,8 @@
 #ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
 
+#include <string>
+
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -29,9 +31,15 @@ class MassiveBody : public Body {
     // The constructors are implicit on purpose.
     Parameters(
         GravitationalParameter const& gravitational_parameter);  // NOLINT
+    Parameters(
+        std::string const& name,
+        GravitationalParameter const& gravitational_parameter);  // NOLINT
     Parameters(Mass const& mass);  // NOLINT(runtime/explicit)
+    Parameters(std::string const& name,
+               Mass const& mass);  // NOLINT(runtime/explicit)
 
    private:
+    std::string const name_;
     GravitationalParameter const gravitational_parameter_;
     Mass const mass_;
     friend class MassiveBody;
@@ -41,6 +49,7 @@ class MassiveBody : public Body {
   ~MassiveBody() = default;
 
   // Returns the construction parameter.
+  std::string const& name() const;
   GravitationalParameter const& gravitational_parameter() const;
   Mass const& mass() const;
 
