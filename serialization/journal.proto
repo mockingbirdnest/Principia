@@ -26,6 +26,7 @@ message AdaptiveStepParameters {
 }
 
 message BodyParameters {
+  required string name = 10;
   required string gravitational_parameter = 1;
   required double reference_instant = 7 [default = nan];  // Optional.
   optional string mean_radius = 2;
