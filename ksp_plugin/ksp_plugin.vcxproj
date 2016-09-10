@@ -353,6 +353,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="vessel_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="burn.cpp" />

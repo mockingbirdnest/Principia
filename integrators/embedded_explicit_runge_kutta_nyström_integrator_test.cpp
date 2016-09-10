@@ -114,6 +114,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
+    return Status::OK;
   };
   AdaptiveStepSize<ODE> adaptive_step_size;
   adaptive_step_size.first_time_step = t_final - t_initial;
@@ -194,6 +195,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
+    return Status::OK;
   };
   AdaptiveStepSize<ODE> adaptive_step_size;
   adaptive_step_size.first_time_step = t_final - t_initial;
@@ -270,6 +272,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   IntegrationProblem<ODE> problem;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
+    return Status::OK;
   };
   problem.equation = rocket_equation;
   problem.initial_state = &initial_state;

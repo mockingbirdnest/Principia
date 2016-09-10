@@ -220,6 +220,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="date_time_test.cpp" />
     <ClCompile Include="solar_system_dynamics_test.cpp" />
     <ClCompile Include="time_scales_test.cpp" />

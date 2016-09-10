@@ -470,6 +470,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
         last_state = state;
+        return Status::OK;
       };
 #else
   problem.append_state =
@@ -959,10 +960,10 @@ Status Ephemeris<Frame>::AppendMassiveBodiesState(
                                 state.velocities[index].value));
 
     // Handle the apocalypse.
-    //TODO(phl): Body name.
     if (!status.ok() && overall_status.ok()) {
-      overall_status = Status(
-          status.error(), "Error extending trajectory. " + status.message());
+      overall_status = Status(status.error(),
+                              "Error extending trajectory for " +
+                                  bodies_[i]->name() + ". " + status.message());
     }
 
     ++index;
@@ -982,7 +983,7 @@ Status Ephemeris<Frame>::AppendMassiveBodiesState(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::AppendMasslessBodiesState(
+Status Ephemeris<Frame>::AppendMasslessBodiesState(
     typename NewtonianMotionEquation::SystemState const& state,
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   int index = 0;
@@ -993,6 +994,7 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
                                 state.velocities[index].value));
     ++index;
   }
+  return Status::OK;
 }
 
 template<typename Frame>

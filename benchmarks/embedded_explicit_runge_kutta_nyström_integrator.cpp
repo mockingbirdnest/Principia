@@ -115,6 +115,7 @@ void SolveHarmonicOscillatorAndComputeError1D(
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
+    return Status::OK;
   };
 
   AdaptiveStepSize<ODE> adaptive_step_size;
@@ -173,6 +174,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
+    return Status::OK;
   };
 
   AdaptiveStepSize<ODE> adaptive_step_size;

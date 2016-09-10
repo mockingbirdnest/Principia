@@ -243,7 +243,7 @@ class Ephemeris {
 
   Status AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
-  static void AppendMasslessBodiesState(
+  static Status AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
