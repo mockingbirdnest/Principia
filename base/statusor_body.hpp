@@ -92,5 +92,11 @@ T const& StatusOr<T>::ValueOrDie() const {
   return *value_;
 }
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, StatusOr<T> const& x) {
+  os << x.status();
+  return os;
+}
+
 }  // namespace base
 }  // namespace principia

@@ -29,6 +29,8 @@ using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
+using integrators::Integrator;
+using integrators::IntegrationProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Length;
@@ -241,6 +243,9 @@ class Ephemeris {
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
 
+  // Sets |last_severe_solve_status_| if needed.
+  void AnalyseSolveStatus(Status const& status);
+
   Status AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
   static Status AppendMasslessBodiesState(
@@ -346,6 +351,8 @@ class Ephemeris {
   int number_of_spherical_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
+
+  Status last_severe_solve_status_;
 };
 
 }  // namespace internal_ephemeris

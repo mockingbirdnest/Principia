@@ -50,6 +50,8 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
+namespace termination_condition = integrators::termination_condition;
+
 Time const max_time_between_checkpoints = 180 * Day;
 
 // If j is a unit vector along the axis of rotation, and r is the separation
@@ -354,7 +356,9 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    parameters_.integrator_->Solve(problem, parameters_.step_);
+    auto const status =
+        parameters_.integrator_->Solve(problem, parameters_.step_);
+    AnalyseSolveStatus(status);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -425,6 +429,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   step_size.max_steps = parameters.max_steps_;
 
   auto const status = parameters.integrator_->Solve(problem, step_size);
+  AnalyseSolveStatus(status);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
@@ -481,7 +486,8 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   problem.t_final = t;
   problem.initial_state = &initial_state;
 
-  parameters.integrator_->Solve(problem, parameters.step_);
+  auto const status = parameters.integrator_->Solve(problem, parameters.step_);
+  AnalyseSolveStatus(status);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
@@ -855,7 +861,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   return ephemeris;
 }
 
-template <typename Frame>
+template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     google::protobuf::RepeatedPtrField<
         serialization::Plugin::CelestialAndProperties> const& messages,
@@ -943,9 +949,22 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   return ephemeris;
 }
 
-template <typename Frame>
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris()
     : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
+
+template<typename Frame>
+void Ephemeris<Frame>::AnalyseSolveStatus(Status const& status) {
+  switch (status.error()) {
+    case termination_condition::Done:
+    case termination_condition::ReachedMaximalStepCount:
+    case termination_condition::VanishingStepSize:;
+    default:
+      if (last_severe_solve_status_.ok()) {
+        last_severe_solve_status_ = status;
+      }
+  }
+}
 
 template<typename Frame>
 Status Ephemeris<Frame>::AppendMassiveBodiesState(

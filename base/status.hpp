@@ -96,6 +96,7 @@ class Status {
 std::ostream& operator<<(std::ostream& os, Status const& x);
 
 #define CHECK_OK(value) CHECK((value).ok()) << (value)
+#define EXPECT_OK(value) EXPECT_TRUE((value).ok()) << (value)
 
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
