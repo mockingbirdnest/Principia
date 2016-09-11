@@ -86,10 +86,10 @@
     <ClInclude Include="status.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="statusor.hpp">
+    <ClInclude Include="status_or.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="statusor_body.hpp">
+    <ClInclude Include="status_or_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,7 +112,7 @@
     <ClCompile Include="status_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="statusor_test.cpp">
+    <ClCompile Include="status_or_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

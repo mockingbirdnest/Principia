@@ -282,8 +282,8 @@
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
     <ClInclude Include="status.hpp" />
-    <ClInclude Include="statusor.hpp" />
-    <ClInclude Include="statusor_body.hpp" />
+    <ClInclude Include="status_or.hpp" />
+    <ClInclude Include="status_or_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />
@@ -294,7 +294,7 @@
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
     <ClCompile Include="status.cpp" />
-    <ClCompile Include="statusor_test.cpp" />
+    <ClCompile Include="status_or_test.cpp" />
     <ClCompile Include="status_test.cpp" />
   </ItemGroup>
   <ItemGroup>
