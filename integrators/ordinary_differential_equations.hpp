@@ -73,7 +73,7 @@ struct IntegrationProblem {
   ODE equation;
   typename ODE::SystemState const* initial_state;
   Instant t_final;
-  std::function<Status(typename ODE::SystemState const& state)> append_state;
+  std::function<void(typename ODE::SystemState const& state)> append_state;
 };
 
 // Settings for for adaptive step size integration.

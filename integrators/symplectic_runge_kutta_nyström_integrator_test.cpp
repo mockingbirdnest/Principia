@@ -104,7 +104,6 @@ void TestTermination(
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
-    return Status::OK;
   };
 
   integrator.Solve(problem, step);
@@ -165,7 +164,6 @@ void Test1000SecondsAt1Millisecond(
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
-    return Status::OK;
   };
 
   integrator.Solve(problem, step);
@@ -237,7 +235,6 @@ void TestConvergence(Integrator const& integrator,
   ODE::SystemState final_state;
   problem.append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
-    return Status::OK;
   };
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
@@ -312,7 +309,6 @@ void TestSymplecticity(Integrator const& integrator,
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
-    return Status::OK;
   };
 
   integrator.Solve(problem, step);
@@ -367,7 +363,6 @@ void TestTimeReversibility(Integrator const& integrator) {
   problem.t_final = t_final;
   problem.append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
-    return Status::OK;
   };
 
   integrator.Solve(problem, step);

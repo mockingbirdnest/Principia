@@ -245,12 +245,9 @@ class Ephemeris {
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
 
-  // Sets |last_severe_integration_status_| if needed.
-  void AnalyseIntegrationStatus(Status const& status);
-
-  Status AppendMassiveBodiesState(
+  void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
-  static Status AppendMasslessBodiesState(
+  static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 

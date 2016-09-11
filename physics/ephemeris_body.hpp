@@ -50,8 +50,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-namespace termination_condition = integrators::termination_condition;
-
 Time const max_time_between_checkpoints = 180 * Day;
 
 // If j is a unit vector along the axis of rotation, and r is the separation
@@ -363,7 +361,6 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   while (t_max() < t) {
     auto const status =
         parameters_.integrator_->Solve(problem, parameters_.step_);
-    AnalyseIntegrationStatus(status);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -434,13 +431,11 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   step_size.max_steps = parameters.max_steps_;
 
   auto const status = parameters.integrator_->Solve(problem, step_size);
-  AnalyseIntegrationStatus(status);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
-  // TODO(phl): Consider returning a |Status| here.
   return status.ok() && t_final == t;
 }
 
@@ -481,7 +476,6 @@ void Ephemeris<Frame>::FlowWithFixedStep(
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
         last_state = state;
-        return Status::OK;
       };
 #else
   problem.append_state =
@@ -492,7 +486,6 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   problem.initial_state = &initial_state;
 
   auto const status = parameters.integrator_->Solve(problem, parameters.step_);
-  AnalyseIntegrationStatus(status);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
@@ -959,24 +952,10 @@ Ephemeris<Frame>::Ephemeris()
     : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
 
 template<typename Frame>
-void Ephemeris<Frame>::AnalyseIntegrationStatus(Status const& status) {
-  switch (status.error()) {
-    case termination_condition::Done:
-    case termination_condition::ReachedMaximalStepCount:
-    case termination_condition::VanishingStepSize:
-      break;
-    default:
-      last_severe_integration_status_ = status;
-      break;
-  }
-}
-
-template<typename Frame>
-Status Ephemeris<Frame>::AppendMassiveBodiesState(
+void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
-  Status overall_status;
   for (int i = 0; i < trajectories_.size(); ++i) {
     auto const& trajectory = trajectories_[i];
     auto const status = trajectory->Append(
@@ -985,10 +964,11 @@ Status Ephemeris<Frame>::AppendMassiveBodiesState(
                                 state.velocities[index].value));
 
     // Handle the apocalypse.
-    if (!status.ok() && overall_status.ok()) {
-      overall_status = Status(status.error(),
-                              "Error extending trajectory for " +
-                                  bodies_[i]->name() + ". " + status.message());
+    if (!status.ok()) {
+      last_severe_integration_status_ =
+          Status(status.error(),
+                 "Error extending trajectory for " + bodies_[i]->name() + ". " +
+                     status.message());
     }
 
     ++index;
@@ -1003,12 +983,10 @@ Status Ephemeris<Frame>::AppendMassiveBodiesState(
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
   }
-
-  return overall_status;
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::AppendMasslessBodiesState(
+void Ephemeris<Frame>::AppendMasslessBodiesState(
     typename NewtonianMotionEquation::SystemState const& state,
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   int index = 0;
@@ -1019,7 +997,6 @@ Status Ephemeris<Frame>::AppendMasslessBodiesState(
                                 state.velocities[index].value));
     ++index;
   }
-  return Status::OK;
 }
 
 template<typename Frame>

@@ -162,7 +162,7 @@ Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
-    RETURN_IF_ERROR(problem.append_state(current_state));
+    problem.append_state(current_state);
   }
   return Status::OK;
 }
