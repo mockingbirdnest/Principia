@@ -231,11 +231,12 @@ bool Plugin::IsKspStockSystem() const {
   return is_ksp_stock_system_;
 }
 
-bool Plugin::HasEncounteredApocalypse(std::string* const message) const {
-  CHECK_NOTNULL(message);
+bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
+  CHECK_NOTNULL(details);
   auto const status = ephemeris_->last_severe_integration_status();
   if (status.error() == Error::INVALID_ARGUMENT) {
-    *message = status.message();
+    *details = status.message();
+    return true;
   } else {
     return false;
   }

@@ -865,6 +865,18 @@ char const* principia__SayHello() {
   return m.Return("Hello from native C++!");
 }
 
+bool principia__HasEncounteredApocalypse(
+    Plugin* const plugin,
+    char const** const details) {
+  journal::Method<journal::HasEncounteredApocalypse> m({{plugin}, {details}});
+  // Ownership will be transfered to the marshmallow.
+  std::string* const allocated_details = new std::string;
+  bool const has_encountered_apocalypse =
+      CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(allocated_details);
+  *CHECK_NOTNULL(details) = allocated_details->c_str();
+  return m.Return(has_encountered_apocalypse);
+}
+
 void principia__GetVersion(
     char const** const build_date,
     char const** const version) {
