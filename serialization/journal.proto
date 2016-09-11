@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5101.
+  extensions 5000 to 5999;  // Last used: 5102.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -673,6 +673,24 @@ message GetVersion {
   optional Out out = 2;
 }
 
+message HasEncounteredApocalypse {
+  extend Method {
+    optional HasEncounteredApocalypse extension = 5102;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Out {
+    required string details = 1 [(is_produced) = true];
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
 message HasVessel {
   extend Method {
     optional HasVessel extension = 5039;
@@ -1076,8 +1094,7 @@ message SerializePlugin {
                                      (is_produced_if) = "result != nullptr"];
   }
   message Return {
-    // TODO(phl): Why the tag 2?
-    required fixed64 result = 2 [(pointer_to) = "char const",
+    required fixed64 result = 1 [(pointer_to) = "char const",
                                  (is_produced_if) = "result != nullptr"];
   }
   optional In in = 1;

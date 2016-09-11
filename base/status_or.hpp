@@ -150,7 +150,11 @@ class StatusOr {
   friend class StatusOr;
 };
 
+// Prints a human-readable representation of |x| to |os|.
+template<typename T>
+std::ostream& operator<<(std::ostream& os, StatusOr<T> const& x);
+
 }  // namespace base
 }  // namespace principia
 
-#include "base/statusor_body.hpp"
+#include "base/status_or_body.hpp"

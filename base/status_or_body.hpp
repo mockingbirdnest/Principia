@@ -34,7 +34,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "base/statusor.hpp"
+#include "base/status_or.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -90,6 +90,12 @@ T const& StatusOr<T>::ValueOrDie() const {
     LOG(FATAL) <<status_;
   }
   return *value_;
+}
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, StatusOr<T> const& x) {
+  os << x.status();
+  return os;
 }
 
 }  // namespace base

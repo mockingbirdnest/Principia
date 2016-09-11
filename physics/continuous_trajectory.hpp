@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -15,6 +16,7 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -71,8 +73,8 @@ class ContinuousTrajectory {
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
   // successive calls to |Append| must be equally spaced with the |step| given
   // at construction.
-  void Append(Instant const& time,
-              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  Status Append(Instant const& time,
+                DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times strictly less than |time|.
   void ForgetBefore(Instant const& time);
@@ -147,7 +149,7 @@ class ContinuousTrajectory {
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
   // instabilities.
-  void ComputeBestNewhallApproximation(
+  Status ComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Displacement<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,

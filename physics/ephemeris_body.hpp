@@ -230,7 +230,7 @@ Ephemeris<Frame>::Ephemeris(
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory =
         inserted.first->second.get();
-    trajectory->Append(initial_time, degrees_of_freedom);
+    CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
     VLOG(1) << "Constructed trajectory " << trajectory
             << " for body with mass " << body->mass();
@@ -311,6 +311,11 @@ FixedStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
 Ephemeris<Frame>::planetary_integrator() const {
   return *parameters_.integrator_;
+}
+
+template<typename Frame>
+Status Ephemeris<Frame>::last_severe_integration_status() const {
+  return last_severe_integration_status_;
 }
 
 template<typename Frame>
@@ -423,13 +428,13 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, _2);
   step_size.max_steps = parameters.max_steps_;
 
-  auto const outcome = parameters.integrator_->Solve(problem, step_size);
+  auto const status = parameters.integrator_->Solve(problem, step_size);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
-  return outcome == integrators::TerminationCondition::Done && t_final == t;
+  return status.ok() && t_final == t;
 }
 
 template<typename Frame>
@@ -852,7 +857,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   return ephemeris;
 }
 
-template <typename Frame>
+template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     google::protobuf::RepeatedPtrField<
         serialization::Plugin::CelestialAndProperties> const& messages,
@@ -912,7 +917,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         // trajectory.
         last_time = it.time();
         last_degrees_of_freedom = it.degrees_of_freedom();
-        continuous_trajectory->Append(last_time, last_degrees_of_freedom);
+        CHECK_OK(continuous_trajectory->Append(last_time,
+                                               last_degrees_of_freedom));
       } else if (duration_since_last_time > fixed_parameters.step_) {
         // A time in the discrete trajectory that is not aligned on the
         // continuous trajectory.  Stop here, we'll use prolong to recompute the
@@ -939,7 +945,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   return ephemeris;
 }
 
-template <typename Frame>
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris()
     : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
 
@@ -948,11 +954,21 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
-  for (auto& trajectory : trajectories_) {
-    trajectory->Append(
+  for (int i = 0; i < trajectories_.size(); ++i) {
+    auto const& trajectory = trajectories_[i];
+    auto const status = trajectory->Append(
         state.time.value,
         DegreesOfFreedom<Frame>(state.positions[index].value,
                                 state.velocities[index].value));
+
+    // Handle the apocalypse.
+    if (!status.ok()) {
+      last_severe_integration_status_ =
+          Status(status.error(),
+                 "Error extending trajectory for " + bodies_[i]->name() + ". " +
+                     status.message());
+    }
+
     ++index;
   }
 

@@ -114,6 +114,12 @@ class Plugin {
   // after initialization.
   virtual bool IsKspStockSystem() const;
 
+  // And there shall, in that time, be rumors of things going astray, and there
+  // will be a great confusion as to where things really are, and nobody will
+  // really know where lieth those little things with the sort of raffia work
+  // base, that has an attachment.
+  virtual bool HasEncounteredApocalypse(std::string* const details) const;
+
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies must already have been
   // inserted. Must be called after initialization.

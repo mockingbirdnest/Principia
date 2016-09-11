@@ -123,7 +123,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                 _1, _2, length_tolerance, speed_tolerance, step_size_callback);
 
   auto outcome = integrator.Solve(problem, adaptive_step_size);
-  EXPECT_EQ(TerminationCondition::Done, outcome);
+  EXPECT_EQ(termination_condition::Done, outcome.error());
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(3e-4 * Metre), Le(4e-4 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
@@ -149,7 +149,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                 step_size_callback);
 
   outcome = integrator.Solve(problem, adaptive_step_size);
-  EXPECT_EQ(TerminationCondition::Done, outcome);
+  EXPECT_EQ(termination_condition::Done, outcome.error());
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(1e-3 * Metre), Le(2e-3 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
@@ -204,7 +204,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   adaptive_step_size.max_steps = 100;
 
   auto const outcome = integrator.Solve(problem, adaptive_step_size);
-  EXPECT_EQ(TerminationCondition::ReachedMaximalStepCount, outcome);
+  EXPECT_EQ(termination_condition::ReachedMaximalStepCount, outcome.error());
   EXPECT_THAT(AbsoluteError(
                   x_initial * Cos(ω * (solution.back().time.value - t_initial)),
                       solution.back().positions[0].value),
@@ -224,7 +224,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
     solution.clear();
     adaptive_step_size.max_steps = steps_forward;
     auto const outcome = integrator.Solve(problem, adaptive_step_size);
-    EXPECT_EQ(TerminationCondition::Done, outcome);
+    EXPECT_EQ(termination_condition::Done, outcome.error());
     EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
                 AllOf(Ge(3e-4 * Metre), Le(4e-4 * Metre)));
     EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
@@ -287,7 +287,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
   auto const outcome = integrator.Solve(problem, adaptive_step_size);
-  EXPECT_EQ(TerminationCondition::VanishingStepSize, outcome);
+  EXPECT_EQ(termination_condition::VanishingStepSize, outcome.error());
   EXPECT_EQ(130, solution.size());
   EXPECT_THAT(solution.back().time.value - t_initial,
               AlmostEquals(t_singular - t_initial, 20));

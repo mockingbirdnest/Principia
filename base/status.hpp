@@ -42,6 +42,8 @@
 namespace principia {
 namespace base {
 
+// See https://cloud.google.com/vision/reference/rest/v1/Code for recommended
+// usage of these codes.
 enum class Error {
   OK = 0,
   CANCELLED = 1,
@@ -90,10 +92,19 @@ class Status {
   std::string message_;
 };
 
-// Prints a human-readable representation of 'x' to 'os'.
+// Prints a human-readable representation of |x| to |os|.
 std::ostream& operator<<(std::ostream& os, Status const& x);
 
 #define CHECK_OK(value) CHECK((value).ok()) << (value)
+#define EXPECT_OK(value) EXPECT_TRUE((value).ok()) << (value)
+
+#define RETURN_IF_ERROR(expr)                                                \
+  do {                                                                       \
+    /* Using _status below to avoid capture problems if expr is "status". */ \
+    const ::principia::base::Status _status = (expr);                        \
+    if (!_status.ok())                                                       \
+      return _status;                                                        \
+  } while (false)
 
 }  // namespace base
 }  // namespace principia

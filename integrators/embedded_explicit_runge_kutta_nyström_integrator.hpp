@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/named_quantities.hpp"
@@ -21,6 +22,7 @@
 namespace principia {
 
 using base::not_null;
+using base::Status;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 using quantities::Time;
@@ -78,7 +80,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
-  TerminationCondition Solve(
+  Status Solve(
       IntegrationProblem<ODE> const& problem,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 

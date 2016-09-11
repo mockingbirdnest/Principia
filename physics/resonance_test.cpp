@@ -34,6 +34,7 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::RelativeError;
+using ::testing::MatchesRegex;
 
 namespace physics {
 
@@ -45,13 +46,14 @@ class ResonanceTest : public ::testing::Test {
 
   // Gravitational parameters from the KSP wiki.
   ResonanceTest()
-      : sun_(AddBody(1.1723328e+18 * Pow<3>(Metre) / Pow<2>(Second))),
-        jool_(AddBody(2.8252800e+14 * Pow<3>(Metre) / Pow<2>(Second))),
-        laythe_(AddBody(1.9620000e+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        vall_(AddBody(2.0748150e+11 * Pow<3>(Metre) / Pow<2>(Second))),
-        tylo_(AddBody(2.8252800e+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        bop_(AddBody(2.4868349e+09 * Pow<3>(Metre) / Pow<2>(Second))),
-        pol_(AddBody(7.2170208e+08 * Pow<3>(Metre) / Pow<2>(Second))),
+      : sun_(AddBody("Sun", 1.1723328e+18 * Pow<3>(Metre) / Pow<2>(Second))),
+        jool_(AddBody("Jool", 2.8252800e+14 * Pow<3>(Metre) / Pow<2>(Second))),
+        laythe_(AddBody("Laythe",
+                        1.9620000e+12 * Pow<3>(Metre) / Pow<2>(Second))),
+        vall_(AddBody("Vall", 2.0748150e+11 * Pow<3>(Metre) / Pow<2>(Second))),
+        tylo_(AddBody("Tylo", 2.8252800e+12 * Pow<3>(Metre) / Pow<2>(Second))),
+        bop_(AddBody("Bop", 2.4868349e+09 * Pow<3>(Metre) / Pow<2>(Second))),
+        pol_(AddBody("Pol", 7.2170208e+08 * Pow<3>(Metre) / Pow<2>(Second))),
         bodies_({sun_, jool_, laythe_, vall_, tylo_, bop_, pol_}),
         jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
         joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {
@@ -365,27 +367,36 @@ class ResonanceTest : public ::testing::Test {
   Instant const comparison_ = long_time_ + 90 * Day;
 
  private:
-  not_null<MassiveBody const*> AddBody(GravitationalParameter const& μ) {
-    owned_bodies_.emplace_back(make_not_null_unique<MassiveBody>(μ));
+  not_null<MassiveBody const*> AddBody(std::string const& name,
+                                       GravitationalParameter const& μ) {
+    owned_bodies_.emplace_back(
+        make_not_null_unique<MassiveBody>(MassiveBody::Parameters(name, μ)));
     return owned_bodies_.back().get();
   }
 };
 
-using ResonanceDeathTest = ResonanceTest;
-
 #if !defined(_DEBUG)
 
-TEST_F(ResonanceDeathTest, Stock) {
+TEST_F(ResonanceTest, Stock) {
   ComputeStockOrbits();
   UseStockMeanMotions();
   auto const ephemeris = MakeEphemeris(StockInitialStates());
   ephemeris->Prolong(reference_);
+  EXPECT_OK(ephemeris->last_severe_integration_status());
   LogPeriods(*ephemeris);
   LogEphemeris(*ephemeris, /*reference=*/true, "stock");
-  // Where is thy sting?
-  EXPECT_DEATH(
-      { ephemeris->Prolong(long_time_); },
-      R"regex(Apocalypse occurred at \+8\.22960000000000000e\+06 s)regex");
+  ephemeris->Prolong(long_time_);
+  auto const status = ephemeris->last_severe_integration_status();
+  EXPECT_EQ(Error::INVALID_ARGUMENT, status.error());
+  EXPECT_THAT(
+      status.message(),
+      MatchesRegex("Error extending trajectory for Vall\\. Error trying to fit "
+                   "a smooth polynomial to the trajectory\\. The approximation "
+                   "error jumped from .* m to .* m at time "
+                   "\\+8.22960000000000000e\\+06 s\\. The last position is "
+                   "\\{.*\\} and the last velocity is \\{.*\\}. An apocalypse "
+                   "occurred and two celestials probably collided because your "
+                   "solar system is unstable\\."));
 }
 
 TEST_F(ResonanceTest, Corrected) {

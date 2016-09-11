@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/repeated_field.h"
@@ -23,10 +24,13 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using base::Status;
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
+using integrators::Integrator;
+using integrators::IntegrationProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Length;
@@ -134,6 +138,8 @@ class Ephemeris {
 
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
+
+  virtual Status last_severe_integration_status() const;
 
   // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
   virtual void ForgetBefore(Instant const& t);
@@ -344,6 +350,8 @@ class Ephemeris {
   int number_of_spherical_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
+
+  Status last_severe_integration_status_;
 };
 
 }  // namespace internal_ephemeris
