@@ -103,8 +103,7 @@ internal class OutOwnedUTF8Marshaler : OutUTF8Marshaler {
   }
 
   public override void CleanUpNativeData(IntPtr native_data) {
-    // NOTE(egg): this should get renamed.
-    Interface.DeletePluginSerialization(ref native_data);
+    Interface.DeleteString(ref native_data);
   }
 
   private readonly static OutOwnedUTF8Marshaler instance_ =

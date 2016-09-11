@@ -197,10 +197,10 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
-                                            XYZ const sun_position) {
-  journal::Method<journal::BubbleDisplacementCorrection> m({plugin,
-                                                            sun_position});
+XYZ principia__PhysicsBubbleDisplacementCorrection(Plugin const* const plugin,
+                                                   XYZ const sun_position) {
+  journal::Method<journal::PhysicsBubbleDisplacementCorrection> m(
+      {plugin, sun_position});
   CHECK_NOTNULL(plugin);
   Displacement<World> const result =
       plugin->BubbleDisplacementCorrection(
@@ -208,10 +208,10 @@ XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
   return m.Return(ToXYZ(result.coordinates() / Metre));
 }
 
-XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
-                                        int const reference_body_index) {
-  journal::Method<journal::BubbleVelocityCorrection> m({plugin,
-                                                        reference_body_index});
+XYZ principia__PhysicsBubbleVelocityCorrection(Plugin const* const plugin,
+                                               int const reference_body_index) {
+  journal::Method<journal::PhysicsBubbleVelocityCorrection> m(
+      {plugin, reference_body_index});
   CHECK_NOTNULL(plugin);
   Velocity<World> const result =
       plugin->BubbleVelocityCorrection(reference_body_index);
@@ -281,14 +281,13 @@ void principia__DeletePlugin(Plugin const** const plugin) {
   return m.Return();
 }
 
-// Deletes and nulls |*serialization|.
-// |serialization| must not be null.  No transfer of ownership of
-// |*serialization|, takes ownership of |**serialization|.
-void principia__DeletePluginSerialization(char const** const serialization) {
-  journal::Method<journal::DeletePluginSerialization> m({serialization},
-                                                        {serialization});
+// Deletes and nulls |*native_string|.  |native_string| must not be null.  No
+// transfer of ownership of |*native_string|, takes ownership of
+// |**native_string|.
+void principia__DeleteString(char const** const native_string) {
+  journal::Method<journal::DeleteString> m({native_string}, {native_string});
   LOG(INFO) << __FUNCTION__;
-  TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
+  TakeOwnershipArray(reinterpret_cast<uint8_t const**>(native_string));
   return m.Return();
 }
 
