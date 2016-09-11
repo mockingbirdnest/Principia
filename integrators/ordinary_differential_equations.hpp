@@ -135,6 +135,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
+// Any status not listed here is considered "severe" by the |Ephemeris|.
 namespace termination_condition {
 constexpr Error Done = Error::OK;
 // The integration may be retried with the same arguments and progress will

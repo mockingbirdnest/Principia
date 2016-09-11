@@ -231,6 +231,16 @@ bool Plugin::IsKspStockSystem() const {
   return is_ksp_stock_system_;
 }
 
+bool Plugin::HasEncounteredApocalypse(std::string* const message) const {
+  CHECK_NOTNULL(message);
+  auto const status = ephemeris_->last_severe_integration_status();
+  if (status.error() == Error::INVALID_ARGUMENT) {
+    *message = status.message();
+  } else {
+    return false;
+  }
+}
+
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
                                       Index const parent_index) const {
   VLOG(1) << __FUNCTION__ << '\n'

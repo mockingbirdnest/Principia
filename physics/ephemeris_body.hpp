@@ -963,11 +963,11 @@ void Ephemeris<Frame>::AnalyseIntegrationStatus(Status const& status) {
   switch (status.error()) {
     case termination_condition::Done:
     case termination_condition::ReachedMaximalStepCount:
-    case termination_condition::VanishingStepSize:;
+    case termination_condition::VanishingStepSize:
+      break;
     default:
-      if (last_severe_integration_status_.ok()) {
-        last_severe_integration_status_ = status;
-      }
+      last_severe_integration_status_ = status;
+      break;
   }
 }
 
