@@ -121,38 +121,6 @@ message AdvanceTime {
   optional In in = 1;
 }
 
-message BubbleDisplacementCorrection {
-  extend Method {
-    optional BubbleDisplacementCorrection extension = 5046;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required XYZ sun_position = 2;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message BubbleVelocityCorrection {
-  extend Method {
-    optional BubbleVelocityCorrection extension = 5047;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 reference_body_index = 2;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message CelestialFromParent {
   extend Method {
     optional CelestialFromParent extension = 5026;
@@ -262,16 +230,16 @@ message DeletePlugin {
   optional Out out = 2;
 }
 
-message DeletePluginSerialization {
+message DeleteString {
   extend Method {
-    optional DeletePluginSerialization extension = 5049;
+    optional DeleteString extension = 5049;
   }
   message In {
-    required fixed64 serialization = 1 [(pointer_to) = "char const",
+    required fixed64 native_string = 1 [(pointer_to) = "char const",
                                         (is_consumed) = true];
   }
   message Out {
-    required fixed64 serialization = 1 [(pointer_to) = "char const"];
+    required fixed64 native_string = 1 [(pointer_to) = "char const"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -1006,6 +974,38 @@ message PhysicsBubbleIsEmpty {
   }
   message Return {
     required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PhysicsBubbleDisplacementCorrection {
+  extend Method {
+    optional PhysicsBubbleDisplacementCorrection extension = 5046;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required XYZ sun_position = 2;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PhysicsBubbleVelocityCorrection {
+  extend Method {
+    optional PhysicsBubbleVelocityCorrection extension = 5047;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 reference_body_index = 2;
+  }
+  message Return {
+    required XYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

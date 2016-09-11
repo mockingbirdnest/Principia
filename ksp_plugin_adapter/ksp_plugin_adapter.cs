@@ -418,7 +418,7 @@ public partial class PrincipiaPluginAdapter
           }
           node.AddValue(principia_key, Marshal.PtrToStringAnsi(serialization));
         } finally {
-          Interface.DeletePluginSerialization(ref serialization);
+          Interface.DeleteString(ref serialization);
         }
       }
     }
@@ -742,10 +742,10 @@ public partial class PrincipiaPluginAdapter
           vessel => UpdateVessel(vessel, universal_time));
       if (!plugin_.PhysicsBubbleIsEmpty()) {
         Vector3d displacement_offset =
-            (Vector3d)plugin_.BubbleDisplacementCorrection(
+            (Vector3d)plugin_.PhysicsBubbleDisplacementCorrection(
                           (XYZ)Planetarium.fetch.Sun.position);
         Vector3d velocity_offset =
-            (Vector3d)plugin_.BubbleVelocityCorrection(
+            (Vector3d)plugin_.PhysicsBubbleVelocityCorrection(
                           active_vessel.orbit.referenceBody.flightGlobalsIndex);
         if (krakensbane_ == null) {
           krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));

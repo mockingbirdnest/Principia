@@ -685,8 +685,8 @@ TEST_F(InterfaceTest, PhysicsBubble) {
       .WillOnce(Return(Displacement<World>({77 * SIUnit<Length>(),
                                             88 * SIUnit<Length>(),
                                             99 * SIUnit<Length>()})));
-  XYZ const displacement =
-      principia__BubbleDisplacementCorrection(plugin_.get(), parent_position);
+  XYZ const displacement = principia__PhysicsBubbleDisplacementCorrection(
+      plugin_.get(), parent_position);
   EXPECT_THAT(displacement, Eq(XYZ{77, 88, 99}));
 
   EXPECT_CALL(*plugin_, BubbleVelocityCorrection(parent_index))
@@ -694,7 +694,7 @@ TEST_F(InterfaceTest, PhysicsBubble) {
                                         55 * SIUnit<Speed>(),
                                         44 * SIUnit<Speed>()})));
   XYZ const velocity =
-      principia__BubbleVelocityCorrection(plugin_.get(), parent_index);
+      principia__PhysicsBubbleVelocityCorrection(plugin_.get(), parent_index);
   EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
 
   EXPECT_CALL(*plugin_, PhysicsBubbleIsEmpty()).WillOnce(Return(true));
@@ -817,7 +817,7 @@ TEST_F(InterfaceTest, SerializePlugin) {
       principia__SerializePlugin(plugin_.get(), &serializer);
   EXPECT_STREQ(hexadecimal_boring_plugin, serialization);
   EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
-  principia__DeletePluginSerialization(&serialization);
+  principia__DeleteString(&serialization);
   EXPECT_THAT(serialization, IsNull());
 }
 
