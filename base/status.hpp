@@ -92,7 +92,7 @@ class Status {
   std::string message_;
 };
 
-// Prints a human-readable representation of 'x' to 'os'.
+// Prints a human-readable representation of |x| to |os|.
 std::ostream& operator<<(std::ostream& os, Status const& x);
 
 #define CHECK_OK(value) CHECK((value).ok()) << (value)
@@ -104,7 +104,7 @@ std::ostream& operator<<(std::ostream& os, Status const& x);
     const ::principia::base::Status _status = (expr);                        \
     if (!_status.ok())                                                       \
       return _status;                                                        \
-  } while (0)
+  } while (false)
 
 }  // namespace base
 }  // namespace principia

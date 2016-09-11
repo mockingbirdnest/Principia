@@ -119,8 +119,8 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // ]problem.t_final - step, problem.t_final].
   // |problem.append_state| will be called with |state.time.values|s at
   // intervals differing from |step| by at most one ULP.
-  virtual Status Solve(IntegrationProblem<ODE> const& problem,
-                       Time const& step) const = 0;
+  virtual void Solve(IntegrationProblem<ODE> const& problem,
+                     Time const& step) const = 0;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> const message) const;
@@ -135,7 +135,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
-// Any status not listed here is considered "severe" by the |Ephemeris|.
+// The |Solve| function below exclusively returns one of the following statuses.
 namespace termination_condition {
 constexpr Error Done = Error::OK;
 // The integration may be retried with the same arguments and progress will

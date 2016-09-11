@@ -91,10 +91,9 @@ class DummyIntegrator
       serialization::FixedStepSizeIntegrator::DUMMY) {}
 
  public:
-  Status Solve(IntegrationProblem<ODE> const& problem,
-               Time const& step) const override {
+  void Solve(IntegrationProblem<ODE> const& problem,
+             Time const& step) const override {
     LOG(FATAL) << "dummy";
-    base::noreturn();
   }
 
   static DummyIntegrator const& Instance() {
@@ -359,8 +358,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    auto const status =
-        parameters_.integrator_->Solve(problem, parameters_.step_);
+    parameters_.integrator_->Solve(problem, parameters_.step_);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -485,7 +483,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   problem.t_final = t;
   problem.initial_state = &initial_state;
 
-  auto const status = parameters.integrator_->Solve(problem, parameters.step_);
+  parameters.integrator_->Solve(problem, parameters.step_);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;

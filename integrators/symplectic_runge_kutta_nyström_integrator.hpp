@@ -83,8 +83,8 @@ class SymplecticRungeKuttaNyströmIntegrator
       FixedVector<double, stages_> const& a,
                                         FixedVector<double, stages_> const& b);
 
-  Status Solve(IntegrationProblem<ODE> const& problem,
-               Time const& step) const override;
+  void Solve(IntegrationProblem<ODE> const& problem,
+             Time const& step) const override;
 
   static int const order = order_;
   static bool const time_reversible = time_reversible_;
