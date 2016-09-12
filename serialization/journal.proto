@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5104.
+  extensions 5000 to 5999;  // Last used: 5102.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -913,44 +913,9 @@ message NewBarycentricRotatingNavigationFrame {
   optional Return return = 3;
 }
 
-message NewBodyCentredBodyDirectionNavigationFrame {
-  extend Method {
-    optional NewBodyCentredBodyDirectionNavigationFrame extension = 5103;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 primary_index = 2;
-    required int32 secondary_index = 3;
-  }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
-                                  (is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message NewBodyCentredNonRotatingNavigationFrame {
   extend Method {
     optional NewBodyCentredNonRotatingNavigationFrame extension = 5030;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 reference_body_index = 2;
-  }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "NavigationFrame",
-                                 (is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message NewBodySurfaceNavigationFrame {
-  extend Method {
-    optional NewBodySurfaceNavigationFrame extension = 5104;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
