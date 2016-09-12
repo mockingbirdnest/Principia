@@ -608,7 +608,19 @@ NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->
       NewBarycentricRotatingNavigationFrame(primary_index,
-                                           secondary_index).release());
+                                            secondary_index).release());
+}
+
+NavigationFrame* principia__NewBodyCentredBodyDirectionNavigationFrame(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index) {
+  journal::Method<journal::NewBodyCentredBodyDirectionNavigationFrame> m(
+      {plugin, primary_index, secondary_index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->
+      NewBodyCentredBodyDirectionNavigationFrame(primary_index,
+                                                 secondary_index).release());
 }
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
@@ -622,6 +634,16 @@ NavigationFrame* principia__NewBodyCentredNonRotatingNavigationFrame(
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->
       NewBodyCentredNonRotatingNavigationFrame(reference_body_index).release());
+}
+
+NavigationFrame* principia__NewBodySurfaceNavigationFrame(
+    Plugin const* const plugin,
+    int const reference_body_index) {
+  journal::Method<journal::NewBodySurfaceNavigationFrame> m(
+      {plugin, reference_body_index});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->
+      NewBodySurfaceNavigationFrame(reference_body_index).release());
 }
 
 // Calls |plugin| to create a |NavigationFrame| using the given |parameters|.

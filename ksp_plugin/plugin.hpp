@@ -257,12 +257,20 @@ class Plugin {
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
+  NewBarycentricRotatingNavigationFrame(Index const primary_index,
+                                        Index const secondary_index) const;
+
+  virtual not_null<std::unique_ptr<NavigationFrame>>
+  NewBodyCentredBodyDirectionNavigationFrame(Index const primary_index,
+                                             Index const secondary_index) const;
+
+  virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(
       Index const reference_body_index) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
-  NewBarycentricRotatingNavigationFrame(Index const primary_index,
-                                        Index const secondary_index) const;
+  NewBodySurfaceNavigationFrame(
+      Index const reference_body_index) const;
 
   virtual void SetPlottingFrame(
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
