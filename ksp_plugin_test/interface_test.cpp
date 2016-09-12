@@ -113,6 +113,7 @@ char const vessel_guid[] = "NCC-1701-D";
 
 Index const celestial_index = 1;
 Index const parent_index = 2;
+Index const unused = 666;
 
 double const planetarium_rotation = 10;
 double const time = 11;
@@ -434,16 +435,15 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       mock_navigation_frame =
           new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
 
-  NavigationFrameParameters parameters;
-  parameters.extension =
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber;
-  parameters.primary_index = celestial_index;
-  parameters.secondary_index = parent_index;
+  NavigationFrameParameters parameters = {
+      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      unused,
+      celestial_index,
+      parent_index};
 
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                     parent_index,
-                                                     _))
+  EXPECT_CALL(
+      *plugin_,
+      FillBarycentricRotatingNavigationFrame(celestial_index, parent_index, _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   std::unique_ptr<NavigationFrame> navigation_frame(
       principia__NewNavigationFrame(plugin_.get(), parameters));
@@ -473,10 +473,11 @@ TEST_F(InterfaceTest, SetPlottingFrame) {
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame(principia__NewNavigationFrame(plugin_.get(),
-                                                                  parameters));
+  NavigationFrame* navigation_frame =
+      principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
@@ -497,10 +498,11 @@ TEST_F(InterfaceTest, RenderedPrediction) {
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame(principia__NewNavigationFrame(plugin_.get(),
-                                                                  parameters));
+  NavigationFrame* navigation_frame =
+      principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -566,10 +568,11 @@ TEST_F(InterfaceTest, Iterator) {
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame(principia__NewNavigationFrame(plugin_.get(),
-                                                                  parameters));
+  NavigationFrame* navigation_frame =
+      principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -686,10 +689,11 @@ TEST_F(InterfaceTest, NavballOrientation) {
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame(principia__NewNavigationFrame(plugin_.get(),
-                                                                  parameters));
+  NavigationFrame* navigation_frame =
+      principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -722,15 +726,16 @@ TEST_F(InterfaceTest, Frenet) {
          new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                parent_index,
-                                                _))
+                                                     parent_index,
+                                                     _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame(principia__NewNavigationFrame(plugin_.get(),
-                                                                  parameters));
+  NavigationFrame* navigation_frame =
+      principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
@@ -739,6 +744,7 @@ TEST_F(InterfaceTest, Frenet) {
 
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
+    //LOG(ERROR)<<plugin_<<" "<<vessel_guid;
     EXPECT_CALL(*plugin_, VesselTangent(vessel_guid)).WillOnce(Return(tangent));
     XYZ t = principia__VesselTangent(plugin_.get(), vessel_guid);
     EXPECT_EQ(t.x, tangent.coordinates().x);
