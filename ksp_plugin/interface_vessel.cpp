@@ -47,7 +47,6 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  //LOG(ERROR)<<plugin<<" "<<vessel_guid;
   return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid).coordinates()));
 }
 

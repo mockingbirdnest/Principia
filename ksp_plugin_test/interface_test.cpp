@@ -744,7 +744,6 @@ TEST_F(InterfaceTest, Frenet) {
 
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
-    //LOG(ERROR)<<plugin_<<" "<<vessel_guid;
     EXPECT_CALL(*plugin_, VesselTangent(vessel_guid)).WillOnce(Return(tangent));
     XYZ t = principia__VesselTangent(plugin_.get(), vessel_guid);
     EXPECT_EQ(t.x, tangent.coordinates().x);
