@@ -26,7 +26,9 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
+#include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/rotating_body.hpp"
 
@@ -52,7 +54,9 @@ using geometry::Sign;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BarycentricRotatingDynamicFrame;
+using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::BodySurfaceDynamicFrame;
 using physics::DynamicFrame;
 using physics::Frenet;
 using physics::KeplerianElements;
@@ -549,18 +553,6 @@ not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
 }
 
 not_null<std::unique_ptr<NavigationFrame>>
-Plugin::NewBodyCentredNonRotatingNavigationFrame(
-    Index const reference_body_index) const {
-  CHECK(!initializing_);
-  Celestial const& reference_body =
-      *FindOrDie(celestials_, reference_body_index);
-  return make_not_null_unique<
-      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
-          ephemeris_.get(),
-          reference_body.body());
-}
-
-not_null<std::unique_ptr<NavigationFrame>>
 Plugin::NewBarycentricRotatingNavigationFrame(
     Index const primary_index,
     Index const secondary_index) const {
@@ -573,6 +565,45 @@ Plugin::NewBarycentricRotatingNavigationFrame(
           ephemeris_.get(),
           primary.body(),
           secondary.body());
+}
+
+not_null<std::unique_ptr<NavigationFrame>>
+Plugin::NewBodyCentredBodyDirectionNavigationFrame(
+    Index const primary_index,
+    Index const secondary_index) const {
+  CHECK(!initializing_);
+  // TODO(egg): these should be const, use a custom comparator in the map.
+  Celestial const& primary = *FindOrDie(celestials_, primary_index);
+  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
+  return make_not_null_unique<
+      BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
+          ephemeris_.get(),
+          primary.body(),
+          secondary.body());
+}
+
+not_null<std::unique_ptr<NavigationFrame>>
+Plugin::NewBodyCentredNonRotatingNavigationFrame(
+    Index const reference_body_index) const {
+  CHECK(!initializing_);
+  Celestial const& reference_body =
+      *FindOrDie(celestials_, reference_body_index);
+  return make_not_null_unique<
+      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+          ephemeris_.get(),
+          reference_body.body());
+}
+
+not_null<std::unique_ptr<NavigationFrame>>
+Plugin::NewBodySurfaceNavigationFrame(
+    Index const reference_body_index) const {
+  CHECK(!initializing_);
+  Celestial const& reference_body =
+      *FindOrDie(celestials_, reference_body_index);
+  return make_not_null_unique<BodySurfaceDynamicFrame<Barycentric, Navigation>>(
+      ephemeris_.get(),
+      dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+          reference_body.body()));
 }
 
 void Plugin::SetPlottingFrame(

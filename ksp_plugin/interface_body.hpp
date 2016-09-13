@@ -262,10 +262,16 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
         kExtensionFieldNumber:
       return plugin.NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
+    case serialization::BodyCentredBodyDirectionDynamicFrame::
+        kExtensionFieldNumber:
+      return plugin.NewBodyCentredBodyDirectionNavigationFrame(
+          parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredNonRotatingDynamicFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
+    case serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber:
+      return plugin.NewBodySurfaceNavigationFrame(parameters.centre_index);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;
       base::noreturn();

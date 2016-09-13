@@ -597,33 +597,6 @@ WXYZ principia__NavballOrientation(
                   FromXYZ(ship_world_position) * Metre)).quaternion()));
 }
 
-// Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
-// |plugin| must not be null.  The caller gets ownership of the returned object.
-NavigationFrame* principia__NewBarycentricRotatingNavigationFrame(
-    Plugin const* const plugin,
-    int const primary_index,
-    int const secondary_index) {
-  journal::Method<journal::NewBarycentricRotatingNavigationFrame> m(
-      {plugin, primary_index, secondary_index});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->
-      NewBarycentricRotatingNavigationFrame(primary_index,
-                                           secondary_index).release());
-}
-
-// Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
-// |plugin| must not be null.  The caller gets ownership of the returned object.
-// TODO(phl): The parameter should be named |centre_index|.
-NavigationFrame* principia__NewBodyCentredNonRotatingNavigationFrame(
-    Plugin const* const plugin,
-    int const reference_body_index) {
-  journal::Method<journal::NewBodyCentredNonRotatingNavigationFrame> m(
-      {plugin, reference_body_index});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->
-      NewBodyCentredNonRotatingNavigationFrame(reference_body_index).release());
-}
-
 // Calls |plugin| to create a |NavigationFrame| using the given |parameters|.
 NavigationFrame* principia__NewNavigationFrame(
     Plugin const* const plugin,
