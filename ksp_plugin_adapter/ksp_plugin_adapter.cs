@@ -234,23 +234,17 @@ public partial class PrincipiaPluginAdapter
                                p = (XYZ)vessel.orbit.vel});
     }
     QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
-    // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
-    // corresponds to the position one timestep in the future.  This is not
-    // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
-        pos     : (Vector3d)from_parent.q +
-                  (vessel.orbitDriver.offsetPosByAFrame
-                       ? (Vector3d)from_parent.p * UnityEngine.Time.deltaTime
-                       : Vector3d.zero),
+        pos     : (Vector3d)from_parent.q,
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    if (FlightIntegrator.GraviticForceMultiplier != 0) {  // sic.
+    if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
       Log.Info("Killing stock gravity");
-      FlightIntegrator.GraviticForceMultiplier = 0;
+      PhysicsGlobals.GraviticForceMultiplier = 0;
     }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
@@ -273,10 +267,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetVesselStateOffset(
             vessel_guid : vessel.id.ToString(),
             from_parent : new QP{
-                q = vessel.orbitDriver.offsetPosByAFrame
-                        ? (XYZ)(vessel.orbit.pos -
-                                vessel.orbit.vel * TimeWarp.fixedDeltaTime)
-                        : (XYZ)vessel.orbit.pos,
+                q = (XYZ)vessel.orbit.pos,
                 p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
@@ -326,7 +317,7 @@ public partial class PrincipiaPluginAdapter
 
   private void OverrideRSASTarget(FlightCtrlState state) {
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-      FlightGlobals.ActiveVessel.Autopilot.RSAS.SetTargetOrientation(
+      FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
           reset_rsas_target_);
     }
@@ -390,14 +381,14 @@ public partial class PrincipiaPluginAdapter
                FlightGlobals.Bodies.Where(c => c.orbit != null)) {
         unmodified_orbits_.Add(
             celestial,
-            new Orbit(inc  : celestial.orbit.inclination,
-                      e    : celestial.orbit.eccentricity,
-                      sma  : celestial.orbit.semiMajorAxis,
-                      lan  : celestial.orbit.LAN,
-                      w    : celestial.orbit.argumentOfPeriapsis,
-                      mEp  : celestial.orbit.meanAnomalyAtEpoch,
-                      t    : celestial.orbit.epoch,
-                      body : celestial.orbit.referenceBody));
+            new Orbit(inc   : celestial.orbit.inclination,
+                      e     : celestial.orbit.eccentricity,
+                      sma   : celestial.orbit.semiMajorAxis,
+                      lan   : celestial.orbit.LAN,
+                      argPe : celestial.orbit.argumentOfPeriapsis,
+                      mEp   : celestial.orbit.meanAnomalyAtEpoch,
+                      t     : celestial.orbit.epoch,
+                      body  : celestial.orbit.referenceBody));
       }
     }
 
@@ -697,9 +688,9 @@ public partial class PrincipiaPluginAdapter
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
         previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
       } else {
-        if (FlightIntegrator.GraviticForceMultiplier != 1) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 1) {
           Log.Info("Reinstating stock gravity");
-          FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
+          PhysicsGlobals.GraviticForceMultiplier = 1;  // sic.
         }
         previous_bubble_reference_body_ = null;
       }
@@ -750,7 +741,7 @@ public partial class PrincipiaPluginAdapter
         if (krakensbane_ == null) {
           krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
         }
-        krakensbane_.setOffset(displacement_offset);
+        FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
     }
