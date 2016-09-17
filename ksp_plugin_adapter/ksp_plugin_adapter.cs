@@ -538,6 +538,7 @@ public partial class PrincipiaPluginAdapter
     // Orient the celestial bodies.
     if (PluginRunning()) {
       foreach (var body in FlightGlobals.Bodies) {
+        // TODO(egg): Do something with body.BodyFrame here.
         body.scaledBody.transform.rotation =
             (UnityEngine.QuaternionD)plugin_.CelestialRotation(
                 body.flightGlobalsIndex);
