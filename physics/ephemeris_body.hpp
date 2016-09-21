@@ -55,9 +55,12 @@ Time const max_time_between_checkpoints = 180 * Day;
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
 //
-//   -(J2 / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
+//   -((J2 / μ) / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
 //
 // Where |r| is the norm of r and r.j is the inner product.
+// TODO(phl): The signs need to be revised here.  In particular J2 should
+// always be negative because the planet are oblate.  It seems that we switch
+// sign twice for maximal confusion.
 template<typename Frame>
 FORCE_INLINE Vector<Quotient<Acceleration,
                              GravitationalParameter>, Frame> Order2ZonalEffect(
