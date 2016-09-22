@@ -52,22 +52,24 @@ using ::std::placeholders::_3;
 
 Time const max_time_between_checkpoints = 180 * Day;
 
-// If j is a unit vector along the axis of rotation, and r is the separation
-// between the bodies, the acceleration computed here is:
+// If j is a unit vector along the axis of rotation, and r a vector from the
+// center of |body| to some point in space, the acceleration computed here is:
 //
-//   -((J2 / μ) / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
+//   -(J₂ / (μ ‖r‖⁵)) (3 j (r.j) + r (3 - 15 (r.j)² / ‖r‖²) / 2)
 //
-// Where |r| is the norm of r and r.j is the inner product.
-// TODO(phl): The signs need to be revised here.  In particular J2 should
-// always be negative because the planets are oblate.  It seems that we switch
-// sign twice for maximal confusion.
+// Where ‖r‖ is the norm of r and r.j is the inner product.  It is the
+// additional acceleration exerted by the oblateness of |body| on a point at
+// position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
+// because the planets are oblate, not prolate.  Note that this follows IERS
+// Technical Note 36 and it differs from
+// https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to be
+// negative.
 template<typename Frame>
-FORCE_INLINE Vector<Quotient<Acceleration,
-                             GravitationalParameter>, Frame> Order2ZonalEffect(
-    OblateBody<Frame> const& body,
-    Displacement<Frame> const& r,
-    Exponentiation<Length, -2> const& one_over_r_squared,
-    Exponentiation<Length, -3> const& one_over_r_cubed) {
+FORCE_INLINE Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Order2ZonalAcceleration(OblateBody<Frame> const& body,
+                        Displacement<Frame> const& r,
+                        Exponentiation<Length, -2> const& one_over_r_squared,
+                        Exponentiation<Length, -3> const& one_over_r_cubed) {
   Vector<double, Frame> const& axis = body.polar_axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth =
@@ -1031,6 +1033,7 @@ void Ephemeris<Frame>::
     MassiveBody const& body2 = *bodies2[b2];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
+    // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
     Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
@@ -1054,9 +1057,9 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             order_2_zonal_effect1 =
-                Order2ZonalEffect<Frame>(
+                Order2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
-                    Δq,
+                    -Δq,
                     one_over_Δq_squared,
                     one_over_Δq_cubed);
         acceleration_on_b1 -= μ2 * order_2_zonal_effect1;
@@ -1066,13 +1069,13 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             order_2_zonal_effect2 =
-                Order2ZonalEffect<Frame>(
+                Order2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
                     one_over_Δq_squared,
                     one_over_Δq_cubed);
-        acceleration_on_b1 -= μ2 * order_2_zonal_effect2;
-        acceleration_on_b2 += μ1 * order_2_zonal_effect2;
+        acceleration_on_b1 += μ2 * order_2_zonal_effect2;
+        acceleration_on_b2 -= μ1 * order_2_zonal_effect2;
       }
     }
   }
@@ -1093,6 +1096,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       trajectories_[b1]->EvaluatePosition(t, hint1);
 
   for (size_t b2 = 0; b2 < positions.size(); ++b2) {
+    // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position1 - positions[b2];
 
     Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
@@ -1109,9 +1113,9 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
           order_2_zonal_effect1 =
-              Order2ZonalEffect<Frame>(
+              Order2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
-                  Δq,
+                  -Δq,
                   one_over_Δq_squared,
                   one_over_Δq_cubed);
       (*accelerations)[b2] += μ1 * order_2_zonal_effect1;

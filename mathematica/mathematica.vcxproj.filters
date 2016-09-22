@@ -45,5 +45,8 @@
     <None Include="newhall.nb">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="phobos.nb">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>
