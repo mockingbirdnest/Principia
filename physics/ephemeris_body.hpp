@@ -55,14 +55,15 @@ Time const max_time_between_checkpoints = 180 * Day;
 // If j is a unit vector along the axis of rotation, and r a vector from the
 // center of |body| to some point in space, the acceleration computed here is:
 //
-//   -((J2 / μ) / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
+//   -(J₂ / (μ ‖r‖⁵)) (3 j (r.j) + r (3 - 15 (r.j)² / ‖r‖²) / 2)
 //
-// Where |r| is the norm of r and r.j is the inner product.  It is the
+// Where ‖r‖ is the norm of r and r.j is the inner product.  It is the
 // additional acceleration exerted by the oblateness of |body| on a point at
-// position r.  J2 and J̃2 are normally positive and C̃20 negative because the
-// planets are oblate, not prolate.  Note that this follows Technical Note 36
-// and it differs from https://en.wikipedia.org/wiki/Geopotential_model which
-// seems to want J̃2 to be negative.
+// position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
+// because the planets are oblate, not prolate.  Note that this follows IERS
+// Technical Note 36 and it differs from
+// https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to be
+// negative.
 template<typename Frame>
 FORCE_INLINE Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Order2ZonalAcceleration(OblateBody<Frame> const& body,
