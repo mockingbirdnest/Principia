@@ -59,7 +59,7 @@ Time const max_time_between_checkpoints = 180 * Day;
 //
 // Where |r| is the norm of r and r.j is the inner product.
 // TODO(phl): The signs need to be revised here.  In particular J2 should
-// always be negative because the planet are oblate.  It seems that we switch
+// always be negative because the planets are oblate.  It seems that we switch
 // sign twice for maximal confusion.
 template<typename Frame>
 FORCE_INLINE Vector<Quotient<Acceleration,
