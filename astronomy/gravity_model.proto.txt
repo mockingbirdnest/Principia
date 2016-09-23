@@ -295,7 +295,7 @@ gravity_model {
     mean_radius             : "605 km"
     axis_right_ascension    : "132.993 deg"
     axis_declination        : "-6.163 deg"
-    reference_angle         : "57.305 deg"
+    reference_angle         : "122.695 deg"
     angular_frequency       : "56.3625225 deg / d"
   }
   body {
