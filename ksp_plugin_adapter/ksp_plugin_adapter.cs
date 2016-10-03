@@ -320,6 +320,8 @@ public partial class PrincipiaPluginAdapter
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
           reset_rsas_target_);
+      FlightGlobals.ActiveVessel.Autopilot.SAS.ConnectFlyByWire(
+          reset_rsas_target_);
     }
     reset_rsas_target_ = false;
   }
