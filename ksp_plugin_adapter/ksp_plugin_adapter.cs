@@ -316,12 +316,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
-     diag_ = "last ran: " + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff") +
-             "; did nothing";
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-      diag_ = "last overrode: " +
-              DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "; to: " +
-              rsas_target_.ToString();
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
           reset_rsas_target_);
@@ -627,6 +622,7 @@ public partial class PrincipiaPluginAdapter
         SetNavballVector(navball_.radialOutVector, -radial);
         SetNavballVector(navball_.antiNormalVector, -normal);
 
+        // Make the autopilot target our Frenet trihedron.
         if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
             (Delegate)(FlightInputCallback)OverrideRSASTarget) {
           Log.Info("Prepending RSAS override");
@@ -635,8 +631,6 @@ public partial class PrincipiaPluginAdapter
                   new FlightInputCallback(OverrideRSASTarget),
                   active_vessel.OnAutopilotUpdate);
         }
-
-        // Make the autopilot target our Frenet trihedron.
         if (active_vessel.Autopilot.Enabled) {
           override_rsas_target_ = true;
           switch (active_vessel.Autopilot.Mode) {
@@ -973,12 +967,8 @@ public partial class PrincipiaPluginAdapter
     show_main_window_ = false;
   }
 
-string diag_ = "";
-
   private void DrawMainWindow(int window_id) {
     UnityEngine.GUILayout.BeginVertical();
-    UnityEngine.GUILayout.TextArea("override rsas = " + override_rsas_target_);
-    UnityEngine.GUILayout.TextArea(diag_);
     String plugin_state;
     if (!PluginRunning()) {
       plugin_state = "not started";
