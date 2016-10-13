@@ -396,6 +396,8 @@ public partial class PrincipiaPluginAdapter
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
+                                 SetBodyFramesAndPrecalculateVessels);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -540,7 +542,6 @@ public partial class PrincipiaPluginAdapter
     // Orient the celestial bodies.
     if (PluginRunning()) {
       foreach (var body in FlightGlobals.Bodies) {
-        // TODO(egg): Do something with body.BodyFrame here.
         body.scaledBody.transform.rotation =
             (UnityEngine.QuaternionD)plugin_.CelestialRotation(
                 body.flightGlobalsIndex);
@@ -732,6 +733,7 @@ public partial class PrincipiaPluginAdapter
                 FlightGlobals.currentMainBody.flightGlobalsIndex);
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
+      SetBodyFrames();
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
       if (!plugin_.PhysicsBubbleIsEmpty()) {
@@ -760,9 +762,35 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
+                                    SetBodyFramesAndPrecalculateVessels);
   }
 
   #endregion
+
+  private void SetBodyFramesAndPrecalculateVessels() {
+    SetBodyFrames();
+    foreach (var Vessel in FlightGlobals.Vessels) {
+      Vessel.precalc.FixedUpdate();
+    }
+  }
+
+  private void SetBodyFrames() {
+    if (PluginRunning()) {
+      foreach (var body in FlightGlobals.Bodies) {
+        // TODO(egg): I have no idea why this |swizzle| thing makes things work.
+        // This probably really means something in terms of frames that should
+        // be done in the C++ instead---once I figure out what it is.
+        var swizzly_body_world_to_world =
+            ((UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                 body.flightGlobalsIndex)).swizzle;
+        body.BodyFrame = new Planetarium.CelestialFrame{
+            X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
+            Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
+            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+      }
+    }
+  }
 
   private void SetNavballVector(UnityEngine.Transform vector,
                                 Vector3d direction) {
