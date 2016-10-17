@@ -22,10 +22,10 @@ static class CelestialExtensions {
 
 class ReferenceFrameSelector : WindowRenderer {
   public enum FrameType {
-    BODY_CENTRED_NON_ROTATING = 6000,
-    BODY_SURFACE = 6003,
     BARYCENTRIC_ROTATING = 6001,
+    BODY_CENTRED_NON_ROTATING = 6000,
     BODY_CENTRED_PARENT_DIRECTION = 6002,
+    BODY_SURFACE = 6003,
   }
 
   public delegate void Callback(NavigationFrameParameters frame_parameters);
@@ -158,8 +158,8 @@ class ReferenceFrameSelector : WindowRenderer {
   public CelestialBody[] FixedBodies() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
-      case FrameType.BODY_SURFACE:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+      case FrameType.BODY_SURFACE:
         return new CelestialBody[]{selected_celestial_};
       case FrameType.BARYCENTRIC_ROTATING:
         return new CelestialBody[]{};
