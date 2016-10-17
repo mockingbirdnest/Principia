@@ -22,14 +22,10 @@ static class CelestialExtensions {
 
 class ReferenceFrameSelector : WindowRenderer {
   public enum FrameType {
-    BODY_CENTRED_NON_ROTATING = 6000,
-#if HAS_SURFACE
-    SURFACE,
-#endif
     BARYCENTRIC_ROTATING = 6001,
-#if HAS_BODY_CENTRED_ALIGNED_WITH_PARENT
-    BODY_CENTRED_ALIGNED_WITH_PARENT
-#endif
+    BODY_CENTRED_NON_ROTATING = 6000,
+    BODY_CENTRED_PARENT_DIRECTION = 6002,
+    BODY_SURFACE = 6003,
   }
 
   public delegate void Callback(NavigationFrameParameters frame_parameters);
@@ -76,6 +72,17 @@ class ReferenceFrameSelector : WindowRenderer {
           return selected.referenceBody.name + "-" + selected.name +
                  " Barycentric";
         }
+     case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Naming parent-direction rotating frame of root body");
+        } else {
+          // TODO(egg): find a proper name...
+          return selected.name + "-Centred " + selected.referenceBody.name +
+                 "-Fixed";
+        }
+     case FrameType.BODY_SURFACE:
+       return selected.name + "-Centred " + selected.name + "-Fixed";
      default:
        throw Log.Fatal("Unexpected type " + type.ToString());
    }
@@ -87,10 +94,20 @@ class ReferenceFrameSelector : WindowRenderer {
         return selected.name[0] + "CI";
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
-          throw Log.Fatal("Naming barycentric rotating frame of root body");
+          throw Log.Fatal(
+              "Naming parent-direction rotating frame of root body");
         } else {
           return selected.referenceBody.name[0] + (selected.name[0] + "B");
         }
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        if (selected.is_root()) {
+          throw Log.Fatal("Naming barycentric rotating frame of root body");
+        } else {
+          return selected.name[0] + "C" + selected.referenceBody.name[0] +
+                 "F";
+        }
+      case FrameType.BODY_SURFACE:
+        return selected.name[0] + "C" + selected.name[0] + "F";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -110,6 +127,17 @@ class ReferenceFrameSelector : WindowRenderer {
                  ", the plane in which they move about the barycentre, and" +
                  " the line between them";
         }
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Describing parent-direction rotating frame of root body");
+        } else {
+          return "Reference frame fixing the centre of " + selected.theName +
+                 ", the plane of its orbit around " +
+                 selected.referenceBody.theName + ", and the line between them";
+        }
+      case FrameType.BODY_SURFACE:
+        return "Reference frame fixing " + selected.theName;
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -130,6 +158,8 @@ class ReferenceFrameSelector : WindowRenderer {
   public CelestialBody[] FixedBodies() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+      case FrameType.BODY_SURFACE:
         return new CelestialBody[]{selected_celestial_};
       case FrameType.BARYCENTRIC_ROTATING:
         return new CelestialBody[]{};
@@ -141,10 +171,12 @@ class ReferenceFrameSelector : WindowRenderer {
   public NavigationFrameParameters FrameParameters() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
+      case FrameType.BODY_SURFACE:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
             centre_index = selected_celestial_.flightGlobalsIndex};
       case FrameType.BARYCENTRIC_ROTATING:
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
             primary_index =
@@ -159,9 +191,11 @@ class ReferenceFrameSelector : WindowRenderer {
     frame_type = (FrameType)parameters.extension;
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
+      case FrameType.BODY_SURFACE:
         selected_celestial_ = FlightGlobals.Bodies[parameters.centre_index];
         break;
       case FrameType.BARYCENTRIC_ROTATING:
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         selected_celestial_ = FlightGlobals.Bodies[parameters.secondary_index];
         break;
     }
@@ -208,10 +242,12 @@ class ReferenceFrameSelector : WindowRenderer {
 
     // Right-hand side: toggles for reference frame type selection.
     UnityEngine.GUILayout.BeginVertical();
+    TypeSelector(FrameType.BODY_SURFACE);
     TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
     if (!selected_celestial_.is_root()) {
       CelestialBody parent = selected_celestial_.orbit.referenceBody;
       TypeSelector(FrameType.BARYCENTRIC_ROTATING);
+      TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
     }
     UnityEngine.GUILayout.EndVertical();
 
@@ -252,7 +288,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                      celestial.name)) {
       if (selected_celestial_ != celestial) {
         selected_celestial_ = celestial;
-        if (celestial.is_root()) {
+        if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
           frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
         }
         on_change_(FrameParameters());

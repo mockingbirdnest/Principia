@@ -234,23 +234,17 @@ public partial class PrincipiaPluginAdapter
                                p = (XYZ)vessel.orbit.vel});
     }
     QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
-    // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
-    // corresponds to the position one timestep in the future.  This is not
-    // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
-        pos     : (Vector3d)from_parent.q +
-                  (vessel.orbitDriver.offsetPosByAFrame
-                       ? (Vector3d)from_parent.p * UnityEngine.Time.deltaTime
-                       : Vector3d.zero),
+        pos     : (Vector3d)from_parent.q,
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    if (FlightIntegrator.GraviticForceMultiplier != 0) {  // sic.
+    if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
       Log.Info("Killing stock gravity");
-      FlightIntegrator.GraviticForceMultiplier = 0;
+      PhysicsGlobals.GraviticForceMultiplier = 0;
     }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
@@ -273,10 +267,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetVesselStateOffset(
             vessel_guid : vessel.id.ToString(),
             from_parent : new QP{
-                q = vessel.orbitDriver.offsetPosByAFrame
-                        ? (XYZ)(vessel.orbit.pos -
-                                vessel.orbit.vel * TimeWarp.fixedDeltaTime)
-                        : (XYZ)vessel.orbit.pos,
+                q = (XYZ)vessel.orbit.pos,
                 p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
@@ -326,8 +317,10 @@ public partial class PrincipiaPluginAdapter
 
   private void OverrideRSASTarget(FlightCtrlState state) {
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-      FlightGlobals.ActiveVessel.Autopilot.RSAS.SetTargetOrientation(
+      FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
+          reset_rsas_target_);
+      FlightGlobals.ActiveVessel.Autopilot.SAS.ConnectFlyByWire(
           reset_rsas_target_);
     }
     reset_rsas_target_ = false;
@@ -390,19 +383,21 @@ public partial class PrincipiaPluginAdapter
                FlightGlobals.Bodies.Where(c => c.orbit != null)) {
         unmodified_orbits_.Add(
             celestial,
-            new Orbit(inc  : celestial.orbit.inclination,
-                      e    : celestial.orbit.eccentricity,
-                      sma  : celestial.orbit.semiMajorAxis,
-                      lan  : celestial.orbit.LAN,
-                      w    : celestial.orbit.argumentOfPeriapsis,
-                      mEp  : celestial.orbit.meanAnomalyAtEpoch,
-                      t    : celestial.orbit.epoch,
-                      body : celestial.orbit.referenceBody));
+            new Orbit(inc   : celestial.orbit.inclination,
+                      e     : celestial.orbit.eccentricity,
+                      sma   : celestial.orbit.semiMajorAxis,
+                      lan   : celestial.orbit.LAN,
+                      argPe : celestial.orbit.argumentOfPeriapsis,
+                      mEp   : celestial.orbit.meanAnomalyAtEpoch,
+                      t     : celestial.orbit.epoch,
+                      body  : celestial.orbit.referenceBody));
       }
     }
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
+                                 SetBodyFramesAndPrecalculateVessels);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -697,9 +692,9 @@ public partial class PrincipiaPluginAdapter
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
         previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
       } else {
-        if (FlightIntegrator.GraviticForceMultiplier != 1) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 1) {
           Log.Info("Reinstating stock gravity");
-          FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
+          PhysicsGlobals.GraviticForceMultiplier = 1;  // sic.
         }
         previous_bubble_reference_body_ = null;
       }
@@ -738,6 +733,7 @@ public partial class PrincipiaPluginAdapter
                 FlightGlobals.currentMainBody.flightGlobalsIndex);
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
+      SetBodyFrames();
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
       if (!plugin_.PhysicsBubbleIsEmpty()) {
@@ -750,7 +746,7 @@ public partial class PrincipiaPluginAdapter
         if (krakensbane_ == null) {
           krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
         }
-        krakensbane_.setOffset(displacement_offset);
+        FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
     }
@@ -766,9 +762,35 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
+                                    SetBodyFramesAndPrecalculateVessels);
   }
 
   #endregion
+
+  private void SetBodyFramesAndPrecalculateVessels() {
+    SetBodyFrames();
+    foreach (var Vessel in FlightGlobals.Vessels) {
+      Vessel.precalc.FixedUpdate();
+    }
+  }
+
+  private void SetBodyFrames() {
+    if (PluginRunning()) {
+      foreach (var body in FlightGlobals.Bodies) {
+        // TODO(egg): I have no idea why this |swizzle| thing makes things work.
+        // This probably really means something in terms of frames that should
+        // be done in the C++ instead---once I figure out what it is.
+        var swizzly_body_world_to_world =
+            ((UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                 body.flightGlobalsIndex)).swizzle;
+        body.BodyFrame = new Planetarium.CelestialFrame{
+            X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
+            Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
+            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+      }
+    }
+  }
 
   private void SetNavballVector(UnityEngine.Transform vector,
                                 Vector3d direction) {
