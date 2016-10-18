@@ -415,7 +415,8 @@ bool principia__HasEncounteredApocalypse(
   std::memcpy(allocated_details.data.get(),
               details_string.data(),
               details_string.size() + 1);
-  *CHECK_NOTNULL(details) = allocated_details.data.release();
+  *CHECK_NOTNULL(details) =
+      reinterpret_cast<char const*>(allocated_details.data.release());
   return m.Return(has_encountered_apocalypse);
 }
 

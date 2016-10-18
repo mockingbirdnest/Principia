@@ -248,8 +248,8 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   // instead.
   field_cs_type_[descriptor] = cs_boxed_type;
   field_cs_marshal_[descriptor] =
-      "[MarshalAs(UnmanagedType.CustomMarshaler, "
-      "MarshalTypeRef = typeof(OptionalMarshaler<" + cs_unboxed_type + ">))]";
+      "MarshalAs(UnmanagedType.CustomMarshaler, "
+      "MarshalTypeRef = typeof(OptionalMarshaler<" + cs_unboxed_type + ">))";
   field_cxx_type_[descriptor] = cxx_type + " const*";
 
   field_cxx_arguments_fn_[descriptor] =
@@ -374,6 +374,17 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         };
   }
 
+  // Special handlings for produced C-style strings: these are seen from the C#
+  // as strings, and marshalled with immediate destruction.
+  if (pointer_to == "char const" &&
+      (options.HasExtension(journal::serialization::is_produced) ||
+       options.HasExtension(journal::serialization::is_produced_if))) {
+    field_cs_type_[descriptor] = "String";
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, "
+        "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
+  }
+
   field_cxx_deserializer_fn_[descriptor] =
       [pointer_to](std::string const& expr) {
         return "DeserializePointer<" + pointer_to + "*>(*pointer_map, " + expr +
@@ -439,25 +450,14 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
-  FieldOptions const& options = descriptor->options();
-  bool const is_produced =
-      options.HasExtension(journal::serialization::is_produced);
   field_cs_marshal_[descriptor] =
-      Contains(out_, descriptor)
-          ? (is_produced ? "[MarshalAs(UnmanagedType.CustomMarshaler, "
-                           "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))]"
-                         : "[MarshalAs(UnmanagedType.CustomMarshaler, "
-                           "MarshalTypeRef = typeof(OutUTF8Marshaler))]")
-          : "[MarshalAs(UnmanagedType.CustomMarshaler, "
-            "MarshalTypeRef = typeof(InUTF8Marshaler))]";
+      Contains(out_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                   "MarshalTypeRef = typeof(OutUTF8Marshaler))"
+                                 : "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                   "MarshalTypeRef = typeof(InUTF8Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
-  if (is_produced) {
-    field_cxx_inserter_fn_[descriptor] = [](std::string const& expr1,
-                                            std::string const& expr2) {
-      return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
-    };
-  }
+  FieldOptions const& options = descriptor->options();
   if (options.HasExtension(journal::serialization::size)) {
     size_member_name_[descriptor] =
         options.GetExtension(journal::serialization::size);
@@ -730,7 +730,9 @@ void JournalProtoProcessor::ProcessInOut(
 
     if (must_generate_code) {
       cs_interface_parameters_[descriptor].push_back(
-          "  " + Join({field_cs_marshal_[field_descriptor],
+          "  " + Join({field_cs_marshal_[field_descriptor].empty()
+                           ? ""
+                           : "[" + field_cs_marshal_[field_descriptor] + "]",
                        field_cs_mode_fn_[field_descriptor](
                            field_cs_type_[field_descriptor])},
                       /*joiner=*/" ") +
@@ -781,9 +783,11 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         " == result);\n";
   }
-  cs_interface_return_type_[descriptor] =
-      Join({field_cs_marshal_[field_descriptor],
-            field_cs_type_[field_descriptor]}, /*joiner=*/" ");
+  cs_interface_return_marshal_[descriptor] =
+      field_cs_marshal_[field_descriptor].empty()
+          ? ""
+          : "[return : " + field_cs_marshal_[field_descriptor] + "]";
+  cs_interface_return_type_[descriptor] = field_cs_type_[field_descriptor];
   cxx_interface_return_type_[descriptor] = field_cxx_type_[field_descriptor];
   cxx_nested_type_declaration_[descriptor] =
       "  using Return = " + field_cxx_type_[field_descriptor] + ";\n";
@@ -895,6 +899,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::vector<std::string> cs_interface_parameters;
   std::vector<std::string> cxx_interface_parameters;
   std::vector<std::string> cxx_run_arguments;
+  std::string cs_interface_return_marshal = "";
   std::string cs_interface_return_type = "void";
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_prolog;
@@ -945,6 +950,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
           "not_null<Message*> const message) {\n" +
           cxx_fill_body_[nested_descriptor] +
           "}\n\n";
+      cs_interface_return_marshal =
+          cs_interface_return_marshal_[nested_descriptor];
       cs_interface_return_type = cs_interface_return_type_[nested_descriptor];
       cxx_interface_return_type = cxx_interface_return_type_[nested_descriptor];
     }
@@ -997,11 +1004,13 @@ void JournalProtoProcessor::ProcessMethodExtension(
       Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
-  cs_interface_method_declaration_[descriptor] =
-      "  [DllImport(dllName           : dll_path,\n"
-      "             EntryPoint        = \"principia__" + name + "\",\n"
-      "             CallingConvention = CallingConvention.Cdecl)]\n"
-      "  internal static extern " + cs_interface_return_type + " " + name + "(";
+  cs_interface_method_declaration_[descriptor] = Join(
+      {"  [DllImport(dllName           : dll_path,\n"
+       "             EntryPoint        = \"principia__" + name + "\",\n"
+       "             CallingConvention = CallingConvention.Cdecl)]",
+       cs_interface_return_marshal,
+       "internal static extern " + cs_interface_return_type + " " + name + "("},
+      "\n  ");
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] +=
         "\n    " + Join(cs_interface_parameters, /*joiner=*/",\n    ");  // NOLINT

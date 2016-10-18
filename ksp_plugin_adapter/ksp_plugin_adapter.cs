@@ -415,18 +415,14 @@ public partial class PrincipiaPluginAdapter
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
     if (PluginRunning()) {
-      IntPtr serialization = IntPtr.Zero;
+      String serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
-        try {
-          serialization = plugin_.SerializePlugin(ref serializer);
-          if (serialization == IntPtr.Zero) {
-            break;
-          }
-          node.AddValue(principia_key, Marshal.PtrToStringAnsi(serialization));
-        } finally {
-          Interface.DeleteString(ref serialization);
+        serialization = plugin_.SerializePlugin(ref serializer);
+        if (serialization == null) {
+          break;
         }
+        node.AddValue(principia_key, serialization);
       }
     }
   }
