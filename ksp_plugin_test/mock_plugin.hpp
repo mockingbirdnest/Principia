@@ -34,6 +34,9 @@ class MockPlugin : public Plugin {
   MOCK_METHOD0(EndInitialization,
                void());
 
+  MOCK_CONST_METHOD1(HasEncounteredApocalypse,
+                     bool(std::string* const details));
+
   MOCK_CONST_METHOD2(UpdateCelestialHierarchy,
                      void(Index const celestial_index,
                           Index const parent_index));

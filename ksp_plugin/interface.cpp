@@ -406,7 +406,7 @@ void principia__GetVersion(
 bool principia__HasEncounteredApocalypse(
     Plugin* const plugin,
     char const** const details) {
-  journal::Method<journal::HasEncounteredApocalypse> m({{plugin}, {details}});
+  journal::Method<journal::HasEncounteredApocalypse> m({plugin}, {details});
   // Ownership will be transfered to the marshmallow.
   std::string details_string;
   bool const has_encountered_apocalypse =
