@@ -371,7 +371,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern bool HasEncounteredApocalypse(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutUTF8Marshaler))] out String details);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))] out String details);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__HasVessel",
@@ -558,12 +558,14 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__SayHello",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr SayHello();
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))]
+  internal static extern String SayHello();
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__SerializePlugin",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr SerializePlugin(
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))]
+  internal static extern String SerializePlugin(
       this IntPtr plugin,
       ref IntPtr serializer);
 

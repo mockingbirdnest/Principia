@@ -831,7 +831,7 @@ void HasEncounteredApocalypse::Fill(In const& in, not_null<Message*> const messa
 }
 
 void HasEncounteredApocalypse::Fill(Out const& out, not_null<Message*> const message) {
-  message->mutable_out()->set_details(*out.details);
+  message->mutable_out()->set_details(SerializePointer(*out.details));
 }
 
 void HasEncounteredApocalypse::Fill(Return const& result, not_null<Message*> const message) {
@@ -844,6 +844,7 @@ void HasEncounteredApocalypse::Run(Message const& message, not_null<Player::Poin
   auto const& out = message.out();
   char const* details;
   auto const result = interface::principia__HasEncounteredApocalypse(plugin, &details);
+  Insert(pointer_map, out.details(), details);
   CHECK(message.return_().result() == result);
 }
 
