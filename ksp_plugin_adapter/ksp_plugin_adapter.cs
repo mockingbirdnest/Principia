@@ -127,7 +127,7 @@ public partial class PrincipiaPluginAdapter
 
   // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
-  private String revelations_ = "";
+  private String revelation_ = "";
   // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
   private bool is_post_apocalyptic_ = false;
@@ -494,7 +494,6 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (is_post_apocalyptic_) {
-      UnityEngine.Debug.LogError("Spawning: " + revelations_);
       UnityEngine.GUI.skin = null;
       apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
       apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
@@ -503,7 +502,7 @@ public partial class PrincipiaPluginAdapter
           screenRect : apocalypse_window_rectangle_,
           func       : (int id) => {
               UnityEngine.GUILayout.BeginVertical();
-              UnityEngine.GUILayout.TextArea(revelations_);
+              UnityEngine.GUILayout.TextArea(revelation_);
               UnityEngine.GUILayout.EndVertical();
             },
           text       : "Principia",
@@ -777,11 +776,7 @@ public partial class PrincipiaPluginAdapter
         FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
-      is_post_apocalyptic_ |=
-          plugin_.HasEncounteredApocalypse(out revelations_);
-      if (is_post_apocalyptic_) {
-        Log.Fatal(revelations_);
-      }
+      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
     }
   }
 
