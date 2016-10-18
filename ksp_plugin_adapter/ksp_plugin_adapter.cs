@@ -130,7 +130,7 @@ public partial class PrincipiaPluginAdapter
   private String revelations_ = "";
   // Whether we have encountered an apocalypse already.
   [KSPField(isPersistant = true)]
-  private bool is_post_apocalyptic_;
+  private bool is_post_apocalyptic_ = false;
   [KSPField(isPersistant = true)]
   private int apocalypse_window_x_ = UnityEngine.Screen.width / 2;
   [KSPField(isPersistant = true)]
@@ -777,8 +777,11 @@ public partial class PrincipiaPluginAdapter
         FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
-      is_post_apocalyptic_ &=
+      is_post_apocalyptic_ |=
           plugin_.HasEncounteredApocalypse(out revelations_);
+      if (is_post_apocalyptic_) {
+        Log.Fatal(revelations_);
+      }
     }
   }
 
