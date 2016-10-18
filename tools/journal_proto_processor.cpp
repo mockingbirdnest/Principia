@@ -439,14 +439,25 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  bool const is_produced =
+      options.HasExtension(journal::serialization::is_produced);
   field_cs_marshal_[descriptor] =
-      Contains(out_, descriptor) ? "[MarshalAs(UnmanagedType.CustomMarshaler, "
-                                   "MarshalTypeRef = typeof(OutUTF8Marshaler))]"
-                                 : "[MarshalAs(UnmanagedType.CustomMarshaler, "
-                                   "MarshalTypeRef = typeof(InUTF8Marshaler))]";
+      Contains(out_, descriptor)
+          ? (is_produced ? "[MarshalAs(UnmanagedType.CustomMarshaler, "
+                           "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))]"
+                         : "[MarshalAs(UnmanagedType.CustomMarshaler, "
+                           "MarshalTypeRef = typeof(OutUTF8Marshaler))]")
+          : "[MarshalAs(UnmanagedType.CustomMarshaler, "
+            "MarshalTypeRef = typeof(InUTF8Marshaler))]";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
-  FieldOptions const& options = descriptor->options();
+  if (is_produced) {
+    field_cxx_inserter_fn_[descriptor] = [](std::string const& expr1,
+                                            std::string const& expr2) {
+      return "  Insert(pointer_map, " + expr1 + ", " + expr2 + ");\n";
+    };
+  }
   if (options.HasExtension(journal::serialization::size)) {
     size_member_name_[descriptor] =
         options.GetExtension(journal::serialization::size);
