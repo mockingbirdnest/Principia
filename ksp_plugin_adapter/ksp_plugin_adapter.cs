@@ -125,6 +125,18 @@ public partial class PrincipiaPluginAdapter
 
   private String bad_installation_popup_;
 
+  // The first apocalyptic error message.
+  [KSPField(isPersistant = true)]
+  private String revelation_ = "";
+  // Whether we have encountered an apocalypse already.
+  [KSPField(isPersistant = true)]
+  private bool is_post_apocalyptic_ = false;
+  [KSPField(isPersistant = true)]
+  private int apocalypse_window_x_ = UnityEngine.Screen.width / 2;
+  [KSPField(isPersistant = true)]
+  private int apocalypse_window_y_ = UnityEngine.Screen.height / 3;
+  private UnityEngine.Rect apocalypse_window_rectangle_;
+
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -403,18 +415,14 @@ public partial class PrincipiaPluginAdapter
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
     if (PluginRunning()) {
-      IntPtr serialization = IntPtr.Zero;
+      String serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
-        try {
-          serialization = plugin_.SerializePlugin(ref serializer);
-          if (serialization == IntPtr.Zero) {
-            break;
-          }
-          node.AddValue(principia_key, Marshal.PtrToStringAnsi(serialization));
-        } finally {
-          Interface.DeleteString(ref serialization);
+        serialization = plugin_.SerializePlugin(ref serializer);
+        if (serialization == null) {
+          break;
         }
+        node.AddValue(principia_key, serialization);
       }
     }
   }
@@ -484,6 +492,25 @@ public partial class PrincipiaPluginAdapter
       bad_installation_popup_ = null;
       return;
     }
+
+    if (is_post_apocalyptic_) {
+      UnityEngine.GUI.skin = null;
+      apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
+      apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
+      apocalypse_window_rectangle_ = UnityEngine.GUILayout.Window(
+          id         : this.GetHashCode(),
+          screenRect : apocalypse_window_rectangle_,
+          func       : (int id) => {
+              UnityEngine.GUILayout.BeginVertical();
+              UnityEngine.GUILayout.TextArea(revelation_);
+              UnityEngine.GUILayout.EndVertical();
+            },
+          text       : "Principia",
+          options    : UnityEngine.GUILayout.MinWidth(500));
+      apocalypse_window_x_ = (int)apocalypse_window_rectangle_.xMin;
+      apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
+    }
+
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
       LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
@@ -749,6 +776,7 @@ public partial class PrincipiaPluginAdapter
         FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
+      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
     }
   }
 

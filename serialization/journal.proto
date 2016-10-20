@@ -649,7 +649,8 @@ message HasEncounteredApocalypse {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   message Out {
-    required string details = 1 [(is_produced) = true];
+    required fixed64 details = 1 [(pointer_to) = "char const",
+                                  (is_produced) = true];
   }
   message Return {
     required bool result = 1;

@@ -406,12 +406,17 @@ void principia__GetVersion(
 bool principia__HasEncounteredApocalypse(
     Plugin* const plugin,
     char const** const details) {
-  journal::Method<journal::HasEncounteredApocalypse> m({{plugin}, {details}});
+  journal::Method<journal::HasEncounteredApocalypse> m({plugin}, {details});
   // Ownership will be transfered to the marshmallow.
-  std::string* const allocated_details = new std::string;
+  std::string details_string;
   bool const has_encountered_apocalypse =
-      CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(allocated_details);
-  *CHECK_NOTNULL(details) = allocated_details->c_str();
+      CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(&details_string);
+  UniqueBytes allocated_details(details_string.size() + 1);
+  std::memcpy(allocated_details.data.get(),
+              details_string.data(),
+              details_string.size() + 1);
+  *CHECK_NOTNULL(details) =
+      reinterpret_cast<char const*>(allocated_details.data.release());
   return m.Return(has_encountered_apocalypse);
 }
 

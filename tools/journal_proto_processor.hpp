@@ -219,6 +219,10 @@ class JournalProtoProcessor {
   std::map<Descriptor const*, std::string> cs_interface_return_type_;
   std::map<Descriptor const*, std::string> cxx_interface_return_type_;
 
+  // The C# attribute for marshalling the return value of an interface method.
+  // The key is a descriptor for a Return message.
+  std::map<Descriptor const*, std::string> cs_interface_return_marshal_;
+
   // The C#/C++ definition of a type corresponding to an interchange message.
   // The key is a descriptor for an interchange message.
   std::map<Descriptor const*, std::string> cs_interface_type_declaration_;

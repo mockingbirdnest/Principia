@@ -972,6 +972,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
           Status(status.error(),
                  "Error extending trajectory for " + bodies_[i]->name() + ". " +
                      status.message());
+      LOG(ERROR) << "New Apocalypse: " << last_severe_integration_status_;
     }
 
     ++index;
