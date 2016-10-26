@@ -99,13 +99,10 @@ marginparwidth=5cm, marginparsep=0.5cm, top=2.5cm, bottom=2.5cm, left=2.5cm, rig
 \renewcommand{\textsuperscript}[1]{{\textup{#1}}}
 \RequirePackage[stable]{footmisc}
 %\RequirePackage{bigfoot}
-\RequirePackage{tikz}
-\usepackage{tikz-qtree}
 % For some obscure reason, XeTeX does not support
 % TikZ patterns. We are not getting rid of unicode
 % and font support anytime soon, so just do that by
 % hand.
-\usetikzlibrary{calc} %, patterns}
 \RequirePackage{caption}
 \RequirePackage{marginfix}
 \newcommand{\marginfig}[2][]{%
