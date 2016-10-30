@@ -12,82 +12,71 @@ namespace base {
 // called on an element |e| of type |T|, all properties of the subset previously
 // containing |e| are invalidated.
 // To use an union-find algorithm on elements of |T|, specialize
-// |GetSubsetNode<T>|, run |MakeSingleton| on all elements involved, and proceed
-// with calls to |Unite| and |Find|.
+// |Subset<T>::Node::Get|, run |Subset<T>::MakeSingleton| on all elements
+// involved, and proceed with calls to |Subset<T>::Unite| and |Subset<T>::Find|.
 
-template<typename T>
-class Subset;
-
-// Any properties about a subset of |T| that can be efficiently maintained when
-// merging (e.g. a list of elements) should be kept in |SubsetProperties<T>|;
-// specialize it as needed.
-template<typename T>
-class SubsetProperties {
- public:
-  void MergeWith(SubsetProperties& other) {}
-};
-
-// The arguments are invalidated; the result may be used to get information
-// about the united subset.
-template<typename T>
-Subset<T> Unite(Subset<T> left, Subset<T> right);
-
-template<typename T>
-class SubsetNode;
 
 // A subset of |T|.
 template<typename T>
 class Subset {
  public:
+  // Any properties about a subset of |T| that can be efficiently maintained
+  // when merging (e.g. a list of elements) should be kept in
+  // |Subset<T>::Properties|; specialize it as needed.
+  class Properties {
+   public:
+    void MergeWith(Properties& other) {}
+  };
+
   // The |SubsetPropertiesArgs| are forwarded to the constructor of
-  // |SubsetProperties<T>|.
+  // |Properties|.
   template<typename... SubsetPropertiesArgs>
-  static Subset<T> MakeSingleton(
+  static Subset MakeSingleton(
       T& element,
       SubsetPropertiesArgs... subset_properties_args);
+  // The arguments are invalidated; the result may be used to get information
+  // about the united subset.
+  static Subset Unite(Subset left, Subset right);
   // Returns the subset containing |element|.
-  static Subset<T> Find(T& element);
+  static Subset Find(T& element);
 
-  SubsetProperties<T> const& properties();
+  Properties const& properties();
 
- private:
-  explicit Subset(not_null<SubsetNode<T>*> node);
+  class Node {
+   public:
+    Node();
 
-  not_null<SubsetNode<T>*> const node_;
+   private:
+    // Specialize to return a |Node| owned by |element| (in constant time).  The
+    // compiler will warn about returning from a non-void function if this is
+    // not specialized.
+    static not_null<typename Subset::Node*> Get(T& element) {}
 
-  friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
+    not_null<Node*> Root();
+
+    // TODO(egg): maybe they should be mutable? those intrusive structures are
+    // confusing...
+    not_null<Node*> parent_;
+    int rank_ = 0;
+
+    // Do not require a default constructor for |SubsetProperties|.
+    union {
+      std::uint8_t junk;
+      Properties value;
+    } properties_;
+
+    friend class Subset<T>;
+  };
+
   friend bool operator==(Subset left, Subset right) {
     return left.node_ == right.node_;
   }
-};
 
-template<typename T>
-class SubsetNode {
- public:
-  SubsetNode();
  private:
-  not_null<SubsetNode<T>*> Root();
+  explicit Subset(not_null<Node*> node);
 
-  // TODO(egg): maybe they should be mutable? those intrusive structures are
-  // confusing...
-  not_null<SubsetNode<T>*> parent_;
-  int rank_ = 0;
-
-  // Do not require a default constructor for |SubsetProperties|.
-  union {
-    std::uint8_t junk;
-    SubsetProperties<T> value;
-  } properties_;
-
-  friend class Subset<T>;
-  friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
+  not_null<Node*> const node_;
 };
-
-// Specialize to return a |SubsetNode| owned by |element| (in constant time).
-template<typename T>
-not_null<SubsetNode<T>*> GetSubsetNode(T& element) {
-  static_assert(false, "GetSubsetNode must be specialized");
-}
 
 }  // namespace base
 }  // namespace principia
