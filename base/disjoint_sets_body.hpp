@@ -30,11 +30,6 @@ Subset<T> Unite(Subset<T> left, Subset<T> right) {
 }
 
 template<typename T>
-Subset<T> Find(T& element) {
-  return Subset<T>(GetSubsetNode(element)->Root());
-}
-
-template<typename T>
 SubsetProperties<T> const& Subset<T>::properties() {
   return node_->properties_.value;
 }
@@ -53,6 +48,11 @@ Subset<T> Subset<T>::MakeSingleton(
   node->properties_.value = SubsetProperties<T>(
       std::forward<SubsetPropertiesArgs>(subset_properties_args)...);
   return Subset<T>(node);
+}
+
+template<typename T>
+Subset<T> Subset<T>::Find(T& element) {
+  return Subset<T>(GetSubsetNode(element)->Root());
 }
 
 template<typename T>

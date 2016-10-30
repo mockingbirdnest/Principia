@@ -76,25 +76,28 @@ TEST_F(DisjointSetsTest, Congruence) {
   for (auto& left : integers_) {
     for (auto& right : integers_) {
       if (left.value % 5 == right.value % 5) {
-        auto const unified = Unite(Find(left), Find(right));
-        EXPECT_EQ(unified, Find(left));
-        EXPECT_EQ(unified, Find(right));
+        auto const unified =
+            Unite(Subset<Integer>::Find(left), Subset<Integer>::Find(right));
+        EXPECT_EQ(unified, Subset<Integer>::Find(left));
+        EXPECT_EQ(unified, Subset<Integer>::Find(right));
       }
     }
   }
   for (auto& i : integers_) {
-    EXPECT_EQ(Find(integers_[i.value % 5]), Find(i));
+    EXPECT_EQ(Subset<Integer>::Find(integers_[i.value % 5]),
+              Subset<Integer>::Find(i));
   }
 
   for (auto& left : countable_integers_) {
     for (auto& right : countable_integers_) {
       if (left.value % 5 == right.value % 5) {
-        Unite(Find(left), Find(right));
+        Unite(Subset<CountableInteger>::Find(left),
+              Subset<CountableInteger>::Find(right));
       }
     }
   }
   for (auto& i : countable_integers_) {
-    EXPECT_EQ(10, Find(i).properties().cardinality);
+    EXPECT_EQ(10, Subset<CountableInteger>::Find(i).properties().cardinality);
   }
 }
 

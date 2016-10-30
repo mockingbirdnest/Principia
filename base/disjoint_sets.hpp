@@ -31,9 +31,6 @@ class SubsetProperties {
 // about the united subset.
 template<typename T>
 Subset<T> Unite(Subset<T> left, Subset<T> right);
-// Returns the subset containing |element|.
-template<typename T>
-Subset<T> Find(T& element);
 
 template<typename T>
 class SubsetNode;
@@ -48,6 +45,8 @@ class Subset {
   static Subset<T> MakeSingleton(
       T& element,
       SubsetPropertiesArgs... subset_properties_args);
+  // Returns the subset containing |element|.
+  static Subset<T> Find(T& element);
 
   SubsetProperties<T> const& properties();
 
@@ -57,8 +56,6 @@ class Subset {
   not_null<SubsetNode<T>*> const node_;
 
   friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
-  friend Subset<T> Find<>(T& element);
-
   friend bool operator==(Subset left, Subset right) {
     return left.node_ == right.node_;
   }
@@ -84,7 +81,6 @@ class SubsetNode {
 
   friend class Subset<T>;
   friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
-  friend Subset<T> Find<>(T& element);
 };
 
 // Specialize to return a |SubsetNode| owned by |element| (in constant time).
