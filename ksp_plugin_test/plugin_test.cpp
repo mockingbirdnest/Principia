@@ -867,16 +867,22 @@ TEST_F(PluginTest, Navball) {
       navigation_frame.get();
   plugin.SetPlottingFrame(std::move(navigation_frame));
   EXPECT_EQ(navigation_frame_copy, plugin.GetPlottingFrame());
-  Vector<double, World> x({1, 0, 0});
-  Vector<double, World> y({0, 1, 0});
-  Vector<double, World> z({0, 0, 1});
-  auto navball = plugin.Navball(World::origin);
-  EXPECT_THAT(AbsoluteError(-x, navball(World::origin)(x)),
-              VanishesBefore(1, 4));
-  EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
-              VanishesBefore(1, 0));
-  EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(z)),
-              VanishesBefore(1, 4));
+  Vector<double, Navball> x_navball({1, 0, 0});
+  Vector<double, Navball> y_navball({0, 1, 0});
+  Vector<double, Navball> z_navball({0, 0, 1});
+  Vector<double, World> x_world({-1, 0, 0});
+  Vector<double, World> y_world({0, 1, 0});
+  Vector<double, World> z_world({0, 0, -1});
+  auto const navball = plugin.NavballFrameField(World::origin);
+  EXPECT_THAT(
+      AbsoluteError(x_world, navball.FromThisFrame(World::origin)(x_navball)),
+      VanishesBefore(1, 4));
+  EXPECT_THAT(
+      AbsoluteError(y_world, navball.FromThisFrame(World::origin)(y_navball)),
+      VanishesBefore(1, 0));
+  EXPECT_THAT(
+      AbsoluteError(z_world, navball.FromThisFrame(World::origin)(z_navball)),
+      VanishesBefore(1, 4));
 }
 
 TEST_F(PluginTest, Frenet) {

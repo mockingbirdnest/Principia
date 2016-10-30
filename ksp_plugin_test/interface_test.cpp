@@ -45,11 +45,13 @@ using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockManœuvre;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockVessel;
+using ksp_plugin::Navball;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
+using physics::CoordinateFrameField;
 using physics::DegreesOfFreedom;
 using physics::DynamicFrame;
 using physics::Frenet;
@@ -705,19 +707,15 @@ TEST_F(InterfaceTest, NavballOrientation) {
                           {1 * SIUnit<Length>(),
                            2 * SIUnit<Length>(),
                            3 * SIUnit<Length>()});
-  auto const rotation =
-      Rotation<World, World>(π / 2 * Radian,
-                             Bivector<double, World>({4, 5, 6}));
-  EXPECT_CALL(*plugin_, Navball(sun_position))
-      .WillOnce(
-          Return([rotation](Position<World> const& q) { return rotation; }));
+  EXPECT_CALL(*plugin_, NavballFrameField(sun_position))
+      .WillOnce(Return(CoordinateFrameField<World, Navball>()));
   WXYZ q = principia__NavballOrientation(plugin_.get(),
                                          {1, 2, 3},
                                          {2, 3, 5});
-  EXPECT_EQ(q.w, rotation.quaternion().real_part());
-  EXPECT_EQ(q.x, rotation.quaternion().imaginary_part().x);
-  EXPECT_EQ(q.y, rotation.quaternion().imaginary_part().y);
-  EXPECT_EQ(q.z, rotation.quaternion().imaginary_part().z);
+  EXPECT_EQ(q.w, 0);
+  EXPECT_EQ(q.x, 0);
+  EXPECT_EQ(q.y, 0);
+  EXPECT_EQ(q.z, 0);
 }
 
 TEST_F(InterfaceTest, Frenet) {
