@@ -19,8 +19,6 @@ struct CountableInteger;
 template<>
 class SubsetProperties<CountableInteger> {
  public:
-  SubsetProperties<CountableInteger>() = default;
-
   explicit SubsetProperties<CountableInteger>(int const cardinality)
       : cardinality(cardinality) {}
 

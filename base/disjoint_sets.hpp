@@ -11,13 +11,16 @@ namespace base {
 // a single globally unique partition is being built.  If |MakeSingleton| is
 // called on an element |e| of type |T|, all properties of the subset previously
 // containing |e| are invalidated.
+// To use an union-find algorithm on elements of |T|, specialize
+// |GetSubsetNode<T>|, run |MakeSingleton| on all elements involved, and proceed
+// with calls to |Unite| and |Find|.
 
 template<typename T>
 class Subset;
 
 // Any properties about a subset of |T| that can be efficiently maintained when
 // merging (e.g. a list of elements) should be kept in |SubsetProperties<T>|;
-// specialize it as needed.  Specializations must be default-constructible.
+// specialize it as needed.
 template<typename T>
 class SubsetProperties {
  public:
@@ -72,7 +75,12 @@ class SubsetNode {
   // confusing...
   not_null<SubsetNode<T>*> parent_;
   int rank_ = 0;
-  SubsetProperties<T> properties_;
+
+  // Do not require a default constructor for |SubsetProperties|.
+  union {
+    std::uint8_t junk;
+    SubsetProperties<T> value;
+  } properties_;
 
   friend class Subset<T>;
   friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
