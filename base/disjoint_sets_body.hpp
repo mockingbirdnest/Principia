@@ -1,16 +1,11 @@
-#include "disjoint_sets.hpp"
 #pragma once
+
+#include "base/disjoint_sets.hpp"
+
+#include <utility>
 
 namespace principia {
 namespace base {
-
-template<typename T>
-Subset<T> MakeSingleton(not_null<T*> element) {
-  not_null<SubsetNode<T>*> node = GetSubsetNode(*element);
-  node->parent_ = node;
-  node->rank_ = 0;
-  return Subset<T>(node);
-}
 
 template<typename T>
 Subset<T> Unite(Subset<T> left, Subset<T> right) {
@@ -46,6 +41,19 @@ SubsetProperties<T> const& Subset<T>::properties() {
 
 template<typename T>
 Subset<T>::Subset(not_null<SubsetNode<T>*> node) : node_(node) {}
+
+template<typename T>
+template<typename... SubsetPropertiesArgs>
+Subset<T> Subset<T>::MakeSingleton(
+    T& element,
+    SubsetPropertiesArgs... subset_properties_args) {
+  not_null<SubsetNode<T>*> node = GetSubsetNode(element);
+  node->parent_ = node;
+  node->rank_ = 0;
+  node->properties_ = SubsetProperties<T>(
+      std::forward<SubsetPropertiesArgs>(subset_properties_args)...);
+  return Subset<T>(node);
+}
 
 template<typename T>
 SubsetNode<T>::SubsetNode() : parent_(this) {}

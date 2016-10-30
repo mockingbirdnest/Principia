@@ -19,12 +19,17 @@ struct CountableInteger;
 template<>
 class SubsetProperties<CountableInteger> {
  public:
+  SubsetProperties<CountableInteger>() = default;
+
+  explicit SubsetProperties<CountableInteger>(int const cardinality)
+      : cardinality(cardinality) {}
+
   void MergeWith(SubsetProperties& other) {
     cardinality += other.cardinality;
     other.cardinality = -1;
   }
 
-  int cardinality = 1;
+  int cardinality = -1;
 };
 
 namespace {
@@ -49,8 +54,8 @@ class DisjointSetsTest : public testing::Test {
     for(int i = 0; i < 50; ++i) {
       integers_[i].value = i;
       countable_integers_[i].value = i;
-      MakeSingleton<Integer>(&integers_[i]);
-      MakeSingleton<CountableInteger>(&countable_integers_[i]);
+      Subset<Integer>::MakeSingleton(integers_[i]);
+      Subset<CountableInteger>::MakeSingleton(countable_integers_[i], 1);
     }
   }
 
@@ -86,9 +91,7 @@ TEST_F(DisjointSetsTest, Congruence) {
   for (auto& left : countable_integers_) {
     for (auto& right : countable_integers_) {
       if (left.value % 5 == right.value % 5) {
-        auto const unified = Unite(Find(left), Find(right));
-        EXPECT_EQ(unified, Find(left));
-        EXPECT_EQ(unified, Find(right));
+        Unite(Find(left), Find(right));
       }
     }
   }

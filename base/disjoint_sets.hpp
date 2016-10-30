@@ -15,8 +15,15 @@ namespace base {
 template<typename T>
 class Subset;
 
+// Any properties about a subset of |T| that can be efficiently maintained when
+// merging (e.g. a list of elements) should be kept in |SubsetProperties<T>|;
+// specialize it as needed.  Specializations must be default-constructible.
 template<typename T>
-Subset<T> MakeSingleton(not_null<T*> element);
+class SubsetProperties {
+ public:
+  void MergeWith(SubsetProperties& other) {}
+};
+
 // The arguments are invalidated; the result may be used to get information
 // about the united subset.
 template<typename T>
@@ -25,15 +32,6 @@ Subset<T> Unite(Subset<T> left, Subset<T> right);
 template<typename T>
 Subset<T> Find(T& element);
 
-// Any properties about a subset of |T| that can be efficiently maintained when
-// merging (e.g. a list of elements) should be kept in |SubsetProperties<T>|;
-// specialize it as needed.
-template<typename T>
-class SubsetProperties {
- public:
-  void MergeWith(SubsetProperties& other) {}
-};
-
 template<typename T>
 class SubsetNode;
 
@@ -41,6 +39,13 @@ class SubsetNode;
 template<typename T>
 class Subset {
  public:
+  // The |SubsetPropertiesArgs| are forwarded to the constructor of
+  // |SubsetProperties<T>|.
+  template<typename... SubsetPropertiesArgs>
+  static Subset<T> MakeSingleton(
+      T& element,
+      SubsetPropertiesArgs... subset_properties_args);
+
   SubsetProperties<T> const& properties();
 
  private:
@@ -48,7 +53,6 @@ class Subset {
 
   not_null<SubsetNode<T>*> const node_;
 
-  friend Subset<T> MakeSingleton<>(not_null<T*> element);
   friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
   friend Subset<T> Find<>(T& element);
 
@@ -61,7 +65,6 @@ template<typename T>
 class SubsetNode {
  public:
   SubsetNode();
-  SubsetProperties<T> properties_;
  private:
   not_null<SubsetNode<T>*> Root();
 
@@ -69,7 +72,9 @@ class SubsetNode {
   // confusing...
   not_null<SubsetNode<T>*> parent_;
   int rank_ = 0;
-  friend Subset<T> MakeSingleton<>(not_null<T*> element);
+  SubsetProperties<T> properties_;
+
+  friend class Subset<T>;
   friend Subset<T> Unite<>(Subset<T> left, Subset<T> right);
   friend Subset<T> Find<>(T& element);
 };
