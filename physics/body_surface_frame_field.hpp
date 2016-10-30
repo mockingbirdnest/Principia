@@ -17,7 +17,9 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 
-//TODO(phl):comment
+// The z-axis goes from the centre of |body| at |t| to the point |q|.  The
+// x-axis is orthogonal to the z-axis and in the plane defined by the z-axis and
+// the polar axis of |body|.  The y-axis is chosen to form a direct basis.
 template<typename Frame, typename ThisFrame>
 class BodySurfaceFrameField : public FrameField<Frame, ThisFrame> {
  public:

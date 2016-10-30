@@ -40,7 +40,7 @@ BodySurfaceFrameField<Frame, ThisFrame>::FromThisFrame(
 
   // The unit vector x directed along the polar axis is
   // |λ * body_axis + μ * normalized_displacement|.  Note that λ is positive.
-  double const λ = 1 / Sqrt(1 + axis_projection²);
+  double const λ = 1 / Sqrt(1 - axis_projection²);
   auto const μ = -λ * axis_projection;
 
   Vector<double, Frame> const x = λ * body_axis_ + μ * normalized_displacement;
