@@ -42,6 +42,11 @@ using CelestialSphere = Frame<serialization::Frame::PluginTag,
 using BodyWorld = Frame<serialization::Frame::PluginTag,
                         serialization::Frame::BODY_WORLD, false>;
 
+// The frame used for the navball.  Its definition depends on the choice of a
+// subclass of FrameField.
+using Navball = Frame<serialization::Frame::PluginTag,
+                      serialization::Frame::NAVBALL, false>;
+
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
 // depends on the choice of a subclass of DynamicFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
@@ -73,6 +78,7 @@ using internal_frames::AliceWorld;
 using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
 using internal_frames::CelestialSphere;
+using internal_frames::Navball;
 using internal_frames::Navigation;
 using internal_frames::NavigationFrame;
 using internal_frames::NavigationManœuvre;

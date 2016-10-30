@@ -136,6 +136,7 @@ message Frame {
     BARYCENTRIC = 7;
     BODY_WORLD = 9;
     CELESTIAL_SPHERE = 8;
+    NAVBALL = 10;
     NAVIGATION = 4;
     PRE_BOREL_BARYCENTRIC = 3;
     WORLD = 5;

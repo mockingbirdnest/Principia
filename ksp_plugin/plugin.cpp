@@ -666,29 +666,49 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
                                                  reference_body));
 }
 
-FrameField<World> Plugin::Navball(
+FrameField<World, Navball> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
-  auto const to_world =
-      OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
-  ephemeris_->Prolong(current_time_);
-  auto const positions_from_world =
-      AffineMap<World, Barycentric, Length, OrthogonalMap>(
-          sun_world_position,
-          sun_->current_position(current_time_),
-          to_world.Inverse());
-  return [this, positions_from_world, to_world](
-      Position<World> const& q) -> Rotation<World, World> {
-    // KSP's navball has x west, y up, z south.
-    // we want x north, y west, z up.
-    auto const orthogonal_map = to_world *
-        plotting_frame_->FromThisFrameAtTime(current_time_).orthogonal_map() *
-        Permutation<World, Navigation>(
-            Permutation<World, Navigation>::XZY).Forget() *
-        Rotation<World, World>(π / 2 * Radian,
-                               Bivector<double, World>({0, 1, 0})).Forget();
-    CHECK(orthogonal_map.Determinant().Positive());
-    return orthogonal_map.rotation();
+
+  class NavballFrameField : public FrameField<World, Navball> {
+   public:
+    NavballFrameField(not_null<Plugin const*> const plugin,
+                      Position<World> const& sun_world_position)
+        : plugin_(plugin),
+          sun_world_position_(sun_world_position) {}
+
+    Rotation<Navball, World> FromThisFrame(
+        Position<World> const& q) const override {
+      Instant const& current_time = plugin_->current_time_;
+      auto const to_world = OrthogonalMap<WorldSun, World>::Identity() *
+                            plugin_->BarycentricToWorldSun();
+      plugin_->ephemeris_->Prolong(current_time);
+      auto const positions_from_world =
+          AffineMap<World, Barycentric, Length, OrthogonalMap>(
+              sun_world_position_,
+              plugin_->sun_->current_position(current_time),
+              to_world.Inverse());
+      // KSP's navball has x west, y up, z south.
+      // We want x north, y west, z up.
+      auto const orthogonal_map =
+          to_world *
+          plugin_->plotting_frame_->FromThisFrameAtTime(current_time)
+              .orthogonal_map() *
+          Permutation<World, Navigation>(Permutation<World, Navigation>::XZY)
+              .Forget() *
+          Rotation<Navball, World>(π / 2 * Radian,
+                                   Bivector<double, World>({0, 1, 0}),
+                                   DefinesFrame<Navball>())
+              .Forget();
+      CHECK(orthogonal_map.Determinant().Positive());
+      return orthogonal_map.rotation();
+    }
+
+   private:
+    not_null<Plugin const*> const plugin_;
+    Position<World> const sun_world_position_;
   };
+
+  return NavballFrameField(this, sun_world_position);
 }
 
 Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {
