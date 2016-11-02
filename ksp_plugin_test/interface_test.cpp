@@ -76,6 +76,7 @@ using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ByMove;
+using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Property;
@@ -801,6 +802,21 @@ TEST_F(InterfaceTest, SerializePlugin) {
   EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
   principia__DeleteString(&serialization);
   EXPECT_THAT(serialization, IsNull());
+}
+
+
+TEST_F(InterfaceTest, Apocalypse) {
+  char const* details;
+  EXPECT_CALL(*plugin_, HasEncounteredApocalypse(_)).WillOnce(Return(false));
+  EXPECT_FALSE(principia__HasEncounteredApocalypse(plugin_.get(), &details));
+
+  constexpr char silly_string[] = "silly";
+  EXPECT_CALL(*plugin_, HasEncounteredApocalypse(_))
+      .WillOnce(DoAll(SetArgPointee<0>(silly_string), Return(true)));
+  EXPECT_TRUE(principia__HasEncounteredApocalypse(plugin_.get(), &details));
+  EXPECT_STREQ(silly_string, details);
+  principia__DeleteString(&details);
+  EXPECT_THAT(details, IsNull());
 }
 
 TEST_F(InterfaceTest, DeserializePlugin) {

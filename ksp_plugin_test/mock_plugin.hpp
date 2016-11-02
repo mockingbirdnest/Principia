@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -33,6 +34,9 @@ class MockPlugin : public Plugin {
 
   MOCK_METHOD0(EndInitialization,
                void());
+
+  MOCK_CONST_METHOD1(HasEncounteredApocalypse,
+                     bool(std::string* const details));
 
   MOCK_CONST_METHOD2(UpdateCelestialHierarchy,
                      void(Index const celestial_index,

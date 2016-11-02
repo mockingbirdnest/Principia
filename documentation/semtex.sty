@@ -39,19 +39,19 @@
 
 \RequirePackage[slash-delimiter=frac]{unicode-math}
 \setmathfont[Scale=MatchLowercase, math-style=ISO]{Cambria Math}
-\setmathfont[Scale=MatchLowercase, range={\mathcal,\mathbfcal}]{texgyrepagella-math.otf}
+\setmathfont[Scale=MatchLowercase, range={\mathcal,\mathbfcal}]{TeX Gyre Pagella Math}
 
 \newcommand{\VectorSymbol}\mathbfit
 \newcommand{\MultiIndexSymbol}\VectorSymbol
 \newcommand{\MatrixSymbol}\mathbfit
 \newcommand{\TensorSymbol}\mathbfsfit
 \newcommand{\OperatorSymbol}[1]{\operatorname{\mathit{#1}}}
-\newcommand{\StandardSymbol}\mathrm
+\newcommand{\StandardSymbol}\symup
 \newcommand{\StandardMatrixSymbol}{\mathbfup}
 \newcommand{\StandardVectorSymbol}{\mathbfup}
 \newcommand{\StandardTensorSymbol}{\mathbfsfup}
 
-\RequirePackage[thmmarks,hyperref]{ntheorem}
+\RequirePackage[amsmath,thmmarks,hyperref]{ntheorem}
 
 %%%% Layout.
 
@@ -70,7 +70,7 @@
 \theoremsymbol{\ensuremath{\mdlgwhtlozenge}}
 \newtheorem{definition}{Definition}
 \newtheorem{postulate}{Postulate}
-\NoEndMark
+
 \newtheorem{example}{Example}
 \newtheorem{consequence}{Consequence}
 \newtheorem{exercise}{Exercise}
@@ -89,15 +89,16 @@
 %%% begin Voodoo
 
 % This adds a widecheck, unicode-math style.
-
-\ExplSyntaxOn
-\cs_gset_protected_nopar:Npx \widecheck {
-  \um_accent:nnn {} { \um_symfont_tl } { "030C }
-}
-%\cs_gset_protected_nopar:Npx \slashed { %circumvent an extremely weird bug...
-%  \um_accent:nnn {} { \um_symfont_tl } { "0338 }
+% TODO(egg): now it doesn't work and I don't know why.
+%\ExplSyntaxOn
+%\cs_gset_protected_nopar:Npx \widecheck {
+%  \@@_accent:nnn {} { \um_symfont_tl } { "030C }
 %}
-\ExplSyntaxOff
+%%\cs_gset_protected_nopar:Npx \slashed { %circumvent an extremely weird bug...
+%%  \um_accent:nnn {} { \um_symfont_tl } { "0338 }
+%%}
+%\ExplSyntaxOff
+
 \usepackage{cancel}
 % U00338 works well for operators, but isn't so nice for letters.
 \newcommand{\slashed}{\cancel}
@@ -156,6 +157,7 @@
             \vphantom{#5}
             {\kern-\nulldelimiterspace}
           }{\right.}
+          \kern-\nulldelimiterspace
         }
         \def\@delimcontent{#5}
         \@delimsizefalse
@@ -167,15 +169,18 @@
             \vphantom{#5}
             {\kern-\nulldelimiterspace}
           }{\right.}
+          \kern-\nulldelimiterspace
         }
         \@delimiterWrapper{\left#3}{
           \vphantom{#5}
           {\kern-\nulldelimiterspace}
         }{\right.}
+        \kern-\nulldelimiterspace
         \@delimsizefalse
         \hphantom{#5}
         \mathclose{
         \@delimsizetrue
+        \kern-\nulldelimiterspace
         \@delimiterWrapper{\left.}{
           {\kern-\nulldelimiterspace}
           \vphantom{#5}
@@ -270,6 +275,8 @@
 \livechars@
 \newcommand^[1]{\if@delimsize{}\else\sp{#1}\fi}
 \newcommand_[1]{\if@delimsize{}\else\sb{#1}\fi}
+\let\@bar\bar
+\renewcommand\bar[1]{\if@delimsize{}\else\@bar{#1}\fi}
 \makeatother
  
 \AtBeginDocument{   
@@ -300,6 +307,8 @@
 \DeclareDelimiter\squareBrackets{[}{]}
 \DeclareDelimiter\curlyBrackets{\lbrace}{\rbrace}
 \DeclareDelimiter\angleBrackets{\langle}{\rangle}
+\DeclareDelimiter\floor{\lfloor}{\rfloor}
+\DeclareDelimiter\ceil{\lceil}{\rceil}
 %% Binary.
 \DeclareDelimiterX\lsquareCommaRsquare[2]{[}{]}{#1, #2}
 \DeclareDelimiterX\lsquareCommaLsquare[2]{[}{[}{#1, #2}
@@ -337,6 +346,8 @@
 % Mathematical are typeset in roman as per ISO 80000-2:2009
 % \Pi is the circle constant.
 \renewcommand{\Pi}{{\StandardSymbol \pi}}
+% \GoldenRatio is the golden ratio.
+\newcommand{\GoldenRatio}{{\StandardSymbol \phi}}
 % \I is the maginary unit.
 \newcommand\I{\StandardSymbol{i}}
 % \E is the base of the natural logarithm.
@@ -355,7 +366,7 @@
 % for all x \neq 0. \DiracDelta is a shorter notation for \DiracDelta[0].
 \newcommand{\DiracDelta}[1][]{\operatorname{\delta}_{#1}}
 % \RiemannZeta is Riemann's zeta function.
-\newcommand{\RiemannZeta}{\operatorname{\zeta}}
+\newcommand{\RiemannZeta}{\operatorname{\StandardSymbol \zeta}}
 % \Gamma is the Euler's gamma function.
 \renewcommand{\Gamma}{\operatorname{\capitalGamma}}
 % \HyperbolicCosine is the hyperbolic cosine.
@@ -524,6 +535,9 @@
 \newcommand{\diff}[3]{\squareBrackets{#3}_{#1}^{#2}}
 \newcommand{\Evaluate}[2]{\emptyBar{#1}_{\mathrlap{#2}}}
 
+\newcommand\Floor[1]{\floor{#1}}
+\newcommand\Ceiling[1]{\ceil{#1}}
+
 %% Binary delimiters.
 % Intervals.
 % \intopen a b is the open interval from a excluded to b excluded.
@@ -565,6 +579,7 @@
 \renewcommand\gg\gamma
 \newcommand\gd\delta
 \renewcommand\ge\epsilon
+\newcommand\gce\varepsilon
 \newcommand\gz\zeta
 \newcommand\gh\eta
 \newcommand\gq\theta
@@ -591,8 +606,12 @@
 \newcommand\gw\omega
 \newcommand\gdig\digamma
 
+\newcommand\gD\Delta
+\newcommand\gL\Lambda
+\newcommand\gG\capitalGamma
 \newcommand\gS\Sigma
 \newcommand\gP\capitalPi
+\newcommand\gX\Xi
 \newcommand\gW\Omega
 
 %% Vectors, matrices, higher-order tensors.
@@ -629,10 +648,6 @@
 \newcommand{\vF}{\VectorSymbol F}
 \newcommand{\vQ}{\VectorSymbol Q}
 \newcommand{\vP}{\VectorSymbol P}
-
-\newcommand{\vA}{\VectorSymbol A}
-\newcommand{\vB}{\VectorSymbol B}
-\newcommand{\vX}{\VectorSymbol X}
 
 \newcommand{\miga}{{\MultiIndexSymbol \alpha}}
 \newcommand{\migb}{{\MultiIndexSymbol \beta}}
@@ -838,6 +853,7 @@
 \newcommand{\EmptySet}\varnothing
 \newcommand{\Union}{\cup}
 \newcommand{\Intersection}{\cap}
+\newcommand{\SymmetricDifference}{\bigtriangleup}
 \newcommand{\DefineAs}{\coloneq}
 % When using ComputerModern, Subset will be undefined, 
 % but it will be defined when using Utopia, so we use
@@ -936,10 +952,7 @@
 \newcommand{\Dimension}[1][]{\operatorname{dim}_{#1}}
 \newcommand{\HarmonicNumber}[1]{\operatorname{H}_{#1}}
 
-\renewcommand{\binom}[2]{\begin{pmatrix}
-#1\\#2
-\end{pmatrix}
-}
+\renewcommand{\binom}[2]{\parentheses{\genfrac{}{}{0pt}{}{#1}{#2}}}
 
 \DeclareMathOperator{\ConjugacyClass}{C}
 

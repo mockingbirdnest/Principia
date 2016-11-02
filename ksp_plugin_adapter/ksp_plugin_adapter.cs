@@ -125,6 +125,18 @@ public partial class PrincipiaPluginAdapter
 
   private String bad_installation_popup_;
 
+  // The first apocalyptic error message.
+  [KSPField(isPersistant = true)]
+  private String revelation_ = "";
+  // Whether we have encountered an apocalypse already.
+  [KSPField(isPersistant = true)]
+  private bool is_post_apocalyptic_ = false;
+  [KSPField(isPersistant = true)]
+  private int apocalypse_window_x_ = UnityEngine.Screen.width / 2;
+  [KSPField(isPersistant = true)]
+  private int apocalypse_window_y_ = UnityEngine.Screen.height / 3;
+  private UnityEngine.Rect apocalypse_window_rectangle_;
+
   public event Action render_windows;
 
   PrincipiaPluginAdapter() {
@@ -234,23 +246,17 @@ public partial class PrincipiaPluginAdapter
                                p = (XYZ)vessel.orbit.vel});
     }
     QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
-    // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
-    // corresponds to the position one timestep in the future.  This is not
-    // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
-        pos     : (Vector3d)from_parent.q +
-                  (vessel.orbitDriver.offsetPosByAFrame
-                       ? (Vector3d)from_parent.p * UnityEngine.Time.deltaTime
-                       : Vector3d.zero),
+        pos     : (Vector3d)from_parent.q,
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    if (FlightIntegrator.GraviticForceMultiplier != 0) {  // sic.
+    if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
       Log.Info("Killing stock gravity");
-      FlightIntegrator.GraviticForceMultiplier = 0;
+      PhysicsGlobals.GraviticForceMultiplier = 0;
     }
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
     KSPPart[] parts =
@@ -273,10 +279,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetVesselStateOffset(
             vessel_guid : vessel.id.ToString(),
             from_parent : new QP{
-                q = vessel.orbitDriver.offsetPosByAFrame
-                        ? (XYZ)(vessel.orbit.pos -
-                                vessel.orbit.vel * TimeWarp.fixedDeltaTime)
-                        : (XYZ)vessel.orbit.pos,
+                q = (XYZ)vessel.orbit.pos,
                 p = (XYZ)vessel.orbit.vel});
       }
       plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
@@ -326,8 +329,10 @@ public partial class PrincipiaPluginAdapter
 
   private void OverrideRSASTarget(FlightCtrlState state) {
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
-      FlightGlobals.ActiveVessel.Autopilot.RSAS.SetTargetOrientation(
+      FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
           rsas_target_,
+          reset_rsas_target_);
+      FlightGlobals.ActiveVessel.Autopilot.SAS.ConnectFlyByWire(
           reset_rsas_target_);
     }
     reset_rsas_target_ = false;
@@ -390,36 +395,34 @@ public partial class PrincipiaPluginAdapter
                FlightGlobals.Bodies.Where(c => c.orbit != null)) {
         unmodified_orbits_.Add(
             celestial,
-            new Orbit(inc  : celestial.orbit.inclination,
-                      e    : celestial.orbit.eccentricity,
-                      sma  : celestial.orbit.semiMajorAxis,
-                      lan  : celestial.orbit.LAN,
-                      w    : celestial.orbit.argumentOfPeriapsis,
-                      mEp  : celestial.orbit.meanAnomalyAtEpoch,
-                      t    : celestial.orbit.epoch,
-                      body : celestial.orbit.referenceBody));
+            new Orbit(inc   : celestial.orbit.inclination,
+                      e     : celestial.orbit.eccentricity,
+                      sma   : celestial.orbit.semiMajorAxis,
+                      lan   : celestial.orbit.LAN,
+                      argPe : celestial.orbit.argumentOfPeriapsis,
+                      mEp   : celestial.orbit.meanAnomalyAtEpoch,
+                      t     : celestial.orbit.epoch,
+                      body  : celestial.orbit.referenceBody));
       }
     }
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
+                                 SetBodyFramesAndPrecalculateVessels);
   }
 
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
     if (PluginRunning()) {
-      IntPtr serialization = IntPtr.Zero;
+      String serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
-        try {
-          serialization = plugin_.SerializePlugin(ref serializer);
-          if (serialization == IntPtr.Zero) {
-            break;
-          }
-          node.AddValue(principia_key, Marshal.PtrToStringAnsi(serialization));
-        } finally {
-          Interface.DeleteString(ref serialization);
+        serialization = plugin_.SerializePlugin(ref serializer);
+        if (serialization == null) {
+          break;
         }
+        node.AddValue(principia_key, serialization);
       }
     }
   }
@@ -489,6 +492,25 @@ public partial class PrincipiaPluginAdapter
       bad_installation_popup_ = null;
       return;
     }
+
+    if (is_post_apocalyptic_) {
+      UnityEngine.GUI.skin = null;
+      apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
+      apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
+      apocalypse_window_rectangle_ = UnityEngine.GUILayout.Window(
+          id         : this.GetHashCode(),
+          screenRect : apocalypse_window_rectangle_,
+          func       : (int id) => {
+              UnityEngine.GUILayout.BeginVertical();
+              UnityEngine.GUILayout.TextArea(revelation_);
+              UnityEngine.GUILayout.EndVertical();
+            },
+          text       : "Principia",
+          options    : UnityEngine.GUILayout.MinWidth(500));
+      apocalypse_window_x_ = (int)apocalypse_window_rectangle_.xMin;
+      apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
+    }
+
     if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
       LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
@@ -697,9 +719,9 @@ public partial class PrincipiaPluginAdapter
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
         previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
       } else {
-        if (FlightIntegrator.GraviticForceMultiplier != 1) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 1) {
           Log.Info("Reinstating stock gravity");
-          FlightIntegrator.GraviticForceMultiplier = 1;  // sic.
+          PhysicsGlobals.GraviticForceMultiplier = 1;  // sic.
         }
         previous_bubble_reference_body_ = null;
       }
@@ -738,6 +760,7 @@ public partial class PrincipiaPluginAdapter
                 FlightGlobals.currentMainBody.flightGlobalsIndex);
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
+      SetBodyFrames();
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
       if (!plugin_.PhysicsBubbleIsEmpty()) {
@@ -750,9 +773,10 @@ public partial class PrincipiaPluginAdapter
         if (krakensbane_ == null) {
           krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
         }
-        krakensbane_.setOffset(displacement_offset);
+        FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
+      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
     }
   }
 
@@ -766,9 +790,35 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
+                                    SetBodyFramesAndPrecalculateVessels);
   }
 
   #endregion
+
+  private void SetBodyFramesAndPrecalculateVessels() {
+    SetBodyFrames();
+    foreach (var Vessel in FlightGlobals.Vessels) {
+      Vessel.precalc.FixedUpdate();
+    }
+  }
+
+  private void SetBodyFrames() {
+    if (PluginRunning()) {
+      foreach (var body in FlightGlobals.Bodies) {
+        // TODO(egg): I have no idea why this |swizzle| thing makes things work.
+        // This probably really means something in terms of frames that should
+        // be done in the C++ instead---once I figure out what it is.
+        var swizzly_body_world_to_world =
+            ((UnityEngine.QuaternionD)plugin_.CelestialRotation(
+                 body.flightGlobalsIndex)).swizzle;
+        body.BodyFrame = new Planetarium.CelestialFrame{
+            X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
+            Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
+            Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+      }
+    }
+  }
 
   private void SetNavballVector(UnityEngine.Transform vector,
                                 Vector3d direction) {
@@ -986,6 +1036,26 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "managing physics bubble";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+    // TODO(egg): remove this diagnosis when we have proper collision handling.
+    if (FlightGlobals.ActiveVessel != null) {
+      int collisions = 0;
+      int part_collisions = 0;
+      foreach (var part in FlightGlobals.ActiveVessel.parts) {
+         collisions += part.currentCollisions.Count;
+         foreach (var collider in part.currentCollisions) {
+           var collidee = collider.gameObject.GetComponentUpwards<Part>();
+           if (collidee != null &&
+               collidee.vessel != FlightGlobals.ActiveVessel) {
+             ++part_collisions;
+           }
+         }
+      }
+      UnityEngine.GUILayout.TextArea(
+          text
+          : "Active vessel is involved in " + collisions +
+                " collision(s) including " + part_collisions +
+                " with another vessel.");
+    }
     String last_reset_information;
     if (!PluginRunning()) {
       last_reset_information = "";
