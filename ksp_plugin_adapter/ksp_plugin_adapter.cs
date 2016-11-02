@@ -1036,6 +1036,7 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "managing physics bubble";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+    // TODO(egg): remove this diagnosis when we have proper collision handling.
     if (FlightGlobals.ActiveVessel != null) {
       int collisions = 0;
       int part_collisions = 0;
