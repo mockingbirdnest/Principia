@@ -1036,6 +1036,26 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "managing physics bubble";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+    // TODO(egg): remove this diagnosis when we have proper collision handling.
+    if (FlightGlobals.ActiveVessel != null) {
+      int collisions = 0;
+      int part_collisions = 0;
+      foreach (var part in FlightGlobals.ActiveVessel.parts) {
+         collisions += part.currentCollisions.Count;
+         foreach (var collider in part.currentCollisions) {
+           var collidee = collider.gameObject.GetComponentUpwards<Part>();
+           if (collidee != null &&
+               collidee.vessel != FlightGlobals.ActiveVessel) {
+             ++part_collisions;
+           }
+         }
+      }
+      UnityEngine.GUILayout.TextArea(
+          text
+          : "Active vessel is involved in " + collisions +
+                " collision(s) including " + part_collisions +
+                " with another vessel.");
+    }
     String last_reset_information;
     if (!PluginRunning()) {
       last_reset_information = "";
