@@ -307,7 +307,7 @@ class Plugin {
       Index const reference_body_index) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
-  virtual FrameField<World, Navball> NavballFrameField(
+  virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
       Position<World> const& sun_world_position) const;
 
   // The unit tangent, normal, or binormal vector to the trajectory of the

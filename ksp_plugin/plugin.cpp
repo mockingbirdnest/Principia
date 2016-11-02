@@ -666,7 +666,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
                                                  reference_body));
 }
 
-FrameField<World, Navball> Plugin::NavballFrameField(
+std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
 
   class NavballFrameField : public FrameField<World, Navball> {
@@ -708,7 +708,7 @@ FrameField<World, Navball> Plugin::NavballFrameField(
     Position<World> const sun_world_position_;
   };
 
-  return NavballFrameField(this, sun_world_position);
+  return std::make_unique<NavballFrameField>(this, sun_world_position);
 }
 
 Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {

@@ -160,7 +160,7 @@ class MockPlugin : public Plugin {
                          Index const reference_body_index));
 
   MOCK_CONST_METHOD1(NavballFrameField,
-                     FrameField<World, Navball>(
+                     std::unique_ptr<FrameField<World, Navball>>(
                          Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD1(VesselTangent,

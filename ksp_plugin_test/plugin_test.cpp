@@ -875,13 +875,13 @@ TEST_F(PluginTest, Navball) {
   Vector<double, World> z_world({0, 0, -1});
   auto const navball = plugin.NavballFrameField(World::origin);
   EXPECT_THAT(
-      AbsoluteError(x_world, navball.FromThisFrame(World::origin)(x_navball)),
+      AbsoluteError(x_world, navball->FromThisFrame(World::origin)(x_navball)),
       VanishesBefore(1, 4));
   EXPECT_THAT(
-      AbsoluteError(y_world, navball.FromThisFrame(World::origin)(y_navball)),
+      AbsoluteError(y_world, navball->FromThisFrame(World::origin)(y_navball)),
       VanishesBefore(1, 0));
   EXPECT_THAT(
-      AbsoluteError(z_world, navball.FromThisFrame(World::origin)(z_navball)),
+      AbsoluteError(z_world, navball->FromThisFrame(World::origin)(z_navball)),
       VanishesBefore(1, 4));
 }
 

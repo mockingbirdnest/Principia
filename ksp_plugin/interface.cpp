@@ -591,7 +591,7 @@ WXYZ principia__NavballOrientation(
       World::origin +
           Displacement<World>(FromXYZ(sun_world_position) * Metre));
   return m.Return(ToWXYZ(
-      frame_field.FromThisFrame(
+      frame_field->FromThisFrame(
           World::origin +
               Displacement<World>(
                   FromXYZ(ship_world_position) * Metre)).quaternion()));

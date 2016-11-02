@@ -75,6 +75,7 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
+using ::testing::ByMove;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Property;
@@ -708,11 +709,12 @@ TEST_F(InterfaceTest, NavballOrientation) {
                            2 * SIUnit<Length>(),
                            3 * SIUnit<Length>()});
   EXPECT_CALL(*plugin_, NavballFrameField(sun_position))
-      .WillOnce(Return(CoordinateFrameField<World, Navball>()));
+      .WillOnce(Return(
+          ByMove(std::make_unique<CoordinateFrameField<World, Navball>>())));
   WXYZ q = principia__NavballOrientation(plugin_.get(),
                                          {1, 2, 3},
                                          {2, 3, 5});
-  EXPECT_EQ(q.w, 0);
+  EXPECT_EQ(q.w, 1);
   EXPECT_EQ(q.x, 0);
   EXPECT_EQ(q.y, 0);
   EXPECT_EQ(q.z, 0);
