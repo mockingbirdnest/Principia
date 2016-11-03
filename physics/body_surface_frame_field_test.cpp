@@ -73,9 +73,9 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
         {Sqrt((4531 + 1624 * Sqrt(2)) / 8149),
          -2 * Sqrt((419 - 116 * Sqrt(2)) / 8149),
          -Sqrt(((2 * (971 - 580 * Sqrt(2))) / 8149))});
-    EXPECT_THAT(actual, AlmostEquals(expected, 43));
+    EXPECT_THAT(actual, AlmostEquals(expected, 9, 43));
     EXPECT_THAT(InnerProduct(actual, displacement),
-                VanishesBefore(displacement.Norm(), 11));
+                VanishesBefore(displacement.Norm(), 2, 11));
   }
   {
     auto const actual = rotation(Vector<double, TestFrame>({0, 1, 0}));
@@ -83,9 +83,9 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
         {-Sqrt((86 - 56 * Sqrt(2)) / 281),
          -2 * Sqrt(2 * (17 + 2 * Sqrt(2)) / 281),
          Sqrt((59 + 40 * Sqrt(2)) / 281)});
-    EXPECT_THAT(actual, AlmostEquals(expected, 74));
+    EXPECT_THAT(actual, AlmostEquals(expected, 10, 74));
     EXPECT_THAT(InnerProduct(actual, displacement),
-                VanishesBefore(displacement.Norm(), 17));
+                VanishesBefore(displacement.Norm(), 0, 17));
     EXPECT_THAT(InnerProduct(actual, body_.polar_axis()),
                 VanishesBefore(1, 25));
   }
@@ -93,7 +93,7 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
     auto const actual = rotation(Vector<double, TestFrame>({0, 0, 1}));
     auto const expected = Vector<double, ICRFJ2000Equator>(
         {-2 / Sqrt(29), -3 / Sqrt(29), -4 / Sqrt(29)});
-    EXPECT_THAT(actual, AlmostEquals(expected, 76));
+    EXPECT_THAT(actual, AlmostEquals(expected, 7, 76));
   }
 }
 
