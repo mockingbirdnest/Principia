@@ -87,7 +87,7 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
     EXPECT_THAT(InnerProduct(actual, displacement),
                 VanishesBefore(displacement.Norm(), 0, 17));
     EXPECT_THAT(InnerProduct(actual, body_.polar_axis()),
-                VanishesBefore(1, 25));
+                VanishesBefore(1, 0, 25));
   }
   {
     auto const actual = rotation(Vector<double, TestFrame>({0, 0, 1}));
