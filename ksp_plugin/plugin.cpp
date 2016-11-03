@@ -675,13 +675,15 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
   class NavballFrameField : public FrameField<World, Navball> {
    public:
-    NavballFrameField(not_null<Plugin const*> const plugin,
-                      Position<World> const& sun_world_position,
-                      FrameField<Navigation, RightHandedNavball> const&
-                          right_handed_navball_field)
+    NavballFrameField(
+        not_null<Plugin const*> const plugin,
+        base::not_null<
+            std::unique_ptr<FrameField<Navigation, RightHandedNavball>>>
+            right_handed_navball_field,
+        Position<World> const& sun_world_position)
         : plugin_(plugin),
-          sun_world_position_(sun_world_position),
-          right_handed_navball_field_(right_handed_navball_field) {}
+          right_handed_navball_field_(std::move(right_handed_navball_field)),
+          sun_world_position_(sun_world_position) {}
 
     Rotation<Navball, World> FromThisFrame(
         Position<World> const& q) const override {
@@ -709,10 +711,11 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
-      // TODO(phl): So what permutation should I use?
+      // TODO(phl): So what permutation should I use?  Do I even need to
+      // compose a permutation and a rotation?
       OrthogonalMap<Navball, World> const orthogonal_map =
           navigation_to_world *
-          right_handed_navball_field_.FromThisFrame(q_in_navigation).Forget() *
+          right_handed_navball_field_->FromThisFrame(q_in_navigation).Forget() *
           Permutation<World, RightHandedNavball>(
               Permutation<World, RightHandedNavball>::XZY)
               .Forget() *
@@ -726,15 +729,17 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
    private:
     not_null<Plugin const*> const plugin_;
-    Position<World> const sun_world_position_;
-    FrameField<Navigation, RightHandedNavball> const
+    base::not_null<
+        std::unique_ptr<FrameField<Navigation, RightHandedNavball>>> const
         right_handed_navball_field_;
+    Position<World> const sun_world_position_;
   };
 
   return std::make_unique<NavballFrameField>(
              this,
-             sun_world_position,
-             CoordinateFrameField<Navigation, RightHandedNavball>());
+             base::make_not_null_unique<
+                 CoordinateFrameField<Navigation, RightHandedNavball>>(),
+             sun_world_position);
 }
 
 Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {
