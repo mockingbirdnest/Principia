@@ -30,24 +30,22 @@ template<typename Frame, typename ThisFrame>
 Rotation<ThisFrame, Frame>
 BodySurfaceFrameField<Frame, ThisFrame>::FromThisFrame(
     Position<Frame> const& q) const {
-  // A vector going from the centre of the body to the point in the field.
-  Displacement<Frame> const displacement = q - body_position_;
+  Displacement<Frame> const from_body_centre = q - body_position_;
 
-  Vector<double, Frame> const normalized_displacement = Normalize(displacement);
+  Vector<double, Frame> const zenith = Normalize(from_body_centre);
   double const axis_projection =
-      InnerProduct(normalized_displacement, body_axis_);
+      InnerProduct(zenith, body_axis_);
   double const axis_projection² = axis_projection * axis_projection;
 
-  // The unit vector x directed along the polar axis is
-  // |λ * body_axis + μ * normalized_displacement|.  Note that λ is positive.
+  // The unit vector |north| is directed along the polar axis.  Note that λ is
+  // positive.
   double const λ = 1 / Sqrt(1 - axis_projection²);
   auto const μ = -λ * axis_projection;
+  Vector<double, Frame> const north = λ * body_axis_ + μ * zenith;
+  Vector<double, Frame> const nadir = -zenith;
+  Bivector<double, Frame> const east = Wedge(nadir, north);
 
-  Vector<double, Frame> const x = λ * body_axis_ + μ * normalized_displacement;
-  Vector<double, Frame> const& z = normalized_displacement;
-  Bivector<double, Frame> const y = Wedge(z, x);
-
-  return Rotation<ThisFrame, Frame>(x, y, z);
+  return Rotation<ThisFrame, Frame>(north, east, nadir);
 }
 
 }  // namespace internal_body_surface_frame_field

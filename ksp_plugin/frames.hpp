@@ -43,7 +43,7 @@ using BodyWorld = Frame<serialization::Frame::PluginTag,
                         serialization::Frame::BODY_WORLD, false>;
 
 // The frame used for the navball.  Its definition depends on the choice of a
-// subclass of FrameField.
+// subclass of FrameField.  This frame is left-handed.
 using Navball = Frame<serialization::Frame::PluginTag,
                       serialization::Frame::NAVBALL, false>;
 

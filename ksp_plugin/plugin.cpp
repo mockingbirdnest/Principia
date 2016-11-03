@@ -30,6 +30,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
+#include "physics/frame_field.hpp"
 #include "physics/rotating_body.hpp"
 
 namespace principia {
@@ -57,6 +58,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
+using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
 using physics::KeplerianElements;
@@ -669,31 +671,50 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
 
+  struct RightHandedNavball;
+
   class NavballFrameField : public FrameField<World, Navball> {
    public:
     NavballFrameField(not_null<Plugin const*> const plugin,
-                      Position<World> const& sun_world_position)
+                      Position<World> const& sun_world_position,
+                      FrameField<Navigation, RightHandedNavball> const&
+                          right_handed_navball_field)
         : plugin_(plugin),
-          sun_world_position_(sun_world_position) {}
+          sun_world_position_(sun_world_position),
+          right_handed_navball_field_(right_handed_navball_field) {}
 
     Rotation<Navball, World> FromThisFrame(
         Position<World> const& q) const override {
       Instant const& current_time = plugin_->current_time_;
-      auto const to_world = OrthogonalMap<WorldSun, World>::Identity() *
-                            plugin_->BarycentricToWorldSun();
       plugin_->ephemeris_->Prolong(current_time);
-      auto const positions_from_world =
-          AffineMap<World, Barycentric, Length, OrthogonalMap>(
-              sun_world_position_,
-              plugin_->sun_->current_position(current_time),
-              to_world.Inverse());
-      // KSP's navball has x west, y up, z south.
-      // We want x north, y west, z up.
-      auto const orthogonal_map =
-          to_world *
+
+      OrthogonalMap<Barycentric, World> const barycentric_to_world =
+          OrthogonalMap<WorldSun, World>::Identity() *
+          plugin_->BarycentricToWorldSun();
+      OrthogonalMap<Navigation, World> const navigation_to_world =
+          barycentric_to_world *
           plugin_->plotting_frame_->FromThisFrameAtTime(current_time)
-              .orthogonal_map() *
-          Permutation<World, Navigation>(Permutation<World, Navigation>::XZY)
+              .orthogonal_map();
+
+      AffineMap<World, Barycentric, Length, OrthogonalMap> const
+          world_to_barycentric(sun_world_position_,
+                               plugin_->sun_->current_position(current_time),
+                               barycentric_to_world.Inverse());
+      AffineMap<Barycentric, Navigation, Length, OrthogonalMap> const
+          barycentric_to_navigation =
+              plugin_->plotting_frame_->ToThisFrameAtTime(current_time)
+                  .rigid_transformation();
+      Position<Navigation> const q_in_navigation =
+          (barycentric_to_navigation * world_to_barycentric)(q);
+
+      // KSP's navball has x west, y up, z south.
+      // We want x north, y east, z down.
+      // TODO(phl): So what permutation should I use?
+      OrthogonalMap<Navball, World> const orthogonal_map =
+          navigation_to_world *
+          right_handed_navball_field_.FromThisFrame(q_in_navigation).Forget() *
+          Permutation<World, RightHandedNavball>(
+              Permutation<World, RightHandedNavball>::XZY)
               .Forget() *
           Rotation<Navball, World>(π / 2 * Radian,
                                    Bivector<double, World>({0, 1, 0}),
@@ -706,9 +727,14 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
    private:
     not_null<Plugin const*> const plugin_;
     Position<World> const sun_world_position_;
+    FrameField<Navigation, RightHandedNavball> const
+        right_handed_navball_field_;
   };
 
-  return std::make_unique<NavballFrameField>(this, sun_world_position);
+  return std::make_unique<NavballFrameField>(
+             this,
+             sun_world_position,
+             CoordinateFrameField<Navigation, RightHandedNavball>());
 }
 
 Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {
