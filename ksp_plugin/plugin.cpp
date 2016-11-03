@@ -711,8 +711,6 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
-      // TODO(phl): So what permutation should I use?  Do I even need to
-      // compose a permutation and a rotation?
       OrthogonalMap<Navball, World> const orthogonal_map =
           navigation_to_world *
           right_handed_navball_field_->FromThisFrame(q_in_navigation).Forget() *
