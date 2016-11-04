@@ -331,6 +331,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="burn.hpp" />
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
+    <ClInclude Include="coupling.hpp" />
     <ClInclude Include="flight_plan.hpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="interface.generated.h">
