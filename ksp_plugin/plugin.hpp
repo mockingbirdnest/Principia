@@ -59,6 +59,7 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
+using quantities::Length;
 using quantities::Mass;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -332,6 +333,15 @@ class Plugin {
       not_null<serialization::Plugin*> const message) const;
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
       serialization::Plugin const& message);
+
+ protected:
+  // May be overriden in tests to inject a mock.
+  virtual std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+      std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
+      Instant const& initial_time,
+      Length const& fitting_tolerance,
+      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
