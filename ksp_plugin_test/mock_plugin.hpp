@@ -138,12 +138,6 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD0(GetPlottingFrame,
                      not_null<NavigationFrame const*>());
 
-  MOCK_CONST_METHOD3(
-      PlotBarycentricPosition,
-      Position<World>(Instant const& t,
-                      Position<Barycentric> const& position,
-                      Position<World> const& sun_world_position));
-
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
   void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,

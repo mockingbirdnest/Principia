@@ -617,25 +617,6 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
 }
 
-Position<World> Plugin::PlotBarycentricPosition(
-    Instant const& t,
-    Position<Barycentric> const& position,
-    Position<World> const& sun_world_position) const {
-  auto const barycentric_to_world =
-      AffineMap<Barycentric, World, Length, OrthogonalMap>(
-          sun_->current_position(current_time_),
-          sun_world_position,
-          OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
-  auto const barycentric_to_navigation_at_t =
-      plotting_frame_->ToThisFrameAtTime(t).rigid_transformation();
-  auto const navigation_frame_to_world_at_current_time =
-      barycentric_to_world *
-          plotting_frame_->
-              FromThisFrameAtTime(current_time_).rigid_transformation();
-  return navigation_frame_to_world_at_current_time(
-             barycentric_to_navigation_at_t(position));
-}
-
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {
