@@ -186,8 +186,7 @@ class TestablePlugin : public Plugin {
 
     // Return the mock ephemeris.  We squirelled away a pointer in
     // |mock_ephemeris_|.
-    return std::unique_ptr<Ephemeris<Barycentric>>(
-        owned_mock_ephemeris_.release());
+    return std::move(owned_mock_ephemeris_);
   }
 
  private:
@@ -635,7 +634,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
-  EXPECT_CALL(plugin_->mock_ephemeris(), t_max()).WillRepeatedly(Return(Instant()));
+  EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
+      .WillRepeatedly(Return(Instant()));
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _))
@@ -708,7 +708,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
-  EXPECT_CALL(plugin_->mock_ephemeris(), t_max()).WillRepeatedly(Return(Instant()));
+  EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
+      .WillRepeatedly(Return(Instant()));
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
@@ -796,7 +797,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystemFactory::Earth);
   EXPECT_TRUE(inserted);
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_))
+      .Times(AnyNumber());
   plugin_->SetVesselStateOffset(guid,
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,

@@ -335,7 +335,7 @@ class Plugin {
       serialization::Plugin const& message);
 
  protected:
-  // Maybe overriden in tests to inject a mock.
+  // May be overriden in tests to inject a mock.
   virtual std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
       std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
       std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
