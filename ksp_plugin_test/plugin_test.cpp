@@ -122,28 +122,23 @@ ACTION(AppendToDiscreteTrajectory) {
 }  // namespace
 
 class TestablePlugin : public Plugin {
-  // Someone has to own the bodies; normally it would be the ephemeris, but
-  // since we mock it, we keep them here instead.
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>>  bodies_;
-  std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
-  std::unique_ptr<StrictMock<MockEphemeris<Barycentric>>> mock_ephemeris_;
-
  public:
   TestablePlugin(Instant const& game_epoch,
                  Instant const& solar_system_epoch,
                  Angle const& planetarium_rotation)
-      : Plugin(game_epoch,
-               solar_system_epoch,
-               planetarium_rotation),
-        mock_ephemeris_(
-            std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
+      : Plugin(game_epoch, solar_system_epoch, planetarium_rotation),
+        // The |mock_ephemeris_| has to be created early so that we can write
+        // expectations before |EndInitialization| has been called.
+        owned_mock_ephemeris_(
+            std::make_unique<MockEphemeris<Barycentric>>()),
+        mock_ephemeris_(owned_mock_ephemeris_.get()) {}
 
   Time const& Δt() const {
     return history_parameters_.step();
   }
 
-  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {
-    return mock_ephemeris_.get();
+  MockEphemeris<Barycentric>& mock_ephemeris() const {
+    return *mock_ephemeris_;
   }
 
   Rotation<AliceSun, Barycentric> InversePlanetariumRotation() {
@@ -152,45 +147,58 @@ class TestablePlugin : public Plugin {
 
   not_null<ContinuousTrajectory<Barycentric> const*> trajectory(
       Index const index) const {
-    return &trajectories_.at(index);
+    return trajectories_.at(index).get();
+  }
+
+ protected:
+  // We override this part of initialization in order to create a
+  // |MockEphemeris| rather than an |Ephemeris|.
+  std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+      std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
+      Instant const& initial_time,
+      Length const& fitting_tolerance,
+      Ephemeris<Barycentric>::FixedStepParameters const& parameters) override {
+    // Own the bodies.
+    bodies_ = std::move(bodies);
+
+    // Construct continuous trajectories for the bodies with some data
+    Index index = 0;
+    for (auto const& degrees_of_freedom : initial_state) {
+      trajectories_.push_back(
+          base::make_not_null_unique<ContinuousTrajectory<Barycentric>>(
+              45 * Minute, 1 * Milli(Metre)));
+      auto const& trajectory = trajectories_.back();
+      for (int i = 0; i < 9; ++i) {
+        trajectory->Append(
+            current_time_ + i * 45 * Minute,
+            {degrees_of_freedom.position() +
+                 i * 45 * Minute * degrees_of_freedom.velocity(),
+             degrees_of_freedom.velocity()});
+      }
+
+      // Make sure that the |trajectory| member does the right thing.
+      ON_CALL(*mock_ephemeris_, trajectory(bodies_[index].get()))
+          .WillByDefault(Return(trajectory.get()));
+
+      ++index;
+    }
+
+    // Return the mock ephemeris.  We squirelled away a pointer in
+    // |mock_ephemeris_|.
+    return std::unique_ptr<Ephemeris<Barycentric>>(
+        owned_mock_ephemeris_.release());
   }
 
  private:
-  // We override this part of initialization in order to create a
-  // |MockEphemeris| rather than an |Ephemeris|, and in order to fill in the
-  // continuous trajectories ourselves.
-  void InitializeEphemerisAndSetCelestialTrajectories() override {
-    std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-    auto bodies_it = absolute_initialization_->bodies.begin();
-    for (auto const& pair : absolute_initialization_->initial_state) {
-      Index const index = pair.first;
-      auto const& degree_of_freedom = pair.second;
-      EXPECT_EQ(index, bodies_it->first);
-      auto const inserted =
-          trajectories_.emplace(std::piecewise_construct,
-                                std::forward_as_tuple(index),
-                                std::forward_as_tuple(45 * Minute,
-                                                      1 * Milli(Metre)));
-      EXPECT_TRUE(inserted.second);
-      for (int i = 0; i < 9; ++i) {
-        inserted.first->second.Append(
-            current_time_ + i * 45 * Minute,
-            {degree_of_freedom.position() +
-                 i * 45 * Minute * degree_of_freedom.velocity(),
-             degree_of_freedom.velocity()});
-      }
-      bodies_.emplace_back(std::move(bodies_it->second));
-      ++bodies_it;
-    }
-
-    absolute_initialization_ = std::experimental::nullopt;
-    ephemeris_ = std::move(mock_ephemeris_);
-    for (auto const& pair : celestials_) {
-      auto const& index = pair.first;
-      auto& celestial = *pair.second;
-      celestial.set_trajectory(&FindOrDie(trajectories_, index));
-    }
-  }
+  // Someone has to own the bodies; normally it would be the ephemeris, but
+  // since we mock it, we keep them here instead.  Similarly for the
+  // trajectories.
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
+  std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Barycentric>>>>
+      trajectories_;
+  std::unique_ptr<MockEphemeris<Barycentric>> owned_mock_ephemeris_;
+  MockEphemeris<Barycentric>* mock_ephemeris_;
 };
 
 class PluginTest : public testing::Test {
@@ -214,7 +222,6 @@ class PluginTest : public testing::Test {
                     initial_time_,
                     initial_time_,
                     planetarium_rotation_)) {
-    mock_ephemeris_ = plugin_->mock_ephemeris();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -284,7 +291,7 @@ class PluginTest : public testing::Test {
     bool const inserted = plugin_->InsertOrKeepVessel(
                               guid, SolarSystemFactory::Earth);
     EXPECT_TRUE(inserted) << guid;
-    EXPECT_CALL(*mock_ephemeris_, Prolong(time)).RetiresOnSaturation();
+    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(time)).RetiresOnSaturation();
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
@@ -294,7 +301,6 @@ class PluginTest : public testing::Test {
 
   RotatingBody<Barycentric>::Parameters body_rotation_;
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
-  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant const initial_time_;
   not_null<std::unique_ptr<MassiveBody>> sun_body_;
@@ -440,10 +446,10 @@ TEST_F(PluginTest, Serialization) {
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
-  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
@@ -507,10 +513,10 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       make_not_null_unique<RotatingBody<Barycentric>>(
           1 * SIUnit<GravitationalParameter>(),
           body_rotation_));
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
-  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
               AlmostEquals(3.0 * Metre, 3));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
@@ -551,14 +557,14 @@ TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->UpdateCelestialHierarchy(not_a_body, SolarSystemFactory::Pluto);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->UpdateCelestialHierarchy(SolarSystemFactory::Sun, not_a_body);
@@ -573,7 +579,7 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, not_a_body);
@@ -591,7 +597,7 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->SetVesselStateOffset(guid,
@@ -601,11 +607,11 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Sun);
-    EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_));
+    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_));
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
@@ -629,17 +635,17 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
-  EXPECT_CALL(*mock_ephemeris_, t_max()).WillRepeatedly(Return(Instant()));
-  EXPECT_CALL(*mock_ephemeris_, empty()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _))
+  EXPECT_CALL(plugin_->mock_ephemeris(), t_max()).WillRepeatedly(Return(Instant()));
+  EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
-  EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
-  EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
+  EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
-  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(_)).Times(2);
+  EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(_)).Times(2);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
           RigidMotion<Barycentric, Navigation>(
@@ -651,7 +657,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
           MockDynamicFrame<Barycentric, Navigation>::Rot::Identity()));
 
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
@@ -698,20 +704,20 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
 
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
-  EXPECT_CALL(*mock_ephemeris_, t_max()).WillRepeatedly(Return(Instant()));
-  EXPECT_CALL(*mock_ephemeris_, empty()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_ephemeris_, trajectory(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), t_max()).WillRepeatedly(Return(Instant()));
+  EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
+  EXPECT_CALL(plugin_->mock_ephemeris(), trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
-  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
-  EXPECT_CALL(*mock_ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _))
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
-  EXPECT_CALL(*mock_ephemeris_, FlowWithFixedStep(_, _, _, _))
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _, _, _))
       .WillRepeatedly(AppendToDiscreteTrajectories());
-  EXPECT_CALL(*mock_ephemeris_, planetary_integrator())
+  EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
 
@@ -724,7 +730,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                                     satellite_initial_velocity_));
 
   Instant const& time = initial_time_ + 1 * Second;
-  EXPECT_CALL(*mock_ephemeris_, ForgetBefore(HistoryTime(time, 5)))
+  EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(HistoryTime(time, 5)))
       .Times(1);
   plugin_->AdvanceTime(time, Angle());
   plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
@@ -745,14 +751,14 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->VesselFromParent(guid);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Sun);
@@ -767,14 +773,14 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->CelestialFromParent(not_a_body);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+    EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
     plugin_->CelestialFromParent(SolarSystemFactory::Sun);
@@ -784,13 +790,13 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystemFactory::Earth);
   EXPECT_TRUE(inserted);
-  EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_)).Times(AnyNumber());
   plugin_->SetVesselStateOffset(guid,
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
@@ -803,10 +809,10 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
-  EXPECT_CALL(*mock_ephemeris_, WriteToMessage(_))
+  EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
-  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {

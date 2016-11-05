@@ -945,6 +945,19 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   return std::move(plugin);
 }
 
+std::unique_ptr<Ephemeris<Barycentric>> Plugin::NewEphemeris(
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+    std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
+    Instant const& initial_time,
+    Length const& fitting_tolerance,
+    Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
+  return std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
+                                                  initial_state,
+                                                  initial_time,
+                                                  fitting_tolerance,
+                                                  parameters);
+}
+
 Plugin::Plugin(
     GUIDToOwnedVessel vessels,
     IndexToOwnedCelestial celestials,
@@ -995,12 +1008,11 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
     initial_state.emplace_back(degrees_of_freedom);
   }
   absolute_initialization_ = std::experimental::nullopt;
-  ephemeris_ =
-      std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
-                                               initial_state,
-                                               current_time_,
-                                               fitting_tolerance,
-                                               DefaultEphemerisParameters());
+  ephemeris_ = NewEphemeris(std::move(bodies),
+                            initial_state,
+                            current_time_,
+                            fitting_tolerance,
+                            DefaultEphemerisParameters());
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
     celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
