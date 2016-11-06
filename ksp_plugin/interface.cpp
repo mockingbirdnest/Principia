@@ -592,11 +592,11 @@ WXYZ principia__NavballOrientation(
                                                   sun_world_position,
                                                   ship_world_position});
   CHECK_NOTNULL(plugin);
-  FrameField<World> const frame_field = plugin->Navball(
+  auto const frame_field = plugin->NavballFrameField(
       World::origin +
           Displacement<World>(FromXYZ(sun_world_position) * Metre));
   return m.Return(ToWXYZ(
-      frame_field(
+      frame_field->FromThisFrame(
           World::origin +
               Displacement<World>(
                   FromXYZ(ship_world_position) * Metre)).quaternion()));

@@ -59,6 +59,7 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
+using quantities::Length;
 using quantities::Mass;
 using quantities::si::Hour;
 using quantities::si::Metre;
@@ -276,11 +277,6 @@ class Plugin {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
-  virtual Position<World> PlotBarycentricPosition(
-      Instant const& t,
-      Position<Barycentric> const& position,
-      Position<World> const& sun_world_position) const;
-
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
@@ -307,7 +303,7 @@ class Plugin {
       Index const reference_body_index) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
-  virtual FrameField<World> Navball(
+  virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
       Position<World> const& sun_world_position) const;
 
   // The unit tangent, normal, or binormal vector to the trajectory of the
@@ -332,6 +328,15 @@ class Plugin {
       not_null<serialization::Plugin*> const message) const;
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
       serialization::Plugin const& message);
+
+ protected:
+  // May be overriden in tests to inject a mock.
+  virtual std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+      std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
+      Instant const& initial_time,
+      Length const& fitting_tolerance,
+      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
@@ -431,7 +436,6 @@ class Plugin {
       hierarchical_initialization_;
 
   // Null if and only if |initializing_|.
-  // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
 
   // The parameters for computing the various trajectories.
@@ -464,6 +468,7 @@ class Plugin {
   // Compatibility.
   bool is_pre_cardano_ = false;
 
+  friend class NavballFrameField;
   friend class TestablePlugin;
 };
 

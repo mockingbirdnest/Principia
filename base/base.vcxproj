@@ -263,6 +263,8 @@
   <ItemGroup>
     <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
+    <ClInclude Include="disjoint_sets.hpp" />
+    <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="get_line.hpp" />
     <ClInclude Include="get_line_body.hpp" />
@@ -289,6 +291,7 @@
     <ClInclude Include="version.generated.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="disjoint_sets_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />

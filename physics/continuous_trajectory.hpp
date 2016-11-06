@@ -83,10 +83,10 @@ class ContinuousTrajectory {
   // [t_min(), t_max()].  The |hint| may be used to speed up evaluation
   // in increasing time order.  It may be a nullptr (in which case no speed-up
   // takes place).
-  Position<Frame> EvaluatePosition(Instant const& time,
-                                   Hint* const hint) const;
-  Velocity<Frame> EvaluateVelocity(Instant const& time,
-                                   Hint* const hint) const;
+  virtual Position<Frame> EvaluatePosition(Instant const& time,
+                                           Hint* const hint) const;
+  virtual Velocity<Frame> EvaluateVelocity(Instant const& time,
+                                           Hint* const hint) const;
   virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& time,
       Hint* const hint) const;
