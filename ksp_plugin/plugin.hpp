@@ -277,11 +277,6 @@ class Plugin {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
-  virtual Position<World> PlotBarycentricPosition(
-      Instant const& t,
-      Position<Barycentric> const& position,
-      Position<World> const& sun_world_position) const;
-
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
@@ -441,7 +436,6 @@ class Plugin {
       hierarchical_initialization_;
 
   // Null if and only if |initializing_|.
-  // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
 
   // The parameters for computing the various trajectories.
