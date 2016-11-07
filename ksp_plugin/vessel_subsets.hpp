@@ -16,9 +16,12 @@ class Subset<ksp_plugin::Vessel>::Properties {
  public:
   class SubsetOfExistingPileUp {
    public:
-    explicit SubsetOfExistingPileUp(not_null<ksp_plugin::PileUp*> pile_up);
+    SubsetOfExistingPileUp(not_null<std::list<ksp_plugin::PileUp>*> pile_ups,
+                           std::list<ksp_plugin::PileUp>::iterator pile_up);
+
    private:
-    not_null<ksp_plugin::PileUp*> const pile_up_;
+    not_null<std::list<ksp_plugin::PileUp>*> const pile_ups_;
+    std::list<ksp_plugin::PileUp>::iterator const pile_up_;
     int missing_;
     friend class Subset<ksp_plugin::Vessel>::Properties;
   };

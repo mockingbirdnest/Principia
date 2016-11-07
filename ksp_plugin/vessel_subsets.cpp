@@ -1,5 +1,7 @@
 #include "ksp_plugin/vessel_subsets.hpp"
 
+#include <list>
+
 #include "ksp_plugin/pile_up.hpp"
 
 namespace principia {
@@ -10,8 +12,10 @@ using ksp_plugin::PileUp;
 namespace base {
 
 Subset<Vessel>::Properties::SubsetOfExistingPileUp::SubsetOfExistingPileUp(
-    not_null<PileUp*> pile_up)
-    : pile_up_(pile_up) {
+    not_null<std::list<ksp_plugin::PileUp>*> pile_ups,
+    std::list<ksp_plugin::PileUp>::iterator pile_up)
+    : pile_ups_(pile_ups),
+      pile_up_(pile_up) {
   missing_ = pile_up_->vessels().size() - 1;
 }
 
@@ -32,6 +36,14 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
     subset_of_existing_pile_up_->missing_ -= other.vessels_.size();
     CHECK_GE(subset_of_existing_pile_up_->missing_, 0);
   } else {
+    if (subset_of_existing_pile_up_) {
+      subset_of_existing_pile_up_->pile_ups_->erase(
+          subset_of_existing_pile_up_->pile_up_);
+    }
+    if (other.subset_of_existing_pile_up_) {
+      other.subset_of_existing_pile_up_->pile_ups_->erase(
+          other.subset_of_existing_pile_up_->pile_up_);
+    }
     subset_of_existing_pile_up_ = std::experimental::nullopt;
   }
   vessels_.splice(vessels_.end(), other.vessels_);
