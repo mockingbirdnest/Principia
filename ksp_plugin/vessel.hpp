@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
@@ -17,6 +18,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::Subset;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -158,6 +160,9 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
+
+  not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
+  friend class Subset<Vessel>::Node;
 };
 
 // Factories for use by the clients and the compatibility code.

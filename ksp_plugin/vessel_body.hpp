@@ -40,7 +40,8 @@ inline Vessel::Vessel(not_null<Celestial const*> const parent,
       prediction_adaptive_step_parameters_(
           prediction_adaptive_step_parameters),
       parent_(parent),
-      ephemeris_(ephemeris) {}
+      ephemeris_(ephemeris),
+      subset_node_(make_not_null_unique<Subset<Vessel>::Node>()) {}
 
 inline not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
@@ -275,7 +276,8 @@ inline Vessel::Vessel()
       prolongation_adaptive_step_parameters_(DefaultProlongationParameters()),
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()) {}
+      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      subset_node_(make_not_null_unique<Subset<Vessel>::Node>()) {}
 
 inline void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
   Instant const& history_last_time = history_->last().time();

@@ -1,5 +1,7 @@
 #include "ksp_plugin/vessel_subsets.hpp"
 
+#include "ksp_plugin/pile_up.hpp"
+
 namespace principia {
 
 using ksp_plugin::Vessel;
@@ -33,6 +35,12 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
     subset_of_existing_pile_up_ = std::experimental::nullopt;
   }
   vessels_.splice(vessels_.end(), other.vessels_);
+}
+
+template<>
+not_null<Subset<ksp_plugin::Vessel>::Node*>
+Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
+  return element.subset_node_.get();
 }
 
 }  // namespace base
