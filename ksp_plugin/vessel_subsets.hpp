@@ -32,7 +32,10 @@ class Subset<ksp_plugin::Vessel>::Properties {
 
   void MergeWith(Properties& other);
 
+  std::experimental::optional<ksp_plugin::PileUp> Collect();
+
  private:
+  bool collected_ = false;
   std::experimental::optional<SubsetOfExistingPileUp>
       subset_of_existing_pile_up_;
   std::list<not_null<ksp_plugin::Vessel*>> vessels_;

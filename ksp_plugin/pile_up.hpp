@@ -19,6 +19,8 @@ using quantities::Force;
 // |Vessels|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
+  PileUp(std::list<not_null<Vessel*>> vessels);
+
   /*
   void AdvanceTimeInFreeFall(Instant const& t);
   void AdvanceTimeUnderThrust(Instant const& t,

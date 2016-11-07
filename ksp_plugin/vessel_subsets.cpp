@@ -27,6 +27,17 @@ Subset<Vessel>::Properties::Properties(
   vessels_.emplace_back(vessel);
 }
 
+std::experimental::optional<PileUp>
+Subset<ksp_plugin::Vessel>::Properties::Collect() {
+  if (collected_ || (subset_of_existing_pile_up_ &&
+                     subset_of_existing_pile_up_->missing_ == 0)) {
+    return std::experimental::nullopt;
+  } else {
+    collected_ = true;
+    return PileUp(std::move(vessels_));
+  }
+}
+
 void Subset<Vessel>::Properties::MergeWith(Properties& other) {
   if (subset_of_existing_pile_up_ && other.subset_of_existing_pile_up_ &&
       subset_of_existing_pile_up_->pile_up_ ==
