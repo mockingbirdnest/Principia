@@ -270,6 +270,15 @@ inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   return std::move(vessel);
 }
 
+inline void Vessel::set_pile_up(ContainerIterator<std::list<PileUp>> pile_up) {
+  pile_up_ = pile_up;
+}
+
+inline std::experimental::optional<ContainerIterator<std::list<PileUp>>>
+Vessel::pile_up() const {
+  return pile_up_;
+}
+
 inline Vessel::Vessel()
     : body_(),
       history_fixed_step_parameters_(DefaultHistoryParameters()),

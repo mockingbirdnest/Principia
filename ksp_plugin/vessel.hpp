@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/container_iterator.hpp"
 #include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
@@ -16,8 +17,15 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+namespace internal_pile_up {
+class PileUp;
+}  // namespace internal_pile_up
+using internal_pile_up::PileUp;
+
 namespace internal_vessel {
 
+using base::ContainerIterator;
 using base::Subset;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -124,6 +132,10 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> const ephemeris,
       not_null<Celestial const*> const parent);
 
+  void set_pile_up(ContainerIterator<std::list<PileUp>> pile_up);
+  std::experimental::optional<ContainerIterator<std::list<PileUp>>> pile_up()
+      const;
+
  protected:
   // For mocking.
   Vessel();
@@ -160,6 +172,8 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
+
+  std::experimental::optional<ContainerIterator<std::list<PileUp>>> pile_up_;
 
   not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
   friend class Subset<Vessel>::Node;

@@ -12,18 +12,16 @@ using ksp_plugin::PileUp;
 namespace base {
 
 Subset<Vessel>::Properties::SubsetOfExistingPileUp::SubsetOfExistingPileUp(
-    not_null<std::list<ksp_plugin::PileUp>*> pile_ups,
-    std::list<ksp_plugin::PileUp>::iterator pile_up)
-    : pile_ups_(pile_ups),
-      pile_up_(pile_up) {
-  missing_ = pile_up_->vessels().size() - 1;
+    ContainerIterator<PileUps> pile_up)
+    : pile_up_(pile_up) {
+  missing_ = pile_up_.iterator->vessels().size() - 1;
 }
 
-Subset<Vessel>::Properties::Properties(
-    not_null<Vessel*> vessel,
-    std::experimental::optional<SubsetOfExistingPileUp>
-        subset_of_existing_pile_up)
-    : subset_of_existing_pile_up_(subset_of_existing_pile_up) {
+Subset<Vessel>::Properties::Properties(not_null<ksp_plugin::Vessel*> vessel) {
+  if (vessel->pile_up()) {
+    subset_of_existing_pile_up_.emplace(
+        SubsetOfExistingPileUp(*vessel->pile_up()));
+  }
   vessels_.emplace_back(vessel);
 }
 
@@ -40,20 +38,20 @@ Subset<ksp_plugin::Vessel>::Properties::Collect() {
 
 void Subset<Vessel>::Properties::MergeWith(Properties& other) {
   if (subset_of_existing_pile_up_ && other.subset_of_existing_pile_up_ &&
-      subset_of_existing_pile_up_->pile_up_ ==
-          other.subset_of_existing_pile_up_->pile_up_) {
+      subset_of_existing_pile_up_->pile_up_.iterator ==
+          other.subset_of_existing_pile_up_->pile_up_.iterator) {
     CHECK_EQ(subset_of_existing_pile_up_->missing_ - other.vessels_.size(),
              other.subset_of_existing_pile_up_->missing_ - vessels_.size());
     subset_of_existing_pile_up_->missing_ -= other.vessels_.size();
     CHECK_GE(subset_of_existing_pile_up_->missing_, 0);
   } else {
     if (subset_of_existing_pile_up_) {
-      subset_of_existing_pile_up_->pile_ups_->erase(
-          subset_of_existing_pile_up_->pile_up_);
+      subset_of_existing_pile_up_->pile_up_.container->erase(
+          subset_of_existing_pile_up_->pile_up_.iterator);
     }
     if (other.subset_of_existing_pile_up_) {
-      other.subset_of_existing_pile_up_->pile_ups_->erase(
-          other.subset_of_existing_pile_up_->pile_up_);
+      other.subset_of_existing_pile_up_->pile_up_.container->erase(
+          other.subset_of_existing_pile_up_->pile_up_.iterator);
     }
     subset_of_existing_pile_up_ = std::experimental::nullopt;
   }

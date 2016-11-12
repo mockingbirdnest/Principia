@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #include "base/disjoint_sets.hpp"
 
 #include "ksp_plugin/pile_up.hpp"
@@ -13,22 +15,19 @@ namespace base {
 
 template<>
 class Subset<ksp_plugin::Vessel>::Properties {
+  using PileUps = std::list<ksp_plugin::PileUp>;
  public:
   class SubsetOfExistingPileUp {
    public:
-    SubsetOfExistingPileUp(not_null<std::list<ksp_plugin::PileUp>*> pile_ups,
-                           std::list<ksp_plugin::PileUp>::iterator pile_up);
+    explicit SubsetOfExistingPileUp(ContainerIterator<PileUps> pile_up);
 
    private:
-    not_null<std::list<ksp_plugin::PileUp>*> const pile_ups_;
-    std::list<ksp_plugin::PileUp>::iterator const pile_up_;
+    ContainerIterator<PileUps> const pile_up_;
     int missing_;
     friend class Subset<ksp_plugin::Vessel>::Properties;
   };
 
-  Properties(not_null<ksp_plugin::Vessel*> vessel,
-             std::experimental::optional<SubsetOfExistingPileUp>
-                 subset_of_existing_pile_up);
+  Properties(not_null<ksp_plugin::Vessel*> vessel);
 
   void MergeWith(Properties& other);
 
@@ -37,7 +36,7 @@ class Subset<ksp_plugin::Vessel>::Properties {
  private:
   bool collected_ = false;
   std::experimental::optional<SubsetOfExistingPileUp>
-      subset_of_existing_pile_up_;
+      subset_of_existing_pile_up_ ;
   std::list<not_null<ksp_plugin::Vessel*>> vessels_;
 };
 
