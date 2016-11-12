@@ -25,14 +25,17 @@ Subset<Vessel>::Properties::Properties(not_null<ksp_plugin::Vessel*> vessel) {
   vessels_.emplace_back(vessel);
 }
 
-std::experimental::optional<PileUp>
-Subset<ksp_plugin::Vessel>::Properties::Collect() {
-  if (collected_ || (subset_of_existing_pile_up_ &&
-                     subset_of_existing_pile_up_->missing_ == 0)) {
-    return std::experimental::nullopt;
-  } else {
+void Subset<ksp_plugin::Vessel>::Properties::Collect(
+    not_null<PileUps*> pile_ups) {
+  if (!collected_ &&
+      !(subset_of_existing_pile_up_ &&
+        subset_of_existing_pile_up_->missing_ == 0)) {
     collected_ = true;
-    return PileUp(std::move(vessels_));
+    pile_ups->emplace_front(std::move(vessels_));
+    auto it = pile_ups->begin();
+    for (not_null<Vessel*> const vessel : it->vessels()) {
+      vessel->set_pile_up(ContainerIterator<PileUps>(pile_ups, it));
+    }
   }
 }
 

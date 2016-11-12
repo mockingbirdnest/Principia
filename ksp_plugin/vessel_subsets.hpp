@@ -31,7 +31,7 @@ class Subset<ksp_plugin::Vessel>::Properties {
 
   void MergeWith(Properties& other);
 
-  std::experimental::optional<ksp_plugin::PileUp> Collect();
+  void Collect(not_null<PileUps*> pile_ups);
 
  private:
   bool collected_ = false;
