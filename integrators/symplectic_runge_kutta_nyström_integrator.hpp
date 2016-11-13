@@ -9,13 +9,11 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
-#include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
 
-using base::Status;
 using numerics::FixedVector;
 
 namespace integrators {
@@ -92,8 +90,8 @@ class SymplecticRungeKuttaNyströmIntegrator
   static CompositionMethod const composition = composition_;
 
  private:
-  FixedVector<double, stages_> a_;
-  FixedVector<double, stages_> b_;
+  FixedVector<double, stages_> const a_;
+  FixedVector<double, stages_> const b_;
   FixedVector<double, stages_> c_;
 };
 
