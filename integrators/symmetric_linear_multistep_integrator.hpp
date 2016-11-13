@@ -29,7 +29,8 @@ public:
   SymmetricLinearMultistepIntegrator(
       serialization::FixedStepSizeIntegrator::Kind const kind,
       FixedVector<double, half_order_> const& ɑ,
-      FixedVector<double, half_order_> const& β);
+      FixedVector<double, half_order_> const& β_numerators,
+      double const β_denominator);
 
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
@@ -44,17 +45,17 @@ public:
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
-QuinlanTremaine1990Order8();
-
-template <typename Position>
-SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8> const&
 Quinlan1999Order8A();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
 Quinlan1999Order8B();
+
+template <typename Position>
+SymmetricLinearMultistepIntegrator<Position,
+                                   /*order=*/8> const&
+QuinlanTremaine1990Order8();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
