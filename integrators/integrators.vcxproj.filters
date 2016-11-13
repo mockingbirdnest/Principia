@@ -47,6 +47,12 @@
     <ClInclude Include="ordinary_differential_equations_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="symmetric_linear_multistep_integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symmetric_linear_multistep_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp">
@@ -66,6 +72,9 @@
     </ClCompile>
     <ClCompile Include="..\base\status.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
