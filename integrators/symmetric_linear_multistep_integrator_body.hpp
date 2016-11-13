@@ -22,7 +22,29 @@ SymmetricLinearMultistepIntegrator(
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
     IntegrationProblem<ODE> const& problem,
-    Time const& step) const {}
+    Time const& step) const {
+  using Displacement = typename ODE::Displacement;
+  using Velocity = typename ODE::Velocity;
+  using Acceleration = typename ODE::Acceleration;
+
+  // Argument checks.
+  CHECK_NOTNULL(problem.initial_state);
+  int const dimension = problem.initial_state->positions.size();
+  CHECK_EQ(dimension, problem.initial_state->velocities.size());
+  CHECK_NE(Time(), step);
+
+  typename ODE::SystemState current_state = *problem.initial_state;
+
+  // Time step.
+  Time const& h = step;
+  // Current time.
+  DoublePrecision<Instant>& t = current_state.time;
+  // Current position.
+  std::vector<DoublePrecision<Position>>& q = current_state.positions;
+
+  while (h <= Abs((problem.t_final - t.value) - t.error)) {
+  }
+}
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
@@ -89,7 +111,8 @@ QuinlanTremaine1990Order14() {
   static SymmetricLinearMultistepIntegrator<Position, 14> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14,
       {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0},
-      {433489274083.0,
+      {0.0,
+       433489274083.0,
        -1364031998256.0,
        5583113380398.0,
        -14154444148720.0,
