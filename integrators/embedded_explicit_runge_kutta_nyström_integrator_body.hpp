@@ -87,11 +87,17 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                    lower_order,
                                                    stages,
                                                    first_same_as_last>::Solve(
-    IntegrationProblem<ODE> const& problem,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+    Instant const& t_final,
+    not_null<IntegrationInstance*> const instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
+
+  Instance* const down_cast_instance =
+      dynamic_cast_not_null<Instance*>(instance);
+  auto const& problem = down_cast_instance->problem;
+  auto const& append_state = down_cast_instance->append_state;
+  auto const& adaptive_step_size = down_cast_instance->adaptive_step_size;
 
   // Argument checks.
   CHECK_NOTNULL(problem.initial_state);
@@ -102,10 +108,10 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       Sign(adaptive_step_size.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(problem.initial_state->time.value, problem.t_final);
+    CHECK_LT(problem.initial_state->time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(problem.initial_state->time.value, problem.t_final);
+    CHECK_GT(problem.initial_state->time.value, t_final);
   }
   CHECK_GT(adaptive_step_size.safety_factor, 0);
   CHECK_LT(adaptive_step_size.safety_factor, 1);
@@ -178,7 +184,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 
     runge_kutta_nyström_step:
       // Termination condition.
-      Time const time_to_end = (problem.t_final - t.value) - t.error;
+      Time const time_to_end = (t_final - t.value) - t.error;
       at_end = integration_direction * h >= integration_direction * time_to_end;
       if (at_end) {
         // The chosen step size will overshoot.  Clip it to just reach the end,
@@ -239,19 +245,50 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       q_hat[k].Increment(Δq_hat[k]);
       v_hat[k].Increment(Δv_hat[k]);
     }
-    problem.append_state(current_state);
+    append_state(current_state);
     ++step_count;
     if (step_count == adaptive_step_size.max_steps && !at_end) {
       return Status(termination_condition::ReachedMaximalStepCount,
                     "Reached maximum step count " +
                         std::to_string(adaptive_step_size.max_steps) +
                         " at time " + DebugString(t.value) +
-                        "; problem t_final is " + DebugString(problem.t_final) +
+                        "; problem t_final is " + DebugString(t_final) +
                         ".");
     }
   }
   return Status(termination_condition::Done, "");
 }
+
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
+not_null<std::unique_ptr<IntegrationInstance>>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::
+NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance::AppendState<ODE> append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+  return make_not_null_unique<Instance>(problem,
+                                        std::move(append_state),
+                                        adaptive_step_size);
+}
+
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::
+Instance::Instance(IntegrationProblem<ODE> problem,
+                   AppendState<ODE> append_state,
+                   AdaptiveStepSize<ODE> adaptive_step_size)
+    : problem(std::move(problem)),
+      append_state(std::move(append_state)),
+      adaptive_step_size(std::move(adaptive_step_size)) {}
 
 }  // namespace integrators
 }  // namespace principia

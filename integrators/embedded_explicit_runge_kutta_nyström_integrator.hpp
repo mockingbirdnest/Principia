@@ -81,10 +81,24 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
   Status Solve(
-      IntegrationProblem<ODE> const& problem,
-      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+      Instant const& t_final,
+      not_null<IntegrationInstance*> const instance) const override;
+
+  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance::AppendState<ODE> append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
  protected:
+  struct Instance : public IntegrationInstance {
+    Instance(IntegrationProblem<ODE> problem,
+             AppendState<ODE> append_state,
+             AdaptiveStepSize<ODE> adaptive_step_size);
+    IntegrationProblem<ODE> const problem;
+    AppendState<ODE> const append_state;
+    AdaptiveStepSize<ODE> const adaptive_step_size;
+  };
+
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
   FixedVector<double, stages> const b_hat_;

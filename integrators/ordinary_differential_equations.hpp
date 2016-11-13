@@ -160,11 +160,15 @@ template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
-  // The last call to |problem.append_state| will have
-  // |state.time.value == problem.t_final|.
+  // The last call to |append_state| will have |state.time.value == t_final|.
   virtual Status Solve(
-      IntegrationProblem<ODE> const& problem,
-      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+      Instant const& t_final,
+      not_null<IntegrationInstance*> const instance) const = 0;
+
+  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance::AppendState<ODE> append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   void WriteToMessage(
       not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const;
