@@ -78,7 +78,7 @@ struct IntegrationInstance {
   template<typename ODE>
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
-  virtual ~IntegrationInstance() = default;
+  virtual ~IntegrationInstance() = default;  // Makes the type polymorphic.
 };
 
 // Settings for for adaptive step size integration.
