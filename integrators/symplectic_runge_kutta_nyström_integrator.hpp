@@ -81,10 +81,15 @@ class SymplecticRungeKuttaNyströmIntegrator
   SymplecticRungeKuttaNyströmIntegrator(
       serialization::FixedStepSizeIntegrator::Kind const kind,
       FixedVector<double, stages_> const& a,
-                                        FixedVector<double, stages_> const& b);
+      FixedVector<double, stages_> const& b);
 
-  void Solve(IntegrationProblem<ODE> const& problem,
-             Time const& step) const override;
+  void Solve(Instant const& t_final,
+             not_null<IntegrationInstance*> const instance) const override;
+
+  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename IntegrationInstance::AppendState<ODE> append_state,
+    Time const& step) const override;
 
   static int const order = order_;
   static bool const time_reversible = time_reversible_;
@@ -92,6 +97,15 @@ class SymplecticRungeKuttaNyströmIntegrator
   static CompositionMethod const composition = composition_;
 
  private:
+  struct Instance : public IntegrationInstance {
+    Instance(IntegrationProblem<ODE> problem,
+             AppendState<ODE> append_state,
+             Time step);
+    IntegrationProblem<ODE> const problem;
+    AppendState<ODE> const append_state;
+    Time const step;
+  };
+
   FixedVector<double, stages_> a_;
   FixedVector<double, stages_> b_;
   FixedVector<double, stages_> c_;

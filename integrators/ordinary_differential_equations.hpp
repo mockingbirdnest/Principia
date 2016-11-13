@@ -71,14 +71,15 @@ template<typename ODE>
 struct IntegrationProblem {
   ODE equation;
   typename ODE::SystemState const* initial_state;
-
-  //
-  Instant t_final;
-  std::function<void(typename ODE::SystemState const& state)> append_state;
 };
 
 // An opaque object for holding the state during the integration of a problem.
-struct IntegrationInstance {};
+struct IntegrationInstance {
+  template<typename ODE>
+  using AppendState =
+      std::function<void(typename ODE::SystemState const& state)>;
+  virtual ~IntegrationInstance() = default;
+};
 
 // Settings for for adaptive step size integration.
 template<typename ODE>
@@ -122,12 +123,13 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // unique |Instant| of the form |problem.t_final + n * step| in
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
-  virtual void Solve(Instant const& t_final,
-                     not_null<IntegrationInstance*> const instance) const = 0;
+  virtual void Solve(
+      Instant const& t_final,
+      not_null<IntegrationInstance*> const instance) const = 0;
 
-  virtual IntegrationInstance MakeInstance(
+  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    std::function<void(typename ODE::SystemState const& state)> append_state,
+    IntegrationInstance::AppendState<ODE> append_state,
     Time const& step) const = 0;
 
   void WriteToMessage(

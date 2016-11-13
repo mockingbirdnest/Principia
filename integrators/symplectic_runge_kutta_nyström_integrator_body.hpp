@@ -11,6 +11,8 @@
 
 namespace principia {
 
+using base::dynamic_cast_not_null;
+using base::make_not_null_unique;
 using geometry::Sign;
 using quantities::Abs;
 using testing_utilities::ULPDistance;
@@ -71,11 +73,17 @@ template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::Solve(
-    IntegrationProblem<ODE> const& problem,
-    Time const& step) const {
+    Instant const& t_final,
+    not_null<IntegrationInstance*> const instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
+
+  Instance* const down_cast_instance =
+      dynamic_cast_not_null<Instance*>(instance);
+  auto const& problem = down_cast_instance->problem;
+  auto const& append_state = down_cast_instance->append_state;
+  Time const& step = down_cast_instance->step;
 
   // Argument checks.
   CHECK_NOTNULL(problem.initial_state);
@@ -85,10 +93,10 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   Sign const integration_direction = Sign(step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(problem.initial_state->time.value, problem.t_final);
+    CHECK_LT(problem.initial_state->time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(problem.initial_state->time.value, problem.t_final);
+    CHECK_GT(problem.initial_state->time.value, t_final);
   }
 
   typename ODE::SystemState current_state = *problem.initial_state;
@@ -124,7 +132,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   // exp(bᵢ h B).
   int first_stage = composition == ABA ? 1 : 0;
 
-  while (abs_h <= Abs((problem.t_final - t.value) - t.error)) {
+  while (abs_h <= Abs((t_final - t.value) - t.error)) {
     std::fill(Δq.begin(), Δq.end(), Displacement{});
     std::fill(Δv.begin(), Δv.end(), Velocity{});
 
@@ -162,9 +170,31 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
-    problem.append_state(current_state);
+    append_state(current_state);
   }
 }
+
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
+not_null<std::unique_ptr<IntegrationInstance>>
+SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
+                                      evaluations_, composition_>::
+NewInstance(IntegrationProblem<ODE> const& problem,
+            typename IntegrationInstance::AppendState<ODE> append_state,
+            Time const& step) const {
+  return make_not_null_unique<Instance>(problem, std::move(append_state), step);
+}
+
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
+SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
+                                      evaluations_, composition_>::
+Instance::Instance(IntegrationProblem<ODE> problem,
+                   AppendState<ODE> append_state,
+                   Time step)
+    : problem(std::move(problem)),
+      append_state(std::move(append_state)),
+      step(std::move(step)) {}
 
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, BA> const&
