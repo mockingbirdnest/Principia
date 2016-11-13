@@ -5,21 +5,6 @@
 namespace principia {
 namespace integrators {
 
-namespace {
-
-template<int size>
-constexpr FixedVector<double, size> Divide(
-    FixedVector<double, size> const& numerators,
-    double const denominator) {
-  FixedVector<double, size> result = numerators;
-  for (int i = 0; i < size; ++i) {
-    numerators /= denominator;
-  }
-  return result;
-}
-
-}  // namespace
-
 template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::
 SymmetricLinearMultistepIntegrator(
@@ -28,8 +13,11 @@ SymmetricLinearMultistepIntegrator(
     FixedVector<double, half_order_> const & β_numerators,
     double const β_denominator)
     : FixedStepSizeIntegrator(kind),
-      ɑ_(ɑ),
-      β_(Divide(β_numerators, β_denominator)) {}
+      ɑ_(ɑ) {
+  for (int i = 0; i < half_order_; ++i) {
+    β_[i] = β_numerators[i] / β_denominator;
+  }
+}
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(

@@ -39,7 +39,7 @@ public:
 
  private:
   FixedVector<double, half_order_> const ɑ_;
-  FixedVector<double, half_order_> const β_;
+  FixedVector<double, half_order_> β_;
 };
 
 template <typename Position>
