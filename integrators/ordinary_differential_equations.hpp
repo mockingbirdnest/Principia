@@ -66,15 +66,19 @@ struct SpecialSecondOrderDifferentialEquation {
   RightHandSideComputation compute_acceleration;
 };
 
-// An initial value problem, together with a final time for the solution
-// and a callback for processing solution points.
+// An initial value problem.
 template<typename ODE>
 struct IntegrationProblem {
   ODE equation;
   typename ODE::SystemState const* initial_state;
+
+  //
   Instant t_final;
   std::function<void(typename ODE::SystemState const& state)> append_state;
 };
+
+// An opaque object for holding the state during the integration of a problem.
+struct IntegrationInstance {};
 
 // Settings for for adaptive step size integration.
 template<typename ODE>
@@ -114,13 +118,17 @@ template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
-  // The last call to |problem.append_state| has a |state.time.value| equal to
-  // the unique |Instant| of the form |problem.t_final + n * step| in
-  // ]problem.t_final - step, problem.t_final].
-  // |problem.append_state| will be called with |state.time.values|s at
-  // intervals differing from |step| by at most one ULP.
-  virtual void Solve(IntegrationProblem<ODE> const& problem,
-                     Time const& step) const = 0;
+  // The last call to |append_state| has a |state.time.value| equal to the
+  // unique |Instant| of the form |problem.t_final + n * step| in
+  // ]t_final - step, t_final].  |append_state| will be called with
+  // |state.time.values|s at intervals differing from |step| by at most one ULP.
+  virtual void Solve(Instant const& t_final,
+                     not_null<IntegrationInstance*> const instance) const = 0;
+
+  virtual IntegrationInstance MakeInstance(
+    IntegrationProblem<ODE> const& problem,
+    std::function<void(typename ODE::SystemState const& state)> append_state,
+    Time const& step) const = 0;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> const message) const;
