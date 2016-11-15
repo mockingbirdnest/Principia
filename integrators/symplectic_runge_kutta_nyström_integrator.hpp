@@ -101,7 +101,8 @@ class SymplecticRungeKuttaNyströmIntegrator
     Instance(IntegrationProblem<ODE> problem,
              AppendState<ODE> append_state,
              Time step);
-    IntegrationProblem<ODE> const problem;
+    ODE const equation;
+    typename ODE::SystemState current_state;
     AppendState<ODE> const append_state;
     Time const step;
   };

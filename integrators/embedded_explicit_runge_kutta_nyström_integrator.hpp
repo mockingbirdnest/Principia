@@ -94,7 +94,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     Instance(IntegrationProblem<ODE> problem,
              AppendState<ODE> append_state,
              AdaptiveStepSize<ODE> adaptive_step_size);
-    IntegrationProblem<ODE> const problem;
+    ODE equation;
+    typename ODE::SystemState current_state;
     AppendState<ODE> const append_state;
     AdaptiveStepSize<ODE> const adaptive_step_size;
   };

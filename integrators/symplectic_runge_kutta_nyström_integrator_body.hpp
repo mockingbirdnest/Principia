@@ -81,25 +81,26 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
   Instance* const down_cast_instance =
       dynamic_cast_not_null<Instance*>(instance);
-  auto const& problem = down_cast_instance->problem;
+  auto const& equation = down_cast_instance->equation;
   auto const& append_state = down_cast_instance->append_state;
   Time const& step = down_cast_instance->step;
 
+  // Gets updated as the integration progresses to allow restartability.
+  typename ODE::SystemState& current_state = down_cast_instance->current_state;
+
   // Argument checks.
-  CHECK_NOTNULL(problem.initial_state);
-  int const dimension = problem.initial_state->positions.size();
-  CHECK_EQ(dimension, problem.initial_state->velocities.size());
+  int const dimension = current_state.positions.size();
+  CHECK_EQ(dimension, current_state.velocities.size());
   CHECK_NE(Time(), step);
   Sign const integration_direction = Sign(step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(problem.initial_state->time.value, t_final);
+    CHECK_LT(current_state.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(problem.initial_state->time.value, t_final);
+    CHECK_GT(current_state.time.value, t_final);
   }
 
-  typename ODE::SystemState current_state = *problem.initial_state;
 
   // Time step.
   Time const& h = step;
@@ -151,7 +152,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      problem.equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
+      equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b_[i] * g[k];
@@ -192,7 +193,8 @@ SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
 Instance::Instance(IntegrationProblem<ODE> problem,
                    AppendState<ODE> append_state,
                    Time step)
-    : problem(std::move(problem)),
+    : equation(std::move(problem.equation)),
+      current_state(*problem.initial_state),
       append_state(std::move(append_state)),
       step(std::move(step)) {}
 

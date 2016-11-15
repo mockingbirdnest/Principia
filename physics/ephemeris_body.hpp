@@ -504,7 +504,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   auto const instance =
       parameters.integrator_->NewInstance(
           problem, std::move(append_state), parameters.step_);
-  parameters.integrator_->Solve(t,instance.get());
+  parameters.integrator_->Solve(t, instance.get());
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;

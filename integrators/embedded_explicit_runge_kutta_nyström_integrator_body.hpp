@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include <experimental/optional>
 #include <vector>
 
 #include "geometry/sign.hpp"
@@ -95,28 +96,31 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 
   Instance* const down_cast_instance =
       dynamic_cast_not_null<Instance*>(instance);
-  auto const& problem = down_cast_instance->problem;
+  auto const& equation = down_cast_instance->equation;
   auto const& append_state = down_cast_instance->append_state;
   auto const& adaptive_step_size = down_cast_instance->adaptive_step_size;
 
+  // Gets updated as the integration progresses to allow restartability.
+  typename ODE::SystemState& current_state = down_cast_instance->current_state;
+
+  // State before the last, truncated step.
+  std::experimental::optional<typename ODE::SystemState> final_state;
+
   // Argument checks.
-  CHECK_NOTNULL(problem.initial_state);
-  int const dimension = problem.initial_state->positions.size();
-  CHECK_EQ(dimension, problem.initial_state->velocities.size());
+  int const dimension = current_state.positions.size();
+  CHECK_EQ(dimension, current_state.velocities.size());
   CHECK_NE(Time(), adaptive_step_size.first_time_step);
   Sign const integration_direction =
       Sign(adaptive_step_size.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(problem.initial_state->time.value, t_final);
+    CHECK_LT(current_state.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(problem.initial_state->time.value, t_final);
+    CHECK_GT(current_state.time.value, t_final);
   }
   CHECK_GT(adaptive_step_size.safety_factor, 0);
   CHECK_LT(adaptive_step_size.safety_factor, 1);
-
-  typename ODE::SystemState current_state = *problem.initial_state;
 
   // Time step.
   Time h = adaptive_step_size.first_time_step;
@@ -190,6 +194,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
         // The chosen step size will overshoot.  Clip it to just reach the end,
         // and terminate if the step is accepted.
         h = time_to_end;
+        final_state = current_state;
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
@@ -203,7 +208,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
           q_stage[k] = q_hat[k].value +
                            h * (c_[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
         }
-        problem.equation.compute_acceleration(t_stage, q_stage, &g[i]);
+        equation.compute_acceleration(t_stage, q_stage, &g[i]);
       }
 
       // Increment computation and step size control.
@@ -256,6 +261,10 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                         ".");
     }
   }
+  // The resolution is restartable from the last non-truncated state.
+  if (final_state) {
+    current_state = *final_state;
+  }
   return Status(termination_condition::Done, "");
 }
 
@@ -286,7 +295,8 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 Instance::Instance(IntegrationProblem<ODE> problem,
                    AppendState<ODE> append_state,
                    AdaptiveStepSize<ODE> adaptive_step_size)
-    : problem(std::move(problem)),
+    : equation(std::move(problem.equation)),
+      current_state(*problem.initial_state),
       append_state(std::move(append_state)),
       adaptive_step_size(std::move(adaptive_step_size)) {}
 
