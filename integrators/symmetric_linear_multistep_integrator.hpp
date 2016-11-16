@@ -32,12 +32,27 @@ public:
       FixedVector<double, half_order_> const& β_numerators,
       double const β_denominator);
 
-  void Solve(IntegrationProblem<ODE> const& problem,
-             Time const& step) const override;
+  void Solve(Instant const& t_final,
+             not_null<IntegrationInstance*> const instance) const override;
+
+  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance::AppendState<ODE> append_state,
+    Time const& step) const;
 
   static int const order = order_;
 
  private:
+  struct Instance : public IntegrationInstance {
+    Instance(IntegrationProblem<ODE> problem,
+             AppendState<ODE> append_state,
+             Time step);
+    ODE const equation;
+    typename ODE::SystemState current_state;
+    AppendState<ODE> const append_state;
+    Time const step;
+  };
+
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> β_;
 };

@@ -21,14 +21,19 @@ SymmetricLinearMultistepIntegrator(
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
-    IntegrationProblem<ODE> const& problem,
-    Time const& step) const {
+    Instant const& t_final,
+    not_null<IntegrationInstance*> const instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
 
+  Instance* const down_cast_instance =
+      dynamic_cast_not_null<Instance*>(instance);
+  auto const& equation = down_cast_instance->equation;
+  auto const& append_state = down_cast_instance->append_state;
+  Time const& step = down_cast_instance->step;
+
   // Argument checks.
-  CHECK_NOTNULL(problem.initial_state);
   int const dimension = problem.initial_state->positions.size();
   CHECK_EQ(dimension, problem.initial_state->velocities.size());
   CHECK_NE(Time(), step);
@@ -42,11 +47,24 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
   // Current position.
   std::vector<DoublePrecision<Position>>& q = current_state.positions;
 
-  while (h <= Abs((problem.t_final - t.value) - t.error)) {
+  while (h <= Abs((t_final - t.value) - t.error)) {
   }
 }
 
-template <typename Position>
+template<typename Position, int order_>
+not_null<std::unique_ptr<IntegrationInstance>>
+SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance::AppendState<ODE> append_state,
+    Time const& step) const {}
+
+template<typename Position, int order_>
+SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
+    IntegrationProblem<ODE> problem,
+    AppendState<ODE> append_state,
+    Time step) {}
+
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A,
@@ -56,7 +74,7 @@ SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
   return integrator;
 }
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B,
@@ -66,7 +84,7 @@ SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
   return integrator;
 }
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const&
 QuinlanTremaine1990Order8() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
@@ -77,7 +95,7 @@ QuinlanTremaine1990Order8() {
   return integrator;
 }
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 10> const&
 QuinlanTremaine1990Order10() {
   static SymmetricLinearMultistepIntegrator<Position, 10> const integrator(
@@ -88,7 +106,7 @@ QuinlanTremaine1990Order10() {
   return integrator;
 }
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 12> const&
 QuinlanTremaine1990Order12() {
   static SymmetricLinearMultistepIntegrator<Position, 12> const integrator(
@@ -105,7 +123,7 @@ QuinlanTremaine1990Order12() {
   return integrator;
 }
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 14> const&
 QuinlanTremaine1990Order14() {
   static SymmetricLinearMultistepIntegrator<Position, 14> const integrator(
