@@ -97,15 +97,17 @@ void SolveHarmonicOscillatorAndComputeError1D(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.emplace_back(state);
   };
+
+  auto const instance =
+      integrator.NewInstance(problem, std::move(append_state), step);
+
   state->ResumeTiming();
-
-  integrator.Solve(problem, step);
-
+  integrator.Solve(t_final, instance.get());
   state->PauseTiming();
+
   *q_error = Length();
   *v_error = Speed();
   for (auto const& state : solution) {
@@ -153,15 +155,17 @@ void SolveHarmonicOscillatorAndComputeError3D(
                                           {v_initial},
                                           t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.emplace_back(state);
   };
+
+  auto const instance =
+      integrator.NewInstance(problem, std::move(append_state), step);
+
   state->ResumeTiming();
-
-  integrator.Solve(problem, step);
-
+  integrator.Solve(t_final, instance.get());
   state->PauseTiming();
+
   *q_error = Length();
   *v_error = Speed();
   for (auto const& state : solution) {
