@@ -112,8 +112,7 @@ void SolveHarmonicOscillatorAndComputeError1D(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
@@ -124,7 +123,9 @@ void SolveHarmonicOscillatorAndComputeError1D(
       std::bind(HarmonicOscillatorToleranceRatio1D<ODE>,
                 _1, _2, length_tolerance, speed_tolerance);
 
-  integrator.Solve(problem, adaptive_step_size);
+  auto const instance = integrator.NewInstance(
+      problem, std::move(append_state), adaptive_step_size);
+  integrator.Solve(t_final, instance.get());
 
   state->PauseTiming();
   *q_error = Length();
@@ -170,8 +171,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
                                           {v_initial},
                                           t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
@@ -182,7 +182,9 @@ void SolveHarmonicOscillatorAndComputeError3D(
       std::bind(HarmonicOscillatorToleranceRatio3D<ODE>,
                 _1, _2, length_tolerance, speed_tolerance);
 
-  integrator.Solve(problem, adaptive_step_size);
+  auto const instance = integrator.NewInstance(
+      problem, std::move(append_state), adaptive_step_size);
+  integrator.Solve(t_final, instance.get());
 
   state->PauseTiming();
   *q_error = Length();

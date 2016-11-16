@@ -35,6 +35,7 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Velocity;
 using integrators::AdaptiveStepSize;
+using integrators::IntegrationInstance;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
 using numerics::Hermite3;
@@ -96,9 +97,16 @@ class DummyIntegrator
       serialization::FixedStepSizeIntegrator::DUMMY) {}
 
  public:
-  void Solve(IntegrationProblem<ODE> const& problem,
-             Time const& step) const override {
+  void Solve(Instant const& t_final,
+             not_null<IntegrationInstance*> const instance) const override {
     LOG(FATAL) << "dummy";
+  }
+
+  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance::AppendState<ODE> append_state,
+    Time const& step) const override {
+    return make_not_null_unique<IntegrationInstance>();
   }
 
   static DummyIntegrator const& Instance() {
@@ -346,28 +354,32 @@ template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massive_bodies_equation_;
-  problem.append_state =
-      std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1);
+  problem.initial_state = &last_state_;
+
+  auto const instance = parameters_.integrator_->NewInstance(
+      problem,
+      std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1),
+      parameters_.step_);
 
   // Note that |t| may be before the last time that we integrated and still
   // after |t_max()|.  In this case we want to make sure that the integrator
   // makes progress.
-  problem.initial_state = &last_state_;
+  Instant t_final;
   if (t <= last_state_.time.value) {
-    problem.t_final = last_state_.time.value + parameters_.step_;
+    t_final = last_state_.time.value + parameters_.step_;
   } else {
-    problem.t_final = t;
+    t_final = t;
   }
 
   // Perform the integration.  Note that we may have to iterate until |t_max()|
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    parameters_.integrator_->Solve(problem, parameters_.step_);
+    parameters_.integrator_->Solve(t_final, instance.get());
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
-    problem.t_final += parameters_.step_;
+    t_final += parameters_.step_;
   }
 }
 
@@ -414,16 +426,12 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massless_body_equation;
-  problem.append_state =
-      std::bind(&Ephemeris::AppendMasslessBodiesState,
-                _1, std::cref(trajectories));
-  problem.t_final = t_final;
   problem.initial_state = &initial_state;
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
-  step_size.first_time_step = problem.t_final - initial_state.time.value;
+  step_size.first_time_step = t_final - initial_state.time.value;
   CHECK_GT(step_size.first_time_step, 0 * Second)
-      << "Flow back to the future: " << problem.t_final
+      << "Flow back to the future: " << t_final
       << " <= " << initial_state.time.value;
   step_size.safety_factor = 0.9;
   step_size.tolerance_to_error_ratio =
@@ -433,7 +441,13 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, _2);
   step_size.max_steps = parameters.max_steps_;
 
-  auto const status = parameters.integrator_->Solve(problem, step_size);
+  auto const instance = parameters.integrator_->NewInstance(
+      problem,
+      std::bind(
+          &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories)),
+      step_size);
+
+  auto const status = parameters.integrator_->Solve(t_final, instance.get());
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
@@ -472,23 +486,25 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massless_body_equation;
+  problem.initial_state = &initial_state;
 
 #if defined(WE_LOVE_228)
   typename NewtonianMotionEquation::SystemState last_state;
-  problem.append_state =
+  auto append_state =
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
         last_state = state;
       };
 #else
-  problem.append_state =
+  auto append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState,
                 _1, std::cref(trajectories));
 #endif
-  problem.t_final = t;
-  problem.initial_state = &initial_state;
 
-  parameters.integrator_->Solve(problem, parameters.step_);
+  auto const instance =
+      parameters.integrator_->NewInstance(
+          problem, std::move(append_state), parameters.step_);
+  parameters.integrator_->Solve(t, instance.get());
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
