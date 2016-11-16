@@ -257,14 +257,13 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                     "Reached maximum step count " +
                         std::to_string(adaptive_step_size.max_steps) +
                         " at time " + DebugString(t.value) +
-                        "; problem t_final is " + DebugString(t_final) +
+                        "; requested t_final is " + DebugString(t_final) +
                         ".");
     }
   }
   // The resolution is restartable from the last non-truncated state.
-  if (final_state) {
-    current_state = *final_state;
-  }
+  CHECK(final_state);
+  current_state = *final_state;
   return Status(termination_condition::Done, "");
 }
 
