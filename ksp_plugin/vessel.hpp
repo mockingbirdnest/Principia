@@ -45,7 +45,9 @@ class Vessel {
   Vessel(Vessel&&) = delete;
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
-  ~Vessel() = default;
+
+  // |CHECK|s that |pile_up()| is |nullopt|.
+  ~Vessel();
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
@@ -136,6 +138,10 @@ class Vessel {
   std::experimental::optional<ContainerIterator<std::list<PileUp>>> pile_up()
       const;
 
+  // if |pile_up()|, |erase|s the |PileUp| referenced by |pile_up()|.  After
+  // this call, for all vessels in that |PileUp|, |pile_up()| is |nullopt|.
+  void clear_pile_up();
+
  protected:
   // For mocking.
   Vessel();
@@ -193,5 +199,3 @@ using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
 }  // namespace principia
-
-#include "ksp_plugin/vessel_body.hpp"

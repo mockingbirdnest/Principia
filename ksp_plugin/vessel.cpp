@@ -1,6 +1,4 @@
 ﻿
-#pragma once
-
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
@@ -8,6 +6,7 @@
 #include <vector>
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
@@ -24,6 +23,10 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
+
+inline Vessel::~Vessel() {
+  CHECK(!pile_up_);
+}
 
 inline Vessel::Vessel(not_null<Celestial const*> const parent,
                       not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -277,6 +280,17 @@ inline void Vessel::set_pile_up(ContainerIterator<std::list<PileUp>> pile_up) {
 inline std::experimental::optional<ContainerIterator<std::list<PileUp>>>
 Vessel::pile_up() const {
   return pile_up_;
+}
+
+inline void Vessel::clear_pile_up() {
+  if (pile_up_) {
+    ContainerIterator<std::list<PileUp>> pile_up = *pile_up_;
+    for (not_null<Vessel*> const vessel : pile_up.iterator->vessels()) {
+      vessel->pile_up_ = std::experimental::nullopt;
+    }
+    CHECK(!pile_up_);
+    pile_up.container->erase(pile_up.iterator);
+  }
 }
 
 inline Vessel::Vessel()
