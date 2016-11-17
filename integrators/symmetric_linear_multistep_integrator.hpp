@@ -28,6 +28,7 @@ public:
 
   SymmetricLinearMultistepIntegrator(
       serialization::FixedStepSizeIntegrator::Kind const kind,
+      FixedStepSizeIntegrator<ODE> const& startup_integrator,
       FixedVector<double, half_order_> const& ɑ,
       FixedVector<double, half_order_> const& β_numerators,
       double const β_denominator);
@@ -48,13 +49,21 @@ public:
              AppendState<ODE> append_state,
              Time step);
     ODE const equation;
-    typename ODE::SystemState current_state;
+    std::list<typename ODE::SystemState> current_states;
     AppendState<ODE> const append_state;
     Time const step;
   };
 
+  // Performs the startup integration, i.e., computes enough states to either
+  // reach |t_final| or to reach a point where |instance.current_states| has
+  // |order - 1| elements.
+  void StartupSolve(Instant const& t_final,
+                    Instance& instance) const;
+
+  FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   FixedVector<double, half_order_> const ɑ_;
-  FixedVector<double, half_order_> β_;
+  FixedVector<double, half_order_> const β_numerators_;
+  double const β_denominator_;
 };
 
 template <typename Position>

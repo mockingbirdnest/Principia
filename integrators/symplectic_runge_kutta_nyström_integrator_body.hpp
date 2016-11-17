@@ -101,7 +101,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     CHECK_GT(current_state.time.value, t_final);
   }
 
-
   // Time step.
   Time const& h = step;
   Time const abs_h = integration_direction * h;
