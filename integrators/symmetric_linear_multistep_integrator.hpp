@@ -8,12 +8,16 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 
+#include <list>
+
 #include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
 
+using numerics::DoublePrecision;
 using numerics::FixedVector;
 
 namespace integrators {
@@ -30,7 +34,7 @@ public:
       serialization::FixedStepSizeIntegrator::Kind const kind,
       FixedStepSizeIntegrator<ODE> const& startup_integrator,
       FixedVector<double, half_order_> const& ɑ,
-      FixedVector<double, half_order_> const& β_numerators,
+      FixedVector<double, half_order_> const& β_numerator,
       double const β_denominator);
 
   void Solve(Instant const& t_final,
@@ -44,12 +48,20 @@ public:
   static int const order = order_;
 
  private:
+  // The data for a previous step of the integration.
+  // TODO(phl): A bit confusing with time step.
+  struct Step {
+    std::vector<DoublePrecision<Position>> positions;
+    std::vector<DoublePrecision<typename ODE::Acceleration>> accelerations;
+    DoublePrecision<Instant> time;
+  };
+
   struct Instance : public IntegrationInstance {
     Instance(IntegrationProblem<ODE> problem,
              AppendState<ODE> append_state,
              Time step);
     ODE const equation;
-    std::list<typename ODE::SystemState> current_states;
+    std::list<Step> previous_steps;  // At most |order - 1| elements.
     AppendState<ODE> const append_state;
     Time const step;
   };
@@ -62,7 +74,7 @@ public:
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   FixedVector<double, half_order_> const ɑ_;
-  FixedVector<double, half_order_> const β_numerators_;
+  FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;
 };
 
