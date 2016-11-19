@@ -52,7 +52,7 @@ public:
   // TODO(phl): A bit confusing with time step.
   struct Step {
     std::vector<DoublePrecision<Position>> positions;
-    std::vector<DoublePrecision<typename ODE::Acceleration>> accelerations;
+    std::vector<typename ODE::Acceleration> accelerations;
     DoublePrecision<Instant> time;
   };
 

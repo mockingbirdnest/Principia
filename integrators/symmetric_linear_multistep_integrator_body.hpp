@@ -52,35 +52,69 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
   // Order.
   int const k = order_;
 
-  std::vector<DoublePrecision<Position>> Σi_ɑi_qi(dimension, 0.0);
-  std::vector<DoublePrecision<Acceleration>> Σi_βi_numerator_ai(dimension, 0.0);
+  std::vector<DoublePrecision<Position>> Σj_ɑj_qj(dimension, 0.0);
+  std::vector<Acceleration> Σj_βj_numerator_aj(dimension, 0.0);
   while (h <= (t_final - t.value) - t.error) {
-    auto previous_step_it = previous_step.begin();
-    for (int i = 0; i < k; ++i) {
-      std::vector<DoublePrecision<Position>>& qi = previous_step_it->positions;
-      std::vector<DoublePrecision<Acceleration>>& ai =
-          previous_step_it->accelerations;
-      double const ɑi =
-          (i <= k / 2) ? ɑ_[i] : ɑ_[k - i];
-      double const βi_numerator =
-          (i <= k / 2) ? β_numerator_[i] : β_numerator_[k - i];
+    // We take advantage of the symmetry to iterate on the list of previous
+    // steps from both ends.
+    auto front_it = previous_steps.begin();
+    auto back_it = previous_steps.rbegin();
+    for (int j = 0; j <= k / 2; ++j) {
+      std::vector<DoublePrecision<Position>> const& qj = front_it->positions;
+      std::vector<DoublePrecision<Position>> const& qk_minus_j =
+          back_it->positions;
+      std::vector<Acceleration> const& aj = front_it->accelerations;
+      std::vector<Acceleration> const& ak_minus_j = back_it->accelerations;
+      double const ɑj = ɑ_[j];
+      double const βj_numerator = β_numerator_[j];
       for (int d = 0; d < dimension; d++) {
-        Σi_ɑi_qi[d].Increment(ɑ_[i] * qi[d]);
-        Σi_βi_numerator_ai[d].Increment(β_numerator_[i] * ai[d]);
+        // q is qj[d] + qk_minus_j[d] computed to double precision.
+        DoublePrecision<Position> q = qj[d];
+        q.Increment(qk_minus_j[d].value);
+        q.Increment(qk_minus_j[d].error);
+        // ɑj_q is ɑj * q.  The computation is exact because ɑj is a power of
+        // two.
+        q.value *= ɑj;
+        q.error *= ɑj;
+        DoublePrecision<Position> const& ɑj_q = q;
+        // Σj_ɑj_qj is computed in double precision.
+        Σj_ɑj_qj[d].Increment(q.value);
+        Σj_ɑj_qj[d].Increment(q.error);
+        Σj_βj_numerator_aj[d] += β_numerator_[j] * (aj[d] + ak_minus_j[d]);
       }
-      ++previous_step_it;
+      ++front_it;
+      --back_it;
     }
 
+    // Create a new step in the instance.
     previous_steps.pop_front();
     previous_steps.emplace_back();
     Step& current_step = previous_steps.back();
+    current_step.time = t;
+
+    // Fill the new step.
+    double const ɑk = ɑ_[0];
+    std::vector<Position> positions;
+    positions.reserve(dimension);
     for (int d = 0; d < dimension; d++) {
-      current_step.positions[d] = -Σi_ɑi_qi[d];
-      current_step.positions[d].Increment(
-          h * h * Σi_βi_numerator_ai[d] / β_denominator_);
-      current_step.positions[d] /= ɑ_[k];
-      //Accelerations, append_state.
+      DoublePrecision<Position>& current_position = current_step.positions[d];
+      current_position = -Σj_ɑj_qj[d];
+      current_position.Increment(
+          h * h * Σj_βj_numerator_aj[d] / β_denominator_);
+      // This computation is exact because ɑ_[k] is a power of two.
+      current_position.value /= ɑk;
+      current_position.error /= ɑk;
+      positions.push_back(current_position);
     }
+    equation.compute_acceleration(t, positions, &current_step.accelerations);
+
+    // Inform the caller of the new state.
+    //TODO(phl): Velocities.
+    typename ODE::SystemState system_state;
+    system_state.positions = current_step.positions;
+    system_state.velocities = std::vector<DoublePrecision<Velocity>>(dimension);
+    system_state.t = t;
+    append_state(system_state);
 
     t.Increment(h);
   }
@@ -103,8 +137,6 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     AppendState<ODE> append_state,
     Time step)
     : equation(std::move(problem.equation)),
-      previous_steps(1, {problem.initial_state.positions,
-                         }),
       append_state(std::move(append_state)),
       step(std::move(step)) {
   CHECK_EQ(current_state.position.size(),
@@ -120,17 +152,9 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
                                 positions,
                                 &acceleration);
 
-  // Store them in double precision.
-  Step first_step
-  for (int i = 0; i < problem.initial_state.positions; ++i) {
-    first_step.positions
-  }
-  std::vector<DoublePrecision<ODE::Acceleration>> initial_accelerations;
-  for (auto const& acceleration : accelerations) {
-    initial_accelerations.push_back(DoublePrecision(acceleration));
-  }
+  // Store them as the first step.
   previous_steps.push_back({problem.initial_state.positions,
-                            initial_accelerations,
+                            accelerations,
                             problem.initial_state.time});
 }
 
