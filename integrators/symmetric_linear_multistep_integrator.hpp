@@ -8,6 +8,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 
+#include <experimental/optional>
 #include <list>
 
 #include "base/status.hpp"
@@ -62,7 +63,9 @@ public:
              AppendState<ODE> append_state,
              Time step);
     ODE const equation;
-    std::list<Step> previous_steps;  // At most |order - 1| elements.
+    std::list<Step> previous_steps;  // At most |order_ - 1| elements.
+    std::experimental::optional<typename ODE::SystemState>
+        current_startup_state;
     AppendState<ODE> const append_state;
     Time const step;
   };
@@ -72,6 +75,10 @@ public:
   // |order - 1| elements.
   void StartupSolve(Instant const& t_final,
                     Instance& instance) const;
+
+  static void FillStepFromSystemState(ODE const& equation,
+                                      typename ODE::SystemState const& state,
+                                      Step& step);
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   FixedVector<double, half_order_> const ɑ_;

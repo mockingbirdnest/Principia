@@ -124,25 +124,15 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     AppendState<ODE> append_state,
     Time step)
     : equation(std::move(problem.equation)),
+      current_startup_state(*problem.initial_state),
       append_state(std::move(append_state)),
       step(std::move(step)) {
-  CHECK_EQ(current_state.position.size(),
-           current_state.velocities.size());
+  CHECK_EQ(problem.initial_state->positions.size(),
+           problem.initial_state->velocities.size());
 
-  // Compute the initial accelerations.
-  std::vector<ODE::Acceleration> accelerations;
-  std::vector<Position> positions;
-  for (auto const& initial_position : problem.initial_state.positions) {
-    positions.push_back(initial_position.value);
-  }
-  equation.compute_acceleration(problem.initial_state.time.value,
-                                positions,
-                                &acceleration);
-
-  // Store them as the first step.
-  previous_steps.push_back({problem.initial_state.positions,
-                            accelerations,
-                            problem.initial_state.time});
+  previous_steps.emplace_back();
+  FillStepFromSystemState(
+      equation, *current_startup_state, previous_steps.back());
 }
 
 template<typename Position, int order_>
@@ -158,24 +148,43 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::StartupSolve(
 
   auto const startup_append_state =
       [&instance](typename ODE::SystemState const& state) {
-        previous_steps.push_back(state);
-        if (previous_steps.size() == order_ - 1) {
-          previous_steps.pop_front();
-        }
+        CHECK_LT(instance.previous_steps.size(), order_ - 1);
+        CHECK(instance.current_startup_state);
+        instance.current_startup_state = state;
+        instance.previous_steps.emplace_back();
+        FillStepFromSystemState(instance.equation,
+                                *instance.current_startup_state,
+                                instance.previous_steps.back());
       };
-  typename ODE::SystemState const& startup_initial_state =
-      previous_steps.back();
+
+  CHECK(instance.current_startup_state);
+  typename ODE::SystemState const& current_startup_state =
+      *instance.current_startup_state;
   auto const startup_instance =
       startup_integrator_.NewInstance(
-          {equation, &startup_initial_state}, startup_append_state, step);
+          {equation, &current_startup_state}, startup_append_state, step);
 
   startup_integrator_.Solve(
-      std::min(startup_initial_state.time.value +
+      std::min(current_startup_state.time.value +
                    (order_ - 1 - previous_steps.size()) * step,
                t_final),
       startup_instance.get());
 
   CHECK_EQ(previous_steps.size(), order_ - 1);
+}
+
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
+FillStepFromSystemState(ODE const& equation,
+                        typename ODE::SystemState const& state,
+                        Step& step) {
+  step.time = state.time;
+  for (auto const& position : state.positions) {
+    step.displacements.push_back(position.value - Position());
+  }
+  equation.compute_acceleration(step.time.value,
+                                step.displacements,
+                                &step.accelerations);
 }
 
 // TODO(phl): Pick more appropriate startup integrators below.

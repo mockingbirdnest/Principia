@@ -100,12 +100,13 @@ void TestTermination(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  integrator.Solve(problem, step);
+  auto const instance =
+      integrator.NewInstance(problem, std::move(append_state), step);
+  integrator.Solve(t_final, instance.get());
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
@@ -149,12 +150,13 @@ void Test1000SecondsAt1Millisecond(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  integrator.Solve(problem, step);
+  auto const instance =
+      integrator.NewInstance(problem, std::move(append_state), step);
+  integrator.Solve(t_final, instance.get());
 
   EXPECT_EQ(steps, solution.size());
   Length q_error;
@@ -208,14 +210,14 @@ void TestConvergence(Integrator const& integrator,
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
   ODE::SystemState final_state;
-  problem.append_state = [&final_state](ODE::SystemState const& state) {
+  auto const append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
   };
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
-    integrator.Solve(problem, step);
+    auto const instance = integrator.NewInstance(problem, append_state, step);
+    integrator.Solve(t_final, instance.get());
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
@@ -283,12 +285,13 @@ void TestSymplecticity(Integrator const& integrator,
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&solution](ODE::SystemState const& state) {
+  auto append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  integrator.Solve(problem, step);
+  auto const instance =
+      integrator.NewInstance(problem, std::move(append_state), step);
+  integrator.Solve(t_final, instance.get());
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);
@@ -315,49 +318,6 @@ void TestSymplecticity(Integrator const& integrator,
   EXPECT_EQ(expected_energy_error, max_energy_error);
 }
 
-// If the integrator is time-reversible, checks that integrating back and
-// forth with a large time step yields the initial value.  If it is not, checks
-// that there is an error when integrating back and forth.
-template<typename Integrator>
-void TestTimeReversibility(Integrator const& integrator) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  Instant const t_initial;
-  Instant const t_final = t_initial + 100 * Second;
-  Time const step = 1 * Second;
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  ODE::SystemState final_state;
-  problem.initial_state = &initial_state;
-  problem.t_final = t_final;
-  problem.append_state = [&final_state](ODE::SystemState const& state) {
-    final_state = state;
-  };
-
-  integrator.Solve(problem, step);
-
-  problem.initial_state = &final_state;
-  problem.t_final = t_initial;
-
-  integrator.Solve(problem, -step);
-
-  EXPECT_EQ(t_initial, final_state.time.value);
-  EXPECT_THAT(AbsoluteError(q_initial,
-                            final_state.positions[0].value),
-              Gt(1e-4 * Metre));
-  EXPECT_THAT(AbsoluteError(v_initial,
-                            final_state.velocities[0].value),
-              Gt(1e-4 * Metre / Second));
-}
-
 class SimpleHarmonicMotionTestInstance {
  public:
   template<typename Integrator>
@@ -381,9 +341,6 @@ class SimpleHarmonicMotionTestInstance {
             std::bind(TestSymplecticity<Integrator>,
                       integrator,
                       expected_energy_error)),
-        test_time_reversibility_(
-            std::bind(TestTimeReversibility<Integrator>,
-                      integrator)),
         name_(name) {}
 
   std::string const& name() const {
@@ -406,16 +363,11 @@ class SimpleHarmonicMotionTestInstance {
     test_symplecticity_();
   }
 
-  void RunTimeReversibility() const {
-    test_time_reversibility_();
-  }
-
  private:
   std::function<void()> test_termination_;
   std::function<void()> test_1000_seconds_at_1_millisecond_;
   std::function<void()> test_convergence_;
   std::function<void()> test_symplecticity_;
-  std::function<void()> test_time_reversibility_;
   std::string name_;
 };
 
@@ -473,11 +425,6 @@ class SymmetricLinearMultistepIntegratorTest
 INSTANTIATE_TEST_CASE_P(SymmetricLinearMultistepIntegratorTests,
                         SymmetricLinearMultistepIntegratorTest,
                         ValuesIn(Instances()));
-
-TEST_P(SymmetricLinearMultistepIntegratorTest, TimeReversibility) {
-  LOG(INFO) << GetParam();
-  GetParam().RunTimeReversibility();
-}
 
 TEST_P(SymmetricLinearMultistepIntegratorTest, Symplecticity) {
   LOG(INFO) << GetParam();
