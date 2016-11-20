@@ -179,6 +179,7 @@ class Vessel {
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
 
+  // The |PileUp| containing |this|.
   std::experimental::optional<ContainerIterator<std::list<PileUp>>> pile_up_;
 
   not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;

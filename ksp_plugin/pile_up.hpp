@@ -21,11 +21,6 @@ class PileUp {
  public:
   PileUp(std::list<not_null<Vessel*>> vessels);
 
-  /*
-  void AdvanceTimeInFreeFall(Instant const& t);
-  void AdvanceTimeUnderThrust(Instant const& t,
-                              Vector<Force, Barycentric> net_force);
-                              */
   std::list<not_null<Vessel*>> const& vessels() const;
 
  private:
