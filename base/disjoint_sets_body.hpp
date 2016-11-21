@@ -36,16 +36,16 @@ Subset<T> Subset<T>::Unite(Subset left, Subset right) {
     return left;
   } else if (left_root->rank_ < right_root->rank_) {
     left_root->parent_ = right_root;
-    right_root->properties_->MergeWith(left_root->properties_.value);
+    right_root->properties_->MergeWith(*left_root->properties_);
     return Subset(right_root);
   } else if (right_root->rank_ < left_root->rank_) {
     right_root->parent_ = left_root;
-    left_root->properties_->MergeWith(right_root->properties_.value);
+    left_root->properties_->MergeWith(*right_root->properties_);
     return Subset(left_root);
   } else {
     right_root->parent_ = left_root;
     ++left_root->rank_;
-    left_root->properties_->MergeWith(right_root->properties_.value);
+    left_root->properties_->MergeWith(*right_root->properties_);
     return Subset(left_root);
   }
 }
