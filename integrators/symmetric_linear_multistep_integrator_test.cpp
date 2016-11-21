@@ -185,11 +185,7 @@ void TestConvergence(Integrator const& integrator,
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
   Instant const t_initial;
-#if defined(_DEBUG)
-  Instant const t_final = t_initial + 10 * Second;
-#else
   Instant const t_final = t_initial + 100 * Second;
-#endif
 
   Time step = beginning_of_convergence;
   int const step_sizes = 50;
@@ -221,7 +217,6 @@ void TestConvergence(Integrator const& integrator,
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
-    LOG(ERROR)<<"q: "<<q<<" "<<q_initial* Cos(ω * t)<<" "<<step;
     double const log_q_error = std::log10(
         AbsoluteError(q / q_initial, Cos(ω * t)));
     double const log_p_error = std::log10(
@@ -242,9 +237,12 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
-              Lt(0.02));
-  EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
+  // For high-order integrators the convergence order cannot even be computed.
+  if (!std::isnan(q_convergence_order)) {
+    EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
+                Lt(0.05));
+    EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
+  }
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -382,32 +380,32 @@ std::ostream& operator<<(std::ostream& stream,
 
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
   return {INSTANCE(Quinlan1999Order8A,
-                   1.0 * Second,
+                   0.5 * Second,
                    0 * Metre,
                    0 * Metre / Second,
                    0 * Joule),
           INSTANCE(Quinlan1999Order8B,
-                   1.0 * Second,
+                   0.3 * Second,
                    0 * Metre,
                    0 * Metre / Second,
                    0 * Joule),
           INSTANCE(QuinlanTremaine1990Order8,
-                   1.0 * Second,
+                   0.5 * Second,
                    0 * Metre,
                    0 * Metre / Second,
                    0 * Joule),
           INSTANCE(QuinlanTremaine1990Order10,
-                   1.0 * Second,
+                   0.4 * Second,
                    0 * Metre,
                    0 * Metre / Second,
                    0 * Joule),
           INSTANCE(QuinlanTremaine1990Order12,
-                   1.0 * Second,
+                   0.2 * Second,
                    0 * Metre,
                    0 * Metre / Second,
                    0 * Joule),
           INSTANCE(QuinlanTremaine1990Order14,
-                   1.0 * Second,
+                   0.111 * Second,
                    0 * Metre,
                    0 * Metre / Second,
                    0 * Joule)};

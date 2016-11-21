@@ -247,7 +247,7 @@ SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B,
       BlanesMoan2002SRKN14A<Position>(),
-      {1.0, 0.0, 0.0, -1 / 2.0, -1.0},
+      {1.0, 0.0, 0.0, -0.5, -1.0},
       {0.0, 192481.0, 6582.0, 816783.0, -156812.0},
       120960.0);
   return integrator;
