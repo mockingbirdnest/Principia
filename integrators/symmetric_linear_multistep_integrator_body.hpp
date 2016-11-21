@@ -49,14 +49,12 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
   Time const& h = step;
   // Current time.
   DoublePrecision<Instant> t = previous_steps.back().time;
-  t.Increment(h);
   // Order.
   int const k = order_;
 
   std::vector<DoublePrecision<Position>> Σj_minus_ɑj_qj(dimension);
   std::vector<Acceleration> Σj_βj_numerator_aj(dimension);
   while (h <= (t_final - t.value) - t.error) {
-
     // We take advantage of the symmetry to iterate on the list of previous
     // steps from both ends.
     auto front_it = previous_steps.begin();
@@ -102,6 +100,7 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
     }
 
     // Create a new step in the instance.
+    t.Increment(h);
     previous_steps.pop_front();
     previous_steps.emplace_back();
     Step& current_step = previous_steps.back();
@@ -130,8 +129,6 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
     system_state.velocities = std::vector<DoublePrecision<Velocity>>(dimension);
     system_state.time = t;
     append_state(system_state);
-
-    t.Increment(h);
   }
 }
 
@@ -199,7 +196,7 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::StartupSolve(
                t_final),
       startup_instance.get());
 
-  CHECK_EQ(previous_steps.size(), order_);
+  CHECK_LE(previous_steps.size(), order_);
 }
 
 template<typename Position, int order_>

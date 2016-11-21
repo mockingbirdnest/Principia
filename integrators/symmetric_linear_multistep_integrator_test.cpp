@@ -85,7 +85,7 @@ void TestTermination(
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Instant const t_initial;
-  Instant const t_final = t_initial + 163 * Second;
+  Instant const t_final = t_initial + 1630 * Second;
   Time const step = 42 * Second;
   int const steps = static_cast<int>(std::floor((t_final - t_initial) / step));
 
