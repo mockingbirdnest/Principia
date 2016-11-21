@@ -221,6 +221,7 @@ void TestConvergence(Integrator const& integrator,
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
+    LOG(ERROR)<<"q: "<<q<<" "<<q_initial* Cos(ω * t)<<" "<<step;
     double const log_q_error = std::log10(
         AbsoluteError(q / q_initial, Cos(ω * t)));
     double const log_p_error = std::log10(

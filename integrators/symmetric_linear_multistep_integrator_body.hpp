@@ -7,6 +7,12 @@
 namespace principia {
 namespace integrators {
 
+namespace {
+
+int const startup_step_divisor = 16;
+
+}  // namespace
+
 template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::
 SymmetricLinearMultistepIntegrator(
@@ -119,14 +125,17 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
           h * h * Σj_βj_numerator_aj[d] / β_denominator_);
       current_step.displacements.push_back(current_position.value - Position());
       positions.push_back(current_position.value);
+      //TODO(phl):Improve the computation of the velocities
+      auto it = previous_steps.rbegin();
+      ++it;
+      system_state.velocities.push_back(
+          (current_position.value - (Position() + it->displacements[d])) / h);
       system_state.positions.push_back(current_position);
     }
     equation.compute_acceleration(
         t.value, positions, &current_step.accelerations);
 
     // Inform the caller of the new state.
-    //TODO(phl): Velocities.
-    system_state.velocities = std::vector<DoublePrecision<Velocity>>(dimension);
     system_state.time = t;
     append_state(system_state);
   }
@@ -167,28 +176,36 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::StartupSolve(
   auto const& equation = instance.equation;
   auto const& previous_steps = instance.previous_steps;
   Time const& step = instance.step;
+  Time const startup_step = step / startup_step_divisor;
 
   CHECK(!previous_steps.empty());
   CHECK_LT(previous_steps.size(), order_);
 
+  int startup_step_index = 0;
   auto const startup_append_state =
-      [&instance](typename ODE::SystemState const& state) {
-        CHECK_LT(instance.previous_steps.size(), order_);
+      [&instance, &startup_step_index](typename ODE::SystemState const& state) {
         CHECK(instance.current_startup_state);
         instance.current_startup_state = state;
-        instance.previous_steps.emplace_back();
-        instance.append_state(state);
-        FillStepFromSystemState(instance.equation,
-                                *instance.current_startup_state,
-                                instance.previous_steps.back());
+        // The startup integrator has a smaller step.  We do not record all the
+        // states it computes, but only those that are a multiple of the main
+        // integrator step.
+        if (++startup_step_index % startup_step_divisor == 0) {
+          CHECK_LT(instance.previous_steps.size(), order_);
+          instance.previous_steps.emplace_back();
+          instance.append_state(state);
+          FillStepFromSystemState(instance.equation,
+                                  *instance.current_startup_state,
+                                  instance.previous_steps.back());
+        }
       };
 
   CHECK(instance.current_startup_state);
   typename ODE::SystemState const& current_startup_state =
       *instance.current_startup_state;
   auto const startup_instance =
-      startup_integrator_.NewInstance(
-          {equation, &current_startup_state}, startup_append_state, step);
+      startup_integrator_.NewInstance({equation, &current_startup_state},
+                                      startup_append_state,
+                                      startup_step);
 
   startup_integrator_.Solve(
       std::min(current_startup_state.time.value +
@@ -214,12 +231,11 @@ FillStepFromSystemState(ODE const& equation,
                                 &step.accelerations);
 }
 
-// TODO(phl): Pick more appropriate startup integrators below.
 template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A,
-      McLachlanAtela1992Order5Optimal<Position>(),
+      BlanesMoan2002SRKN14A<Position>(),
       {1.0, -2.0, 2.0, -2.0, 2.0},
       {0.0, 22081.0, -29418.0, 75183.0, -75212.0},
       15120.0);
@@ -230,7 +246,7 @@ template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B,
-      McLachlanAtela1992Order5Optimal<Position>(),
+      BlanesMoan2002SRKN14A<Position>(),
       {1.0, 0.0, 0.0, -1 / 2.0, -1.0},
       {0.0, 192481.0, 6582.0, 816783.0, -156812.0},
       120960.0);
@@ -242,9 +258,9 @@ SymmetricLinearMultistepIntegrator<Position, 8> const&
 QuinlanTremaine1990Order8() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_8,
-      McLachlanAtela1992Order5Optimal<Position>(),
+      BlanesMoan2002SRKN14A<Position>(),
       {1.0, -2.0, 2.0, -1.0, 0.0},
-      {0.0, 17671.0, -23622.0, 61449.0, 50516.0},
+      {0.0, 17671.0, -23622.0, 61449.0, -50516.0},
       12096.0);
   return integrator;
 }
@@ -254,8 +270,8 @@ SymmetricLinearMultistepIntegrator<Position, 10> const&
 QuinlanTremaine1990Order10() {
   static SymmetricLinearMultistepIntegrator<Position, 10> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_10,
-      McLachlanAtela1992Order5Optimal<Position>(),
-      {1.0, -1.0, 1.0, -1.0, 1.0, 2.0},
+      BlanesMoan2002SRKN14A<Position>(),
+      {1.0, -1.0, 1.0, -1.0, 1.0, -2.0},
       {0.0, 399187.0, -485156.0, 2391436.0, -2816732.0, 4651330.0},
       241920.0);
   return integrator;
@@ -266,7 +282,7 @@ SymmetricLinearMultistepIntegrator<Position, 12> const&
 QuinlanTremaine1990Order12() {
   static SymmetricLinearMultistepIntegrator<Position, 12> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_12,
-      McLachlanAtela1992Order5Optimal<Position>(),
+      BlanesMoan2002SRKN14A<Position>(),
       {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0},
       {0.0,
        90987349.0,
@@ -284,7 +300,7 @@ SymmetricLinearMultistepIntegrator<Position, 14> const&
 QuinlanTremaine1990Order14() {
   static SymmetricLinearMultistepIntegrator<Position, 14> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14,
-      McLachlanAtela1992Order5Optimal<Position>(),
+      BlanesMoan2002SRKN14A<Position>(),
       {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0},
       {0.0,
        433489274083.0,
