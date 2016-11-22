@@ -34,8 +34,7 @@ class Bundle {
   // it to cooperatively abort if it is running.
   void Abort(not_null<Task*> task);
 
-  // Waits until the given |task| is scheduled and completes, and returns its
-  // status.
+  // Waits until the given |task| completes, and returns its status.
   Status JoinTask(not_null<Task*> task);
 
  private:
