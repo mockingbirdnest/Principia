@@ -26,8 +26,8 @@ class Bundle {
   // no calls to |Add| or |Join| may follow this call.
   Status Join();
 
-  // The given |Task| may be used in calls to |Abort| or |JoinTask|; |this|
-  // shares ownership until |task| has returned.
+  // The |Task| returned by |Add| may be used in calls to |Abort| or |JoinTask|;
+  // |this| shares ownership until |task| has returned.
   std::shared_ptr<Task> Add(std::function<Status()> task);
 
   // Removes the given |task| from the queue if it has not started, or instructs
