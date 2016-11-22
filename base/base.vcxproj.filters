@@ -98,6 +98,9 @@
     <ClInclude Include="disjoint_sets_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="bundle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -123,6 +126,9 @@
     </ClCompile>
     <ClCompile Include="disjoint_sets_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bundle.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
