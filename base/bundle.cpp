@@ -5,6 +5,7 @@
 #include <functional>
 #include <queue>
 
+#include "base/map_util.hpp"
 #include "base/status.hpp"
 
 namespace principia {
@@ -17,7 +18,7 @@ Bundle::Bundle(int threads) {
   }
   for (int i = 0; i < threads; ++i) {
     threads_.emplace_back([this]() {
-      std::shared_ptr<Task> current_task = nullptr;
+      std::shared_ptr<Task> current_task;
       for (;;) {
         {
           std::unique_lock<std::mutex> l(lock_);
@@ -33,7 +34,8 @@ Bundle::Bundle(int threads) {
           current_task = std::move(tasks_.front());
           tasks_.pop_front();
           current_task->in_queue_ = std::experimental::nullopt;
-          current_task->abort_requested_ = &AbortRequested;
+          current_task->abort_requested_ =
+              &FindOrDie(abort_requests_, std::this_thread::get_id());
         }
         Status const status = current_task->body_();
         {
@@ -45,19 +47,23 @@ Bundle::Bundle(int threads) {
           }
         }
         current_task->done_.notify_all();
-        current_task = nullptr;
+        current_task.reset();
+        FindOrDie(abort_requests_, std::this_thread::get_id()) = false;
       }
     });
+    abort_requests_.emplace(threads_.back().get_id(), false);
   }
 }
 
 std::shared_ptr<Bundle::Task> Bundle::Add(std::function<Status()> task) {
-  auto result = std::make_shared<Task>(task);
+  // Private constructor, cannot |make_shared|.
+  auto result = std::shared_ptr<Task>(new Task(task));
   {
     std::unique_lock<std::mutex> l(lock_);
     CHECK(!joining_);
     tasks_.emplace_back(result);
-    tasks_.back();
+    auto end = tasks_.end();
+    result->in_queue_ = --end;
   }
   tasks_not_empty_or_joining_.notify_one();
   return result;
@@ -95,6 +101,10 @@ Status Bundle::JoinTask(not_null<Task*> task) {
   // a better optional.
   task->done_.wait(l, [task]() { return static_cast<bool>(task->status_); });
   return *task->status_;
+}
+
+bool Bundle::abort_requested() const {
+  return FindOrDie(abort_requests_, std::this_thread::get_id());
 }
 
 Bundle::Task::Task(std::function<Status()> body) : body_(std::move(body)) {}

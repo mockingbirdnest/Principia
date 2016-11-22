@@ -4,6 +4,7 @@
 #include <experimental/optional>
 #include <functional>
 #include <list>
+#include <map>
 #include <memory>
 #include <mutex>
 
@@ -14,12 +15,10 @@
 namespace principia {
 namespace base {
 
-thread_local std::atomic<bool> AbortRequested;
-
 class Bundle {
+ public:
   class Task;
 
- public:
   Bundle(int threads);
 
   // Returns the first non-OK status encountered.  All threads are joined;
@@ -37,9 +36,12 @@ class Bundle {
   // Waits until the given |task| completes, and returns its status.
   Status JoinTask(not_null<Task*> task);
 
- private:
+  // Must be called from a task scheduled on |*this|.  Returns true if |Abort|
+  // has been called for that task.
+  bool abort_requested() const;
+
   class Task {
-   public:
+   private:
     Task(std::function<Status()> body);
 
     std::function<Status()> body_;
@@ -56,8 +58,11 @@ class Bundle {
     std::atomic<bool>* abort_requested_ = nullptr;
 
     std::condition_variable done_;
+
+    friend class Bundle;
   };
 
+ private:
   std::mutex lock_;
   std::condition_variable tasks_not_empty_or_joining_;
 
@@ -66,6 +71,7 @@ class Bundle {
   Status status_ GUARDED_BY(lock_);
 
   std::vector<std::thread> threads_;
+  std::map<std::thread::id, std::atomic<bool>> abort_requests_;
 };
 
 }  // namespace base

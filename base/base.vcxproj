@@ -293,6 +293,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bundle.cpp" />
+    <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
