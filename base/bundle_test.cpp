@@ -1,5 +1,7 @@
 #include "base/bundle.hpp"
 
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -7,7 +9,7 @@ namespace principia {
 
 using ::testing::Eq;
 
-using namespace std::chrono_literals;  // NOLINT(build/namespace)
+using namespace std::chrono_literals;  // NOLINT(build/namespaces)
 
 namespace base {
 

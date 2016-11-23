@@ -30,12 +30,12 @@ class Bundle {
     TaskHandle& operator=(TaskHandle&&) = default;
 
    private:
-    TaskHandle(std::shared_ptr<Task> task);
+    explicit TaskHandle(std::shared_ptr<Task> task);
     std::shared_ptr<Task> task_;
     friend class Bundle;
   };
 
-  Bundle(int workers);
+  explicit Bundle(int workers);
 
   // Returns the first non-OK status encountered.  All worker threads are
   // joined; no calls to |Add| or |Join| may follow this call.

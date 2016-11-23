@@ -3,6 +3,7 @@
 #include "base/bundle.hpp"
 
 #include <functional>
+#include <list>
 
 #include "base/map_util.hpp"
 #include "base/status.hpp"
