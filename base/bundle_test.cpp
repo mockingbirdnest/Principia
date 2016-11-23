@@ -13,7 +13,7 @@ namespace base {
 
 class BundleTest : public testing::Test {
  protected:
-  BundleTest() : bundle_(/*threads=*/8) {}
+  BundleTest() : bundle_(/*workers=*/8) {}
 
   Bundle bundle_;
 };
@@ -50,43 +50,50 @@ TEST_F(BundleTest, MatrixVectorProduct) {
 TEST_F(BundleTest, Abort) {
   int i = 0;
   auto const wait = [this]() {
-    while (!bundle_.abort_requested()) {}
+    while (!AbortRequested()) {
+      std::this_thread::sleep_for(10ms);
+    }
     return Status(Error::ABORTED, "");
+  };
+  auto const wait_with_message = [this]() {
+    while (!AbortRequested()) {
+      std::this_thread::sleep_for(10ms);
+    }
+    return Status(Error::ABORTED, "aborted on request");
   };
   auto const increment_i = [&i]() {
     ++i;
     return Status::OK;
   };
-  std::vector<std::shared_ptr<Bundle::Task>> waiters;
-  std::shared_ptr<Bundle::Task> waiter;
+  std::vector<Bundle::TaskHandle> waiters;
+  Bundle::TaskHandle waiter;
   for (int i = 0; i < 7; ++i) {
     waiters.emplace_back(bundle_.Add(wait));
   }
-  waiter = bundle_.Add(wait);
+  waiter = bundle_.Add(wait_with_message);
   // All threads busy.
-  std::shared_ptr<Bundle::Task> not_scheduled = bundle_.Add(increment_i);
+  Bundle::TaskHandle not_scheduled = bundle_.Add(increment_i);
   std::this_thread::sleep_for(10ms);
-  bundle_.Abort(not_scheduled.get());
-  EXPECT_TRUE(not_scheduled.unique());
+  bundle_.Abort(not_scheduled);
   EXPECT_THAT(i, Eq(0));
-  not_scheduled.reset();
-  bundle_.Abort(waiter.get());
+  bundle_.Abort(waiter);
   // Now a thread is free.
-  std::shared_ptr<Bundle::Task> incrementer = bundle_.Add(increment_i);
-  EXPECT_OK(bundle_.JoinTask(incrementer.get()));
+  Bundle::TaskHandle incrementer = bundle_.Add(increment_i);
+  EXPECT_OK(bundle_.JoinTask(std::move(incrementer)));
   EXPECT_THAT(i, Eq(1));
   // But only one.
   waiter = bundle_.Add(wait);
   not_scheduled = bundle_.Add(increment_i);
   std::this_thread::sleep_for(10ms);
-  bundle_.Abort(not_scheduled.get());
-  EXPECT_TRUE(not_scheduled.unique());
+  bundle_.Abort(not_scheduled);
   EXPECT_THAT(i, Eq(1));
-  bundle_.Abort(waiter.get());
-  for (auto const w : waiters) {
-    bundle_.Abort(w.get());
+  bundle_.Abort(waiter);
+  for (auto const& w : waiters) {
+    bundle_.Abort(w);
   }
-  EXPECT_TRUE(bundle_.Join().error() == Error::ABORTED);
+  auto status = bundle_.Join();
+  EXPECT_TRUE(status.error() == Error::ABORTED);
+  EXPECT_THAT(status.message(), Eq("aborted on request"));
 }
 
 }  // namespace base
