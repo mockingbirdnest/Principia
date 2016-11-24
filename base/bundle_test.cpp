@@ -29,7 +29,7 @@ class BundleTest : public testing::Test {
     }
     ++waiters_terminated_;
     return Status(Error::ABORTED, "");
-  };
+  }
 
   // Owns a bundle, fills it with instances of |Wait|, and joins it without
   // deadline.
@@ -44,7 +44,7 @@ class BundleTest : public testing::Test {
     EXPECT_THAT(status.error(), Eq(Error::ABORTED));
     EXPECT_THAT(status.message(), Eq("abort requested on bundle master"));
     return status;
-  };
+  }
 
   Bundle bundle_;
   std::atomic<int> waiters_activated_ = 0;
