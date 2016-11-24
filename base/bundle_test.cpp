@@ -15,11 +15,13 @@ using namespace std::chrono_literals;  // NOLINT(build/namespaces)
 namespace base {
 
 constexpr int workers = 8;
+constexpr int workers_per_dependent_bundle = 2;
 
 class BundleTest : public testing::Test {
  protected:
   BundleTest() : bundle_(workers) {}
 
+  // Does nothing, cooperatively aborts with no message.
   Status Wait() {
     ++waiters_activated_;
     while (!AbortRequested()) {
@@ -29,11 +31,27 @@ class BundleTest : public testing::Test {
     return Status(Error::ABORTED, "");
   };
 
+  // Owns a bundle, fills it with instances of |Wait|, and joins it without
+  // deadline.
+  Status OwnABundle() {
+    Bundle dependent(workers_per_dependent_bundle);
+    // |workers_per_dependent_bundle| tasks will run, and an additional one will
+    // be queued.
+    for (int i = 0; i < workers_per_dependent_bundle + 1; ++i) {
+      dependent.Add(wait_);
+    }
+    auto status = dependent.Join();
+    EXPECT_THAT(status.error(), Eq(Error::ABORTED));
+    EXPECT_THAT(status.message(), Eq("abort requested on bundle master"));
+    return status;
+  };
+
   Bundle bundle_;
   std::atomic<int> waiters_activated_ = 0;
   std::atomic<int> waiters_terminated_ = 0;
   Bundle::Task const wait_ = std::bind(&BundleTest::Wait, this);
   Bundle::Task const cancel_ = [] { return Status::CANCELLED; };
+  Bundle::Task const own_a_bundle_ = std::bind(&BundleTest::OwnABundle, this);
 };
 
 TEST_F(BundleTest, MatrixVectorProduct) {
@@ -82,21 +100,8 @@ TEST_F(BundleTest, Abort) {
 }
 
 TEST_F(BundleTest, NestedAbort) {
-  constexpr int workers_per_dependent_bundle = 2;
-  auto const own_a_bundle = [this, workers_per_dependent_bundle] {
-    Bundle dependent(workers_per_dependent_bundle);
-    // |workers_per_dependent_bundle| tasks will run, and an additional one will
-    // be queued.
-    for (int i = 0; i < workers_per_dependent_bundle + 1; ++i) {
-      dependent.Add(wait_);
-    }
-    auto status = dependent.Join();
-    EXPECT_OK(status);
-    return status;
-  };
-
   for (int i = 0; i < workers - 1; ++i) {
-    bundle_.Add(own_a_bundle);
+    bundle_.Add(own_a_bundle_);
   }
   while (waiters_activated_ < (workers - 1) * workers_per_dependent_bundle) {
     std::this_thread::sleep_for(10ms);
@@ -108,6 +113,23 @@ TEST_F(BundleTest, NestedAbort) {
               Eq((workers - 1) * workers_per_dependent_bundle));
   EXPECT_THAT(waiters_terminated_,
               Eq((workers - 1) * workers_per_dependent_bundle));
+}
+
+TEST_F(BundleTest, Deadline) {
+  for (int i = 0; i < workers; ++i) {
+    bundle_.Add(own_a_bundle_);
+  }
+  while (waiters_activated_ < workers * workers_per_dependent_bundle) {
+    std::this_thread::sleep_for(10ms);
+  }
+  EXPECT_THAT(waiters_terminated_, Eq(0));
+  auto const status = bundle_.JoinWithin(10ms);
+  EXPECT_THAT(status.error(), Eq(Error::DEADLINE_EXCEEDED));
+  EXPECT_THAT(status.message(), Eq("bundle deadline exceeded"));
+  EXPECT_THAT(waiters_activated_,
+              Eq(workers * workers_per_dependent_bundle));
+  EXPECT_THAT(waiters_terminated_,
+              Eq(workers * workers_per_dependent_bundle));
 }
 
 }  // namespace base

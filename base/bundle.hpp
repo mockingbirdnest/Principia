@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include <experimental/optional>
@@ -34,9 +35,9 @@ class Bundle {
   Status Join();
   // Same as above, but aborts and returns |Error::DEADLINE_EXCEEDED| if it
   // fails to complete within the given interval.
-  Status JoinWithin();
+  Status JoinWithin(std::chrono::steady_clock::duration Δt);
   // Same as above with absolute time.
-  Status JoinBefore();
+  Status JoinBefore(std::chrono::steady_clock::time_point t);
 
   // If a |task| returns an erroneous |Status|, the |Bundle| is aborted and
   // |Join| returns that status.
@@ -55,8 +56,11 @@ class Bundle {
   // should not be |OK|.
   void Abort(Status status);
 
-  // Shared-locks |abort_lock_| and returns |!status_.ok()|.
+  // Thread-safe |!status_.ok()|.
   bool Aborting();
+
+  // Thread-safe |deadline_ && std::chrono::steady_clock::now() > deadline_|.
+  bool DeadlineExceeded();
 
   // |abort_lock_| should not be held when locking |lock_|.
   std::mutex lock_;
@@ -65,12 +69,13 @@ class Bundle {
   // Workers wait on this when no |tasks_| are available.
   std::condition_variable tasks_not_empty_or_terminate_;
 
-  // Only lock in |Abort| and |Aborting|, and at the end of |Join|.
   std::shared_mutex abort_lock_;
   // If |!status_.ok()|, currently-running tasks should cooperatively abort, and
   // workers will terminate without considering queued tasks.  Set by |Abort|,
   // accessed by |Aborting|, returned by |Join|.
   Status status_ GUARDED_BY(abort_lock_);
+  std::experimental::optional<std::chrono::steady_clock::time_point> deadline_
+      GUARDED_BY(abort_lock_);
 
   // Whether the workers should terminate when no tasks are available.  Set by
   // |Join|.

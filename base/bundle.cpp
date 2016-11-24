@@ -1,5 +1,4 @@
-#pragma once
-
+﻿
 #include "base/bundle.hpp"
 
 #include <functional>
@@ -32,6 +31,18 @@ Status Bundle::Join() {
   }
   std::shared_lock<std::shared_mutex> abort_lock(abort_lock_);
   return status_;
+}
+
+Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
+  return JoinBefore(std::chrono::steady_clock::now() + Δt);
+}
+
+Status Bundle::JoinBefore(std::chrono::steady_clock::time_point t) {
+  {
+    std::unique_lock<std::shared_mutex> abort_lock(abort_lock_);
+    deadline_ = t;
+  }
+  return Join();
 }
 
 void Bundle::Add(Task task) {
@@ -77,8 +88,12 @@ void Bundle::Toil() {
 }
 
 bool Bundle::BundleShouldAbort() {
-  if (!Aborting() && (*master_abort_)()) {
-    Abort(Status(Error::ABORTED, "abort requested on bundle master"));
+  if (!Aborting()) {
+    if ((*master_abort_)()) {
+      Abort(Status(Error::ABORTED, "abort requested on bundle master"));
+    } else if (DeadlineExceeded()) {
+      Abort(Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded"));
+    }
   }
   return Aborting();
 }
@@ -97,6 +112,11 @@ void Bundle::Abort(Status status) {
 bool Bundle::Aborting() {
   std::shared_lock<std::shared_mutex> abort_lock(abort_lock_);
   return !status_.ok();
+}
+
+bool Bundle::DeadlineExceeded() {
+  std::shared_lock<std::shared_mutex> abort_lock(abort_lock_);
+  return deadline_ && std::chrono::steady_clock::now() > deadline_;
 }
 
 }  // namespace base
