@@ -1,5 +1,6 @@
 #include "base/bundle.hpp"
 
+#include <atomic>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -89,7 +90,9 @@ TEST_F(BundleTest, NestedAbort) {
     for (int i = 0; i < workers_per_dependent_bundle + 1; ++i) {
       dependent.Add(wait_);
     }
-    return dependent.Join();
+    auto status = dependent.Join();
+    EXPECT_OK(status);
+    return status;
   };
 
   for (int i = 0; i < workers - 1; ++i) {

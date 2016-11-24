@@ -14,8 +14,7 @@ namespace base {
 thread_local std::function<bool()> AbortRequested = [] { return false; };
 
 Bundle::Bundle(int threads)
-    : abort_(false),
-      terminate_on_empty_(false),
+    : terminate_on_empty_(false),
       max_workers_(threads),
       master_abort_(&AbortRequested) {
   workers_.reserve(max_workers_);
@@ -31,7 +30,7 @@ Status Bundle::Join() {
   for (auto& thread : workers_) {
     thread.join();
   }
-  std::unique_lock<std::mutex> lock(lock_);
+  std::shared_lock<std::shared_mutex> abort_lock(abort_lock_);
   return status_;
 }
 
@@ -55,9 +54,11 @@ void Bundle::Toil() {
       std::unique_lock<std::mutex> lock(lock_);
       tasks_not_empty_or_terminate_.wait(
           lock,
-          [this] { return !tasks_.empty() || terminate_on_empty_ || abort_; });
-      if (tasks_.empty() || abort_) {
-        if (abort_) {
+          [this] {
+            return !tasks_.empty() || terminate_on_empty_ || Aborting();
+          });
+      if (tasks_.empty() || Aborting()) {
+        if (Aborting()) {
           LOG(ERROR) << std::this_thread::get_id() << " aborts";
         } else {
           LOG(ERROR) << std::this_thread::get_id() << " joins (no more tasks)";
@@ -69,27 +70,33 @@ void Bundle::Toil() {
     }
     LOG(ERROR) << std::this_thread::get_id() << " executes a task";
     Status status = current_task();
-    bool new_erroneous_status = false;
-    {
-      std::unique_lock<std::mutex> lock(lock_);
-      if (!status.ok() && status_.ok()) {
-        status_ = status;
-        Abort();
-      }
+    if (!status.ok()) {
+      Abort(status);
     }
   }
 }
 
 bool Bundle::BundleShouldAbort() {
-  if (!abort_ && (*master_abort_)()) {
-    Abort();
+  if (!Aborting() && (*master_abort_)()) {
+    Abort(Status(Error::ABORTED, "abort requested on bundle master"));
   }
-  return abort_;
+  return Aborting();
 }
 
-void Bundle::Abort() {
-  abort_ = true;
+void Bundle::Abort(Status status) {
+  std::unique_lock<std::shared_mutex> abort_lock(abort_lock_);
+  CHECK(!status.ok());
+  if (!status_.ok()) {
+    // Already aborting.
+    return;
+  }
+  status_ = status;
   tasks_not_empty_or_terminate_.notify_all();
+}
+
+bool Bundle::Aborting() {
+  std::shared_lock<std::shared_mutex> abort_lock(abort_lock_);
+  return !status_.ok();
 }
 
 }  // namespace base
