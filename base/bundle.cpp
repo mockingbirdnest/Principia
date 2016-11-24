@@ -71,17 +71,11 @@ void Bundle::Toil() {
       // The call to |BundleShouldAbort| checks for deadline expiry and master
       // abort.
       if (tasks_.empty() || BundleShouldAbort()) {
-        if (Aborting()) {
-          LOG(ERROR) << std::this_thread::get_id() << " aborts";
-        } else {
-          LOG(ERROR) << std::this_thread::get_id() << " joins (no more tasks)";
-        }
         return;
       }
       current_task = std::move(tasks_.front());
       tasks_.pop();
     }
-    LOG(ERROR) << std::this_thread::get_id() << " executes a task";
     Status status = current_task();
     if (!status.ok()) {
       Abort(status);
