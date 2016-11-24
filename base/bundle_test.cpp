@@ -132,5 +132,20 @@ TEST_F(BundleTest, Deadline) {
               Eq(workers * workers_per_dependent_bundle));
 }
 
+TEST_F(BundleTest, NonCooperativeDeadline) {
+  for (int i = 0; i < 10 * workers; ++i) {
+    // Waiters with no cooperative abort.
+    bundle_.Add([this] {
+      std::this_thread::sleep_for(100ms);
+      ++waiters_terminated_;
+      return Status::OK;
+    });
+  }
+  auto const status = bundle_.JoinBefore(std::chrono::steady_clock::now());
+  EXPECT_THAT(status.error(), Eq(Error::DEADLINE_EXCEEDED));
+  EXPECT_THAT(status.message(), Eq("bundle deadline exceeded"));
+  EXPECT_THAT(waiters_terminated_, Eq(workers));
+}
+
 }  // namespace base
 }  // namespace principia

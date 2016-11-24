@@ -68,7 +68,9 @@ void Bundle::Toil() {
           [this] {
             return !tasks_.empty() || terminate_on_empty_ || Aborting();
           });
-      if (tasks_.empty() || Aborting()) {
+      // The call to |BundleShouldAbort| checks for deadline expiry and master
+      // abort.
+      if (tasks_.empty() || BundleShouldAbort()) {
         if (Aborting()) {
           LOG(ERROR) << std::this_thread::get_id() << " aborts";
         } else {
