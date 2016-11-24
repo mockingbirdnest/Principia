@@ -13,11 +13,26 @@ using namespace std::chrono_literals;  // NOLINT(build/namespaces)
 
 namespace base {
 
+constexpr int workers = 8;
+
 class BundleTest : public testing::Test {
  protected:
-  BundleTest() : bundle_(/*workers=*/8) {}
+  BundleTest() : bundle_(workers) {}
+
+  Status Wait() {
+    ++waiters_activated_;
+    while (!AbortRequested()) {
+      std::this_thread::sleep_for(10ms);
+    }
+    ++waiters_terminated_;
+    return Status(Error::ABORTED, "");
+  };
 
   Bundle bundle_;
+  std::atomic<int> waiters_activated_ = 0;
+  std::atomic<int> waiters_terminated_ = 0;
+  Bundle::Task const wait_ = std::bind(&BundleTest::Wait, this);
+  Bundle::Task const cancel_ = [] { return Status::CANCELLED; };
 };
 
 TEST_F(BundleTest, MatrixVectorProduct) {
@@ -50,52 +65,46 @@ TEST_F(BundleTest, MatrixVectorProduct) {
 }
 
 TEST_F(BundleTest, Abort) {
-  int i = 0;
-  auto const wait = [this]() {
-    while (!AbortRequested()) {
-      std::this_thread::sleep_for(10ms);
-    }
-    return Status(Error::ABORTED, "");
-  };
-  auto const wait_with_message = [this]() {
-    while (!AbortRequested()) {
-      std::this_thread::sleep_for(10ms);
-    }
-    return Status(Error::ABORTED, "aborted on request");
-  };
-  auto const increment_i = [&i]() {
-    ++i;
-    return Status::OK;
-  };
-  std::vector<Bundle::TaskHandle> waiters;
-  Bundle::TaskHandle waiter;
-  for (int i = 0; i < 7; ++i) {
-    waiters.emplace_back(bundle_.Add(wait));
+  for (int i = 0; i < workers - 1; ++i) {
+    bundle_.Add(wait_);
   }
-  waiter = bundle_.Add(wait_with_message);
-  // All threads busy.
-  Bundle::TaskHandle not_scheduled = bundle_.Add(increment_i);
-  std::this_thread::sleep_for(10ms);
-  bundle_.Abort(not_scheduled);
-  EXPECT_THAT(i, Eq(0));
-  bundle_.Abort(waiter);
-  // Now a thread is free.
-  Bundle::TaskHandle incrementer = bundle_.Add(increment_i);
-  EXPECT_OK(bundle_.JoinTask(std::move(incrementer)));
-  EXPECT_THAT(i, Eq(1));
-  // But only one.
-  waiter = bundle_.Add(wait);
-  not_scheduled = bundle_.Add(increment_i);
-  std::this_thread::sleep_for(10ms);
-  bundle_.Abort(not_scheduled);
-  EXPECT_THAT(i, Eq(1));
-  bundle_.Abort(waiter);
-  for (auto const& w : waiters) {
-    bundle_.Abort(w);
+  while (waiters_activated_ < workers - 1) {
+    std::this_thread::sleep_for(10ms);
   }
-  auto status = bundle_.Join();
-  EXPECT_TRUE(status.error() == Error::ABORTED);
-  EXPECT_THAT(status.message(), Eq("aborted on request"));
+  EXPECT_THAT(waiters_terminated_, Eq(0));
+  bundle_.Add(cancel_);
+  // This one will never start.
+  bundle_.Add(wait_);
+  EXPECT_THAT(bundle_.Join(), Eq(Status::CANCELLED));
+  EXPECT_THAT(waiters_activated_, Eq(workers - 1));
+  EXPECT_THAT(waiters_terminated_, Eq(workers - 1));
+}
+
+TEST_F(BundleTest, NestedAbort) {
+  constexpr int workers_per_dependent_bundle = 2;
+  auto const own_a_bundle = [this, workers_per_dependent_bundle] {
+    Bundle dependent(workers_per_dependent_bundle);
+    // |workers_per_dependent_bundle| tasks will run, and an additional one will
+    // be queued.
+    for (int i = 0; i < workers_per_dependent_bundle + 1; ++i) {
+      dependent.Add(wait_);
+    }
+    return dependent.Join();
+  };
+
+  for (int i = 0; i < workers - 1; ++i) {
+    bundle_.Add(own_a_bundle);
+  }
+  while (waiters_activated_ < (workers - 1) * workers_per_dependent_bundle) {
+    std::this_thread::sleep_for(10ms);
+  }
+  EXPECT_THAT(waiters_terminated_, Eq(0));
+  bundle_.Add(cancel_);
+  EXPECT_THAT(bundle_.Join(), Eq(Status::CANCELLED));
+  EXPECT_THAT(waiters_activated_,
+              Eq((workers - 1) * workers_per_dependent_bundle));
+  EXPECT_THAT(waiters_terminated_,
+              Eq((workers - 1) * workers_per_dependent_bundle));
 }
 
 }  // namespace base
