@@ -23,7 +23,15 @@ using numerics::FixedVector;
 
 namespace integrators {
 
-template <typename Position, int order_>
+template<int order_>
+struct AdamsMoulton {
+  static int const order = order_;
+  FixedVector<double, order + 1> numerators;
+  double denominator;
+};
+
+//TODO(phl): Single order?
+template <typename Position, int order_, int velocity_order_>
 class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>> {
@@ -34,6 +42,7 @@ public:
   SymmetricLinearMultistepIntegrator(
       serialization::FixedStepSizeIntegrator::Kind const kind,
       FixedStepSizeIntegrator<ODE> const& startup_integrator,
+      AdamsMoulton<velocity_order_> const& velocity_integrator,
       FixedVector<double, half_order_> const& ɑ,
       FixedVector<double, half_order_> const& β_numerator,
       double const β_denominator);
@@ -64,8 +73,9 @@ public:
              Time step);
     ODE const equation;
     std::list<Step> previous_steps;  // At most |order_ - 1| elements.
-    std::experimental::optional<typename ODE::SystemState>
-        current_startup_state;
+    // During startup the following field is updated more frequently than once
+    // every |step|.
+    typename ODE::SystemState current_state;
     AppendState<ODE> const append_state;
     Time const step;
   };
@@ -76,11 +86,16 @@ public:
   void StartupSolve(Instant const& t_final,
                     Instance& instance) const;
 
+  //TODO(phl):comment
+  void VelocitySolve(int dimension,
+                     Instance& instance) const;
+
   static void FillStepFromSystemState(ODE const& equation,
                                       typename ODE::SystemState const& state,
                                       Step& step);
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
+  AdamsMoulton<velocity_order_> const& velocity_integrator_;
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;
@@ -88,32 +103,38 @@ public:
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8> const&
+                                   /*order=*/8,
+                                   /*velocity_order=*/1> const&
 Quinlan1999Order8A();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8> const&
+                                   /*order=*/8,
+                                   /*velocity_order=*/4> const&
 Quinlan1999Order8B();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8> const&
+                                   /*order=*/8,
+                                   /*velocity_order=*/4> const&
 QuinlanTremaine1990Order8();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/10> const&
+                                   /*order=*/10,
+                                   /*velocity_order=*/4> const&
 QuinlanTremaine1990Order10();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/12> const&
+                                   /*order=*/12,
+                                   /*velocity_order=*/4> const&
 QuinlanTremaine1990Order12();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/14> const&
+                                   /*order=*/14,
+                                   /*velocity_order=*/4> const&
 QuinlanTremaine1990Order14();
 
 }  // namespace integrators
