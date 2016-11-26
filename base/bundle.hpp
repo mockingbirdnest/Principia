@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
+#include "base/monostable.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 
@@ -17,7 +18,7 @@ namespace principia {
 namespace base {
 
 // Functions that can be cooperatively aborted should check |AbortRequested()|
-// when appropriate.
+// when appropriate.  The function is thread-safe.
 extern thread_local std::function<bool()> AbortRequested;
 
 // A thread pool with cooperative aborting (but no cooperative scheduling).
@@ -28,7 +29,7 @@ class Bundle {
  public:
   using Task = std::function<Status()>;
 
-  explicit Bundle(int workers);
+  explicit Bundle(int const workers);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
@@ -45,7 +46,7 @@ class Bundle {
 
  private:
   // The |workers_| |Toil|.  This function returns when
-  // |(tasks_.empty() && terminate_on_empty_) || abort_|.
+  // |(tasks_.empty() && !wait_on_empty_) ||Aborting()|.
   void Toil();
 
   // The |workers_| have their |AbortRequested| set to |BundleShouldAbort|.
@@ -54,7 +55,7 @@ class Bundle {
   // If |status_| is erroneous, has no effect. Otherwise, sets |status_| to
   // |status| and notifies all on |tasks_not_empty_or_terminate_|.  |status|
   // should not be |OK|.
-  void Abort(Status status);
+  void Abort(Status const status);
 
   // Thread-safe |!status_.ok()|.
   bool Aborting();
@@ -62,29 +63,31 @@ class Bundle {
   // Thread-safe |deadline_ && std::chrono::steady_clock::now() > deadline_|.
   bool DeadlineExceeded();
 
-  // |abort_lock_| should not be held when locking |lock_|.
+  // |status_lock_| should not be held when locking |lock_|.
   std::mutex lock_;
   // Notified once when a task is available for execution.  Notified to all
-  // waiting workers when either |terminate_on_empty_| or |abort_| is set.
+  // waiting workers when either |wait_on_empty_| is flopped or |status_| is set
+  // to an error.
   // Workers wait on this when no |tasks_| are available.
   std::condition_variable tasks_not_empty_or_terminate_;
 
-  std::shared_mutex abort_lock_;
+  std::shared_mutex status_lock_;
   // If |!status_.ok()|, currently-running tasks should cooperatively abort, and
   // workers will terminate without considering queued tasks.  Set by |Abort|,
   // accessed by |Aborting|, returned by |Join|.
-  Status status_ GUARDED_BY(abort_lock_);
+  Status status_ GUARDED_BY(status_lock_);
   std::experimental::optional<std::chrono::steady_clock::time_point> deadline_
-      GUARDED_BY(abort_lock_);
+      GUARDED_BY(status_lock_);
 
   // Whether the workers should terminate when no tasks are available.  Set by
   // |Join|.
-  bool terminate_on_empty_ GUARDED_BY(lock_);
+  Monostable wait_on_empty_ GUARDED_BY(lock_);
+
   std::queue<Task> tasks_ GUARDED_BY(lock_);
   std::vector<std::thread> workers_ GUARDED_BY(lock_);
 
-  // A pointer to |AbortRequested| on the thread which created the |Bundle|.
   int const max_workers_;
+  // A pointer to |AbortRequested| on the thread which created the |Bundle|.
   not_null<std::function<bool()>*> const master_abort_;
 };
 
