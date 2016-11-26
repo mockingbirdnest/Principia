@@ -26,7 +26,7 @@ namespace integrators {
 template<int order_>
 struct AdamsMoulton {
   static int const order = order_;
-  FixedVector<double, order + 1> numerators;
+  FixedVector<double, order> numerators;
   double denominator;
 };
 
@@ -104,37 +104,37 @@ public:
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8,
-                                   /*velocity_order=*/1> const&
+                                   /*velocity_order=*/7> const&
 Quinlan1999Order8A();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8,
-                                   /*velocity_order=*/4> const&
+                                   /*velocity_order=*/7> const&
 Quinlan1999Order8B();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8,
-                                   /*velocity_order=*/4> const&
+                                   /*velocity_order=*/7> const&
 QuinlanTremaine1990Order8();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/10,
-                                   /*velocity_order=*/4> const&
+                                   /*velocity_order=*/9> const&
 QuinlanTremaine1990Order10();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/12,
-                                   /*velocity_order=*/4> const&
+                                   /*velocity_order=*/11> const&
 QuinlanTremaine1990Order12();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/14,
-                                   /*velocity_order=*/4> const&
+                                   /*velocity_order=*/13> const&
 QuinlanTremaine1990Order14();
 
 }  // namespace integrators
