@@ -30,12 +30,16 @@ struct AdamsMoulton {
   double denominator;
 };
 
-//TODO(phl): Single order?
-template <typename Position, int order_, int velocity_order_>
+//
+template <typename Position, int order_>
 class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>> {
   static int const half_order_ = order_ / 2 + 1;
+  // The velocity is evaluated for a single step, and for a method of order
+  // n a single step has order n + 1.  This declaration gives us the velocity
+  // with order |order_|.
+  static int const velocity_order_ = order_ - 1;
 public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
@@ -103,38 +107,32 @@ public:
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8,
-                                   /*velocity_order=*/7> const&
+                                   /*order=*/8> const&
 Quinlan1999Order8A();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8,
-                                   /*velocity_order=*/7> const&
+                                   /*order=*/8> const&
 Quinlan1999Order8B();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/8,
-                                   /*velocity_order=*/7> const&
+                                   /*order=*/8> const&
 QuinlanTremaine1990Order8();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/10,
-                                   /*velocity_order=*/9> const&
+                                   /*order=*/10> const&
 QuinlanTremaine1990Order10();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/12,
-                                   /*velocity_order=*/11> const&
+                                   /*order=*/12> const&
 QuinlanTremaine1990Order12();
 
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
-                                   /*order=*/14,
-                                   /*velocity_order=*/13> const&
+                                   /*order=*/14> const&
 QuinlanTremaine1990Order14();
 
 }  // namespace integrators

@@ -163,8 +163,8 @@ int const startup_step_divisor = 16;
 
 }  // namespace
 
-template<typename Position, int order_, int velocity_order_>
-SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+template<typename Position, int order_>
+SymmetricLinearMultistepIntegrator<Position, order_>::
 SymmetricLinearMultistepIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind,
     FixedStepSizeIntegrator<ODE> const& startup_integrator,
@@ -179,8 +179,8 @@ SymmetricLinearMultistepIntegrator(
       β_numerator_(β_numerator),
       β_denominator_(β_denominator) {}
 
-template<typename Position, int order_, int velocity_order_>
-void SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
 Solve(Instant const& t_final,
       not_null<IntegrationInstance*> const instance) const {
   using Displacement = typename ODE::Displacement;
@@ -289,9 +289,9 @@ Solve(Instant const& t_final,
   }
 }
 
-template<typename Position, int order_, int velocity_order_>
+template<typename Position, int order_>
 not_null<std::unique_ptr<IntegrationInstance>>
-SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+SymmetricLinearMultistepIntegrator<Position, order_>::
 NewInstance(IntegrationProblem<ODE> const& problem,
             IntegrationInstance::AppendState<ODE> append_state,
             Time const& step) const {
@@ -300,8 +300,8 @@ NewInstance(IntegrationProblem<ODE> const& problem,
                                         step);
 }
 
-template<typename Position, int order_, int velocity_order_>
-SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+template<typename Position, int order_>
+SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::Instance(IntegrationProblem<ODE> problem,
                    AppendState<ODE> append_state,
                    Time step)
@@ -316,8 +316,8 @@ Instance::Instance(IntegrationProblem<ODE> problem,
   FillStepFromSystemState(equation, current_state, previous_steps.back());
 }
 
-template<typename Position, int order_, int velocity_order_>
-void SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
 StartupSolve(Instant const& t_final,
              Instance& instance) const {
   auto const& equation = instance.equation;
@@ -364,8 +364,8 @@ StartupSolve(Instant const& t_final,
   CHECK_LE(previous_steps.size(), order_);
 }
 
-template<typename Position, int order_, int velocity_order_>
-void SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
     VelocitySolve(int const dimension, Instance& instance) const {
   using Velocity = typename ODE::Velocity;
   for (int d = 0; d < dimension; ++d) {
@@ -382,8 +382,8 @@ void SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
   }
 }
 
-template<typename Position, int order_, int velocity_order_>
-void SymmetricLinearMultistepIntegrator<Position, order_, velocity_order_>::
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
 FillStepFromSystemState(ODE const& equation,
                         typename ODE::SystemState const& state,
                         Step& step) {
@@ -398,8 +398,8 @@ FillStepFromSystemState(ODE const& equation,
 }
 
 template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 8, 7> const& Quinlan1999Order8A() {
-  static SymmetricLinearMultistepIntegrator<Position, 8, 7> const integrator(
+SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
+  static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A,
       BlanesMoan2002SRKN14A<Position>(),
       AdamsMoultonOrder7(),
@@ -410,8 +410,8 @@ SymmetricLinearMultistepIntegrator<Position, 8, 7> const& Quinlan1999Order8A() {
 }
 
 template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 8, 7> const& Quinlan1999Order8B() {
-  static SymmetricLinearMultistepIntegrator<Position, 8, 7> const integrator(
+SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
+  static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B,
       BlanesMoan2002SRKN14A<Position>(),
       AdamsMoultonOrder7(),
@@ -422,9 +422,9 @@ SymmetricLinearMultistepIntegrator<Position, 8, 7> const& Quinlan1999Order8B() {
 }
 
 template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 8, 7> const&
+SymmetricLinearMultistepIntegrator<Position, 8> const&
 QuinlanTremaine1990Order8() {
-  static SymmetricLinearMultistepIntegrator<Position, 8, 7> const integrator(
+  static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_8,
       BlanesMoan2002SRKN14A<Position>(),
       AdamsMoultonOrder7(),
@@ -435,9 +435,9 @@ QuinlanTremaine1990Order8() {
 }
 
 template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 10, 9> const&
+SymmetricLinearMultistepIntegrator<Position, 10> const&
 QuinlanTremaine1990Order10() {
-  static SymmetricLinearMultistepIntegrator<Position, 10, 9> const integrator(
+  static SymmetricLinearMultistepIntegrator<Position, 10> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_10,
       BlanesMoan2002SRKN14A<Position>(),
       AdamsMoultonOrder9(),
@@ -448,9 +448,9 @@ QuinlanTremaine1990Order10() {
 }
 
 template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 12, 11> const&
+SymmetricLinearMultistepIntegrator<Position, 12> const&
 QuinlanTremaine1990Order12() {
-  static SymmetricLinearMultistepIntegrator<Position, 12, 11> const integrator(
+  static SymmetricLinearMultistepIntegrator<Position, 12> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_12,
       BlanesMoan2002SRKN14A<Position>(),
       AdamsMoultonOrder11(),
@@ -467,9 +467,9 @@ QuinlanTremaine1990Order12() {
 }
 
 template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 14, 13> const&
+SymmetricLinearMultistepIntegrator<Position, 14> const&
 QuinlanTremaine1990Order14() {
-  static SymmetricLinearMultistepIntegrator<Position, 14, 13> const integrator(
+  static SymmetricLinearMultistepIntegrator<Position, 14> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14,
       BlanesMoan2002SRKN14A<Position>(),
       AdamsMoultonOrder13(),
