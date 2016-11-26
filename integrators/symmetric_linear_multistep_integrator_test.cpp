@@ -237,12 +237,9 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  // For high-order integrators the convergence order cannot even be computed.
-  if (!std::isnan(q_convergence_order)) {
-    EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
-                Lt(0.05));
-    EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
-  }
+  EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
+              Lt(0.05));
+  EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -254,7 +251,7 @@ void TestConvergence(Integrator const& integrator,
   EXPECT_THAT(
       RelativeError(integrator.order + (integrator.order % 2),
                     v_convergence_order),
-      Lt(0.02));
+      Lt(0.03));
   EXPECT_THAT(v_correlation, AllOf(Gt(0.99), Lt(1.01)));
 #endif
 }
@@ -308,7 +305,7 @@ void TestSymplecticity(Integrator const& integrator,
   double const correlation =
       PearsonProductMomentCorrelationCoefficient(time, energy_error);
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
-  EXPECT_THAT(correlation, Lt(2e-3));
+  EXPECT_THAT(correlation, Lt(1e-2));
   Power const slope = Slope(time, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
   EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
@@ -378,37 +375,34 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << instance.name();
 }
 
+// Not testing QuinlanTremaine1990Order14 as its characteristics cannot even be
+// computed.
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
   return {INSTANCE(Quinlan1999Order8A,
                    0.5 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
-                   0 * Joule),
+                   1.11928133428307319e-10 * Metre,
+                   1.20469939579592733e-10 * Metre / Second,
+                   1.33057216356036179e-07 * Joule),
           INSTANCE(Quinlan1999Order8B,
                    0.3 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
-                   0 * Joule),
+                   3.09590547642457636e-12 * Metre,
+                   7.37307437326251147e-12 * Metre / Second,
+                   1.64380669076535924e-07 * Joule),
           INSTANCE(QuinlanTremaine1990Order8,
                    0.5 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
-                   0 * Joule),
+                   6.45052899983511452e-11 * Metre,
+                   1.38676549410465810e-10 * Metre / Second,
+                   1.43650998873923186e-07 * Joule),
           INSTANCE(QuinlanTremaine1990Order10,
                    0.4 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
-                   0 * Joule),
+                   8.76709815855747365e-12 * Metre,
+                   1.29957156147497699e-11 * Metre / Second,
+                   4.11567135927271011e-09 * Joule),
           INSTANCE(QuinlanTremaine1990Order12,
                    0.2 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
-                   0 * Joule),
-          INSTANCE(QuinlanTremaine1990Order14,
-                   0.111 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
-                   0 * Joule)};
+                   1.87249105110254277e-11 * Metre,
+                   3.56745744056752301e-11 * Metre / Second,
+                   8.86237194741568146e-11 * Joule)};
 }
 
 }  // namespace
