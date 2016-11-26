@@ -141,6 +141,7 @@ TEST_F(BundleTest, NonCooperativeDeadline) {
       return Status::OK;
     });
   }
+  std::this_thread::sleep_for(10ms);
   auto const status = bundle_.JoinBefore(std::chrono::steady_clock::now());
   EXPECT_THAT(status.error(), Eq(Error::DEADLINE_EXCEEDED));
   EXPECT_THAT(status.message(), Eq("bundle deadline exceeded"));
