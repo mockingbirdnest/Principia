@@ -23,6 +23,7 @@ using numerics::FixedVector;
 
 namespace integrators {
 
+// Definition of an Adams-Moulton integrator used for computing velocities.
 template<int order_>
 struct AdamsMoulton {
   static int const order = order_;
@@ -30,7 +31,6 @@ struct AdamsMoulton {
   double denominator;
 };
 
-//
 template <typename Position, int order_>
 class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<
@@ -90,7 +90,8 @@ public:
   void StartupSolve(Instant const& t_final,
                     Instance& instance) const;
 
-  //TODO(phl):comment
+  // Performs the velocity integration, i.e. one step of the Adams-Moulton
+  // method using the accelerations computed by the main integrator.
   void VelocitySolve(int dimension,
                      Instance& instance) const;
 
