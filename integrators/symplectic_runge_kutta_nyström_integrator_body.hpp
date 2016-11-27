@@ -90,7 +90,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
   // Argument checks.
   int const dimension = current_state.positions.size();
-  CHECK_EQ(dimension, current_state.velocities.size());
   CHECK_NE(Time(), step);
   Sign const integration_direction = Sign(step);
   if (integration_direction.Positive()) {
@@ -100,7 +99,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     // Integrating backward.
     CHECK_GT(current_state.time.value, t_final);
   }
-
 
   // Time step.
   Time const& h = step;
@@ -196,7 +194,10 @@ Instance::Instance(IntegrationProblem<ODE> problem,
     : equation(std::move(problem.equation)),
       current_state(*problem.initial_state),
       append_state(std::move(append_state)),
-      step(std::move(step)) {}
+      step(std::move(step)) {
+  CHECK_EQ(current_state.positions.size(),
+           current_state.velocities.size());
+}
 
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, BA> const&

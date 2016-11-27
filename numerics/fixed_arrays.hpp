@@ -16,11 +16,11 @@ namespace numerics {
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
 
-template<typename Scalar, int size>
+template<typename Scalar, int size_>
 class FixedVector {
  public:
   constexpr FixedVector();  // Zero-initialized.
-  constexpr explicit FixedVector(std::array<Scalar, size> const& data);
+  constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
   FixedVector(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
@@ -31,6 +31,8 @@ class FixedVector {
   constexpr Scalar const& operator[](int const index) const;
 
   operator std::vector<Scalar>() const;
+
+  static constexpr int size = size_;
 
  private:
   std::array<Scalar, size> data_;

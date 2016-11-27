@@ -108,7 +108,6 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 
   // Argument checks.
   int const dimension = current_state.positions.size();
-  CHECK_EQ(dimension, current_state.velocities.size());
   CHECK_NE(Time(), adaptive_step_size.first_time_step);
   Sign const integration_direction =
       Sign(adaptive_step_size.first_time_step);
@@ -297,7 +296,10 @@ Instance::Instance(IntegrationProblem<ODE> problem,
     : equation(std::move(problem.equation)),
       current_state(*problem.initial_state),
       append_state(std::move(append_state)),
-      adaptive_step_size(std::move(adaptive_step_size)) {}
+      adaptive_step_size(std::move(adaptive_step_size)) {
+  CHECK_EQ(current_state.positions.size(),
+           current_state.velocities.size());
+}
 
 }  // namespace integrators
 }  // namespace principia

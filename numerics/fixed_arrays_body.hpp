@@ -11,8 +11,8 @@
 namespace principia {
 namespace numerics {
 
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>::FixedVector() {
+template<typename Scalar, int size_>
+constexpr FixedVector<Scalar, size_>::FixedVector() {
   // TODO(phl): This used to be:
   //   Scalar zero{};
   //   data_.fill(zero);
@@ -21,44 +21,44 @@ constexpr FixedVector<Scalar, size>::FixedVector() {
   data_.fill({});
 }
 
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>::FixedVector(
-    std::array<Scalar, size> const& data)
+template<typename Scalar, int size_>
+constexpr FixedVector<Scalar, size_>::FixedVector(
+    std::array<Scalar, size_> const& data)
     : data_(data) {}
 
-template<typename Scalar, int size>
-FixedVector<Scalar, size>::FixedVector(
+template<typename Scalar, int size_>
+FixedVector<Scalar, size_>::FixedVector(
     std::initializer_list<Scalar> const& data) {
   CHECK_EQ(size, data.size());
   std::copy(data.begin(), data.end(), data_.begin());
 }
 
-template<typename Scalar, int size>
-bool FixedVector<Scalar, size>::operator==(FixedVector const& right) const {
+template<typename Scalar, int size_>
+bool FixedVector<Scalar, size_>::operator==(FixedVector const& right) const {
   return data_ == right.data_;
 }
 
-template<typename Scalar, int size>
-FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
+template<typename Scalar, int size_>
+FixedVector<Scalar, size_>& FixedVector<Scalar, size_>::operator=(
     std::initializer_list<Scalar> const& right) {
   CHECK_EQ(size, right.size());
   std::copy(right.begin(), right.end(), data_.begin());
   return *this;
 }
 
-template<typename Scalar, int size>
-Scalar& FixedVector<Scalar, size>::operator[](int const index) {
+template<typename Scalar, int size_>
+Scalar& FixedVector<Scalar, size_>::operator[](int const index) {
   return data_[index];
 }
 
-template<typename Scalar, int size>
-constexpr Scalar const& FixedVector<Scalar, size>::operator[](
+template<typename Scalar, int size_>
+constexpr Scalar const& FixedVector<Scalar, size_>::operator[](
     int const index) const {
   return data_[index];
 }
 
-template<typename Scalar, int size>
-FixedVector<Scalar, size>::operator std::vector<Scalar>() const {
+template<typename Scalar, int size_>
+FixedVector<Scalar, size_>::operator std::vector<Scalar>() const {
   std::vector<Scalar> result(data_.size());
   std::copy(data_.begin(), data_.end(), result.begin());
   return result;
