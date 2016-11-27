@@ -1,4 +1,5 @@
-﻿// The files containing the tree of of child classes of |Integrator| must be
+﻿
+// The files containing the tree of of child classes of |Integrator| must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 //  parent.
@@ -8,8 +9,8 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 
-#include <experimental/optional>
 #include <list>
+#include <vector>
 
 #include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -40,7 +41,7 @@ class SymmetricLinearMultistepIntegrator
   // n a single step has order n + 1.  This declaration gives us the velocity
   // with order |order_|.
   static int const velocity_order_ = order_ - 1;
-public:
+ public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
   SymmetricLinearMultistepIntegrator(
@@ -106,6 +107,9 @@ public:
   double const β_denominator_;
 };
 
+// This method and the next are from Quinlan (1999), Resonances and
+// instabilities in symmetric multistep methods,
+// https://arxiv.org/abs/astro-ph/9901136.
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
@@ -116,6 +120,9 @@ SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
 Quinlan1999Order8B();
 
+// This four methods are from Quinlan and Tremaine (1990), Symmetric multistep
+// methods for the numerical integration of planetary orbits,
+// http://adsabs.harvard.edu/full/1990AJ....100.1694Q.
 template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&

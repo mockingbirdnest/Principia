@@ -2,12 +2,22 @@
 
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 
+#include <algorithm>
+#include <vector>
+
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
 namespace integrators {
 
 namespace {
+
+// For the Adams-Moulton integrators, see
+// http://www.scholarpedia.org/article/Linear_multistep_method#Methods_for_Hamiltonian_systems  // NOLINT
+// and
+// https://en.wikipedia.org/wiki/Linear_multistep_method#Adams.E2.80.93Moulton_methods.  // NOLINT
+// The latter has a general formula for the coefficients and was used to
+// compute the high-order integrators.
 
 AdamsMoulton<1> const& AdamsMoultonOrder1() {
   static AdamsMoulton<1> const integrator{{1.0}, 1.0};
