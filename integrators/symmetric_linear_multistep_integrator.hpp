@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/status.hpp"
+#include "integrators/adams_moulton_integrator.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -24,43 +25,34 @@ using numerics::FixedVector;
 
 namespace integrators {
 
-// Definition of an Adams-Moulton integrator used for computing velocities.
-template<int order_>
-struct AdamsMoulton {
-  static int const order = order_;
-  FixedVector<double, order> numerators;
-  double denominator;
-};
-
-template <typename Position, int order_>
+template<typename Position, int order_>
 class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>> {
-  static int const half_order_ = order_ / 2 + 1;
+  static constexpr int half_order_ = order_ / 2 + 1;
   // The velocity is evaluated for a single step, and for a method of order
   // n a single step has order n + 1.  This declaration gives us the velocity
   // with order |order_|.
-  static int const velocity_order_ = order_ - 1;
+  static constexpr int velocity_order_ = order_ - 1;
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
   SymmetricLinearMultistepIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind const kind,
+      serialization::FixedStepSizeIntegrator::Kind kind,
       FixedStepSizeIntegrator<ODE> const& startup_integrator,
-      AdamsMoulton<velocity_order_> const& velocity_integrator,
       FixedVector<double, half_order_> const& ɑ,
       FixedVector<double, half_order_> const& β_numerator,
-      double const β_denominator);
+      double β_denominator);
 
   void Solve(Instant const& t_final,
-             not_null<IntegrationInstance*> const instance) const override;
+             not_null<IntegrationInstance*> instance) const override;
 
   not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
     IntegrationInstance::AppendState<ODE> append_state,
     Time const& step) const;
 
-  static int const order = order_;
+  static constexpr int order = order_;
 
  private:
   // The data for a previous step of the integration.  The |Displacement|s here

@@ -32,7 +32,7 @@ class FixedVector {
 
   operator std::vector<Scalar>() const;
 
-  static int const size = size_;
+  static constexpr int size = size_;
 
  private:
   std::array<Scalar, size> data_;
