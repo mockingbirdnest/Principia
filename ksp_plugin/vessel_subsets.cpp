@@ -12,7 +12,7 @@ using ksp_plugin::PileUp;
 namespace base {
 
 Subset<Vessel>::Properties::SubsetOfExistingPileUp::SubsetOfExistingPileUp(
-    ContainerIterator<PileUps> pile_up)
+    ContainerIterator<PileUps> const pile_up)
     : pile_up_(pile_up) {
   missing_ = pile_up_.iterator->vessels().size() - 1;
 }
@@ -26,7 +26,7 @@ Subset<Vessel>::Properties::Properties(not_null<ksp_plugin::Vessel*> vessel) {
 }
 
 void Subset<ksp_plugin::Vessel>::Properties::Collect(
-    not_null<PileUps*> pile_ups) {
+    not_null<PileUps*> const pile_ups) {
   if (!collected_ && !(EqualsExistingPileUp())) {
     collected_ = true;
     pile_ups->emplace_front(std::move(vessels_));
