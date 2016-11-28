@@ -25,15 +25,7 @@ class PileUp {
 
  private:
   std::list<not_null<Vessel*>> vessels_;
-
-  /*
-  MasslessBody const body_;
-  not_null<Ephemeris<Barycentric>*> const ephemeris_;
-  DiscreteTrajectory<Barycentric> history_;
-  not_null<DiscreteTrajectory<Barycentric>*> prolongation_;
-  */
 };
-
 
 }  // namespace internal_pile_up
 
