@@ -9,13 +9,11 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
-#include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
 
-using base::Status;
 using numerics::FixedVector;
 
 namespace integrators {
@@ -81,10 +79,15 @@ class SymplecticRungeKuttaNyströmIntegrator
   SymplecticRungeKuttaNyströmIntegrator(
       serialization::FixedStepSizeIntegrator::Kind const kind,
       FixedVector<double, stages_> const& a,
-                                        FixedVector<double, stages_> const& b);
+      FixedVector<double, stages_> const& b);
 
-  void Solve(IntegrationProblem<ODE> const& problem,
-             Time const& step) const override;
+  void Solve(Instant const& t_final,
+             not_null<IntegrationInstance*> const instance) const override;
+
+  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename IntegrationInstance::AppendState<ODE> append_state,
+    Time const& step) const override;
 
   static int const order = order_;
   static bool const time_reversible = time_reversible_;
@@ -92,8 +95,18 @@ class SymplecticRungeKuttaNyströmIntegrator
   static CompositionMethod const composition = composition_;
 
  private:
-  FixedVector<double, stages_> a_;
-  FixedVector<double, stages_> b_;
+  struct Instance : public IntegrationInstance {
+    Instance(IntegrationProblem<ODE> problem,
+             AppendState<ODE> append_state,
+             Time step);
+    ODE const equation;
+    typename ODE::SystemState current_state;
+    AppendState<ODE> const append_state;
+    Time const step;
+  };
+
+  FixedVector<double, stages_> const a_;
+  FixedVector<double, stages_> const b_;
   FixedVector<double, stages_> c_;
 };
 

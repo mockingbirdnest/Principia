@@ -292,6 +292,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="adams_moulton_integrator.hpp" />
+    <ClInclude Include="adams_moulton_integrator_body.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="motion_integrator.hpp" />
@@ -301,6 +303,8 @@
     <ClInclude Include="sprk_integrator_body.hpp" />
     <ClInclude Include="srkn_integrator.hpp" />
     <ClInclude Include="srkn_integrator_body.hpp" />
+    <ClInclude Include="symmetric_linear_multistep_integrator.hpp" />
+    <ClInclude Include="symmetric_linear_multistep_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator.hpp" />
   </ItemGroup>
@@ -310,6 +314,7 @@
     <ClCompile Include="simple_harmonic_motion.cpp" />
     <ClCompile Include="sprk_integrator_test.cpp" />
     <ClCompile Include="srkn_integrator_test.cpp" />
+    <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -11,6 +11,8 @@
 
 namespace principia {
 
+using base::dynamic_cast_not_null;
+using base::make_not_null_unique;
 using geometry::Sign;
 using quantities::Abs;
 using testing_utilities::ULPDistance;
@@ -71,27 +73,32 @@ template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::Solve(
-    IntegrationProblem<ODE> const& problem,
-    Time const& step) const {
+    Instant const& t_final,
+    not_null<IntegrationInstance*> const instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
 
+  Instance* const down_cast_instance =
+      dynamic_cast_not_null<Instance*>(instance);
+  auto const& equation = down_cast_instance->equation;
+  auto const& append_state = down_cast_instance->append_state;
+  Time const& step = down_cast_instance->step;
+
+  // Gets updated as the integration progresses to allow restartability.
+  typename ODE::SystemState& current_state = down_cast_instance->current_state;
+
   // Argument checks.
-  CHECK_NOTNULL(problem.initial_state);
-  int const dimension = problem.initial_state->positions.size();
-  CHECK_EQ(dimension, problem.initial_state->velocities.size());
+  int const dimension = current_state.positions.size();
   CHECK_NE(Time(), step);
   Sign const integration_direction = Sign(step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(problem.initial_state->time.value, problem.t_final);
+    CHECK_LT(current_state.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(problem.initial_state->time.value, problem.t_final);
+    CHECK_GT(current_state.time.value, t_final);
   }
-
-  typename ODE::SystemState current_state = *problem.initial_state;
 
   // Time step.
   Time const& h = step;
@@ -124,7 +131,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   // exp(bᵢ h B).
   int first_stage = composition == ABA ? 1 : 0;
 
-  while (abs_h <= Abs((problem.t_final - t.value) - t.error)) {
+  while (abs_h <= Abs((t_final - t.value) - t.error)) {
     std::fill(Δq.begin(), Δq.end(), Displacement{});
     std::fill(Δv.begin(), Δv.end(), Velocity{});
 
@@ -143,7 +150,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      problem.equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
+      equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b_[i] * g[k];
@@ -162,8 +169,34 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
-    problem.append_state(current_state);
+    append_state(current_state);
   }
+}
+
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
+not_null<std::unique_ptr<IntegrationInstance>>
+SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
+                                      evaluations_, composition_>::
+NewInstance(IntegrationProblem<ODE> const& problem,
+            typename IntegrationInstance::AppendState<ODE> append_state,
+            Time const& step) const {
+  return make_not_null_unique<Instance>(problem, std::move(append_state), step);
+}
+
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
+SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
+                                      evaluations_, composition_>::
+Instance::Instance(IntegrationProblem<ODE> problem,
+                   AppendState<ODE> append_state,
+                   Time step)
+    : equation(std::move(problem.equation)),
+      current_state(*problem.initial_state),
+      append_state(std::move(append_state)),
+      step(std::move(step)) {
+  CHECK_EQ(current_state.positions.size(),
+           current_state.velocities.size());
 }
 
 template<typename Position>

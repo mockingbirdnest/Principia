@@ -101,6 +101,9 @@
     <ClInclude Include="container_iterator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bundle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -125,6 +128,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="disjoint_sets_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bundle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bundle_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
