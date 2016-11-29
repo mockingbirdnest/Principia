@@ -25,7 +25,7 @@ using quantities::si::Milli;
 using quantities::si::Second;
 
 Vessel::~Vessel() {
-  CHECK(!piled_up());
+  CHECK(!is_piled_up());
 }
 
 Vessel::Vessel(not_null<Celestial const*> const parent,
@@ -272,28 +272,27 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   return std::move(vessel);
 }
 
-void Vessel::set_containing_pile_up(
-    ContainerIterator<std::list<PileUp>> pile_up) {
+void Vessel::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
   containing_pile_up_ = pile_up;
 }
 
-std::experimental::optional<ContainerIterator<std::list<PileUp>>>
+std::experimental::optional<IteratorOn<std::list<PileUp>>>
 Vessel::containing_pile_up() const {
   return containing_pile_up_;
 }
 
-bool Vessel::piled_up() const {
+bool Vessel::is_piled_up() const {
   // TODO(egg): |has_value()| once we have a standard |optional|.
   return static_cast<bool>(containing_pile_up_);
 }
 
 void Vessel::clear_pile_up() {
-  if (piled_up()) {
-    ContainerIterator<std::list<PileUp>> pile_up = *containing_pile_up_;
-    for (not_null<Vessel*> const vessel : pile_up.iterator->vessels()) {
+  if (is_piled_up()) {
+    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
+    for (not_null<Vessel*> const vessel : pile_up.iterator()->vessels()) {
       vessel->containing_pile_up_ = std::experimental::nullopt;
     }
-    CHECK(!piled_up());
+    CHECK(!is_piled_up());
     pile_up.Erase();
   }
 }

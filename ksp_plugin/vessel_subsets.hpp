@@ -48,8 +48,7 @@ class Subset<ksp_plugin::Vessel>::Properties {
                                   Properties const& right);
   // Whether the set of |Vessel|s in |vessels_| is equal to the set of |Vessel|s
   // in an existing |PileUp|.  In that case
-  // |subset_of_existing_pile_up_->pile_up_|
-  // is that |PileUp|.
+  // |subset_of_existing_pile_up_->pile_up_| is that |PileUp|.
   bool EqualsExistingPileUp() const;
   // Whether the set of |Vessel|s in |vessels_| is a strict subset of the set of
   // |Vessel|s in an existing |PileUp|.  In that case
@@ -60,11 +59,11 @@ class Subset<ksp_plugin::Vessel>::Properties {
   // track of the difference of cardinalities.
   class SubsetOfExistingPileUp {
    public:
-    explicit SubsetOfExistingPileUp(ContainerIterator<PileUps> pile_up);
+    explicit SubsetOfExistingPileUp(IteratorOn<PileUps> pile_up);
 
     // The existing |PileUp|.
-    ContainerIterator<PileUps> const pile_up_;
-    // The difference between the cardinalities.
+    IteratorOn<PileUps> const pile_up_;
+    // The difference between the cardinalities; never negative.
     int missing_;
   };
 

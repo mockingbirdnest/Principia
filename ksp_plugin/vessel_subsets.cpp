@@ -12,13 +12,13 @@ using ksp_plugin::PileUp;
 namespace base {
 
 Subset<Vessel>::Properties::SubsetOfExistingPileUp::SubsetOfExistingPileUp(
-    ContainerIterator<PileUps> const pile_up)
+    IteratorOn<PileUps> const pile_up)
     : pile_up_(pile_up) {
-  missing_ = pile_up_.iterator->vessels().size() - 1;
+  missing_ = pile_up_.iterator()->vessels().size() - 1;
 }
 
 Subset<Vessel>::Properties::Properties(not_null<ksp_plugin::Vessel*> vessel) {
-  if (vessel->piled_up()) {
+  if (vessel->is_piled_up()) {
     subset_of_existing_pile_up_.emplace(
         SubsetOfExistingPileUp(*vessel->containing_pile_up()));
   }
@@ -32,7 +32,7 @@ void Subset<ksp_plugin::Vessel>::Properties::Collect(
     pile_ups->emplace_front(std::move(vessels_));
     auto const it = pile_ups->begin();
     for (not_null<Vessel*> const vessel : it->vessels()) {
-      vessel->set_containing_pile_up(ContainerIterator<PileUps>(pile_ups, it));
+      vessel->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
     }
   }
 }
@@ -42,8 +42,8 @@ bool Subset<ksp_plugin::Vessel>::Properties::SubsetsOfSamePileUp(
     Properties const& right) {
   return left.subset_of_existing_pile_up_ &&
          right.subset_of_existing_pile_up_ &&
-         left.subset_of_existing_pile_up_->pile_up_.iterator ==
-             right.subset_of_existing_pile_up_->pile_up_.iterator;
+         left.subset_of_existing_pile_up_->pile_up_.iterator() ==
+             right.subset_of_existing_pile_up_->pile_up_.iterator();
 }
 
 bool Subset<ksp_plugin::Vessel>::Properties::EqualsExistingPileUp() const {

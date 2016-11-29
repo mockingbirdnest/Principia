@@ -25,7 +25,7 @@ using internal_pile_up::PileUp;
 
 namespace internal_vessel {
 
-using base::ContainerIterator;
+using base::IteratorOn;
 using base::Subset;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -46,7 +46,7 @@ class Vessel {
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
 
-  // |CHECK|s that |*this| is not |piled_up()|.
+  // |CHECK|s that |*this| is not piled up.
   ~Vessel();
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
@@ -134,15 +134,15 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> const ephemeris,
       not_null<Celestial const*> const parent);
 
-  void set_containing_pile_up(ContainerIterator<std::list<PileUp>> pile_up);
-  std::experimental::optional<ContainerIterator<std::list<PileUp>>>
+  void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  std::experimental::optional<IteratorOn<std::list<PileUp>>>
   containing_pile_up() const;
 
   // Whether |this| is in a |PileUp|.  Equivalent to |containing_pile_up()|.
-  bool piled_up() const;
+  bool is_piled_up() const;
 
-  // If |*this| is |piled_up()|, |erase|s the |containing_pile_up()|.
-  // After this call, all vessels in that |PileUp| are no longer |piled_up()|.
+  // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
+  // After this call, all vessels in that |PileUp| are no longer piled up.
   void clear_pile_up();
 
  protected:
@@ -183,7 +183,7 @@ class Vessel {
   bool is_dirty_ = false;
 
   // The |PileUp| containing |this|.
-  std::experimental::optional<ContainerIterator<std::list<PileUp>>>
+  std::experimental::optional<IteratorOn<std::list<PileUp>>>
       containing_pile_up_;
 
   // We will use union-find algorithms on |Vessel|s.

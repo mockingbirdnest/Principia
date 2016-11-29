@@ -7,15 +7,20 @@ namespace principia {
 namespace base {
 
 template<typename Container>
-ContainerIterator<Container>::ContainerIterator(not_null<Container*> container,
+IteratorOn<Container>::IteratorOn(not_null<Container*> container,
                                                 Iterator iterator)
-    : container(container),
-      iterator(iterator) {}
+    : container_(container),
+      iterator_(iterator) {}
+
+template<typename Container>
+typename Container::iterator const& IteratorOn<Container>::iterator() const {
+  return iterator_;
+}
 
 template<typename Container>
 template<typename>
-ContainerIterator<Container> ContainerIterator<Container>::Erase() const {
-  return ContainerIterator(container, container->erase(iterator));
+IteratorOn<Container> IteratorOn<Container>::Erase() const {
+  return IteratorOn(container_, container_->erase(iterator_));
 }
 
 }  // namespace base
