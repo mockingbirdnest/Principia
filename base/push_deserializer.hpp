@@ -59,8 +59,7 @@ class PushDeserializer {
   // |chunk_size|.  The internal queue holds at most |number_of_chunks| chunks.
   // Therefore, this class uses at most
   // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
-  PushDeserializer(int const chunk_size,
-                   int const number_of_chunks);
+  PushDeserializer(int chunk_size, int number_of_chunks);
   ~PushDeserializer();
 
   // Starts the deserializer, which will proceed to deserialize data into
@@ -78,7 +77,7 @@ class PushDeserializer {
   // serialization of |bytes| is complete.  The client must ensure that |bytes|
   // remains live until the call to |done|.  It may reclaim any memory
   // associated with |bytes| in |done|.
-  void Push(Bytes const bytes, std::function<void()> done);
+  void Push(Bytes bytes, std::function<void()> done);
 
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data

@@ -22,7 +22,7 @@ struct Array {
   template<typename Size,
            typename =
                typename std::enable_if<std::is_integral<Size>::value>::type>
-  Array(Element* const data, Size const size);
+  Array(Element* data, Size size);
 
   Element* data;
   std::int64_t size;  // In number of elements.
@@ -37,12 +37,12 @@ struct UniqueArray {
   template<typename Size,
            typename =
                typename std::enable_if<std::is_integral<Size>::value>::type>
-  explicit UniqueArray(Size const size);
+  explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
   template<typename Size,
            typename =
                typename std::enable_if<std::is_integral<Size>::value>::type>
-  UniqueArray(std::unique_ptr<Element[]> data, Size const size);
+  UniqueArray(std::unique_ptr<Element[]> data, Size size);
 
   // Move it, move it!
   UniqueArray(UniqueArray&& other) = default;

@@ -244,30 +244,30 @@ class not_null {
   template<typename Q,
            typename P = pointer,
            typename = decltype(std::declval<P>().reset())>
-  void reset(not_null<Q> const ptr);
+  void reset(not_null<Q> ptr);
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
   // optimization.
 
   // Returns |false|.
-  bool operator==(std::nullptr_t const other) const;
+  bool operator==(std::nullptr_t other) const;
   // Returns |true|.
-  bool operator!=(std::nullptr_t const other) const;
+  bool operator!=(std::nullptr_t other) const;
   // Returns |true|.
   operator bool() const;
 
   // Equality.
-  bool operator==(pointer const other) const;
-  bool operator==(not_null const other) const;
-  bool operator!=(pointer const other) const;
-  bool operator!=(not_null const other) const;
+  bool operator==(pointer other) const;
+  bool operator==(not_null other) const;
+  bool operator!=(pointer other) const;
+  bool operator!=(not_null other) const;
 
   // Ordering.
-  bool operator<(not_null const other) const;
-  bool operator<=(not_null const other) const;
-  bool operator>=(not_null const other) const;
-  bool operator>(not_null const other) const;
+  bool operator<(not_null other) const;
+  bool operator<=(not_null other) const;
+  bool operator>=(not_null other) const;
+  bool operator>(not_null other) const;
 
  private:
   struct unchecked_tag {};
@@ -275,7 +275,7 @@ class not_null {
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must
   // perform one if needed before using it.
-  explicit not_null(pointer other, unchecked_tag const tag);
+  explicit not_null(pointer other, unchecked_tag tag);
 
   pointer pointer_;
 
@@ -331,7 +331,7 @@ std::ostream& operator<<(std::ostream& stream,
 
 template<typename Result,
          typename Pointer>
-Result dynamic_cast_not_null(Pointer const pointer);
+Result dynamic_cast_not_null(Pointer pointer);
 
 }  // namespace base
 }  // namespace principia
