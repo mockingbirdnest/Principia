@@ -29,7 +29,7 @@ class Bundle {
  public:
   using Task = std::function<Status()>;
 
-  explicit Bundle(int const workers);
+  explicit Bundle(int workers);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
@@ -55,7 +55,7 @@ class Bundle {
   // If |status_| is erroneous, has no effect. Otherwise, sets |status_| to
   // |status| and notifies all on |tasks_not_empty_or_terminate_|.  |status|
   // should not be |OK|.
-  void Abort(Status const status);
+  void Abort(Status status);
 
   // Thread-safe |!status_.ok()|.
   bool Aborting();
