@@ -8,11 +8,11 @@ namespace quantities {
 
 // We need this for templates, for consistency with the dimensionful Sqrt.
 // Equivalent to |std::sqrt(x)|.
-double Sqrt(double const x);
+double Sqrt(double x);
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 
-double Cbrt(double const x);
+double Cbrt(double x);
 template<typename D>
 CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x);
 
@@ -20,9 +20,9 @@ double Sin(Angle const& α);
 double Cos(Angle const& α);
 double Tan(Angle const& α);
 
-Angle ArcSin(double const x);
-Angle ArcCos(double const x);
-Angle ArcTan(double const y, double const x = 1);
+Angle ArcSin(double x);
+Angle ArcCos(double x);
+Angle ArcTan(double y, double x = 1);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
@@ -34,9 +34,9 @@ double Sinh(Angle const& α);
 double Cosh(Angle const& α);
 double Tanh(Angle const& α);
 
-Angle ArcSinh(double const x);
-Angle ArcCosh(double const x);
-Angle ArcTanh(double const x);
+Angle ArcSinh(double x);
+Angle ArcCosh(double x);
+Angle ArcTanh(double x);
 }  // namespace quantities
 }  // namespace principia
 
