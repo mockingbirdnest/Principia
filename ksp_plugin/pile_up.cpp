@@ -1,4 +1,7 @@
+
 #include "ksp_plugin/pile_up.hpp"
+
+#include <list>
 
 namespace principia {
 namespace ksp_plugin {

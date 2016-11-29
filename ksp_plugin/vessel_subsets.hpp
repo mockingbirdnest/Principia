@@ -15,10 +15,10 @@ namespace base {
 
 // Within an union-find on |Vessel|s, we maintain lists of the elements in the
 // disjoint sets.  Moreover, we keep track of the inclusion relations of those
-// sets to the sets of |Vessel|s in existing |PileUp|s, destroying existing |PileUp|s
-// as we learn that they will not appear in the new arrangement.
-// The |Collect| operation finalizes this, destroying existing |PileUp| which are
-// strict supersets of the new sets, and creating the new |PileUp|s.
+// sets to the sets of |Vessel|s in existing |PileUp|s, destroying existing
+// |PileUp|s as we learn that they will not appear in the new arrangement.
+// The |Collect| operation finalizes this, destroying existing |PileUp| which
+// are strict supersets of the new sets, and creating the new |PileUp|s.
 template<>
 class Subset<ksp_plugin::Vessel>::Properties {
   using PileUps = std::list<ksp_plugin::PileUp>;
