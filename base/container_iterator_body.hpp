@@ -8,7 +8,7 @@ namespace base {
 
 template<typename Container>
 IteratorOn<Container>::IteratorOn(not_null<Container*> container,
-                                                Iterator iterator)
+                                  Iterator iterator)
     : container_(container),
       iterator_(iterator) {}
 
