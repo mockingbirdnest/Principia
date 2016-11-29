@@ -165,10 +165,10 @@ class Quantity {
   constexpr Quantity operator*(double right) const;
   constexpr Quantity operator/(double right) const;
 
-  Quantity& operator+=(Quantity const&);
-  Quantity& operator-=(Quantity const&);
-  Quantity& operator*=(double);
-  Quantity& operator/=(double);
+  Quantity& operator+=(Quantity const& right);
+  Quantity& operator-=(Quantity const& right);
+  Quantity& operator*=(double right);
+  Quantity& operator/=(double right);
 
   constexpr bool operator>(Quantity const& right) const;
   constexpr bool operator<(Quantity const& right) const;
