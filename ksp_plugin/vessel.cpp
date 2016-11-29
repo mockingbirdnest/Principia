@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <list>
 #include <vector>
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
