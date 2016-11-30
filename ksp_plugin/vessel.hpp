@@ -1,9 +1,12 @@
 ﻿
 #pragma once
 
+#include <list>
 #include <memory>
 #include <vector>
 
+#include "base/container_iterator.hpp"
+#include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
@@ -15,8 +18,16 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+namespace internal_pile_up {
+class PileUp;
+}  // namespace internal_pile_up
+using internal_pile_up::PileUp;
+
 namespace internal_vessel {
 
+using base::IteratorOn;
+using base::Subset;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -35,7 +46,9 @@ class Vessel {
   Vessel(Vessel&&) = delete;
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
-  ~Vessel() = default;
+
+  // |CHECK|s that |*this| is not piled up.
+  ~Vessel();
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
@@ -122,6 +135,17 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> const ephemeris,
       not_null<Celestial const*> const parent);
 
+  void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  std::experimental::optional<IteratorOn<std::list<PileUp>>>
+  containing_pile_up() const;
+
+  // Whether |this| is in a |PileUp|.  Equivalent to |containing_pile_up()|.
+  bool is_piled_up() const;
+
+  // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
+  // After this call, all vessels in that |PileUp| are no longer piled up.
+  void clear_pile_up();
+
  protected:
   // For mocking.
   Vessel();
@@ -158,6 +182,14 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
+
+  // The |PileUp| containing |this|.
+  std::experimental::optional<IteratorOn<std::list<PileUp>>>
+      containing_pile_up_;
+
+  // We will use union-find algorithms on |Vessel|s.
+  not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
+  friend class Subset<Vessel>::Node;
 };
 
 // Factories for use by the clients and the compatibility code.
@@ -174,5 +206,3 @@ using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
 }  // namespace principia
-
-#include "ksp_plugin/vessel_body.hpp"

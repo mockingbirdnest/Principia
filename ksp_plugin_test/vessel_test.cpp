@@ -14,6 +14,8 @@ namespace internal_vessel {
 
 using geometry::Displacement;
 using geometry::Velocity;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::McLachlanAtela1992Order5Optimal;
 using physics::Ephemeris;
 using physics::SolarSystem;
 using quantities::si::Kilo;

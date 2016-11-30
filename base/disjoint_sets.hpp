@@ -1,5 +1,6 @@
 #pragma once
 
+#include <experimental/optional>
 #include <list>
 
 #include "base/not_null.hpp"
@@ -59,11 +60,8 @@ class Subset {
     not_null<Node*> parent_;
     int rank_ = 0;
 
-    // Do not require a default constructor for |SubsetProperties|.
-    union {
-      std::uint8_t junk;
-      Properties value;
-    } properties_;
+    // Do not require a default constructor for |Node|.
+    std::experimental::optional<Properties> properties_;
 
     friend class Subset<T>;
   };

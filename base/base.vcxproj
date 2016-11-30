@@ -263,7 +263,9 @@
   <ItemGroup>
     <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
+    <ClInclude Include="container_iterator.hpp" />
     <ClInclude Include="bundle.hpp" />
+    <ClInclude Include="container_iterator_body.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />

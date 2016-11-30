@@ -98,8 +98,14 @@
     <ClInclude Include="disjoint_sets_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="container_iterator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="bundle.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="container_iterator_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
