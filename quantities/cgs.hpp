@@ -14,28 +14,28 @@ namespace quantities {
 // table 9, http://www.bipm.org/en/si/si_brochure/chapter4/table9.html.
 namespace cgs {
 
-Length constexpr Centimetre = si::Centi(si::Metre);
+constexpr Length Centimetre = si::Centi(si::Metre);
 using si::Gram;
 using si::Second;
 
-Energy       constexpr Erg  = 1e-7 * si::Joule;
-Force        constexpr Dyne = 1e-5 * si::Newton;
-Acceleration constexpr Gal  = Centimetre / Pow<2>(Second);
+constexpr Energy       Erg  = 1e-7 * si::Joule;
+constexpr Force        Dyne = 1e-5 * si::Newton;
+constexpr Acceleration Gal  = Centimetre / Pow<2>(Second);
 
-Pressure constexpr Barye = 1 * Dyne / Pow<2>(Centimetre);
+constexpr Pressure Barye = 1 * Dyne / Pow<2>(Centimetre);
 
-DynamicViscosity   constexpr Poise  = Barye * Second;
-KinematicViscosity constexpr Stokes = Pow<2>(Centimetre) / Second;
+constexpr DynamicViscosity   Poise  = Barye * Second;
+constexpr KinematicViscosity Stokes = Pow<2>(Centimetre) / Second;
 
-Luminance   constexpr Stilb = si::Candela / Pow<2>(Centimetre);
-Illuminance constexpr Phot  = Stilb * si::Steradian;
+constexpr Luminance   Stilb = si::Candela / Pow<2>(Centimetre);
+constexpr Illuminance Phot  = Stilb * si::Steradian;
 
-MagneticFluxDensity constexpr Gauss   = 1e-4 * si::Tesla;
-MagneticFlux        constexpr Maxwell = Gauss * Pow<2>(Centimetre);
-MagneticField       constexpr Œrsted  =
+constexpr MagneticFluxDensity Gauss   = 1e-4 * si::Tesla;
+constexpr MagneticFlux        Maxwell = Gauss * Pow<2>(Centimetre);
+constexpr MagneticField       Œrsted  =
     1e3 / (4 * π * si::Steradian) * si::Ampere / si::Metre;
 
-SpectroscopicWavenumber constexpr Kayser = si::Cycle / Centimetre;
+constexpr SpectroscopicWavenumber Kayser = si::Cycle / Centimetre;
 
 }  // namespace cgs
 }  // namespace quantities

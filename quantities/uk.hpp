@@ -15,49 +15,49 @@ namespace quantities {
 // system.
 namespace uk {
 
-Mass constexpr Pound  = 0.45359237 * si::Kilogram;
-Mass constexpr Ounce  = Pound / 16;
-Mass constexpr Drachm = Pound / 256;
-Mass constexpr Grain  = Pound / 7000;
+constexpr Mass Pound  = 0.45359237 * si::Kilogram;
+constexpr Mass Ounce  = Pound / 16;
+constexpr Mass Drachm = Pound / 256;
+constexpr Mass Grain  = Pound / 7000;
 
-Mass constexpr Stone = 14 * Pound;
+constexpr Mass Stone = 14 * Pound;
 // Imperial quarter, hundredweight and pound, yielding the 'long ton'.
-Mass constexpr Quarter       = 2 * Stone;
-Mass constexpr Hundredweight = 4 * Quarter;
-Mass constexpr Ton           = 20 * Hundredweight;
+constexpr Mass Quarter       = 2 * Stone;
+constexpr Mass Hundredweight = 4 * Quarter;
+constexpr Mass Ton           = 20 * Hundredweight;
 
-Length constexpr Yard = 0.9144 * si::Metre;
-Length constexpr Foot = Yard / 3;
-Length constexpr Inch = Foot / 12;
-Length constexpr Thou = Inch / 1000;
+constexpr Length Yard = 0.9144 * si::Metre;
+constexpr Length Foot = Yard / 3;
+constexpr Length Inch = Foot / 12;
+constexpr Length Thou = Inch / 1000;
 
-Length constexpr Chain   = 22 * Yard;
-Length constexpr Furlong = 10 * Chain;
-Length constexpr Mile    = 8 * Furlong;
-Length constexpr League  = 3 * Mile;
+constexpr Length Chain   = 22 * Yard;
+constexpr Length Furlong = 10 * Chain;
+constexpr Length Mile    = 8 * Furlong;
+constexpr Length League  = 3 * Mile;
 
-Length constexpr Link = Chain / 100;
-Length constexpr Rod  = Chain / 4;
+constexpr Length Link = Chain / 100;
+constexpr Length Rod  = Chain / 4;
 
 namespace admiralty {
-Length constexpr NauticalMile = 6080 * Foot;
-Length constexpr Cable        = NauticalMile / 10;
-Length constexpr Fathom       = Cable / 100;
+constexpr Length NauticalMile = 6080 * Foot;
+constexpr Length Cable        = NauticalMile / 10;
+constexpr Length Fathom       = Cable / 100;
 }  // namespace admiralty
 
-Area constexpr Perch = Pow<2>(Rod);
-Area constexpr Rood  = Furlong * Rod;
-Area constexpr Acre  = Furlong * Chain;
+constexpr Area Perch = Pow<2>(Rod);
+constexpr Area Rood  = Furlong * Rod;
+constexpr Area Acre  = Furlong * Chain;
 
-Volume constexpr FluidOunce = 28.4130625 * si::Milli(si::Litre);
-Volume constexpr Gill       = 5 * FluidOunce;
-Volume constexpr Pint       = 4 * Gill;
-Volume constexpr Quart      = 2 * Pint;
-Volume constexpr Gallon     = 4 * Quart;
+constexpr Volume FluidOunce = 28.4130625 * si::Milli(si::Litre);
+constexpr Volume Gill       = 5 * FluidOunce;
+constexpr Volume Pint       = 4 * Gill;
+constexpr Volume Quart      = 2 * Pint;
+constexpr Volume Gallon     = 4 * Quart;
 
-Force    constexpr PoundForce         = Pound * constants::StandardGravity;
-Power    constexpr HorsePower         = 550 * PoundForce * Foot / si::Second;
-Pressure constexpr PoundPerSquareInch = PoundForce / Pow<2>(Inch);
+constexpr Force    PoundForce         = Pound * constants::StandardGravity;
+constexpr Power    HorsePower         = 550 * PoundForce * Foot / si::Second;
+constexpr Pressure PoundPerSquareInch = PoundForce / Pow<2>(Inch);
 
 }  // namespace uk
 }  // namespace quantities

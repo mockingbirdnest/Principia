@@ -41,22 +41,22 @@ template<typename D> constexpr Quantity<D> Yocto(Quantity<D>);
 // SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
-Length            constexpr Metre    = SIUnit<Length>();
-Mass              constexpr Kilogram = SIUnit<Mass>();
-Time              constexpr Second   = SIUnit<Time>();
-Current           constexpr Ampere   = SIUnit<Current>();
-Temperature       constexpr Kelvin   = SIUnit<Temperature>();
-Amount            constexpr Mole     = SIUnit<Amount>();
-LuminousIntensity constexpr Candela  = SIUnit<LuminousIntensity>();
+constexpr Length            Metre    = SIUnit<Length>();
+constexpr Mass              Kilogram = SIUnit<Mass>();
+constexpr Time              Second   = SIUnit<Time>();
+constexpr Current           Ampere   = SIUnit<Current>();
+constexpr Temperature       Kelvin   = SIUnit<Temperature>();
+constexpr Amount            Mole     = SIUnit<Amount>();
+constexpr LuminousIntensity Candela  = SIUnit<LuminousIntensity>();
 // Nonstandard.
-Winding constexpr Cycle = SIUnit<Winding>();
+constexpr Winding Cycle = SIUnit<Winding>();
 // Not base units in the SI. We make these quantities rather than units as they
 // are natural.
-Angle constexpr Radian = SIUnit<Angle>();
-SolidAngle constexpr Steradian = SIUnit<SolidAngle>();
+constexpr Angle Radian = SIUnit<Angle>();
+constexpr SolidAngle Steradian = SIUnit<SolidAngle>();
 
 // Gram, for use with prefixes.
-Mass constexpr Gram = 1e-3 * Kilogram;
+constexpr Mass Gram = 1e-3 * Kilogram;
 
 // Coherent derived units in the SI with special names and symbols
 // From the BIPM's SI brochure 8, section 2.2.2, table 3,
@@ -67,43 +67,43 @@ Mass constexpr Gram = 1e-3 * Kilogram;
 // Note the nonstandard definition of the Hertz, with a dimensionful cycle.
 
 // The uno was proposed but never accepted.
-double              constexpr Uno     = 1;
-Frequency           constexpr Hertz   = Cycle / Second;
-Force               constexpr Newton  = Metre * Kilogram / (Second * Second);
-Pressure            constexpr Pascal  = Newton / (Metre * Metre);
-Energy              constexpr Joule   = Newton * Metre;
-Power               constexpr Watt    = Joule / Second;
-Charge              constexpr Coulomb = Ampere * Second;
-Voltage             constexpr Volt    = Watt / Ampere;
-Capacitance         constexpr Farad   = Coulomb / Volt;
-Resistance          constexpr Ohm     = Volt / Ampere;
-Conductance         constexpr Siemens = Ampere / Volt;
-MagneticFlux        constexpr Weber   = Volt * Second;
-MagneticFluxDensity constexpr Tesla   = Weber / (Metre * Metre);
-Inductance          constexpr Henry   = Weber / Ampere;
-LuminousFlux        constexpr Lumen   = Candela * Steradian;
-CatalyticActivity   constexpr Katal   = Mole / Second;
+constexpr double              Uno     = 1;
+constexpr Frequency           Hertz   = Cycle / Second;
+constexpr Force               Newton  = Metre * Kilogram / (Second * Second);
+constexpr Pressure            Pascal  = Newton / (Metre * Metre);
+constexpr Energy              Joule   = Newton * Metre;
+constexpr Power               Watt    = Joule / Second;
+constexpr Charge              Coulomb = Ampere * Second;
+constexpr Voltage             Volt    = Watt / Ampere;
+constexpr Capacitance         Farad   = Coulomb / Volt;
+constexpr Resistance          Ohm     = Volt / Ampere;
+constexpr Conductance         Siemens = Ampere / Volt;
+constexpr MagneticFlux        Weber   = Volt * Second;
+constexpr MagneticFluxDensity Tesla   = Weber / (Metre * Metre);
+constexpr Inductance          Henry   = Weber / Ampere;
+constexpr LuminousFlux        Lumen   = Candela * Steradian;
+constexpr CatalyticActivity   Katal   = Mole / Second;
 
 // Non-SI units accepted for use with the SI
 // From the BIPM's SI brochure 8, section 4.1, table 6,
 // http://www.bipm.org/en/si/si_brochure/chapter4/table6.html
-Time constexpr Minute = 60 * Second;
-Time constexpr Hour   = 60 * Minute;
-Time constexpr Day    = 24 * Hour;
+constexpr Time Minute = 60 * Second;
+constexpr Time Hour   = 60 * Minute;
+constexpr Time Day    = 24 * Hour;
 
-Angle  constexpr Degree    = π / 180 * Radian;
-Angle  constexpr ArcMinute = π / 10800 * Radian;
-Angle  constexpr ArcSecond = π / 648000 * Radian;
-Area   constexpr Hectare   = 1e4 * Metre * Metre;
-Volume constexpr Litre     = Pow<3>(1e-1 * Metre);
-Mass   constexpr Tonne     = 1e3 * Kilogram;
+constexpr Angle  Degree    = π / 180 * Radian;
+constexpr Angle  ArcMinute = π / 10800 * Radian;
+constexpr Angle  ArcSecond = π / 648000 * Radian;
+constexpr Area   Hectare   = 1e4 * Metre * Metre;
+constexpr Volume Litre     = Pow<3>(1e-1 * Metre);
+constexpr Mass   Tonne     = 1e3 * Kilogram;
 
 // Non-SI units whose values must be obtained experimentally
 // From the BIPM's SI brochure 8, section 4.1, table 7,
 // Units accepted for use with the SI.
-Energy constexpr ElectronVolt     = 1.602176565e-19 * Joule;
-Mass   constexpr Dalton           = 1.660538921e-27 * Kilogram;
-Length constexpr AstronomicalUnit = 149597870700 * si::Metre;
+constexpr Energy ElectronVolt     = 1.602176565e-19 * Joule;
+constexpr Mass   Dalton           = 1.660538921e-27 * Kilogram;
+constexpr Length AstronomicalUnit = 149597870700 * si::Metre;
 
 }  // namespace si
 }  // namespace quantities

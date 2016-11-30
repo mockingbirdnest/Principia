@@ -69,7 +69,7 @@ class Status {
   // Creates a "successful" status.
   Status();
 
-  Status(Error const error, std::string const& message);
+  Status(Error error, std::string const& message);
 
   // Some pre-defined Status objects.
   static const Status OK;

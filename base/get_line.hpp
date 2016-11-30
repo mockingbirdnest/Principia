@@ -10,7 +10,7 @@ namespace principia {
 namespace base {
 
 // Recursively reads a line of arbitrary length.
-std::string GetLine(not_null<std::ifstream*> const stream);
+std::string GetLine(not_null<std::ifstream*> stream);
 
 }  // namespace base
 }  // namespace principia

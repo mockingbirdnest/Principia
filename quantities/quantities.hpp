@@ -111,10 +111,10 @@ constexpr internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
 operator/(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename RDimensions>
 constexpr Quantity<RDimensions>
-operator*(double const, Quantity<RDimensions> const&);
+operator*(double, Quantity<RDimensions> const&);
 template<typename RDimensions>
 constexpr typename Quantity<RDimensions>::Inverse
-operator/(double const, Quantity<RDimensions> const&);
+operator/(double, Quantity<RDimensions> const&);
 
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.
@@ -124,7 +124,7 @@ template<int exponent, typename D>
 constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 // Equivalent to |std::abs(x)|.
-double Abs(double const x);
+double Abs(double x);
 template<typename D>
 Quantity<D> Abs(Quantity<D> const& x);
 
@@ -138,12 +138,12 @@ template<typename D>
 bool IsFinite(Quantity<D> const& x);
 
 std::string DebugString(
-    double const number,
-    int const precision = std::numeric_limits<double>::max_digits10);
+    double number,
+    int precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
 std::string DebugString(
     Quantity<D> const& quantity,
-    int const precision = std::numeric_limits<double>::max_digits10);
+    int precision = std::numeric_limits<double>::max_digits10);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
@@ -162,13 +162,13 @@ class Quantity {
   constexpr Quantity operator+(Quantity const& right) const;
   constexpr Quantity operator-(Quantity const& right) const;
 
-  constexpr Quantity operator*(double const right) const;
-  constexpr Quantity operator/(double const right) const;
+  constexpr Quantity operator*(double right) const;
+  constexpr Quantity operator/(double right) const;
 
-  Quantity& operator+=(Quantity const&);
-  Quantity& operator-=(Quantity const&);
-  Quantity& operator*=(double const);
-  Quantity& operator/=(double const);
+  Quantity& operator+=(Quantity const& right);
+  Quantity& operator-=(Quantity const& right);
+  Quantity& operator*=(double right);
+  Quantity& operator/=(double right);
 
   constexpr bool operator>(Quantity const& right) const;
   constexpr bool operator<(Quantity const& right) const;
@@ -177,11 +177,11 @@ class Quantity {
   constexpr bool operator==(Quantity const& right) const;
   constexpr bool operator!=(Quantity const& right) const;
 
-  void WriteToMessage(not_null<serialization::Quantity*> const message) const;
+  void WriteToMessage(not_null<serialization::Quantity*> message) const;
   static Quantity ReadFromMessage(serialization::Quantity const& message);
 
  private:
-  explicit constexpr Quantity(double const magnitude);
+  explicit constexpr Quantity(double magnitude);
   double magnitude_;
 
   template<typename LDimensions, typename RDimensions>
@@ -196,11 +196,11 @@ class Quantity {
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
   friend constexpr Quantity<RDimensions> operator*(
-      double const left,
+      double left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
   friend constexpr typename Quantity<RDimensions>::Inverse operator/(
-      double const left,
+      double left,
       Quantity<RDimensions> const& right);
 
   template<typename Q>
@@ -222,7 +222,7 @@ class Quantity {
 
   friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
   friend bool IsFinite<>(Quantity<D> const& x);
-  friend std::string DebugString<>(Quantity<D> const&, int const);
+  friend std::string DebugString<>(Quantity<D> const&, int);
 };
 
 // A type trait for testing if a type is a quantity.

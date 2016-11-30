@@ -29,8 +29,8 @@ class DelegatingArrayOutputStream
   // that array has been filled, |on_full| is called to somehow consume the
   // data.  |on_full| also returns another array where the stream may output
   // more data.
-  DelegatingArrayOutputStream(Bytes const bytes,
-                              std::function<Bytes(Bytes const bytes)> on_full);
+  DelegatingArrayOutputStream(Bytes bytes,
+                              std::function<Bytes(Bytes bytes)> on_full);
 
   // The ZeroCopyOutputStream API.
   bool Next(void** data, int* size) override;
@@ -39,7 +39,7 @@ class DelegatingArrayOutputStream
 
  private:
   Bytes bytes_;
-  std::function<Bytes(Bytes const bytes)> on_full_;
+  std::function<Bytes(Bytes bytes)> on_full_;
 
   std::int64_t byte_count_;
   std::int64_t position_;
@@ -61,7 +61,7 @@ class PullSerializer {
   // |chunk_size|.  At most |number_of_chunks| chunks are held in the internal
   // queue.  This class uses at most
   // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
-  PullSerializer(int const chunk_size, int const number_of_chunks);
+  PullSerializer(int chunk_size, int number_of_chunks);
   ~PullSerializer();
 
   // Starts the serializer, which will proceed to serialize |message|.  This
@@ -79,7 +79,7 @@ class PullSerializer {
   // Enqueues the chunk of data to be returned to |Pull| and returns a free
   // chunk.  Blocks if there are no free chunks.  Used as a callback for the
   // underlying |DelegatingArrayOutputStream|.
-  Bytes Push(Bytes const bytes);
+  Bytes Push(Bytes bytes);
 
   std::unique_ptr<google::protobuf::Message const> message_;
 
