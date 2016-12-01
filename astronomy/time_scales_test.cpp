@@ -114,13 +114,13 @@ TEST_F(TimeScalesTest, ReferenceDates) {
   // Besselian epochs.
   constexpr Instant B1900 = "1899-12-31T00:00:00"_TT + 0.8135 * Day;
   Instant const JD2415020_3135 = JulianDate(2415020.3135);
-  EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 51));
+  EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 29));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2415020_3135, B1900),
               AllOf(Ge(10 * Micro(Second)), Lt(100 * Micro(Second))));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00"_TT + 0.9235 * Day;
   Instant const JD2433282_4235 = JulianDate(2433282.4235);
-  EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 26));
+  EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 12));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2433282_4235, B1950),
               AllOf(Ge(1 * Micro(Second)), Lt(10 * Micro(Second))));
 }
