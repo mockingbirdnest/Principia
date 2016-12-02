@@ -105,7 +105,7 @@ void TestTermination(Integrator const& integrator) {
 
   auto const instance =
       integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, *instance.get());
+  integrator.Solve(t_final, *instance);
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
@@ -155,7 +155,7 @@ void Test1000SecondsAt1Millisecond(
 
   auto const instance =
       integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, *instance.get());
+  integrator.Solve(t_final, *instance);
 
   EXPECT_EQ(steps, solution.size());
   Length q_error;
@@ -212,7 +212,7 @@ void TestConvergence(Integrator const& integrator,
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance = integrator.NewInstance(problem, append_state, step);
-    integrator.Solve(t_final, *instance.get());
+    integrator.Solve(t_final, *instance);
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
@@ -286,7 +286,7 @@ void TestSymplecticity(Integrator const& integrator,
 
   auto const instance =
       integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, *instance.get());
+  integrator.Solve(t_final, *instance);
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);

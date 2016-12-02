@@ -375,7 +375,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    parameters_.integrator_->Solve(t_final, *instance.get());
+    parameters_.integrator_->Solve(t_final, *instance);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -448,7 +448,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
           &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories)),
       step_size);
 
-  auto const status = parameters.integrator_->Solve(t_final, *instance.get());
+  auto const status = parameters.integrator_->Solve(t_final, *instance);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
