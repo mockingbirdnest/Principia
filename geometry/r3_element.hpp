@@ -45,7 +45,7 @@ struct R3Element {
   // Modifies |*r3_element| so as to make it orthogonal to |*this|, using the
   // modified Gram-Schmidt algorithm.  Fails if |*this| is zero.
   template<typename S>
-  void Orthogonalize(R3Element<S>& r3_element) const;
+  void OrthogonalizeAgainst(R3Element<S> const& r3_element);
 
   void WriteToMessage(not_null<serialization::R3Element*> const message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);

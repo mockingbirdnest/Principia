@@ -113,9 +113,9 @@ SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
 
 template<typename Scalar>
 template<typename S>
-void R3Element<Scalar>::Orthogonalize(R3Element<S>& r3_element) const {
-  R3Element<double> const this_normalized = Normalize(*this);
-  r3_element -= Dot(r3_element, this_normalized) * this_normalized;
+void R3Element<Scalar>::OrthogonalizeAgainst(R3Element<S> const& r3_element) {
+  R3Element<double> const r3_element_normalized = Normalize(r3_element);
+  *this -= Dot(*this, r3_element_normalized) * r3_element_normalized;
 }
 
 template<typename Scalar>
