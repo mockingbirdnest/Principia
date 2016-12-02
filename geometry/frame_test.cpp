@@ -45,7 +45,7 @@ TEST_F(FrameDeathTest, SerializationError) {
     message.set_tag_type_fingerprint(0xDEADBEEF);
     google::protobuf::EnumValueDescriptor const* enum_value_descriptor;
     bool is_inertial;
-    ReadFrameFromMessage(message, &enum_value_descriptor, &is_inertial);
+    ReadFrameFromMessage(message, enum_value_descriptor, is_inertial);
   }, "enum_value_descriptor");
   EXPECT_DEATH({
     serialization::Frame message;
@@ -53,7 +53,7 @@ TEST_F(FrameDeathTest, SerializationError) {
     message.set_tag(666);
     google::protobuf::EnumValueDescriptor const* enum_value_descriptor;
     bool is_inertial;
-    ReadFrameFromMessage(message, &enum_value_descriptor, &is_inertial);
+    ReadFrameFromMessage(message, enum_value_descriptor, is_inertial);
   }, "enum_value_descriptor");
 }
 
@@ -72,7 +72,7 @@ TEST_F(FrameTest, SerializationSuccess) {
 
   google::protobuf::EnumValueDescriptor const* enum_value_descriptor;
   bool is_inertial;
-  ReadFrameFromMessage(message, &enum_value_descriptor, &is_inertial);
+  ReadFrameFromMessage(message, enum_value_descriptor, is_inertial);
   EXPECT_EQ("principia.serialization.Frame.TEST1",
             enum_value_descriptor->full_name());
   EXPECT_TRUE(is_inertial);

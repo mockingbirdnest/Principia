@@ -118,7 +118,7 @@ TEST_F(R3ElementDeathTest, OrthogonalizeError) {
 TEST_F(R3ElementTest, OrthogonalizeSuccess) {
   R3Element<Length> const v1 = {1 * Metre, -2 * Metre, 5 * Metre};
   R3Element<Length> v2 = {3 * Metre, 4 * Metre, -1 * Metre};
-  v1.Orthogonalize<Length>(&v2);
+  v1.Orthogonalize(v2);
   EXPECT_EQ(0 * Metre * Metre, Dot(v1, v2));
   EXPECT_THAT(v2, AlmostEquals(R3Element<Length>({(10.0 / 3.0) * Metre,
                                                   (10.0 / 3.0) * Metre,
