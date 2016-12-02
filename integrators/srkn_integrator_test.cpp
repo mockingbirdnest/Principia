@@ -116,7 +116,7 @@ TEST_P(SRKNTest, ConsistentWeights) {
   auto compute_acceleration = [v](
       Time const& t,
       std::vector<Length> const& q,
-      not_null<std::vector<Acceleration>*> const result) {
+      std::vector<Acceleration>& result) {
     EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 4096));
     (*result)[0] = 0 * Metre / Pow<2>(Second);
   };

@@ -80,9 +80,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
-  Status Solve(
-      Instant const& t_final,
-      not_null<IntegrationInstance*> const instance) const override;
+  Status Solve(Instant const& t_final,
+               IntegrationInstance& instance) const override;
 
   not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,

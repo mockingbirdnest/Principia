@@ -61,7 +61,7 @@ namespace physics {
 namespace {
 
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
-                                   not_null<benchmark::State*> const state) {
+                                   benchmark::State& state) {
   Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
   Length error;
   while (state->KeepRunning()) {
@@ -95,7 +95,7 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
 }
 
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
-                               not_null<benchmark::State*> const state) {
+                               benchmark::State& state) {
   Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
   Length sun_error;
   Length earth_error;
@@ -192,7 +192,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 }
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
-                                not_null<benchmark::State*> const state) {
+                                benchmark::State& state) {
   Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
   Length sun_error;
   Length earth_error;

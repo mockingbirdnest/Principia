@@ -73,7 +73,7 @@ void FillLinearTrajectory(Position<F> const& initial,
                           Instant const& t0,
                           Time const& Δt,
                           int const steps,
-                          not_null<T<F>*> const trajectory) {
+                          T<F>& trajectory) {
   for (int i = 0; i < steps; ++i) {
     Time const iΔt = i * Δt;
     Displacement<F> const displacement_i = velocity * iΔt;

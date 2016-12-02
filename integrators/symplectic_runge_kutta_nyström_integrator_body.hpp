@@ -74,7 +74,7 @@ template<typename Position, int order, bool time_reversible, int evaluations,
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::Solve(
     Instant const& t_final,
-    not_null<IntegrationInstance*> const instance) const {
+    IntegrationInstance& instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;

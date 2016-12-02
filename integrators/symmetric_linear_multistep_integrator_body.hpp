@@ -37,7 +37,7 @@ SymmetricLinearMultistepIntegrator(
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Solve(Instant const& t_final,
-      not_null<IntegrationInstance*> const instance) const {
+      IntegrationInstance& instance) const {
   using Displacement = typename ODE::Displacement;
   using Acceleration = typename ODE::Acceleration;
 

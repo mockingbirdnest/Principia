@@ -25,8 +25,7 @@ std::size_t const dimension = 100;
 
 }  // namespace
 
-inline void DimensionfulDiscreteCosineTransform(
-    not_null<std::vector<Momentum>*> const result) {
+inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result) {
   std::vector<Momentum> input(dimension);
   for (std::size_t i = 0; i < dimension; ++i) {
     input[i] = i * SIUnit<Momentum>();
@@ -47,8 +46,7 @@ inline void DimensionfulDiscreteCosineTransform(
   }
 }
 
-inline void DoubleDiscreteCosineTransform(
-    not_null<std::vector<double>*> const result) {
+inline void DoubleDiscreteCosineTransform(std::vector<double>& result) {
   std::vector<double> input(dimension);
   for (std::size_t i = 0; i < dimension; ++i) {
     input[i] = i;

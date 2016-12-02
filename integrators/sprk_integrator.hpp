@@ -70,7 +70,7 @@ class SPRKIntegrator : public SRKNIntegrator {
       SPRKAutonomousRightHandSideComputation<Position, Momentum>
           compute_velocity,
       Parameters<Position, Momentum> const& parameters,
-      not_null<Solution<Position, Momentum>*> const solution) const;
+      Solution<Position, Momentum>& solution) const;
 
  private:
   template<VanishingCoefficients vanishing_coefficients,
@@ -80,7 +80,7 @@ class SPRKIntegrator : public SRKNIntegrator {
       SPRKAutonomousRightHandSideComputation<Position, Momentum>
           compute_velocity,
       Parameters<Position, Momentum> const& parameters,
-      not_null<Solution<Position, Momentum>*> const solution) const;
+      Solution<Position, Momentum>& solution) const;
 };
 
 // First-same-as-last (FSAL) methods with k stages require k - 1 force

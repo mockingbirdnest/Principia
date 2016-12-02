@@ -44,11 +44,10 @@ namespace {
 
 // TODO(egg): use the one from testing_utilities/integration again when everyone
 // uses |Instant|s.
-void ComputeHarmonicOscillatorAcceleration(
-    Instant const& t,
-    std::vector<Length> const& q,
-    std::vector<Acceleration>* const result,
-    not_null<int*> evaluations) {
+void ComputeHarmonicOscillatorAcceleration(Instant const& t,
+                                           std::vector<Length> const& q,
+                                           Acceleration& result,
+                                           int& evaluations) {
   (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
   ++*evaluations;
 }
@@ -272,7 +271,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   rocket_equation.compute_acceleration = [&mass, specific_impulse, mass_flow](
       Instant const& t,
       std::vector<Length> const& position,
-      not_null<std::vector<Acceleration>*> acceleration) {
+      std::vector<Acceleration>& acceleration) {
     acceleration->back() = mass_flow * specific_impulse / mass(t);
   };
   IntegrationProblem<ODE> problem;

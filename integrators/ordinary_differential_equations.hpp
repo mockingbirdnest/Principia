@@ -41,7 +41,7 @@ struct SpecialSecondOrderDifferentialEquation {
       std::function<
           void(Instant const& t,
                std::vector<Position> const& positions,
-               not_null<std::vector<Acceleration>*> const accelerations)>;
+               std::vector<Acceleration>& accelerations)>;
 
   struct SystemState {
     std::vector<DoublePrecision<Position>> positions;
@@ -123,9 +123,8 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // unique |Instant| of the form |problem.t_final + n * step| in
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
-  virtual void Solve(
-      Instant const& t_final,
-      not_null<IntegrationInstance*> const instance) const = 0;
+  virtual void Solve(Instant const& t_final,
+                     IntegrationInstance& instance) const = 0;
 
   virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
@@ -161,9 +160,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
   // The last call to |append_state| will have |state.time.value == t_final|.
-  virtual Status Solve(
-      Instant const& t_final,
-      not_null<IntegrationInstance*> const instance) const = 0;
+  virtual Status Solve(Instant const& t_final,
+                       IntegrationInstance& instance) const = 0;
 
   virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,

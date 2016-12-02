@@ -115,10 +115,10 @@ class Forkable {
   Forkable& operator=(Forkable const&) = delete;
   Forkable& operator=(Forkable&&) = delete;
 
-  // Deletes the child trajectory denoted by |*trajectory|, which must be a
+  // Deletes the child trajectory denoted by |trajectory|, which must be a
   // pointer previously returned by NewFork for this object.  Nulls
-  // |*trajectory|.
-  void DeleteFork(not_null<Tr4jectory**> const trajectory);
+  // |trajectory|.
+  void DeleteFork(Tr4jectory*& trajectory);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
@@ -214,7 +214,7 @@ class Forkable {
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and |ancestor| is this object).
   It3rator Wrap(
-      not_null<const Tr4jectory*> const ancestor,
+      not_null<Tr4jectory const*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
 
   // There may be several forks starting from the same time, hence the multimap.

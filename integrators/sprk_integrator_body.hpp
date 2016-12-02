@@ -562,7 +562,7 @@ void SPRKIntegrator::SolveIncrement(
     SPRKRightHandSideComputation<Position, Momentum> compute_force,
     SPRKAutonomousRightHandSideComputation<Position, Momentum> compute_velocity,
     Parameters<Position, Momentum> const& parameters,
-    not_null<Solution<Position, Momentum>*> const solution) const {
+    Solution<Position, Momentum>& solution) const {
   switch (vanishing_coefficients_) {
     case None:
       SolveIncrementOptimized<None, Position, Momentum>(
@@ -587,7 +587,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
     SPRKRightHandSideComputation<Position, Momentum> compute_force,
     SPRKAutonomousRightHandSideComputation<Position, Momentum> compute_velocity,
     Parameters<Position, Momentum> const& parameters,
-    not_null<Solution<Position, Momentum>*> const solution) const {
+    Solution<Position, Momentum>& solution) const {
   int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);

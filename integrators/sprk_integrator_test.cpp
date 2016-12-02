@@ -114,12 +114,12 @@ TEST_P(SPRKTest, ConsistentWeights) {
   Mass const m = 1 * Kilogram;
   auto compute_force = [v](Time const& t,
                            std::vector<Length> const& q,
-                           not_null<std::vector<Force>*> const result) {
+                           std::vector<Force>& result) {
     EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 4096));
     (*result)[0] = 0 * Newton;
   };
   auto compute_velocity = [m, v](std::vector<Momentum> const& p,
-                                 not_null<std::vector<Speed>*> const result) {
+                                 std::vector<Speed>& result) {
     EXPECT_EQ(v, p[0] / m);
     (*result)[0] = p[0] / m;
   };

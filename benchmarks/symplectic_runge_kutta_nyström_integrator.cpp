@@ -70,11 +70,10 @@ void ComputeHarmonicOscillatorAcceleration3D(
 }  // namespace
 
 template<typename Integrator>
-void SolveHarmonicOscillatorAndComputeError1D(
-    not_null<benchmark::State*> const state,
-    not_null<Length*> const q_error,
-    not_null<Speed*> const v_error,
-    Integrator const& integrator) {
+void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
+                                              Length& q_error,
+                                              Speed& v_error,
+                                              Integrator const& integrator) {
   using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
   state->PauseTiming();
@@ -126,11 +125,10 @@ void SolveHarmonicOscillatorAndComputeError1D(
 }
 
 template<typename Integrator>
-void SolveHarmonicOscillatorAndComputeError3D(
-    not_null<benchmark::State*> const state,
-    not_null<Length*> const q_error,
-    not_null<Speed*> const v_error,
-    Integrator const& integrator) {
+void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
+                                              Length& q_error,
+                                              Speed& v_error,
+                                              Integrator const& integrator) {
   using ODE = SpecialSecondOrderDifferentialEquation<Position<World>>;
 
   state->PauseTiming();

@@ -12,11 +12,9 @@ using base::not_null;
 
 namespace quantities {
 
-inline void DimensionfulDiscreteCosineTransform(
-    not_null<std::vector<Momentum>*> const result);
+inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result);
 
-inline void DoubleDiscreteCosineTransform(
-    not_null<std::vector<double>*> const result);
+inline void DoubleDiscreteCosineTransform(std::vector<double>& result);
 
 }  // namespace quantities
 }  // namespace principia

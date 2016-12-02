@@ -89,13 +89,12 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                    stages,
                                                    first_same_as_last>::Solve(
     Instant const& t_final,
-    not_null<IntegrationInstance*> const instance) const {
+    IntegrationInstance& instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
 
-  Instance* const down_cast_instance =
-      dynamic_cast_not_null<Instance*>(instance);
+  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
   auto const& equation = down_cast_instance->equation;
   auto const& append_state = down_cast_instance->append_state;
   auto const& adaptive_step_size = down_cast_instance->adaptive_step_size;

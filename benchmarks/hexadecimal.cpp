@@ -91,8 +91,8 @@ char constexpr π_500_bytes[] =
 
 int const copies_of_π = 10000;
 
-void HexEncode(not_null<benchmark::State*> const state,
-              not_null<bool*> const correct,
+void HexEncode(benchmark::State& state,
+              bool& correct,
               std::vector<uint8_t> const& input_bytes,
               std::vector<uint8_t> const& expected_digits) {
   state->PauseTiming();
@@ -138,8 +138,8 @@ void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
 
 BENCHMARK(BM_EncodePi);
 
-void HexDecode(not_null<benchmark::State*> const state,
-               not_null<bool*> const correct,
+void HexDecode(benchmark::State& state,
+               bool& correct,
                std::vector<uint8_t> const& input_digits,
                std::vector<uint8_t> const& expected_bytes) {
   state->PauseTiming();

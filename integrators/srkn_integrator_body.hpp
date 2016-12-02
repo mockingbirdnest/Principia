@@ -253,7 +253,7 @@ template<typename Position>
 void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
     SRKNRightHandSideComputation<Position> compute_acceleration,
     Parameters<Position, Variation<Position>> const& parameters,
-    not_null<Solution<Position, Variation<Position>>*> const solution) const {
+    Solution<Position, Variation<Position>>& solution) const {
   // NOTE(egg): we need to explicitly give the second template argument here
   // because MSVC doesn't want to deduce it.  Clang-cl deduces it without any
   // issues.
@@ -286,7 +286,7 @@ template<SRKNIntegrator::VanishingCoefficients vanishing_coefficients,
 void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     SRKNRightHandSideComputation<Position> compute_acceleration,
     Parameters<Position, Variation<Position>> const& parameters,
-    not_null<Solution<Position, Variation<Position>>*> const solution) const {
+    Solution<Position, Variation<Position>>& solution) const {
   using Velocity = Variation<Position>;
   using Displacement = Difference<Position>;
   int const dimension = parameters.initial.positions.size();
