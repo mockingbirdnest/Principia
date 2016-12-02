@@ -409,7 +409,7 @@ void FlightPlan::ResetLastSegment() {
 void FlightPlan::PopLastSegment() {
   DiscreteTrajectory<Barycentric>* trajectory = segments_.back();
   CHECK(!trajectory->is_root());
-  trajectory->parent()->DeleteFork(&trajectory);
+  trajectory->parent()->DeleteFork(trajectory);
   segments_.pop_back();
   if (anomalous_segments_ > 0) {
     --anomalous_segments_;
@@ -429,7 +429,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
           adaptive_step_parameters_,
           max_ephemeris_steps_per_frame);
   if (!reached_manœuvre_initial_time) {
-    recomputed_coast->parent()->DeleteFork(&recomputed_coast);
+    recomputed_coast->parent()->DeleteFork(recomputed_coast);
   }
   return recomputed_coast;
 }

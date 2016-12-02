@@ -95,14 +95,14 @@ void HexEncode(benchmark::State& state,
               bool& correct,
               std::vector<uint8_t> const& input_bytes,
               std::vector<uint8_t> const& expected_digits) {
-  state->PauseTiming();
+  state.PauseTiming();
   std::vector<uint8_t> digits(input_bytes.size() << 1);
-  state->ResumeTiming();
+  state.ResumeTiming();
   HexadecimalEncode({input_bytes.data(), input_bytes.size()},
                     {digits.data(), digits.size()});
-  state->PauseTiming();
-  *correct &= digits == expected_digits;
-  state->ResumeTiming();
+  state.PauseTiming();
+  correct &= digits == expected_digits;
+  state.ResumeTiming();
 }
 
 std::vector<uint8_t> PiBytes() {
@@ -129,7 +129,7 @@ void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<uint8_t> const input_bytes = PiBytes();
   std::vector<uint8_t> const expected_digits = PiDigits();
   while (state.KeepRunning()) {
-    HexEncode(&state, &correct, input_bytes, expected_digits);
+    HexEncode(state, correct, input_bytes, expected_digits);
   }
   std::stringstream ss;
   ss << correct;
@@ -142,14 +142,14 @@ void HexDecode(benchmark::State& state,
                bool& correct,
                std::vector<uint8_t> const& input_digits,
                std::vector<uint8_t> const& expected_bytes) {
-  state->PauseTiming();
+  state.PauseTiming();
   std::vector<uint8_t> bytes(input_digits.size() / 2);
-  state->ResumeTiming();
+  state.ResumeTiming();
   HexadecimalDecode({input_digits.data(), input_digits.size()},
                     {bytes.data(), bytes.size()});
-  state->PauseTiming();
-  *correct &= bytes == expected_bytes;
-  state->ResumeTiming();
+  state.PauseTiming();
+  correct &= bytes == expected_bytes;
+  state.ResumeTiming();
 }
 
 void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
@@ -157,7 +157,7 @@ void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<uint8_t> input_digits = PiDigits();
   std::vector<uint8_t> expected_bytes = PiBytes();
   while (state.KeepRunning()) {
-    HexDecode(&state, &correct, input_digits, expected_bytes);
+    HexDecode(state, correct, input_digits, expected_bytes);
   }
   std::stringstream ss;
   ss << correct;

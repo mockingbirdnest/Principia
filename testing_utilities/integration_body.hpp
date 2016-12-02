@@ -67,7 +67,7 @@ void ComputeGravitationalAcceleration(
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
     std::vector<MassiveBody> const& bodies) {
-  result->assign(result->size(), Vector<Acceleration, Frame>());
+  result.assign(result.size(), Vector<Acceleration, Frame>());
   for (int b1 = 1; b1 < q.size(); ++b1) {
     GravitationalParameter const& μ1 = bodies[b1].gravitational_parameter();
     for (int b2 = 0; b2 < b1; ++b2) {
@@ -77,7 +77,7 @@ void ComputeGravitationalAcceleration(
           Sqrt(r_squared) / (r_squared * r_squared);
       {
         auto const μ1_over_r_cubed = μ1 * one_over_r_cubed;
-        (*result)[b2] += Δq * μ1_over_r_cubed;
+        result[b2] += Δq * μ1_over_r_cubed;
       }
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
@@ -85,7 +85,7 @@ void ComputeGravitationalAcceleration(
       {
         GravitationalParameter const& μ2 = bodies[b2].gravitational_parameter();
         auto const μ2_over_r_cubed = μ2 * one_over_r_cubed;
-        (*result)[b1] -= Δq * μ2_over_r_cubed;
+        result[b1] -= Δq * μ2_over_r_cubed;
       }
     }
   }

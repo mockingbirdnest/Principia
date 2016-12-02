@@ -62,10 +62,10 @@ namespace {
 
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                    benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
+  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length error;
-  while (state->KeepRunning()) {
-    state->PauseTiming();
+  while (state.KeepRunning()) {
+    state.PauseTiming();
     auto const at_спутник_1_launch =
         SolarSystemFactory::AtСпутник1Launch(accuracy);
     Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
@@ -77,9 +77,9 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                 McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
                 /*step=*/45 * Minute));
 
-    state->ResumeTiming();
+    state.ResumeTiming();
     ephemeris->Prolong(final_time);
-    state->PauseTiming();
+    state.PauseTiming();
     error = (at_спутник_1_launch->trajectory(
                  *ephemeris,
                  SolarSystemFactory::name(SolarSystemFactory::Sun)).
@@ -89,14 +89,14 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                  SolarSystemFactory::name(SolarSystemFactory::Earth)).
                      EvaluatePosition(final_time, nullptr)).
                  Norm();
-    state->ResumeTiming();
+    state.ResumeTiming();
   }
-  state->SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
+  state.SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
 }
 
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
+  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -121,8 +121,8 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     total_degree += ephemeris->trajectory(body)->average_degree();
   }
 
-  while (state->KeepRunning()) {
-    state->PauseTiming();
+  while (state.KeepRunning()) {
+    state.PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
     MasslessBody probe;
     DiscreteTrajectory<ICRFJ2000Equator> trajectory;
@@ -153,7 +153,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                               equatorial_to_ecliptic.Inverse()(
                                   sun_l4_velocity)));
 
-    state->ResumeTiming();
+    state.ResumeTiming();
     ephemeris->FlowWithAdaptiveStep(
         &trajectory,
         Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
@@ -164,7 +164,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second),
         Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
-    state->PauseTiming();
+    state.PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
                      *ephemeris,
@@ -179,11 +179,11 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
     steps = trajectory.Size();
-    state->ResumeTiming();
+    state.ResumeTiming();
   }
   std::stringstream ss;
   ss << steps;
-  state->SetLabel(ss.str() + " steps, " +
+  state.SetLabel(ss.str() + " steps, " +
                   quantities::DebugString(sun_error / AstronomicalUnit) +
                   " ua, " +
                   quantities::DebugString(earth_error / AstronomicalUnit) +
@@ -193,7 +193,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                 benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state->range_x()) * Metre;
+  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -211,8 +211,8 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   ephemeris->Prolong(final_time);
 
-  while (state->KeepRunning()) {
-    state->PauseTiming();
+  while (state.KeepRunning()) {
+    state.PauseTiming();
     // A probe in low earth orbit.
     MasslessBody probe;
     DiscreteTrajectory<ICRFJ2000Equator> trajectory;
@@ -234,7 +234,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                           earth_degrees_of_freedom.velocity() +
                               earth_probe_velocity));
 
-    state->ResumeTiming();
+    state.ResumeTiming();
     ephemeris->FlowWithAdaptiveStep(
         &trajectory,
         Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
@@ -245,7 +245,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second),
         Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
-    state->PauseTiming();
+    state.PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
                      *ephemeris,
@@ -260,11 +260,11 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
     steps = trajectory.Size();
-    state->ResumeTiming();
+    state.ResumeTiming();
   }
   std::stringstream ss;
   ss << steps;
-  state->SetLabel(ss.str() + " steps, " +
+  state.SetLabel(ss.str() + " steps, " +
                   quantities::DebugString(sun_error / AstronomicalUnit) +
                   " ua, " +
                   quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
@@ -277,65 +277,65 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 void BM_EphemerisSolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                                &state);
+                                state);
 }
 
 void BM_EphemerisSolarSystemMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisSolarSystemBenchmark(
       SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-      &state);
+      state);
 }
 
 void BM_EphemerisSolarSystemAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisSolarSystemBenchmark(
       SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
-      &state);
+      state);
 }
 
 void BM_EphemerisL4ProbeMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                            &state);
+                            state);
 }
 
 void BM_EphemerisL4ProbeMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-                            &state);
+                            state);
 }
 
 void BM_EphemerisL4ProbeAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisL4ProbeBenchmark(
       SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
-      &state);
+      state);
 }
 
 void BM_EphemerisLEOProbeMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                             &state);
+                             state);
 }
 
 void BM_EphemerisLEOProbeMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-                             &state);
+                             state);
 }
 
 void BM_EphemerisLEOProbeAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisLEOProbeBenchmark(
       SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
-      &state);
+      state);
 }
 
 void BM_EphemerisFittingTolerance(
     benchmark::State& state) {  // NOLINT(runtime/references)
   EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                            &state);
+                            state);
 }
 
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly)->Arg(-3);

@@ -30,7 +30,7 @@ inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result) {
   for (std::size_t i = 0; i < dimension; ++i) {
     input[i] = i * SIUnit<Momentum>();
   }
-  result->resize(dimension);
+  result.resize(dimension);
   double sign = 1;
   Momentum sum;
   for (std::size_t k = 0; k < dimension; ++k, sign *= -1) {
@@ -39,9 +39,9 @@ inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result) {
       sum += input[n] * Cos(π * Radian / (dimension - 1) * n * k);
     }
 #ifdef TRIGGER_DEAD_CODE_ELIMINATION
-    (*result)[k] = 0.5 * (input[0] + sign * input[dimension - 1]);
+    result[k] = 0.5 * (input[0] + sign * input[dimension - 1]);
 #else
-    (*result)[k] = 0.5 * (input[0] + sign * input[dimension - 1]) + sum;
+    result[k] = 0.5 * (input[0] + sign * input[dimension - 1]) + sum;
 #endif
   }
 }
@@ -51,7 +51,7 @@ inline void DoubleDiscreteCosineTransform(std::vector<double>& result) {
   for (std::size_t i = 0; i < dimension; ++i) {
     input[i] = i;
   }
-  result->resize(dimension);
+  result.resize(dimension);
   double sign = 1;
   double sum;
   for (std::size_t k = 0; k < dimension; ++k, sign *= -1) {
@@ -60,9 +60,9 @@ inline void DoubleDiscreteCosineTransform(std::vector<double>& result) {
       sum += input[n] * std::cos(π / (dimension - 1) * n * k);
     }
 #ifdef TRIGGER_DEAD_CODE_ELIMINATION
-    (*result)[k] = 0.5 * (input[0] + sign * input[dimension - 1]);
+    result[k] = 0.5 * (input[0] + sign * input[dimension - 1]);
 #else
-    (*result)[k] = 0.5 * (input[0] + sign * input[dimension - 1]) + sum;
+    result[k] = 0.5 * (input[0] + sign * input[dimension - 1]) + sum;
 #endif
   }
 }
