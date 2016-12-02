@@ -116,12 +116,12 @@ TEST_P(SPRKTest, ConsistentWeights) {
                            std::vector<Length> const& q,
                            std::vector<Force>& result) {
     EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 4096));
-    (*result)[0] = 0 * Newton;
+    result[0] = 0 * Newton;
   };
   auto compute_velocity = [m, v](std::vector<Momentum> const& p,
                                  std::vector<Speed>& result) {
     EXPECT_EQ(v, p[0] / m);
-    (*result)[0] = p[0] / m;
+    result[0] = p[0] / m;
   };
   parameters_.initial.positions.emplace_back(0 * Metre);
   parameters_.initial.momenta.emplace_back(m * v);
@@ -130,7 +130,7 @@ TEST_P(SPRKTest, ConsistentWeights) {
   parameters_.Δt = 1 * Second;
   parameters_.sampling_period = 5;
   integrator_->SolveIncrement<Length, Momentum>(compute_force, compute_velocity,
-                                                parameters_, &solution_);
+                                                parameters_, solution_);
   EXPECT_THAT(solution_.back().positions.back().value,
               AlmostEquals(v * parameters_.tmax, 0, 4));
 }
@@ -147,7 +147,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
@@ -157,7 +157,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -168,7 +168,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(29, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
@@ -178,7 +178,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -189,7 +189,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(0, solution_.size());
 
   parameters_.tmax_is_exact = true;
@@ -197,7 +197,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(1, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -208,7 +208,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(0, solution_.size());
 
   parameters_.tmax_is_exact = true;
@@ -216,7 +216,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
       &ComputeHarmonicOscillatorForce,
       &ComputeHarmonicOscillatorVelocity,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(1, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));

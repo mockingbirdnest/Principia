@@ -70,7 +70,7 @@ class SRKNIntegrator : public MotionIntegrator {
   void SolveTrivialKineticEnergyIncrement(
       SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
-      Solution<Position, Variation<Position>& solution) const;
+      Solution<Position, Variation<Position>>& solution) const;
 
  protected:
   enum VanishingCoefficients {

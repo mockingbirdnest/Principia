@@ -32,7 +32,7 @@
 #define ADVANCE_ΔVSTAGE(step, q_clock)                                     \
   do {                                                                     \
     Time const step_evaluated = (step);                                    \
-    compute_acceleration((q_clock), q_stage, &a);                          \
+    compute_acceleration((q_clock), q_stage, a);                           \
     for (int k = 0; k < dimension; ++k) {                                  \
       Velocity const Δv = (*Δvstage_previous)[k] + step_evaluated * a[k];  \
       v_stage[k] = v_last[k].value + Δv;                                   \
@@ -307,8 +307,8 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
         ceil((((parameters.tmax - parameters.initial.time.value) /
                     parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
-  solution->clear();
-  solution->reserve(capacity);
+  solution.clear();
+  solution.reserve(capacity);
 
   std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
   std::vector<DoublePrecision<Velocity>> v_last(parameters.initial.momenta);
@@ -428,8 +428,8 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
-        solution->emplace_back();
-        SystemState<Position, Velocity>* state = &solution->back();
+        solution.emplace_back();
+        SystemState<Position, Velocity>* state = &solution.back();
         state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
@@ -443,8 +443,8 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
   }
 
   if (parameters.sampling_period == 0) {
-    solution->emplace_back();
-    SystemState<Position, Velocity>* state = &solution->back();
+    solution.emplace_back();
+    SystemState<Position, Velocity>* state = &solution.back();
     state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);

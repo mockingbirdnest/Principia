@@ -23,8 +23,7 @@ using quantities::Time;
 namespace testing_utilities {
 
 // Right-hand sides for various differential equations frequently used to test
-// the properties of integrators.  Logically the result should be a not_null<>
-// but this costs 20% in the benchmark of the harmonic oscillator.
+// the properties of integrators.
 
 // The one-dimensional unit harmonic oscillator,
 //   q' = p / m,  |ComputeHarmonicOscillatorVelocity|,
@@ -33,18 +32,18 @@ namespace testing_utilities {
 
 void ComputeHarmonicOscillatorForce(Time const& t,
                                     std::vector<Length> const& q,
-                                    std::vector<Force>* const result);
+                                    std::vector<Force>& result);
 
 void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
-    std::vector<Speed>* const result);
+    std::vector<Speed>& result);
 
 // The Runge-Kutta-Nyström formulation
 //   q" = -q k / m.
 void ComputeHarmonicOscillatorAcceleration(
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* const result);
+    std::vector<Acceleration>& result);
 
 // The Kepler problem with unit gravitational parameter, where the
 // two-dimensional configuration space is the separation between the bodies, in
@@ -53,13 +52,13 @@ void ComputeHarmonicOscillatorAcceleration(
 // where μ = 1 m³ s⁻².
 void ComputeKeplerAcceleration(Time const& t,
                                std::vector<Length> const& q,
-                               std::vector<Acceleration>* const result);
+                               std::vector<Acceleration>& result);
 
 template<typename Frame>
 void ComputeGravitationalAcceleration(
     Time const& t,
     std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>* const result,
+    std::vector<Vector<Acceleration, Frame>>& result,
     std::vector<MassiveBody> const& bodies);
 
 }  // namespace testing_utilities

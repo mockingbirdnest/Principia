@@ -95,12 +95,12 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   using Acceleration = typename ODE::Acceleration;
 
   Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
-  auto const& equation = down_cast_instance->equation;
-  auto const& append_state = down_cast_instance->append_state;
-  auto const& adaptive_step_size = down_cast_instance->adaptive_step_size;
+  auto const& equation = down_cast_instance.equation;
+  auto const& append_state = down_cast_instance.append_state;
+  auto const& adaptive_step_size = down_cast_instance.adaptive_step_size;
 
   // Gets updated as the integration progresses to allow restartability.
-  typename ODE::SystemState& current_state = down_cast_instance->current_state;
+  typename ODE::SystemState& current_state = down_cast_instance.current_state;
 
   // State before the last, truncated step.
   std::experimental::optional<typename ODE::SystemState> final_state;
@@ -206,7 +206,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
           q_stage[k] = q_hat[k].value +
                            h * (c_[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
         }
-        equation.compute_acceleration(t_stage, q_stage, &g[i]);
+        equation.compute_acceleration(t_stage, q_stage, g[i]);
       }
 
       // Increment computation and step size control.

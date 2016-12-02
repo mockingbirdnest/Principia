@@ -15,7 +15,7 @@
 #define ADVANCE_ΔQSTAGE(step)                                              \
   do {                                                                     \
     Time const step_evaluated = (step);                                    \
-    compute_velocity(p_stage, &v);                                         \
+    compute_velocity(p_stage, v);                                          \
     for (int k = 0; k < dimension; ++k) {                                  \
       Position const Δq = (*Δqstage_previous)[k] + step_evaluated * v[k];  \
       q_stage[k] = q_last[k].value + Δq;                                   \
@@ -30,7 +30,7 @@
 #define ADVANCE_ΔPSTAGE(step, q_clock)                                     \
   do {                                                                     \
     Time const step_evaluated = (step);                                    \
-    compute_force((q_clock), q_stage, &f);                                 \
+    compute_force((q_clock), q_stage, f);                                  \
     for (int k = 0; k < dimension; ++k) {                                  \
       Momentum const Δp = (*Δpstage_previous)[k] + step_evaluated * f[k];  \
       p_stage[k] = p_last[k].value + Δp;                                   \
@@ -606,8 +606,8 @@ void SPRKIntegrator::SolveIncrementOptimized(
         ceil((((parameters.tmax - parameters.initial.time.value) /
                     parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
-  solution->clear();
-  solution->reserve(capacity);
+  solution.clear();
+  solution.reserve(capacity);
 
   std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
   std::vector<DoublePrecision<Momentum>> p_last(parameters.initial.momenta);
@@ -728,8 +728,8 @@ void SPRKIntegrator::SolveIncrementOptimized(
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
-        solution->emplace_back();
-        SystemState<Position, Momentum>* state = &solution->back();
+        solution.emplace_back();
+        SystemState<Position, Momentum>* state = &solution.back();
         state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
@@ -743,8 +743,8 @@ void SPRKIntegrator::SolveIncrementOptimized(
   }
 
   if (parameters.sampling_period == 0) {
-    solution->emplace_back();
-    SystemState<Position, Momentum>* state = &solution->back();
+    solution.emplace_back();
+    SystemState<Position, Momentum>* state = &solution.back();
     state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);

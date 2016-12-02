@@ -205,7 +205,8 @@ TEST_P(SimpleHarmonicMotionTest, Error) {
   parameters_.sampling_period = 1;
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       ComputeHarmonicOscillatorAcceleration,
-      parameters_, &solution_);
+      parameters_,
+      solution_);
   Length q_error;
   Speed v_error;
   for (std::size_t i = 0; i < solution_.size(); ++i) {
@@ -253,7 +254,8 @@ TEST_P(SimpleHarmonicMotionTest, Error) {
     sprk->SolveIncrement<Length, Momentum>(
         ComputeHarmonicOscillatorForce,
         ComputeHarmonicOscillatorVelocity,
-        parameters, &solution);
+        parameters,
+        solution);
     Length q_error;
     Speed v_error;
     for (std::size_t i = 0; i < solution.size(); ++i) {
@@ -287,9 +289,9 @@ TEST_P(SimpleHarmonicMotionTest, Convergence) {
   log_step_sizes.reserve(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     integrator_->SolveTrivialKineticEnergyIncrement<Length>(
-        &ComputeHarmonicOscillatorAcceleration,
+        ComputeHarmonicOscillatorAcceleration,
         parameters_,
-        &solution_);
+        solution_);
     double const log_q_error = std::log10(
         std::abs(solution_[0].positions[0].value / SIUnit<Length>() -
                  Cos(solution_[0].time.value *
@@ -354,9 +356,9 @@ TEST_P(SimpleHarmonicMotionTest, Symplecticity) {
   parameters_.Δt = 0.2 * Second;
   parameters_.sampling_period = 1;
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
-      &ComputeHarmonicOscillatorAcceleration,
+      ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   std::size_t const length = solution_.size();
   std::vector<Energy> energy_error(length);
   std::vector<Time> time_steps(length);
