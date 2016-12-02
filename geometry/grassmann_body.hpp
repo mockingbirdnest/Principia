@@ -109,16 +109,20 @@ Scalar Multivector<Scalar, Frame, 3>::Norm() const {
 
 template<typename Scalar, typename Frame>
 template<typename S>
-void Multivector<Scalar, Frame, 1>::OrthogonalizeAgainst(
-    Multivector<S, Frame, 1> const& multivector) {
-  coordinates_.OrthogonalizeAgainst(multivector.coordinates_);
+Multivector<Scalar, Frame, 1>
+    Multivector<Scalar, Frame, 1>::OrthogonalizedAgainst(
+        Multivector<S, Frame, 1> const& multivector) const {
+  return Multivector(
+      coordinates_.OrthogonalizedAgainst(multivector.coordinates_));
 }
 
 template<typename Scalar, typename Frame>
 template<typename S>
-void Multivector<Scalar, Frame, 2>::OrthogonalizeAgainst(
-    Multivector<S, Frame, 2> const& multivector) {
-  coordinates_.OrthogonalizeAgainst(multivector.coordinates_);
+Multivector<Scalar, Frame, 2>
+    Multivector<Scalar, Frame, 2>::OrthogonalizedAgainst(
+        Multivector<S, Frame, 2> const& multivector) const {
+  return Multivector(
+      coordinates_.OrthogonalizedAgainst(multivector.coordinates_));
 }
 
 template<typename Scalar, typename Frame>

@@ -111,11 +111,12 @@ SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
   return result;
 }
 
-template<typename Scalar>
-template<typename S>
-void R3Element<Scalar>::OrthogonalizeAgainst(R3Element<S> const& r3_element) {
+template <typename Scalar>
+template <typename S>
+R3Element<Scalar> R3Element<Scalar>::OrthogonalizedAgainst(
+    R3Element<S> const& r3_element) const {
   R3Element<double> const r3_element_normalized = Normalize(r3_element);
-  *this -= Dot(*this, r3_element_normalized) * r3_element_normalized;
+  return *this - Dot(*this, r3_element_normalized) * r3_element_normalized;
 }
 
 template<typename Scalar>

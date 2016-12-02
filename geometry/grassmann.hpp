@@ -37,7 +37,8 @@ class Multivector<Scalar, Frame, 1> {
   Scalar Norm() const;
 
   template<typename S>
-  void OrthogonalizeAgainst(Multivector<S, Frame, 1> const& multivector);
+  Multivector OrthogonalizedAgainst(
+      Multivector<S, Frame, 1> const& multivector) const;
 
   void WriteToMessage(
       not_null<serialization::Multivector*> const message) const;
@@ -78,7 +79,8 @@ class Multivector<Scalar, Frame, 2> {
   Scalar Norm() const;
 
   template<typename S>
-  void OrthogonalizeAgainst(Multivector<S, Frame, 2> const& multivector);
+  Multivector OrthogonalizedAgainst(
+      Multivector<S, Frame, 2> const& multivector) const;
 
   void WriteToMessage(
       not_null<serialization::Multivector*> const message) const;

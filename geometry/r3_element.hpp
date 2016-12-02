@@ -42,10 +42,11 @@ struct R3Element {
   // the equator, and the z-axis as the north pole.
   SphericalCoordinates<Scalar> ToSpherical() const;
 
-  // Modifies |*r3_element| so as to make it orthogonal to |*this|, using the
-  // modified Gram-Schmidt algorithm.  Fails if |*this| is zero.
+  // Returns a vector coplanar to |*this| and |r3_element|, orthogonal to
+  // |r3_element|, and on the same side of |r3_element| as |*this|.
+  // Uses the modified Gram-Schmidt algorithm.  Fails if |r3_element| is zero.
   template<typename S>
-  void OrthogonalizeAgainst(R3Element<S> const& r3_element);
+  R3Element OrthogonalizedAgainst(R3Element<S> const& r3_element) const;
 
   void WriteToMessage(not_null<serialization::R3Element*> const message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);
