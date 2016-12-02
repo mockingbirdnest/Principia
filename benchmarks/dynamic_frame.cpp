@@ -77,9 +77,9 @@ void FillLinearTrajectory(Position<F> const& initial,
   for (int i = 0; i < steps; ++i) {
     Time const iΔt = i * Δt;
     Displacement<F> const displacement_i = velocity * iΔt;
-    trajectory->Append(t0 + iΔt,
-                       DegreesOfFreedom<F>(initial + displacement_i,
-                                           velocity));
+    trajectory.Append(t0 + iΔt,
+                      DegreesOfFreedom<F>(initial + displacement_i,
+                                          velocity));
   }
 }
 
@@ -159,7 +159,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(
       solar_system.epoch(),
       Δt,
       steps,
-      &probe_trajectory);
+      probe_trajectory);
 
   BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Rendering>
       dynamic_frame(ephemeris.get(), earth);
@@ -210,7 +210,7 @@ void BM_BarycentricRotatingDynamicFrame(
       solar_system.epoch(),
       Δt,
       steps,
-      &probe_trajectory);
+      probe_trajectory);
 
   BarycentricRotatingDynamicFrame<ICRFJ2000Equator, Rendering>
       dynamic_frame(ephemeris.get(), earth, venus);

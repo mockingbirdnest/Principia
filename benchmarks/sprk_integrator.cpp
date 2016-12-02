@@ -151,7 +151,7 @@ using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 namespace integrators {
 
 void SolveHarmonicOscillatorAndComputeError(
-    benchmark::State& const state,
+    benchmark::State& state,
     Length& q_error,
     Speed& v_error,
     SRKNIntegrator const& integrator) {
