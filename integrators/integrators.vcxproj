@@ -305,6 +305,8 @@
     <ClInclude Include="srkn_integrator_body.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator_body.hpp" />
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator.hpp" />
   </ItemGroup>

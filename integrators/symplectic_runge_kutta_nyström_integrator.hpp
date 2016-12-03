@@ -30,7 +30,7 @@ namespace integrators {
 // of (1), and for an explanation of the relation to Hamiltonian mechanics.
 
 // Each step of size h is computed using the composition of evolutions
-//   exp(aᵣ₋₁ h A) exp(bᵣ₋₁ h B) ... exp(a₀ h A)exp(b₀ h B);
+//   exp(aᵣ₋₁ h A) exp(bᵣ₋₁ h B) ... exp(a₀ h A) exp(b₀ h B);
 // the integrator thus is a composition method.  If the appropriate coefficients
 // vanish, the above can be reformulated as either
 //   exp(aᵣ₋₁ h A) exp(bᵣ₋₁ h B) ... exp(b₁ h B) exp(a₀ h A)  or
