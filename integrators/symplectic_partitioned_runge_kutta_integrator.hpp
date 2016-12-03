@@ -132,7 +132,7 @@ class SymplecticPartitionedRungeKuttaIntegrator {
 // - Delambre (1790), De l'usage du calcul differentiel dans la
 //   construction des tables astronomiques.
 //   http://www.biodiversitylibrary.org/item/32318#page/698/mode/1up.
-// - Störmer (1907), Sur les trajectoires des corpuscules électrisés dans
+// - Størmer (1907), Sur les trajectoires des corpuscules électrisés dans
 //   l'espace, avec application aux aurores boréales.
 //   https://hal.archives-ouvertes.fr/jpa-00242574/document.
 // - Verlet (1967) Computer "Experiments" on classical fluids. I.
@@ -145,7 +145,7 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           /*time_reversible=*/true,
                                           /*evaluations=*/1,
                                           /*first_same_as_last=*/true> const&
-NewtonDelambreStörmerVerletLeapfrog();
+NewtonDelambreStørmerVerletLeapfrog();
 
 // Coefficients from Ruth (1983), A canonical integration technique,
 // https://accelconf.web.cern.ch/accelconf/p83/PDF/PAC1983_2669.PDF.
