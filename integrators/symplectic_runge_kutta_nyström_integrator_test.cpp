@@ -70,7 +70,7 @@ using ::testing::ValuesIn;
   SimpleHarmonicMotionTestInstance(                                     \
       integrator<Length, Speed>()                                       \
           .AsRungeKuttaNyströmIntegrator<(composition)>(),              \
-      #integrator "().AsRungeKuttaNyströmIntegrator<" #composition ">", \
+      #integrator ".AsRungeKuttaNyströmIntegrator<" #composition ">", \
       (beginning_of_convergence),                                       \
       (expected_position_error),                                        \
       (expected_velocity_error),                                        \
