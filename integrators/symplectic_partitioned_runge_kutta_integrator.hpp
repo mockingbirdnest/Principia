@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <type_traits>
+
 #include "numerics/fixed_arrays.hpp"
 #include "symplectic_runge_kutta_nyström_integrator.hpp"
 
@@ -24,8 +26,18 @@ namespace integrators {
 // The equation solved by this integrator is a general case of that solved by
 // a |SymplecticRungeKuttaNyströmIntegrator|, see equation (1) in the
 // appropriate file.  This may therefore be turned into a
-// |SymplecticRungeKuttaNyströmIntegrator|; since A and B are interchangeable
-// for a |SymplecticPartitionedRungeKuttaIntegrator|, this may be done by either
+// |SymplecticRungeKuttaNyströmIntegrator|. 
+// In the |first_same_as_last| case, since A and B are interchangeable
+// for a |SymplecticPartitionedRungeKuttaIntegrator|, the step
+//   exp(bᵣ₋₁ h A) exp(aᵣ₋₂ h B) ... exp(a₀ h B) exp(b₀ h A)
+// also provides an integrator.  Since for a
+// |SymplecticRungeKuttaNyströmIntegrator| A and B are *not* interchangeable,
+// because of the requirement that [B, [B, [B, A]]] = 0 in (1), there are two
+// different |SymplecticRungeKuttaNyströmIntegrator| corresponding to a
+// |first_same_as_last| |SymplecticPartitionedRungeKuttaIntegrator|: one is
+// |ABA|, the other is |BAB|.
+
+this may be done by either
 // making B the "force operator" and A the "velocity operator", corresponding to
 //   [B, [B, [B, A]]] = 0,
 // or by making A the "force operator" and B the "velocity operator",
@@ -56,19 +68,15 @@ class SymplecticPartitionedRungeKuttaIntegrator {
   static constexpr bool time_reversible = time_reversible_;
   static constexpr bool first_same_as_last = first_same_as_last_;
 
+  // If |first_same_as_last|, |composition_method| must be |ABA| or |BAB|.
+  // Otherwise, it must be |BA|.
+  template<CompositionMethod composition_method>
   SymplecticRungeKuttaNyströmIntegrator<
       Position,
       order,
       time_reversible,
       evaluations,
-      first_same_as_last ? BAB : BA> const& BForceMethod() const;
-
-  SymplecticRungeKuttaNyströmIntegrator<
-      Position,
-      order,
-      time_reversible,
-      evaluations,
-      first_same_as_last ? BAB : BA> const& AForceMethod() const;
+      composition_method> const& AsRungeKuttaNyströmIntegrator() const;
 
  private:
   FixedVector<double, stages_> const a_;
@@ -77,17 +85,39 @@ class SymplecticPartitionedRungeKuttaIntegrator {
   // The Runge-Kutta-Nyström methods are stored here, so that we can use them
   // by const-reference as we do for the others.  Since |*this| should be a
   // static object, This similarly obviates questions of lifetime.
-  std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<
-      Position,
-      order,
-      time_reversible,
-      evaluations,
-      first_same_as_last_ ? BAB : BA>> b_force_method_;
-  std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
-      order,
-      time_reversible,
-      evaluations,
-      first_same_as_last_ ? ABA : BA>> a_force_method_;
+  struct NotApplicable {};
+  std::conditional_t<
+      !first_same_as_last,
+      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
+                                                            order,
+                                                            time_reversible,
+                                                            evaluations,
+                                                            BA>>,
+      NotApplicable> ba_srkn_;
+  std::conditional_t<
+      first_same_as_last,
+      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
+                                                            order,
+                                                            time_reversible,
+                                                            evaluations,
+                                                            ABA>>,
+      NotApplicable> aba_srkn_;
+  std::conditional_t<
+      first_same_as_last,
+      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
+                                                            order,
+                                                            time_reversible,
+                                                            evaluations,
+                                                            BAB>>,
+      std::nullptr_t> bab_srkn_;
+  std::conditional_t<
+      first_same_as_last,
+      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
+                                                            order,
+                                                            time_reversible,
+                                                            evaluations,
+                                                            ABA>>,
+      NotApplicable> aba_srkn_;
 };
 
 template<typename Position, typename Momentum>
@@ -309,8 +339,6 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           /*evaluations=*/10,
                                           /*first_same_as_last=*/true> const&
 BlanesMoan2002S10();
-
-
 
 }  // namespace integrators
 }  // namespace principia
