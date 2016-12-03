@@ -184,11 +184,11 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   std::stringstream ss;
   ss << steps;
   state.SetLabel(ss.str() + " steps, " +
-                  quantities::DebugString(sun_error / AstronomicalUnit) +
-                  " ua, " +
-                  quantities::DebugString(earth_error / AstronomicalUnit) +
-                  " ua, degree " +
-                  std::to_string(total_degree));
+                 quantities::DebugString(sun_error / AstronomicalUnit) +
+                 " ua, " +
+                 quantities::DebugString(earth_error / AstronomicalUnit) +
+                 " ua, degree " +
+                 std::to_string(total_degree));
 }
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
