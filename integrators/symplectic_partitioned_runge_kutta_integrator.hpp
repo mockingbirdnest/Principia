@@ -36,24 +36,16 @@ namespace integrators {
 // different |SymplecticRungeKuttaNyströmIntegrator| corresponding to a
 // |first_same_as_last| |SymplecticPartitionedRungeKuttaIntegrator|: one is
 // |ABA|, the other is |BAB|.
-
-this may be done by either
-// making B the "force operator" and A the "velocity operator", corresponding to
-//   [B, [B, [B, A]]] = 0,
-// or by making A the "force operator" and B the "velocity operator",
-// corresponding to
-//   [A, [A, [A, B]]] = 0.
-// If the method is |first_same_as_last|, the former yields a |BAB|
-// |CompositionMethod|, and the latter yields an |ABA| |CompositionMethod|.
-// If the method is not |first_same_as_last|, both yield a |BA|
-// |CompositionMethod|.
 // NOTE(egg): The |SymplecticRungeKuttaNyströmIntegrator| thus constructed will
 // serialize as a |DUMMY| and probably break in all sorts of hilarious ways if
 // deserialized.
 // TODO(egg): Make them serializable/deserializable.  We need to prevent
 // combinatorial explosion.
-template<typename Position, typename Momentum,
-         int order_, int evaluations_, bool time_reversible_,
+template<typename Position,
+         typename Momentum,
+         int order_,
+         bool time_reversible_,
+         int evaluations_,
          bool first_same_as_last_>
 class SymplecticPartitionedRungeKuttaIntegrator {
   static constexpr int stages_ = first_same_as_last_ ? evaluations_ + 1
@@ -73,9 +65,9 @@ class SymplecticPartitionedRungeKuttaIntegrator {
   template<CompositionMethod composition_method>
   SymplecticRungeKuttaNyströmIntegrator<
       Position,
-      order,
-      time_reversible,
-      evaluations,
+      order_,
+      time_reversible_,
+      evaluations_,
       composition_method> const& AsRungeKuttaNyströmIntegrator() const;
 
  private:
@@ -84,40 +76,27 @@ class SymplecticPartitionedRungeKuttaIntegrator {
 
   // The Runge-Kutta-Nyström methods are stored here, so that we can use them
   // by const-reference as we do for the others.  Since |*this| should be a
-  // static object, This similarly obviates questions of lifetime.
+  // static object, this similarly obviates questions of lifetime.
+  // They are mutable since the integrators are handled by by const-reference,
+  // are initialized on-demand, and are not part of the integrator per se.
+
+  template<CompositionMethod composition_method>
+  using SRKN = SymplecticRungeKuttaNyströmIntegrator<Position,
+                                                     order,
+                                                     time_reversible,
+                                                     evaluations,
+                                                     composition_method>;
   struct NotApplicable {};
-  std::conditional_t<
-      !first_same_as_last,
-      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                            order,
-                                                            time_reversible,
-                                                            evaluations,
-                                                            BA>>,
-      NotApplicable> ba_srkn_;
-  std::conditional_t<
-      first_same_as_last,
-      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                            order,
-                                                            time_reversible,
-                                                            evaluations,
-                                                            ABA>>,
-      NotApplicable> aba_srkn_;
-  std::conditional_t<
-      first_same_as_last,
-      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                            order,
-                                                            time_reversible,
-                                                            evaluations,
-                                                            BAB>>,
-      std::nullptr_t> bab_srkn_;
-  std::conditional_t<
-      first_same_as_last,
-      std::unique_ptr<SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                            order,
-                                                            time_reversible,
-                                                            evaluations,
-                                                            ABA>>,
-      NotApplicable> aba_srkn_;
+
+  mutable std::conditional_t<!first_same_as_last,
+                             std::unique_ptr<SRKN<BA>>,
+                             NotApplicable> ba_srkn_;
+  mutable std::conditional_t<first_same_as_last,
+                             std::unique_ptr<SRKN<ABA>>,
+                             NotApplicable> aba_srkn_;
+  mutable std::conditional_t<first_same_as_last,
+                             std::unique_ptr<SRKN<BAB>>,
+                             NotApplicable> bab_srkn_;
 };
 
 // This integrator goes by many names, see Hairer, Lubich, and Wanner (2003),

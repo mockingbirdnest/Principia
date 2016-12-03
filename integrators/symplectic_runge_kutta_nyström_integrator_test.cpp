@@ -7,6 +7,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -59,6 +60,21 @@ using ::testing::ValuesIn;
                                      (expected_position_error),   \
                                      (expected_velocity_error),   \
                                      (expected_energy_error))
+
+#define SPRK_INSTANCE(integrator,                          \
+                      composition,                         \
+                      beginning_of_convergence,            \
+                      expected_position_error,             \
+                      expected_velocity_error,             \
+                      expected_energy_error)               \
+  SimpleHarmonicMotionTestInstance(                        \
+      integrator<Length, Speed>()                          \
+          .AsRungeKuttaNyströmIntegrator<(composition)>(), \
+      #integrator #composition,                            \
+      (beginning_of_convergence),                          \
+      (expected_position_error),                           \
+      (expected_velocity_error),                           \
+      (expected_energy_error))
 
 namespace integrators {
 
@@ -504,7 +520,25 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    1.0 * Second,
                    +1.11001485780803930e-13 * Metre,
                    +1.11063935825939100e-13 * Metre / Second,
-                   +6.29052365752613700e-13 * Joule)};
+                   +6.29052365752613700e-13 * Joule),
+          SPRK_INSTANCE(NewtonDelambreStørmerVerletLeapfrog,
+                        ABA,
+                        1.0 * Second,
+                        0 * Metre,
+                        0 * Metre / Second,
+                        0 * Joule),
+          SPRK_INSTANCE(NewtonDelambreStørmerVerletLeapfrog,
+                        BAB,
+                        1.0 * Second,
+                        0 * Metre,
+                        0 * Metre / Second,
+                        0 * Joule),
+          SPRK_INSTANCE(Ruth1983,
+                        BA,
+                        1.0 * Second,
+                        0 * Metre,
+                        0 * Metre / Second,
+                        0 * Joule)};
 }
 
 }  // namespace

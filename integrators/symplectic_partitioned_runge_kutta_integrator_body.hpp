@@ -9,14 +9,14 @@ namespace integrators {
 template<typename Position,
          typename Momentum,
          int order_,
-         int evaluations_,
          bool time_reversible_,
+         int evaluations_,
          bool first_same_as_last_>
 SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           Momentum,
                                           order_,
-                                          evaluations_,
                                           time_reversible_,
+                                          evaluations_,
                                           first_same_as_last_>::
     SymplecticPartitionedRungeKuttaIntegrator(
         FixedVector<double, stages_> const& a,
@@ -40,153 +40,58 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
 template<typename Position,
          typename Momentum,
          int order_,
-         int evaluations_,
          bool time_reversible_,
+         int evaluations_,
          bool first_same_as_last_>
+template<CompositionMethod composition_method>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       order_,
                                       time_reversible_,
                                       evaluations_,
-                                      first_same_as_last_ ? BAB : BA> const&
-SymplecticPartitionedRungeKuttaIntegrator<Position,
-                                          Momentum,
-                                          order_,
-                                          evaluations_,
-                                          time_reversible_,
-                                          first_same_as_last_>::BForceMethod()
-    const {
-  if (b_force_method_ == nullptr) {
-    b_force_method_ = std::make_unique<
-        SymplecticRungeKuttaNyströmIntegrator<Position,
-                                              order_,
-                                              time_reversible_,
-                                              evaluations_,
-                                              first_same_as_last_ ? BAB : BA>>(
-        serialization::FixedStepSizeIntegrator::DUMMY,
-        a_,
-        b_);
-  }
-  return *b_force_method_;
-}
-
-template<typename Position,
-         typename Momentum,
-         int order_,
-         int evaluations_,
-         bool time_reversible_,
-         bool first_same_as_last_>
-template<>
-SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      order,
-                                      time_reversible,
-                                      evaluations,
-                                      BA> const&
+                                      composition_method> const&
     SymplecticPartitionedRungeKuttaIntegrator<
         Position,
         Momentum,
         order_,
-        evaluations_,
         time_reversible_,
-        first_same_as_last_>::AsRungeKuttaNyströmIntegrator<BA>() const {
-  static_assert(!first_same_as_last,
+        evaluations_,
+        first_same_as_last_>::AsRungeKuttaNyströmIntegrator() const {
+  using SRKN = SymplecticRungeKuttaNyströmIntegrator<Position,
+                                                     order_,
+                                                     time_reversible_,
+                                                     evaluations_,
+                                                     composition_method>;
+  static_assert(first_same_as_last
+                    ? composition_method == ABA || composition_method == BAB
+                    : composition_method == BA,
                 "requested |composition_method| inconsistent with the "
                 "properties of this integrator");
-  if (ba_srkn_ == nullptr) {
-    ba_srkn_ =
-        std::make_unique<SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                               order,
-                                                               time_reversible,
-                                                               evaluations,
-                                                               BA>>(
-            serialization::FixedStepSizeIntegrator::DUMMY,
-            a_,
-            b_);
-  }
-  return *ba_srkn_;
-}
-
-template<typename Position,
-         typename Momentum,
-         int order_,
-         int evaluations_,
-         bool time_reversible_,
-         bool first_same_as_last_>
-template<>
-SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      order,
-                                      time_reversible,
-                                      evaluations,
-                                      BAB> const&
-    SymplecticPartitionedRungeKuttaIntegrator<
-        Position,
-        Momentum,
-        order_,
-        evaluations_,
-        time_reversible_,
-        first_same_as_last_>::AsRungeKuttaNyströmIntegrator<BAB>() const {
-  static_assert(first_same_as_last,
-                "requested |composition_method| inconsistent with the "
-                "properties of this integrator");
-  if (bab_srkn_ == nullptr) {
-    bab_srkn_ =
-        std::make_unique<SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                               order,
-                                                               time_reversible,
-                                                               evaluations,
-                                                               BAB>>(
-            serialization::FixedStepSizeIntegrator::DUMMY,
-            a_,
-            b_);
-  }
-  return *bab_srkn_;
-}
-
-
-template<typename Position,
-         typename Momentum,
-         int order_,
-         int evaluations_,
-         bool time_reversible_,
-         bool first_same_as_last_>
-template<>
-SymplecticRungeKuttaNyströmIntegrator<Position,
-                                      order,
-                                      time_reversible,
-                                      evaluations,
-                                      BAB> const&
-    SymplecticPartitionedRungeKuttaIntegrator<
-        Position,
-        Momentum,
-        order_,
-        evaluations_,
-        time_reversible_,
-        first_same_as_last_>::AsRungeKuttaNyströmIntegrator<BAB>() const {
-  static_assert(first_same_as_last,
-                "requested |composition_method| inconsistent with the "
-                "properties of this integrator");
-  if (aba_srkn_ == nullptr) {
-    FixedVector<double, stages_> shifted_a;
-    if (first_same_as_last) {
+  // The |reinterpret_cast|s are ugly, but everything else I can think of is a
+  // rabbit hole of metaprogramming.
+  std::unique_ptr<SRKN>& method =
+      composition_method == BA
+          ? reinterpret_cast<std::unique_ptr<SRKN>&>(ba_srkn_)
+          : composition_method == ABA
+                ? reinterpret_cast<std::unique_ptr<SRKN>&>(aba_srkn_)
+                : reinterpret_cast<std::unique_ptr<SRKN>&>(bab_srkn_);
+  if (method == nullptr) {
+    if (composition_method == ABA) {
+      FixedVector<double, stages_> shifted_a;
       // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging A
       // and B shifts |a_| (because |ABA| means b₀ vanishes, whereas |BAB| means
       // aᵣ vanishes).
       for (int i = 0; i < stages_; ++i) {
         shifted_a[i] = a_[(i - 1) % stages_];
       }
+      method = std::make_unique<SRKN>(
+          serialization::FixedStepSizeIntegrator::DUMMY, b_, shifted_a);
+    } else {
+      method = std::make_unique<SRKN>(
+          serialization::FixedStepSizeIntegrator::DUMMY, a_, b_);
     }
-    aba_srkn_ = std::make_unique<
-        SymplecticRungeKuttaNyströmIntegrator<Position,
-                                              order_,
-                                              time_reversible_,
-                                              evaluations_,
-                                              ABA>>(
-        serialization::FixedStepSizeIntegrator::DUMMY,
-        b_,
-        shifted_a);
   }
-  return *aba_srkn_;
+  return *method;
 }
-
 
 template<typename Position, typename Momentum>
 SymplecticPartitionedRungeKuttaIntegrator<Position,
