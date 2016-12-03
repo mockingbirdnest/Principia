@@ -3,7 +3,12 @@
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 
+#include "base/mod.hpp"
+
 namespace principia {
+
+using base::mod;
+
 namespace integrators {
 
 template<typename Position,
@@ -81,7 +86,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
       // and B shifts |a_| (because |ABA| means b₀ vanishes, whereas |BAB| means
       // aᵣ vanishes).
       for (int i = 0; i < stages_; ++i) {
-        shifted_a[i] = a_[(i - 1) % stages_];
+        shifted_a[i] = a_[mod(i - 1, stages_)];
       }
       method = std::make_unique<SRKN>(
           serialization::FixedStepSizeIntegrator::DUMMY, b_, shifted_a);
@@ -256,7 +261,8 @@ Yoshida1990Order6C() {
                                                      +1.19548832276396674257,
                                                      -1.07125322701057002017,
                                                      -0.34812637695304568885,
-                                                     +0.72389128119964896645})
+                                                     +0.72389128119964896645});
+  return integrator;
 }
 
 template<typename Position, typename Momentum>
@@ -537,7 +543,7 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           /*evaluations=*/2,
                                           /*first_same_as_last=*/false> const&
 McLachlanAtela1992Order2Optimal() {
-  static const SymplecticPartitionedRungeKuttaIntegrator<
+  static SymplecticPartitionedRungeKuttaIntegrator<
       Position,
       Momentum,
       /*order=*/2,
@@ -652,17 +658,18 @@ McLachlan1995S4() {
 template<typename Position, typename Momentum>
 SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           Momentum,
-                                          /*order=*/5,
+                                          /*order=*/4,
                                           /*time_reversible=*/true,
                                           /*evaluations=*/5,
                                           /*first_same_as_last=*/true> const&
 McLachlan1995S5() {
-  SymplecticPartitionedRungeKuttaIntegrator<Position,
-                                            Momentum,
-                                            /*order=*/5,
-                                            /*time_reversible=*/true,
-                                            /*evaluations=*/5,
-                                            /*first_same_as_last=*/true> const
+  static SymplecticPartitionedRungeKuttaIntegrator<
+      Position,
+      Momentum,
+      /*order=*/4,
+      /*time_reversible=*/true,
+      /*evaluations=*/5,
+      /*first_same_as_last=*/true> const
       integrator({+0.4, -0.1, 0.4, -0.1, 0.4, 0.0},
                  {+0.089269454226475244887,
                   -0.097336042636895508015,
@@ -681,26 +688,32 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           /*evaluations=*/9,
                                           /*first_same_as_last=*/true> const&
 McLachlan1995SS9() {
-  static T const integrator({+0.1867,
-                             +0.55549702371247839916,
-                             +0.12946694891347535806,
-                             -0.84326562338773460855,
-                             +0.9432033015235617027,
-                             -0.84326562338773460855,
-                             +0.12946694891347535806,
-                             +0.55549702371247839916,
-                             +0.1867,
-                             +0.0},
-                            {+0.09335,
-                             +0.37109851185623919958,
-                             +0.34248198631297687861,
-                             -0.35689933723712962525,
-                             +0.0499688390679135471,
-                             +0.0499688390679135471,
-                             -0.35689933723712962525,
-                             +0.34248198631297687861,
-                             +0.37109851185623919958,
-                             +0.09335});
+  static SymplecticPartitionedRungeKuttaIntegrator<
+      Position,
+      Momentum,
+      /*order=*/6,
+      /*time_reversible=*/true,
+      /*evaluations=*/9,
+      /*first_same_as_last=*/true> const integrator({+0.1867,
+                                                     +0.55549702371247839916,
+                                                     +0.12946694891347535806,
+                                                     -0.84326562338773460855,
+                                                     +0.9432033015235617027,
+                                                     -0.84326562338773460855,
+                                                     +0.12946694891347535806,
+                                                     +0.55549702371247839916,
+                                                     +0.1867,
+                                                     +0.0},
+                                                    {+0.09335,
+                                                     +0.37109851185623919958,
+                                                     +0.34248198631297687861,
+                                                     -0.35689933723712962525,
+                                                     +0.0499688390679135471,
+                                                     +0.0499688390679135471,
+                                                     -0.35689933723712962525,
+                                                     +0.34248198631297687861,
+                                                     +0.37109851185623919958,
+                                                     +0.09335});
   return integrator;
 }
 
@@ -850,7 +863,18 @@ BlanesMoan2002S10() {
       /*order=*/6,
       /*time_reversible=*/true,
       /*evaluations=*/10,
-      /*first_same_as_last=*/true> const integrator({+0.050262764400392200,
+      /*first_same_as_last=*/true> const integrator({+0.14881644790104200,
+                                                     -0.13238586576778400,
+                                                     +0.067307604692185000,
+                                                     +0.43266640257817500,
+                                                     -0.01640458940361800,
+                                                     -0.01640458940361800,
+                                                     +0.43266640257817500,
+                                                     +0.067307604692185000,
+                                                     -0.13238586576778400,
+                                                     +0.14881644790104200,
+                                                     +0.0},
+                                                    {+0.050262764400392200,
                                                      +0.41351430042834400,
                                                      +0.045079889794397700,
                                                      -0.18805485381956900,
@@ -860,18 +884,7 @@ BlanesMoan2002S10() {
                                                      -0.18805485381956900,
                                                      +0.045079889794397700,
                                                      +0.41351430042834400,
-                                                     +0.050262764400392200},
-                                                    {+0.0,
-                                                     +0.14881644790104200,
-                                                     -0.13238586576778400,
-                                                     +0.067307604692185000,
-                                                     +0.43266640257817500,
-                                                     -0.01640458940361800,
-                                                     -0.01640458940361800,
-                                                     +0.43266640257817500,
-                                                     +0.067307604692185000,
-                                                     -0.13238586576778400,
-                                                     +0.14881644790104200});
+                                                     +0.050262764400392200});
   return integrator;
 }
 

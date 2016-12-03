@@ -287,7 +287,7 @@ McLachlan1995S4();
 template<typename Position, typename Momentum>
 SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           Momentum,
-                                          /*order=*/5,
+                                          /*order=*/4,
                                           /*time_reversible=*/true,
                                           /*evaluations=*/5,
                                           /*first_same_as_last=*/true> const&
