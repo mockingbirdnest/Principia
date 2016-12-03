@@ -195,7 +195,7 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           /*time_reversible=*/true,
                                           /*evaluations=*/1,
                                           /*first_same_as_last=*/true> const&
-Leapfrog() {
+NewtonDelambreStörmerVerletLeapfrog() {
   static SymplecticPartitionedRungeKuttaIntegrator<
       Position,
       Momentum,

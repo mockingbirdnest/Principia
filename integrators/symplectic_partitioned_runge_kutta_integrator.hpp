@@ -120,6 +120,24 @@ class SymplecticPartitionedRungeKuttaIntegrator {
       NotApplicable> aba_srkn_;
 };
 
+// This integrator goes by many names, see Hairer, Lubich, and Wanner (2003),
+// Geometric numerical integration illustrated by the Störmer–Verlet method,
+// http://www.math.kit.edu/ianm3/lehre/geonumint2009s/media/gni_by_stoermer-verlet.pdf,
+// section 1.3 (Historical remarks).
+// Notably, it appears in Philosophiae Naturalis Principia Mathematica,
+// in section II (De inventione Virium centripetarum), in the proof of
+// theorem I.  See p. 37 of the first edition,
+// https://cudl.lib.cam.ac.uk/view/PR-ADV-B-00039-00001/97.
+// It also appears in:
+// - Delambre (1790), De l'usage du calcul differentiel dans la
+//   construction des tables astronomiques.
+//   http://www.biodiversitylibrary.org/item/32318#page/698/mode/1up.
+// - Störmer (1907), Sur les trajectoires des corpuscules électrisés dans
+//   l'espace, avec application aux aurores boréales.
+//   https://hal.archives-ouvertes.fr/jpa-00242574/document.
+// - Verlet (1967) Computer "Experiments" on classical fluids. I.
+//   Thermodynamical properties of Lennard-Jones molecules.
+//   http://www.chemie.unibas.ch/~steinhauser/teaching/FS2014/MD-Simulation/Handout_12.pdf.
 template<typename Position, typename Momentum>
 SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           Momentum,
@@ -127,7 +145,7 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
                                           /*time_reversible=*/true,
                                           /*evaluations=*/1,
                                           /*first_same_as_last=*/true> const&
-Leapfrog();
+NewtonDelambreStörmerVerletLeapfrog();
 
 // Coefficients from Ruth (1983), A canonical integration technique,
 // https://accelconf.web.cern.ch/accelconf/p83/PDF/PAC1983_2669.PDF.
@@ -342,3 +360,5 @@ BlanesMoan2002S10();
 
 }  // namespace integrators
 }  // namespace principia
+
+#include "integrators/symplectic_partitioned_runge_kutta_integrator_body.hpp"
