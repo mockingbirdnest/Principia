@@ -61,19 +61,19 @@ using ::testing::ValuesIn;
                                      (expected_velocity_error),   \
                                      (expected_energy_error))
 
-#define SPRK_INSTANCE(integrator,                          \
-                      composition,                         \
-                      beginning_of_convergence,            \
-                      expected_position_error,             \
-                      expected_velocity_error,             \
-                      expected_energy_error)               \
-  SimpleHarmonicMotionTestInstance(                        \
-      integrator<Length, Speed>()                          \
-          .AsRungeKuttaNyströmIntegrator<(composition)>(), \
-      #integrator #composition,                            \
-      (beginning_of_convergence),                          \
-      (expected_position_error),                           \
-      (expected_velocity_error),                           \
+#define SPRK_INSTANCE(integrator,                                       \
+                      composition,                                      \
+                      beginning_of_convergence,                         \
+                      expected_position_error,                          \
+                      expected_velocity_error,                          \
+                      expected_energy_error)                            \
+  SimpleHarmonicMotionTestInstance(                                     \
+      integrator<Length, Speed>()                                       \
+          .AsRungeKuttaNyströmIntegrator<(composition)>(),              \
+      #integrator "().AsRungeKuttaNyströmIntegrator<" #composition ">", \
+      (beginning_of_convergence),                                       \
+      (expected_position_error),                                        \
+      (expected_velocity_error),                                        \
       (expected_energy_error))
 
 namespace integrators {
@@ -481,7 +481,7 @@ std::ostream& operator<<(std::ostream& stream,
 }
 
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
-  return {/*INSTANCE(McLachlanAtela1992Order4Optimal,
+  return {INSTANCE(McLachlanAtela1992Order4Optimal,
                    1.0 * Second,
                    +1.88161985992252310e-13 * Metre,
                    +1.88491583452687910e-13 * Metre / Second,
@@ -520,7 +520,7 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    1.0 * Second,
                    +1.11001485780803930e-13 * Metre,
                    +1.11063935825939100e-13 * Metre / Second,
-                   +6.29052365752613700e-13 * Joule),*/
+                   +6.29052365752613700e-13 * Joule),
           // We test |NewtonDelambreStørmerVerletLeapfrog| both as |ABA| and
           // |BAB| (sometimes called leapfrog and pseudo-leapfrog) for coverage.
           // We test the others as BAB integrators only.
