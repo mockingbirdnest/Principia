@@ -5,7 +5,6 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
 template<typename Position,
          typename Momentum,
@@ -111,7 +110,5 @@ SymplecticPartitionedRungeKuttaIntegrator<Position,
   return *a_force_method_;
 }
 
-
-}  // namespace internal_symplectic_partitioned_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
