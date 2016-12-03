@@ -110,7 +110,7 @@ TEST_F(R3ElementTest, MixedProduct) {
 TEST_F(R3ElementDeathTest, OrthogonalizeError) {
   R3Element<Speed> v1 = {1 * Knot, -2 * Knot, 5 * Knot};
   EXPECT_DEATH({
-    null_velocity_.Orthogonalize<Speed>(v1);
+    null_velocity_.Orthogonalize(v1);
   }, "Scalar.*!= norm");
 }
 #endif

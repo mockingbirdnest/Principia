@@ -265,11 +265,11 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   std::stringstream ss;
   ss << steps;
   state.SetLabel(ss.str() + " steps, " +
-                  quantities::DebugString(sun_error / AstronomicalUnit) +
-                  " ua, " +
-                  quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
-                                          NauticalMile) +
-                  " nmi");
+                 quantities::DebugString(sun_error / AstronomicalUnit) +
+                 " ua, " +
+                 quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
+                                         NauticalMile) +
+                 " nmi");
 }
 
 }  // namespace
