@@ -64,7 +64,6 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using testing_utilities::AbsoluteError;
-using testing_utilities::ComputeGravitationalAcceleration;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using testing_utilities::ComputeKeplerAcceleration;
 using ::std::placeholders::_1;
@@ -164,7 +163,10 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> ReferenceMethods() {
 void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   ODE::SystemState initial_state;
   Problem problem;
-  problem.equation.compute_acceleration = ComputeHarmonicOscillatorAcceleration;
+  int number_of_evaluations;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, &number_of_evaluations);
   problem.initial_state = &initial_state;
 
   Instant const t0;
@@ -207,7 +209,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 
   std::vector<std::string> names;
   for (auto const& method : Methods()) {
-    LOG(INFO) << method.name;
+    LOG(INFO) << "Harmonic oscillator: " << method.name;
     Time Δt = method.evaluations * 1 * Second;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
@@ -217,18 +219,23 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       max_q_error = Length{};
       max_v_error = Speed{};
       max_e_error = Energy{};
+      number_of_evaluations = 0;
       auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      int const number_of_evaluations =
-          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
       method.integrator.Solve(tmax, *instance);
+      // Log both the actual number of evaluations and a theoretical number that
+      // ignores any startup costs; that theoretical number is the one used for
+      // plotting.
+      int const amortized_evaluations =
+          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
+                                      << amortized_evaluations << ")";
       // We plot the maximum error, i.e., the L∞ norm of the error.
       // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
       // the average error (the normalized L¹ norm) instead.
       q_errors.emplace_back(max_q_error);
       v_errors.emplace_back(max_v_error);
       e_errors.emplace_back(max_e_error);
-      evaluations.emplace_back(number_of_evaluations);
+      evaluations.emplace_back(amortized_evaluations);
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
     v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));
@@ -247,7 +254,9 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 void GenerateKeplerProblemWorkErrorGraphs(double eccentricity) {
   ODE::SystemState initial_state;
   Problem problem;
-  problem.equation.compute_acceleration = ComputeKeplerAcceleration;
+  int number_of_evaluations;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeKeplerAcceleration, _1, _2, _3, &number_of_evaluations);
   problem.initial_state = &initial_state;
 
   Instant const t0;
@@ -313,7 +322,8 @@ void GenerateKeplerProblemWorkErrorGraphs(double eccentricity) {
 
   std::vector<std::string> names;
   for (auto const& method : Methods()) {
-    LOG(INFO) << method.name;
+    LOG(INFO) << " Kepler problem with e = " << eccentricity << ": "
+              << method.name;
     Time Δt = method.evaluations * 1 * Second;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
@@ -323,18 +333,23 @@ void GenerateKeplerProblemWorkErrorGraphs(double eccentricity) {
       max_q_error = Length{};
       max_v_error = Speed{};
       max_e_error = SpecificEnergy{};
+      number_of_evaluations = 0;
       auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      int const number_of_evaluations =
-          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
       method.integrator.Solve(tmax, *instance);
+      // Log both the actual number of evaluations and a theoretical number that
+      // ignores any startup costs; that theoretical number is the one used for
+      // plotting.
+      int const amortized_evaluations =
+          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
+                                      << amortized_evaluations << ")";
       // We plot the maximum error, i.e., the L∞ norm of the error.
       // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
       // the average error (the normalized L¹ norm) instead.
       q_errors.emplace_back(max_q_error);
       v_errors.emplace_back(max_v_error);
       e_errors.emplace_back(max_e_error);
-      evaluations.emplace_back(number_of_evaluations);
+      evaluations.emplace_back(amortized_evaluations);
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
     v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));

@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 SetDirectory[NotebookDirectory[]];
-<<"integration.wl";(*
+<<"integration.wl";
 Run[FileNameJoin[{"..", "Release", "x64", "mathematica.exe"}]];
 <<"simple_harmonic_motion_graphs.generated.wl";
 Export[
@@ -12,11 +12,11 @@ Export[
  IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
 Export[
  "shm_velocity_error.cdf",
- IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];*)
+ IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
 <<"kepler_problem_graphs_0.000000.generated.wl";
 Export[
  "kepler_energy_error_circular.cdf",
- IntegrationErrorPlot[eErrorData, names, "maximal energy error", 2.*^9]];
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error"]];
 Export[
  "kepler_position_error_circular.cdf",
  IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
@@ -26,12 +26,32 @@ Export[
 <<"kepler_problem_graphs_0.250000.generated.wl";
 Export[
  "kepler_energy_error_pluto.cdf",
- IntegrationErrorPlot[eErrorData, names, "maximal energy error", 2.*^9]];
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error"]];
 Export[
  "kepler_position_error_pluto.cdf",
  IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
 Export[
  "kepler_velocity_error_pluto.cdf",
+ IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
+<<"kepler_problem_graphs_0.640000.generated.wl";
+Export[
+ "kepler_energy_error_67p.cdf",
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error"]];
+Export[
+ "kepler_position_error_67p.cdf",
+ IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
+Export[
+ "kepler_velocity_error_67p.cdf",
+ IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
+<<"kepler_problem_graphs_0.967000.generated.wl";
+Export[
+ "kepler_energy_error_1p.cdf",
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error"]];
+Export[
+ "kepler_position_error_1p.cdf",
+ IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
+Export[
+ "kepler_velocity_error_1p.cdf",
  IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
 
 

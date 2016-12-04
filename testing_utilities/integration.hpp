@@ -43,7 +43,8 @@ void ComputeHarmonicOscillatorVelocity(
 void ComputeHarmonicOscillatorAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>& result);
+    std::vector<Acceleration>& result,
+    int* evaluations);
 
 // The Kepler problem with unit gravitational parameter, where the
 // two-dimensional configuration space is the separation between the bodies, in
@@ -52,7 +53,8 @@ void ComputeHarmonicOscillatorAcceleration(
 // where μ = 1 m³ s⁻².
 void ComputeKeplerAcceleration(Instant const& t,
                                std::vector<Length> const& q,
-                               std::vector<Acceleration>& result);
+                               std::vector<Acceleration>& result,
+                               int* evaluations);
 
 template<typename Frame>
 void ComputeGravitationalAcceleration(
