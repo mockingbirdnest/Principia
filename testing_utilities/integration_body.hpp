@@ -43,7 +43,7 @@ inline void ComputeHarmonicOscillatorVelocity(
 }
 
 inline void ComputeHarmonicOscillatorAcceleration(
-    Time const& t,
+    Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result) {
   result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());

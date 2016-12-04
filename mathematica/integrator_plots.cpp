@@ -10,7 +10,8 @@
 #include "astronomy/frames.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
-#include "integrators/sprk_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
@@ -20,7 +21,18 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
-#define INTEGRATOR(name) &integrators::name(), #name
+#define SRKN_INTEGRATOR(name)                     \
+  {                                               \
+    (integrators::name<Length>()), #name,         \
+        (integrators::name<Length>()).evaluations \
+  }
+#define SPRK_INTEGRATOR(name, composition)                 \
+  {                                                        \
+    (integrators::name<Length, Speed>()                    \
+         .AsRungeKuttaNyströmIntegrator<(composition)>()), \
+        #name " " #composition,                            \
+        (integrators::name<Length, Speed>()).evaluations   \
+  }
 
 namespace principia {
 
@@ -29,7 +41,11 @@ using base::not_null;
 using geometry::InnerProduct;
 using geometry::BarycentreCalculator;
 using geometry::Velocity;
-using integrators::SRKNIntegrator;
+using integrators::ABA;
+using integrators::BA;
+using integrators::FixedStepSizeIntegrator;
+using integrators::IntegrationProblem;
+using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Energy;
@@ -59,145 +75,147 @@ namespace mathematica {
 namespace {
 
 struct SimpleHarmonicMotionPlottedIntegrator {
-  not_null<SRKNIntegrator const*> integrator;
+  FixedStepSizeIntegrator<SpecialSecondOrderDifferentialEquation<Length>> const&
+      integrator;
   std::string name;
-  int stages;
+  int evaluations;
 };
 
 // This list should be sorted by:
 // 1. increasing order;
 // 2. SPRKs before SRKNs;
-// 3. increasing number of effective stages;
+// 3. increasing number of evaluations;
 // 4. date;
 // 5. author names;
 // 6. method name.
 std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
-  return {
-      // Order 2
-      {INTEGRATOR(Leapfrog), 1},
-      {INTEGRATOR(PseudoLeapfrog), 1},
-      {INTEGRATOR(McLachlanAtela1992Order2Optimal), 2},
-      {INTEGRATOR(McLachlan1995S2), 2},
-      // Order 3
-      {INTEGRATOR(Ruth1983), 3},
-      {INTEGRATOR(McLachlanAtela1992Order3Optimal), 3},
-      // Order 4
-      //   SPRKs
-      {INTEGRATOR(CandyRozmus1991ForestRuth1990SynchronousMomenta), 3},
-      {INTEGRATOR(CandyRozmus1991ForestRuth1990SynchronousPositions), 3},
-      {INTEGRATOR(Suzuki1990), 5},
-      {INTEGRATOR(McLachlan1995SS5), 5},
-      {INTEGRATOR(McLachlan1995S4), 4},
-      {INTEGRATOR(McLachlan1995S5), 5},
-      {INTEGRATOR(BlanesMoan2002S6), 6},
-      //   SRKNs
-      {INTEGRATOR(McLachlanAtela1992Order4Optimal), 4},
-      {INTEGRATOR(McLachlan1995SB3A4), 4},
-      {INTEGRATOR(McLachlan1995SB3A5), 5},
-      {INTEGRATOR(BlanesMoan2002SRKN6B), 6},
-      // Order 5
-      {INTEGRATOR(McLachlanAtela1992Order5Optimal), 6},
-      // Order 6
-      //   SPRKs
-      {INTEGRATOR(Yoshida1990Order6A), 7},
-      {INTEGRATOR(Yoshida1990Order6B), 7},
-      {INTEGRATOR(Yoshida1990Order6C), 7},
-      {INTEGRATOR(McLachlan1995SS9), 9},
-      {INTEGRATOR(BlanesMoan2002S10), 10},
-      //   SRKNs
-      {INTEGRATOR(OkunborSkeel1994Order6Method13), 7},
-      {INTEGRATOR(BlanesMoan2002SRKN11B), 11},
-      {INTEGRATOR(BlanesMoan2002SRKN14A), 14},
-      // Order 8
-      {INTEGRATOR(Yoshida1990Order8A), 15},
-      {INTEGRATOR(Yoshida1990Order8B), 15},
-      {INTEGRATOR(Yoshida1990Order8C), 15},
-      {INTEGRATOR(Yoshida1990Order8D), 15},
-      {INTEGRATOR(Yoshida1990Order8E), 15},
-      {INTEGRATOR(McLachlan1995SS15), 15},
-      {INTEGRATOR(McLachlan1995SS17), 17}};
+  return {// Order 2
+          SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, ABA),
+          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),
+          SPRK_INTEGRATOR(McLachlan1995S2, ABA),
+          // Order 3
+          SPRK_INTEGRATOR(Ruth1983, BA),
+          SPRK_INTEGRATOR(McLachlanAtela1992Order3Optimal, BA),
+          // Order 4
+          SPRK_INTEGRATOR(CandyRozmus1991ForestRuth1990, ABA),
+          SPRK_INTEGRATOR(Suzuki1990, ABA),
+          SPRK_INTEGRATOR(McLachlan1995SS5, ABA),
+          SPRK_INTEGRATOR(McLachlan1995S4, ABA),
+          SPRK_INTEGRATOR(McLachlan1995S5, ABA),
+          SPRK_INTEGRATOR(BlanesMoan2002S6, ABA),
+          SRKN_INTEGRATOR(McLachlanAtela1992Order4Optimal),
+          SRKN_INTEGRATOR(McLachlan1995SB3A4),
+          SRKN_INTEGRATOR(McLachlan1995SB3A5),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN6B),
+          // Order 5
+          SRKN_INTEGRATOR(McLachlanAtela1992Order5Optimal),
+          // Order 6
+          SPRK_INTEGRATOR(Yoshida1990Order6A, ABA),
+          SPRK_INTEGRATOR(Yoshida1990Order6B, ABA),
+          SPRK_INTEGRATOR(Yoshida1990Order6C, ABA),
+          SPRK_INTEGRATOR(McLachlan1995SS9, ABA),
+          SPRK_INTEGRATOR(BlanesMoan2002S10, ABA),
+          SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
+          // Order 8
+          SPRK_INTEGRATOR(Yoshida1990Order8A, ABA),
+          SPRK_INTEGRATOR(Yoshida1990Order8B, ABA),
+          SPRK_INTEGRATOR(Yoshida1990Order8C, ABA),
+          SPRK_INTEGRATOR(Yoshida1990Order8D, ABA),
+          SPRK_INTEGRATOR(Yoshida1990Order8E, ABA),
+          SPRK_INTEGRATOR(McLachlan1995SS15, ABA),
+          SPRK_INTEGRATOR(McLachlan1995SS17, ABA)};
 }
 
 // Those methods which have converged to the limits of double-precision floating
 // point error on the circular Kepler problem tested by
 // |GenerateKeplerProblemWorkErrorGraphs| with less than 8e4 evaluations.
 std::vector<SimpleHarmonicMotionPlottedIntegrator> ReferenceMethods() {
-  return {
-      // Order 5
-      {INTEGRATOR(McLachlanAtela1992Order5Optimal), 6},
-      // Order 6
-      //   SPRKs
-      {INTEGRATOR(McLachlan1995SS9), 9},
-      {INTEGRATOR(BlanesMoan2002S10), 10},
-      //   SRKNs
-      {INTEGRATOR(OkunborSkeel1994Order6Method13), 7},
-      {INTEGRATOR(BlanesMoan2002SRKN11B), 11},
-      {INTEGRATOR(BlanesMoan2002SRKN14A), 14},
-      // Order 8
-      {INTEGRATOR(McLachlan1995SS15), 15},
-      {INTEGRATOR(McLachlan1995SS17), 17}};
+  return {// Order 5
+          SRKN_INTEGRATOR(McLachlanAtela1992Order5Optimal),
+          // Order 6
+          SPRK_INTEGRATOR(McLachlan1995SS9, ABA),
+          SPRK_INTEGRATOR(BlanesMoan2002S10, ABA),
+          SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
+          // Order 8
+          SPRK_INTEGRATOR(McLachlan1995SS15, ABA),
+          SPRK_INTEGRATOR(McLachlan1995SS17, ABA)};
 }
 
 }  // namespace
 
 void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
-  SRKNIntegrator::Parameters<Length, Speed> parameters;
-  SRKNIntegrator::Solution<Length, Speed> solution;
+  using ODE = SpecialSecondOrderDifferentialEquation<Length>;
+  using Problem = IntegrationProblem<ODE>;
+  ODE::SystemState initial_state;
+  Problem problem;
+  problem.equation.compute_acceleration = ComputeHarmonicOscillatorAcceleration;
+  problem.initial_state = &initial_state;
+
+  Instant const t0;
   Length const q_amplitude = 1 * Metre;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
   Stiffness const k = SIUnit<Stiffness>();
   Mass const m = 1 * Kilogram;
+
+  initial_state.positions.emplace_back(q_amplitude);
+  initial_state.velocities.emplace_back(0 * Metre / Second);
+  initial_state.time = t0;
+
+  Instant const tmax = t0 + 50 * Second;
+
   double const step_reduction = 1.015;
-  parameters.initial.positions.emplace_back(q_amplitude);
-  parameters.initial.momenta.emplace_back(0 * Metre / Second);
-  parameters.initial.time = 0 * Second;
-  parameters.tmax = 50 * Second;
-  // We use dense sampling in order to compute average errors, this leads to
-  // more evaluations than reported for FSAL methods.
-  parameters.sampling_period = 1;
+
+
   std::vector<std::string> q_error_data;
   std::vector<std::string> v_error_data;
   std::vector<std::string> e_error_data;
+
+  Length max_q_error;
+  Speed max_v_error;
+  Energy max_e_error;
+  auto append_state = [&max_q_error, &max_v_error, &max_e_error,
+                       q_amplitude, v_amplitude, ω, m, k, t0](
+      ODE::SystemState const& state) {
+    max_q_error = std::max(max_q_error,
+        AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
+                      state.positions[0].value));
+    max_v_error = std::max(max_v_error,
+        AbsoluteError(-v_amplitude * Sin(ω * (state.time.value - t0)),
+                      state.velocities[0].value));
+    max_e_error = std::max(max_e_error,
+        AbsoluteError(0.5 * Joule,
+                      (m * Pow<2>(state.velocities[0].value) +
+                       k * Pow<2>(state.positions[0].value)) / 2));
+  };
+
   std::vector<std::string> names;
   for (auto const& method : Methods()) {
     LOG(INFO) << method.name;
-    parameters.Δt = method.stages * 1 * Second;
+    Time Δt = method.evaluations * 1 * Second;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
     std::vector<Energy> e_errors;
     std::vector<double> evaluations;
-    for (int i = 0; i < 500; ++i, parameters.Δt /= step_reduction) {
+    for (int i = 0; i < 500; ++i, Δt /= step_reduction) {
+      max_q_error = Length{};
+      max_v_error = Speed{};
+      max_e_error = Energy{};
+      auto instance = method.integrator.NewInstance(problem, append_state, Δt);
       int const number_of_evaluations =
-          method.stages *
-              static_cast<int>(std::floor(parameters.tmax / parameters.Δt));
+          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
       LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
-      method.integrator->SolveTrivialKineticEnergyIncrement<Length>(
-          &ComputeHarmonicOscillatorAcceleration,
-          parameters,
-          solution);
-      std::vector<Length> q_error;
-      std::vector<Speed> v_error;
-      std::vector<Energy> e_error;
-      for (auto const& system_state : solution) {
-        q_error.emplace_back(
-            AbsoluteError(q_amplitude * Cos(ω * system_state.time.value),
-                          system_state.positions[0].value));
-        v_error.emplace_back(
-            AbsoluteError(-v_amplitude * Sin(ω * system_state.time.value),
-                          system_state.momenta[0].value));
-        e_error.emplace_back(
-            AbsoluteError(
-                0.5 * Joule,
-                (m * Pow<2>(system_state.momenta[0].value) +
-                 k * Pow<2>(system_state.positions[0].value)) / 2));
-      }
+      method.integrator.Solve(tmax, *instance);
       // We plot the maximum error, i.e., the L∞ norm of the error.
       // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
       // the average error (the normalized L¹ norm) instead.
-      q_errors.emplace_back(*std::max_element(q_error.begin(), q_error.end()));
-      v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
-      e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
+      q_errors.emplace_back(max_q_error);
+      v_errors.emplace_back(max_v_error);
+      e_errors.emplace_back(max_e_error);
       evaluations.emplace_back(number_of_evaluations);
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
@@ -213,7 +231,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   file << Assign("names", names);
   file.close();
 }
-
+/*
 void GenerateKeplerProblemWorkErrorGraphs() {
   SRKNIntegrator::Parameters<Length, Speed> parameters;
   SRKNIntegrator::Solution<Length, Speed> solution;
@@ -476,6 +494,6 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
   file << Assign("names", names);
   file.close();
 }
-
+*/
 }  // namespace mathematica
 }  // namespace principia

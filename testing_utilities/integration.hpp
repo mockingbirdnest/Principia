@@ -41,7 +41,7 @@ void ComputeHarmonicOscillatorVelocity(
 // The Runge-Kutta-Nyström formulation
 //   q" = -q k / m.
 void ComputeHarmonicOscillatorAcceleration(
-    Time const& t,
+    Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result);
 

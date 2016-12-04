@@ -4,9 +4,9 @@
 namespace principia {
 namespace mathematica {
 
-void GenerateSimpleHarmonicMotionWorkErrorGraphs();
+void GenerateSimpleHarmonicMotionWorkErrorGraphs();/*
 void GenerateKeplerProblemWorkErrorGraphs();
-void GenerateSolarSystemPlanetsWorkErrorGraph();
+void GenerateSolarSystemPlanetsWorkErrorGraph();*/
 
 }  // namespace mathematica
 }  // namespace principia
