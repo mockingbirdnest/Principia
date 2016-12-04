@@ -213,7 +213,7 @@ StartupSolve(Instant const& t_final,
       std::min(current_state.time.value +
                    (order_ - previous_steps.size()) * step + step / 2.0,
                t_final),
-      *startup_instance.get());
+      *startup_instance);
 
   CHECK_LE(previous_steps.size(), order_);
 }

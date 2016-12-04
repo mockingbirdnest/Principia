@@ -92,9 +92,9 @@ char constexpr π_500_bytes[] =
 int const copies_of_π = 10000;
 
 void HexEncode(benchmark::State& state,
-              bool& correct,
-              std::vector<uint8_t> const& input_bytes,
-              std::vector<uint8_t> const& expected_digits) {
+               bool& correct,
+               std::vector<uint8_t> const& input_bytes,
+               std::vector<uint8_t> const& expected_digits) {
   state.PauseTiming();
   std::vector<uint8_t> digits(input_bytes.size() << 1);
   state.ResumeTiming();
