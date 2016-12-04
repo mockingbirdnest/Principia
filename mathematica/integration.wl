@@ -43,7 +43,7 @@ IntegrationErrorPlot[
              " (" <> ToString[unit, TraditionalForm] <> ")"},
           PlotStyle -> {colour[i], PointSize[0.001]}]]~ParallelMap~
         Range[series + 1]),
-     visible = Append[ConstantArray[False, series], True]},
+     visible = Append[ConstantArray[True, series], True]},
     NotebookDelete@temporaryCell;
     PrintTemporary["Done."];
     Dynamic[
