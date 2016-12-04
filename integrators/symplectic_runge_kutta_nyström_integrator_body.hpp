@@ -161,6 +161,9 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b_[i] * g[k];
+        // NOTE(egg): in the BAB case, at the last stage, this will be an
+        // exercise in adding 0.  I don't think the optimizer can know that.  Do
+        // we care?
         // exp(aᵢ h A)
         Δq[k] += h * a_[i] * (v[k].value + Δv[k]);
       }
