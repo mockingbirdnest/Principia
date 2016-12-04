@@ -71,8 +71,9 @@ template<typename Position, int order_, bool time_reversible_, int evaluations_,
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
-  static int const stages_ = composition_ == BA ? evaluations_
-                                                : evaluations_ + 1;
+  static constexpr int stages_ =
+      composition_ == BA ? evaluations_ : evaluations_ + 1;
+
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
@@ -89,10 +90,10 @@ class SymplecticRungeKuttaNyströmIntegrator
     typename IntegrationInstance::AppendState<ODE> append_state,
     Time const& step) const override;
 
-  static int const order = order_;
-  static bool const time_reversible = time_reversible_;
-  static int const evaluations = evaluations_;
-  static CompositionMethod const composition = composition_;
+  static constexpr int order = order_;
+  static constexpr bool time_reversible = time_reversible_;
+  static constexpr int evaluations = evaluations_;
+  static constexpr CompositionMethod composition = composition_;
 
  private:
   struct Instance : public IntegrationInstance {
