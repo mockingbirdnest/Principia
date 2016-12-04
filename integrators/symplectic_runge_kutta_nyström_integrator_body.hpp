@@ -36,7 +36,7 @@ SymplecticRungeKuttaNyströmIntegrator(
     c_[i] = c_i.value;
     c_i.Increment(a_[i]);
   }
-  CHECK_LE(ULPDistance(1.0, c_i.value), 2);
+  CHECK_LE(ULPDistance(1.0, c_i.value), 4);
   if (composition == ABA) {
     CHECK_EQ(0.0, b_[0]);
   } else if (composition == BAB) {

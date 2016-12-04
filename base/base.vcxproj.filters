@@ -107,6 +107,9 @@
     <ClInclude Include="container_iterator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="mod.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
