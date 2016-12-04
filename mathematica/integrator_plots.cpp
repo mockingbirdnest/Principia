@@ -10,6 +10,7 @@
 #include "astronomy/frames.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/astronomy.hpp"
@@ -21,6 +22,8 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
+#define SLMS_INTEGRATOR(name) \
+  { (integrators::name<Length>()), #name, 1 }
 #define SRKN_INTEGRATOR(name)                     \
   {                                               \
     (integrators::name<Length>()), #name,         \
@@ -83,7 +86,7 @@ struct SimpleHarmonicMotionPlottedIntegrator {
 
 // This list should be sorted by:
 // 1. increasing order;
-// 2. SPRKs before SRKNs;
+// 2. SPRKs before SRKNs before symmetric linear multistep integrators.
 // 3. increasing number of evaluations;
 // 4. date;
 // 5. author names;
@@ -125,7 +128,16 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SPRK_INTEGRATOR(Yoshida1990Order8D, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8E, ABA),
           SPRK_INTEGRATOR(McLachlan1995SS15, ABA),
-          SPRK_INTEGRATOR(McLachlan1995SS17, ABA)};
+          SPRK_INTEGRATOR(McLachlan1995SS17, ABA),
+          SLMS_INTEGRATOR(QuinlanTremaine1990Order8),
+          SLMS_INTEGRATOR(Quinlan1999Order8A),
+          SLMS_INTEGRATOR(Quinlan1999Order8B),
+          // Order 10
+          SLMS_INTEGRATOR(QuinlanTremaine1990Order10),
+          // Order 12
+          SLMS_INTEGRATOR(QuinlanTremaine1990Order12),
+          // Order 14
+          SLMS_INTEGRATOR(QuinlanTremaine1990Order14)};
 }
 
 // Those methods which have converged to the limits of double-precision floating

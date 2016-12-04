@@ -112,7 +112,7 @@ SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
 Quinlan1999Order8B();
 
-// This four methods are from Quinlan and Tremaine (1990), Symmetric multistep
+// These four methods are from Quinlan and Tremaine (1990), Symmetric multistep
 // methods for the numerical integration of planetary orbits,
 // http://adsabs.harvard.edu/full/1990AJ....100.1694Q.
 template <typename Position>
