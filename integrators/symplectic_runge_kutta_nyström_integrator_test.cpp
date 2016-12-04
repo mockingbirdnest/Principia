@@ -61,19 +61,19 @@ using ::testing::ValuesIn;
                                      (expected_velocity_error),   \
                                      (expected_energy_error))
 
-#define SPRK_INSTANCE(integrator,                                       \
-                      composition,                                      \
-                      beginning_of_convergence,                         \
-                      expected_position_error,                          \
-                      expected_velocity_error,                          \
-                      expected_energy_error)                            \
-  SimpleHarmonicMotionTestInstance(                                     \
-      integrator<Length, Speed>()                                       \
-          .AsRungeKuttaNyströmIntegrator<(composition)>(),              \
+#define SPRK_INSTANCE(integrator,                                     \
+                      composition,                                    \
+                      beginning_of_convergence,                       \
+                      expected_position_error,                        \
+                      expected_velocity_error,                        \
+                      expected_energy_error)                          \
+  SimpleHarmonicMotionTestInstance(                                   \
+      integrator<Length, Speed>()                                     \
+          .AsRungeKuttaNyströmIntegrator<(composition)>(),            \
       #integrator ".AsRungeKuttaNyströmIntegrator<" #composition ">", \
-      (beginning_of_convergence),                                       \
-      (expected_position_error),                                        \
-      (expected_velocity_error),                                        \
+      (beginning_of_convergence),                                     \
+      (expected_position_error),                                      \
+      (expected_velocity_error),                                      \
       (expected_energy_error))
 
 namespace integrators {
@@ -368,7 +368,11 @@ void TestTimeReversibility(Integrator const& integrator) {
   Speed const v_amplitude = 1 * Metre / Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 100 * Second;
-  Time const step = 1 * Second;
+  // While time-reversibility is an exact property independent of the equation,
+  // if the computed solution explodes, all bits are lost and time-reversibility
+  // utterly fails in finite precision.  A step of 1 second would break
+  // Yoshida's 8A method.
+  Time const step = 0.5 * Second;
 
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
@@ -398,16 +402,16 @@ void TestTimeReversibility(Integrator const& integrator) {
   EXPECT_EQ(t_initial, final_state.time.value);
   if (integrator.time_reversible) {
     EXPECT_THAT(final_state.positions[0].value,
-                AlmostEquals(q_initial, 0, 8));
+                AlmostEquals(q_initial, 0, 30));
     EXPECT_THAT(final_state.velocities[0].value,
-                VanishesBefore(v_amplitude, 0, 16));
+                VanishesBefore(v_amplitude, 0, 70));
   } else {
     EXPECT_THAT(AbsoluteError(q_initial,
                               final_state.positions[0].value),
-                Gt(1e-4 * Metre));
+                Gt(1e-6 * Metre));
     EXPECT_THAT(AbsoluteError(v_initial,
                               final_state.velocities[0].value),
-                Gt(1e-4 * Metre / Second));
+                Gt(1e-6 * Metre / Second));
   }
 }
 
