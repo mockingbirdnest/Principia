@@ -45,7 +45,7 @@ class SymmetricLinearMultistepIntegrator
       double β_denominator);
 
   void Solve(Instant const& t_final,
-             not_null<IntegrationInstance*> instance) const override;
+             IntegrationInstance& instance) const override;
 
   not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,

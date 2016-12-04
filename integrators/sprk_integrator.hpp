@@ -55,12 +55,12 @@ class SPRKIntegrator : public SRKNIntegrator {
   using SPRKRightHandSideComputation =
       std::function<void(Time const&,
                          std::vector<Position> const&,
-                         std::vector<Variation<Momentum>>* const)>;
+                         std::vector<Variation<Momentum>>&)>;
 
   template<typename Position, typename Momentum>
   using SPRKAutonomousRightHandSideComputation =
       std::function<void(std::vector<Momentum> const&,
-                         std::vector<Variation<Position>>* const)>;
+                         std::vector<Variation<Position>>&)>;
 
   // The functors |compute_velocity| and |compute_force| compute
   // ∂T/∂pᵢ(p) and ∂V/∂qᵢ(q,t) respectively.
@@ -70,7 +70,7 @@ class SPRKIntegrator : public SRKNIntegrator {
       SPRKAutonomousRightHandSideComputation<Position, Momentum>
           compute_velocity,
       Parameters<Position, Momentum> const& parameters,
-      not_null<Solution<Position, Momentum>*> const solution) const;
+      Solution<Position, Momentum>& solution) const;
 
  private:
   template<VanishingCoefficients vanishing_coefficients,
@@ -80,7 +80,7 @@ class SPRKIntegrator : public SRKNIntegrator {
       SPRKAutonomousRightHandSideComputation<Position, Momentum>
           compute_velocity,
       Parameters<Position, Momentum> const& parameters,
-      not_null<Solution<Position, Momentum>*> const solution) const;
+      Solution<Position, Momentum>& solution) const;
 };
 
 // First-same-as-last (FSAL) methods with k stages require k - 1 force

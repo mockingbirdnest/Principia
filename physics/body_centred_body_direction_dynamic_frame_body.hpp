@@ -144,7 +144,7 @@ ComputeAngularDegreesOfFreedom(
   Displacement<InertialFrame> const& reference_direction =
       reference.displacement();
   Velocity<InertialFrame> reference_normal = reference.velocity();
-  reference_direction.template Orthogonalize<Speed>(&reference_normal);
+  reference_direction.Orthogonalize(reference_normal);
   Bivector<Product<Length, Speed>, InertialFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
   *rotation = Rotation<InertialFrame, ThisFrame>(Normalize(reference_direction),

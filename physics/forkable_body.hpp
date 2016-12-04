@@ -112,17 +112,16 @@ void ForkableIterator<Tr4jectory, It3rator>::CheckNormalizedIfEnd() {
 }
 
 template<typename Tr4jectory, typename It3rator>
-void Forkable<Tr4jectory, It3rator>::DeleteFork(
-    not_null<Tr4jectory**> const trajectory) {
-  CHECK_NOTNULL(*trajectory);
-  auto const fork_it = (*trajectory)->Fork();
+void Forkable<Tr4jectory, It3rator>::DeleteFork(Tr4jectory*& trajectory) {
+  CHECK_NOTNULL(trajectory);
+  auto const fork_it = trajectory->Fork();
   // Find the position of |*trajectory| among our children and remove it.
   auto const range =
       children_.equal_range(ForkableTraits<Tr4jectory>::time(fork_it.current_));
   for (auto it = range.first; it != range.second; ++it) {
-    if (it->second.get() == *trajectory) {
+    if (it->second.get() == trajectory) {
       children_.erase(it);
-      *trajectory = nullptr;
+      trajectory = nullptr;
       return;
     }
   }

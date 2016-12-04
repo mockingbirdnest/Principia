@@ -37,20 +37,19 @@ SymmetricLinearMultistepIntegrator(
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Solve(Instant const& t_final,
-      not_null<IntegrationInstance*> const instance) const {
+      IntegrationInstance& instance) const {
   using Displacement = typename ODE::Displacement;
   using Acceleration = typename ODE::Acceleration;
 
-  Instance* const down_cast_instance =
-      dynamic_cast_not_null<Instance*>(instance);
-  auto const& equation = down_cast_instance->equation;
-  auto const& append_state = down_cast_instance->append_state;
-  Time const& step = down_cast_instance->step;
+  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
+  auto const& equation = down_cast_instance.equation;
+  auto const& append_state = down_cast_instance.append_state;
+  Time const& step = down_cast_instance.step;
 
-  auto& previous_steps = down_cast_instance->previous_steps;
+  auto& previous_steps = down_cast_instance.previous_steps;
 
   if (previous_steps.size() < order_ - 1) {
-    StartupSolve(t_final, *down_cast_instance);
+    StartupSolve(t_final, down_cast_instance);
   }
 
   // Argument checks.
@@ -123,7 +122,7 @@ Solve(Instant const& t_final,
 
     // Fill the new step.  We skip the division by ɑk as it is equal to 1.0.
     double const ɑk = ɑ_[0];
-    typename ODE::SystemState& system_state = down_cast_instance->current_state;
+    typename ODE::SystemState& system_state = down_cast_instance.current_state;
     for (int d = 0; d < dimension; ++d) {
       DoublePrecision<Position>& current_position = Σj_minus_ɑj_qj[d];
       current_position.Increment(
@@ -132,10 +131,11 @@ Solve(Instant const& t_final,
       positions[d] = current_position.value;
       system_state.positions[d] = current_position;
     }
-    equation.compute_acceleration(
-        t.value, positions, &current_step.accelerations);
+    equation.compute_acceleration(t.value,
+                                  positions,
+                                  current_step.accelerations);
 
-    VelocitySolve(dimension, *down_cast_instance);
+    VelocitySolve(dimension, down_cast_instance);
 
     // Inform the caller of the new state.
     system_state.time = t;
@@ -213,7 +213,7 @@ StartupSolve(Instant const& t_final,
       std::min(current_state.time.value +
                    (order_ - previous_steps.size()) * step + step / 2.0,
                t_final),
-      startup_instance.get());
+      *startup_instance);
 
   CHECK_LE(previous_steps.size(), order_);
 }
@@ -248,7 +248,7 @@ FillStepFromSystemState(ODE const& equation,
   step.accelerations.resize(step.displacements.size());
   equation.compute_acceleration(step.time.value,
                                 step.displacements,
-                                &step.accelerations);
+                                step.accelerations);
 }
 
 template<typename Position>

@@ -30,9 +30,8 @@ class Frame {
 // Extracts enough information from the |message| to contruct a |Frame| type.
 void ReadFrameFromMessage(
     serialization::Frame const& message,
-    not_null<google::protobuf::EnumValueDescriptor const**> const
-        enum_value_descriptor,
-    not_null<bool*> const is_inertial);
+    google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,
+    bool& is_inertial);
 
 }  // namespace geometry
 }  // namespace principia

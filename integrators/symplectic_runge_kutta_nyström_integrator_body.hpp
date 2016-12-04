@@ -74,19 +74,18 @@ template<typename Position, int order, bool time_reversible, int evaluations,
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::Solve(
     Instant const& t_final,
-    not_null<IntegrationInstance*> const instance) const {
+    IntegrationInstance& instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
 
-  Instance* const down_cast_instance =
-      dynamic_cast_not_null<Instance*>(instance);
-  auto const& equation = down_cast_instance->equation;
-  auto const& append_state = down_cast_instance->append_state;
-  Time const& step = down_cast_instance->step;
+  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
+  auto const& equation = down_cast_instance.equation;
+  auto const& append_state = down_cast_instance.append_state;
+  Time const& step = down_cast_instance.step;
 
   // Gets updated as the integration progresses to allow restartability.
-  typename ODE::SystemState& current_state = down_cast_instance->current_state;
+  typename ODE::SystemState& current_state = down_cast_instance.current_state;
 
   // Argument checks.
   int const dimension = current_state.positions.size();
@@ -150,7 +149,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
+      equation.compute_acceleration(t.value + c_[i] * h, q_stage, g);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b_[i] * g[k];

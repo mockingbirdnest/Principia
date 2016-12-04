@@ -135,7 +135,7 @@ void Vessel::AdvanceTimeInBubble(
 void Vessel::ForgetBefore(Instant const& time) {
   CHECK(is_initialized());
   if (prediction_->Fork().time() < time) {
-    history_->DeleteFork(&prediction_);
+    history_->DeleteFork(prediction_);
     prediction_ = history_->NewForkAtLast();
   }
   if (flight_plan_ != nullptr) {
@@ -165,7 +165,7 @@ void Vessel::DeleteFlightPlan() {
 
 void Vessel::UpdatePrediction(Instant const& last_time) {
   CHECK(is_initialized());
-  history_->DeleteFork(&prediction_);
+  history_->DeleteFork(prediction_);
   prediction_ = history_->NewForkAtLast();
   auto const prolongation_last = prolongation_->last();
   if (history_->last().time() != prolongation_last.time()) {
@@ -319,7 +319,7 @@ void Vessel::AdvanceHistoryIfNeeded(Instant const& time) {
       is_dirty_ = false;
     }
     FlowHistory(time);
-    history_->DeleteFork(&prolongation_);
+    history_->DeleteFork(prolongation_);
     prolongation_ = history_->NewForkAtLast();
   }
 }

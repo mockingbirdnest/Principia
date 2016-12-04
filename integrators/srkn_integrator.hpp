@@ -63,14 +63,14 @@ class SRKNIntegrator : public MotionIntegrator {
       std::function<
           void(Time const& t,
                std::vector<Position> const&,
-               not_null<std::vector<Variation<Variation<Position>>>*> const)>;
+               std::vector<Variation<Variation<Position>>>&)>;
 
   // The functor |compute_acceleration| computes M⁻¹ F(q, t).
   template<typename Position>
   void SolveTrivialKineticEnergyIncrement(
       SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
-      not_null<Solution<Position, Variation<Position>>*> const solution) const;
+      Solution<Position, Variation<Position>>& solution) const;
 
  protected:
   enum VanishingCoefficients {
@@ -113,7 +113,7 @@ class SRKNIntegrator : public MotionIntegrator {
   void SolveTrivialKineticEnergyIncrementOptimized(
       SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
-      not_null<Solution<Position, Variation<Position>>*> const solution) const;
+      Solution<Position, Variation<Position>>& solution) const;
 };
 
 // Fourth order, 4 stages.  This method minimizes the error constant.

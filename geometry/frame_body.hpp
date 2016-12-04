@@ -58,26 +58,25 @@ bool const Frame<FrameTag, frame_tag, frame_is_inertial>::is_inertial;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,
-    not_null<google::protobuf::EnumValueDescriptor const**> const
-        enum_value_descriptor,
-    not_null<bool*> const is_inertial) {
+    google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,
+    bool& is_inertial) {
   // Look at the enumeration types nested in serialization::Frame for one that
   // matches our fingerprint.
   const google::protobuf::Descriptor* frame_descriptor =
       serialization::Frame::descriptor();
-  *enum_value_descriptor = nullptr;
+  enum_value_descriptor = nullptr;
   for (int i = 0; i < frame_descriptor->enum_type_count(); ++i) {
     const google::protobuf::EnumDescriptor* enum_type_descriptor =
         frame_descriptor->enum_type(i);
     std::string const& enum_type_full_name = enum_type_descriptor->full_name();
     if (Fingerprint(enum_type_full_name) == message.tag_type_fingerprint()) {
-      *enum_value_descriptor =
+      enum_value_descriptor =
           enum_type_descriptor->FindValueByNumber(message.tag());
       break;
     }
   }
-  CHECK_NOTNULL(*enum_value_descriptor);
-  *is_inertial = message.is_inertial();
+  CHECK_NOTNULL(enum_value_descriptor);
+  is_inertial = message.is_inertial();
 }
 
 }  // namespace geometry

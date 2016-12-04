@@ -116,9 +116,9 @@ TEST_P(SRKNTest, ConsistentWeights) {
   auto compute_acceleration = [v](
       Time const& t,
       std::vector<Length> const& q,
-      not_null<std::vector<Acceleration>*> const result) {
+      std::vector<Acceleration>& result) {
     EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 4096));
-    (*result)[0] = 0 * Metre / Pow<2>(Second);
+    result[0] = 0 * Metre / Pow<2>(Second);
   };
   parameters_.initial.positions.emplace_back(0 * Metre);
   parameters_.initial.momenta.emplace_back(v);
@@ -127,7 +127,7 @@ TEST_P(SRKNTest, ConsistentWeights) {
   parameters_.Δt = 1 * Second;
   parameters_.sampling_period = 5;
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
-      compute_acceleration, parameters_, &solution_);
+      compute_acceleration, parameters_, solution_);
   EXPECT_THAT(solution_.back().positions.back().value,
               AlmostEquals(v * parameters_.tmax, 0, 4));
 }
@@ -143,7 +143,7 @@ TEST_P(SRKNTest, ExactInexactTMax) {
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
@@ -152,7 +152,7 @@ TEST_P(SRKNTest, ExactInexactTMax) {
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -162,7 +162,7 @@ TEST_P(SRKNTest, ExactInexactTMax) {
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(29, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
@@ -171,7 +171,7 @@ TEST_P(SRKNTest, ExactInexactTMax) {
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -181,14 +181,14 @@ TEST_P(SRKNTest, ExactInexactTMax) {
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(0, solution_.size());
 
   parameters_.tmax_is_exact = true;
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(1, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -198,14 +198,14 @@ TEST_P(SRKNTest, ExactInexactTMax) {
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(0, solution_.size());
 
   parameters_.tmax_is_exact = true;
   integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
-      &solution_);
+      solution_);
   EXPECT_EQ(1, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));

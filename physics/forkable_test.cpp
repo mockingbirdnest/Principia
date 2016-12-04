@@ -260,14 +260,14 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     FakeTrajectory* root = &trajectory_;
-    trajectory_.DeleteFork(&root);
+    trajectory_.DeleteFork(root);
   }, "!is_root");
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     FakeTrajectory* fork1 = trajectory_.NewFork(trajectory_.timeline_find(t1_));
     fork1->push_back(t2_);
     FakeTrajectory* fork2 = fork1->NewFork(fork1->timeline_find(t2_));
-    trajectory_.DeleteFork(&fork2);
+    trajectory_.DeleteFork(fork2);
   }, "not a child");
 }
 
@@ -279,7 +279,7 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
   FakeTrajectory* fork2 = trajectory_.NewFork(trajectory_.timeline_find(t2_));
   fork1->push_back(t4_);
-  trajectory_.DeleteFork(&fork2);
+  trajectory_.DeleteFork(fork2);
   EXPECT_EQ(nullptr, fork2);
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));

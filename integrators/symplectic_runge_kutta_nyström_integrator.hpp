@@ -82,7 +82,7 @@ class SymplecticRungeKuttaNyströmIntegrator
       FixedVector<double, stages_> const& b);
 
   void Solve(Instant const& t_final,
-             not_null<IntegrationInstance*> const instance) const override;
+             IntegrationInstance& instance) const override;
 
   not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,

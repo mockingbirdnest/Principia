@@ -151,11 +151,11 @@ using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 namespace integrators {
 
 void SolveHarmonicOscillatorAndComputeError(
-    not_null<benchmark::State*> const state,
-    not_null<Length*> const q_error,
-    not_null<Speed*> const v_error,
+    benchmark::State& state,
+    Length& q_error,
+    Speed& v_error,
     SRKNIntegrator const& integrator) {
-  state->PauseTiming();
+  state.PauseTiming();
   SRKNIntegrator::Solution<Length, Speed> solution;
   SRKNIntegrator::Parameters<Length, Speed> parameters;
 
@@ -171,29 +171,29 @@ void SolveHarmonicOscillatorAndComputeError(
   // in the new benchmarks.  Reducing to 3.0e-4 to permit comparisons.
   parameters.Δt = 3.0e-4 * SIUnit<Time>();
   parameters.sampling_period = 1;
-  state->ResumeTiming();
+  state.ResumeTiming();
 
   integrator.SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters,
-      &solution);
+      solution);
 
-  state->PauseTiming();
-  *q_error = Length();
-  *v_error = Speed();
+  state.PauseTiming();
+  q_error = Length();
+  v_error = Speed();
   for (std::size_t i = 0; i < solution.size(); ++i) {
-    *q_error = std::max(*q_error,
-                        Abs(solution[i].positions[0].value -
-                            SIUnit<Length>() *
-                            Cos(solution[i].time.value *
-                                SIUnit<AngularFrequency>())));
-    *v_error = std::max(*v_error,
-                        Abs(solution[i].momenta[0].value +
-                            SIUnit<Speed>() *
-                            Sin(solution[i].time.value *
-                                SIUnit<AngularFrequency>())));
+    q_error = std::max(q_error,
+                       Abs(solution[i].positions[0].value -
+                           SIUnit<Length>() *
+                           Cos(solution[i].time.value *
+                               SIUnit<AngularFrequency>())));
+    v_error = std::max(v_error,
+                       Abs(solution[i].momenta[0].value +
+                           SIUnit<Speed>() *
+                           Sin(solution[i].time.value *
+                               SIUnit<AngularFrequency>())));
   }
-  state->ResumeTiming();
+  state.ResumeTiming();
 }
 
 template<typename Integrator, Integrator const& (*integrator)()>
@@ -202,7 +202,7 @@ void BM_SolveHarmonicOscillator(
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError(&state, &q_error, &v_error,
+    SolveHarmonicOscillatorAndComputeError(state, q_error, v_error,
                                            integrator());
   }
   std::stringstream ss;

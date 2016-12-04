@@ -71,17 +71,16 @@ namespace {
 void ComputeHarmonicOscillatorAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* const result,
+    std::vector<Acceleration>& result,
     int* evaluations) {
-  (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
   if (evaluations != nullptr) {
     ++*evaluations;
   }
 }
 
 template<typename Integrator>
-void TestTermination(
-    Integrator const& integrator) {
+void TestTermination(Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Instant const t_initial;
@@ -106,7 +105,7 @@ void TestTermination(
 
   auto const instance =
       integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, instance.get());
+  integrator.Solve(t_final, *instance);
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
@@ -156,7 +155,7 @@ void Test1000SecondsAt1Millisecond(
 
   auto const instance =
       integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, instance.get());
+  integrator.Solve(t_final, *instance);
 
   EXPECT_EQ(steps, solution.size());
   Length q_error;
@@ -213,7 +212,7 @@ void TestConvergence(Integrator const& integrator,
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance = integrator.NewInstance(problem, append_state, step);
-    integrator.Solve(t_final, instance.get());
+    integrator.Solve(t_final, *instance);
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
@@ -287,7 +286,7 @@ void TestSymplecticity(Integrator const& integrator,
 
   auto const instance =
       integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, instance.get());
+  integrator.Solve(t_final, *instance);
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);

@@ -55,16 +55,15 @@ using World = Frame<serialization::Frame::TestTag,
 void ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* const result) {
-  (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+    std::vector<Acceleration>& result) {
+  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
 }
 
 void ComputeHarmonicOscillatorAcceleration3D(
     Instant const& t,
     std::vector<Position<World>> const& q,
-    std::vector<Vector<Acceleration, World>>* const result) {
-  (*result)[0] =
-      (World::origin - q[0]) * (SIUnit<Stiffness>() / SIUnit<Mass>());
+    std::vector<Vector<Acceleration, World>>& result) {
+  result[0] = (World::origin - q[0]) * (SIUnit<Stiffness>() / SIUnit<Mass>());
 }
 
 template<typename ODE>
@@ -90,11 +89,10 @@ double HarmonicOscillatorToleranceRatio3D(
 }  // namespace
 
 template<typename Integrator>
-void SolveHarmonicOscillatorAndComputeError1D(
-    not_null<benchmark::State*> const state,
-    not_null<Length*> const q_error,
-    not_null<Speed*> const v_error,
-    Integrator const& integrator) {
+void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
+                                              Length& q_error,
+                                              Speed& v_error,
+                                              Integrator const& integrator) {
   using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
   Length const q_initial = 1 * Metre;
@@ -125,31 +123,31 @@ void SolveHarmonicOscillatorAndComputeError1D(
 
   auto const instance = integrator.NewInstance(
       problem, std::move(append_state), adaptive_step_size);
-  integrator.Solve(t_final, instance.get());
+  integrator.Solve(t_final, *instance);
 
-  state->PauseTiming();
-  *q_error = Length();
-  *v_error = Speed();
+  state.PauseTiming();
+  q_error = Length();
+  v_error = Speed();
   for (std::size_t i = 0; i < solution.size(); ++i) {
-    *q_error = std::max(*q_error,
-                        Abs(solution[i].positions[0].value  -
-                            Metre *
-                            Cos((solution[i].time.value - t_initial) *
-                                (Radian / Second))));
-    *v_error = std::max(*v_error,
-                        Abs(solution[i].velocities[0].value +
-                            (Metre / Second) *
-                            Sin((solution[i].time.value - t_initial) *
-                                (Radian / Second))));
+    q_error = std::max(q_error,
+                       Abs(solution[i].positions[0].value  -
+                           Metre *
+                           Cos((solution[i].time.value - t_initial) *
+                               (Radian / Second))));
+    v_error = std::max(v_error,
+                       Abs(solution[i].velocities[0].value +
+                           (Metre / Second) *
+                           Sin((solution[i].time.value - t_initial) *
+                               (Radian / Second))));
   }
-  state->ResumeTiming();
+  state.ResumeTiming();
 }
 
 template<typename Integrator>
 void SolveHarmonicOscillatorAndComputeError3D(
-    not_null<benchmark::State*> const state,
-    not_null<Length*> const q_error,
-    not_null<Speed*> const v_error,
+    benchmark::State& state,
+    Length& q_error,
+    Speed& v_error,
     Integrator const& integrator) {
   using ODE = SpecialSecondOrderDifferentialEquation<Position<World>>;
 
@@ -184,24 +182,24 @@ void SolveHarmonicOscillatorAndComputeError3D(
 
   auto const instance = integrator.NewInstance(
       problem, std::move(append_state), adaptive_step_size);
-  integrator.Solve(t_final, instance.get());
+  integrator.Solve(t_final, *instance);
 
-  state->PauseTiming();
-  *q_error = Length();
-  *v_error = Speed();
+  state.PauseTiming();
+  q_error = Length();
+  v_error = Speed();
   for (std::size_t i = 0; i < solution.size(); ++i) {
-    *q_error = std::max(*q_error,
-                        ((solution[i].positions[0].value - World::origin) -
-                            q_initial *
-                            Cos((solution[i].time.value - t_initial) *
-                                (Radian / Second))).Norm());
-    *v_error = std::max(*v_error,
-                        (solution[i].velocities[0].value +
-                            (q_initial / Second) *
-                            Sin((solution[i].time.value - t_initial) *
-                                (Radian / Second))).Norm());
+    q_error = std::max(q_error,
+                       ((solution[i].positions[0].value - World::origin) -
+                           q_initial *
+                           Cos((solution[i].time.value - t_initial) *
+                               (Radian / Second))).Norm());
+    v_error = std::max(v_error,
+                       (solution[i].velocities[0].value +
+                           (q_initial / Second) *
+                           Sin((solution[i].time.value - t_initial) *
+                               (Radian / Second))).Norm());
   }
-  state->ResumeTiming();
+  state.ResumeTiming();
 }
 
 template<typename Integrator, Integrator const& (*integrator)()>
@@ -210,7 +208,7 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError1D(&state, &q_error, &v_error,
+    SolveHarmonicOscillatorAndComputeError1D(state, q_error, v_error,
                                              integrator());
   }
   std::stringstream ss;
@@ -224,7 +222,7 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError3D(&state, &q_error, &v_error,
+    SolveHarmonicOscillatorAndComputeError3D(state, q_error, v_error,
                                              integrator());
   }
   std::stringstream ss;

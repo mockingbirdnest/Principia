@@ -32,42 +32,42 @@ namespace testing_utilities {
 inline void ComputeHarmonicOscillatorForce(
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Force>* const result) {
-  (*result)[0] = -q[0] * SIUnit<Stiffness>();
+    std::vector<Force>& result) {
+  result[0] = -q[0] * SIUnit<Stiffness>();
 }
 
 inline void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
-    std::vector<Speed>* const result) {
-  (*result)[0] = p[0] / SIUnit<Mass>();
+    std::vector<Speed>& result) {
+  result[0] = p[0] / SIUnit<Mass>();
 }
 
 inline void ComputeHarmonicOscillatorAcceleration(
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* const result) {
-  (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+    std::vector<Acceleration>& result) {
+  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
 }
 
 inline void ComputeKeplerAcceleration(
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* const result) {
+    std::vector<Acceleration>& result) {
   auto const r_squared = q[0] * q[0] + q[1] * q[1];
   auto const minus_μ_over_r_cubed =
       -SIUnit<GravitationalParameter>() * Sqrt(r_squared) /
           (r_squared * r_squared);
-  (*result)[0] = q[0] * minus_μ_over_r_cubed;
-  (*result)[1] = q[1] * minus_μ_over_r_cubed;
+  result[0] = q[0] * minus_μ_over_r_cubed;
+  result[1] = q[1] * minus_μ_over_r_cubed;
 }
 
 template<typename Frame>
 void ComputeGravitationalAcceleration(
     Time const& t,
     std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>* const result,
+    std::vector<Vector<Acceleration, Frame>>& result,
     std::vector<MassiveBody> const& bodies) {
-  result->assign(result->size(), Vector<Acceleration, Frame>());
+  result.assign(result.size(), Vector<Acceleration, Frame>());
   for (int b1 = 1; b1 < q.size(); ++b1) {
     GravitationalParameter const& μ1 = bodies[b1].gravitational_parameter();
     for (int b2 = 0; b2 < b1; ++b2) {
@@ -77,7 +77,7 @@ void ComputeGravitationalAcceleration(
           Sqrt(r_squared) / (r_squared * r_squared);
       {
         auto const μ1_over_r_cubed = μ1 * one_over_r_cubed;
-        (*result)[b2] += Δq * μ1_over_r_cubed;
+        result[b2] += Δq * μ1_over_r_cubed;
       }
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
@@ -85,7 +85,7 @@ void ComputeGravitationalAcceleration(
       {
         GravitationalParameter const& μ2 = bodies[b2].gravitational_parameter();
         auto const μ2_over_r_cubed = μ2 * one_over_r_cubed;
-        (*result)[b1] -= Δq * μ2_over_r_cubed;
+        result[b1] -= Δq * μ2_over_r_cubed;
       }
     }
   }

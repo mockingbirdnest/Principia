@@ -175,7 +175,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       method.integrator->SolveTrivialKineticEnergyIncrement<Length>(
           &ComputeHarmonicOscillatorAcceleration,
           parameters,
-          &solution);
+          solution);
       std::vector<Length> q_error;
       std::vector<Speed> v_error;
       std::vector<Energy> e_error;
@@ -256,7 +256,7 @@ void GenerateKeplerProblemWorkErrorGraphs() {
       method.integrator->SolveTrivialKineticEnergyIncrement<Length>(
           &ComputeKeplerAcceleration,
           parameters,
-          &solution);
+          solution);
       std::vector<Length> q_error;
       std::vector<Speed> v_error;
       std::vector<Energy> e_error;
@@ -365,7 +365,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
               std::bind(ComputeGravitationalAcceleration<ICRFJ2000Equator>,
                         _1, _2, _3, std::cref(bodies)),
               parameters,
-              &reference_solutions.back());
+              reference_solutions.back());
     }
     int const reference_size = reference_solutions.front().size();
     for (auto const& solution : reference_solutions) {
@@ -418,7 +418,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
               std::bind(ComputeGravitationalAcceleration<ICRFJ2000Equator>,
                         _1, _2, _3, std::cref(bodies)),
               parameters,
-              &solution);
+              solution);
       Length q_error;
       Speed v_error;
       Energy e_error;
