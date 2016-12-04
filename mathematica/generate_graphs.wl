@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 SetDirectory[NotebookDirectory[]];
-<<"integration.wl";
+<<"integration.wl";(*
 Run[FileNameJoin[{"..", "Release", "x64", "mathematica.exe"}]];
 <<"simple_harmonic_motion_graphs.generated.wl";
 Export[
@@ -12,27 +12,27 @@ Export[
  IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
 Export[
  "shm_velocity_error.cdf",
- IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
-<<"kepler_problem_graphs.generated.wl";
+ IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];*)
+<<"kepler_problem_graphs_0.000000.generated.wl";
 Export[
- "kepler_energy_error.cdf",
+ "kepler_energy_error_circular.cdf",
  IntegrationErrorPlot[eErrorData, names, "maximal energy error", 2.*^9]];
 Export[
- "kepler_position_error.cdf",
+ "kepler_position_error_circular.cdf",
  IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
 Export[
- "kepler_velocity_error.cdf",
+ "kepler_velocity_error_circular.cdf",
  IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
-<<"planets_graphs.generated.wl";
+<<"kepler_problem_graphs_0.250000.generated.wl";
 Export[
- "planets_position_error.cdf",
- IntegrationErrorPlot[qErrorData, names, "maximal position error", 1.*^10],
- "CDF"];
+ "kepler_energy_error_pluto.cdf",
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error", 2.*^9]];
 Export[
- "planets_velocity_error.cdf",
- IntegrationErrorPlot[vErrorData, names, "maximal velocity error", 1.*^4],
- "CDF"];
+ "kepler_position_error_pluto.cdf",
+ IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
 Export[
- "planets_energy_error.cdf",
- IntegrationErrorPlot[eErrorData, names, "maximal energy error", 1.*^35],
- "CDF"];
+ "kepler_velocity_error_pluto.cdf",
+ IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
+
+
+
