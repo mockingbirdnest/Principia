@@ -409,7 +409,7 @@ Yoshida1990Order8C() {
                                                      +0.15238115813845159094,
                                                      +0.999190057189585020872,
                                                      +0.314515325105213909024});
- return integrator;
+  return integrator;
 }
 
 template<typename Position, typename Momentum>

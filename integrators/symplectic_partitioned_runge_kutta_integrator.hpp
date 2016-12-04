@@ -13,7 +13,7 @@ using numerics::FixedVector;
 namespace integrators {
 
 // A symplectic partitioned Runge-Kutta integrator.  Does not subclass
-// |Integrator| yet; used to generate (less general)
+// |Integrator|; used to generate (less general)
 // |SymplecticRungeKuttaNyströmIntegrator|s.
 // Represents a single-step method for the solution of
 //   (q, p)′ = X(q, p, t), with X = A(q, p, t) + B(q, p, t).
@@ -26,7 +26,7 @@ namespace integrators {
 // The equation solved by this integrator is a general case of that solved by
 // a |SymplecticRungeKuttaNyströmIntegrator|, see equation (1) in the
 // appropriate file.  This may therefore be turned into a
-// |SymplecticRungeKuttaNyströmIntegrator|. 
+// |SymplecticRungeKuttaNyströmIntegrator|.
 // In the |first_same_as_last| case, since A and B are interchangeable
 // for a |SymplecticPartitionedRungeKuttaIntegrator|, the step
 //   exp(bᵣ₋₁ h A) exp(aᵣ₋₂ h B) ... exp(a₀ h B) exp(b₀ h A)
@@ -50,6 +50,7 @@ template<typename Position,
 class SymplecticPartitionedRungeKuttaIntegrator {
   static constexpr int stages_ = first_same_as_last_ ? evaluations_ + 1
                                                      : evaluations_;
+
  public:
   SymplecticPartitionedRungeKuttaIntegrator(
       FixedVector<double, stages_> const& a,
