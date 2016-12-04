@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -33,6 +34,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
@@ -64,20 +66,6 @@ namespace integrators {
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
 namespace {
-
-// TODO(egg): use the one from testing_utilities/integration again when everyone
-// uses |Instant|s.
-// Increments |*evaluations| if |evaluations| is not null.
-void ComputeHarmonicOscillatorAcceleration(
-    Instant const& t,
-    std::vector<Length> const& q,
-    std::vector<Acceleration>& result,
-    int* evaluations) {
-  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
-  if (evaluations != nullptr) {
-    ++*evaluations;
-  }
-}
 
 template<typename Integrator>
 void TestTermination(Integrator const& integrator) {
