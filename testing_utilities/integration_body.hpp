@@ -50,7 +50,7 @@ inline void ComputeHarmonicOscillatorAcceleration(
 }
 
 inline void ComputeKeplerAcceleration(
-    Time const& t,
+    Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result) {
   auto const r_squared = q[0] * q[0] + q[1] * q[1];
