@@ -53,6 +53,3 @@ Export[
 Export[
  "kepler_velocity_error_1p.cdf",
  IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
-
-
-
