@@ -2,7 +2,7 @@
 
 SetDirectory[NotebookDirectory[]];
 <<"integration.wl";
-(*Run[FileNameJoin[{"..", "Release", "x64", "mathematica.exe"}]];*)
+Run[FileNameJoin[{"..", "Release", "x64", "mathematica.exe"}]];
 <<"simple_harmonic_motion_graphs.generated.wl";
 plot=IntegrationErrorPlot[eErrorData, names, "maximal energy error"];
 Export["shm_energy_error.cdf", plot];
