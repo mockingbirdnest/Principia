@@ -59,6 +59,12 @@
     <ClInclude Include="adams_moulton_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp">

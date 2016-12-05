@@ -6,12 +6,15 @@
 #include <array>
 
 #include "base/macros.hpp"
+#include "base/mod.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace astronomy {
 namespace date_time {
 namespace internal_date_time {
+
+using base::mod;
 
 // Arithmetico-calendrical utility functions.
 
@@ -30,20 +33,6 @@ constexpr int month_length(int year, int month) {
   return (is_gregorian_leap_year(year) && month == 2)
              ? 29
              : non_leap_year_month_lengths[month - 1];
-}
-
-// The result of |mod| has the same sign as |divisor| (same convention as Ada,
-// ISO Prolog, Haskell, etc.), whereas the result of |dividend % divisor| has
-// the same sign as |dividend| (like |rem| in the aforementioned languages).
-constexpr int mod(int const dividend, int const divisor) {
-  return ((dividend % divisor) + divisor) % divisor;
-}
-
-// Similar to Mathematica's |Mod|: the result is congruent to |dividend| modulo
-// |divisor|, and lies in [offset, divisor + offset[ if divisor > 0, and in
-// ]divisor + offset, offset] otherwise.
-constexpr int mod(int const dividend, int const divisor, int const offset) {
-  return mod(dividend - offset, divisor) + offset;
 }
 
 // Result in [1, 7], 1 is Monday.

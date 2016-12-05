@@ -276,6 +276,7 @@
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="mappable.hpp" />
     <ClInclude Include="map_util.hpp" />
+    <ClInclude Include="mod.hpp" />
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="monostable_body.hpp" />
     <ClInclude Include="not_null.hpp" />
