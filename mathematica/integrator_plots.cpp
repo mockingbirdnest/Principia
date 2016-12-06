@@ -251,7 +251,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   file.close();
 }
 
-void GenerateKeplerProblemWorkErrorGraphs(double eccentricity) {
+void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   ODE::SystemState initial_state;
   Problem problem;
   int number_of_evaluations;
