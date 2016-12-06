@@ -41,18 +41,20 @@ void ComputeHarmonicOscillatorVelocity(
 // The Runge-Kutta-Nyström formulation
 //   q" = -q k / m.
 void ComputeHarmonicOscillatorAcceleration(
-    Time const& t,
+    Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>& result);
+    std::vector<Acceleration>& result,
+    int* evaluations);
 
 // The Kepler problem with unit gravitational parameter, where the
 // two-dimensional configuration space is the separation between the bodies, in
 // the Runge-Kutta-Nyström formulation
 //   q" = -q μ / |q|³,
 // where μ = 1 m³ s⁻².
-void ComputeKeplerAcceleration(Time const& t,
+void ComputeKeplerAcceleration(Instant const& t,
                                std::vector<Length> const& q,
-                               std::vector<Acceleration>& result);
+                               std::vector<Acceleration>& result,
+                               int* evaluations);
 
 template<typename Frame>
 void ComputeGravitationalAcceleration(

@@ -43,22 +43,30 @@ inline void ComputeHarmonicOscillatorVelocity(
 }
 
 inline void ComputeHarmonicOscillatorAcceleration(
-    Time const& t,
+    Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>& result) {
+    std::vector<Acceleration>& result,
+    int* evaluations) {
   result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  if (evaluations != nullptr) {
+    ++*evaluations;
+  }
 }
 
 inline void ComputeKeplerAcceleration(
-    Time const& t,
+    Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>& result) {
+    std::vector<Acceleration>& result,
+    int* evaluations) {
   auto const r_squared = q[0] * q[0] + q[1] * q[1];
   auto const minus_μ_over_r_cubed =
       -SIUnit<GravitationalParameter>() * Sqrt(r_squared) /
           (r_squared * r_squared);
   result[0] = q[0] * minus_μ_over_r_cubed;
   result[1] = q[1] * minus_μ_over_r_cubed;
+  if (evaluations != nullptr) {
+    ++*evaluations;
+  }
 }
 
 template<typename Frame>

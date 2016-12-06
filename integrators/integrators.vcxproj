@@ -299,10 +299,6 @@
     <ClInclude Include="motion_integrator.hpp" />
     <ClInclude Include="ordinary_differential_equations.hpp" />
     <ClInclude Include="ordinary_differential_equations_body.hpp" />
-    <ClInclude Include="sprk_integrator.hpp" />
-    <ClInclude Include="sprk_integrator_body.hpp" />
-    <ClInclude Include="srkn_integrator.hpp" />
-    <ClInclude Include="srkn_integrator_body.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
@@ -313,9 +309,6 @@
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp" />
-    <ClCompile Include="simple_harmonic_motion.cpp" />
-    <ClCompile Include="sprk_integrator_test.cpp" />
-    <ClCompile Include="srkn_integrator_test.cpp" />
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
   </ItemGroup>

@@ -27,6 +27,12 @@ Argument Bisect(Function f,
   Value const zero{};
   Value f_upper = f(upper_bound);
   Value f_lower = f(lower_bound);
+  if (f_upper == zero) {
+    return upper_bound;
+  }
+  if (f_lower == zero) {
+    return lower_bound;
+  }
   CHECK(f_lower > zero && zero > f_upper || f_lower < zero && zero < f_upper)
       << "\nlower: " << lower_bound << " :-> " << f_lower << ", "
       << "\nupper: " << upper_bound << " :-> " << f_upper;
