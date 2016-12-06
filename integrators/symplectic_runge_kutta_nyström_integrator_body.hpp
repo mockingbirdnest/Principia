@@ -124,11 +124,19 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
   // The first full stage of the step, i.e. the first stage where
   // exp(bᵢ h B) exp(aᵢ h A) must be entirely computed.
-  // Always 0 in the non-FSAL BA case, always 1 in the ABA case since b₀ = 0,
-  // means the first stage is only exp(a₀ h A), and 1 after the first step
-  // in the BAB case, since the last right-hand-side evaluation can be used for
-  // exp(bᵢ h B).
-  int first_stage = composition == ABA ? 1 : 0;
+  // 0 in the non-FSAL BA case, 1 in the ABA case since b₀ = 0 means the first
+  // stage is only exp(a₀ h A), 1 in the BAB case, since the previous
+  // right-hand-side evaluation can be used for exp(bᵢ h B).  Note that in the
+  // BAB case, we need to start things with an evaluation since there is no
+  // previous evaluation.
+  constexpr int first_stage = composition == BA ? 0 : 1;
+
+  if (composition == BAB) {
+    for (int k = 0; k < dimension; ++k) {
+      q_stage[k] = q[k].value;
+    }
+    equation.compute_acceleration(t.value, q_stage, g);
+  }
 
   while (abs_h <= Abs((t_final - t.value) - t.error)) {
     std::fill(Δq.begin(), Δq.end(), Displacement{});
@@ -153,13 +161,12 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b_[i] * g[k];
+        // NOTE(egg): in the BAB case, at the last stage, this will be an
+        // exercise in adding 0.  I don't think the optimizer can know that.  Do
+        // we care?
         // exp(aᵢ h A)
         Δq[k] += h * a_[i] * (v[k].value + Δv[k]);
       }
-    }
-
-    if (composition == BAB) {
-      first_stage = 1;
     }
 
     // Increment the solution.
