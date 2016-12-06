@@ -28,6 +28,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -41,16 +42,6 @@ namespace integrators {
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
 namespace {
-
-// TODO(egg): use the one from testing_utilities/integration again when everyone
-// uses |Instant|s.
-void ComputeHarmonicOscillatorAcceleration(Instant const& t,
-                                           std::vector<Length> const& q,
-                                           std::vector<Acceleration>& result,
-                                           int& evaluations) {
-  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
-  ++evaluations;
-}
 
 double HarmonicOscillatorToleranceRatio(
     Time const& h,
@@ -105,7 +96,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, std::ref(evaluations));
+                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
@@ -182,14 +173,13 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   // The number of steps if no step limit is set.
   std::int64_t const steps_forward = 132;
 
-  int evaluations = 0;
   auto const step_size_callback = [](bool tolerable) {};
 
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, evaluations);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};

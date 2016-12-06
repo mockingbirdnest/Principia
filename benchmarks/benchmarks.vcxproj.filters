@@ -23,9 +23,6 @@
     <ClCompile Include="чебышёв_series.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sprk_integrator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ephemeris.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
