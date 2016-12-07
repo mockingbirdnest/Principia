@@ -94,7 +94,8 @@ Solve(Instant const& t_final,
       double const ɑj = ɑ_[j];
       double const βj_numerator = β_numerator_[j];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d].Increment(-ɑj * (qj[d] + qk_minus_j[d]));
+        Σj_minus_ɑj_qj[d].Increment(-ɑj * qj[d]);
+        Σj_minus_ɑj_qj[d].Increment(-ɑj * qk_minus_j[d]);
         Σj_βj_numerator_aj[d] += βj_numerator * (aj[d] + ak_minus_j[d]);
       }
       ++front_it;
