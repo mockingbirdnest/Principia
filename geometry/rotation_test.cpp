@@ -207,9 +207,9 @@ TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
-  EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 2));
-  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 1));
-  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 12));
+  EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
+  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
 TEST_F(RotationTest, ToQuaternion4) {
@@ -223,8 +223,8 @@ TEST_F(RotationTest, ToQuaternion4) {
   R3x3Matrix m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
-  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 1));
-  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 2));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
+  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
 TEST_F(RotationDeathTest, SerializationError) {
