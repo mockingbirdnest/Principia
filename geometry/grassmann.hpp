@@ -37,7 +37,7 @@ class Multivector<Scalar, Frame, 1> {
   Scalar Norm() const;
 
   template<typename S>
-  Multivector OrthogonalizedAgainst(
+  Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 1> const& multivector) const;
 
   void WriteToMessage(
@@ -79,7 +79,7 @@ class Multivector<Scalar, Frame, 2> {
   Scalar Norm() const;
 
   template<typename S>
-  Multivector OrthogonalizedAgainst(
+  Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 2> const& multivector) const;
 
   void WriteToMessage(

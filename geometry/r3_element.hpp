@@ -46,7 +46,7 @@ struct R3Element {
   // |r3_element|, and on the same side of |r3_element| as |*this|.
   // Uses the modified Gram-Schmidt algorithm.  Fails if |r3_element| is zero.
   template<typename S>
-  R3Element OrthogonalizedAgainst(R3Element<S> const& r3_element) const;
+  R3Element OrthogonalizationAgainst(R3Element<S> const& r3_element) const;
 
   void WriteToMessage(not_null<serialization::R3Element*> const message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);
