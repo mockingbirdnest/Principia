@@ -90,8 +90,8 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
   Velocity<ThisFrame> const& velocity = degrees_of_freedom.velocity();
   Vector<Acceleration, ThisFrame> const acceleration =
       GeometricAcceleration(t, degrees_of_freedom);
-  Vector<Acceleration, ThisFrame> normal_acceleration = acceleration;
-  velocity.Orthogonalize(normal_acceleration);
+  Vector<Acceleration, ThisFrame> const normal_acceleration =
+      acceleration.OrthogonalizationAgainst(velocity);
   Vector<double, ThisFrame> tangent = Normalize(velocity);
   Vector<double, ThisFrame> normal = Normalize(normal_acceleration);
   Bivector<double, ThisFrame> binormal = Wedge(tangent, normal);
