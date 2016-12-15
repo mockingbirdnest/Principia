@@ -25,6 +25,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/vessel_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -764,6 +765,14 @@ bool Plugin::MustRotateBodies() const {
 Instant Plugin::CurrentTime() const {
   return current_time_;
 }
+
+/*
+void Plugin::ReportCollision(GUID const& first_vessel,
+                             GUID const& second_vessel) {
+    Vessel& v1 = *FindOrDie(vessels_, first_vessel);
+    Vessel& v2 = *FindOrDie(vessels_, second_vessel);
+    Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
+}*/
 
 void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {

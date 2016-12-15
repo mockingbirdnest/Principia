@@ -37,6 +37,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::not_null;
+using base::Subset;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -323,6 +324,10 @@ class Plugin {
 
   virtual Instant CurrentTime() const;
 
+  /*
+  virtual void ReportCollision(GUID const& first_vessel,
+                               GUID const& second_vessel);*/
+
   // Must be called after initialization.
   virtual void WriteToMessage(
       not_null<serialization::Plugin*> const message) const;
@@ -464,6 +469,8 @@ class Plugin {
   bool is_ksp_stock_system_ = false;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
+
+  std::list<PileUp> pile_ups_;
 
   // Compatibility.
   bool is_pre_cardano_ = false;

@@ -1056,6 +1056,10 @@ public partial class PrincipiaPluginAdapter
                 " collision(s) including " + part_collisions +
                 " with another vessel.");
     }
+    if (FlightGlobals.ActiveVessel != null) {
+      UnityEngine.GUILayout.TextArea(FlightGlobals.ActiveVessel.geeForce +
+                                     " g0");
+    }
     String last_reset_information;
     if (!PluginRunning()) {
       last_reset_information = "";
