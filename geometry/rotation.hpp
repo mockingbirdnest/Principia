@@ -16,6 +16,8 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap;
 
+namespace internal_rotation {
+
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
@@ -242,6 +244,13 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_rotation
+
+using internal_rotation::CardanoAngles;
+using internal_rotation::DefinesFrame;
+using internal_rotation::EulerAngles;
+using internal_rotation::Rotation;
 
 }  // namespace geometry
 }  // namespace principia

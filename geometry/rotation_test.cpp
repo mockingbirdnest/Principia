@@ -16,6 +16,8 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace geometry {
+namespace internal_rotation {
 
 using quantities::ArcCos;
 using quantities::si::Degree;
@@ -28,8 +30,6 @@ using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
-
-namespace geometry {
 
 class RotationTest : public testing::Test {
  protected:
@@ -519,5 +519,6 @@ TEST_F(RotationTest, CardanoAngles) {
   }
 }
 
+}  // namespace internal_rotation
 }  // namespace geometry
 }  // namespace principia
