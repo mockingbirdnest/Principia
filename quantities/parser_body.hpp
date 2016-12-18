@@ -10,8 +10,7 @@
 
 namespace principia {
 namespace quantities {
-
-namespace {
+namespace internal_parser {
 
 // The patterns that we parse here have the form:
 //    U^n/V^m
@@ -51,8 +50,6 @@ Quotient<TNumerator, TDenominator> ParseQuotientUnit(
   return parse_numerator_unit(s.substr(0, last_nonblank + 1)) /
          parse_denominator_unit(s.substr(first_nonblank));
 }
-
-}  // namespace
 
 template<typename T>
 T ParseQuantity(std::string const& s) {
@@ -136,5 +133,6 @@ inline double ParseUnit<double>(std::string const& s) {
   return 1;
 }
 
+}  // namespace internal_parser
 }  // namespace quantities
 }  // namespace principia

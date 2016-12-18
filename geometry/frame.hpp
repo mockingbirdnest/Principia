@@ -10,6 +10,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_frame {
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
 class Frame {
@@ -32,6 +33,11 @@ void ReadFrameFromMessage(
     serialization::Frame const& message,
     google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,
     bool& is_inertial);
+
+}  // namespace internal_frame
+
+using internal_frame::Frame;
+using internal_frame::ReadFrameFromMessage;
 
 }  // namespace geometry
 }  // namespace principia
