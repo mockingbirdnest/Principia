@@ -13,6 +13,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using geometry::Displacement;
+using geometry::Position;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;

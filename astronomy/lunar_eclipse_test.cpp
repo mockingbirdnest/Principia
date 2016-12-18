@@ -17,6 +17,7 @@
 namespace principia {
 
 using geometry::AngleBetween;
+using geometry::Position;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;
