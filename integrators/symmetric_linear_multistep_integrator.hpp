@@ -19,11 +19,11 @@
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_symmetric_linear_multistep_integrator {
 
 using numerics::DoublePrecision;
 using numerics::FixedVector;
-
-namespace integrators {
 
 template<typename Position, int order_>
 class SymmetricLinearMultistepIntegrator
@@ -134,6 +134,15 @@ template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/14> const&
 QuinlanTremaine1990Order14();
+
+}  // namespace internal_symmetric_linear_multistep_integrator
+
+using internal_symmetric_linear_multistep_integrator::Quinlan1999Order8A;
+using internal_symmetric_linear_multistep_integrator::Quinlan1999Order8B;
+using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order8;
+using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order10;
+using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order12;
+using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order14;
 
 }  // namespace integrators
 }  // namespace principia

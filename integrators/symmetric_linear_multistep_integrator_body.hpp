@@ -9,12 +9,9 @@
 
 namespace principia {
 namespace integrators {
-
-namespace {
+namespace internal_symmetric_linear_multistep_integrator {
 
 int const startup_step_divisor = 16;
-
-}  // namespace
 
 template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::
@@ -335,5 +332,6 @@ QuinlanTremaine1990Order14() {
   return integrator;
 }
 
+}  // namespace internal_symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
