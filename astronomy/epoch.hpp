@@ -12,11 +12,12 @@
 // TT dates.
 
 namespace principia {
+namespace astronomy {
+namespace internal_epoch {
 
 using geometry::Instant;
 using quantities::si::Second;
 
-namespace astronomy {
 
 // |J2000| represents to the standard epoch J2000.0.
 // According to Resolution B1 (On the Use of Julian Dates) of the XXIIIrd IAU
@@ -39,6 +40,14 @@ constexpr Instant JulianDate(double const days);
 // The Modified Julian Date MJD |days|. MJD is defined as JD - 2400000.5 days,
 // so |ModifiedJulianDate(0)| is "1858-11-17T00:00:00"_TT.
 constexpr Instant ModifiedJulianDate(double const days);
+
+}  // namespace internal_epoch
+
+using internal_epoch::InfiniteFuture;
+using internal_epoch::InfinitePast;
+using internal_epoch::J2000;
+using internal_epoch::JulianDate;
+using internal_epoch::ModifiedJulianDate;
 
 }  // namespace astronomy
 }  // namespace principia

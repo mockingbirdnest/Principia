@@ -32,6 +32,7 @@ using astronomy::ICRFJ2000Equator;
 using base::check_not_null;
 using geometry::Barycentre;
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;

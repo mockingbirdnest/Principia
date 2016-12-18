@@ -30,6 +30,7 @@ using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;

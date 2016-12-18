@@ -34,6 +34,7 @@ using base::check_not_null;
 using base::dynamic_cast_not_null;
 using geometry::Bivector;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Velocity;

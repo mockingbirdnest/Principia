@@ -35,6 +35,7 @@ using quantities::Sin;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::si::Day;
+using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;

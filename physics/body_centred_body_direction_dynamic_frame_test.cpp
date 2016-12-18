@@ -30,6 +30,7 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 using astronomy::ICRFJ2000Equator;
 using base::check_not_null;
 using geometry::Bivector;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;

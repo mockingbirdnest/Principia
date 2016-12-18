@@ -39,6 +39,7 @@ using astronomy::SolarSystemBarycentreEquator;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::Frame;
 using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
