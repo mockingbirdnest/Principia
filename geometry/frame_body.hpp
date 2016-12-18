@@ -20,8 +20,6 @@ inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
 }
 
-}  // namespace
-
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
 void Frame<FrameTag, frame_tag, frame_is_inertial>::WriteToMessage(
     not_null<serialization::Frame*> const message) {

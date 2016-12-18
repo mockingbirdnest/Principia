@@ -10,8 +10,7 @@
 
 namespace principia {
 namespace geometry {
-
-namespace {
+namespace internal_grassmann {
 
 // This class helps in reading coordinates in compatilibity mode.  We used to
 // use a left-handed OLD_BARYCENTRIC frame, and switched to use a right-handed
@@ -53,8 +52,6 @@ bool CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>::
     return false;
   }
 }
-
-}  // namespace
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector() {}
@@ -520,5 +517,6 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
+}  // namespace internal_grassmann
 }  // namespace geometry
 }  // namespace principia

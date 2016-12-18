@@ -39,6 +39,7 @@ namespace internal_plugin {
 
 using base::dynamic_cast_not_null;
 using base::FindOrDie;
+using base::Fingerprint2011;
 using base::FingerprintCat2011;
 using base::make_not_null_unique;
 using base::not_null;

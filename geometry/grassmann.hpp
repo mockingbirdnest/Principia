@@ -11,12 +11,13 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
-
-using base::not_null;
-
 namespace geometry {
 
-template<typename FromFrame, typename ToFrame> class Permutation;
+template<typename FromFrame, typename ToFrame> class Rotation;
+
+namespace internal_grassmann {
+
+using base::not_null;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of
@@ -203,8 +204,6 @@ Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-template<typename FromFrame, typename ToFrame> class Rotation;
-
 // Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) → SO(𝑉).
 template<typename Frame>
 Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
@@ -329,6 +328,21 @@ std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
 template<typename Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
+
+}  // namespace internal_grassmann
+
+using internal_grassmann::AngleBetween;
+using internal_grassmann::Bivector;
+using internal_grassmann::Commutator;
+using internal_grassmann::Exp;
+using internal_grassmann::InnerProduct;
+using internal_grassmann::Multivector;
+using internal_grassmann::Normalize;
+using internal_grassmann::NormalizeOrZero;
+using internal_grassmann::OrientedAngleBetween;
+using internal_grassmann::Trivector;
+using internal_grassmann::Vector;
+using internal_grassmann::Wedge;
 
 }  // namespace geometry
 }  // namespace principia

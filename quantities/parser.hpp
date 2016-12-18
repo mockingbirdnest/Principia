@@ -18,7 +18,7 @@ T ParseUnit(std::string const& s);
 }  // namespace internal_parser
 
 using internal_parser::ParseQuantity;
-using internal_parser::ParseUnit
+using internal_parser::ParseUnit;
 
 }  // namespace quantities
 }  // namespace principia
