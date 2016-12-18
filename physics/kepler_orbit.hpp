@@ -13,6 +13,7 @@ namespace physics {
 namespace internal_kepler_orbit {
 
 using geometry::Instant;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Length;

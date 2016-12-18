@@ -20,6 +20,7 @@ namespace geometry {
 namespace internal_rotation {
 
 using quantities::ArcCos;
+using quantities::ArcSin;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;

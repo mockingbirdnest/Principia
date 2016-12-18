@@ -22,6 +22,7 @@ using geometry::Instant;
 using geometry::Normalize;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Order2ZonalCoefficient;

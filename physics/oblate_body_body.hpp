@@ -17,6 +17,7 @@ namespace internal_oblate_body {
 using astronomy::J2000;
 using geometry::AngularVelocity;
 using geometry::Instant;
+using quantities::Angle;
 using quantities::si::Radian;
 using quantities::si::Second;
 

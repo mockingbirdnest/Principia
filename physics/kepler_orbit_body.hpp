@@ -28,6 +28,7 @@ using geometry::Velocity;
 using geometry::Wedge;
 using numerics::Bisect;
 using quantities::ArcCos;
+using quantities::ArcTan;
 using quantities::Cbrt;
 using quantities::DebugString;
 using quantities::Pow;

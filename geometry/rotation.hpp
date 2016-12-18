@@ -18,6 +18,8 @@ class OrthogonalMap;
 
 namespace internal_rotation {
 
+using quantities::Angle;
+
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);

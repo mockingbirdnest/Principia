@@ -12,6 +12,8 @@
 #include "quantities/serialization.hpp"
 
 namespace principia {
+namespace geometry {
+namespace internal_r3_element {
 
 using quantities::ArcSin;
 using quantities::ArcTan;
@@ -20,8 +22,6 @@ using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
-
-namespace geometry {
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -320,5 +320,6 @@ inline R3Element<double> BasisVector(int const i) {
           static_cast<double>(i == 2)};
 }
 
+}  // namespace internal_r3_element
 }  // namespace geometry
 }  // namespace principia

@@ -10,11 +10,11 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace geometry {
+namespace internal_r3_element {
 
 using base::not_null;
 using quantities::Angle;
-
-namespace geometry {
 
 template<typename Scalar>
 struct SphericalCoordinates;
@@ -148,6 +148,17 @@ quantities::Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
 // Returns the |i|th basis vector, whose |i|th coordinate is 1, and whose
 // other coordinates are 0.  |i| must be in [0, 2].
 R3Element<double> BasisVector(int const i);
+
+}  // namespace internal_r3_element
+
+using internal_r3_element::BasisVector;
+using internal_r3_element::Cross;
+using internal_r3_element::Dot;
+using internal_r3_element::Normalize;
+using internal_r3_element::NormalizeOrZero;
+using internal_r3_element::R3Element;
+using internal_r3_element::RadiusLatitudeLongitude;
+using internal_r3_element::SphericalCoordinates;
 
 }  // namespace geometry
 }  // namespace principia
