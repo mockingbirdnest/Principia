@@ -33,7 +33,7 @@ namespace principia {
 
 using astronomy::ICRFJ2000Ecliptic;
 using astronomy::ICRFJ2000Equator;
-using astronomy::equatorial_to_ecliptic;
+using astronomy::ICRFJ200EquatorialToEcliptic;
 using base::not_null;
 using geometry::Displacement;
 using geometry::Position;
@@ -133,24 +133,24 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         at_спутник_1_launch->initial_state(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
     Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
-        equatorial_to_ecliptic(earth_degrees_of_freedom.position() -
+        ICRFJ200EquatorialToEcliptic(earth_degrees_of_freedom.position() -
                               sun_degrees_of_freedom.position());
     Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic> const l4_rotation(
         Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
     Displacement<ICRFJ2000Ecliptic> const sun_l4_displacement =
         l4_rotation(sun_earth_displacement);
     Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
-        equatorial_to_ecliptic(earth_degrees_of_freedom.velocity() -
+        ICRFJ200EquatorialToEcliptic(earth_degrees_of_freedom.velocity() -
                               sun_degrees_of_freedom.velocity());
     Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
         l4_rotation(sun_earth_velocity);
     trajectory.Append(at_спутник_1_launch->epoch(),
                       DegreesOfFreedom<ICRFJ2000Equator>(
                           sun_degrees_of_freedom.position() +
-                              equatorial_to_ecliptic.Inverse()(
+                              ICRFJ200EquatorialToEcliptic.Inverse()(
                                   sun_l4_displacement),
                           sun_degrees_of_freedom.velocity() +
-                              equatorial_to_ecliptic.Inverse()(
+                              ICRFJ200EquatorialToEcliptic.Inverse()(
                                   sun_l4_velocity)));
 
     state.ResumeTiming();

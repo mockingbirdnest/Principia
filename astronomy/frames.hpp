@@ -46,7 +46,7 @@ using ICRFJ2000Equator =
 // coordinates.  The angle is the one defined by the XVIth General Assembly of
 // the International Astronomical Union.
 geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
-    equatorial_to_ecliptic =
+    ICRFJ200EquatorialToEcliptic =
         geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
             23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
             geometry::Bivector<double, ICRFJ2000Equator>({1, 0, 0}),
@@ -57,9 +57,9 @@ geometry::Position<ICRFJ2000Equator> const SolarSystemBarycentreEquator;
 
 }  // namespace internal_frames
 
-using internal_frames::equatorial_to_ecliptic;
 using internal_frames::ICRFJ2000Ecliptic;
 using internal_frames::ICRFJ2000Equator;
+using internal_frames::ICRFJ200EquatorialToEcliptic;
 using internal_frames::SolarSystemBarycentreEcliptic;
 using internal_frames::SolarSystemBarycentreEquator;
 
