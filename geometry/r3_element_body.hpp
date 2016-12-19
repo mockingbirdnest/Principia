@@ -302,9 +302,8 @@ R3Element<Product<LScalar, RScalar>> Cross(
 }
 
 template<typename LScalar, typename RScalar>
-Product<LScalar, RScalar> Dot(
-    R3Element<LScalar> const& left,
-    R3Element<RScalar> const& right) {
+Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
+                              R3Element<RScalar> const& right) {
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 

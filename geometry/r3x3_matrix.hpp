@@ -12,7 +12,7 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3x3matrix {
+namespace internal_r3x3_matrix {
 
 using base::not_null;
 
@@ -111,9 +111,9 @@ std::string DebugString(R3x3Matrix const& r3x3_matrix);
 std::ostream& operator<<(std::ostream& out,
                          R3x3Matrix const& r3x3_matrix);
 
-}  // namespace internal_r3x3matrix
+}  // namespace internal_r3x3_matrix
 
-using internal_r3x3matrix::R3x3Matrix;
+using internal_r3x3_matrix::R3x3Matrix;
 
 }  // namespace geometry
 }  // namespace principia

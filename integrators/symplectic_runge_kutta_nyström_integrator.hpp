@@ -119,7 +119,8 @@ class SymplecticRungeKuttaNyströmIntegrator
 using internal_symplectic_runge_kutta_nyström_integrator::ABA;
 using internal_symplectic_runge_kutta_nyström_integrator::BA;
 using internal_symplectic_runge_kutta_nyström_integrator::BAB;
-using internal_symplectic_runge_kutta_nyström_integrator::SymplecticRungeKuttaNyströmIntegrator;
+using internal_symplectic_runge_kutta_nyström_integrator::
+    SymplecticRungeKuttaNyströmIntegrator;
 
 // This method minimizes the error constant.
 // Coefficients from Robert I. McLachlan and Pau Atela (1992),

@@ -49,24 +49,9 @@ template <typename T, int exponent, typename = void>
 struct ExponentiationGenerator {};
 
 template<typename Left, typename Right>
-using QuantityProduct = typename ProductGenerator<Left, Right>::Type;
+using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
-using QuantityQuotient = typename QuotientGenerator<Left, Right>::Type;
-
-// The result type of +, -, * and / on arguments of types |Left| and |Right|.
-template<typename Left, typename Right>
-using Sum = decltype(std::declval<Left>() = std::declval<Right>());
-template<typename Left, typename Right = Left>
-using Difference = decltype(std::declval<Left>() - std::declval<Right>());
-template<typename Left, typename Right>
-using Product = decltype(std::declval<Left>() * std::declval<Right>());
-template<typename Left, typename Right>
-using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
-
-// The result type of the derivative of a |Value|-valued function with respect
-// to its |Argument|-valued argument.
-template<typename Value, typename Argument>
-using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
+using Quotient = typename QuotientGenerator<Left, Right>::Type;
 
 // |Exponentiation<T, n>| is an alias for the following, where t is a value of
 // type |T|:
@@ -99,10 +84,10 @@ template<>
 constexpr double SIUnit<double>();
 
 template<typename LDimensions, typename RDimensions>
-constexpr QuantityProduct<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename LDimensions, typename RDimensions>
-constexpr QuantityQuotient<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
 operator/(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename RDimensions>
 constexpr Quantity<RDimensions>
@@ -147,7 +132,7 @@ template<typename D>
 class Quantity {
  public:
   using Dimensions = D;
-  using Inverse = QuantityQuotient<double, Quantity>;
+  using Inverse = Quotient<double, Quantity>;
 
   constexpr Quantity();
   ~Quantity() = default;
@@ -180,12 +165,12 @@ class Quantity {
   double magnitude_;
 
   template<typename LDimensions, typename RDimensions>
-  friend constexpr QuantityProduct<Quantity<LDimensions>,
+  friend constexpr Product<Quantity<LDimensions>,
                                    Quantity<RDimensions>> operator*(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
-  friend constexpr QuantityQuotient<Quantity<LDimensions>,
+  friend constexpr Quotient<Quantity<LDimensions>,
                                     Quantity<RDimensions>> operator/(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
@@ -234,8 +219,6 @@ using internal_quantities::Angle;
 using internal_quantities::Cube;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
-using internal_quantities::Derivative;
-using internal_quantities::Difference;
 using internal_quantities::Exponentiation;
 using internal_quantities::IsFinite;
 using internal_quantities::is_quantity;
@@ -243,9 +226,7 @@ using internal_quantities::Length;
 using internal_quantities::LuminousIntensity;
 using internal_quantities::Mass;
 using internal_quantities::Pow;
-using internal_quantities::Product;
 using internal_quantities::Quantity;
-using internal_quantities::Quotient;
 using internal_quantities::SIUnit;
 using internal_quantities::SolidAngle;
 using internal_quantities::Square;

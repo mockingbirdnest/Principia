@@ -6,6 +6,21 @@
 namespace principia {
 namespace quantities {
 
+// The result type of +, -, * and / on arguments of types |Left| and |Right|.
+template<typename Left, typename Right>
+using Sum = decltype(std::declval<Left>() = std::declval<Right>());
+template<typename Left, typename Right = Left>
+using Difference = decltype(std::declval<Left>() - std::declval<Right>());
+template<typename Left, typename Right>
+using Product = decltype(std::declval<Left>() * std::declval<Right>());
+template<typename Left, typename Right>
+using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+
+// The result type of the derivative of a |Value|-valued function with respect
+// to its |Argument|-valued argument.
+template<typename Value, typename Argument>
+using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
+
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
 template<typename T>
 using Variation = Derivative<T, Time>;

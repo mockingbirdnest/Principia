@@ -4,7 +4,7 @@
 #include <set>
 #include <utility>
 
-#include "quantities/quantities.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {

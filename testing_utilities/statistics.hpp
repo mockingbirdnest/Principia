@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 // Various statistics on finite populations stored as |std::vector|s of

@@ -102,7 +102,8 @@ class SymplecticPartitionedRungeKuttaIntegrator {
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
-using internal_symplectic_runge_kutta_nyström_integrator::SymplecticPartitionedRungeKuttaIntegrator;
+using internal_symplectic_runge_kutta_nyström_integrator::
+    SymplecticPartitionedRungeKuttaIntegrator;
 
 // This integrator goes by many names, see Hairer, Lubich, and Wanner (2003),
 // Geometric numerical integration illustrated by the Störmer–Verlet method,

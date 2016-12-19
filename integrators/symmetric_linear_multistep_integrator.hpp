@@ -104,7 +104,8 @@ class SymmetricLinearMultistepIntegrator
 
 }  // namespace internal_symmetric_linear_multistep_integrator
 
-using internal_symmetric_linear_multistep_integrator::SymmetricLinearMultistepIntegrator;
+using internal_symmetric_linear_multistep_integrator::
+    SymmetricLinearMultistepIntegrator;
 
 // This method and the next are from Quinlan (1999), Resonances and
 // instabilities in symmetric multistep methods,

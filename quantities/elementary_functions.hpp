@@ -5,7 +5,7 @@
 
 namespace principia {
 namespace quantities {
-// elementary_functions shares its internal namespace with quantities because
+// elementary_functions shares its internal namespace with quantities, because
 // friendships otherwise become impossible to untangle.
 namespace internal_quantities {
 

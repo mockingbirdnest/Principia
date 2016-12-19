@@ -4,7 +4,7 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_adams_moulton {
+namespace internal_adams_moulton_integrator {
 
 using numerics::FixedVector;
 
@@ -17,9 +17,9 @@ struct AdamsMoulton {
   double denominator;
 };
 
-}  // namespace internal_adams_moulton
+}  // namespace internal_adams_moulton_integrator
 
-using internal_adams_moulton::AdamsMoulton;
+using internal_adams_moulton_integrator::AdamsMoulton;
 
 template<int order>
 AdamsMoulton<order> const& AdamsMoultonOrder();
