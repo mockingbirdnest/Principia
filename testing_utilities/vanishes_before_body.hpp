@@ -12,9 +12,13 @@
 #include <string>
 
 #include "gmock/gmock.h"
+#include "numerics/ulp_distance.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+
+using numerics::ULPDistance;
+
 namespace testing_utilities {
 
 template<typename T>

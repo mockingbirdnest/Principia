@@ -1,12 +1,12 @@
 ﻿
 #pragma once
 
+#include "testing_utilities/numerics.hpp"
+
 #include <cmath>
 #include <cstdint>
-
 #include <functional>
 #include <limits>
-#include "numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -106,36 +106,6 @@ double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
                      geometry::Multivector<Scalar, Frame, rank> const& actual) {
   return RelativeError(expected, actual,
                        &geometry::Multivector<Scalar, Frame, rank>::Norm);
-}
-
-union Qword {
-  double double_value;
-  std::int64_t long_value;
-};
-
-inline std::int64_t ULPDistance(double const x, double const y) {
-  if (x == y) {
-    return 0;
-  }
-  double const x_sign = std::copysign(1, x);
-  double const y_sign = std::copysign(1, y);
-  if (x_sign != y_sign) {
-    double const positive = x_sign == 1 ? x : y;
-    double const negative = x_sign == 1 ? y : x;
-    std::int64_t const positive_distance = ULPDistance(positive, +0.0);
-    std::int64_t const negative_distance = ULPDistance(negative, -0.0);
-    if (positive_distance >
-            std::numeric_limits<std::int64_t>::max() - negative_distance) {
-      return std::numeric_limits<std::int64_t>::max();
-    } else {
-      return positive_distance + negative_distance;
-    }
-  }
-  Qword x_qword;
-  Qword y_qword;
-  x_qword.double_value = x;
-  y_qword.double_value = y;
-  return std::abs(x_qword.long_value - y_qword.long_value);
 }
 
 }  // namespace testing_utilities

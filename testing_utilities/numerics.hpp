@@ -79,8 +79,6 @@ template<typename Scalar, typename Frame, int rank>
 double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
                      geometry::Multivector<Scalar, Frame, rank> const& actual);
 
-std::int64_t ULPDistance(double const x, double const y);
-
 }  // namespace testing_utilities
 }  // namespace principia
 

@@ -9,20 +9,20 @@
 
 #include "astronomy/epoch.hpp"
 #include "glog/stl_logging.h"
+#include "numerics/ulp_distance.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
 using base::Error;
+using numerics::ULPDistance;
 using quantities::DebugString;
 using quantities::SIUnit;
 using quantities::si::Metre;
 using quantities::si::Second;
-using testing_utilities::ULPDistance;
 
 int const max_degree = 17;
 int const min_degree = 3;
