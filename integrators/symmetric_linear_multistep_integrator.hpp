@@ -22,8 +22,11 @@ namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
+using base::not_null;
+using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
+using quantities::Time;
 
 template<typename Position, int order_>
 class SymmetricLinearMultistepIntegrator

@@ -10,14 +10,14 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using base::dynamic_cast_not_null;
 using base::make_not_null_unique;
 using geometry::Sign;
 using quantities::Abs;
 using testing_utilities::ULPDistance;
-
-namespace integrators {
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
@@ -406,5 +406,6 @@ BlanesMoan2002SRKN14A() {
   return integrator;
 }
 
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

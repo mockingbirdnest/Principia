@@ -20,15 +20,16 @@
 #include "serialization/integrators.pb.h"
 
 namespace principia {
+namespace integrators {
+namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
 using base::not_null;
 using base::Status;
+using geometry::Instant;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 using quantities::Time;
 using quantities::Variation;
-
-namespace integrators {
 
 // This class solves ordinary differential equations of the form q″ = f(q, t)
 // using an embedded Runge-Kutta-Nyström method.  We follow the standard
@@ -117,6 +118,13 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             /*stages=*/4,
                                             /*first_same_as_last=*/true> const&
 DormandElMikkawyPrince1986RKN434FM();
+
+}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+
+using internal_embedded_explicit_runge_kutta_nyström_integrator::
+    DormandElMikkawyPrince1986RKN434FM;
+using internal_embedded_explicit_runge_kutta_nyström_integrator::
+    EmbeddedExplicitRungeKuttaNyströmIntegrator;
 
 }  // namespace integrators
 }  // namespace principia

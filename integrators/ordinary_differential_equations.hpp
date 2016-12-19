@@ -23,6 +23,7 @@ using base::not_null;
 using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
+using quantities::Difference;
 using quantities::Time;
 using quantities::Variation;
 
@@ -187,6 +188,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 
 }  // namespace internal_ordinary_differential_equations
 
+using internal_ordinary_differential_equations::AdaptiveStepSize;
 using internal_ordinary_differential_equations::AdaptiveStepSizeIntegrator;
 using internal_ordinary_differential_equations::FixedStepSizeIntegrator;
 using internal_ordinary_differential_equations::IntegrationInstance;

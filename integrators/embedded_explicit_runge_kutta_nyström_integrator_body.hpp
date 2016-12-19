@@ -14,13 +14,13 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
 using geometry::Sign;
 using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
-
-namespace integrators {
 
 template<typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, 4, 3, 4, true> const&
@@ -300,5 +300,6 @@ Instance::Instance(IntegrationProblem<ODE> problem,
            current_state.velocities.size());
 }
 
+}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
