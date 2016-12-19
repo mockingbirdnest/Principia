@@ -16,6 +16,18 @@
 
 namespace principia {
 namespace integrators {
+
+// The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
+// one of the following statuses.
+namespace termination_condition {
+constexpr base::Error Done = base::Error::OK;
+// The integration may be retried with the same arguments and progress will
+// happen.
+constexpr base::Error ReachedMaximalStepCount = base::Error::ABORTED;
+// A singularity.
+constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
+}  // namespace termination_condition
+
 namespace internal_ordinary_differential_equations {
 
 using base::Error;
@@ -145,21 +157,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
-}  // namespace internal_ordinary_differential_equations
-
-// The |Solve| function below exclusively returns one of the following statuses.
-namespace termination_condition {
-constexpr base::Error Done = base::Error::OK;
-// The integration may be retried with the same arguments and progress will
-// happen.
-constexpr base::Error ReachedMaximalStepCount = base::Error::ABORTED;
-// A singularity.
-constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
-}  // namespace termination_condition
-
-namespace internal_ordinary_differential_equations {
-
-// An integrator using a fixed step size.
+// An integrator using an adaptive step size.
 template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
@@ -194,7 +192,8 @@ using internal_ordinary_differential_equations::FixedStepSizeIntegrator;
 using internal_ordinary_differential_equations::IntegrationInstance;
 using internal_ordinary_differential_equations::IntegrationProblem;
 using internal_ordinary_differential_equations::Integrator;
-using internal_ordinary_differential_equations::SpecialSecondOrderDifferentialEquation;
+using internal_ordinary_differential_equations::
+    SpecialSecondOrderDifferentialEquation;
 
 }  // namespace integrators
 }  // namespace principia

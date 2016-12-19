@@ -104,8 +104,7 @@ Scalar Multivector<Scalar, Frame, 2>::Norm() const {
 template<typename Scalar, typename Frame>
 Scalar Multivector<Scalar, Frame, 3>::Norm() const {
   // When |Scalar| is double, ADL will not find |Abs|.
-  using quantities::Abs;
-  return Abs(coordinates_);
+  return quantities::Abs(coordinates_);
 }
 
 template<typename Scalar, typename Frame>
