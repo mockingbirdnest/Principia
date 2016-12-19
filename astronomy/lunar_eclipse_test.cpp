@@ -17,6 +17,7 @@
 namespace principia {
 
 using geometry::AngleBetween;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -27,6 +28,7 @@ using quantities::Angle;
 using quantities::ArcSin;
 using quantities::Length;
 using quantities::Sin;
+using quantities::Time;
 using quantities::si::Day;
 using quantities::si::Kilo;
 using quantities::si::Metre;

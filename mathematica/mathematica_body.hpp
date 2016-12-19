@@ -10,6 +10,7 @@
 
 namespace principia {
 
+using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
 using quantities::SIUnit;

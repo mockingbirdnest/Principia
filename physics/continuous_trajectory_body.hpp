@@ -19,6 +19,7 @@ namespace internal_continuous_trajectory {
 
 using base::Error;
 using quantities::DebugString;
+using quantities::SIUnit;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::ULPDistance;

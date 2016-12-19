@@ -22,8 +22,10 @@ namespace interface {
 // and generated code; we allow ourselves to pollute the |interface| namespace
 // with convenience |using|s.
 
+using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
+using geometry::Instant;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;

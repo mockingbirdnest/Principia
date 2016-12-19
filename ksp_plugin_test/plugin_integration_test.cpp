@@ -32,6 +32,7 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::si::Day;

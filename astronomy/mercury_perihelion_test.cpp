@@ -25,6 +25,7 @@ namespace principia {
 
 using base::not_null;
 using geometry::AngleBetween;
+using geometry::Instant;
 using geometry::Position;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;

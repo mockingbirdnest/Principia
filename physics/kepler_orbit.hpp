@@ -12,6 +12,7 @@ namespace principia {
 namespace physics {
 namespace internal_kepler_orbit {
 
+using base::not_null;
 using geometry::Instant;
 using quantities::Angle;
 using quantities::AngularFrequency;

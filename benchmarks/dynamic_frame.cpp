@@ -40,6 +40,7 @@ using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Exp;
 using geometry::Frame;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;

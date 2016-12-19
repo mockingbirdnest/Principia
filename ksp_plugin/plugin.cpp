@@ -38,6 +38,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::dynamic_cast_not_null;
+using base::Error;
 using base::FindOrDie;
 using base::Fingerprint2011;
 using base::FingerprintCat2011;

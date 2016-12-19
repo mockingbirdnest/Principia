@@ -16,6 +16,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
+using base::not_null;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;

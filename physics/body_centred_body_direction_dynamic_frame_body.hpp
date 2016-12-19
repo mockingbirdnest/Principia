@@ -22,6 +22,7 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Speed;
+using quantities::Variation;
 using quantities::si::Radian;
 
 template<typename InertialFrame, typename ThisFrame>

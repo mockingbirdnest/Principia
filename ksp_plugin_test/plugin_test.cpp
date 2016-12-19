@@ -57,6 +57,7 @@ using quantities::Cos;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Sin;
+using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::si::Day;
 using quantities::si::Degree;

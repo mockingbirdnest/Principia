@@ -26,8 +26,10 @@ using internal_pile_up::PileUp;
 
 namespace internal_vessel {
 
+using base::not_null;
 using base::IteratorOn;
 using base::Subset;
+using geometry::Instant;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;

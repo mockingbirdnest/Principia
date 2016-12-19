@@ -61,6 +61,7 @@ using physics::RotatingBody;
 using quantities::Angle;
 using quantities::Length;
 using quantities::Mass;
+using quantities::Time;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;

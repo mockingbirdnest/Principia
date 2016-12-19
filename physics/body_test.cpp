@@ -26,6 +26,7 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Order2ZonalCoefficient;
+using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
