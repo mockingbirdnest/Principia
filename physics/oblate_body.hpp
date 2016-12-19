@@ -19,6 +19,7 @@ namespace principia {
 namespace physics {
 namespace internal_oblate_body {
 
+using base::not_null;
 using geometry::Vector;
 using quantities::GravitationalParameter;
 using quantities::Length;

@@ -20,6 +20,7 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
+using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Instant;
 using geometry::Rotation;

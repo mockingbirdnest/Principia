@@ -14,6 +14,9 @@
 
 namespace principia {
 namespace physics {
+namespace internal_massless_body {
+
+using base::not_null;
 
 class MasslessBody : public Body {
  public:
@@ -38,6 +41,10 @@ class MasslessBody : public Body {
   static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
       serialization::MasslessBody const& message);
 };
+
+}  // namespace internal_massless_body
+
+using internal_massless_body::MasslessBody;
 
 }  // namespace physics
 }  // namespace principia

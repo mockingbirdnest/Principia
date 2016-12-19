@@ -24,6 +24,7 @@ using geometry::Vector;
 using quantities::Action;
 using quantities::Winding;
 using quantities::Length;
+using quantities::SIUnit;
 using quantities::si::Metre;
 using ::testing::Eq;
 using ::testing::Not;

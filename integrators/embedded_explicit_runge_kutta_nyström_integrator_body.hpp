@@ -17,7 +17,9 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
+using base::make_not_null_unique;
 using geometry::Sign;
+using numerics::DoublePrecision;
 using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;

@@ -11,6 +11,8 @@ namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
+using base::make_not_null_unique;
+
 int const startup_step_divisor = 16;
 
 template<typename Position, int order_>

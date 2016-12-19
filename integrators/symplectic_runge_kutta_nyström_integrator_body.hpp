@@ -13,9 +13,9 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
-using base::dynamic_cast_not_null;
 using base::make_not_null_unique;
 using geometry::Sign;
+using numerics::DoublePrecision;
 using quantities::Abs;
 using testing_utilities::ULPDistance;
 

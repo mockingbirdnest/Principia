@@ -10,6 +10,10 @@
 // |Quantity| or |Dimensionless|.
 
 namespace principia {
+
+using quantities::Product;
+using quantities::Quotient;
+
 namespace testing_utilities {
 
 // The population mean μ(x) = E[x].
@@ -19,12 +23,11 @@ T Mean(std::vector<T> const& x);
 // The population variance σ(x)² = Var[x] = E[x² - E[x]²].
 // Computed as |Covariance(x, x)|.
 template<typename T>
-quantities::Product<T, T> Variance(std::vector<T> const& x);
+Product<T, T> Variance(std::vector<T> const& x);
 
 // The population covariance Cov[x, y] = E[(x - E[x])(y - E[y])].
 template<typename T, typename U>
-quantities::Product<T, U> Covariance(std::vector<T> const& x,
-                                     std::vector<U> const& y);
+Product<T, U> Covariance(std::vector<T> const& x, std::vector<U> const& y);
 
 // The population standard deviation σ(x) = √(Var[x]).
 template<typename T>
@@ -40,8 +43,7 @@ double PearsonProductMomentCorrelationCoefficient(std::vector<T> const& x,
 // The slope of the least-squares linear regression to the dataset
 // with abscissae |x| and ordinates |y|. |x| and |y| should have the same size.
 template<typename T, typename U>
-quantities::Quotient<U, T> Slope(std::vector<T> const& x,
-                                 std::vector<U> const& y);
+Quotient<U, T> Slope(std::vector<T> const& x, std::vector<U> const& y);
 
 // Mathematica input for a bidimensional dataset, copyable from the command line
 // (includes a call to StringReplace to remove stray newlines). The resulting
