@@ -10,12 +10,12 @@
 #include "quantities/serialization.hpp"
 
 namespace principia {
+namespace geometry {
+namespace internal_serialization {
 
 using base::not_null;
 using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
-
-namespace geometry {
 
 template<typename Message>
 class DoubleOrQuantityOrMultivectorSerializer<double, Message>
@@ -68,5 +68,6 @@ template<typename Dimensions, typename Message>
 class QuantityOrMultivectorSerializer<Quantity<Dimensions>, Message>
     : public DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {};
 
+}  // namespace internal_serialization
 }  // namespace geometry
 }  // namespace principia
