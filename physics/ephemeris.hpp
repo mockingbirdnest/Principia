@@ -24,7 +24,9 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
+using base::not_null;
 using base::Status;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
@@ -35,6 +37,7 @@ using integrators::SpecialSecondOrderDifferentialEquation;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::Speed;
+using quantities::Time;
 
 template<typename Frame>
 class Ephemeris {

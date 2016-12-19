@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/macros.hpp"
 #include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
@@ -10,8 +11,13 @@
 namespace principia {
 namespace geometry {
 
-template<typename FromFrame, typename ToFrame>
-class OrthogonalMap;
+FORWARD_DECLARE_FROM(orthogonal_map,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     OrthogonalMap);
+
+namespace internal_identity {
+
+using base::not_null;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>
@@ -56,6 +62,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Identity<FromFrame, ToFrame> operator*(
     Identity<ThroughFrame, ToFrame> const& left,
     Identity<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_identity
+
+using internal_identity::Identity;
 
 }  // namespace geometry
 }  // namespace principia

@@ -5,6 +5,7 @@
 
 namespace principia {
 namespace physics {
+namespace internal_massless_body {
 
 inline bool MasslessBody::is_massless() const {
   return true;
@@ -33,5 +34,6 @@ inline not_null<std::unique_ptr<MasslessBody>> MasslessBody::ReadFromMessage(
   return std::make_unique<MasslessBody>();
 }
 
+}  // namespace internal_massless_body
 }  // namespace physics
 }  // namespace principia

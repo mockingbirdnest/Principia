@@ -20,6 +20,8 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
+using quantities::SIUnit;
+using quantities::Sqrt;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;

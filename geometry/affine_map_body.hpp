@@ -6,6 +6,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_affine_map {
 
 // The map is represented as x ↦ linear_map(x - from_origin) + to_origin.  This
 // numerically better behaved than x ↦ linear_map(x) + translation with
@@ -94,5 +95,6 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
       /*linear_map=*/left.linear_map_ * right.linear_map_);
 }
 
+}  // namespace internal_affine_map
 }  // namespace geometry
 }  // namespace principia

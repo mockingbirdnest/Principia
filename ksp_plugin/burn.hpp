@@ -12,6 +12,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_burn {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::Velocity;
 using physics::Frenet;

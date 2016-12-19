@@ -19,15 +19,14 @@
 namespace principia {
 namespace ksp_plugin {
 
-namespace internal_pile_up {
-class PileUp;
-}  // namespace internal_pile_up
-using internal_pile_up::PileUp;
+FORWARD_DECLARE_FROM(pile_up, class, PileUp);
 
 namespace internal_vessel {
 
+using base::not_null;
 using base::IteratorOn;
 using base::Subset;
+using geometry::Instant;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;

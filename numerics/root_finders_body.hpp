@@ -11,13 +11,13 @@
 #include "numerics/double_precision.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_root_finders {
 
 using geometry::Barycentre;
 using geometry::Sign;
 using quantities::Square;
 using quantities::Sqrt;
-
-namespace numerics {
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
@@ -100,5 +100,6 @@ std::set<Argument> SolveQuadraticEquation(
   return solutions;
 }
 
+}  // namespace internal_root_finders
 }  // namespace numerics
 }  // namespace principia

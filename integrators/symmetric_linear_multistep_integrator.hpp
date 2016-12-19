@@ -19,11 +19,14 @@
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_symmetric_linear_multistep_integrator {
 
+using base::not_null;
+using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
-
-namespace integrators {
+using quantities::Time;
 
 template<typename Position, int order_>
 class SymmetricLinearMultistepIntegrator
@@ -98,6 +101,11 @@ class SymmetricLinearMultistepIntegrator
   FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;
 };
+
+}  // namespace internal_symmetric_linear_multistep_integrator
+
+using internal_symmetric_linear_multistep_integrator::
+    SymmetricLinearMultistepIntegrator;
 
 // This method and the next are from Quinlan (1999), Resonances and
 // instabilities in symmetric multistep methods,

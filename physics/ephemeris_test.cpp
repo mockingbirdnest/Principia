@@ -49,6 +49,7 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Mass;
 using quantities::Pow;
+using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::astronomy::JulianYear;
 using quantities::astronomy::LunarDistance;

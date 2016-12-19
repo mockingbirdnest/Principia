@@ -10,6 +10,8 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace base {
+namespace internal_pull_serializer {
 
 using serialization::DiscreteTrajectory;
 using serialization::Pair;
@@ -18,8 +20,6 @@ using serialization::Quantity;
 using ::std::placeholders::_1;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
-
-namespace base {
 
 namespace {
   int const chunk_size = 99;
@@ -73,7 +73,7 @@ class PullSerializerTest : public ::testing::Test {
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
-  internal::DelegatingArrayOutputStream stream_;
+  DelegatingArrayOutputStream stream_;
   std::list<std::string> strings_;
   std::uint8_t data_[small_chunk_size];
 };
@@ -166,5 +166,6 @@ TEST_F(PullSerializerTest, SerializationThreading) {
   }
 }
 
+}  // namespace internal_pull_serializer
 }  // namespace base
 }  // namespace principia

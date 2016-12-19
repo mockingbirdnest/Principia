@@ -7,10 +7,10 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace quantities {
+namespace internal_serialization {
 
 using base::not_null;
-
-namespace quantities {
 
 template<typename Dimensions, typename Message>
 class DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {
@@ -40,5 +40,6 @@ class DoubleOrQuantitySerializer<double, Message> {
   }
 };
 
+}  // namespace internal_serialization
 }  // namespace quantities
 }  // namespace principia

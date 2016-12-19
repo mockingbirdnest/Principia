@@ -15,6 +15,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_manœuvre {
 
+using base::not_null;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Vector;

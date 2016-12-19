@@ -8,6 +8,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
+using base::not_null;
 using geometry::Vector;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;

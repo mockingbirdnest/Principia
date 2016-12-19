@@ -39,6 +39,7 @@ using geometry::Position;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::ParseQuantity;

@@ -3,6 +3,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_serialization {
 
 // A helper class that serializes a |double|, a |Quantity| or a |Multivector|
 // to a protobuf structure like:
@@ -40,6 +41,12 @@ class PointOrMultivectorSerializer {};
 // }
 template<typename T, typename Message>
 class QuantityOrMultivectorSerializer {};
+
+}  // namespace internal_serialization
+
+using internal_serialization::DoubleOrQuantityOrMultivectorSerializer;
+using internal_serialization::PointOrMultivectorSerializer;
+using internal_serialization::QuantityOrMultivectorSerializer;
 
 }  // namespace geometry
 }  // namespace principia

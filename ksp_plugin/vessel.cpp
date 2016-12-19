@@ -20,6 +20,7 @@ using geometry::Position;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::IsFinite;
+using quantities::Time;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;

@@ -11,12 +11,19 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
-
-using base::not_null;
-
 namespace geometry {
 
-template<typename FromFrame, typename ToFrame> class Permutation;
+FORWARD_DECLARE_FROM(rotation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Rotation);
+
+namespace internal_grassmann {
+
+using base::not_null;
+using quantities::Angle;
+using quantities::Product;
+using quantities::Quantity;
+using quantities::Quotient;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of
@@ -150,34 +157,31 @@ template<typename Scalar, typename Frame>
 using Trivector = Multivector<Scalar, Frame, 3>;
 
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Product<LScalar, RScalar> InnerProduct(
-    Vector<LScalar, Frame> const& left,
-    Vector<RScalar, Frame> const& right);
+Product<LScalar, RScalar> InnerProduct(Vector<LScalar, Frame> const& left,
+                                       Vector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Product<LScalar, RScalar> InnerProduct(
-    Bivector<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right);
+Product<LScalar, RScalar> InnerProduct(Bivector<LScalar, Frame> const& left,
+                                       Bivector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Product<LScalar, RScalar> InnerProduct(
-    Trivector<LScalar, Frame> const& left,
-    Trivector<RScalar, Frame> const& right);
+Product<LScalar, RScalar> InnerProduct(Trivector<LScalar, Frame> const& left,
+                                       Trivector<RScalar, Frame> const& right);
 
 template<typename LScalar, typename RScalar, typename Frame>
-Bivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+Bivector<Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+Trivector<Product<LScalar, RScalar>, Frame> Wedge(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+Trivector<Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
 // Lie bracket on 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉).
 template<typename LScalar, typename RScalar, typename Frame>
-Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
+Bivector<Product<LScalar, RScalar>, Frame> Commutator(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
@@ -193,62 +197,58 @@ Multivector<double, Frame, rank> NormalizeOrZero(
 
 // Left action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉.
 template<typename LScalar, typename RScalar, typename Frame>
-Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+Vector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
 // Right action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉* ≅ 𝑉.
 template<typename LScalar, typename RScalar, typename Frame>
-Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-template<typename FromFrame, typename ToFrame> class Rotation;
-
 // Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) → SO(𝑉).
 template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
+Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent);
 
 // The result is in [0, π]; the function is commutative.
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Angle AngleBetween(Vector<LScalar, Frame> const& v,
-                               Vector<RScalar, Frame> const& w);
+Angle AngleBetween(Vector<LScalar, Frame> const& v,
+                   Vector<RScalar, Frame> const& w);
 
 // The result is in [0, π]; the function is commutative.
 template<typename LScalar, typename RScalar, typename Frame>
-quantities::Angle AngleBetween(Bivector<LScalar, Frame> const& v,
-                               Bivector<RScalar, Frame> const& w);
+Angle AngleBetween(Bivector<LScalar, Frame> const& v,
+                   Bivector<RScalar, Frame> const& w);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
 // [0, π] if |InnerProduct(Wedge(v, w), positive) >= 0|.
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
-quantities::Angle OrientedAngleBetween(
-    Vector<LScalar, Frame> const& v,
-    Vector<RScalar, Frame> const& w,
-    Bivector<PScalar, Frame> const& positive);
+Angle OrientedAngleBetween(Vector<LScalar, Frame> const& v,
+                           Vector<RScalar, Frame> const& w,
+                           Bivector<PScalar, Frame> const& positive);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
 // [0, π] if |InnerProduct(Commutator(v, w), positive) >= 0|.
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
-quantities::Angle OrientedAngleBetween(
-    Bivector<LScalar, Frame> const& v,
-    Bivector<RScalar, Frame> const& w,
-    Bivector<PScalar, Frame> const& positive);
+Angle OrientedAngleBetween(Bivector<LScalar, Frame> const& v,
+                           Bivector<RScalar, Frame> const& w,
+                           Bivector<PScalar, Frame> const& positive);
 
 template<typename LScalar, typename RScalar, typename Frame>
-Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+Vector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Trivector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+Vector<Product<LScalar, RScalar>, Frame> operator*(
     Trivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-Bivector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+Bivector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Trivector<RScalar, Frame> const& right);
 template<typename LScalar, typename RScalar, typename Frame>
-Bivector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+Bivector<Product<LScalar, RScalar>, Frame> operator*(
     Trivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
@@ -282,22 +282,19 @@ Multivector<Scalar, Frame, rank> operator/(
     double const right);
 
 template<typename LDimension, typename RScalar, typename Frame, int rank>
-Multivector<quantities::Product<quantities::Quantity<LDimension>, RScalar>,
-            Frame, rank>
-operator*(quantities::Quantity<LDimension> const& left,
+Multivector<Product<Quantity<LDimension>, RScalar>, Frame, rank>
+operator*(Quantity<LDimension> const& left,
           Multivector<RScalar, Frame, rank> const& right);
 
 template<typename LScalar, typename RDimension, typename Frame, int rank>
-Multivector<quantities::Product<LScalar, quantities::Quantity<RDimension>>,
-            Frame, rank>
+Multivector<Product<LScalar, Quantity<RDimension>>, Frame, rank>
 operator*(Multivector<LScalar, Frame, rank> const& left,
-          quantities::Quantity<RDimension> const& right);
+          Quantity<RDimension> const& right);
 
 template<typename LScalar, typename RDimension, typename Frame, int rank>
-Multivector<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>,
-            Frame, rank>
+Multivector<Quotient<LScalar, Quantity<RDimension>>, Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
-          quantities::Quantity<RDimension> const& right);
+          Quantity<RDimension> const& right);
 
 template<typename Scalar, typename Frame, int rank>
 bool operator==(Multivector<Scalar, Frame, rank> const& left,
@@ -329,6 +326,21 @@ std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
 template<typename Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
+
+}  // namespace internal_grassmann
+
+using internal_grassmann::AngleBetween;
+using internal_grassmann::Bivector;
+using internal_grassmann::Commutator;
+using internal_grassmann::Exp;
+using internal_grassmann::InnerProduct;
+using internal_grassmann::Multivector;
+using internal_grassmann::Normalize;
+using internal_grassmann::NormalizeOrZero;
+using internal_grassmann::OrientedAngleBetween;
+using internal_grassmann::Trivector;
+using internal_grassmann::Vector;
+using internal_grassmann::Wedge;
 
 }  // namespace geometry
 }  // namespace principia

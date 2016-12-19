@@ -16,6 +16,7 @@ using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::Wedge;
 using quantities::Length;
+using quantities::Sqrt;
 
 template<typename Frame, typename ThisFrame>
 BodySurfaceFrameField<Frame, ThisFrame>::BodySurfaceFrameField(

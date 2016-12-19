@@ -14,6 +14,7 @@
 
 namespace principia {
 
+using quantities::SIUnit;
 using quantities::Speed;
 using quantities::bipm::Knot;
 using ::testing::Ne;

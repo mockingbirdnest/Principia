@@ -9,12 +9,10 @@
 #include "google/protobuf/io/coded_stream_inl.h"
 
 namespace principia {
+namespace base {
+namespace internal_push_deserializer {
 
 using std::swap;
-
-namespace base {
-
-namespace internal {
 
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
     std::function<Bytes()> on_empty)
@@ -77,8 +75,6 @@ inline bool DelegatingArrayInputStream::Skip(int const count) {
 inline std::int64_t DelegatingArrayInputStream::ByteCount() const {
   return byte_count_;
 }
-
-}  // namespace internal
 
 inline PushDeserializer::PushDeserializer(int const chunk_size,
                                           int const number_of_chunks)
@@ -174,5 +170,6 @@ inline Bytes PushDeserializer::Pull() {
   return result;
 }
 
+}  // namespace internal_push_deserializer
 }  // namespace base
 }  // namespace principia

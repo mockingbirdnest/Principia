@@ -16,8 +16,8 @@
 
 namespace principia {
 namespace base {
+namespace internal_pull_serializer {
 
-namespace internal {
 // An output stream based on an array that delegates to a function the handling
 // of the case where one array is full.  It calls the |on_full| function passed
 // at construction and proceeds with filling the array returned by that
@@ -46,8 +46,6 @@ class DelegatingArrayOutputStream
   std::int64_t last_returned_size_;  // How many bytes we returned last time
                                      // Next() was called.
 };
-
-}  // namespace internal
 
 // This class support serialization which is "pulled" by the client.  That is,
 // the client creates a |PullSerializer| object, calls |Start| to start the
@@ -88,7 +86,7 @@ class PullSerializer {
 
   // The array supporting the stream and the stream itself.
   std::unique_ptr<std::uint8_t[]> data_;
-  internal::DelegatingArrayOutputStream stream_;
+  DelegatingArrayOutputStream stream_;
 
   // The thread doing the actual serialization.
   std::unique_ptr<std::thread> thread_;
@@ -109,6 +107,10 @@ class PullSerializer {
   // filled by the stream.
   std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
 };
+
+}  // namespace internal_pull_serializer
+
+using internal_pull_serializer::PullSerializer;
 
 }  // namespace base
 }  // namespace principia

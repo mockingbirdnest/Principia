@@ -14,6 +14,8 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
 using quantities::Abs;
 using quantities::AngularFrequency;
@@ -36,8 +38,6 @@ using ::testing::AllOf;
 using ::testing::Ge;
 using ::testing::Le;
 using ::testing::Lt;
-
-namespace integrators {
 
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
@@ -295,5 +295,6 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
               AlmostEquals(specific_impulse * initial_mass / mass_flow, 711));
 }
 
+}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

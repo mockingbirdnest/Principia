@@ -38,6 +38,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;

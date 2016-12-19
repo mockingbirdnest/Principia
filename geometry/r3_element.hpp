@@ -6,15 +6,19 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace geometry {
+namespace internal_r3_element {
 
 using base::not_null;
 using quantities::Angle;
-
-namespace geometry {
+using quantities::Product;
+using quantities::Quantity;
+using quantities::Quotient;
 
 template<typename Scalar>
 struct SphericalCoordinates;
@@ -104,17 +108,14 @@ R3Element<Scalar> operator/(R3Element<Scalar> const& left,
 // The special case where one of the scalars is |double| is handled separately
 // above in order to allow implicit conversions to |double|.
 template<typename LDimension, typename RScalar>
-R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
-operator*(quantities::Quantity<LDimension> const& left,
-          R3Element<RScalar> const& right);
+R3Element<Product<Quantity<LDimension>, RScalar>>
+operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right);
 template<typename LScalar, typename RDimension>
-R3Element<quantities::Product<LScalar, quantities::Quantity<RDimension>>>
-operator*(R3Element<LScalar> const& left,
-          quantities::Quantity<RDimension> const& right);
+R3Element<Product<LScalar, Quantity<RDimension>>>
+operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right);
 template<typename LScalar, typename RDimension>
-R3Element<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>>
-operator/(R3Element<LScalar> const& left,
-          quantities::Quantity<RDimension> const& right);
+R3Element<Quotient<LScalar, Quantity<RDimension>>>
+operator/(R3Element<LScalar> const& left, Quantity<RDimension> const& right);
 
 template<typename Scalar>
 bool operator==(R3Element<Scalar> const& left,
@@ -137,17 +138,28 @@ std::ostream& operator<<(std::ostream& out,
                          R3Element<Scalar> const& r3_element);
 
 template<typename LScalar, typename RScalar>
-R3Element<quantities::Product<LScalar, RScalar>> Cross(
+R3Element<Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right);
 
 template<typename LScalar, typename RScalar>
-quantities::Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
-                                          R3Element<RScalar> const& right);
+Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
+                              R3Element<RScalar> const& right);
 
 // Returns the |i|th basis vector, whose |i|th coordinate is 1, and whose
 // other coordinates are 0.  |i| must be in [0, 2].
 R3Element<double> BasisVector(int const i);
+
+}  // namespace internal_r3_element
+
+using internal_r3_element::BasisVector;
+using internal_r3_element::Cross;
+using internal_r3_element::Dot;
+using internal_r3_element::Normalize;
+using internal_r3_element::NormalizeOrZero;
+using internal_r3_element::R3Element;
+using internal_r3_element::RadiusLatitudeLongitude;
+using internal_r3_element::SphericalCoordinates;
 
 }  // namespace geometry
 }  // namespace principia

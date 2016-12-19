@@ -192,6 +192,22 @@ inline void noreturn() { std::exit(0); }
 #  define CONSTEXPR_INFINITY constexpr
 #endif
 
+// For templates in macro parameters.
+#define TEMPLATE(...) template<__VA_ARGS__>
+
+// Forward declaration of a class or struct declared in an internal namespace
+// according to #602.
+// Usage:
+// FORWARD_DECLARE_FROM(p1, struct, T);
+// FORWARD_DECLARE_FROM(p2, TEMPLATE(int i) class, U);
+#define FORWARD_DECLARE_FROM(package_name,           \
+                             template_and_class_key, \
+                             declared_name)          \
+namespace internal_##package_name {                  \
+template_and_class_key declared_name;                \
+}                                                    \
+using internal_##package_name::declared_name
+
 // We preserve issue #228 in Bourbaki because we don't have trajectory
 // decimation yet.
 #define WE_LOVE_228

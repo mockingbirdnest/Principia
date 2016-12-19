@@ -22,14 +22,13 @@ T Mean(std::vector<T> const& x) {
 }
 
 template<typename T>
-quantities::Product<T, T> Variance(std::vector<T> const& x) {
+Product<T, T> Variance(std::vector<T> const& x) {
   return Covariance(x, x);
 }
 
 template<typename T, typename U>
-quantities::Product<T, U> Covariance(std::vector<T> const& x,
-                                     std::vector<U> const& y) {
-  std::vector<quantities::Product<T, U>> integrand(x.size());
+Product<T, U> Covariance(std::vector<T> const& x, std::vector<U> const& y) {
+  std::vector<Product<T, U>> integrand(x.size());
   T mean_x = Mean(x);
   U mean_y = Mean(y);
   for (std::size_t i = 0; i < x.size(); ++i) {
@@ -50,8 +49,7 @@ double PearsonProductMomentCorrelationCoefficient(std::vector<T> const& x,
 }
 
 template<typename T, typename U>
-quantities::Quotient<U, T> Slope(std::vector<T> const& x,
-                                 std::vector<U> const& y) {
+Quotient<U, T> Slope(std::vector<T> const& x, std::vector<U> const& y) {
   return Covariance(x, y) / Variance(x);
 }
 

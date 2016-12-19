@@ -14,8 +14,9 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_rotation {
 
-namespace {
+using base::not_null;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
@@ -62,7 +63,7 @@ FORCE_INLINE Quaternion ToQuaternion(R3x3Matrix const& matrix) {
 }
 
 // Returns a rotation of |angle| around |axis|.  |axis| must be normalized.
-Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
+inline Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
   quantities::Angle const half_angle = 0.5 * angle;
   return Quaternion(Cos(half_angle), Sin(half_angle) * axis);
 }
@@ -74,8 +75,6 @@ template<typename BinaryCodedTernary>
 int BinaryCodedTernaryDigit(int const n, BinaryCodedTernary const number) {
   return (static_cast<int>(number) >> (2 * n)) & 0b11;
 }
-
-}  // namespace
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
@@ -280,5 +279,6 @@ std::ostream& operator<<(std::ostream& out,
   return out << rotation.quaternion_;
 }
 
+}  // namespace internal_rotation
 }  // namespace geometry
 }  // namespace principia

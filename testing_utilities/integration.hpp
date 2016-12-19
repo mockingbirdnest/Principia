@@ -10,6 +10,8 @@
 
 namespace principia {
 
+using base::not_null;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using physics::MassiveBody;

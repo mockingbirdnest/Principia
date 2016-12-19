@@ -74,9 +74,6 @@
     <ClInclude Include="named_quantities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="epoch_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="identity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

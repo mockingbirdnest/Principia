@@ -61,6 +61,7 @@ using physics::SolarSystem;
 using quantities::Acceleration;
 using quantities::ParseQuantity;
 using quantities::Pow;
+using quantities::Time;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;

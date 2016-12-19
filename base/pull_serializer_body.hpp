@@ -6,13 +6,11 @@
 #include <algorithm>
 
 namespace principia {
+namespace base {
+namespace internal_pull_serializer {
 
 using std::placeholders::_1;
 using std::swap;
-
-namespace base {
-
-namespace internal {
 
 inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
     Bytes const bytes,
@@ -61,8 +59,6 @@ inline void DelegatingArrayOutputStream::BackUp(int count) {
 inline std::int64_t DelegatingArrayOutputStream::ByteCount() const {
   return byte_count_;
 }
-
-}  // namespace internal
 
 inline PullSerializer::PullSerializer(int const chunk_size,
                                       int const number_of_chunks)
@@ -142,5 +138,6 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
   return result;
 }
 
+}  // namespace internal_pull_serializer
 }  // namespace base
 }  // namespace principia

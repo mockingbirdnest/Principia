@@ -10,6 +10,7 @@
 
 namespace principia {
 namespace numerics {
+namespace internal_fixed_arrays {
 
 template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector() {
@@ -151,5 +152,6 @@ FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 template<typename Scalar, int rows>
 int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
 
+}  // namespace internal_fixed_arrays
 }  // namespace numerics
 }  // namespace principia
