@@ -15,6 +15,8 @@
 #include "serialization/integrators.pb.h"
 
 namespace principia {
+namespace integrators {
+namespace internal_ordinary_differential_equations {
 
 using base::Error;
 using base::not_null;
@@ -23,8 +25,6 @@ using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Time;
 using quantities::Variation;
-
-namespace integrators {
 
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.
@@ -144,15 +144,19 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
+}  // namespace internal_ordinary_differential_equations
+
 // The |Solve| function below exclusively returns one of the following statuses.
 namespace termination_condition {
-constexpr Error Done = Error::OK;
+constexpr base::Error Done = base::Error::OK;
 // The integration may be retried with the same arguments and progress will
 // happen.
-constexpr Error ReachedMaximalStepCount = Error::ABORTED;
+constexpr base::Error ReachedMaximalStepCount = base::Error::ABORTED;
 // A singularity.
-constexpr Error VanishingStepSize = Error::FAILED_PRECONDITION;
+constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
 }  // namespace termination_condition
+
+namespace internal_ordinary_differential_equations {
 
 // An integrator using a fixed step size.
 template<typename DifferentialEquation>
@@ -180,6 +184,15 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  private:
   serialization::AdaptiveStepSizeIntegrator::Kind const kind_;
 };
+
+}  // namespace internal_ordinary_differential_equations
+
+using internal_ordinary_differential_equations::AdaptiveStepSizeIntegrator;
+using internal_ordinary_differential_equations::FixedStepSizeIntegrator;
+using internal_ordinary_differential_equations::IntegrationInstance;
+using internal_ordinary_differential_equations::IntegrationProblem;
+using internal_ordinary_differential_equations::Integrator;
+using internal_ordinary_differential_equations::SpecialSecondOrderDifferentialEquation;
 
 }  // namespace integrators
 }  // namespace principia

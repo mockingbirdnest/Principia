@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace integrators {
+namespace internal_ordinary_differential_equations {
 
 template<typename Position>
 void
@@ -106,5 +107,6 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
   }
 }
 
+}  // namespace internal_ordinary_differential_equations
 }  // namespace integrators
 }  // namespace principia

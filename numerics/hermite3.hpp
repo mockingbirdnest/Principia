@@ -7,10 +7,10 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_hermite3 {
 
 using quantities::Derivative;
-
-namespace numerics {
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
@@ -38,6 +38,10 @@ class Hermite3 {
   Derivative2 a2_;
   Derivative3 a3_;
 };
+
+}  // namespace internal_hermite3
+
+using internal_hermite3::Hermite3;
 
 }  // namespace numerics
 }  // namespace principia

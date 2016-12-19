@@ -14,12 +14,13 @@ namespace serialization {
 using ЧебышёвSeries = ChebyshevSeries;
 }  // namespace serialization
 
+namespace numerics {
+namespace internal_чебышёв_series {
+
+using base::not_null;
 using geometry::Instant;
 using quantities::Time;
 using quantities::Variation;
-
-namespace numerics {
-namespace internal {
 
 // A helper class for implementing |Evaluate| that can be specialized for speed.
 template<typename Vector>
@@ -39,8 +40,6 @@ class EvaluationHelper {
   std::vector<Vector> coefficients_;
   int degree_;
 };
-
-}  // namespace internal
 
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
 // an |Instant|.
@@ -92,8 +91,12 @@ class ЧебышёвSeries {
   Instant t_min_;
   Instant t_max_;
   Time::Inverse one_over_duration_;
-  internal::EvaluationHelper<Vector> helper_;
+  EvaluationHelper<Vector> helper_;
 };
+
+}  // namespace internal_чебышёв_series
+
+using internal_чебышёв_series::ЧебышёвSeries;
 
 }  // namespace numerics
 }  // namespace principia

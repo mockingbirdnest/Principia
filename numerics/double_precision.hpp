@@ -5,10 +5,11 @@
 #include "serialization/numerics.pb.h"
 
 namespace principia {
-
-using quantities::Difference;
-
 namespace numerics {
+namespace internal_double_precision {
+
+using base::not_null;
+using quantities::Difference;
 
 // A simple container for accumulating a value using compensated summation.  The
 // type of the value must be an affine space.  The value constructor is not
@@ -32,6 +33,10 @@ struct DoublePrecision {
 template<typename T>
 std::ostream& operator<<(std::ostream& os,
                          const DoublePrecision<T>& double_precision);
+
+}  // namespace internal_double_precision
+
+using internal_double_precision::DoublePrecision;
 
 }  // namespace numerics
 }  // namespace principia

@@ -8,10 +8,10 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_fixed_arrays {
 
 using quantities::Product;
-
-namespace numerics {
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
@@ -93,6 +93,12 @@ class FixedStrictlyLowerTriangularMatrix {
  private:
   std::array<Scalar, dimension> data_;
 };
+
+}  // namespace internal_fixed_arrays
+
+using internal_fixed_arrays::FixedMatrix;
+using internal_fixed_arrays::FixedStrictlyLowerTriangularMatrix;
+using internal_fixed_arrays::FixedVector;
 
 }  // namespace numerics
 }  // namespace principia

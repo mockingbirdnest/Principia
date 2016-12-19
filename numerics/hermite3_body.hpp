@@ -9,10 +9,10 @@
 #include "numerics/root_finders.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_hermite3 {
 
 using quantities::Difference;
-
-namespace numerics {
 
 template<typename Argument, typename Value>
 Hermite3<Argument, Value>::Hermite3(
@@ -55,5 +55,6 @@ std::set<Argument> Hermite3<Argument, Value>::FindExtrema() const {
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
 }
 
+}  // namespace internal_hermite3
 }  // namespace numerics
 }  // namespace principia
