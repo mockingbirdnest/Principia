@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/macros.hpp"
 #include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
@@ -10,8 +11,9 @@
 namespace principia {
 namespace geometry {
 
-template<typename FromFrame, typename ToFrame>
-class OrthogonalMap;
+FORWARD_DECLARE_FROM(orthogonal_map,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     OrthogonalMap);
 
 namespace internal_identity {
 

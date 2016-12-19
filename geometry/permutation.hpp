@@ -11,8 +11,9 @@
 namespace principia {
 namespace geometry {
 
-template<typename FromFrame, typename ToFrame>
-class OrthogonalMap;
+FORWARD_DECLARE_FROM(orthogonal_map,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     OrthogonalMap);
 
 namespace internal_permutation {
 

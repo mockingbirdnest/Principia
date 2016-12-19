@@ -14,6 +14,11 @@ class ComponentwiseMatcher2;
 }  // namespace testing_utilities
 
 namespace geometry {
+namespace internal_pair {
+
+using base::not_null;
+using quantities::Product;
+using quantities::Quotient;
 
 template<typename T1, typename T2>
 class Pair;
@@ -137,22 +142,19 @@ class Pair {
   template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
       Pair<U1, U2>,
-      Pair<decltype(std::declval<Scalar>() * std::declval<U1>()),
-           decltype(std::declval<Scalar>() * std::declval<U2>())>>::type
+      Pair<Product<Scalar, U1>, Product<Scalar, U2>>>::type
   operator*(Scalar const left, Pair<U1, U2> const& right);
 
   template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
       Pair<U1, U2>,
-      Pair<decltype(std::declval<U1>() * std::declval<Scalar>()),
-           decltype(std::declval<U2>() * std::declval<Scalar>())>>::type
+      Pair<Product<U1, Scalar>, Product<U2, Scalar>>>::type
   operator*(Pair<U1, U2> const& left, Scalar const right);
 
   template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
       Pair<U1, U2>,
-      Pair<decltype(std::declval<U1>() / std::declval<Scalar>()),
-           decltype(std::declval<U2>() / std::declval<Scalar>())>>::type
+      Pair<Quotient<U1, Scalar>, Quotient<U2, Scalar>>>::type
   operator/(Pair<U1, U2> const& left, Scalar const right);
 
   template<typename U1, typename U2>
@@ -185,22 +187,19 @@ typename enable_if_vector<Pair<T1, T2>>::type operator-(
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<Scalar>() * std::declval<T1>()),
-         decltype(std::declval<Scalar>() * std::declval<T2>())>>::type
+    Pair<Product<Scalar, T1>, Product<Scalar, T2>>>::type
 operator*(Scalar const left, Pair<T1, T2> const& right);
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
-         decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+    Pair<Product<T1, Scalar>, Product<T2, Scalar>>>::type
 operator*(Pair<T1, T2> const& left, Scalar const right);
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
-         decltype(std::declval<T2>() / std::declval<Scalar>())>>::type
+    Pair<Product<T1, Scalar>, Product<T2, Scalar>>>::type
 operator/(Pair<T1, T2> const& left, Scalar const right);
 
 template<typename T1, typename T2>
@@ -215,6 +214,12 @@ typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
 
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
+
+}  // namespace internal_pair
+
+using internal_pair::enable_if_vector;
+using internal_pair::Pair;
+using internal_pair::vector_of;
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
 template<typename T1, typename T2, typename Weight>
