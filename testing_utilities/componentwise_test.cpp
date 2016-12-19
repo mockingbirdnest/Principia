@@ -22,7 +22,7 @@ using geometry::Pair;
 using geometry::R3Element;
 using geometry::Vector;
 using quantities::Action;
-using quantities::Winding;
+using quantities::Amount;
 using quantities::Length;
 using quantities::SIUnit;
 using quantities::si::Metre;
@@ -70,22 +70,22 @@ TEST_F(ComponentwiseTest, Grassmann) {
 }
 
 TEST_F(ComponentwiseTest, Pair) {
-  using VV = Pair<Vector<Action, World>, Vector<Winding, World>>;
+  using VV = Pair<Vector<Action, World>, Vector<Amount, World>>;
   VV vv(Vector<Action, World>({(1.0 + 1.0e-12) * SIUnit<Action>(),
                                 1.0e-10 *  SIUnit<Action>(),
                                 3.5 *  SIUnit<Action>()}),
-        Vector<Winding, World>({(1.0 + 1.0e-12) * SIUnit<Winding>(),
-                                (2.0 + 1.0e-10) *  SIUnit<Winding>(),
-                                 3.5 *  SIUnit<Winding>()}));
+        Vector<Amount, World>({(1.0 + 1.0e-12) * SIUnit<Amount>(),
+                                (2.0 + 1.0e-10) *  SIUnit<Amount>(),
+                                 3.5 *  SIUnit<Amount>()}));
   EXPECT_THAT(vv, Componentwise(
                       Componentwise(
                           AlmostEquals(1.0 * SIUnit<Action>(), 4504),
                           VanishesBefore(1.0 * SIUnit<Action>(), 450360),
                           Eq(3.5 * SIUnit<Action>())),
                       AlmostEquals(
-                          Vector<Winding, World>({1.0 * SIUnit<Winding>(),
-                                                  2.0 *  SIUnit<Winding>(),
-                                                  3.5 *  SIUnit<Winding>()}),
+                          Vector<Amount, World>({1.0 * SIUnit<Amount>(),
+                                                  2.0 *  SIUnit<Amount>(),
+                                                  3.5 *  SIUnit<Amount>()}),
                           225180)));
   EXPECT_THAT(vv, Not(Componentwise(
                       Componentwise(
@@ -93,9 +93,9 @@ TEST_F(ComponentwiseTest, Pair) {
                           VanishesBefore(1.0 * SIUnit<Action>(), 450360),
                           Eq(2.5 * SIUnit<Action>())),
                       AlmostEquals(
-                          Vector<Winding, World>({1.0 * SIUnit<Winding>(),
-                                                  2.0 *  SIUnit<Winding>(),
-                                                  3.5 *  SIUnit<Winding>()}),
+                          Vector<Amount, World>({1.0 * SIUnit<Amount>(),
+                                                  2.0 *  SIUnit<Amount>(),
+                                                  3.5 *  SIUnit<Amount>()}),
                           2))));
 }
 
