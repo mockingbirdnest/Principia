@@ -12,6 +12,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_r3x3matrix {
 
 inline R3x3Matrix::R3x3Matrix(R3Element<double> const& row_x,
                               R3Element<double> const& row_y,
@@ -192,5 +193,6 @@ inline std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
+}  // namespace internal_r3x3matrix
 }  // namespace geometry
 }  // namespace principia

@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_identity {
 
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap;
@@ -56,6 +57,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Identity<FromFrame, ToFrame> operator*(
     Identity<ThroughFrame, ToFrame> const& left,
     Identity<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_identity
+
+using internal_identity::Identity;
 
 }  // namespace geometry
 }  // namespace principia

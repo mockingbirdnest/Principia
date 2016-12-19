@@ -487,10 +487,9 @@ Multivector<Scalar, Frame, rank>& operator/=(
 
 template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector) {
-  // This |using| is required for the |Trivector|, since we need an ambiguity
-  // between |geometry::DebugString(R3Element<Scalar> const&)| and
-  // |DebugString(Scalar const&)| in order for the template magic to work out.
-  using DebugString;
+  // This |using| is required for the |Trivector|, whose |DebugString(Scalar)|
+  // will not be found by ADL if |Scalar| is |double|.
+  using quantities::DebugString;
   return DebugString(multivector.coordinates());
 }
 

@@ -12,6 +12,9 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_r3x3matrix {
+
+using base::not_null;
 
 // An |R3x3Matrix| is an element of the associative algebra of 3-by-3 matrices
 // over ℝ, represented by |double|.
@@ -107,6 +110,10 @@ std::string DebugString(R3x3Matrix const& r3x3_matrix);
 
 std::ostream& operator<<(std::ostream& out,
                          R3x3Matrix const& r3x3_matrix);
+
+}  // namespace internal_r3x3matrix
+
+using internal_r3x3matrix::R3x3Matrix;
 
 }  // namespace geometry
 }  // namespace principia

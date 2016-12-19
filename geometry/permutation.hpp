@@ -14,6 +14,10 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap;
 
+namespace internal_permutation {
+
+using base::not_null;
+
 // A permutation of the coordinates. Obviously not coordinate-free, but
 // practical.  There are no precision losses when composing or applying
 // permutations.
@@ -89,6 +93,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_permutation
+
+using internal_permutation::Permutation;
 
 }  // namespace geometry
 }  // namespace principia

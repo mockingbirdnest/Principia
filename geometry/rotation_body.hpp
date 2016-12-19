@@ -16,6 +16,8 @@ namespace principia {
 namespace geometry {
 namespace internal_rotation {
 
+using base::not_null;
+
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.

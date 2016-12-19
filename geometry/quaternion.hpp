@@ -6,6 +6,9 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_quaternion {
+
+using base::not_null;
 
 // An element of the skew field of quaternions ℍ (where ℝ is modeled by
 // |double|).
@@ -57,6 +60,10 @@ Quaternion operator/(Quaternion const& left,
                      double const right);
 
 std::ostream& operator<<(std::ostream& out, Quaternion const& quaternion);
+
+}  // namespace internal_quaternion
+
+using internal_quaternion::Quaternion;
 
 }  // namespace geometry
 }  // namespace principia

@@ -12,6 +12,8 @@ namespace principia {
 namespace geometry {
 namespace internal_frame {
 
+using base::not_null;
+
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
 class Frame {
  public:

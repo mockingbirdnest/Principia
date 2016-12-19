@@ -11,10 +11,11 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
-
-using quantities::is_quantity;
-
 namespace geometry {
+namespace internal_point {
+
+using base::not_null;
+using quantities::is_quantity;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -106,6 +107,10 @@ std::string DebugString(Point<Vector> const& point);
 
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
+
+}  // namespace internal_point
+
+using internal_point::Point;
 
 // Specialize BarycentreCalculator to make it applicable to Points.
 template<typename Vector, typename Weight>

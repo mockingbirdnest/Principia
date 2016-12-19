@@ -1,11 +1,15 @@
 ﻿
 #pragma once
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
+namespace internal_linear_map {
+
+using base::not_null;
 
 template<typename FromFrame, typename ToFrame>
 class LinearMap {
@@ -47,6 +51,10 @@ class LinearMap {
 //   virtual R3Element<Scalar> operator()(
 //       R3Element<Scalar> const& r3_element) const = 0;
 };
+
+}  // namespace internal_linear_map
+
+using internal_linear_map::LinearMap;
 
 }  // namespace geometry
 }  // namespace principia

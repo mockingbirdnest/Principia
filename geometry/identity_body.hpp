@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_identity {
 
 template<typename FromFrame, typename ToFrame>
 Identity<FromFrame, ToFrame>::Identity() {}
@@ -91,5 +92,6 @@ Identity<FromFrame, ToFrame> operator*(
   return Identity<FromFrame, ToFrame>();
 }
 
+}  // namespace internal_identity
 }  // namespace geometry
 }  // namespace principia

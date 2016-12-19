@@ -7,6 +7,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_quaternion {
 
 inline Quaternion::Quaternion() : real_part_(0) {}
 
@@ -146,5 +147,6 @@ inline std::ostream& operator<<(std::ostream& out,
              << quaternion.imaginary_part().z << " k";
 }
 
+}  // namespace internal_quaternion
 }  // namespace geometry
 }  // namespace principia

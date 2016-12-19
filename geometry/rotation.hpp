@@ -18,6 +18,7 @@ class OrthogonalMap;
 
 namespace internal_rotation {
 
+using base::not_null;
 using quantities::Angle;
 
 template<typename FromFrame, typename ToFrame>
