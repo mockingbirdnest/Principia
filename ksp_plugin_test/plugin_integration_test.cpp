@@ -10,6 +10,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
