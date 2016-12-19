@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace quantities {
+namespace internal_quantities {
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
@@ -79,7 +80,6 @@ struct Dimensions {
       (WindingExponent & exponent_mask)           << 9 * exponent_bits;   // NOLINT
 };
 
-namespace internal {
 template<typename Q>
 struct Collapse { using Type = Q; };
 template<>
@@ -177,8 +177,6 @@ template<typename T, int exponent>
 struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
   using Type = T;
 };
-
-}  // namespace internal
 
 template<typename D>
 constexpr Quantity<D>::Quantity() : magnitude_(0) {}
@@ -294,8 +292,8 @@ constexpr Quantity<D> Quantity<D>::operator*(double const right) const {
 }
 
 template<typename LDimensions, typename RDimensions>
-FORCE_INLINE constexpr internal::Product<Quantity<LDimensions>,
-                                         Quantity<RDimensions>>
+FORCE_INLINE constexpr QuantityProduct<Quantity<LDimensions>,
+                                       Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
@@ -303,7 +301,7 @@ operator*(Quantity<LDimensions> const& left,
 }
 
 template<typename LDimensions, typename RDimensions>
-constexpr internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr QuantityQuotient<Quantity<LDimensions>, Quantity<RDimensions>>
 operator/(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Quotient<Quantity<LDimensions>,
@@ -441,5 +439,6 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity) {
   return out << DebugString(quantity);
 }
 
+}  // namespace internal_quantities
 }  // namespace quantities
 }  // namespace principia

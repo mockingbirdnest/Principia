@@ -8,8 +8,7 @@
 
 namespace principia {
 namespace quantities {
-
-namespace internal {
+namespace internal_quantities {
 
 template<int n, typename Q>
 struct NthRootGenerator<
@@ -41,8 +40,6 @@ struct NthRootGenerator<
                                    Amount, LuminousIntensity, Winding, Angle,
                                    SolidAngle>>;
 };
-
-}  // namespace internal
 
 inline double Sqrt(double const x) {
   return std::sqrt(x);
@@ -106,5 +103,6 @@ inline Angle ArcTanh(double const x) {
   return std::atanh(x) * si::Radian;
 }
 
+}  // namespace internal_quantities
 }  // namespace quantities
 }  // namespace principia

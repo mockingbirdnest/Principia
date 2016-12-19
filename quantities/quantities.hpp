@@ -11,10 +11,10 @@
 #include "serialization/quantities.pb.h"
 
 namespace principia {
+namespace quantities {
+namespace internal_quantities {
 
 using base::not_null;
-
-namespace quantities {
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
@@ -41,8 +41,6 @@ using Winding           = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>>;
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>>;
 using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
 
-namespace internal {
-
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template <int n, typename Q, typename = void>
@@ -51,11 +49,9 @@ template <typename T, int exponent, typename = void>
 struct ExponentiationGenerator {};
 
 template<typename Left, typename Right>
-using Product = typename ProductGenerator<Left, Right>::Type;
+using QuantityProduct = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
-using Quotient = typename QuotientGenerator<Left, Right>::Type;
-
-}  // namespace internal
+using QuantityQuotient = typename QuotientGenerator<Left, Right>::Type;
 
 // The result type of +, -, * and / on arguments of types |Left| and |Right|.
 template<typename Left, typename Right>
@@ -78,8 +74,7 @@ using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
 //   The type of t / ( ... (t * t) * ... * t), with n + 1 factors in the
 //   denominator, if n < 1.
 template<typename T, int exponent>
-using Exponentiation =
-    typename internal::ExponentiationGenerator<T, exponent>::Type;
+using Exponentiation = typename ExponentiationGenerator<T, exponent>::Type;
 template<typename Q>
 using Square = Exponentiation<Q, 2>;
 template<typename Q>
@@ -89,7 +84,7 @@ using Cube = Exponentiation<Q, 3>;
 // even dimensions.  In that case, it is the unique instance |S| of |Quantity|
 // such that |Product<S, S>| is |T|.
 template<int n, typename Q>
-using NthRoot = typename internal::NthRootGenerator<n, Q>::Type;
+using NthRoot = typename NthRootGenerator<n, Q>::Type;
 template<typename Q>
 using SquareRoot = NthRoot<2, Q>;
 template<typename Q>
@@ -104,10 +99,10 @@ template<>
 constexpr double SIUnit<double>();
 
 template<typename LDimensions, typename RDimensions>
-constexpr internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr QuantityProduct<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename LDimensions, typename RDimensions>
-constexpr internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+constexpr QuantityQuotient<Quantity<LDimensions>, Quantity<RDimensions>>
 operator/(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
 template<typename RDimensions>
 constexpr Quantity<RDimensions>
@@ -152,7 +147,7 @@ template<typename D>
 class Quantity {
  public:
   using Dimensions = D;
-  using Inverse = internal::Quotient<double, Quantity>;
+  using Inverse = QuantityQuotient<double, Quantity>;
 
   constexpr Quantity();
   ~Quantity() = default;
@@ -185,13 +180,13 @@ class Quantity {
   double magnitude_;
 
   template<typename LDimensions, typename RDimensions>
-  friend constexpr internal::Product<Quantity<LDimensions>,
-                                     Quantity<RDimensions>> operator*(
+  friend constexpr QuantityProduct<Quantity<LDimensions>,
+                                   Quantity<RDimensions>> operator*(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
-  friend constexpr internal::Quotient<Quantity<LDimensions>,
-                                      Quantity<RDimensions>> operator/(
+  friend constexpr QuantityQuotient<Quantity<LDimensions>,
+                                    Quantity<RDimensions>> operator/(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
@@ -230,6 +225,33 @@ template<typename T>
 struct is_quantity : std::is_floating_point<T> {};
 template<typename D>
 struct is_quantity<Quantity<D>> : std::true_type {};
+
+}  // namespace internal_quantities
+
+using internal_quantities::Abs;
+using internal_quantities::Amount;
+using internal_quantities::Angle;
+using internal_quantities::Cube;
+using internal_quantities::Current;
+using internal_quantities::DebugString;
+using internal_quantities::Derivative;
+using internal_quantities::Difference;
+using internal_quantities::Exponentiation;
+using internal_quantities::IsFinite;
+using internal_quantities::is_quantity;
+using internal_quantities::Length;
+using internal_quantities::LuminousIntensity;
+using internal_quantities::Mass;
+using internal_quantities::Pow;
+using internal_quantities::Product;
+using internal_quantities::Quantity;
+using internal_quantities::Quotient;
+using internal_quantities::SIUnit;
+using internal_quantities::SolidAngle;
+using internal_quantities::Square;
+using internal_quantities::Temperature;
+using internal_quantities::Time;
+using internal_quantities::Winding;
 
 }  // namespace quantities
 }  // namespace principia
