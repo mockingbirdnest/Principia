@@ -19,7 +19,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(internal_pile_up, class, PileUp);
+FORWARD_DECLARE_FROM(pile_up, class, PileUp);
 
 namespace internal_vessel {
 
