@@ -11,6 +11,9 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_orthogonal_map {
+
+using base::not_null;
 
 // An orthogonal map between the inner product spaces |FromFrame| and
 // |ToFrame|, as well as the induced maps on the exterior algebra.
@@ -79,6 +82,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(
     OrthogonalMap<ThroughFrame, ToFrame> const& left,
     OrthogonalMap<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_orthogonal_map
+
+using internal_orthogonal_map::OrthogonalMap;
 
 }  // namespace geometry
 }  // namespace principia

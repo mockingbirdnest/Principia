@@ -9,10 +9,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_identity {
 
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap;
+
+namespace internal_identity {
+
+using base::not_null;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>
