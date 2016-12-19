@@ -13,10 +13,9 @@
 namespace principia {
 namespace geometry {
 
-namespace internal_rotation {
-template<typename FromFrame, typename ToFrame> class Rotation;
-}  // namespace internal_rotation
-using internal_rotation::Rotation;
+FORWARD_DECLARE_FROM(rotation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Rotation);
 
 namespace internal_grassmann {
 
