@@ -75,11 +75,11 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
 
   Status Solve(Instant const& t_final,
                IntegrationInstance& instance) const override;
