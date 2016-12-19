@@ -25,6 +25,12 @@ using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
 template<typename T>
 using Variation = Derivative<T, Time>;
 
+// The solid angle is really the square of the angle: for instance, the surface
+// element on the sphere is cos(θ) dθ dφ, and the cylinder with radius r and
+// height 2r, whose surface is equal to that of the sphere, has a surface of
+// 2r × 2πr: the steradian is the square of the radian.
+using SolidAngle   = Square<Angle>;
+
 // General mechanics
 using Speed        = Variation<Length>;
 using Acceleration = Variation<Speed>;
@@ -74,12 +80,8 @@ using CatalyticActivity = Quotient<Amount, Time>;
 using Wavenumber = Quotient<Angle, Length>;
 
 // Spectroscopy
-// Nonstandard, the SI considers cycles as dimensionless. This is annoying
-// because of the resulting hopeless confusion between frequency and angular
-// frequency. We choose to strongly type cycles.
-using Frequency               = Quotient<Winding, Time>;
-using Wavelength              = Quotient<Length, Winding>;
-using SpectroscopicWavenumber = Quotient<Winding, Length>;
+using Frequency               = Time::Inverse;
+using SpectroscopicWavenumber = Length::Inverse;
 
 // Electromagnetism
 using Charge              = Product<Current, Time>;

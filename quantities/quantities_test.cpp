@@ -36,7 +36,6 @@ using constants::VacuumPermittivity;
 using si::Ampere;
 using si::AstronomicalUnit;
 using si::Candela;
-using si::Cycle;
 using si::Day;
 using si::Degree;
 using si::Hour;
@@ -117,9 +116,8 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
 
 TEST_F(QuantitiesTest, Formatting) {
   auto const all_the_units = 1 * Metre * Kilogram * Second * Ampere * Kelvin /
-                                 (Mole * Candela * Cycle * Radian * Steradian);
-  std::string const expected = std::string("+1e+00 m kg s A K mol^-1") +
-                               " cd^-1 cycle^-1 rad^-1 sr^-1";
+                                 (Mole * Candela * Radian * Steradian);
+  std::string const expected = "+1e+00 m kg s A K mol^-1 cd^-1 rad^-3";
   std::string const actual = DebugString(all_the_units, 0);
   EXPECT_EQ(expected, actual);
   std::string const π17 = "\\+3\\.1415926535897931.e\\+00";
