@@ -251,6 +251,8 @@ FillStepFromSystemState(ODE const& equation,
                                 step.accelerations);
 }
 
+}  // namespace internal_symmetric_linear_multistep_integrator
+
 template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
@@ -334,6 +336,5 @@ QuinlanTremaine1990Order14() {
   return integrator;
 }
 
-}  // namespace internal_symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia

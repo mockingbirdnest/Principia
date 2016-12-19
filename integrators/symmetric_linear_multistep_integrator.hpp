@@ -102,6 +102,10 @@ class SymmetricLinearMultistepIntegrator
   double const β_denominator_;
 };
 
+}  // namespace internal_symmetric_linear_multistep_integrator
+
+using internal_symmetric_linear_multistep_integrator::SymmetricLinearMultistepIntegrator;
+
 // This method and the next are from Quinlan (1999), Resonances and
 // instabilities in symmetric multistep methods,
 // https://arxiv.org/abs/astro-ph/9901136.
@@ -137,15 +141,6 @@ template <typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/14> const&
 QuinlanTremaine1990Order14();
-
-}  // namespace internal_symmetric_linear_multistep_integrator
-
-using internal_symmetric_linear_multistep_integrator::Quinlan1999Order8A;
-using internal_symmetric_linear_multistep_integrator::Quinlan1999Order8B;
-using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order8;
-using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order10;
-using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order12;
-using internal_symmetric_linear_multistep_integrator::QuinlanTremaine1990Order14;
 
 }  // namespace integrators
 }  // namespace principia

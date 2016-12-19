@@ -3,10 +3,10 @@
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_adams_moulton {
 
 using numerics::FixedVector;
-
-namespace integrators {
 
 // Definition of an Adams-Moulton method.  Not technically an "integrator" as
 // it is not a subclass of |integrators::Integrator|.
@@ -16,6 +16,10 @@ struct AdamsMoulton {
   FixedVector<double, order> numerators;
   double denominator;
 };
+
+}  // namespace internal_adams_moulton
+
+using internal_adams_moulton::AdamsMoulton;
 
 template<int order>
 AdamsMoulton<order> const& AdamsMoultonOrder();

@@ -7,10 +7,10 @@
 #include "symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using numerics::FixedVector;
-
-namespace integrators {
 
 // A symplectic partitioned Runge-Kutta integrator.  Does not subclass
 // |Integrator|; used to generate (less general)
@@ -99,6 +99,10 @@ class SymplecticPartitionedRungeKuttaIntegrator {
                              std::unique_ptr<SRKN<BAB>>,
                              NotApplicable> bab_srkn_;
 };
+
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+
+using internal_symplectic_runge_kutta_nyström_integrator::SymplecticPartitionedRungeKuttaIntegrator;
 
 // This integrator goes by many names, see Hairer, Lubich, and Wanner (2003),
 // Geometric numerical integration illustrated by the Störmer–Verlet method,

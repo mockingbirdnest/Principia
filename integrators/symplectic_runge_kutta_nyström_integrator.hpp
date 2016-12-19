@@ -114,6 +114,13 @@ class SymplecticRungeKuttaNyströmIntegrator
   FixedVector<double, stages_> c_;
 };
 
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+
+using internal_symplectic_runge_kutta_nyström_integrator::ABA;
+using internal_symplectic_runge_kutta_nyström_integrator::BA;
+using internal_symplectic_runge_kutta_nyström_integrator::BAB;
+using internal_symplectic_runge_kutta_nyström_integrator::SymplecticRungeKuttaNyströmIntegrator;
+
 // This method minimizes the error constant.
 // Coefficients from Robert I. McLachlan and Pau Atela (1992),
 // The accuracy of symplectic integrators, table 2.
@@ -196,22 +203,6 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
                                       /*time_reversible=*/true,
                                       /*evaluations=*/14,
                                       ABA> const& BlanesMoan2002SRKN14A();
-
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
-
-using internal_symplectic_runge_kutta_nyström_integrator::ABA;
-using internal_symplectic_runge_kutta_nyström_integrator::BA;
-using internal_symplectic_runge_kutta_nyström_integrator::BAB;
-using internal_symplectic_runge_kutta_nyström_integrator::BlanesMoan2002SRKN11B;
-using internal_symplectic_runge_kutta_nyström_integrator::BlanesMoan2002SRKN14A;
-using internal_symplectic_runge_kutta_nyström_integrator::BlanesMoan2002SRKN6B;
-using internal_symplectic_runge_kutta_nyström_integrator::CompositionMethod;
-using internal_symplectic_runge_kutta_nyström_integrator::McLachlan1995SB3A4;
-using internal_symplectic_runge_kutta_nyström_integrator::McLachlan1995SB3A5;
-using internal_symplectic_runge_kutta_nyström_integrator::McLachlanAtela1992Order4Optimal;
-using internal_symplectic_runge_kutta_nyström_integrator::McLachlanAtela1992Order5Optimal;
-using internal_symplectic_runge_kutta_nyström_integrator::OkunborSkeel1994Order6Method13;
-using internal_symplectic_runge_kutta_nyström_integrator::SymplecticRungeKuttaNyströmIntegrator;
 
 }  // namespace integrators
 }  // namespace principia

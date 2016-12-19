@@ -205,6 +205,8 @@ Instance::Instance(IntegrationProblem<ODE> problem,
            current_state.velocities.size());
 }
 
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, BA> const&
 McLachlanAtela1992Order4Optimal() {
@@ -406,6 +408,5 @@ BlanesMoan2002SRKN14A() {
   return integrator;
 }
 
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
