@@ -7,11 +7,11 @@
 #include "geometry/serialization.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_double_precision {
 
 using geometry::PointOrMultivectorSerializer;
 using geometry::QuantityOrMultivectorSerializer;
-
-namespace numerics {
 
 template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
@@ -62,5 +62,6 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+}  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia

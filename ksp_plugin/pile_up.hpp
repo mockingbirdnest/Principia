@@ -11,10 +11,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-namespace internal_vessel {
-class Vessel;
-}  // namespace internal_vessel
-using internal_vessel::Vessel;
+FORWARD_DECLARE_FROM(vessel, class, Vessel);
 
 namespace internal_pile_up {
 

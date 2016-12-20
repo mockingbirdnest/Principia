@@ -16,8 +16,8 @@
 
 namespace principia {
 namespace base {
+namespace internal_push_deserializer {
 
-namespace internal {
 // An input stream based on an array that delegates to a function the handling
 // of the case where the array is empty.  It calls the |on_empty| function
 // passed at construction and proceeds with deserializing the array returned by
@@ -43,8 +43,6 @@ class DelegatingArrayInputStream
   std::int64_t last_returned_size_;  // How many bytes we returned last time
                                      // Next() was called.
 };
-
-}  // namespace internal
 
 // This class support deserialization which is "pushed" by the client.  That is,
 // the client creates a |PushDeserializer| object, calls |Start| to start the
@@ -89,7 +87,7 @@ class PushDeserializer {
 
   int const chunk_size_;
   int const number_of_chunks_;
-  internal::DelegatingArrayInputStream stream_;
+  DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
 
   // Synchronization objects for the |queue_|.
@@ -104,6 +102,10 @@ class PushDeserializer {
   std::queue<Bytes> queue_ GUARDED_BY(lock_);
   std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };
+
+}  // namespace internal_push_deserializer
+
+using internal_push_deserializer::PushDeserializer;
 
 }  // namespace base
 }  // namespace principia

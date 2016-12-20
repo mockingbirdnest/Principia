@@ -15,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_forkable {
 
+using base::not_null;
 using geometry::Instant;
 
 // Forkable and ForkableIterator both use CRTP to achieve static polymorphism on

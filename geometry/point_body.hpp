@@ -9,12 +9,12 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace geometry {
+namespace internal_point {
 
 using quantities::Product;
 using quantities::Quantity;
 using quantities::SIUnit;
-
-namespace geometry {
 
 template<typename Vector>
 class PointSerializer {};
@@ -160,6 +160,8 @@ template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
   return out << DebugString(point);
 }
+
+}  // namespace internal_point
 
 template<typename Vector, typename Weight>
 void BarycentreCalculator<Point<Vector>, Weight>::Add(

@@ -13,6 +13,8 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
+using base::not_null;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;

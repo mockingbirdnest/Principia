@@ -13,10 +13,13 @@
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
-
-using numerics::FixedVector;
-
 namespace integrators {
+namespace internal_symplectic_runge_kutta_nyström_integrator {
+
+using base::not_null;
+using geometry::Instant;
+using numerics::FixedVector;
+using quantities::Time;
 
 // This class solves ordinary differential equations of following forms using a
 // symplectic Runge-Kutta-Nyström method:
@@ -110,6 +113,14 @@ class SymplecticRungeKuttaNyströmIntegrator
   FixedVector<double, stages_> const b_;
   FixedVector<double, stages_> c_;
 };
+
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+
+using internal_symplectic_runge_kutta_nyström_integrator::ABA;
+using internal_symplectic_runge_kutta_nyström_integrator::BA;
+using internal_symplectic_runge_kutta_nyström_integrator::BAB;
+using internal_symplectic_runge_kutta_nyström_integrator::
+    SymplecticRungeKuttaNyströmIntegrator;
 
 // This method minimizes the error constant.
 // Coefficients from Robert I. McLachlan and Pau Atela (1992),

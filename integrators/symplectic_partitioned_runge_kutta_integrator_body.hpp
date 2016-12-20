@@ -6,10 +6,10 @@
 #include "base/mod.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using base::mod;
-
-namespace integrators {
 
 template<typename Position,
          typename Momentum,
@@ -97,6 +97,8 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
   }
   return *method;
 }
+
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
 template<typename Position, typename Momentum>
 SymplecticPartitionedRungeKuttaIntegrator<Position,

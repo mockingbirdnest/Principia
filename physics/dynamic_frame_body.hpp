@@ -23,6 +23,7 @@ using geometry::Velocity;
 using geometry::Wedge;
 using quantities::Pow;
 using quantities::Sqrt;
+using quantities::Variation;
 using quantities::si::Radian;
 
 template<typename InertialFrame, typename ThisFrame>

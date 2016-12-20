@@ -10,19 +10,15 @@
 #include "google/protobuf/descriptor.h"
 
 namespace principia {
+namespace geometry {
+namespace internal_frame {
 
 using base::Fingerprint2011;
-
-namespace geometry {
-
-namespace {
 
 // Utility for fingerprinting.
 inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
 }
-
-}  // namespace
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
 void Frame<FrameTag, frame_tag, frame_is_inertial>::WriteToMessage(
@@ -79,5 +75,6 @@ inline void ReadFrameFromMessage(
   is_inertial = message.is_inertial();
 }
 
+}  // namespace internal_frame
 }  // namespace geometry
 }  // namespace principia

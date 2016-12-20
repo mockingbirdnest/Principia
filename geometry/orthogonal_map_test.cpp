@@ -13,13 +13,13 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace geometry {
+namespace internal_orthogonal_map {
 
 using quantities::si::Degree;
 using quantities::si::Metre;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
-
-namespace geometry {
 
 class OrthogonalMapTest : public testing::Test {
  protected:
@@ -165,5 +165,6 @@ TEST_F(OrthogonalMapTest, SerializationSuccess) {
   EXPECT_EQ(orthogonal_a_(vector_), o(vector_));
 }
 
+}  // namespace internal_orthogonal_map
 }  // namespace geometry
 }  // namespace principia

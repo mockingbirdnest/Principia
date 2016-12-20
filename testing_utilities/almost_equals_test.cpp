@@ -25,6 +25,7 @@ using geometry::Vector;
 using geometry::Trivector;
 using quantities::Length;
 using quantities::MagneticFlux;
+using quantities::SIUnit;
 using quantities::Speed;
 using quantities::bipm::Knot;
 using quantities::cgs::Maxwell;

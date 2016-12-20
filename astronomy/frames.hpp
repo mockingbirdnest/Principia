@@ -9,6 +9,8 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace astronomy {
+namespace internal_frames {
 
 using geometry::Frame;
 using geometry::Instant;
@@ -16,8 +18,6 @@ using geometry::Position;
 using quantities::si::ArcMinute;
 using quantities::si::ArcSecond;
 using quantities::si::Degree;
-
-namespace astronomy {
 
 // A reference frame with a basis.
 // The frame is the International Celestial Reference Frame.
@@ -46,7 +46,7 @@ using ICRFJ2000Equator =
 // coordinates.  The angle is the one defined by the XVIth General Assembly of
 // the International Astronomical Union.
 geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
-    equatorial_to_ecliptic =
+    ICRFJ200EquatorialToEcliptic =
         geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
             23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
             geometry::Bivector<double, ICRFJ2000Equator>({1, 0, 0}),
@@ -54,6 +54,14 @@ geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
 
 geometry::Position<ICRFJ2000Ecliptic> const SolarSystemBarycentreEcliptic;
 geometry::Position<ICRFJ2000Equator> const SolarSystemBarycentreEquator;
+
+}  // namespace internal_frames
+
+using internal_frames::ICRFJ2000Ecliptic;
+using internal_frames::ICRFJ2000Equator;
+using internal_frames::ICRFJ200EquatorialToEcliptic;
+using internal_frames::SolarSystemBarycentreEcliptic;
+using internal_frames::SolarSystemBarycentreEquator;
 
 }  // namespace astronomy
 }  // namespace principia

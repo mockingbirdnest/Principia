@@ -12,6 +12,20 @@
 namespace principia {
 namespace geometry {
 
+FORWARD_DECLARE_FROM(identity,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Identity);
+FORWARD_DECLARE_FROM(permutation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Permutation);
+FORWARD_DECLARE_FROM(rotation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Rotation);
+
+namespace internal_orthogonal_map {
+
+using base::not_null;
+
 // An orthogonal map between the inner product spaces |FromFrame| and
 // |ToFrame|, as well as the induced maps on the exterior algebra.
 // The orthogonal map is modeled as a rotoinversion.
@@ -59,13 +73,13 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   Rotation<FromFrame, ToFrame> rotation_;
 
   template<typename From, typename To>
-  friend class Identity;
+  friend class internal_identity::Identity;
   template<typename From, typename To>
   friend class OrthogonalMap;
   template<typename From, typename To>
-  friend class Permutation;
+  friend class internal_permutation::Permutation;
   template<typename From, typename To>
-  friend class Rotation;
+  friend class internal_rotation::Rotation;
 
   template<typename From, typename Through, typename To>
   friend OrthogonalMap<From, To> operator*(
@@ -79,6 +93,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(
     OrthogonalMap<ThroughFrame, ToFrame> const& left,
     OrthogonalMap<FromFrame, ThroughFrame> const& right);
+
+}  // namespace internal_orthogonal_map
+
+using internal_orthogonal_map::OrthogonalMap;
 
 }  // namespace geometry
 }  // namespace principia

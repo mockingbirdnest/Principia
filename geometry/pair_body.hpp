@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_pair {
 
 template<typename T1, typename T2>
 Pair<T1, T2>::Pair(T1 const& t1, T2 const& t2)
@@ -147,6 +148,8 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
   out << "{" << pair.t1_ << ", " << pair.t2_ << "}";
   return out;
 }
+
+}  // namespace internal_pair
 
 template<typename T1, typename T2, typename Weight>
 void BarycentreCalculator<Pair<T1, T2>, Weight>::Add(Pair<T1, T2> const& pair,

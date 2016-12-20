@@ -12,16 +12,17 @@
 #include "quantities/serialization.hpp"
 
 namespace principia {
+namespace geometry {
+namespace internal_r3_element {
 
 using quantities::ArcSin;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::DebugString;
 using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
-
-namespace geometry {
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -212,33 +213,28 @@ R3Element<Scalar> operator/(R3Element<Scalar> const& left,
 }
 
 template<typename LDimension, typename RScalar>
-R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
-operator*(quantities::Quantity<LDimension> const& left,
-          R3Element<RScalar> const& right) {
-  return R3Element<quantities::Product<quantities::Quantity<LDimension>,
-                                       RScalar>>(
+R3Element<Product<Quantity<LDimension>, RScalar>>
+operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
+  return R3Element<Product<Quantity<LDimension>, RScalar>>(
       left * right.x,
       left * right.y,
       left * right.z);
 }
 
 template<typename LScalar, typename RDimension>
-R3Element<quantities::Product<LScalar, quantities::Quantity<RDimension>>>
-operator*(R3Element<LScalar> const& left,
-          quantities::Quantity<RDimension> const& right) {
-  return R3Element<quantities::Product<LScalar,
-                                       quantities::Quantity<RDimension>>>(
+R3Element<Product<LScalar, Quantity<RDimension>>>
+operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right) {
+  return R3Element<Product<LScalar, Quantity<RDimension>>>(
       left.x * right,
       left.y * right,
       left.z * right);
 }
 
 template<typename LScalar, typename RDimension>
-R3Element<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>>
+R3Element<Quotient<LScalar, Quantity<RDimension>>>
 operator/(R3Element<LScalar> const& left,
-          quantities::Quantity<RDimension> const& right) {
-  return R3Element<quantities::Quotient<LScalar,
-                                        quantities::Quantity<RDimension>>>(
+          Quantity<RDimension> const& right) {
+  return R3Element<Quotient<LScalar, Quantity<RDimension>>>(
       left.x / right,
       left.y / right,
       left.z / right);
@@ -279,11 +275,11 @@ R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
 template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
   std::string result = "{";
-  result += quantities::DebugString(r3_element.x);
+  result += DebugString(r3_element.x);
   result += ", ";
-  result += quantities::DebugString(r3_element.y);
+  result += DebugString(r3_element.y);
   result += ", ";
-  result += quantities::DebugString(r3_element.z);
+  result += DebugString(r3_element.z);
   result +="}";
   return result;
 }
@@ -296,19 +292,18 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 template<typename LScalar, typename RScalar>
-R3Element<quantities::Product<LScalar, RScalar>> Cross(
+R3Element<Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right) {
-  return R3Element<quantities::Product<LScalar, RScalar>>(
+  return R3Element<Product<LScalar, RScalar>>(
       left.y * right.z - left.z * right.y,
       left.z * right.x - left.x * right.z,
       left.x * right.y - left.y * right.x);
 }
 
 template<typename LScalar, typename RScalar>
-quantities::Product<LScalar, RScalar> Dot(
-    R3Element<LScalar> const& left,
-    R3Element<RScalar> const& right) {
+Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
+                              R3Element<RScalar> const& right) {
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
@@ -320,5 +315,6 @@ inline R3Element<double> BasisVector(int const i) {
           static_cast<double>(i == 2)};
 }
 
+}  // namespace internal_r3_element
 }  // namespace geometry
 }  // namespace principia

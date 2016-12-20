@@ -7,10 +7,10 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace geometry {
+namespace internal_sign {
 
 using base::not_null;
-
-namespace geometry {
 
 // An element of the multiplicative group ({+1, -1}, *). Useful for instance to
 // represent the determinant of an orthogonal map.
@@ -44,6 +44,10 @@ T operator*(Sign const& left, T const& right);
 std::string DebugString(Sign const& sign);
 
 std::ostream& operator<<(std::ostream& out, Sign const& sign);
+
+}  // namespace internal_sign
+
+using internal_sign::Sign;
 
 }  // namespace geometry
 }  // namespace principia

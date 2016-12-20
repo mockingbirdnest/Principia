@@ -21,6 +21,7 @@ using geometry::EulerAngles;
 using geometry::Exp;
 using geometry::RadiusLatitudeLongitude;
 using geometry::SphericalCoordinates;
+using quantities::SIUnit;
 using quantities::si::Radian;
 
 template<typename Frame>

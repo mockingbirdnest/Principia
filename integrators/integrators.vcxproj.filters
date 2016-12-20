@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="motion_integrator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>

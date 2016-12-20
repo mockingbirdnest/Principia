@@ -9,12 +9,11 @@
 
 namespace principia {
 namespace integrators {
+namespace internal_symmetric_linear_multistep_integrator {
 
-namespace {
+using base::make_not_null_unique;
 
 int const startup_step_divisor = 16;
-
-}  // namespace
 
 template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::
@@ -251,6 +250,8 @@ FillStepFromSystemState(ODE const& equation,
                                 step.displacements,
                                 step.accelerations);
 }
+
+}  // namespace internal_symmetric_linear_multistep_integrator
 
 template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {

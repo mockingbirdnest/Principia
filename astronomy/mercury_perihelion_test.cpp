@@ -25,6 +25,8 @@ namespace principia {
 
 using base::not_null;
 using geometry::AngleBetween;
+using geometry::Instant;
+using geometry::Position;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
 using physics::DiscreteTrajectory;
@@ -35,8 +37,10 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::astronomy::JulianYear;
+using quantities::si::ArcSecond;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
+using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Minute;
 using quantities::si::Metre;

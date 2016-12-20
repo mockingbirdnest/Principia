@@ -14,6 +14,7 @@ using base::check_not_null;
 using base::dynamic_cast_not_null;
 using geometry::AngularVelocity;
 using geometry::Rotation;
+using quantities::Variation;
 
 template<typename InertialFrame, typename ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::

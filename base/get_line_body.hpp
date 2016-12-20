@@ -7,10 +7,9 @@
 
 namespace principia {
 namespace base {
+namespace internal_get_line {
 
-namespace {
-
-int constexpr buffer_size = 200;
+constexpr int buffer_size = 200;
 
 std::string GetLineWithSize(std::size_t const size,
                             not_null<std::ifstream*> const stream) {
@@ -26,11 +25,10 @@ std::string GetLineWithSize(std::size_t const size,
   }
 }
 
-}  // namespace
-
 std::string GetLine(not_null<std::ifstream*> const stream) {
   return GetLineWithSize(buffer_size, stream);
 }
 
+}  // namespace internal_get_line
 }  // namespace base
 }  // namespace principia

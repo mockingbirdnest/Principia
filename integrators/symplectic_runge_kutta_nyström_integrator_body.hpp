@@ -10,14 +10,14 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace integrators {
+namespace internal_symplectic_runge_kutta_nyström_integrator {
 
-using base::dynamic_cast_not_null;
 using base::make_not_null_unique;
 using geometry::Sign;
+using numerics::DoublePrecision;
 using quantities::Abs;
 using testing_utilities::ULPDistance;
-
-namespace integrators {
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
@@ -204,6 +204,8 @@ Instance::Instance(IntegrationProblem<ODE> problem,
   CHECK_EQ(current_state.positions.size(),
            current_state.velocities.size());
 }
+
+}  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, BA> const&

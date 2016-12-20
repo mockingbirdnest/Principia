@@ -7,6 +7,9 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_affine_map {
+
+using base::not_null;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
@@ -48,6 +51,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame,
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
     AffineMap<FromFrame, ThroughFrame, Scalar, LinearMap> const& right);
+
+}  // namespace internal_affine_map
+
+using internal_affine_map::AffineMap;
 
 }  // namespace geometry
 }  // namespace principia

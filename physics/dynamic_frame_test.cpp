@@ -20,6 +20,7 @@ using geometry::OrthogonalMap;
 using geometry::Position;
 using geometry::Velocity;
 using quantities::GravitationalParameter;
+using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using quantities::si::Second;

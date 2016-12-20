@@ -17,11 +17,12 @@ namespace principia {
 
 using quantities::Action;
 using quantities::Angle;
-using quantities::Dimensions;
 using quantities::Energy;
 using quantities::Entropy;
 using quantities::Frequency;
+using quantities::Product;
 using quantities::Quantity;
+using quantities::SIUnit;
 using quantities::SolidAngle;
 using quantities::Time;
 using quantities::Winding;
@@ -360,8 +361,8 @@ TEST_F(PairTest, LeftMultiplication) {
 }
 
 TEST_F(PairTest, RightMultiplication) {
-  using Whatever1 = Quantity<Dimensions<2, 1, -1, 0, 0, 0, 0, 0, 0, 1>>;
-  using Whatever2 = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 1>>;
+  using Whatever1 = Product<Action, SolidAngle>;
+  using Whatever2 = Product<Winding, SolidAngle>;
   using VWhatever1 = Vector<Whatever1, World>;
   using VWhatever2 = Vector<Whatever2, World>;
   using Pear = Pair<VWhatever1, VWhatever2>;

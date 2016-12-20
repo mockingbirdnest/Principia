@@ -7,9 +7,6 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
-
-using base::not_null;
-
 namespace quantities {
 
 inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result);

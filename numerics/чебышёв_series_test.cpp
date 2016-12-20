@@ -16,6 +16,8 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_чебышёв_series {
 
 using astronomy::ICRFJ2000Ecliptic;
 using geometry::Instant;
@@ -30,8 +32,6 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
-
-namespace numerics {
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
@@ -396,5 +396,6 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
                               near_speed(1.3e-12 * Metre / Second)));
 }
 
+}  // namespace internal_чебышёв_series
 }  // namespace numerics
 }  // namespace principia

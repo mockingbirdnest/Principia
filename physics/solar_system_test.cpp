@@ -15,6 +15,7 @@ namespace physics {
 namespace internal_solar_system {
 
 using astronomy::ICRFJ2000Equator;
+using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;

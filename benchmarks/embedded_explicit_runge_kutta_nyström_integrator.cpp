@@ -25,6 +25,7 @@ namespace principia {
 
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
@@ -34,8 +35,10 @@ using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
 using quantities::Mass;
+using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
+using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;

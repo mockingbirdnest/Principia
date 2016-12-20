@@ -24,6 +24,7 @@ using geometry::InnerProduct;
 using geometry::Frame;
 using geometry::Rotation;
 using geometry::Vector;
+using quantities::Sqrt;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;

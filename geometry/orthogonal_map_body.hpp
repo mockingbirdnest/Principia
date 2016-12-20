@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_orthogonal_map {
 
 template<typename FromFrame, typename ToFrame>
 Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
@@ -111,5 +112,6 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
              left.rotation_ * right.rotation_);
 }
 
+}  // namespace internal_orthogonal_map
 }  // namespace geometry
 }  // namespace principia

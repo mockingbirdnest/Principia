@@ -17,6 +17,8 @@
 #include "serialization/physics.pb.h"
 
 namespace principia {
+namespace base {
+namespace internal_push_deserializer {
 
 using base::not_null;
 using serialization::DiscreteTrajectory;
@@ -25,8 +27,6 @@ using serialization::Point;
 using serialization::Quantity;
 using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
-
-namespace base {
 
 namespace {
 int const deserializer_chunk_size = 99;
@@ -95,7 +95,7 @@ class PushDeserializerTest : public ::testing::Test {
 
   std::unique_ptr<PullSerializer> pull_serializer_;
   std::unique_ptr<PushDeserializer> push_deserializer_;
-  internal::DelegatingArrayInputStream stream_;
+  DelegatingArrayInputStream stream_;
   std::list<std::string> strings_;
 };
 
@@ -231,5 +231,6 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
     }, "failed.*Parse");
 }
 
+}  // namespace internal_push_deserializer
 }  // namespace base
 }  // namespace principia

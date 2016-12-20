@@ -13,6 +13,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_permutation {
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>::Permutation(
@@ -195,5 +196,6 @@ Permutation<FromFrame, ToFrame> operator*(
                                    left.coordinate_permutation_}));
 }
 
+}  // namespace internal_permutation
 }  // namespace geometry
 }  // namespace principia

@@ -43,7 +43,12 @@ namespace principia {
 
 using astronomy::ICRFJ2000Ecliptic;
 using geometry::Displacement;
+using geometry::Instant;
+using geometry::Multivector;
+using geometry::R3Element;
 using quantities::Length;
+using quantities::Time;
+using quantities::Variation;
 using quantities::si::Metre;
 using quantities::si::Second;
 

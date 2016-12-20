@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_sign {
 
 template<typename Scalar>
 Sign::Sign(Scalar const& scalar) : negative_(scalar < Scalar{}) {}
@@ -56,5 +57,6 @@ inline std::ostream& operator<<(std::ostream& out, Sign const& sign) {
   return out;
 }
 
+}  // namespace internal_sign
 }  // namespace geometry
 }  // namespace principia
