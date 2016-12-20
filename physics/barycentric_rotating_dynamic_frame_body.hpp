@@ -148,8 +148,8 @@ void BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
 ComputeAngularDegreesOfFreedom(
     DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-    not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
-    not_null<AngularVelocity<InertialFrame>*> const angular_velocity) {
+    Rotation<InertialFrame, ThisFrame>& rotation,
+    AngularVelocity<InertialFrame>& angular_velocity) {
   RelativeDegreesOfFreedom<InertialFrame> const reference =
       secondary_degrees_of_freedom - primary_degrees_of_freedom;
   Displacement<InertialFrame> const& reference_direction =
@@ -158,11 +158,11 @@ ComputeAngularDegreesOfFreedom(
       reference.velocity().OrthogonalizationAgainst(reference_direction);
   Bivector<Product<Length, Speed>, InertialFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
-  *rotation = Rotation<InertialFrame, ThisFrame>(Normalize(reference_direction),
-                                                 Normalize(reference_normal),
-                                                 Normalize(reference_binormal));
-  *angular_velocity = reference_binormal * Radian /
-                      InnerProduct(reference_direction, reference_direction);
+  rotation = Rotation<InertialFrame, ThisFrame>(Normalize(reference_direction),
+                                                Normalize(reference_normal),
+                                                Normalize(reference_binormal));
+  angular_velocity = reference_binormal * Radian /
+                     InnerProduct(reference_direction, reference_direction);
 }
 
 }  // namespace internal_barycentric_rotating_dynamic_frame
