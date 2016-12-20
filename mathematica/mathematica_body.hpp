@@ -33,9 +33,8 @@ class TupleHelper {
 template<typename... Types>
 class TupleHelper<0, Types...> {
  public:
-  static void ToMathematicaStrings(
-      std::tuple<Types...> const& tuple,
-      std::vector<std::string>& const expressions) {}
+  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
+                                   std::vector<std::string>& expressions) {}
 };
 
 }  // namespace

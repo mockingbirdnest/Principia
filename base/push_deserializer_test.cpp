@@ -39,11 +39,14 @@ const char start[] = "START";
 class PushDeserializerTest : public ::testing::Test {
  protected:
   PushDeserializerTest()
-      : pull_serializer_(std::make_unique<PullSerializer>(
-                             serializer_chunk_size, number_of_chunks)),
-        push_deserializer_(std::make_unique<PushDeserializer>(
-                               deserializer_chunk_size, number_of_chunks)),
-        stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {}
+      : pull_serializer_(std::make_unique<PullSerializer>(serializer_chunk_size,
+                                                          number_of_chunks)),
+        push_deserializer_(
+            std::make_unique<PushDeserializer>(deserializer_chunk_size,
+                                               number_of_chunks)),
+        stream_(std::bind(&PushDeserializerTest::OnEmpty,
+                          this,
+                          std::ref(strings_))) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
     not_null<std::unique_ptr<DiscreteTrajectory>> result =
@@ -87,7 +90,7 @@ class PushDeserializerTest : public ::testing::Test {
   // always discarded.
   Bytes OnEmpty(std::list<std::string>& strings) {
     strings.pop_front();
-    CHECK(!strings->empty());
+    CHECK(!strings.empty());
     std::string& front = strings.front();
     return Bytes(reinterpret_cast<std::uint8_t*>(&front[0]),
                  static_cast<std::int64_t>(front.size()));

@@ -307,8 +307,8 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
-                               &length_absolute_errors,
-                               &speed_absolute_errors);
+                               length_absolute_errors,
+                               speed_absolute_errors);
   }
 
   ExpectMultipart(length_absolute_errors,
@@ -357,8 +357,8 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
-                               &length_absolute_errors,
-                               &speed_absolute_errors);
+                               length_absolute_errors,
+                               speed_absolute_errors);
   }
 
   ExpectMultipart(length_absolute_errors,
