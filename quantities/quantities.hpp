@@ -19,27 +19,22 @@ using base::not_null;
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
          int64_t AmountExponent, int64_t LuminousIntensityExponent,
-         int64_t WindingExponent, int64_t AngleExponent,
-         int64_t SolidAngleExponent>
+         int64_t AngleExponent>
 struct Dimensions;
 template<typename D> class Quantity;
 
-using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 0>;
+using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0>;
 
 // Base quantities
-using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>;
-using Mass              = Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0, 0>>;
-using Time              = Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0, 0>>;
-using Current           = Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0, 0, 0>>;
-using Temperature       = Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0, 0>>;
-using Amount            = Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0, 0>>;
-using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0, 0>>;
-// Nonstandard; winding is a dimensionless quantity counting cycles, in order to
-// strongly type the distinction between Frequency = Winding/Time and
-// AngularFrequency = Angle/Time. We also strongly type angles.
-using Winding           = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>>;
-using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>>;
-using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
+using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0>>;
+using Mass              = Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0>>;
+using Time              = Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0>>;
+using Current           = Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0>>;
+using Temperature       = Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0>>;
+using Amount            = Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0>>;
+using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0>>;
+// We strongly type angles.
+using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
@@ -228,11 +223,9 @@ using internal_quantities::Mass;
 using internal_quantities::Pow;
 using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
-using internal_quantities::SolidAngle;
 using internal_quantities::Square;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
-using internal_quantities::Winding;
 
 }  // namespace quantities
 }  // namespace principia

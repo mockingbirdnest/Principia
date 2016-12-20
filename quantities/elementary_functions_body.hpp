@@ -21,9 +21,7 @@ struct NthRootGenerator<
                      (Q::Dimensions::Temperature % n) == 0 &&
                      (Q::Dimensions::Amount % n) == 0 &&
                      (Q::Dimensions::LuminousIntensity % n) == 0 &&
-                     (Q::Dimensions::Winding % n) == 0 &&
-                     (Q::Dimensions::Angle % n) == 0 &&
-                     (Q::Dimensions::SolidAngle % n) == 0>> {
+                     (Q::Dimensions::Angle % n) == 0>> {
   enum {
     Length            = Q::Dimensions::Length / n,
     Mass              = Q::Dimensions::Mass / n,
@@ -32,13 +30,10 @@ struct NthRootGenerator<
     Temperature       = Q::Dimensions::Temperature / n,
     Amount            = Q::Dimensions::Amount / n,
     LuminousIntensity = Q::Dimensions::LuminousIntensity / n,
-    Winding           = Q::Dimensions::Winding / n,
     Angle             = Q::Dimensions::Angle / n,
-    SolidAngle        = Q::Dimensions::SolidAngle / n
   };
   using Type = Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
-                                   Amount, LuminousIntensity, Winding, Angle,
-                                   SolidAngle>>;
+                                   Amount, LuminousIntensity, Angle>>;
 };
 
 inline double Sqrt(double const x) {
