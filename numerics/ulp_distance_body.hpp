@@ -31,10 +31,10 @@ inline std::int64_t ULPDistance(double const x, double const y) {
   std::int64_t x_bits;
   std::int64_t y_bits;
   static_assert(sizeof(x_bits) == sizeof(x),
-                "conversion between types of different sizes");
+                "Conversion between types of different sizes");
   std::memcpy(&x_bits, &x, sizeof(x));
   static_assert(sizeof(y_bits) == sizeof(y),
-                "conversion between types of different sizes");
+                "Conversion between types of different sizes");
   std::memcpy(&y_bits, &y, sizeof(y));
   return std::abs(x_bits - y_bits);
 }
