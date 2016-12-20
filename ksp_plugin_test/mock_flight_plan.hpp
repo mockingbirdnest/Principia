@@ -16,7 +16,7 @@ class MockFlightPlan : public FlightPlan {
   MOCK_CONST_METHOD0(desired_final_time, Instant());
 
   MOCK_CONST_METHOD0(number_of_manœuvres, int());
-  MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int const index));
+  MOCK_CONST_METHOD1(GetManœuvre, NavigationManœuvre const& (int index));
 
   MOCK_METHOD0(RemoveLast, void());
 
@@ -42,7 +42,7 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_CONST_METHOD3(
       GetSegment,
-      void(int const index,
+      void(int index,
            not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
            not_null<DiscreteTrajectory<Barycentric>::Iterator*> end));
 };
