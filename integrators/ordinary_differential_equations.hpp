@@ -42,7 +42,7 @@ using quantities::Variation;
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.
 template<typename Position_>
-struct SpecialSecondOrderDifferentialEquation {
+struct SpecialSecondOrderDifferentialEquation final {
   using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;
@@ -56,7 +56,7 @@ struct SpecialSecondOrderDifferentialEquation {
                std::vector<Position> const& positions,
                std::vector<Acceleration>& accelerations)>;
 
-  struct SystemState {
+  struct SystemState final {
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
@@ -67,7 +67,7 @@ struct SpecialSecondOrderDifferentialEquation {
         serialization::SystemState const& message);
   };
 
-  struct SystemStateError {
+  struct SystemStateError final {
     std::vector<Displacement> position_error;
     std::vector<Velocity> velocity_error;
   };
@@ -81,13 +81,13 @@ struct SpecialSecondOrderDifferentialEquation {
 
 // An initial value problem.
 template<typename ODE>
-struct IntegrationProblem {
+struct IntegrationProblem final {
   ODE equation;
   typename ODE::SystemState const* initial_state;
 };
 
 // An opaque object for holding the state during the integration of a problem.
-struct IntegrationInstance {
+struct IntegrationInstance final {
   template<typename ODE>
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
@@ -96,7 +96,7 @@ struct IntegrationInstance {
 
 // Settings for for adaptive step size integration.
 template<typename ODE>
-struct AdaptiveStepSize {
+struct AdaptiveStepSize final {
   using ToleranceToErrorRatio =
       std::function<
           double(Time const& current_step_size,

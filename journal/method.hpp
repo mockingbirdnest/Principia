@@ -14,12 +14,12 @@ namespace journal {
 
 // The parameter |Profile| is expected to have the following structure:
 //
-//  struct SomeProfile {
-//    struct In {  // Only present if the profile has 'in' parameters.
-//      ...        // 'in' parameters copied verbatim from the actual profile.
+//  struct SomeProfile final {
+//    struct In final {  // Only present if the profile has 'in' parameters.
+//      ...  // 'in' parameters copied verbatim from the actual profile.
 //    };
-//    struct Out {  // Only present if the profile has 'out' parameters.
-//      ...         // 'out' parameters copied verbatim from the actual profile.
+//    struct Out final {  // Only present if the profile has 'out' parameters.
+//      ...  // 'out' parameters copied verbatim from the actual profile.
 //    };
 //    using Return = ...;  // Only present if the profile does not return void.
 //

@@ -15,7 +15,7 @@ template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
          int64_t AmountExponent, int64_t LuminousIntensityExponent,
          int64_t AngleExponent>
-struct Dimensions {
+struct Dimensions final {
   enum {
     Length            = LengthExponent,
     Mass              = MassExponent,
@@ -69,11 +69,11 @@ struct Dimensions {
 };
 
 template<typename Q>
-struct Collapse { using Type = Q; };
+struct Collapse final { using Type = Q; };
 template<>
 struct Collapse<Quantity<NoDimensions>> { using Type = double; };
 template<typename Left, typename Right>
-struct ProductGenerator {
+struct ProductGenerator final {
   enum {
     Length            = Left::Dimensions::Length + Right::Dimensions::Length,
     Mass              = Left::Dimensions::Mass + Right::Dimensions::Mass,
@@ -99,7 +99,7 @@ struct ProductGenerator<double, double> {
   using Type = double;
 };
 template<typename Left, typename Right>
-struct QuotientGenerator {
+struct QuotientGenerator final {
   enum {
     Length            = Left::Dimensions::Length - Right::Dimensions::Length,
     Mass              = Left::Dimensions::Mass - Right::Dimensions::Mass,

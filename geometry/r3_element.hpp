@@ -27,7 +27,7 @@ struct SphericalCoordinates;
 // space over ℝ, represented by |double|. |R3Element| is the underlying data
 // type for more advanced strongly typed structures suchas |Multivector|.
 template<typename Scalar>
-struct R3Element {
+struct R3Element final {
  public:
   R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
@@ -61,7 +61,7 @@ struct R3Element {
 };
 
 template<typename Scalar>
-struct SphericalCoordinates {
+struct SphericalCoordinates final {
   // Default, but prevents aggregate initialization of |SphericalCoordinates| to
   // obviate confusion over the order of |latitude| and |longitude|.
   SphericalCoordinates();

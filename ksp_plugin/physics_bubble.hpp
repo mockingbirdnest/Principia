@@ -107,7 +107,7 @@ class PhysicsBubble {
   using PartCorrespondence = std::pair<not_null<Part<World>*>,
                                        not_null<Part<World>*>>;
 
-  struct PreliminaryState {
+  struct PreliminaryState final {
     PreliminaryState();
     std::map<not_null<Vessel*> const,
              // NOTE(Norgg) TODO(Egg) Removed const from vector,

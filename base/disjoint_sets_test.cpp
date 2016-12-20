@@ -31,12 +31,12 @@ class Subset<CountableInteger>::Properties {
 
 namespace {
 
-struct Integer {
+struct Integer final {
   int value;
   Subset<Integer>::Node subset_node;
 };
 
-struct CountableInteger {
+struct CountableInteger final {
   int value;
   Subset<CountableInteger>::Node subset_node;
 };

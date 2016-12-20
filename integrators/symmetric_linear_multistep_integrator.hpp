@@ -61,7 +61,7 @@ class SymmetricLinearMultistepIntegrator
   // The data for a previous step of the integration.  The |Displacement|s here
   // are really |Position|s, but we do complex computations on them and it would
   // be very inconvenient to cast these computations as barycentres.
-  struct Step {
+  struct Step final {
     std::vector<typename ODE::Displacement> displacements;
     std::vector<typename ODE::Acceleration> accelerations;
     DoublePrecision<Instant> time;

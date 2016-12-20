@@ -53,7 +53,7 @@ namespace geometry {
 // If this kind of transparent functor proves useful we may want a macro to make
 // those.
 
-struct TransparentInnerProduct {
+struct TransparentInnerProduct final {
   template<typename Left, typename Right>
   decltype(
       InnerProduct(std::forward<Left>(std::declval<Left&&>()),     // NOLINT
@@ -64,7 +64,7 @@ struct TransparentInnerProduct {
   }
 };
 
-struct TransparentWedge {
+struct TransparentWedge final {
   template<typename Left, typename Right>
   decltype(Wedge(std::forward<Left>(std::declval<Left&&>()),     // NOLINT
                  std::forward<Right>(std::declval<Right&&>())))  // NOLINT

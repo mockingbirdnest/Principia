@@ -39,9 +39,9 @@ using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template <int n, typename Q, typename = void>
-struct NthRootGenerator {};
+struct NthRootGenerator final {};
 template <typename T, int exponent, typename = void>
-struct ExponentiationGenerator {};
+struct ExponentiationGenerator final {};
 
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;

@@ -243,7 +243,7 @@ class Ephemeris {
  private:
   // The state of the integration and of the continuous trajectory at a
   // particular time that we might want to use for compact serialization.
-  struct Checkpoint {
+  struct Checkpoint final {
     typename NewtonianMotionEquation::SystemState system_state;
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };

@@ -90,7 +90,7 @@ struct is_instance_of<T, T<U>> : std::true_type {};
 // The recurrence ends when |T| is not an instance of |not_null|, in which case
 // |remove_not_null<T>::type| is |T|.
 template<typename Pointer>
-struct remove_not_null {
+struct remove_not_null final {
   using type = Pointer;
 };
 template<typename Pointer>
@@ -270,7 +270,7 @@ class not_null {
   bool operator>(not_null other) const;
 
  private:
-  struct unchecked_tag {};
+  struct unchecked_tag final {};
 
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must

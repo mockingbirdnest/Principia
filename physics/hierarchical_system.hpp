@@ -21,7 +21,7 @@ using base::not_null;
 template<typename Frame>
 class HierarchicalSystem {
  public:
-  struct BarycentricSystem {
+  struct BarycentricSystem final {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   };
@@ -47,7 +47,7 @@ class HierarchicalSystem {
   // A |System| represents a |primary| body with orbiting |Subsystem|s, e.g.,
   // the sun and its orbiting planetary systems.  |satellites| may be empty,
   // representing the body |primary| with no satellites, e.g., Venus.
-  struct System {
+  struct System final {
     explicit System(not_null<std::unique_ptr<MassiveBody const>> primary)
         : primary(std::move(primary)) {}
     virtual ~System() = default;
@@ -66,7 +66,7 @@ class HierarchicalSystem {
   };
 
   // Data about a |Subsystem|.
-  struct BarycentricSubystem {
+  struct BarycentricSubystem final {
     // A |MassiveBody| with the mass of the whole subsystem.
     std::unique_ptr<MassiveBody> equivalent_body;
     // The bodies composing the subsystem, in preorder, where the satellites

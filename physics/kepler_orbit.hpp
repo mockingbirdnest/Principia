@@ -20,7 +20,7 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 
 template<typename Frame>
-struct KeplerianElements {
+struct KeplerianElements final {
   double eccentricity{};
   std::experimental::optional<Length> semimajor_axis;
   std::experimental::optional<AngularFrequency> mean_motion;

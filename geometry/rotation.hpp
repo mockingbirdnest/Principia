@@ -62,7 +62,7 @@ enum class CardanoAngles {
 };
 
 template<typename Frame>
-struct DefinesFrame {};
+struct DefinesFrame final {};
 
 // An orientation-preserving orthogonal map between the inner product spaces
 // |FromFrame| and |ToFrame|, as well as the induced maps on the exterior

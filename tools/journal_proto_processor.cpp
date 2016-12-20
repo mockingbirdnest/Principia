@@ -670,7 +670,7 @@ void JournalProtoProcessor::ProcessInOut(
   cxx_run_arguments_[descriptor].clear();
   cxx_run_body_epilog_[descriptor].clear();
 
-  cxx_nested_type_declaration_[descriptor] = "  struct " + name + " {\n";
+  cxx_nested_type_declaration_[descriptor] = "  struct " + name + " final {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     std::string const& field_descriptor_name = field_descriptor->name();
@@ -904,7 +904,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_prolog;
   std::string cxx_run_epilog;
-  cxx_toplevel_type_declaration_[descriptor] = "struct " + name + " {\n";
+  cxx_toplevel_type_declaration_[descriptor] = "struct " + name + " final {\n";
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();

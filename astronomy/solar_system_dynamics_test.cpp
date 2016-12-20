@@ -67,7 +67,7 @@ namespace astronomy {
 
 class SolarSystemDynamicsTest : public testing::Test {
  protected:
-  struct OrbitError {
+  struct OrbitError final {
     Angle separation_per_orbit;
     Angle inclination_drift_per_orbit;
     std::experimental::optional<Angle>
