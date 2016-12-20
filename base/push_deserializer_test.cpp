@@ -85,10 +85,10 @@ class PushDeserializerTest : public ::testing::Test {
 
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
-  Bytes OnEmpty(not_null<std::list<std::string>*> const strings) {
-    strings->pop_front();
+  Bytes OnEmpty(std::list<std::string>& strings) {
+    strings.pop_front();
     CHECK(!strings->empty());
-    std::string& front = strings->front();
+    std::string& front = strings.front();
     return Bytes(reinterpret_cast<std::uint8_t*>(&front[0]),
                  static_cast<std::int64_t>(front.size()));
   }

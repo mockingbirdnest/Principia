@@ -23,11 +23,10 @@ namespace {
 template<int index, typename... Types>
 class TupleHelper {
  public:
-  static void ToMathematicaStrings(
-      std::tuple<Types...> const& tuple,
-      not_null<std::vector<std::string>*> const expressions) {
+  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
+                                   std::vector<std::string>& expressions) {
     TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
-    expressions->push_back(ToMathematica(std::get<index - 1>(tuple)));
+    expressions.push_back(ToMathematica(std::get<index - 1>(tuple)));
   }
 };
 
@@ -36,7 +35,7 @@ class TupleHelper<0, Types...> {
  public:
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
-      not_null<std::vector<std::string>*> const expressions) {}
+      std::vector<std::string>& const expressions) {}
 };
 
 }  // namespace
