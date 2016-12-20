@@ -38,7 +38,7 @@ namespace internal_forkable {
 using internal_discrete_trajectory::DiscreteTrajectory;
 
 template<typename Frame>
-struct ForkableTraits<DiscreteTrajectory<Frame>> {
+struct ForkableTraits<DiscreteTrajectory<Frame>> final {
   using TimelineConstIterator =
       typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);

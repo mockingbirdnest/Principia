@@ -109,6 +109,8 @@ class PhysicsBubble {
 
   struct PreliminaryState {
     PreliminaryState();
+    virtual PreliminaryState() = default;
+
     std::map<not_null<Vessel*> const,
              // NOTE(Norgg) TODO(Egg) Removed const from vector,
              // custom allocator?

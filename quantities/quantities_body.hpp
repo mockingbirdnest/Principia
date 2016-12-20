@@ -71,7 +71,7 @@ struct Dimensions final {
 template<typename Q>
 struct Collapse final { using Type = Q; };
 template<>
-struct Collapse<Quantity<NoDimensions>> { using Type = double; };
+struct Collapse<Quantity<NoDimensions>> final { using Type = double; };
 template<typename Left, typename Right>
 struct ProductGenerator final {
   enum {
@@ -91,13 +91,11 @@ struct ProductGenerator final {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> { using Type = Left; };
+struct ProductGenerator<Left, double> final { using Type = Left; };
 template<typename Right>
-struct ProductGenerator<double, Right> { using Type = Right; };
+struct ProductGenerator<double, Right> final { using Type = Right; };
 template<>
-struct ProductGenerator<double, double> {
-  using Type = double;
-};
+struct ProductGenerator<double, double> final { using Type = double; };
 template<typename Left, typename Right>
 struct QuotientGenerator final {
   enum {
@@ -117,13 +115,11 @@ struct QuotientGenerator final {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> { using Type = Left; };
+struct QuotientGenerator<Left, double> final { using Type = Left; };
 template<>
-struct QuotientGenerator<double, double> {
-  using Type = double;
-};
+struct QuotientGenerator<double, double> final { using Type = double; };
 template<typename Right>
-struct QuotientGenerator<double, Right> {
+struct QuotientGenerator<double, Right> final {
   enum {
     Length            = -Right::Dimensions::Length,
     Mass              = -Right::Dimensions::Mass,

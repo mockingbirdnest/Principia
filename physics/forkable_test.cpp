@@ -21,7 +21,7 @@ using ::testing::ElementsAre;
 class FakeTrajectory;
 
 template<>
-struct ForkableTraits<FakeTrajectory> {
+struct ForkableTraits<FakeTrajectory> final {
   using TimelineConstIterator = std::list<Instant>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };
