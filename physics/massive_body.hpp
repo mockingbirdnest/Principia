@@ -47,7 +47,6 @@ class MassiveBody : public Body {
   };
 
   explicit MassiveBody(Parameters const& parameters);
-  ~MassiveBody() = default;
 
   // Returns the construction parameter.
   std::string const& name() const;

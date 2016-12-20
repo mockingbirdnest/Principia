@@ -225,7 +225,6 @@ template<typename T1, typename T2, typename Weight>
 class BarycentreCalculator<Pair<T1, T2>, Weight> final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(Pair<T1, T2> const& pair, Weight const& weight);
   Pair<T1, T2> Get() const;

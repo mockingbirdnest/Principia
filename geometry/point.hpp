@@ -117,7 +117,6 @@ template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(Point<Vector> const& point, Weight const& weight);
   Point<Vector> Get() const;

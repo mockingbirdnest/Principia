@@ -26,7 +26,6 @@ class DelegatingArrayInputStream
     : public google::protobuf::io::ZeroCopyInputStream {
  public:
   explicit DelegatingArrayInputStream(std::function<Bytes()> on_empty);
-  ~DelegatingArrayInputStream() = default;
 
   // The ZeroCopyInputStream API.
   bool Next(void const** data, int* size) override;

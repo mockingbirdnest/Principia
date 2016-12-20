@@ -17,7 +17,6 @@ class MockPlugin : public Plugin {
   MockPlugin();
   MockPlugin(MockPlugin const&) = delete;
   MockPlugin(MockPlugin&&) = delete;
-  ~MockPlugin() override = default;
 
   void InsertCelestialAbsoluteCartesian(
       Index const celestial_index,

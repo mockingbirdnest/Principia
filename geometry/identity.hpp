@@ -24,7 +24,6 @@ template<typename FromFrame, typename ToFrame>
 class Identity : public LinearMap<FromFrame, ToFrame> {
  public:
   Identity();
-  ~Identity() override = default;
 
   Sign Determinant() const override;
 

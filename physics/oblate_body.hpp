@@ -49,7 +49,6 @@ class OblateBody : public RotatingBody<Frame> {
              typename RotatingBody<Frame>::Parameters const&
                  rotating_body_parameters,
              Parameters const& parameters);
-  ~OblateBody() = default;
 
   // Returns the j2 coefficient.
   Order2ZonalCoefficient const& j2() const;

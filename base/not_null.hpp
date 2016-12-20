@@ -177,8 +177,6 @@ class not_null final {
                                    std::declval<OtherPointer>()))>
   explicit not_null(not_null<OtherPointer>&& other);
 
-  ~not_null() = default;
-
   // Copy assigment operators.
   not_null& operator=(not_null const&) = default;
   template<typename OtherPointer,
