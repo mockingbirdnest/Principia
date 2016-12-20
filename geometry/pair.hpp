@@ -159,12 +159,12 @@ class Pair {
 
   template<typename U1, typename U2>
   friend typename enable_if_vector<Pair<U1, U2>>::type& operator*=(
-      Pair<U1, U2>& left,  // NOLINT(runtime/references)
+      Pair<U1, U2>& left,
       double const right);
 
   template<typename U1, typename U2>
   friend typename enable_if_vector<Pair<U1, U2>>::type& operator/=(
-      Pair<U1, U2>& left,  // NOLINT(runtime/references)
+      Pair<U1, U2>& left,
       double const right);
 
   template<typename U1, typename U2>
@@ -203,14 +203,12 @@ typename enable_if_vector<
 operator/(Pair<T1, T2> const& left, Scalar const right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
-    Pair<T1, T2>& left,  // NOLINT(runtime/references)
-    double const right);
+typename enable_if_vector<Pair<T1, T2>>::type& operator*=(Pair<T1, T2>& left,
+                                                          double const right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
-    Pair<T1, T2>& left,  // NOLINT(runtime/references)
-    double const right);
+typename enable_if_vector<Pair<T1, T2>>::type& operator/=(Pair<T1, T2>& left,
+                                                          double const right);
 
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);

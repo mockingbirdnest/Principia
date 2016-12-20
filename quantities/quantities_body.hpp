@@ -66,18 +66,17 @@ struct Dimensions {
                 WindingExponent <= max_exponent,
                 "Invalid winding exponent");
 
-  // The NOLINT are because glint is confused by the binary and.  I kid you not.
   static int64_t constexpr representation =
-      (LengthExponent & exponent_mask)                                 |  // NOLINT
-      (MassExponent & exponent_mask)              << 1 * exponent_bits |  // NOLINT
-      (TimeExponent & exponent_mask)              << 2 * exponent_bits |  // NOLINT
-      (CurrentExponent & exponent_mask)           << 3 * exponent_bits |  // NOLINT
-      (TemperatureExponent & exponent_mask)       << 4 * exponent_bits |  // NOLINT
-      (AmountExponent & exponent_mask)            << 5 * exponent_bits |  // NOLINT
-      (LuminousIntensityExponent & exponent_mask) << 6 * exponent_bits |  // NOLINT
-      (AngleExponent & exponent_mask)             << 7 * exponent_bits |  // NOLINT
-      (SolidAngleExponent & exponent_mask)        << 8 * exponent_bits |  // NOLINT
-      (WindingExponent & exponent_mask)           << 9 * exponent_bits;   // NOLINT
+      (LengthExponent & exponent_mask)                                 |
+      (MassExponent & exponent_mask)              << 1 * exponent_bits |
+      (TimeExponent & exponent_mask)              << 2 * exponent_bits |
+      (CurrentExponent & exponent_mask)           << 3 * exponent_bits |
+      (TemperatureExponent & exponent_mask)       << 4 * exponent_bits |
+      (AmountExponent & exponent_mask)            << 5 * exponent_bits |
+      (LuminousIntensityExponent & exponent_mask) << 6 * exponent_bits |
+      (AngleExponent & exponent_mask)             << 7 * exponent_bits |
+      (SolidAngleExponent & exponent_mask)        << 8 * exponent_bits |
+      (WindingExponent & exponent_mask)           << 9 * exponent_bits;
 };
 
 template<typename Q>

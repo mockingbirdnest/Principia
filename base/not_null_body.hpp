@@ -30,12 +30,12 @@ not_null<Pointer>::not_null(OtherPointer other) {
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
-not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
+not_null<Pointer>::not_null(not_null<OtherPointer>&& other)
     : pointer_(std::move(other.pointer_)) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename, typename>
-not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
+not_null<Pointer>::not_null(not_null<OtherPointer>&& other)
     : pointer_(static_cast<pointer>(std::move(other.pointer_))) {}
 
 template<typename Pointer>
@@ -195,9 +195,9 @@ not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
 #endif
 
 template<typename T, typename... Args>
-not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
+not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {
   return not_null<std::unique_ptr<T>>(
-      std::make_unique<T>(std::forward<Args>(args)...),  // NOLINT
+      std::make_unique<T>(std::forward<Args>(args)...),
       not_null<std::unique_ptr<T>>::unchecked_tag_);
 }
 
