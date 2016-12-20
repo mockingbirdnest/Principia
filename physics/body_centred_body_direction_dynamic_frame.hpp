@@ -71,8 +71,8 @@ class BodyCentredBodyDirectionDynamicFrame
   static void ComputeAngularDegreesOfFreedom(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
       DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-      not_null<Rotation<InertialFrame, ThisFrame>*> rotation,
-      not_null<AngularVelocity<InertialFrame>*> angular_velocity);
+      Rotation<InertialFrame, ThisFrame>& rotation,
+      AngularVelocity<InertialFrame>& angular_velocity);
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
