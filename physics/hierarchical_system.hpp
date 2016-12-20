@@ -47,7 +47,7 @@ class HierarchicalSystem {
   // A |System| represents a |primary| body with orbiting |Subsystem|s, e.g.,
   // the sun and its orbiting planetary systems.  |satellites| may be empty,
   // representing the body |primary| with no satellites, e.g., Venus.
-  struct System final {
+  struct System {
     explicit System(not_null<std::unique_ptr<MassiveBody const>> primary)
         : primary(std::move(primary)) {}
     virtual ~System() = default;

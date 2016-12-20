@@ -87,7 +87,7 @@ struct IntegrationProblem final {
 };
 
 // An opaque object for holding the state during the integration of a problem.
-struct IntegrationInstance final {
+struct IntegrationInstance {
   template<typename ODE>
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
