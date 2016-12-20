@@ -33,7 +33,7 @@ class HierarchicalSystem {
   // been inserted.  |jacobi_osculating_elements| must be a valid argument to
   // the constructor of |KeplerOrbit|.
   void Add(not_null<std::unique_ptr<MassiveBody const>> body,
-           not_null<MassiveBody const*> const parent,
+           not_null<MassiveBody const*> parent,
            KeplerianElements<Frame> const& jacobi_osculating_elements);
 
   // Puts the barycentre of the system at the motionless origin of |Frame|;

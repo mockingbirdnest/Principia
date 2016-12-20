@@ -37,19 +37,19 @@ class BodyCentredNonRotatingDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
   BodyCentredNonRotatingDynamicFrame(
-      not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-      not_null<MassiveBody const*> const centre);
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<MassiveBody const*> centre);
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> const message) const override;
+      not_null<serialization::DynamicFrame*> message) const override;
 
   static not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>
-      ReadFromMessage(
-          not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-          serialization::BodyCentredNonRotatingDynamicFrame const& message);
+  ReadFromMessage(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      serialization::BodyCentredNonRotatingDynamicFrame const& message);
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(

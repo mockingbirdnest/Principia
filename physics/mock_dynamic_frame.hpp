@@ -34,7 +34,7 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 
   MOCK_CONST_METHOD1_T(
       WriteToMessage,
-      void(not_null<serialization::DynamicFrame*> const message));
+      void(not_null<serialization::DynamicFrame*> message));
 
  private:
   MOCK_CONST_METHOD2_T(

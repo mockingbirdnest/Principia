@@ -27,7 +27,7 @@ class BodySurfaceFrameField : public FrameField<Frame, ThisFrame> {
  public:
   BodySurfaceFrameField(Ephemeris<Frame> const& ephemeris,
                         Instant const& t,
-                        not_null<RotatingBody<Frame> const*> const body);
+                        not_null<RotatingBody<Frame> const*> body);
 
   Rotation<ThisFrame, Frame> FromThisFrame(
       Position<Frame> const& q) const override;
