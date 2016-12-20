@@ -191,7 +191,7 @@ int FlightPlan::number_of_segments() const {
 
 void FlightPlan::GetSegment(
     int const index,
-    DiscreteTrajectory<Barycentric>::Iterator&,
+    DiscreteTrajectory<Barycentric>::Iterator& begin,
     DiscreteTrajectory<Barycentric>::Iterator& end) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());

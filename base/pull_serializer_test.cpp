@@ -34,7 +34,10 @@ class PullSerializerTest : public ::testing::Test {
       : pull_serializer_(
             std::make_unique<PullSerializer>(chunk_size, number_of_chunks)),
         stream_(Bytes(data_, small_chunk_size),
-                std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {}
+                std::bind(&PullSerializerTest::OnFull,
+                          this,
+                          _1,
+                          std::ref(strings_))) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
     not_null<std::unique_ptr<DiscreteTrajectory>> result =

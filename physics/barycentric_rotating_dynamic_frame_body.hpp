@@ -59,8 +59,8 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   AngularVelocity<InertialFrame> angular_velocity;
   ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
                                  secondary_degrees_of_freedom,
-                                 &rotation,
-                                 &angular_velocity);
+                                 rotation,
+                                 angular_velocity);
 
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(barycentre_degrees_of_freedom.position(),

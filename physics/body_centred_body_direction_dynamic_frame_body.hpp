@@ -51,8 +51,8 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
   AngularVelocity<InertialFrame> angular_velocity;
   ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
                                  secondary_degrees_of_freedom,
-                                 &rotation,
-                                 &angular_velocity);
+                                 rotation,
+                                 angular_velocity);
 
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(primary_degrees_of_freedom.position(),
@@ -139,7 +139,7 @@ ComputeAngularDegreesOfFreedom(
     DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
     Rotation<InertialFrame, ThisFrame>& rotation,
-    <AngularVelocity<InertialFrame>& angular_velocity) {
+    AngularVelocity<InertialFrame>& angular_velocity) {
   RelativeDegreesOfFreedom<InertialFrame> const reference =
        secondary_degrees_of_freedom - primary_degrees_of_freedom;
   Displacement<InertialFrame> const& reference_direction =

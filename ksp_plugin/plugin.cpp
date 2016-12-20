@@ -844,12 +844,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         DefaultEphemerisParameters());
     ReadCelestialsFromMessages(*ephemeris,
                                message.pre_bourbaki_celestial(),
-                               &celestials);
+                               celestials);
   } else {
     ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-    ReadCelestialsFromMessages(*ephemeris,
-                               message.celestial(),
-                               &celestials);
+    ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
   }
 
   GUIDToOwnedVessel vessels;
