@@ -1121,13 +1121,13 @@ template<typename T>
 void Plugin::ReadCelestialsFromMessages(
   Ephemeris<Barycentric> const& ephemeris,
   google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-  not_null<IndexToOwnedCelestial*> const celestials) {
+  IndexToOwnedCelestial& celestials) {
   auto const& bodies = ephemeris.bodies();
   auto bodies_it = bodies.begin();
   for (auto const& celestial_message : celestial_messages) {
-    auto const inserted =
-      celestials->emplace(celestial_message.index(),
-                          make_not_null_unique<Celestial>(*bodies_it));
+    auto const inserted = celestials.emplace(
+        celestial_message.index(),
+        make_not_null_unique<Celestial>(*bodies_it));
     CHECK(inserted.second);
     inserted.first->second->set_trajectory(ephemeris.trajectory(*bodies_it));
     ++bodies_it;
@@ -1136,9 +1136,9 @@ void Plugin::ReadCelestialsFromMessages(
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =
-        FindOrDie(*celestials, celestial_message.index());
+        FindOrDie(celestials, celestial_message.index());
       not_null<Celestial const*> const parent =
-        FindOrDie(*celestials, celestial_message.parent_index()).get();
+        FindOrDie(celestials, celestial_message.parent_index()).get();
       celestial->set_parent(parent);
     }
   }

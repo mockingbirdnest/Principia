@@ -66,7 +66,7 @@ class BarycentricRotatingDynamicFrame
       Instant const& t) const override;
 
   // Fills |rotation| with the rotation that maps the basis of |InertialFrame|
-  // to the basis of |ThisFrame|.  Fills |*ngular_frequency| with the
+  // to the basis of |ThisFrame|.  Fills |angular_velocity| with the
   // corresponding angular velocity.
   static void ComputeAngularDegreesOfFreedom(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,

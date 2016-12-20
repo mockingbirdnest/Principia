@@ -65,8 +65,8 @@ class BodyCentredBodyDirectionDynamicFrame
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
-  // Fills |*rotation| with the rotation that maps the basis of |InertialFrame|
-  // to the basis of |ThisFrame|.  Fills |*angular_frequency| with the
+  // Fills |rotation| with the rotation that maps the basis of |InertialFrame|
+  // to the basis of |ThisFrame|.  Fills |angular_velocity| with the
   // corresponding angular velocity.
   static void ComputeAngularDegreesOfFreedom(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
