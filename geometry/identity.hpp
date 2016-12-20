@@ -47,10 +47,10 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
-  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static Identity ReadFromMessage(serialization::LinearMap const& message);
 
-  void WriteToMessage(not_null<serialization::Identity*> const message) const;
+  void WriteToMessage(not_null<serialization::Identity*> message) const;
   static Identity ReadFromMessage(serialization::Identity const& message);
 
  private:

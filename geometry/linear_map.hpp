@@ -44,7 +44,7 @@ class LinearMap {
  protected:
   // Serialization of the frames.  These are just helper functions for
   // implementing the subclasses, they don't dispatch to the subclasses.
-  static void WriteToMessage(not_null<serialization::LinearMap*> const message);
+  static void WriteToMessage(not_null<serialization::LinearMap*> message);
   static void ReadFromMessage(serialization::LinearMap const& message);
 
 //   template<typename Scalar>

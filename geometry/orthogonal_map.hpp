@@ -57,11 +57,10 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
 
   static OrthogonalMap Identity();
 
-  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static OrthogonalMap ReadFromMessage(serialization::LinearMap const& message);
 
-  void WriteToMessage(
-      not_null<serialization::OrthogonalMap*> const message) const;
+  void WriteToMessage(not_null<serialization::OrthogonalMap*> message) const;
   static OrthogonalMap ReadFromMessage(
       serialization::OrthogonalMap const& message);
 
