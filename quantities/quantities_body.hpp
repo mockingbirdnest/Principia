@@ -14,8 +14,7 @@ namespace internal_quantities {
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
          int64_t AmountExponent, int64_t LuminousIntensityExponent,
-         int64_t WindingExponent, int64_t AngleExponent,
-         int64_t SolidAngleExponent>
+         int64_t AngleExponent>
 struct Dimensions {
   enum {
     Length            = LengthExponent,
@@ -25,9 +24,7 @@ struct Dimensions {
     Temperature       = TemperatureExponent,
     Amount            = AmountExponent,
     LuminousIntensity = LuminousIntensityExponent,
-    Winding           = WindingExponent,
     Angle             = AngleExponent,
-    SolidAngle        = SolidAngleExponent
   };
 
   static int constexpr min_exponent = -16;
@@ -59,12 +56,6 @@ struct Dimensions {
   static_assert(AngleExponent >= min_exponent &&
                 AngleExponent <= max_exponent,
                 "Invalid angle exponent");
-  static_assert(SolidAngleExponent >= min_exponent &&
-                SolidAngleExponent <= max_exponent,
-                "Invalid solid angle exponent");
-  static_assert(WindingExponent >= min_exponent &&
-                WindingExponent <= max_exponent,
-                "Invalid winding exponent");
 
   static int64_t constexpr representation =
       (LengthExponent & exponent_mask)                                 |
@@ -74,9 +65,7 @@ struct Dimensions {
       (TemperatureExponent & exponent_mask)       << 4 * exponent_bits |
       (AmountExponent & exponent_mask)            << 5 * exponent_bits |
       (LuminousIntensityExponent & exponent_mask) << 6 * exponent_bits |
-      (AngleExponent & exponent_mask)             << 7 * exponent_bits |
-      (SolidAngleExponent & exponent_mask)        << 8 * exponent_bits |
-      (WindingExponent & exponent_mask)           << 9 * exponent_bits;
+      (AngleExponent & exponent_mask)             << 7 * exponent_bits;
 };
 
 template<typename Q>
@@ -95,15 +84,11 @@ struct ProductGenerator {
     Amount            = Left::Dimensions::Amount + Right::Dimensions::Amount,
     LuminousIntensity = Left::Dimensions::LuminousIntensity +
                         Right:: Dimensions::LuminousIntensity,
-    Winding           = Left::Dimensions::Winding + Right::Dimensions::Winding,
     Angle             = Left::Dimensions::Angle + Right::Dimensions::Angle,
-    SolidAngle        = Left::Dimensions::SolidAngle +
-                        Right::Dimensions::SolidAngle
   };
   using Type = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                          LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::Type;
+                          LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
 struct ProductGenerator<Left, double> { using Type = Left; };
@@ -125,15 +110,11 @@ struct QuotientGenerator {
     Amount            = Left::Dimensions::Amount - Right::Dimensions::Amount,
     LuminousIntensity = Left::Dimensions::LuminousIntensity -
                         Right:: Dimensions::LuminousIntensity,
-    Winding           = Left::Dimensions::Winding - Right::Dimensions::Winding,
     Angle             = Left::Dimensions::Angle - Right::Dimensions::Angle,
-    SolidAngle        = Left::Dimensions::SolidAngle -
-                        Right::Dimensions::SolidAngle
   };
   using Type = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                          LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::Type;
+                          LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
 struct QuotientGenerator<Left, double> { using Type = Left; };
@@ -151,13 +132,11 @@ struct QuotientGenerator<double, Right> {
     Temperature       = -Right::Dimensions::Temperature,
     Amount            = -Right::Dimensions::Amount,
     LuminousIntensity = -Right::Dimensions::LuminousIntensity,
-    Winding           = -Right::Dimensions::Winding,
     Angle             = -Right::Dimensions::Angle,
-    SolidAngle        = -Right::Dimensions::SolidAngle
   };
   using Type = Quantity<
       Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                 LuminousIntensity, Winding, Angle, SolidAngle>>;
+                 LuminousIntensity, Angle>>;
 };
 
 template<typename T, int exponent>
@@ -429,8 +408,7 @@ std::string DebugString(Quantity<D> const& quantity, int const precision) {
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
       FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
-      FormatUnit("cd", D::LuminousIntensity) + FormatUnit("cycle", D::Winding) +
-      FormatUnit("rad", D::Angle) + FormatUnit("sr", D::SolidAngle);
+      FormatUnit("cd", D::LuminousIntensity) + FormatUnit("rad", D::Angle);
 }
 
 template<typename D>
