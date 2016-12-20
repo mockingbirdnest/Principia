@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "geometry/sign.hpp"
+#include "numerics/ulp_distance.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace integrators {
@@ -16,8 +16,8 @@ namespace internal_symplectic_runge_kutta_nyström_integrator {
 using base::make_not_null_unique;
 using geometry::Sign;
 using numerics::DoublePrecision;
+using numerics::ULPDistance;
 using quantities::Abs;
-using testing_utilities::ULPDistance;
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
