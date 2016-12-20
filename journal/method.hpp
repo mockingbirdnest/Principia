@@ -57,7 +57,7 @@ struct has_return<P, void_if_exists<typename P::Return>> : std::true_type {};
 }  // namespace internal
 
 template<typename Profile>
-class Method {
+class Method final {
  public:
   Method();
 

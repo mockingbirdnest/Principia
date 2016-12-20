@@ -35,12 +35,11 @@ using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Acceleration;
 
-class PhysicsBubble {
+class PhysicsBubble final {
  public:
   using BarycentricToWorldSun = geometry::OrthogonalMap<Barycentric, WorldSun>;
 
   PhysicsBubble();
-  ~PhysicsBubble() = default;
 
   // Creates |next_| if it is null.  Adds the |vessel| to |next_->vessels| with
   // a list of pointers to the Parts in |parts|.  Merges |parts| into

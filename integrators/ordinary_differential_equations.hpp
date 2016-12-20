@@ -125,6 +125,8 @@ template<typename DifferentialEquation>
 class Integrator {
  public:
   using ODE = DifferentialEquation;
+
+  virtual ~Integrator() = default;
 };
 
 // An integrator using a fixed step size.

@@ -12,7 +12,7 @@ using base::not_null;
 
 // An element of the skew field of quaternions ℍ (where ℝ is modeled by
 // |double|).
-class Quaternion {
+class Quaternion final {
  public:
   Quaternion();
   explicit Quaternion(double const real_part);

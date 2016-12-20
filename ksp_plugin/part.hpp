@@ -30,7 +30,7 @@ using PartId = std::uint32_t;
 
 // Represents a KSP part.
 template<typename Frame>
-class Part {
+class Part final {
  public:
   Part(DegreesOfFreedom<Frame> const& degrees_of_freedom,
        Mass const& mass,

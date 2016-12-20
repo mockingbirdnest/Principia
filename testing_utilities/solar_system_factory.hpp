@@ -27,7 +27,7 @@ using physics::SolarSystem;
 namespace testing_utilities {
 
 // A helper class for constructing physics::SolarSystem objects for testing.
-class SolarSystemFactory {
+class SolarSystemFactory final {
  public:
   // The bodies are in decreasing order of mass.
   enum Index : int {

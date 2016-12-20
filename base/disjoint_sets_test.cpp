@@ -17,7 +17,7 @@ struct CountableInteger;
 }  // namespace
 
 template<>
-class Subset<CountableInteger>::Properties {
+class Subset<CountableInteger>::Properties final {
  public:
   explicit Properties(int const cardinality) : cardinality(cardinality) {}
 

@@ -45,6 +45,7 @@ class FlightPlan {
              not_null<Ephemeris<Barycentric>*> const ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters const&
                  adaptive_step_parameters);
+  virtual ~FlightPlan() = default;
 
   virtual Instant initial_time() const;
   virtual Instant actual_final_time() const;

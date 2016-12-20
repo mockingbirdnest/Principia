@@ -15,7 +15,7 @@ namespace internal_frame {
 using base::not_null;
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-class Frame {
+class Frame final {
  public:
   using Tag = FrameTag;
   static Position<Frame> const origin;

@@ -31,7 +31,7 @@ class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  class Parameters {
+  class Parameters final {
    public:
     explicit Parameters(Order2ZonalCoefficient const& j2);
     Parameters(double const j2,

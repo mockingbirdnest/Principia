@@ -15,7 +15,7 @@ namespace internal_serialization {
 //   }
 // }
 template<typename T, typename Message>
-class DoubleOrQuantitySerializer {};
+class DoubleOrQuantitySerializer final {};
 
 }  // namespace internal_serialization
 

@@ -51,7 +51,7 @@ class DelegatingArrayInputStream
 // |PushDeserializer| is intended for use in memory-critical contexts as it
 // bounds the amount of memory used irrespective of the size of the message to
 // deserialize.
-class PushDeserializer {
+class PushDeserializer final {
  public:
   // The |size| of the data chunks sent to |Pull| are never greater than
   // |chunk_size|.  The internal queue holds at most |number_of_chunks| chunks.

@@ -32,13 +32,13 @@ inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
 }
 
 template<typename Frame>
-class Body::CompatibilityHelper<Frame, false> {
+class Body::CompatibilityHelper<Frame, false> final {
  public:
   static bool is_compatible_with(not_null<Body const*> const body);
 };
 
 template<typename Frame>
-class Body::CompatibilityHelper<Frame, true> {
+class Body::CompatibilityHelper<Frame, true> final {
  public:
   static bool is_compatible_with(not_null<Body const*> const body);
 };

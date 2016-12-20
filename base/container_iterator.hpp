@@ -6,7 +6,7 @@ namespace principia {
 namespace base {
 
 template<typename Container>
-class IteratorOn {
+class IteratorOn final {
  public:
   using Iterator = typename Container::iterator;
 

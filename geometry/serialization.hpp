@@ -16,7 +16,7 @@ namespace internal_serialization {
 //   }
 // }
 template<typename T, typename Message>
-class DoubleOrQuantityOrMultivectorSerializer {};
+class DoubleOrQuantityOrMultivectorSerializer final {};
 
 // A helper class that serializes a |Point| or a |Multivector| to a protobuf
 // structure like:
@@ -28,7 +28,7 @@ class DoubleOrQuantityOrMultivectorSerializer {};
 //   }
 // }
 template<typename T, typename Message>
-class PointOrMultivectorSerializer {};
+class PointOrMultivectorSerializer final {};
 
 // A helper class that serializes a |Quantity| or a |Multivector| to a protobuf
 // structure like:
@@ -40,7 +40,7 @@ class PointOrMultivectorSerializer {};
 //   }
 // }
 template<typename T, typename Message>
-class QuantityOrMultivectorSerializer {};
+class QuantityOrMultivectorSerializer final {};
 
 }  // namespace internal_serialization
 

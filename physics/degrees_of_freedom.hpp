@@ -91,7 +91,7 @@ using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
 namespace base {
 
 template<typename Functor, typename Frame>
-class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
+class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> final {
  public:
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(
@@ -110,10 +110,9 @@ class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
 namespace geometry {
 
 template<typename Frame, typename Weight>
-class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> {
+class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(physics::DegreesOfFreedom<Frame> const& degrees_of_freedom,
            Weight const& weight);
@@ -127,10 +126,10 @@ class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> {
 };
 
 template<typename Frame, typename Weight>
-class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight> {
+class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>
+    final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(physics::RelativeDegreesOfFreedom<Frame> const&
                relative_degrees_of_freedom,

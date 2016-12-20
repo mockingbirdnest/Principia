@@ -40,12 +40,11 @@ testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     std::int64_t const max_ulps);
 
 template<typename T>
-class VanishesBeforeMatcher {
+class VanishesBeforeMatcher final {
  public:
   explicit VanishesBeforeMatcher(T const& reference,
                                  std::int64_t const min_ulps,
                                  std::int64_t const max_ulps);
-  ~VanishesBeforeMatcher() = default;
 
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,

@@ -127,7 +127,7 @@ struct is_not_null_non_owner<not_null<T*>> : std::true_type {};
 // This is useful when a |template<typename T>| using a |not_null<T>| is
 // instanced with an instance of |not_null|.
 template<typename Pointer>
-class not_null {
+class not_null final {
  public:
   // The type of the pointer being wrapped.
   // This follows the naming convention from |std::unique_ptr|.

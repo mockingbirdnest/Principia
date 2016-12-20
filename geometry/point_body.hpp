@@ -17,10 +17,10 @@ using quantities::Quantity;
 using quantities::SIUnit;
 
 template<typename Vector>
-class PointSerializer {};
+class PointSerializer final {};
 
 template<typename Dimensions>
-class PointSerializer<Quantity<Dimensions>> {
+class PointSerializer<Quantity<Dimensions>> final {
  public:
   using Vector = Quantity<Dimensions>;
   static void WriteToMessage(Vector const& coordinates,
@@ -35,7 +35,7 @@ class PointSerializer<Quantity<Dimensions>> {
 };
 
 template<typename Scalar, typename Frame, int rank>
-class PointSerializer<Multivector<Scalar, Frame, rank>> {
+class PointSerializer<Multivector<Scalar, Frame, rank>> final {
  public:
   using Vector = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(

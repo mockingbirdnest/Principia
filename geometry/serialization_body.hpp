@@ -41,7 +41,7 @@ class DoubleOrQuantityOrMultivectorSerializer<
 };
 
 template<typename Vector, typename Message>
-class PointOrMultivectorSerializer<Point<Vector>, Message> {
+class PointOrMultivectorSerializer<Point<Vector>, Message> final {
  public:
   using T = Point<Vector>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {

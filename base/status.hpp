@@ -64,7 +64,7 @@ enum class Error {
   DATA_LOSS = 15,
 };
 
-class Status {
+class Status final {
  public:
   // Creates a "successful" status.
   Status();

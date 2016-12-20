@@ -13,7 +13,7 @@ using base::not_null;
 
 class Body {
  public:
-  ~Body() = default;
+  virtual ~Body() = default;
 
   // Returns true iff this body is massless.
   virtual bool is_massless() const = 0;
@@ -45,7 +45,7 @@ class Body {
   // |is_inertial|.  This is necessary because we cannot dynamic cast to
   // OblateBody<Frame> if |Frame| is not inertial.
   template<typename Frame, bool is_inertial>
-  class CompatibilityHelper {
+  class CompatibilityHelper final {
    public:
      static bool is_compatible_with(not_null<Body const*> const body);
    private:

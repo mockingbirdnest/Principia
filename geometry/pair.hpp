@@ -25,19 +25,19 @@ class Pair;
 
 // A template to peel off the affine layer (i.e., the class Point) if any.
 template<typename T>
-class vector_of {
+class vector_of final {
  public:
   using type = T;
 };
 
 template<typename T1, typename T2>
-class vector_of<Pair<T1, T2>> {
+class vector_of<Pair<T1, T2>> final {
  public:
   using type = Pair<typename vector_of<T1>::type, typename vector_of<T2>::type>;
 };
 
 template<typename T>
-class vector_of<Point<T>> {
+class vector_of<Point<T>> final {
  public:
   using type = T;
 };
@@ -45,22 +45,22 @@ class vector_of<Point<T>> {
 // A template to enable declarations on affine pairs (i.e., when one of the
 // components is a Point).
 template<typename T>
-class enable_if_affine {};
+class enable_if_affine final {};
 
 template<typename T1, typename T2>
-class enable_if_affine<Pair<Point<T1>, T2>> {
+class enable_if_affine<Pair<Point<T1>, T2>> final {
  public:
   using type = Pair<Point<T1>, T2>;
 };
 
 template<typename T1, typename T2>
-class enable_if_affine<Pair<T1, Point<T2>>> {
+class enable_if_affine<Pair<T1, Point<T2>>> final {
  public:
   using type = Pair<T1, Point<T2>>;
 };
 
 template<typename T1, typename T2>
-class enable_if_affine<Pair<Point<T1>, Point<T2>>> {
+class enable_if_affine<Pair<Point<T1>, Point<T2>>> final {
  public:
   using type = Pair<Point<T1>, Point<T2>>;
 };
@@ -68,19 +68,19 @@ class enable_if_affine<Pair<Point<T1>, Point<T2>>> {
 // A template to enable declarations on vector pairs (i.e., when none of the
 // components is a Point).
 template<typename T, typename U = T>
-class enable_if_vector {
+class enable_if_vector final {
  public:
   using type = U;
 };
 
 template<typename T1, typename T2>
-class enable_if_vector<Pair<Point<T1>, T2>> {};
+class enable_if_vector<Pair<Point<T1>, T2>> final {};
 
 template<typename T1, typename T2>
-class enable_if_vector<Pair<T1, Point<T2>>> {};
+class enable_if_vector<Pair<T1, Point<T2>>> final {};
 
 template<typename T1, typename T2>
-class enable_if_vector<Pair<Point<T1>, Point<T2>>> {};
+class enable_if_vector<Pair<Point<T1>, Point<T2>>> final {};
 
 // This class represents a pair of two values which can be members of an affine
 // space (i.e., Points) or of a vector space (such as double, Quantity, Vector,
@@ -90,6 +90,7 @@ template<typename T1, typename T2>
 class Pair {
  public:
   Pair(T1 const& t1, T2 const& t2);
+  virtual ~Pair() = default;
 
   Pair operator+(typename vector_of<Pair>::type const& right) const;
   Pair operator-(typename vector_of<Pair>::type const& right) const;
@@ -221,7 +222,7 @@ using internal_pair::vector_of;
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
 template<typename T1, typename T2, typename Weight>
-class BarycentreCalculator<Pair<T1, T2>, Weight> {
+class BarycentreCalculator<Pair<T1, T2>, Weight> final {
  public:
   BarycentreCalculator() = default;
   ~BarycentreCalculator() = default;

@@ -21,7 +21,7 @@ using quantities::ArcTan;
 template<typename Multivector,
          typename Frame,
          typename Tag = typename Frame::Tag>
-class CompatibilityHelper {
+class CompatibilityHelper final {
  public:
   CompatibilityHelper() = delete;
 
@@ -29,7 +29,8 @@ class CompatibilityHelper {
 };
 
 template<typename Multivector, typename Frame>
-class CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag> {
+class CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>
+    final {
  public:
   CompatibilityHelper() = delete;
 

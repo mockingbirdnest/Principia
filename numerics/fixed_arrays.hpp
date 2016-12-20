@@ -17,7 +17,7 @@ template<typename Scalar, int rows, int columns>
 class FixedMatrix;
 
 template<typename Scalar, int size_>
-class FixedVector {
+class FixedVector final {
  public:
   constexpr FixedVector();  // Zero-initialized.
   constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
@@ -44,7 +44,7 @@ class FixedVector {
 };
 
 template<typename Scalar, int rows, int columns>
-class FixedMatrix {
+class FixedMatrix final {
  public:
   // The |data| must be in row-major format.
   constexpr explicit FixedMatrix(
@@ -70,7 +70,7 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedVector<ScalarRight, columns> const& right);
 
 template<typename Scalar, int rows>
-class FixedStrictlyLowerTriangularMatrix {
+class FixedStrictlyLowerTriangularMatrix final {
  public:
   static int constexpr dimension = rows * (rows - 1) / 2;
 

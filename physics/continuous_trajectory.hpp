@@ -50,7 +50,7 @@ class ContinuousTrajectory {
   // the coefficient of highest degree is less than |tolerance|.
   ContinuousTrajectory(Time const& step,
                        Length const& tolerance);
-  ~ContinuousTrajectory() = default;
+  virtual ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
   ContinuousTrajectory(ContinuousTrajectory&&) = delete;
@@ -108,7 +108,7 @@ class ContinuousTrajectory {
 
   // The only thing that clients may do with |Hint| objects is to
   // default-initialize them.
-  class Hint {
+  class Hint final {
    public:
     Hint();
    private:
@@ -122,7 +122,7 @@ class ContinuousTrajectory {
   // serialize the trajectory up to and including the time designated by the
   // |Checkpoint|.  The only thing that clients may do with |Checkpoint| objects
   // is to initialize them with GetCheckpoint.
-  class Checkpoint {
+  class Checkpoint final {
     // The members have the same meaning as those of class
     // |ContinuousTrajectory|.
     Checkpoint(Instant const& t_max,

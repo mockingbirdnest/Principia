@@ -16,7 +16,7 @@ namespace base {
 //     and returns a |type|.
 // See the comments below for example declarations.
 template<typename Functor, typename T, typename = void>
-class Mappable {
+class Mappable final {
  public:
   // using type = void;
   // static type Do(Functor const& functor, T const& t);

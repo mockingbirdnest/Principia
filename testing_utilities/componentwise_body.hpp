@@ -31,13 +31,13 @@ namespace {
 // matchers work.
 
 template<typename T>
-class MatcherParameterType {
+class MatcherParameterType final {
  public:
   using type = T;
 };
 
 template<typename T, template<typename> class U>
-class MatcherParameterType<U<T>> {
+class MatcherParameterType<U<T>> final {
  public:
   using type = typename MatcherParameterType<T>::type;
 };
@@ -55,13 +55,13 @@ class MatcherParameterType<
 
 // And now the cases that we *don't* want to peel away.  Yes, this smells a bit.
 template<typename T>
-class MatcherParameterType<Point<T>> {
+class MatcherParameterType<Point<T>> final {
  public:
   using type = Point<T>;
 };
 
 template<typename T>
-class MatcherParameterType<Quantity<T>> {
+class MatcherParameterType<Quantity<T>> final {
  public:
   using type = Quantity<T>;
 };

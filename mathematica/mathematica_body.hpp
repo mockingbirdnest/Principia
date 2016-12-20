@@ -21,7 +21,7 @@ namespace {
 
 // A helper class to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
-class TupleHelper {
+class TupleHelper final {
  public:
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,

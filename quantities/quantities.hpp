@@ -124,13 +124,12 @@ template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
-class Quantity {
+class Quantity final {
  public:
   using Dimensions = D;
   using Inverse = Quotient<double, Quantity>;
 
   constexpr Quantity();
-  ~Quantity() = default;
 
   constexpr Quantity operator+() const;
   constexpr Quantity operator-() const;

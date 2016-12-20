@@ -14,10 +14,9 @@ using base::not_null;
 
 // An element of the multiplicative group ({+1, -1}, *). Useful for instance to
 // represent the determinant of an orthogonal map.
-class Sign {
+class Sign final {
  public:
   template<typename Scalar> explicit Sign(Scalar const& s);
-  ~Sign() = default;
 
   bool Negative() const;
   bool Positive() const;

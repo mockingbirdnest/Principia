@@ -24,7 +24,7 @@ using quantities::Variation;
 
 // A helper class for implementing |Evaluate| that can be specialized for speed.
 template<typename Vector>
-class EvaluationHelper {
+class EvaluationHelper final {
  public:
   EvaluationHelper(std::vector<Vector> const& coefficients,
                    int const degree);
@@ -44,7 +44,7 @@ class EvaluationHelper {
 // A Чебышёв series with values in the vector space |Vector|.  The argument is
 // an |Instant|.
 template<typename Vector>
-class ЧебышёвSeries {
+class ЧебышёвSeries final {
  public:
   // The element at position i in |coefficients| is the coefficient of Tᵢ.  The
   // polynomials are scaled to the interval [t_min, t_max], which must be

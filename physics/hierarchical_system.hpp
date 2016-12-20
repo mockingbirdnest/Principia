@@ -19,7 +19,7 @@ namespace internal_hierarchical_system {
 using base::not_null;
 
 template<typename Frame>
-class HierarchicalSystem {
+class HierarchicalSystem final {
  public:
   struct BarycentricSystem final {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

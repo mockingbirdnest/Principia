@@ -22,7 +22,7 @@ using quantities::GravitationalParameter;
 // An utility for converting a linearly ordered system of massive bodies given
 // in Jacobi coordinates to barycentric coordinates.
 template<typename Frame>
-class JacobiCoordinates {
+class JacobiCoordinates final {
  public:
   explicit JacobiCoordinates(MassiveBody const& primary);
 

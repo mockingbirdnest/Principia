@@ -56,7 +56,7 @@ class Ephemeris {
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
 
-  class AdaptiveStepParameters {
+  class AdaptiveStepParameters final {
    public:
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
@@ -92,7 +92,7 @@ class Ephemeris {
     friend class Ephemeris<Frame>;
   };
 
-  class FixedStepParameters {
+  class FixedStepParameters final {
    public:
     FixedStepParameters(
         FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,

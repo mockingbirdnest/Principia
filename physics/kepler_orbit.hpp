@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& out,
                          KeplerianElements<Frame> const& elements);
 
 template<typename Frame>
-class KeplerOrbit {
+class KeplerOrbit final {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
