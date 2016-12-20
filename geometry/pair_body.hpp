@@ -126,18 +126,16 @@ operator/(Pair<T1, T2> const& left, Scalar const right) {
 }
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
-    Pair<T1, T2>& left,  // NOLINT(runtime/references)
-    double const right) {
+typename enable_if_vector<Pair<T1, T2>>::type& operator*=(Pair<T1, T2>& left,
+                                                          double const right) {
   left.t1_ *= right;
   left.t2_ *= right;
   return left;
 }
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
-    Pair<T1, T2>& left,  // NOLINT(runtime/references)
-    double const right) {
+typename enable_if_vector<Pair<T1, T2>>::type& operator/=(Pair<T1, T2>& left,
+                                                          double const right) {
   left.t1_ /= right;
   left.t2_ /= right;
   return left;

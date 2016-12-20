@@ -43,20 +43,20 @@
 namespace principia {
 namespace base {
 
-template <class Collection>
-const typename Collection::value_type::second_type&
-FindOrDie(const Collection& collection,
-          const typename Collection::value_type::first_type& key) {
+template<class Collection>
+const typename Collection::value_type::second_type& FindOrDie(
+    Collection const& collection,
+    typename Collection::value_type::first_type const& key) {
   typename Collection::const_iterator it = collection.find(key);
   CHECK(it != collection.end()) << "Map key not found: " << key;
   return it->second;
 }
 
 // Same as above, but returns a non-const reference.
-template <class Collection>
-typename Collection::value_type::second_type&
-FindOrDie(Collection& collection,  // NOLINT(runtime/references)
-          const typename Collection::value_type::first_type& key) {
+template<class Collection>
+typename Collection::value_type::second_type& FindOrDie(
+    Collection& collection,
+    typename Collection::value_type::first_type const& key) {
   typename Collection::iterator it = collection.find(key);
   CHECK(it != collection.end()) << "Map key not found: " << key;
   return it->second;
