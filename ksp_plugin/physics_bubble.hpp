@@ -46,7 +46,7 @@ class PhysicsBubble {
   // a list of pointers to the Parts in |parts|.  Merges |parts| into
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
-  void AddVesselToNext(not_null<Vessel*> const vessel,
+  void AddVesselToNext(not_null<Vessel*> vessel,
                        std::vector<IdAndOwnedPart> parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
@@ -84,23 +84,22 @@ class PhysicsBubble {
 
   // Returns true if, and only if, |vessel| is in |current_->vessels|.
   // |current_| may be null, in that case, returns false.
-  bool contains(not_null<Vessel*> const vessel) const;
+  bool contains(not_null<Vessel*> vessel) const;
 
   // Selectors for the data in |current_|.
   std::vector<not_null<Vessel*>> vessels() const;
   RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass(
-      not_null<Vessel const*> const vessel) const;
+      not_null<Vessel const*> vessel) const;
   Ephemeris<Barycentric>::IntrinsicAcceleration const&
   centre_of_mass_intrinsic_acceleration() const;
   DiscreteTrajectory<Barycentric> const& centre_of_mass_trajectory() const;
   not_null<DiscreteTrajectory<Barycentric>*>
   mutable_centre_of_mass_trajectory() const;
 
-  void WriteToMessage(
-      std::function<std::string(not_null<Vessel const*>)> const guid,
-      not_null<serialization::PhysicsBubble*> const message) const;
+  void WriteToMessage(std::function<std::string(not_null<Vessel const*>)> guid,
+                      not_null<serialization::PhysicsBubble*> message) const;
   static not_null<std::unique_ptr<PhysicsBubble>> ReadFromMessage(
-      std::function<not_null<Vessel*>(std::string)> const vessel,
+      std::function<not_null<Vessel*>(std::string)> vessel,
       serialization::PhysicsBubble const& message);
 
  private:
@@ -133,20 +132,18 @@ class PhysicsBubble {
 
   // Computes the world degrees of freedom of the centre of mass of
   // |next| using the contents of |next->parts|.
-  void ComputeNextCentreOfMassWorldDegreesOfFreedom(
-      not_null<FullState*> const next);
+  void ComputeNextCentreOfMassWorldDegreesOfFreedom(not_null<FullState*> next);
 
   // Computes |next->displacements_from_centre_of_mass| and
   // |next->velocities_from_centre_of_mass|.
   void ComputeNextVesselOffsets(
       BarycentricToWorldSun const& barycentric_to_world_sun,
-      not_null<FullState*> const next);
+      not_null<FullState*> next);
 
   // Creates |next->centre_of_mass_trajectory| and appends to it the barycentre
   // of the degrees of freedom of the vessels in |next->vessels|.  There is no
   // intrinsic acceleration.
-  void RestartNext(Instant const& current_time,
-                   not_null<FullState*> const next);
+  void RestartNext(Instant const& current_time, not_null<FullState*> next);
 
   // Returns the parts common to |current_| and |next|.  The returned vector
   // contains pair of pointers to parts (current_part, next_part) for all parts
@@ -168,7 +165,7 @@ class PhysicsBubble {
   void Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
              Instant const& current_time,
              std::vector<PartCorrespondence> const& common_parts,
-             not_null<FullState*> const next);
+             not_null<FullState*> next);
 
   std::unique_ptr<FullState> current_;
   // The following member is only accessed by |AddVesselToNext| and at the
