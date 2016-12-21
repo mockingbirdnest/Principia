@@ -2,7 +2,7 @@
 #pragma once
 
 #include "base/mappable.hpp"
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/point.hpp"
 #include "serialization/geometry.pb.h"

@@ -5,7 +5,7 @@
 #include <type_traits>
 
 #include "base/macros.hpp"
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "glog/logging.h"
 
 // This file defines a pointer wrapper |not_null| that statically ensures

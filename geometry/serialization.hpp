@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 
 namespace principia {
 namespace geometry {

@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 

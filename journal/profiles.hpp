@@ -2,7 +2,7 @@
 #pragma once
 
 #include "base/not_null.hpp"
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"

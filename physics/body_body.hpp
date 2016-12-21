@@ -3,7 +3,7 @@
 
 #include "physics/body.hpp"
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"

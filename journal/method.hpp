@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "base/not_null.hpp"
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 
 namespace principia {
 

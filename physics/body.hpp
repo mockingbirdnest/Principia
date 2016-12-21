@@ -3,7 +3,7 @@
 #define PRINCIPIA_PHYSICS_BODY_HPP_
 
 #include "base/not_null.hpp"
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {

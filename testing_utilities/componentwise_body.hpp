@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"

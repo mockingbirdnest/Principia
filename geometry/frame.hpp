@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 #include "serialization/geometry.pb.h"

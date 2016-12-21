@@ -4,7 +4,7 @@
 #include <list>
 #include <vector>
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

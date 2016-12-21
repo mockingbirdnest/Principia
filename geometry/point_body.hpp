@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"

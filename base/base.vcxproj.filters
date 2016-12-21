@@ -110,7 +110,7 @@
     <ClInclude Include="mod.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="type_traits.hpp">
+    <ClInclude Include="not_constructible.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

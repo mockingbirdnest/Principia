@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/type_traits.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
