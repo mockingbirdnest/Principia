@@ -139,8 +139,9 @@ class MockPlugin : public Plugin {
 
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
-  void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
-                                    std::vector<IdAndOwnedPart> parts) override;
+  void AddVesselToNextPhysicsBubble(
+      GUID const& vessel_guid,
+      std::vector<IdAndOwnedPart>&& parts) override;
 
   MOCK_METHOD2(AddVesselToNextPhysicsBubbleConstRef,
                void(GUID const& vessel_guid,

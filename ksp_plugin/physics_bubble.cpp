@@ -31,7 +31,7 @@ PhysicsBubble::PhysicsBubble()
     : body_() {}
 
 void PhysicsBubble::AddVesselToNext(not_null<Vessel*> const vessel,
-                                    std::vector<IdAndOwnedPart> parts) {
+                                    std::vector<IdAndOwnedPart>&& parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel) << '\n' << NAMED(parts);
   if (next_ == nullptr) {
     next_ = std::make_unique<PreliminaryState>();

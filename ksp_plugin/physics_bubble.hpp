@@ -47,7 +47,7 @@ class PhysicsBubble {
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
   void AddVesselToNext(not_null<Vessel*> vessel,
-                       std::vector<IdAndOwnedPart> parts);
+                       std::vector<IdAndOwnedPart>&& parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into

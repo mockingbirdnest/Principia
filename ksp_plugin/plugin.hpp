@@ -283,8 +283,9 @@ class Plugin {
   // vessel with GUID |vessel_guid| must not already be in
   // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
   // already in |next_physics_bubble_->parts|.
-  virtual void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
-                                            std::vector<IdAndOwnedPart> parts);
+  virtual void AddVesselToNextPhysicsBubble(
+      GUID const& vessel_guid,
+      std::vector<IdAndOwnedPart>&& parts);
 
   // Returns |bubble_.empty()|.
   virtual bool PhysicsBubbleIsEmpty() const;
@@ -329,7 +330,7 @@ class Plugin {
  protected:
   // May be overriden in tests to inject a mock.
   virtual std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
       std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
       Instant const& initial_time,
       Length const& fitting_tolerance,
