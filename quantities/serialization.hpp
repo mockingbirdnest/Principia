@@ -19,7 +19,7 @@ using base::type_trait;
 //   }
 // }
 template<typename T, typename Message>
-class DoubleOrQuantitySerializer : type_trait {};
+struct DoubleOrQuantitySerializer : type_trait {};
 
 }  // namespace internal_serialization
 

@@ -22,10 +22,9 @@ namespace mathematica {
 
 namespace {
 
-// A helper class to scan the elements of a tuple and stringify them.
+// A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
-class TupleHelper : type_trait {
- public:
+struct TupleHelper : type_trait {
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
       not_null<std::vector<std::string>*> const expressions) {
@@ -35,8 +34,7 @@ class TupleHelper : type_trait {
 };
 
 template<typename... Types>
-class TupleHelper<0, Types...> {
- public:
+struct TupleHelper<0, Types...> : type_trait {
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
       not_null<std::vector<std::string>*> const expressions) {}

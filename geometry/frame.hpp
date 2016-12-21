@@ -17,14 +17,11 @@ using base::not_null;
 using base::type_trait;
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-class Frame : type_trait {
- public:
+struct Frame : type_trait {
   using Tag = FrameTag;
   static Position<Frame> const origin;
   static Tag const tag = frame_tag;
   static bool const is_inertial = frame_is_inertial;
-
-  Frame() = delete;
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
