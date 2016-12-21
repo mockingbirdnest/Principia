@@ -115,9 +115,13 @@ struct QuotientGenerator : not_constructible {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> : not_constructible { using Type = Left; };
+struct QuotientGenerator<Left, double> : not_constructible {
+  using Type = Left;
+};
 template<>
-struct QuotientGenerator<double, double> : not_constructible { using Type = double; };
+struct QuotientGenerator<double, double> : not_constructible {
+  using Type = double;
+};
 template<typename Right>
 struct QuotientGenerator<double, Right> : not_constructible {
   enum {

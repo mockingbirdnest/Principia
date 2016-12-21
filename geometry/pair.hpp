@@ -116,7 +116,7 @@ class Pair {
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
-  friend class base::Mappable;
+  friend struct base::Mappable;
 
   // This is needed for testing.
   template<typename T1Matcher, typename T2Matcher>
