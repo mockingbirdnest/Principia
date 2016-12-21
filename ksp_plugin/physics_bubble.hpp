@@ -108,7 +108,11 @@ class PhysicsBubble final {
 
   struct PreliminaryState {
     PreliminaryState();
-    virtual PreliminaryState() = default;
+    PreliminaryState(PreliminaryState const&) = delete;
+    PreliminaryState(PreliminaryState&&) = default;
+    PreliminaryState& operator=(PreliminaryState const&) = delete;
+    PreliminaryState& operator=(PreliminaryState&&) = default;
+    virtual ~PreliminaryState() = default;
 
     std::map<not_null<Vessel*> const,
              // NOTE(Norgg) TODO(Egg) Removed const from vector,

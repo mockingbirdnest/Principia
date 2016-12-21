@@ -50,12 +50,13 @@ struct ForkableTraits;
 // A template for iterating over the timeline of a Forkable object, taking forks
 // into account.
 template<typename Tr4jectory, typename It3rator>
-class ForkableIterator final {
+class ForkableIterator {
   using TimelineConstIterator =
       typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
  public:
   ForkableIterator() = default;
+  virtual ~ForkableIterator() = default;
 
   bool operator==(It3rator const& right) const;
   bool operator!=(It3rator const& right) const;

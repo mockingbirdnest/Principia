@@ -13,7 +13,7 @@ namespace internal_serialization {
 using base::not_null;
 
 template<typename Dimensions, typename Message>
-class DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> final {
+class DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {
  public:
   using T = Quantity<Dimensions>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
@@ -27,7 +27,7 @@ class DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> final {
 };
 
 template<typename Message>
-class DoubleOrQuantitySerializer<double, Message> final {
+class DoubleOrQuantitySerializer<double, Message> {
  public:
   static void WriteToMessage(double const d,
                              not_null<Message*> const message) {
