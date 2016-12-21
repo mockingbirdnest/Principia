@@ -63,11 +63,11 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
   // Sorry about the preprocessing, the regex are not powerful enough to work in
   // both cases.
 #ifdef PRINCIPIA_COMPILER_MSVC
-  static char const const_method[] =  "\\(const int\\) const\\:";
-  static char const non_const_method[] =  "\\(const int\\)\\:";
+  static char const const_method[] =  "\\(int\\) const\\:";
+  static char const non_const_method[] =  "\\(int\\)\\:";
 #elif PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
-  char const const_method[] =  "\\(const int\\) const \\[";
-  char const non_const_method[] =  "\\(const int\\) \\[";
+  char const const_method[] =  "\\(int\\) const \\[";
+  char const non_const_method[] =  "\\(int\\) \\[";
 #endif
 
   EXPECT_DEATH({
