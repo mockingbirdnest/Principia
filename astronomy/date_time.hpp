@@ -17,15 +17,13 @@ namespace internal_date_time {
 
 class Date {
  public:
-  static constexpr Date YYYYMMDD(std::int64_t const digits);
-  static constexpr Date YYYYwwD(std::int64_t const digits);
-  static constexpr Date YYYYDDD(std::int64_t const digits);
+  static constexpr Date YYYYMMDD(std::int64_t digits);
+  static constexpr Date YYYYwwD(std::int64_t digits);
+  static constexpr Date YYYYDDD(std::int64_t digits);
 
-  static constexpr Date Calendar(int const year,
-                                 int const month,
-                                 int const day);
-  static constexpr Date Ordinal(int const year, int const day);
-  static constexpr Date Week(int const year, int const week, int const day);
+  static constexpr Date Calendar(int year, int month, int day);
+  static constexpr Date Ordinal(int year, int day);
+  static constexpr Date Week(int year, int week, int day);
 
   constexpr int year() const;
   constexpr int month() const;
@@ -46,9 +44,7 @@ class Date {
   constexpr bool operator>=(Date const& other) const;
 
  private:
-  constexpr Date(int const year,
-                 int const month,
-                 int const day);
+  constexpr Date(int year, int month, int day);
 
   int const year_;
   int const month_;
@@ -57,7 +53,7 @@ class Date {
 
 class Time {
  public:
-  static constexpr Time hhmmss_ms(int const hhmmss, int ms);
+  static constexpr Time hhmmss_ms(int hhmmss, int ms);
 
   constexpr int hour() const;
   constexpr int minute() const;
@@ -69,10 +65,7 @@ class Time {
   constexpr bool is_end_of_day() const;
 
  private:
-  constexpr Time(int const hour,
-                 int const minute,
-                 int const second,
-                 int const millisecond);
+  constexpr Time(int hour, int minute, int second, int millisecond);
 
   // Checks that this represents a valid time of day as per ISO 8601, thus
   // that the components are in the normal range, or that the object represents
@@ -97,7 +90,7 @@ class DateTime {
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-  constexpr DateTime(Date const date, Time const time);
+  constexpr DateTime(Date date, Time time);
 
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of the month.

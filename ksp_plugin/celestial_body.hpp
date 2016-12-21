@@ -17,7 +17,7 @@ inline bool Celestial::is_initialized() const {
 }
 
 inline void Celestial::set_trajectory(
-      not_null<ContinuousTrajectory<Barycentric> const*> const trajectory) {
+    not_null<ContinuousTrajectory<Barycentric> const*> const trajectory) {
   CHECK(!is_initialized());
   trajectory_ = trajectory;
 }

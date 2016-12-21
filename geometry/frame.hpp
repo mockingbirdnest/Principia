@@ -24,7 +24,7 @@ class Frame {
 
   Frame() = delete;
 
-  static void WriteToMessage(not_null<serialization::Frame*> const message);
+  static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the |message| matches the current type.
   static void ReadFromMessage(serialization::Frame const& message);

@@ -47,7 +47,7 @@ class Body {
   template<typename Frame, bool is_inertial>
   class CompatibilityHelper {
    public:
-     static bool is_compatible_with(not_null<Body const*> const body);
+     static bool is_compatible_with(not_null<Body const*> body);
    private:
      CompatibilityHelper() = delete;
   };

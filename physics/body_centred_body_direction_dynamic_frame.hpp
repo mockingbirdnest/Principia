@@ -43,19 +43,19 @@ class BodyCentredBodyDirectionDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
   BodyCentredBodyDirectionDynamicFrame(
-      not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-      not_null<MassiveBody const*> const primary,
-      not_null<MassiveBody const*> const secondary);
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<MassiveBody const*> primary,
+      not_null<MassiveBody const*> secondary);
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> const message) const override;
+      not_null<serialization::DynamicFrame*> message) const override;
 
   static not_null<std::unique_ptr<BodyCentredBodyDirectionDynamicFrame>>
       ReadFromMessage(
-          not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+          not_null<Ephemeris<InertialFrame> const*> ephemeris,
           serialization::BodyCentredBodyDirectionDynamicFrame const& message);
 
  private:
@@ -71,8 +71,8 @@ class BodyCentredBodyDirectionDynamicFrame
   static void ComputeAngularDegreesOfFreedom(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
       DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-      not_null<Rotation<InertialFrame, ThisFrame>*> const rotation,
-      not_null<AngularVelocity<InertialFrame>*> const angular_velocity);
+      not_null<Rotation<InertialFrame, ThisFrame>*> rotation,
+      not_null<AngularVelocity<InertialFrame>*> angular_velocity);
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;

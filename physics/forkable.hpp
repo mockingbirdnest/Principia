@@ -36,7 +36,7 @@ class Forkable;
 // This traits class must export declarations similar to the following:
 //
 // using TimelineConstIterator = ...;
-// static Instant const& time(TimelineConstIterator const it);
+// static Instant const& time(TimelineConstIterator it);
 //
 // TimelineConstIterator must be an STL-like iterator in the timeline of
 // Tr4jectory.  |time()| must return the corresponding time.
@@ -148,7 +148,7 @@ class Forkable {
   // |trajectory| must be a root.
   static not_null<Tr4jectory*> ReadPointerFromMessage(
       serialization::DiscreteTrajectory::Pointer const& message,
-      not_null<Tr4jectory*> const trajectory);
+      not_null<Tr4jectory*> trajectory);
 
  protected:
   // The API that must be implemented by subclasses.
@@ -202,7 +202,7 @@ class Forkable {
   // This trajectory need not be a root.  As forks are encountered during tree
   // traversal their pointer is nulled-out in |forks|.
   void WriteSubTreeToMessage(
-      not_null<serialization::DiscreteTrajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> message,
       std::vector<Tr4jectory*>& forks) const;
 
   void FillSubTreeFromMessage(serialization::DiscreteTrajectory const& message,
@@ -214,9 +214,8 @@ class Forkable {
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
   // (it may be this object).  |position_in_ancestor_timeline| may only be at
   // end if it is an iterator in this object (and |ancestor| is this object).
-  It3rator Wrap(
-      not_null<Tr4jectory const*> const ancestor,
-      TimelineConstIterator const position_in_ancestor_timeline) const;
+  It3rator Wrap(not_null<Tr4jectory const*> ancestor,
+                TimelineConstIterator position_in_ancestor_timeline) const;
 
   // There may be several forks starting from the same time, hence the multimap.
   // A level of indirection is needed to avoid referencing an incomplete type in

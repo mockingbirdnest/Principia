@@ -35,12 +35,12 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
   MOCK_METHOD5_T(
       FlowWithAdaptiveStep,
-      bool(not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      bool(not_null<DiscreteTrajectory<Frame>*> trajectory,
            typename Ephemeris<Frame>::IntrinsicAcceleration
                intrinsic_acceleration,
            Instant const& t,
            AdaptiveStepParameters const& parameters,
-           std::int64_t const max_ephemeris_steps));
+           std::int64_t max_ephemeris_steps));
   MOCK_METHOD4_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
@@ -71,13 +71,13 @@ class MockEphemeris : public Ephemeris<Frame> {
           Instant const& t));
 
   MOCK_CONST_METHOD1_T(serialization_index_for_body,
-                       int(not_null<MassiveBody const*> const body));
+                       int(not_null<MassiveBody const*> body));
   MOCK_CONST_METHOD1_T(
       body_for_serialization_index,
-      not_null<MassiveBody const*>(int const serialization_index));
+      not_null<MassiveBody const*>(int serialization_index));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
-                       void(not_null<serialization::Ephemeris*> const message));
+                       void(not_null<serialization::Ephemeris*> message));
 };
 
 }  // namespace internal_ephemeris

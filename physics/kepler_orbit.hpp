@@ -30,7 +30,7 @@ struct KeplerianElements {
   Angle mean_anomaly;
 
   void WriteToMessage(
-      not_null<serialization::KeplerianElements*> const message) const;
+      not_null<serialization::KeplerianElements*> message) const;
 };
 
 template<typename Frame>
