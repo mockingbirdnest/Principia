@@ -13,7 +13,7 @@ namespace internal_serialization {
 using base::not_null;
 
 template<typename Dimensions, typename Message>
-struct DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> : type_trait {
+struct DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> : not_constructible {
   using T = Quantity<Dimensions>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
     t.WriteToMessage(message->mutable_quantity());
@@ -26,7 +26,7 @@ struct DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> : type_trait {
 };
 
 template<typename Message>
-struct DoubleOrQuantitySerializer<double, Message> : type_trait {
+struct DoubleOrQuantitySerializer<double, Message> : not_constructible {
   static void WriteToMessage(double const d,
                              not_null<Message*> const message) {
     message->set_double_(d);

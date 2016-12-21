@@ -26,9 +26,8 @@ class DoubleOrQuantityOrMultivectorSerializer<Quantity<Dimensions>, Message>
     : public DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {};
 
 template<typename Scalar, typename Frame, int rank, typename Message>
-class DoubleOrQuantityOrMultivectorSerializer<
-    Multivector<Scalar, Frame, rank>, Message> : type_trait {
- public:
+struct DoubleOrQuantityOrMultivectorSerializer<
+    Multivector<Scalar, Frame, rank>, Message> : not_constructible {
   using T = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
     t.WriteToMessage(message->mutable_multivector());
@@ -41,8 +40,7 @@ class DoubleOrQuantityOrMultivectorSerializer<
 };
 
 template<typename Vector, typename Message>
-class PointOrMultivectorSerializer<Point<Vector>, Message> : type_trait {
- public:
+struct PointOrMultivectorSerializer<Point<Vector>, Message> : not_constructible {
   using T = Point<Vector>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
     t.WriteToMessage(message->mutable_point());

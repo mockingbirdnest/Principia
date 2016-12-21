@@ -13,17 +13,16 @@ namespace principia {
 namespace geometry {
 namespace internal_point {
 
-using base::type_trait;
+using base::not_constructible;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::SIUnit;
 
 template<typename Vector>
-class PointSerializer : type_trait {};
+struct PointSerializer : not_constructible {};
 
 template<typename Dimensions>
-class PointSerializer<Quantity<Dimensions>> : type_trait {
- public:
+struct PointSerializer<Quantity<Dimensions>> : not_constructible {
   using Vector = Quantity<Dimensions>;
   static void WriteToMessage(Vector const& coordinates,
                              not_null<serialization::Point*> const message) {
@@ -37,8 +36,7 @@ class PointSerializer<Quantity<Dimensions>> : type_trait {
 };
 
 template<typename Scalar, typename Frame, int rank>
-class PointSerializer<Multivector<Scalar, Frame, rank>> : type_trait {
- public:
+struct PointSerializer<Multivector<Scalar, Frame, rank>> : not_constructible {
   using Vector = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(
       Vector const& coordinates,

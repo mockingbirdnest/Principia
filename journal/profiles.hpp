@@ -9,8 +9,8 @@
 
 namespace principia {
 
+using base::not_constructible;
 using base::not_null;
-using base::type_trait;
 using base::PullSerializer;
 using base::PushDeserializer;
 using interface::AdaptiveStepParameters;

@@ -12,8 +12,8 @@
 
 namespace principia {
 
+using base::not_constructible;
 using base::not_null;
-using base::type_trait;
 using quantities::DebugString;
 using quantities::IsFinite;
 using quantities::SIUnit;
@@ -24,7 +24,7 @@ namespace {
 
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
-struct TupleHelper : type_trait {
+struct TupleHelper : not_constructible {
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
       not_null<std::vector<std::string>*> const expressions) {
@@ -34,7 +34,7 @@ struct TupleHelper : type_trait {
 };
 
 template<typename... Types>
-struct TupleHelper<0, Types...> : type_trait {
+struct TupleHelper<0, Types...> : not_constructible {
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
       not_null<std::vector<std::string>*> const expressions) {}

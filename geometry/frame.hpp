@@ -13,11 +13,11 @@ namespace principia {
 namespace geometry {
 namespace internal_frame {
 
+using base::not_constructible;
 using base::not_null;
-using base::type_trait;
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-struct Frame : type_trait {
+struct Frame : not_constructible {
   using Tag = FrameTag;
   static Position<Frame> const origin;
   static Tag const tag = frame_tag;

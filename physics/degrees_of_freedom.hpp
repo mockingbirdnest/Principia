@@ -16,7 +16,7 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
-using base::type_trait;
+using base::not_constructible;
 using geometry::Displacement;
 using geometry::Pair;
 using geometry::Position;
@@ -93,8 +93,7 @@ using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
 namespace base {
 
 template<typename Functor, typename Frame>
-class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> : type_trait {
- public:
+struct Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> : not_constructible {
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(
                                 std::declval<geometry::Displacement<Frame>>())),

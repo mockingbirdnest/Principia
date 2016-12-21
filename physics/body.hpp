@@ -10,7 +10,7 @@ namespace principia {
 namespace physics {
 namespace internal_body {
 
-using base::type_trait;
+using base::not_constructible;
 using base::not_null;
 
 class Body {
@@ -43,12 +43,11 @@ class Body {
   Body() = default;
 
  private:
-  // A helper class which is here just so that we can specialize it on
+  // A helper struct which is here just so that we can specialize it on
   // |is_inertial|.  This is necessary because we cannot dynamic cast to
   // OblateBody<Frame> if |Frame| is not inertial.
   template<typename Frame, bool is_inertial>
-  class CompatibilityHelper : type_trait {
-   public:
+  struct CompatibilityHelper : not_constructible {
      static bool is_compatible_with(not_null<Body const*> body);
   };
 };

@@ -13,25 +13,23 @@ namespace principia {
 namespace geometry {
 namespace internal_grassmann {
 
-using base::type_trait;
+using base::not_constructible;
 using quantities::ArcTan;
 
-// This class helps in reading coordinates in compatilibity mode.  We used to
+// This struct helps in reading coordinates in compatilibity mode.  We used to
 // use a left-handed OLD_BARYCENTRIC frame, and switched to use a right-handed
 // BARYCENTRIC frame in Borel.  As a consequence, reading old serialized data
 // results in a frame tag mismatch and must flip the multivectors.
 template<typename Multivector,
          typename Frame,
          typename Tag = typename Frame::Tag>
-class CompatibilityHelper : type_trait {
- public:
+struct CompatibilityHelper : not_constructible {
   static bool MustFlip(serialization::Frame const& frame);
 };
 
 template<typename Multivector, typename Frame>
-class CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>
-    : type_trait {
- public:
+struct CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>
+    : not_constructible {
   CompatibilityHelper() = delete;
 
   static bool MustFlip(serialization::Frame const& frame);

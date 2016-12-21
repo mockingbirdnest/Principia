@@ -15,8 +15,8 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
+using base::not_constructible;
 using base::not_null;
-using base::type_trait;
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
@@ -41,7 +41,7 @@ using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template <int n, typename Q, typename = void>
-struct NthRootGenerator : type_trait {};
+struct NthRootGenerator : not_constructible {};
 template <typename T, int exponent, typename = void>
 struct ExponentiationGenerator final {};
 
@@ -203,9 +203,9 @@ class Quantity final {
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
-struct is_quantity : std::is_floating_point<T>, type_trait {};
+struct is_quantity : std::is_floating_point<T>, not_constructible {};
 template<typename D>
-struct is_quantity<Quantity<D>> : std::true_type, type_trait {};
+struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
 
 }  // namespace internal_quantities
 

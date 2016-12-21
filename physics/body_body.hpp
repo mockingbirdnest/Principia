@@ -12,8 +12,8 @@ namespace principia {
 namespace physics {
 namespace internal_body {
 
-using base::type_trait;
 using base::dynamic_cast_not_null;
+using base::not_constructible;
 
 template<typename Frame>
 bool Body::is_compatible_with() const {
@@ -34,14 +34,12 @@ inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
 }
 
 template<typename Frame>
-class Body::CompatibilityHelper<Frame, false> : type_trait {
- public:
+struct Body::CompatibilityHelper<Frame, false> : not_constructible {
   static bool is_compatible_with(not_null<Body const*> const body);
 };
 
 template<typename Frame>
-class Body::CompatibilityHelper<Frame, true> : type_trait {
- public:
+struct Body::CompatibilityHelper<Frame, true> : not_constructible {
   static bool is_compatible_with(not_null<Body const*> const body);
 };
 

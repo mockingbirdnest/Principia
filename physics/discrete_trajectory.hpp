@@ -26,10 +26,10 @@ FORWARD_DECLARE_FROM(discrete_trajectory,
 // Reopening |internal_forkable| to specialize a template.
 namespace internal_forkable {
 
-using base::type_trait;
+using base::not_constructible;
 
 template<typename Frame>
-struct ForkableTraits<DiscreteTrajectory<Frame>> : type_trait {
+struct ForkableTraits<DiscreteTrajectory<Frame>> : not_constructible {
   using TimelineConstIterator =
       typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
   static Instant const& time(TimelineConstIterator it);

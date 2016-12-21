@@ -904,7 +904,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_prolog;
   std::string cxx_run_epilog;
-  cxx_toplevel_type_declaration_[descriptor] = "struct " + name + " : type_trait {\n";
+  cxx_toplevel_type_declaration_[descriptor] =
+      "struct " + name + " : not_constructible {\n";
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();

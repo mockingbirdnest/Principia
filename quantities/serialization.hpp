@@ -7,7 +7,7 @@ namespace principia {
 namespace quantities {
 namespace internal_serialization {
 
-using base::type_trait;
+using base::not_constructible;
 
 // A helper class that serializes a |Quantity| or a |double| to a protobuf
 // structure like:
@@ -19,7 +19,7 @@ using base::type_trait;
 //   }
 // }
 template<typename T, typename Message>
-struct DoubleOrQuantitySerializer : type_trait {};
+struct DoubleOrQuantitySerializer : not_constructible {};
 
 }  // namespace internal_serialization
 
