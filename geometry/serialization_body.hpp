@@ -40,7 +40,8 @@ struct DoubleOrQuantityOrMultivectorSerializer<
 };
 
 template<typename Vector, typename Message>
-struct PointOrMultivectorSerializer<Point<Vector>, Message> : not_constructible {
+struct PointOrMultivectorSerializer<Point<Vector>, Message>
+    : not_constructible {
   using T = Point<Vector>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
     t.WriteToMessage(message->mutable_point());

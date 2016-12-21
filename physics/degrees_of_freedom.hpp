@@ -93,7 +93,8 @@ using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
 namespace base {
 
 template<typename Functor, typename Frame>
-struct Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> : not_constructible {
+struct Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>
+    : not_constructible {
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(
                                 std::declval<geometry::Displacement<Frame>>())),

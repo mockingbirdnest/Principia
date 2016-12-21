@@ -46,8 +46,8 @@ struct MatcherParameterType<U<T>> : not_constructible {
 // which one exactly, since |MatcherParameterType| is only used for describing
 // the matchers.  So we pick the simplest, |R3Element|.
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-struct MatcherParameterType<
-          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> : not_constructible {
+struct MatcherParameterType<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
+    : not_constructible {
   using type =
       geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
 };
