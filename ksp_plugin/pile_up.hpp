@@ -20,7 +20,7 @@ using quantities::Force;
 // |Vessels|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
-  explicit PileUp(std::list<not_null<Vessel*>> vessels);
+  explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
 
   std::list<not_null<Vessel*>> const& vessels() const;
 
