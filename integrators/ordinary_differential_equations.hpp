@@ -61,8 +61,7 @@ struct SpecialSecondOrderDifferentialEquation final {
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
 
-    void WriteToMessage(
-        not_null<serialization::SystemState*> const message) const;
+    void WriteToMessage(not_null<serialization::SystemState*> message) const;
     static SystemState ReadFromMessage(
         serialization::SystemState const& message);
   };
@@ -147,13 +146,13 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
     Time const& step) const = 0;
 
   void WriteToMessage(
-      not_null<serialization::FixedStepSizeIntegrator*> const message) const;
+      not_null<serialization::FixedStepSizeIntegrator*> message) const;
   static FixedStepSizeIntegrator const& ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message);
 
  protected:
   explicit FixedStepSizeIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind const kind);
+      serialization::FixedStepSizeIntegrator::Kind kind);
 
  private:
   serialization::FixedStepSizeIntegrator::Kind const kind_;
@@ -174,13 +173,13 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
     AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   void WriteToMessage(
-      not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const;
+      not_null<serialization::AdaptiveStepSizeIntegrator*> message) const;
   static AdaptiveStepSizeIntegrator const& ReadFromMessage(
       serialization::AdaptiveStepSizeIntegrator const& message);
 
  protected:
   explicit AdaptiveStepSizeIntegrator(
-      serialization::AdaptiveStepSizeIntegrator::Kind const kind);
+      serialization::AdaptiveStepSizeIntegrator::Kind kind);
 
  private:
   serialization::AdaptiveStepSizeIntegrator::Kind const kind_;

@@ -16,7 +16,7 @@ class MockVessel : public Vessel {
   MOCK_CONST_METHOD0(is_initialized, bool());
 
   MOCK_CONST_METHOD0(parent, not_null<Celestial const*>());
-  MOCK_METHOD1(set_parent, void(not_null<Celestial const*> const parent));
+  MOCK_METHOD1(set_parent, void(not_null<Celestial const*> parent));
 
   MOCK_CONST_METHOD0(history, DiscreteTrajectory<Barycentric> const&());
   MOCK_CONST_METHOD0(prolongation, DiscreteTrajectory<Barycentric> const&());
@@ -46,8 +46,8 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD1(UpdatePrediction, void(Instant const& last_time));
 
-  MOCK_CONST_METHOD1(WriteToMessage, void(
-      not_null<serialization::Vessel*> const message));
+  MOCK_CONST_METHOD1(WriteToMessage,
+                     void(not_null<serialization::Vessel*> message));
 };
 
 }  // namespace internal_vessel

@@ -38,20 +38,18 @@ template<typename InertialFrame, typename ThisFrame>
 class BodySurfaceDynamicFrame
     : public DynamicFrame<InertialFrame, ThisFrame> {
  public:
-  BodySurfaceDynamicFrame(
-      not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-      not_null<RotatingBody<InertialFrame> const*> const centre);
+  BodySurfaceDynamicFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
+                          not_null<RotatingBody<InertialFrame> const*> centre);
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> const message) const override;
+      not_null<serialization::DynamicFrame*> message) const override;
 
-  static not_null<std::unique_ptr<BodySurfaceDynamicFrame>>
-      ReadFromMessage(
-          not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-          serialization::BodySurfaceDynamicFrame const& message);
+  static not_null<std::unique_ptr<BodySurfaceDynamicFrame>> ReadFromMessage(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      serialization::BodySurfaceDynamicFrame const& message);
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(

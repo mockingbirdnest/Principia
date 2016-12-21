@@ -21,8 +21,7 @@ struct DoublePrecision final {
 
   void Increment(Difference<T> const& increment);
 
-  void WriteToMessage(
-      not_null<serialization::DoublePrecision*> const message) const;
+  void WriteToMessage(not_null<serialization::DoublePrecision*> message) const;
   static DoublePrecision ReadFromMessage(
       serialization::DoublePrecision const& message);
 

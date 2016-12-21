@@ -4,7 +4,7 @@
 namespace principia {
 namespace numerics {
 
-std::int64_t ULPDistance(double const x, double const y);
+std::int64_t ULPDistance(double x, double y);
 
 }  // namespace numerics
 }  // namespace principia

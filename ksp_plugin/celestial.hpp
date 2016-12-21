@@ -37,7 +37,7 @@ class Celestial final {
   // True if, and only if, |trajectory_| is not null.
   bool is_initialized() const;
   void set_trajectory(
-      not_null<ContinuousTrajectory<Barycentric> const*> const trajectory);
+      not_null<ContinuousTrajectory<Barycentric> const*> trajectory);
   ContinuousTrajectory<Barycentric> const& trajectory() const;
   not_null<ContinuousTrajectory<Barycentric>::Hint*> current_time_hint() const;
   DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
@@ -48,7 +48,7 @@ class Celestial final {
   not_null<MassiveBody const*> body() const;
   bool has_parent() const;
   Celestial const* parent() const;  // Null for the Sun.
-  void set_parent(not_null<Celestial const*> const parent);
+  void set_parent(not_null<Celestial const*> parent);
 
  private:
   not_null<MassiveBody const*> body_;

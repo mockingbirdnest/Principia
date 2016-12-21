@@ -85,24 +85,22 @@ class ContinuousTrajectory {
   // in increasing time order.  It may be a nullptr (in which case no speed-up
   // takes place).
   virtual Position<Frame> EvaluatePosition(Instant const& time,
-                                           Hint* const hint) const;
+                                           Hint* hint) const;
   virtual Velocity<Frame> EvaluateVelocity(Instant const& time,
-                                           Hint* const hint) const;
-  virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time,
-      Hint* const hint) const;
+                                           Hint* hint) const;
+  virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(Instant const& time,
+                                                           Hint* hint) const;
 
   // Returns a checkpoint for the current state of this object.
   Checkpoint GetCheckpoint() const;
 
   // Serializes the current state of this object.
   void WriteToMessage(
-      not_null<serialization::ContinuousTrajectory*> const message) const;
+      not_null<serialization::ContinuousTrajectory*> message) const;
   // Serializes the state of this object as it existed when the checkpoint was
   // taken.
-  void WriteToMessage(
-      not_null<serialization::ContinuousTrajectory*> const message,
-      Checkpoint const& checkpoint) const;
+  void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message,
+                      Checkpoint const& checkpoint) const;
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
@@ -127,9 +125,9 @@ class ContinuousTrajectory {
     // |ContinuousTrajectory|.
     Checkpoint(Instant const& t_max,
                Length const& adjusted_tolerance,
-               bool const is_unstable,
-               int const degree,
-               int const degree_age,
+               bool is_unstable,
+               int degree,
+               int degree_age,
                std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> const&
                    last_points);
     Instant t_max_;
@@ -155,7 +153,7 @@ class ContinuousTrajectory {
       std::vector<Displacement<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
       ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
-          int const degree,
+          int degree,
           std::vector<Displacement<Frame>> const& q,
           std::vector<Velocity<Frame>> const& v,
           Instant const& t_min,
@@ -169,7 +167,7 @@ class ContinuousTrajectory {
 
   // Returns true if the given |hint| is usable for the given |time|.  If it is,
   // |hint->index| is the index of the series to use.
-  bool MayUseHint(Instant const& time, Hint* const hint) const;
+  bool MayUseHint(Instant const& time, Hint* hint) const;
 
   // Construction parameters;
   Time const step_;

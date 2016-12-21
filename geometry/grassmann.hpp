@@ -47,7 +47,7 @@ class Multivector<Scalar, Frame, 1> final {
       Multivector<S, Frame, 1> const& multivector) const;
 
   void WriteToMessage(
-      not_null<serialization::Multivector*> const message) const;
+      not_null<serialization::Multivector*> message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -64,10 +64,10 @@ class Multivector<Scalar, Frame, 1> final {
                                           Multivector<S, F, r> const& right);
   template<typename S, typename F, int r>
   friend Multivector<S, F, r>& operator*=(Multivector<S, F, r>& left,
-                                          double const right);
+                                          double right);
   template<typename S, typename F, int r>
   friend Multivector<S, F, r>& operator/=(Multivector<S, F, r>& left,
-                                          double const right);
+                                          double right);
 };
 
 template<typename Scalar, typename Frame>
@@ -83,8 +83,7 @@ class Multivector<Scalar, Frame, 2> final {
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 2> const& multivector) const;
 
-  void WriteToMessage(
-      not_null<serialization::Multivector*> const message) const;
+  void WriteToMessage(not_null<serialization::Multivector*> message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -98,10 +97,10 @@ class Multivector<Scalar, Frame, 2> final {
                                           Multivector<S, F, r> const& right);
   template<typename S, typename F, int r>
   friend Multivector<S, F, r>& operator*=(Multivector<S, F, r>& left,
-                                          double const right);
+                                          double right);
   template<typename S, typename F, int r>
   friend Multivector<S, F, r>& operator/=(Multivector<S, F, r>& left,
-                                          double const right);
+                                          double right);
 };
 
 template<typename Scalar, typename Frame>
@@ -113,8 +112,7 @@ class Multivector<Scalar, Frame, 3> final {
   Scalar const& coordinates() const;
   Scalar Norm() const;
 
-  void WriteToMessage(
-      not_null<serialization::Multivector*> const message) const;
+  void WriteToMessage(not_null<serialization::Multivector*> message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -128,10 +126,10 @@ class Multivector<Scalar, Frame, 3> final {
                                           Multivector<S, F, r> const& right);
   template<typename S, typename F, int r>
   friend Multivector<S, F, r>& operator*=(Multivector<S, F, r>& left,
-                                          double const right);
+                                          double right);
   template<typename S, typename F, int r>
   friend Multivector<S, F, r>& operator/=(Multivector<S, F, r>& left,
-                                          double const right);
+                                          double right);
 };
 
 template<typename Scalar, typename Frame>
@@ -255,16 +253,16 @@ Multivector<Scalar, Frame, rank> operator-(
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator*(
-    double const left,
+    double left,
     Multivector<Scalar, Frame, rank> const& right);
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator*(
     Multivector<Scalar, Frame, rank> const& left,
-    double const right);
+    double right);
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator/(
     Multivector<Scalar, Frame, rank> const& left,
-    double const right);
+    double right);
 
 template<typename LDimension, typename RScalar, typename Frame, int rank>
 Multivector<Product<Quantity<LDimension>, RScalar>, Frame, rank>
@@ -299,11 +297,11 @@ Multivector<Scalar, Frame, rank>& operator-=(
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator*=(
     Multivector<Scalar, Frame, rank>& left,
-    double const right);
+    double right);
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator/=(
     Multivector<Scalar, Frame, rank>& left,
-    double const right);
+    double right);
 
 template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);

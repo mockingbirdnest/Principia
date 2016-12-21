@@ -85,17 +85,17 @@ class SolarSystemFactory final {
 
   // A solar system at the time of the launch of Простейший Спутник-1.
   static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
-  AtСпутник1Launch(Accuracy const accuracy);
+  AtСпутник1Launch(Accuracy accuracy);
 
   // A solar system at the time of the launch of Простейший Спутник-2.
   static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
-  AtСпутник2Launch(Accuracy const accuracy);
+  AtСпутник2Launch(Accuracy accuracy);
 
   // Returns the index of the parent of the body with the given |index|.
   // Because enums are broken in C++ we use ints.  Sigh.
-  static int parent(int const index);
+  static int parent(int index);
   // The name of the body with the given |index|.
-  static std::string name(int const index);
+  static std::string name(int index);
 };
 
 }  // namespace testing_utilities

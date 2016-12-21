@@ -51,8 +51,8 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
-  Vessel(not_null<Celestial const*> const parent,
-         not_null<Ephemeris<Barycentric>*> const ephemeris,
+  Vessel(not_null<Celestial const*> parent,
+         not_null<Ephemeris<Barycentric>*> ephemeris,
          Ephemeris<Barycentric>::FixedStepParameters const&
              history_fixed_step_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -69,7 +69,7 @@ class Vessel {
   virtual bool is_initialized() const;
 
   virtual not_null<Celestial const*> parent() const;
-  virtual void set_parent(not_null<Celestial const*> const parent);
+  virtual void set_parent(not_null<Celestial const*> parent);
 
   // These three functions require |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
@@ -127,12 +127,11 @@ class Vessel {
   virtual void UpdatePrediction(Instant const& last_time);
 
   // The vessel must satisfy |is_initialized()|.
-  virtual void WriteToMessage(
-      not_null<serialization::Vessel*> const message) const;
+  virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
-      not_null<Ephemeris<Barycentric>*> const ephemeris,
-      not_null<Celestial const*> const parent);
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      not_null<Celestial const*> parent);
 
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
   std::experimental::optional<IteratorOn<std::list<PileUp>>>

@@ -36,10 +36,10 @@ CONSTEXPR_INFINITY Instant InfiniteFuture =
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
 // days since -4712-01-01T12:00:00,000 (Terrestrial Time, Julian calendar).
-constexpr Instant JulianDate(double const days);
+constexpr Instant JulianDate(double days);
 // The Modified Julian Date MJD |days|. MJD is defined as JD - 2400000.5 days,
 // so |ModifiedJulianDate(0)| is "1858-11-17T00:00:00"_TT.
-constexpr Instant ModifiedJulianDate(double const days);
+constexpr Instant ModifiedJulianDate(double days);
 
 }  // namespace internal_epoch
 

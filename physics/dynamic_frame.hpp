@@ -58,7 +58,7 @@ class DynamicFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::DynamicFrame*> const message) const = 0;
+      not_null<serialization::DynamicFrame*> message) const = 0;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.  Returns |nullptr| if no dynamic frame extension is found.

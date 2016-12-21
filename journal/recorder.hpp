@@ -17,7 +17,7 @@ class Recorder final {
 
   void Write(serialization::Method const& method);
 
-  static void Activate(base::not_null<Recorder*> const recorder);
+  static void Activate(base::not_null<Recorder*> recorder);
   static void Deactivate();
   static bool IsActivated();
 

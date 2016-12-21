@@ -19,14 +19,14 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
 
   void InsertCelestialAbsoluteCartesian(
-      Index const celestial_index,
+      Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
       base::not_null<std::unique_ptr<MassiveBody const>> body) override;
 
   MOCK_METHOD4(
       InsertCelestialAbsoluteCartesianConstRef,
-      void(Index const celestial_index,
+      void(Index celestial_index,
            std::experimental::optional<Index> const& parent_index,
            DegreesOfFreedom<Barycentric> const& initial_state,
            base::not_null<std::unique_ptr<MassiveBody const>> const& body));
@@ -35,14 +35,14 @@ class MockPlugin : public Plugin {
                void());
 
   MOCK_CONST_METHOD1(HasEncounteredApocalypse,
-                     bool(std::string* const details));
+                     bool(std::string* details));
 
   MOCK_CONST_METHOD2(UpdateCelestialHierarchy,
-                     void(Index const celestial_index,
-                          Index const parent_index));
+                     void(Index celestial_index,
+                          Index parent_index));
 
   MOCK_METHOD2(InsertOrKeepVessel,
-               bool(GUID const& vessel_guid, Index const parent_index));
+               bool(GUID const& vessel_guid, Index parent_index));
 
   MOCK_METHOD2(SetVesselStateOffset,
                void(GUID const& vessel_guid,
@@ -58,8 +58,7 @@ class MockPlugin : public Plugin {
                          GUID const& vessel_guid));
 
   MOCK_CONST_METHOD1(CelestialFromParent,
-                     RelativeDegreesOfFreedom<AliceSun>(
-                         Index const celestial_index));
+                     RelativeDegreesOfFreedom<AliceSun>(Index celestial_index));
 
   MOCK_CONST_METHOD3(CreateFlightPlan,
                      void(GUID const& vessel_guid,
@@ -111,20 +110,20 @@ class MockPlugin : public Plugin {
 
   not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(
-      Index const reference_body_index) const override;
+      Index reference_body_index) const override;
   not_null<std::unique_ptr<NavigationFrame>>
   NewBarycentricRotatingNavigationFrame(
-      Index const primary_index,
-      Index const secondary_index) const override;
+      Index primary_index,
+      Index secondary_index) const override;
 
   MOCK_CONST_METHOD2(
       FillBodyCentredNonRotatingNavigationFrame,
-      void(Index const reference_body_index,
+      void(Index reference_body_index,
            std::unique_ptr<NavigationFrame>* navigation_frame));
   MOCK_CONST_METHOD3(
       FillBarycentricRotatingNavigationFrame,
-      void(Index const primary_index,
-           Index const secondary_index,
+      void(Index primary_index,
+           Index secondary_index,
            std::unique_ptr<NavigationFrame>* navigation_frame));
 
   // NOTE(phl): Needed because gMock 1.7.0 wants to copy the unique_ptr<>.
@@ -153,8 +152,7 @@ class MockPlugin : public Plugin {
                          Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD1(BubbleVelocityCorrection,
-                     Velocity<World>(
-                         Index const reference_body_index));
+                     Velocity<World>(Index reference_body_index));
 
   MOCK_CONST_METHOD1(NavballFrameField,
                      std::unique_ptr<FrameField<World, Navball>>(
@@ -178,7 +176,7 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD0(CurrentTime, Instant());
 
   MOCK_CONST_METHOD1(WriteToMessage,
-                     void(not_null<serialization::Plugin*> const message));
+                     void(not_null<serialization::Plugin*> message));
 };
 
 }  // namespace internal_plugin

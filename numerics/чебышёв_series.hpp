@@ -26,14 +26,13 @@ using quantities::Variation;
 template<typename Vector>
 class EvaluationHelper final {
  public:
-  EvaluationHelper(std::vector<Vector> const& coefficients,
-                   int const degree);
+  EvaluationHelper(std::vector<Vector> const& coefficients, int degree);
   EvaluationHelper(EvaluationHelper&& other) = default;
   EvaluationHelper& operator=(EvaluationHelper&& other) = default;
 
-  Vector EvaluateImplementation(double const scaled_t) const;
+  Vector EvaluateImplementation(double scaled_t) const;
 
-  Vector coefficients(int const index) const;
+  Vector coefficients(int index) const;
   int degree() const;
 
  private:
@@ -73,15 +72,14 @@ class ЧебышёвSeries final {
   Vector Evaluate(Instant const& t) const;
   Variation<Vector> EvaluateDerivative(Instant const& t) const;
 
-  void WriteToMessage(
-      not_null<serialization::ЧебышёвSeries*> const message) const;
+  void WriteToMessage(not_null<serialization::ЧебышёвSeries*> message) const;
   static ЧебышёвSeries ReadFromMessage(
       serialization::ЧебышёвSeries const& message);
 
   // Computes a Newhall approximation of the given |degree|.  |q| and |v| are
   // the positions and velocities over a constant division of [t_min, t_max].
   static ЧебышёвSeries NewhallApproximation(
-      int const degree,
+      int degree,
       std::vector<Vector> const& q,
       std::vector<Variation<Vector>> const& v,
       Instant const& t_min,

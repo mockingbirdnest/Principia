@@ -45,7 +45,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
     YXZ = ODD  + (Y << X * 2) + (X << Y * 2) + (Z << Z * 2) + (5 << INDEX)
   };
 
-  explicit Permutation(CoordinatePermutation const coordinate_permutation);
+  explicit Permutation(CoordinatePermutation coordinate_permutation);
 
   Sign Determinant() const override;
 
@@ -70,11 +70,11 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   static Permutation Identity();
 
-  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static Permutation ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(
-      not_null<serialization::Permutation*> const message) const;
+      not_null<serialization::Permutation*> message) const;
   static Permutation ReadFromMessage(serialization::Permutation const& message);
 
  private:

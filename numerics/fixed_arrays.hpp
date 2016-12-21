@@ -27,8 +27,8 @@ class FixedVector final {
   bool operator==(FixedVector const& right) const;
   FixedVector& operator=(std::initializer_list<Scalar> const& right);
 
-  Scalar& operator[](int const index);
-  constexpr Scalar const& operator[](int const index) const;
+  Scalar& operator[](int index);
+  constexpr Scalar const& operator[](int index) const;
 
   operator std::vector<Scalar>() const;
 
@@ -87,8 +87,8 @@ class FixedStrictlyLowerTriangularMatrix final {
   // For  0 < j < i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
-  Scalar* operator[](int const index);
-  constexpr Scalar const* operator[](int const index) const;
+  Scalar* operator[](int index);
+  constexpr Scalar const* operator[](int index) const;
 
  private:
   std::array<Scalar, dimension> data_;

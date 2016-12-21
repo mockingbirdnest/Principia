@@ -23,7 +23,7 @@ class AlmostEqualsMatcher;
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     T const& expected,
-    std::int64_t const max_ulps);
+    std::int64_t max_ulps);
 
 // The 3-argument version of |AlmostEquals()| is exclusively for use when a
 // given assertion may have different errors, e.g., because it's in a loop.  It
@@ -32,20 +32,20 @@ testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     T const& expected,
-    std::int64_t const min_ulps,
-    std::int64_t const max_ulps);
+    std::int64_t min_ulps,
+    std::int64_t max_ulps);
 
 template<typename T>
 class AlmostEqualsMatcher final {
  public:
   explicit AlmostEqualsMatcher(T const& expected,
-                               std::int64_t const min_ulps,
-                               std::int64_t const max_ulps);
+                               std::int64_t min_ulps,
+                               std::int64_t max_ulps);
 
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
                        testing::MatchResultListener* listener) const;
-  bool MatchAndExplain(double const actual,
+  bool MatchAndExplain(double actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,

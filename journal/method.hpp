@@ -28,12 +28,12 @@ namespace journal {
 //    using Message = serialization::SerializePlugin;
 //
 //    // The following functions must be omitted if In/Out/Return is omitted.
-//    static void Fill(In const& in, not_null<Message*> const message);
-//    static void Fill(Out const& out, not_null<Message*> const message);
-//    static void Fill(Return const& result, not_null<Message*> const message);
+//    static void Fill(In const& in, not_null<Message*> message);
+//    static void Fill(Out const& out, not_null<Message*> message);
+//    static void Fill(Return const& result, not_null<Message*> message);
 //
 //    static void Run(Message const& message,
-//                    not_null<Player::PointerMap*> const pointer_map);
+//                    not_null<Player::PointerMap*> pointer_map);
 //  };
 
 namespace internal {
@@ -100,9 +100,8 @@ class Method final {
   typename P::Return Return(typename P::Return const& result);
 
  private:
-  std::function<void(not_null<typename Profile::Message*> const message)>
-      out_filler_;
-  std::function<void(not_null<typename Profile::Message*> const message)>
+  std::function<void(not_null<typename Profile::Message*> message)> out_filler_;
+  std::function<void(not_null<typename Profile::Message*> message)>
       return_filler_;
   bool returned_ = false;
 };

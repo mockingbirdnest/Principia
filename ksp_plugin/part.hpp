@@ -42,7 +42,7 @@ class Part final {
   Vector<Acceleration, Frame> const&
       gravitational_acceleration_to_be_applied_by_ksp() const;
 
-  void WriteToMessage(not_null<serialization::Part*> const message) const;
+  void WriteToMessage(not_null<serialization::Part*> message) const;
   static Part ReadFromMessage(serialization::Part const& message);
 
  private:

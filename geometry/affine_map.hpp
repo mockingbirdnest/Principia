@@ -31,7 +31,7 @@ class AffineMap final {
 
   LinearMap<FromFrame, ToFrame> const& linear_map() const;
 
-  void WriteToMessage(not_null<serialization::AffineMap*> const message) const;
+  void WriteToMessage(not_null<serialization::AffineMap*> message) const;
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:

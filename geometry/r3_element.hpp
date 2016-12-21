@@ -32,13 +32,13 @@ struct R3Element final {
   R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
 
-  Scalar&       operator[](int const index);
-  Scalar const& operator[](int const index) const;
+  Scalar&       operator[](int index);
+  Scalar const& operator[](int index) const;
 
   R3Element& operator+=(R3Element const& right);
   R3Element& operator-=(R3Element const& right);
-  R3Element& operator*=(double const right);
-  R3Element& operator/=(double const right);
+  R3Element& operator*=(double right);
+  R3Element& operator/=(double right);
 
   Scalar Norm() const;
 
@@ -52,7 +52,7 @@ struct R3Element final {
   template<typename S>
   R3Element OrthogonalizationAgainst(R3Element<S> const& r3_element) const;
 
-  void WriteToMessage(not_null<serialization::R3Element*> const message) const;
+  void WriteToMessage(not_null<serialization::R3Element*> message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);
 
   Scalar x;
@@ -93,14 +93,11 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right);
 
 template<typename Scalar>
-R3Element<Scalar> operator*(double const left,
-                            R3Element<Scalar> const& right);
+R3Element<Scalar> operator*(double left, R3Element<Scalar> const& right);
 template<typename Scalar>
-R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                            double const right);
+R3Element<Scalar> operator*(R3Element<Scalar> const& left, double right);
 template<typename Scalar>
-R3Element<Scalar> operator/(R3Element<Scalar> const& left,
-                            double const right);
+R3Element<Scalar> operator/(R3Element<Scalar> const& left, double right);
 
 // Dimensionful multiplication |LScalar * R3Element<RScalar>| is the tensor
 // product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
@@ -148,7 +145,7 @@ Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
 
 // Returns the |i|th basis vector, whose |i|th coordinate is 1, and whose
 // other coordinates are 0.  |i| must be in [0, 2].
-R3Element<double> BasisVector(int const i);
+R3Element<double> BasisVector(int i);
 
 }  // namespace internal_r3_element
 

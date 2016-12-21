@@ -23,7 +23,7 @@ NormType AbsoluteError(T const& expected, T const& actual,
                        NormType (*norm)(NormArg const));
 
 // Equivalent to AbsoluteError(expected, actual, &Abs).
-double AbsoluteError(double const expected, double const actual);
+double AbsoluteError(double expected, double actual);
 
 // Equivalent to AbsoluteError(expected, actual, &Abs<Dimensions>).
 template<typename Dimensions>
@@ -62,7 +62,7 @@ double RelativeError(T const& expected, T const& actual,
                      NormType (*norm)(NormArg const));
 
 // Equivalent to RelativeError(expected, actual, &Abs).
-double RelativeError(double const expected, double const actual);
+double RelativeError(double expected, double actual);
 
 // Equivalent to RelativeError(expected, actual, &Abs<Dimensions>).
 template<typename Dimensions>

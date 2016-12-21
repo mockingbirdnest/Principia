@@ -47,7 +47,7 @@ class Point final {
   constexpr bool operator==(Point const& right) const;
   constexpr bool operator!=(Point const& right) const;
 
-  void WriteToMessage(not_null<serialization::Point*> const message) const;
+  void WriteToMessage(not_null<serialization::Point*> message) const;
   static Point ReadFromMessage(serialization::Point const& message);
 
  private:
