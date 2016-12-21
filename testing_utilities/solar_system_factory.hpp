@@ -29,7 +29,7 @@ namespace testing_utilities {
 // A helper class for constructing physics::SolarSystem objects for testing.
 // TODO(egg): should this be a namespace instead?  It contains only static
 // things, and there's no reason for it to be a type, it's not used in fancy
-// template thnigs.
+// template things.
 class SolarSystemFactory final {
  public:
   // The bodies are in decreasing order of mass.
