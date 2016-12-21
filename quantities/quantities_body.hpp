@@ -69,9 +69,13 @@ struct Dimensions : not_constructible {
 };
 
 template<typename Q>
-struct Collapse : not_constructible { using Type = Q; };
+struct Collapse : not_constructible {
+  using Type = Q;
+};
 template<>
-struct Collapse<Quantity<NoDimensions>> : not_constructible { using Type = double; };
+struct Collapse<Quantity<NoDimensions>> : not_constructible {
+  using Type = double;
+};
 template<typename Left, typename Right>
 struct ProductGenerator : not_constructible {
   enum {
@@ -91,11 +95,17 @@ struct ProductGenerator : not_constructible {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> : not_constructible { using Type = Left; };
+struct ProductGenerator<Left, double> : not_constructible {
+  using Type = Left;
+};
 template<typename Right>
-struct ProductGenerator<double, Right> : not_constructible { using Type = Right; };
+struct ProductGenerator<double, Right> : not_constructible {
+  using Type = Right;
+};
 template<>
-struct ProductGenerator<double, double> : not_constructible { using Type = double; };
+struct ProductGenerator<double, double> : not_constructible {
+  using Type = double;
+};
 template<typename Left, typename Right>
 struct QuotientGenerator : not_constructible {
   enum {
