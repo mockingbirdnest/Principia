@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
+#include "base/type_traits.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -15,6 +16,7 @@ namespace quantities {
 namespace internal_quantities {
 
 using base::not_null;
+using base::type_trait;
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
@@ -201,9 +203,9 @@ class Quantity final {
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
-struct is_quantity : std::is_floating_point<T> {};
+struct is_quantity : std::is_floating_point<T>, type_trait {};
 template<typename D>
-struct is_quantity<Quantity<D>> : std::true_type {};
+struct is_quantity<Quantity<D>> : std::true_type, type_trait {};
 
 }  // namespace internal_quantities
 

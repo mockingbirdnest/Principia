@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include "base/macros.hpp"
+#include "base/type_traits.hpp"
 #include "glog/logging.h"
 
 // This file defines a pointer wrapper |not_null| that statically ensures
@@ -82,9 +83,9 @@ class not_null;
 // |is_instance<T, U>::value| is true if and only if |U| is an instance of the
 // template |T|.  It is false otherwise.
 template<template<typename...> class T, typename U>
-struct is_instance_of : std::false_type {};
+struct is_instance_of : std::false_type, type_trait {};
 template<template<typename...> class T, typename U>
-struct is_instance_of<T, T<U>> : std::true_type {};
+struct is_instance_of<T, T<U>> : std::true_type, type_trait {};
 
 // |remove_not_null<not_null<T>>::type| is |remove_not_null<T>::type|.
 // The recurrence ends when |T| is not an instance of |not_null|, in which case
@@ -113,10 +114,10 @@ template<typename Pointer>
 using is_instance_of_not_null = is_instance_of<not_null, Pointer>;
 
 template<typename Pointer>
-struct is_not_null_non_owner : std::false_type {};
+struct is_not_null_non_owner : std::false_type, type_trait {};
 
 template<typename T>
-struct is_not_null_non_owner<not_null<T*>> : std::true_type {};
+struct is_not_null_non_owner<not_null<T*>> : std::true_type, type_trait {};
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not

@@ -5,10 +5,12 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "base/type_traits.hpp"
 
 namespace principia {
 
 using base::not_null;
+using base::type_trait;
 
 namespace journal {
 
@@ -40,19 +42,22 @@ template<typename T>
 using void_if_exists = void;
 
 template<typename P, typename = void>
-struct has_in : std::false_type {};
+struct has_in : std::false_type, type_trait {};
 template<typename P>
-struct has_in<P, void_if_exists<typename P::In>> : std::true_type {};
+struct has_in<P, void_if_exists<typename P::In>> : std::true_type,
+                                                   type_trait {};
 
 template<typename P, typename = void>
 struct has_out : std::false_type {};
 template<typename P>
-struct has_out<P, void_if_exists<typename P::Out>> : std::true_type {};
+struct has_out<P, void_if_exists<typename P::Out>> : std::true_type,
+                                                     type_trait {};
 
 template<typename P, typename = void>
 struct has_return : std::false_type {};
 template<typename P>
-struct has_return<P, void_if_exists<typename P::Return>> : std::true_type {};
+struct has_return<P, void_if_exists<typename P::Return>> : std::true_type,
+                                                           type_trait {};
 
 }  // namespace internal
 

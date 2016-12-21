@@ -1,9 +1,13 @@
 ﻿
 #pragma once
 
+#include "base/type_traits.hpp"
+
 namespace principia {
 namespace geometry {
 namespace internal_serialization {
+
+using base::type_trait;
 
 // A helper class that serializes a |double|, a |Quantity| or a |Multivector|
 // to a protobuf structure like:
@@ -16,7 +20,7 @@ namespace internal_serialization {
 //   }
 // }
 template<typename T, typename Message>
-class DoubleOrQuantityOrMultivectorSerializer {};
+class DoubleOrQuantityOrMultivectorSerializer : type_trait {};
 
 // A helper class that serializes a |Point| or a |Multivector| to a protobuf
 // structure like:
@@ -28,7 +32,7 @@ class DoubleOrQuantityOrMultivectorSerializer {};
 //   }
 // }
 template<typename T, typename Message>
-class PointOrMultivectorSerializer {};
+class PointOrMultivectorSerializer : type_trait {};
 
 // A helper class that serializes a |Quantity| or a |Multivector| to a protobuf
 // structure like:
@@ -40,7 +44,7 @@ class PointOrMultivectorSerializer {};
 //   }
 // }
 template<typename T, typename Message>
-class QuantityOrMultivectorSerializer {};
+class QuantityOrMultivectorSerializer : type_trait {};
 
 }  // namespace internal_serialization
 

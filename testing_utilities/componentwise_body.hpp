@@ -47,7 +47,7 @@ class MatcherParameterType<U<T>> final {
 // the matchers.  So we pick the simplest, |R3Element|.
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 class MatcherParameterType<
-          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> {
+          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> final {
  public:
   using type =
       geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
