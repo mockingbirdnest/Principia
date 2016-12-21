@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -15,6 +16,7 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
+using base::type_trait;
 using geometry::Displacement;
 using geometry::Pair;
 using geometry::Position;
@@ -91,7 +93,7 @@ using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
 namespace base {
 
 template<typename Functor, typename Frame>
-class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> final {
+class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> : type_trait {
  public:
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(

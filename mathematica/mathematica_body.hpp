@@ -8,9 +8,12 @@
 #include <tuple>
 #include <vector>
 
+#include "base/type_traits.hpp"
+
 namespace principia {
 
 using base::not_null;
+using base::type_trait;
 using quantities::DebugString;
 using quantities::IsFinite;
 using quantities::SIUnit;
@@ -21,7 +24,7 @@ namespace {
 
 // A helper class to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
-class TupleHelper final {
+class TupleHelper : type_trait {
  public:
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,

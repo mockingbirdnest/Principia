@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "base/type_traits.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 
@@ -12,6 +13,7 @@ namespace principia {
 namespace geometry {
 namespace internal_grassmann {
 
+using base::type_trait;
 using quantities::ArcTan;
 
 // This class helps in reading coordinates in compatilibity mode.  We used to
@@ -21,16 +23,14 @@ using quantities::ArcTan;
 template<typename Multivector,
          typename Frame,
          typename Tag = typename Frame::Tag>
-class CompatibilityHelper final {
+class CompatibilityHelper : type_trait {
  public:
-  CompatibilityHelper() = delete;
-
   static bool MustFlip(serialization::Frame const& frame);
 };
 
 template<typename Multivector, typename Frame>
 class CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>
-    final {
+    : type_trait {
  public:
   CompatibilityHelper() = delete;
 

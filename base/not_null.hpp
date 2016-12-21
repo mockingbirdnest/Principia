@@ -91,7 +91,7 @@ struct is_instance_of<T, T<U>> : std::true_type, type_trait {};
 // The recurrence ends when |T| is not an instance of |not_null|, in which case
 // |remove_not_null<T>::type| is |T|.
 template<typename Pointer>
-struct remove_not_null final {
+struct remove_not_null : type_trait {
   using type = Pointer;
 };
 template<typename Pointer>
@@ -278,7 +278,7 @@ class not_null final {
 
   pointer pointer_;
 
-  static unchecked_tag const unchecked_tag_;
+  static constexpr unchecked_tag unchecked_tag_{};
 
   template<typename OtherPointer>
   friend class not_null;

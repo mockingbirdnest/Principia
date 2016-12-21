@@ -3,12 +3,14 @@
 #define PRINCIPIA_PHYSICS_BODY_HPP_
 
 #include "base/not_null.hpp"
+#include "base/type_traits.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
 namespace internal_body {
 
+using base::type_trait;
 using base::not_null;
 
 class Body {
@@ -45,11 +47,9 @@ class Body {
   // |is_inertial|.  This is necessary because we cannot dynamic cast to
   // OblateBody<Frame> if |Frame| is not inertial.
   template<typename Frame, bool is_inertial>
-  class CompatibilityHelper final {
+  class CompatibilityHelper : type_trait {
    public:
      static bool is_compatible_with(not_null<Body const*> const body);
-   private:
-     CompatibilityHelper() = delete;
   };
 };
 

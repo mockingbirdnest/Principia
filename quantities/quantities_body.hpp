@@ -15,7 +15,7 @@ template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
          int64_t CurrentExponent, int64_t TemperatureExponent,
          int64_t AmountExponent, int64_t LuminousIntensityExponent,
          int64_t AngleExponent>
-struct Dimensions final {
+struct Dimensions : type_trait {
   enum {
     Length            = LengthExponent,
     Mass              = MassExponent,
@@ -69,11 +69,11 @@ struct Dimensions final {
 };
 
 template<typename Q>
-struct Collapse final { using Type = Q; };
+struct Collapse : type_trait { using Type = Q; };
 template<>
-struct Collapse<Quantity<NoDimensions>> final { using Type = double; };
+struct Collapse<Quantity<NoDimensions>> : type_trait { using Type = double; };
 template<typename Left, typename Right>
-struct ProductGenerator final {
+struct ProductGenerator : type_trait {
   enum {
     Length            = Left::Dimensions::Length + Right::Dimensions::Length,
     Mass              = Left::Dimensions::Mass + Right::Dimensions::Mass,
@@ -91,13 +91,13 @@ struct ProductGenerator final {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> final { using Type = Left; };
+struct ProductGenerator<Left, double> : type_trait { using Type = Left; };
 template<typename Right>
-struct ProductGenerator<double, Right> final { using Type = Right; };
+struct ProductGenerator<double, Right> : type_trait { using Type = Right; };
 template<>
-struct ProductGenerator<double, double> final { using Type = double; };
+struct ProductGenerator<double, double> : type_trait { using Type = double; };
 template<typename Left, typename Right>
-struct QuotientGenerator final {
+struct QuotientGenerator : type_trait {
   enum {
     Length            = Left::Dimensions::Length - Right::Dimensions::Length,
     Mass              = Left::Dimensions::Mass - Right::Dimensions::Mass,
@@ -115,11 +115,11 @@ struct QuotientGenerator final {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> final { using Type = Left; };
+struct QuotientGenerator<Left, double> : type_trait { using Type = Left; };
 template<>
-struct QuotientGenerator<double, double> final { using Type = double; };
+struct QuotientGenerator<double, double> : type_trait { using Type = double; };
 template<typename Right>
-struct QuotientGenerator<double, Right> final {
+struct QuotientGenerator<double, Right> : type_trait {
   enum {
     Length            = -Right::Dimensions::Length,
     Mass              = -Right::Dimensions::Mass,

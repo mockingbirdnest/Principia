@@ -16,7 +16,7 @@ namespace journal {
 
 // The parameter |Profile| is expected to have the following structure:
 //
-//  struct SomeProfile final {
+//  struct SomeProfile : type_trait {
 //    struct In final {  // Only present if the profile has 'in' parameters.
 //      ...  // 'in' parameters copied verbatim from the actual profile.
 //    };

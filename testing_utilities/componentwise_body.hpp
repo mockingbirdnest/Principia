@@ -5,12 +5,14 @@
 
 #include <string>
 
+#include "base/type_traits.hpp"
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 
+using base::type_trait;
 using geometry::Point;
 using quantities::Quantity;
 using ::testing::Matcher;
@@ -31,13 +33,13 @@ namespace {
 // matchers work.
 
 template<typename T>
-class MatcherParameterType final {
+class MatcherParameterType : type_trait {
  public:
   using type = T;
 };
 
 template<typename T, template<typename> class U>
-class MatcherParameterType<U<T>> final {
+class MatcherParameterType<U<T>> : type_trait {
  public:
   using type = typename MatcherParameterType<T>::type;
 };
@@ -47,7 +49,7 @@ class MatcherParameterType<U<T>> final {
 // the matchers.  So we pick the simplest, |R3Element|.
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 class MatcherParameterType<
-          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> final {
+          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> : type_trait {
  public:
   using type =
       geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
@@ -55,13 +57,13 @@ class MatcherParameterType<
 
 // And now the cases that we *don't* want to peel away.  Yes, this smells a bit.
 template<typename T>
-class MatcherParameterType<Point<T>> final {
+class MatcherParameterType<Point<T>> : type_trait {
  public:
   using type = Point<T>;
 };
 
 template<typename T>
-class MatcherParameterType<Quantity<T>> final {
+class MatcherParameterType<Quantity<T>> : type_trait {
  public:
   using type = Quantity<T>;
 };

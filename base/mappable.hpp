@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "base/type_traits.hpp"
+
 namespace principia {
 namespace base {
 
@@ -16,7 +18,7 @@ namespace base {
 //     and returns a |type|.
 // See the comments below for example declarations.
 template<typename Functor, typename T, typename = void>
-class Mappable final {
+class Mappable : type_trait {
  public:
   // using type = void;
   // static type Do(Functor const& functor, T const& t);

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 
+#include "base/type_traits.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 #include "serialization/geometry.pb.h"
@@ -13,9 +14,10 @@ namespace geometry {
 namespace internal_frame {
 
 using base::not_null;
+using base::type_trait;
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-class Frame final {
+class Frame : type_trait {
  public:
   using Tag = FrameTag;
   static Position<Frame> const origin;

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/type_traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
@@ -12,15 +13,16 @@ namespace principia {
 namespace geometry {
 namespace internal_point {
 
+using base::type_trait;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::SIUnit;
 
 template<typename Vector>
-class PointSerializer final {};
+class PointSerializer : type_trait {};
 
 template<typename Dimensions>
-class PointSerializer<Quantity<Dimensions>> final {
+class PointSerializer<Quantity<Dimensions>> : type_trait {
  public:
   using Vector = Quantity<Dimensions>;
   static void WriteToMessage(Vector const& coordinates,
@@ -35,7 +37,7 @@ class PointSerializer<Quantity<Dimensions>> final {
 };
 
 template<typename Scalar, typename Frame, int rank>
-class PointSerializer<Multivector<Scalar, Frame, rank>> final {
+class PointSerializer<Multivector<Scalar, Frame, rank>> : type_trait {
  public:
   using Vector = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(
