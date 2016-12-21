@@ -32,7 +32,7 @@ template<typename T, typename U>
 std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y);
 
 template<typename T>
-std::string ToMathematica(std::vector<T> list);
+std::string ToMathematica(std::vector<T> const& list);
 
 std::string ToMathematica(double const& real);
 
