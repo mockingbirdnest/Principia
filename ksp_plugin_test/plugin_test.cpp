@@ -50,6 +50,7 @@ using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RigidTransformation;
+using physics::SolarSystem;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::ArcTan;

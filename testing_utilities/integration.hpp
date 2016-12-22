@@ -9,6 +9,8 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_integration {
 
 using base::not_null;
 using geometry::Instant;
@@ -21,8 +23,6 @@ using quantities::Length;
 using quantities::Momentum;
 using quantities::Speed;
 using quantities::Time;
-
-namespace testing_utilities {
 
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.
@@ -64,6 +64,14 @@ void ComputeGravitationalAcceleration(
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
     std::vector<MassiveBody> const& bodies);
+
+}  // namespace internal_integration
+
+using internal_integration::ComputeGravitationalAcceleration;
+using internal_integration::ComputeHarmonicOscillatorAcceleration;
+using internal_integration::ComputeHarmonicOscillatorForce;
+using internal_integration::ComputeHarmonicOscillatorVelocity;
+using internal_integration::ComputeKeplerAcceleration;
 
 }  // namespace testing_utilities
 }  // namespace principia

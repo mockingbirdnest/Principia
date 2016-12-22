@@ -19,11 +19,7 @@ using si::Radian;
 
 #define TRIGGER_DEAD_CODE_ELIMINATION
 
-namespace {
-
-std::size_t const dimension = 100;
-
-}  // namespace
+constexpr std::size_t dimension = 100;
 
 inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result) {
   std::vector<Momentum> input(dimension);

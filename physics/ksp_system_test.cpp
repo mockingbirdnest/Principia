@@ -20,14 +20,17 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using base::not_null;
 using geometry::BarycentreCalculator;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
+using geometry::Vector;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::SIUnit;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;

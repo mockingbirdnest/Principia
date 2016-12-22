@@ -17,6 +17,7 @@
 
 namespace principia {
 
+using geometry::Instant;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -26,8 +27,10 @@ using quantities::Mass;
 using quantities::Pow;
 using quantities::Power;
 using quantities::Sin;
+using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
+using quantities::Time;
 using quantities::si::Joule;
 using quantities::si::Kilogram;
 using quantities::si::Metre;

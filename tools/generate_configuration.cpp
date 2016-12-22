@@ -29,6 +29,7 @@ constexpr char proto_txt[] = "proto.txt";
 }  // namespace
 
 namespace tools {
+namespace internal_generate_configuration {
 
 void GenerateConfiguration(Instant const& game_epoch,
                            std::string const& gravity_model_stem,
@@ -114,5 +115,6 @@ void GenerateConfiguration(Instant const& game_epoch,
   initial_state_cfg << "}\n";
 }
 
+}  // namespace internal_generate_configuration
 }  // namespace tools
 }  // namespace principia
