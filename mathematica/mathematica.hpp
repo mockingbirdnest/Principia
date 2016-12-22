@@ -10,12 +10,12 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace mathematica {
+namespace internal_mathematica {
 
 using geometry::Point;
 using geometry::Vector;
 using quantities::Quantity;
-
-namespace mathematica {
 
 std::string Apply(std::string const& function,
                   std::vector<std::string> const& arguments);
@@ -54,6 +54,16 @@ std::string ToMathematica(std::string const& str);
 // Wraps the string in quotes.
 // TODO(egg): escape things properly.
 std::string Escape(std::string const& str);
+
+}  // namespace internal_mathematica
+
+using internal_mathematica::Apply;
+using internal_mathematica::Assign;
+using internal_mathematica::Escape;
+using internal_mathematica::Export;
+using internal_mathematica::Option;
+using internal_mathematica::PlottableDataset;
+using internal_mathematica::ToMathematica;
 
 }  // namespace mathematica
 }  // namespace principia

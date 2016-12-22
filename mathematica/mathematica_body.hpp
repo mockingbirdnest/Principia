@@ -11,16 +11,14 @@
 #include "base/not_constructible.hpp"
 
 namespace principia {
+namespace mathematica {
+namespace internal_mathematica {
 
 using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
 using quantities::SIUnit;
-
-namespace mathematica {
-
-namespace {
 
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
@@ -39,8 +37,6 @@ struct TupleHelper<0, Types...> : not_constructible {
       std::tuple<Types...> const& tuple,
       not_null<std::vector<std::string>*> const expressions) {}
 };
-
-}  // namespace
 
 inline std::string Apply(
     std::string const& function,
@@ -148,5 +144,6 @@ inline std::string Escape(std::string const& str) {
   return result;
 }
 
+}  // namespace internal_mathematica
 }  // namespace mathematica
 }  // namespace principia

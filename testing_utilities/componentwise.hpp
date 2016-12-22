@@ -13,10 +13,10 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_componentwise {
 
 using geometry::R3Element;
-
-namespace testing_utilities {
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
@@ -80,6 +80,10 @@ class ComponentwiseMatcher3 final {
   YMatcher const& y_matcher_;
   ZMatcher const& z_matcher_;
 };
+
+}  // namespace internal_componentwise
+
+using internal_componentwise::Componentwise;
 
 }  // namespace testing_utilities
 }  // namespace principia

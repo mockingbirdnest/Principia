@@ -11,15 +11,13 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_componentwise {
 
 using base::not_constructible;
 using geometry::Point;
 using quantities::Quantity;
 using ::testing::Matcher;
-
-namespace testing_utilities {
-
-namespace {
 
 // In order to call |Describe...To| on the various matchers we need to convert
 // them to some |Matcher<T>|.  However, it is quite difficult to figure out
@@ -63,7 +61,6 @@ struct MatcherParameterType<Quantity<T>> : not_constructible {
   using type = Quantity<T>;
 };
 
-}  // namespace
 template<typename T1Matcher, typename T2Matcher>
 testing::PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
 Componentwise(T1Matcher const& t1_matcher,
@@ -235,5 +232,6 @@ void ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
       z_matcher_).DescribeNegationTo(out);
 }
 
+}  // namespace internal_componentwise
 }  // namespace testing_utilities
 }  // namespace principia

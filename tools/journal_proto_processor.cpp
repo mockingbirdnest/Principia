@@ -15,6 +15,7 @@
 
 namespace principia {
 namespace tools {
+namespace internal_journal_proto_processor {
 
 namespace {
 
@@ -1032,5 +1033,6 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "             *method_in, *method_out_return);\n";
 }
 
+}  // namespace internal_journal_proto_processor
 }  // namespace tools
 }  // namespace principia

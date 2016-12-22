@@ -9,6 +9,7 @@
 
 namespace principia {
 namespace journal {
+namespace internal_method {
 
 template<typename Profile>
 Method<Profile>::Method() {
@@ -102,5 +103,6 @@ typename P::Return Method<Profile>::Return(
   return result;
 }
 
+}  // namespace internal_method
 }  // namespace journal
 }  // namespace principia
