@@ -11,7 +11,7 @@
 namespace principia {
 namespace journal {
 
-class Player {
+class Player final {
  public:
   using PointerMap = std::map<std::ustd::int64_t, void*>;
 

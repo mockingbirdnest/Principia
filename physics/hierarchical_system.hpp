@@ -19,9 +19,9 @@ namespace internal_hierarchical_system {
 using base::not_null;
 
 template<typename Frame>
-class HierarchicalSystem {
+class HierarchicalSystem final {
  public:
-  struct BarycentricSystem {
+  struct BarycentricSystem final {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   };
@@ -66,7 +66,7 @@ class HierarchicalSystem {
   };
 
   // Data about a |Subsystem|.
-  struct BarycentricSubystem {
+  struct BarycentricSubystem final {
     // A |MassiveBody| with the mass of the whole subsystem.
     std::unique_ptr<MassiveBody> equivalent_body;
     // The bodies composing the subsystem, in preorder, where the satellites

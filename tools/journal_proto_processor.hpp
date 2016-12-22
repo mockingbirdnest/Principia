@@ -18,7 +18,7 @@ using ::google::protobuf::FileDescriptor;
 
 namespace tools {
 
-class JournalProtoProcessor {
+class JournalProtoProcessor final {
  public:
   void ProcessMessages();
 

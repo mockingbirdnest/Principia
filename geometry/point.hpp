@@ -21,7 +21,7 @@ using quantities::is_quantity;
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
 // and Vector / Weight for any Weight used in Barycentre.
 template<typename Vector>
-class Point {
+class Point final {
  public:
   constexpr Point();
 
@@ -114,10 +114,9 @@ using internal_point::Point;
 
 // Specialize BarycentreCalculator to make it applicable to Points.
 template<typename Vector, typename Weight>
-class BarycentreCalculator<Point<Vector>, Weight> {
+class BarycentreCalculator<Point<Vector>, Weight> final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(Point<Vector> const& point, Weight const& weight);
   Point<Vector> Get() const;

@@ -15,7 +15,7 @@ using quantities::Derivative;
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
 template<typename Argument, typename Value>
-class Hermite3 {
+class Hermite3 final {
  public:
   using Derivative1 = Derivative<Value, Argument>;
 

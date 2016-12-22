@@ -23,7 +23,7 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 
 template<typename Frame>
-class SolarSystem {
+class SolarSystem final {
  public:
   // Initializes this object from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.

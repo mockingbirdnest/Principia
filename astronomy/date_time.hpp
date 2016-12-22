@@ -15,7 +15,7 @@ namespace astronomy {
 namespace date_time {
 namespace internal_date_time {
 
-class Date {
+class Date final {
  public:
   static constexpr Date YYYYMMDD(std::int64_t digits);
   static constexpr Date YYYYwwD(std::int64_t digits);
@@ -51,7 +51,7 @@ class Date {
   int const day_;
 };
 
-class Time {
+class Time final {
  public:
   static constexpr Time hhmmss_ms(int hhmmss, int ms);
 
@@ -78,7 +78,7 @@ class Time {
   int const millisecond_;
 };
 
-class DateTime {
+class DateTime final {
  public:
   static constexpr DateTime BeginningOfDay(Date const& date);
 

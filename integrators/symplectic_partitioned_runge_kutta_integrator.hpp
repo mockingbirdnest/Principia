@@ -87,7 +87,7 @@ class SymplecticPartitionedRungeKuttaIntegrator {
                                                      time_reversible,
                                                      evaluations,
                                                      composition_method>;
-  struct NotApplicable {};
+  struct NotApplicable final {};
 
   mutable std::conditional_t<!first_same_as_last,
                              std::unique_ptr<SRKN<BA>>,
