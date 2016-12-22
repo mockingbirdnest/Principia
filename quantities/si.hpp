@@ -48,12 +48,8 @@ constexpr Current           Ampere   = SIUnit<Current>();
 constexpr Temperature       Kelvin   = SIUnit<Temperature>();
 constexpr Amount            Mole     = SIUnit<Amount>();
 constexpr LuminousIntensity Candela  = SIUnit<LuminousIntensity>();
-// Nonstandard.
-constexpr Winding Cycle = SIUnit<Winding>();
-// Not base units in the SI. We make these quantities rather than units as they
-// are natural.
+// Not a base unit in the SI.
 constexpr Angle Radian = SIUnit<Angle>();
-constexpr SolidAngle Steradian = SIUnit<SolidAngle>();
 
 // Gram, for use with prefixes.
 constexpr Mass Gram = 1e-3 * Kilogram;
@@ -64,25 +60,23 @@ constexpr Mass Gram = 1e-3 * Kilogram;
 // We exclude the Becquerel, Gray and Sievert as they are weakly typed.
 // The Celsius only really makes sense as an affine temperature and is not taken
 // care of here.
-// Note the nonstandard definition of the Hertz, with a dimensionful cycle.
 
-// The uno was proposed but never accepted.
-constexpr double              Uno     = 1;
-constexpr Frequency           Hertz   = Cycle / Second;
-constexpr Force               Newton  = Metre * Kilogram / (Second * Second);
-constexpr Pressure            Pascal  = Newton / (Metre * Metre);
-constexpr Energy              Joule   = Newton * Metre;
-constexpr Power               Watt    = Joule / Second;
-constexpr Charge              Coulomb = Ampere * Second;
-constexpr Voltage             Volt    = Watt / Ampere;
-constexpr Capacitance         Farad   = Coulomb / Volt;
-constexpr Resistance          Ohm     = Volt / Ampere;
-constexpr Conductance         Siemens = Ampere / Volt;
-constexpr MagneticFlux        Weber   = Volt * Second;
-constexpr MagneticFluxDensity Tesla   = Weber / (Metre * Metre);
-constexpr Inductance          Henry   = Weber / Ampere;
-constexpr LuminousFlux        Lumen   = Candela * Steradian;
-constexpr CatalyticActivity   Katal   = Mole / Second;
+constexpr SolidAngle          Steradian = Radian * Radian;
+constexpr Frequency           Hertz     = 1 / Second;
+constexpr Force               Newton    = Metre * Kilogram / (Second * Second);
+constexpr Pressure            Pascal    = Newton / (Metre * Metre);
+constexpr Energy              Joule     = Newton * Metre;
+constexpr Power               Watt      = Joule / Second;
+constexpr Charge              Coulomb   = Ampere * Second;
+constexpr Voltage             Volt      = Watt / Ampere;
+constexpr Capacitance         Farad     = Coulomb / Volt;
+constexpr Resistance          Ohm       = Volt / Ampere;
+constexpr Conductance         Siemens   = Ampere / Volt;
+constexpr MagneticFlux        Weber     = Volt * Second;
+constexpr MagneticFluxDensity Tesla     = Weber / (Metre * Metre);
+constexpr Inductance          Henry     = Weber / Ampere;
+constexpr LuminousFlux        Lumen     = Candela * Steradian;
+constexpr CatalyticActivity   Katal     = Mole / Second;
 
 // Non-SI units accepted for use with the SI
 // From the BIPM's SI brochure 8, section 4.1, table 6,

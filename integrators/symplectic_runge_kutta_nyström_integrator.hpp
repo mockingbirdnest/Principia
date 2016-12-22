@@ -81,7 +81,7 @@ class SymplecticRungeKuttaNyströmIntegrator
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
   SymplecticRungeKuttaNyströmIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind const kind,
+      serialization::FixedStepSizeIntegrator::Kind kind,
       FixedVector<double, stages_> const& a,
       FixedVector<double, stages_> const& b);
 

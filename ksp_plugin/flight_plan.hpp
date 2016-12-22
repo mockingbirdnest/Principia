@@ -42,7 +42,7 @@ class FlightPlan {
              Instant const& initial_time,
              DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
              Instant const& desired_final_time,
-             not_null<Ephemeris<Barycentric>*> const ephemeris,
+             not_null<Ephemeris<Barycentric>*> ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters const&
                  adaptive_step_parameters);
 
@@ -52,7 +52,7 @@ class FlightPlan {
 
   virtual int number_of_manœuvres() const;
   // |index| must be in [0, number_of_manœuvres()[.
-  virtual NavigationManœuvre const& GetManœuvre(int const index) const;
+  virtual NavigationManœuvre const& GetManœuvre(int index) const;
 
   // The following two functions return false and have no effect if the given
   // |burn| would start before |initial_time_| or before the end of the previous
@@ -93,21 +93,21 @@ class FlightPlan {
   // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
   // the given trajectory segment.
   virtual void GetSegment(
-      int const index,
+      int index,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
   virtual void GetAllSegments(
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
       not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
 
-  void WriteToMessage(not_null<serialization::FlightPlan*> const message) const;
+  void WriteToMessage(not_null<serialization::FlightPlan*> message) const;
 
   // This may return a null pointer if the flight plan contained in the
   // |message| is anomalous.
   static std::unique_ptr<FlightPlan> ReadFromMessage(
       serialization::FlightPlan const& message,
-      not_null<DiscreteTrajectory<Barycentric>*> const root,
-      not_null<Ephemeris<Barycentric>*> const ephemeris);
+      not_null<DiscreteTrajectory<Barycentric>*> root,
+      not_null<Ephemeris<Barycentric>*> ephemeris);
 
   static std::int64_t constexpr max_ephemeris_steps_per_frame = 1000;
 
@@ -136,8 +136,7 @@ class FlightPlan {
   // Replaces the last segment with |segment|.  |segment| must be forked from
   // the same trajectory as the last segment, and at the same time.  |segment|
   // must not be anomalous.
-  void ReplaceLastSegment(
-      not_null<DiscreteTrajectory<Barycentric>*> const segment);
+  void ReplaceLastSegment(not_null<DiscreteTrajectory<Barycentric>*> segment);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.
   void AddSegment();

@@ -97,14 +97,14 @@ class Plugin {
   // body is the body with index |*parent_index|, which must already have been
   // inserted.  Hierarchical initialization must not be ongoing.
   virtual void InsertCelestialAbsoluteCartesian(
-      Index const celestial_index,
+      Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
       not_null<std::unique_ptr<MassiveBody const>> body);
 
   // Hierarchical initialization must be ongoing.
   virtual void InsertCelestialJacobiKeplerian(
-      Index const celestial_index,
+      Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       std::experimental::optional<
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
@@ -121,24 +121,24 @@ class Plugin {
   // will be a great confusion as to where things really are, and nobody will
   // really know where lieth those little things with the sort of raffia work
   // base, that has an attachment.
-  virtual bool HasEncounteredApocalypse(std::string* const details) const;
+  virtual bool HasEncounteredApocalypse(std::string* details) const;
 
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies must already have been
   // inserted. Must be called after initialization.
   // For a KSP |CelestialBody| |b|, the arguments correspond to
   // |b.flightGlobalsIndex|, |b.orbit.referenceBody.flightGlobalsIndex|.
-  virtual void UpdateCelestialHierarchy(Index const celestial_index,
-                                        Index const parent_index) const;
+  virtual void UpdateCelestialHierarchy(Index celestial_index,
+                                        Index parent_index) const;
 
   // Sets the celestial whose axis of rotation will coincide with the |Alice|
   // z axis.
-  virtual void SetMainBody(Index const index);
-  virtual Rotation<BodyWorld, World> CelestialRotation(Index const index) const;
+  virtual void SetMainBody(Index index);
+  virtual Rotation<BodyWorld, World> CelestialRotation(Index index) const;
   virtual Rotation<CelestialSphere, World> CelestialSphereRotation() const;
 
-  virtual Angle CelestialInitialRotation(Index const celestial_index) const;
-  virtual Time CelestialRotationPeriod(Index const celestial_index) const;
+  virtual Angle CelestialInitialRotation(Index celestial_index) const;
+  virtual Time CelestialRotationPeriod(Index celestial_index) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
@@ -152,8 +152,7 @@ class Plugin {
   // vessel is known. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
-  virtual bool InsertOrKeepVessel(GUID const& vessel_guid,
-                                  Index const parent_index);
+  virtual bool InsertOrKeepVessel(GUID const& vessel_guid, Index parent_index);
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| must only
@@ -199,7 +198,7 @@ class Plugin {
   // A celestial with index |celestial_index| must have been inserted, and it
   // must not be the sun. Must be called after initialization.
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
-      Index const celestial_index) const;
+      Index celestial_index) const;
 
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
@@ -243,7 +242,7 @@ class Plugin {
       Position<World> const& sun_world_position) const;
 
   virtual void ComputeAndRenderApsides(
-      Index const celestial_index,
+      Index celestial_index,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position,
@@ -260,20 +259,18 @@ class Plugin {
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
-  NewBarycentricRotatingNavigationFrame(Index const primary_index,
-                                        Index const secondary_index) const;
+  NewBarycentricRotatingNavigationFrame(Index primary_index,
+                                        Index secondary_index) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
-  NewBodyCentredBodyDirectionNavigationFrame(Index const primary_index,
-                                             Index const secondary_index) const;
+  NewBodyCentredBodyDirectionNavigationFrame(Index primary_index,
+                                             Index secondary_index) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
-  NewBodyCentredNonRotatingNavigationFrame(
-      Index const reference_body_index) const;
+  NewBodyCentredNonRotatingNavigationFrame(Index reference_body_index) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
-  NewBodySurfaceNavigationFrame(
-      Index const reference_body_index) const;
+  NewBodySurfaceNavigationFrame(Index reference_body_index) const;
 
   virtual void SetPlottingFrame(
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
@@ -302,7 +299,7 @@ class Plugin {
   // This is the |World| shift to be applied to the physics bubble in order for
   // it to have the correct velocity.
   virtual Velocity<World> BubbleVelocityCorrection(
-      Index const reference_body_index) const;
+      Index reference_body_index) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
@@ -330,8 +327,7 @@ class Plugin {
                                GUID const& second_vessel);*/
 
   // Must be called after initialization.
-  virtual void WriteToMessage(
-      not_null<serialization::Plugin*> const message) const;
+  virtual void WriteToMessage(not_null<serialization::Plugin*> message) const;
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
       serialization::Plugin const& message);
 
@@ -371,8 +367,8 @@ class Plugin {
          Angle const& planetarium_rotation,
          Instant const& game_epoch,
          Instant const& current_time,
-         Index const sun_index,
-         bool const is_pre_cardano);
+         Index sun_index,
+         bool is_pre_cardano);
 
   // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
@@ -402,14 +398,14 @@ class Plugin {
   // |celestial_messages| (which may be pre- or post-Bourbaki).
   template<typename T>
   static void ReadCelestialsFromMessages(
-    Ephemeris<Barycentric> const& ephemeris,
-    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-    not_null<IndexToOwnedCelestial*> const celestials);
+      Ephemeris<Barycentric> const& ephemeris,
+      google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+      not_null<IndexToOwnedCelestial*> celestials);
 
   // Computes a fingerprint for the parameters passed to
   // |InsertCelestialJacobiKeplerian|.
   static std::uint64_t FingerprintCelestialJacobiKeplerian(
-      Index const celestial_index,
+      Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       std::experimental::optional<
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,

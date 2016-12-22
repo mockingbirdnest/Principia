@@ -69,9 +69,8 @@ class TypedIterator : public Iterator {
 template<>
 class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
  public:
-  TypedIterator(
-      not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
-      not_null<Plugin const*> const plugin);
+  TypedIterator(not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
+                not_null<Plugin const*> plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
   // |Interchange| type using |convert|.
@@ -96,14 +95,14 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
 // |*pointer|.
 template<typename T>
-std::unique_ptr<T> TakeOwnership(T** const pointer);
+std::unique_ptr<T> TakeOwnership(T** pointer);
 template<typename T>
-std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer);
+std::unique_ptr<T[]> TakeOwnershipArray(T** pointer);
 
 #include "ksp_plugin/interface.generated.h"
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__ActivateRecorder(bool const activate);
+void CDECL principia__ActivateRecorder(bool activate);
 
 extern "C" PRINCIPIA_DLL
 void CDECL principia__InitGoogleLogging();
@@ -135,13 +134,10 @@ WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 
 // TODO(phl): These utilities should maybe go into a separate file.
-Instant FromGameTime(Plugin const& plugin,
-                     double const t);
-double ToGameTime(Plugin const& plugin,
-                  Instant const& t);
+Instant FromGameTime(Plugin const& plugin, double t);
+double ToGameTime(Plugin const& plugin, Instant const& t);
 
-not_null<Vessel*> GetVessel(Plugin const& plugin,
-                            char const* const vessel_guid);
+not_null<Vessel*> GetVessel(Plugin const& plugin, char const* vessel_guid);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

@@ -96,7 +96,7 @@ class Manœuvre {
   // be called before any of the functions below.  |coasting_trajectory| must
   // have a point at |initial_time()|.
   void set_coasting_trajectory(
-      not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory);
+      not_null<DiscreteTrajectory<InertialFrame> const*> trajectory);
 
   // Intensity, timing and coasting trajectory must have been set.
   virtual Vector<double, InertialFrame> InertialDirection() const;
@@ -111,10 +111,10 @@ class Manœuvre {
 
   // Intensity and timing must have been set.  |coasting_trajectory| is neither
   // written nor read.
-  void WriteToMessage(not_null<serialization::Manoeuvre*> const message) const;
+  void WriteToMessage(not_null<serialization::Manoeuvre*> message) const;
   static Manœuvre ReadFromMessage(
       serialization::Manoeuvre const& message,
-      not_null<Ephemeris<InertialFrame>*> const ephemeris);
+      not_null<Ephemeris<InertialFrame>*> ephemeris);
 
  private:
   Force const thrust_;

@@ -100,7 +100,7 @@ class Pair {
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
 
-  void WriteToMessage(not_null<serialization::Pair*> const message) const;
+  void WriteToMessage(not_null<serialization::Pair*> message) const;
   static Pair ReadFromMessage(serialization::Pair const& message);
 
  protected:
@@ -143,29 +143,29 @@ class Pair {
   friend typename enable_if_vector<
       Pair<U1, U2>,
       Pair<Product<Scalar, U1>, Product<Scalar, U2>>>::type
-  operator*(Scalar const left, Pair<U1, U2> const& right);
+  operator*(Scalar left, Pair<U1, U2> const& right);
 
   template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
       Pair<U1, U2>,
       Pair<Product<U1, Scalar>, Product<U2, Scalar>>>::type
-  operator*(Pair<U1, U2> const& left, Scalar const right);
+  operator*(Pair<U1, U2> const& left, Scalar right);
 
   template<typename Scalar, typename U1, typename U2>
   friend typename enable_if_vector<
       Pair<U1, U2>,
       Pair<Quotient<U1, Scalar>, Quotient<U2, Scalar>>>::type
-  operator/(Pair<U1, U2> const& left, Scalar const right);
+  operator/(Pair<U1, U2> const& left, Scalar right);
 
   template<typename U1, typename U2>
   friend typename enable_if_vector<Pair<U1, U2>>::type& operator*=(
-      Pair<U1, U2>& left,  // NOLINT(runtime/references)
-      double const right);
+      Pair<U1, U2>& left,
+      double right);
 
   template<typename U1, typename U2>
   friend typename enable_if_vector<Pair<U1, U2>>::type& operator/=(
-      Pair<U1, U2>& left,  // NOLINT(runtime/references)
-      double const right);
+      Pair<U1, U2>& left,
+      double right);
 
   template<typename U1, typename U2>
   friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);
@@ -188,29 +188,27 @@ template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
     Pair<Product<Scalar, T1>, Product<Scalar, T2>>>::type
-operator*(Scalar const left, Pair<T1, T2> const& right);
+operator*(Scalar left, Pair<T1, T2> const& right);
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
     Pair<Product<T1, Scalar>, Product<T2, Scalar>>>::type
-operator*(Pair<T1, T2> const& left, Scalar const right);
+operator*(Pair<T1, T2> const& left, Scalar right);
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
     Pair<Product<T1, Scalar>, Product<T2, Scalar>>>::type
-operator/(Pair<T1, T2> const& left, Scalar const right);
+operator/(Pair<T1, T2> const& left, Scalar right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
-    Pair<T1, T2>& left,  // NOLINT(runtime/references)
-    double const right);
+typename enable_if_vector<Pair<T1, T2>>::type& operator*=(Pair<T1, T2>& left,
+                                                          double right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
-    Pair<T1, T2>& left,  // NOLINT(runtime/references)
-    double const right);
+typename enable_if_vector<Pair<T1, T2>>::type& operator/=(Pair<T1, T2>& left,
+                                                          double right);
 
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);

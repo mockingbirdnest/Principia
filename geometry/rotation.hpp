@@ -150,7 +150,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
-           EulerAngles const axes,
+           EulerAngles axes,
            DefinesFrame<ToFrame> tag);
 
   template<typename F = FromFrame,
@@ -160,7 +160,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
-           EulerAngles const axes,
+           EulerAngles axes,
            DefinesFrame<FromFrame> tag);
 
   // Constructors from Cardano angles.
@@ -180,7 +180,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
-           CardanoAngles const axes,
+           CardanoAngles axes,
            DefinesFrame<ToFrame> tag);
 
   template<typename F = FromFrame,
@@ -190,7 +190,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
-           CardanoAngles const axes,
+           CardanoAngles axes,
            DefinesFrame<FromFrame> tag);
 
   ~Rotation() override = default;
@@ -220,10 +220,10 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   Quaternion const& quaternion() const;
 
-  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static Rotation ReadFromMessage(serialization::LinearMap const& message);
 
-  void WriteToMessage(not_null<serialization::Rotation*> const message) const;
+  void WriteToMessage(not_null<serialization::Rotation*> message) const;
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:
@@ -240,7 +240,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
 
-  friend std::ostream& operator<<<>(std::ostream& out,  // NOLINT
+  friend std::ostream& operator<<<>(std::ostream& out,
                                     Rotation const& rotation);
 };
 

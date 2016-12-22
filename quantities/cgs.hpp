@@ -35,7 +35,7 @@ constexpr MagneticFlux        Maxwell = Gauss * Pow<2>(Centimetre);
 constexpr MagneticField       Œrsted  =
     1e3 / (4 * π * si::Steradian) * si::Ampere / si::Metre;
 
-constexpr SpectroscopicWavenumber Kayser = si::Cycle / Centimetre;
+constexpr SpectroscopicWavenumber Kayser = 1 / Centimetre;
 
 }  // namespace cgs
 }  // namespace quantities

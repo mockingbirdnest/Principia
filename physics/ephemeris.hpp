@@ -63,7 +63,7 @@ class Ephemeris {
     // limited to |max_steps|.
     AdaptiveStepParameters(
         AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-        std::int64_t const max_steps,
+        std::int64_t max_steps,
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
@@ -101,8 +101,7 @@ class Ephemeris {
     Time const& step() const;
 
     void WriteToMessage(
-        not_null<serialization::Ephemeris::FixedStepParameters*> const message)
-        const;
+        not_null<serialization::Ephemeris::FixedStepParameters*> message) const;
     static FixedStepParameters ReadFromMessage(
         serialization::Ephemeris::FixedStepParameters const& message);
 
@@ -129,7 +128,7 @@ class Ephemeris {
 
   // Returns the trajectory for the given |body|.
   virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
-      not_null<MassiveBody const*> const body) const;
+      not_null<MassiveBody const*> body) const;
 
   // Returns true if at least one of the trajectories is empty.
   virtual bool empty() const;
@@ -156,11 +155,11 @@ class Ephemeris {
   // Prolongs the ephemeris by at most |max_ephemeris_steps|.
   // Returns true if and only if |*trajectory| was integrated until |t|.
   virtual bool FlowWithAdaptiveStep(
-      not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
-      std::int64_t const max_ephemeris_steps);
+      std::int64_t max_ephemeris_steps);
 
   // Integrates, until at most |t|, the |trajectories| followed by massless
   // bodies in the gravitational potential described by |*this|.  If
@@ -183,23 +182,23 @@ class Ephemeris {
   // |trajectory|.
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMasslessBody(
-      not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t) const;
 
   // Returns the gravitational acceleration on the massive |body| at time |t|.
   // |body| must be one of the bodies of this object.
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMassiveBody(
-      not_null<MassiveBody const*> const body,
+      not_null<MassiveBody const*> body,
       Instant const& t) const;
 
   // Computes the apsides with respect to |body| for the discrete trajectory
   // segment given by |begin| and |end|.  Appends to the given trajectories one
   // point for each apsis.
   virtual void ComputeApsides(
-      not_null<MassiveBody const*> const body,
-      typename DiscreteTrajectory<Frame>::Iterator const begin,
-      typename DiscreteTrajectory<Frame>::Iterator const end,
+      not_null<MassiveBody const*> body,
+      typename DiscreteTrajectory<Frame>::Iterator begin,
+      typename DiscreteTrajectory<Frame>::Iterator end,
       DiscreteTrajectory<Frame>& apoapsides,
       DiscreteTrajectory<Frame>& periapsides);
 
@@ -218,13 +217,13 @@ class Ephemeris {
   // |WriteToMessage| and read by the |Read...| functions.  This index is not
   // suitable for other uses.
   virtual int serialization_index_for_body(
-      not_null<MassiveBody const*> const body) const;
+      not_null<MassiveBody const*> body) const;
 
   virtual not_null<MassiveBody const*> body_for_serialization_index(
-      int const serialization_index) const;
+      int serialization_index) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::Ephemeris*> const message) const;
+      not_null<serialization::Ephemeris*> message) const;
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       serialization::Ephemeris const& message);
 

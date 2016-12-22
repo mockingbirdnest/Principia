@@ -41,7 +41,7 @@ template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
   using TimelineConstIterator =
       typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
-  static Instant const& time(TimelineConstIterator const it);
+  static Instant const& time(TimelineConstIterator it);
 };
 
 template<typename Frame>
@@ -132,9 +132,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // They must be descended from this trajectory.  The pointers in |forks| may
   // be null at entry.
   void WriteToMessage(
-      not_null<serialization::DiscreteTrajectory*> const message,
-      std::vector<DiscreteTrajectory<Frame>*> const& forks)
-      const;
+      not_null<serialization::DiscreteTrajectory*> message,
+      std::vector<DiscreteTrajectory<Frame>*> const& forks) const;
 
   // |forks| must have a size appropriate for the |message| being deserialized
   // and the orders of the |forks| must be consistent during serialization and
@@ -159,7 +158,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
  private:
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
-      not_null<serialization::DiscreteTrajectory*> const message,
+      not_null<serialization::DiscreteTrajectory*> message,
       std::vector<DiscreteTrajectory<Frame>*>& forks) const;
 
   void FillSubTreeFromMessage(

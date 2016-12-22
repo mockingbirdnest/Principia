@@ -27,17 +27,17 @@ class R3x3Matrix {
   double Trace() const;
   R3x3Matrix Transpose() const;
 
-  double operator()(int const r, int const c) const;
+  double operator()(int r, int c) const;
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
   R3x3Matrix& operator-=(R3x3Matrix const& right);
   R3x3Matrix& operator*=(R3x3Matrix const& right);
-  R3x3Matrix& operator*=(double const right);
-  R3x3Matrix& operator/=(double const right);
+  R3x3Matrix& operator*=(double right);
+  R3x3Matrix& operator/=(double right);
 
   static R3x3Matrix Identity();
 
-  void WriteToMessage(not_null<serialization::R3x3Matrix*> const message) const;
+  void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
 
  private:
@@ -62,12 +62,9 @@ class R3x3Matrix {
   friend R3Element<Scalar> operator*(R3Element<Scalar> const& left,
                                      R3x3Matrix const& right);
 
-  friend R3x3Matrix operator*(double const left,
-                              R3x3Matrix const& right);
-  friend R3x3Matrix operator*(R3x3Matrix const& left,
-                              double const right);
-  friend R3x3Matrix operator/(R3x3Matrix const& left,
-                              double const right);
+  friend R3x3Matrix operator*(double left, R3x3Matrix const& right);
+  friend R3x3Matrix operator*(R3x3Matrix const& left, double right);
+  friend R3x3Matrix operator/(R3x3Matrix const& left, double right);
 
   friend bool operator==(R3x3Matrix const& left,
                          R3x3Matrix const& right);
@@ -94,12 +91,9 @@ template<typename Scalar>
 R3Element<Scalar> operator*(R3Element<Scalar> const& left,
                             R3x3Matrix const& right);
 
-R3x3Matrix operator*(double const left,
-                     R3x3Matrix const& right);
-R3x3Matrix operator*(R3x3Matrix const& left,
-                     double const right);
-R3x3Matrix operator/(R3x3Matrix const& left,
-                     double const right);
+R3x3Matrix operator*(double left, R3x3Matrix const& right);
+R3x3Matrix operator*(R3x3Matrix const& left, double right);
+R3x3Matrix operator/(R3x3Matrix const& left, double right);
 
 bool operator==(R3x3Matrix const& left,
                 R3x3Matrix const& right);

@@ -410,13 +410,13 @@ class DateParser {
   static constexpr Date Parse(char const* str, std::size_t size);
 
  private:
-  constexpr DateParser(std::int64_t const digits,
-                       int const digit_count,
-                       int const hyphens,
-                       int const first_hyphen_index,
-                       int const second_hyphen_index,
-                       bool const has_w,
-                       int const w_index);
+  constexpr DateParser(std::int64_t digits,
+                       int digit_count,
+                       int hyphens,
+                       int first_hyphen_index,
+                       int second_hyphen_index,
+                       bool has_w,
+                       int w_index);
 
   // Returns a |DateParser| describing the given string. Fails if the string
   // does not exclusively consist of:
@@ -424,14 +424,14 @@ class DateParser {
   //   - at most two hyphens;
   //   - at most one 'W'.
   static constexpr DateParser ReadToEnd(char const* str, std::size_t size);
-  static constexpr DateParser ReadToEnd(CStringIterator const str,
-                                        std::int64_t const digits,
-                                        int const digit_count,
-                                        int const colons,
-                                        int const first_hyphen_index,
-                                        int const second_hyphen_index,
-                                        bool const has_w,
-                                        int const w_index);
+  static constexpr DateParser ReadToEnd(CStringIterator str,
+                                        std::int64_t digits,
+                                        int digit_count,
+                                        int colons,
+                                        int first_hyphen_index,
+                                        int second_hyphen_index,
+                                        bool has_w,
+                                        int w_index);
 
   // Returns a |Date| corresponding to the string that |*this| describes.
   // Fails if the format is invalid or the string represents an invalid date.
@@ -575,13 +575,13 @@ class TimeParser {
   static constexpr Time Parse(char const* str, std::size_t size);
 
  private:
-  constexpr TimeParser(std::int64_t const digits,
-                       int const digit_count,
-                       int const colons,
-                       int const first_colon_index,
-                       int const second_colon_index,
-                       bool const has_decimal_mark,
-                       int const decimal_mark_index);
+  constexpr TimeParser(std::int64_t digits,
+                       int digit_count,
+                       int colons,
+                       int first_colon_index,
+                       int second_colon_index,
+                       bool has_decimal_mark,
+                       int decimal_mark_index);
 
   // Returns a |TimeParser| describing the given string. Fails if the string
   // does not exclusively consist of:
@@ -590,14 +590,14 @@ class TimeParser {
   //   - at most two colons;
   //   - at most one decimal mark ('.' or ',').
   static constexpr TimeParser ReadToEnd(char const* str, std::size_t size);
-  static constexpr TimeParser ReadToEnd(CStringIterator const str,
-                                        std::int64_t const digits,
-                                        int const digit_count,
-                                        int const colons,
-                                        int const first_colon_index,
-                                        int const second_colon_index,
-                                        bool const has_decimal_mark,
-                                        int const decimal_mark_index);
+  static constexpr TimeParser ReadToEnd(CStringIterator str,
+                                        std::int64_t digits,
+                                        int digit_count,
+                                        int colons,
+                                        int first_colon_index,
+                                        int second_colon_index,
+                                        bool has_decimal_mark,
+                                        int decimal_mark_index);
 
   // Returns a |Time| corresponding to the string that |*this| describes.
   // Fails if the format is invalid or the string represents an invalid time.

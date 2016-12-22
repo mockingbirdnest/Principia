@@ -456,7 +456,7 @@ bool operator!=(Multivector<Scalar, Frame, rank> const& left,
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator+=(
-    Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, rank>& left,
     Multivector<Scalar, Frame, rank> const& right) {
   left.coordinates_ += right.coordinates_;
   return left;
@@ -464,7 +464,7 @@ Multivector<Scalar, Frame, rank>& operator+=(
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator-=(
-    Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, rank>& left,
     Multivector<Scalar, Frame, rank> const& right) {
   left.coordinates_ -= right.coordinates_;
   return left;
@@ -472,7 +472,7 @@ Multivector<Scalar, Frame, rank>& operator-=(
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator*=(
-    Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, rank>& left,
     double const right) {
   left.coordinates_ *= right;
   return left;
@@ -480,7 +480,7 @@ Multivector<Scalar, Frame, rank>& operator*=(
 
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator/=(
-    Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, rank>& left,
     double const right) {
   left.coordinates_ /= right;
   return left;

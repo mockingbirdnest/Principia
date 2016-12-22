@@ -61,7 +61,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      serialization::AdaptiveStepSizeIntegrator::Kind const kind,
+      serialization::AdaptiveStepSizeIntegrator::Kind kind,
       FixedVector<double, stages> const& c,
       FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
       FixedVector<double, stages> const& b_hat,
@@ -75,11 +75,11 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
 
   Status Solve(Instant const& t_final,
                IntegrationInstance& instance) const override;
