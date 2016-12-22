@@ -399,7 +399,7 @@ class Plugin {
 
   // Computes a fingerprint for the parameters passed to
   // |InsertCelestialJacobiKeplerian|.
-  static std::uint64_t FingerprintCelestialJacobiKeplerian(
+  static std::ustd::int64_t FingerprintCelestialJacobiKeplerian(
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       std::experimental::optional<
@@ -457,7 +457,7 @@ class Plugin {
   std::unique_ptr<NavigationFrame> plotting_frame_;
 
   // Used for detecting and patching the stock system.
-  std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
+  std::set<std::ustd::int64_t> celestial_jacobi_keplerian_fingerprints_;
   bool is_ksp_stock_system_ = false;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;

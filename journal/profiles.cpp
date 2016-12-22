@@ -19,7 +19,7 @@ namespace {
 
 template<typename T>
 void Insert(not_null<Player::PointerMap*> const pointer_map,
-            std::uint64_t const address,
+            std::ustd::int64_t const address,
             T* const pointer) {
   void* const inserted_pointer = static_cast<void*>(
       const_cast<typename std::remove_cv<T>::type*>(pointer));
@@ -30,7 +30,7 @@ void Insert(not_null<Player::PointerMap*> const pointer_map,
 }
 
 void Delete(not_null<Player::PointerMap*> const pointer_map,
-            std::uint64_t const address) {
+            std::ustd::int64_t const address) {
   if (reinterpret_cast<void*>(address) != nullptr) {
     auto const it = pointer_map->find(address);
     CHECK(it != pointer_map->end()) << address;
@@ -41,7 +41,7 @@ void Delete(not_null<Player::PointerMap*> const pointer_map,
 template<typename T,
          typename = typename std::enable_if<std::is_pointer<T>::value>::type>
 T DeserializePointer(Player::PointerMap const& pointer_map,
-                     std::uint64_t const address) {
+                     std::ustd::int64_t const address) {
   if (reinterpret_cast<T>(address) == nullptr) {
     return nullptr;
   } else {
@@ -50,8 +50,8 @@ T DeserializePointer(Player::PointerMap const& pointer_map,
 }
 
 template<typename T>
-std::uint64_t SerializePointer(T* t) {
-  return reinterpret_cast<std::uint64_t>(t);
+std::ustd::int64_t SerializePointer(T* t) {
+  return reinterpret_cast<std::ustd::int64_t>(t);
 }
 
 }  // namespace

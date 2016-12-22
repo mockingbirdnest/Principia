@@ -125,7 +125,7 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
     queue_has_room_.wait(l, [this]() {
       // -1 here is because we want to ensure that there is an entry in the
       // (real) free list.
-      return queue_.size() < static_cast<size_t>(number_of_chunks_) - 1;
+      return queue_.size() < static_cast<std::size_t>(number_of_chunks_) - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
     CHECK_LE(2u, free_.size());

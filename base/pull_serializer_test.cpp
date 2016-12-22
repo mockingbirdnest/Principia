@@ -68,7 +68,7 @@ class PullSerializerTest : public ::testing::Test {
                not_null<std::list<std::string>*> const strings) {
     strings->push_back(
         std::string(reinterpret_cast<const char*>(&bytes.data[0]),
-                    static_cast<size_t>(bytes.size)));
+                    static_cast<std::size_t>(bytes.size)));
     return Bytes(data_, small_chunk_size);
   }
 
@@ -140,7 +140,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
+      std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
       data = &data[bytes.size];
       if (bytes.size == 0) {
         break;

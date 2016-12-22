@@ -76,8 +76,8 @@ namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
 
-std::uint64_t const ksp_stock_system_fingerprint = 0xD15286A27180CD31u;
-std::uint64_t const ksp_fixed_system_fingerprint = 0x648C354716008328u;
+std::ustd::int64_t const ksp_stock_system_fingerprint = 0xD15286A27180CD31u;
+std::ustd::int64_t const ksp_fixed_system_fingerprint = 0x648C354716008328u;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
@@ -180,8 +180,8 @@ void Plugin::InsertCelestialJacobiKeplerian(
 void Plugin::EndInitialization() {
   CHECK(initializing_);
   if (hierarchical_initialization_) {
-    std::uint64_t system_fingerprint = 0;
-    for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
+    std::ustd::int64_t system_fingerprint = 0;
+    for (std::ustd::int64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
       system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
     }
     LOG(INFO) << "System fingerprint is " << std::hex << system_fingerprint;
@@ -1144,7 +1144,7 @@ void Plugin::ReadCelestialsFromMessages(
   }
 }
 
-std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
+std::ustd::int64_t Plugin::FingerprintCelestialJacobiKeplerian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     std::experimental::optional<physics::KeplerianElements<Barycentric>> const&
