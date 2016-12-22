@@ -13,7 +13,7 @@ namespace journal {
 
 class Player final {
  public:
-  using PointerMap = std::map<std::ustd::int64_t, void*>;
+  using PointerMap = std::map<std::uint64_t, void*>;
 
   explicit Player(std::experimental::filesystem::path const& path);
 
