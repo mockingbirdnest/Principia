@@ -1,9 +1,13 @@
 ﻿
 #pragma once
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 namespace quantities {
 namespace internal_serialization {
+
+using base::not_constructible;
 
 // A helper class that serializes a |Quantity| or a |double| to a protobuf
 // structure like:
@@ -15,7 +19,7 @@ namespace internal_serialization {
 //   }
 // }
 template<typename T, typename Message>
-class DoubleOrQuantitySerializer {};
+struct DoubleOrQuantitySerializer : not_constructible {};
 
 }  // namespace internal_serialization
 

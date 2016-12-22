@@ -2,6 +2,7 @@
 #pragma once
 
 #include "base/mappable.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/point.hpp"
 #include "serialization/geometry.pb.h"
@@ -16,6 +17,7 @@ class ComponentwiseMatcher2;
 namespace geometry {
 namespace internal_pair {
 
+using base::not_constructible;
 using base::not_null;
 using quantities::Product;
 using quantities::Quotient;
@@ -25,62 +27,55 @@ class Pair;
 
 // A template to peel off the affine layer (i.e., the class Point) if any.
 template<typename T>
-class vector_of {
- public:
+struct vector_of : not_constructible {
   using type = T;
 };
 
 template<typename T1, typename T2>
-class vector_of<Pair<T1, T2>> {
- public:
+struct vector_of<Pair<T1, T2>> : not_constructible {
   using type = Pair<typename vector_of<T1>::type, typename vector_of<T2>::type>;
 };
 
 template<typename T>
-class vector_of<Point<T>> {
- public:
+struct vector_of<Point<T>> : not_constructible {
   using type = T;
 };
 
 // A template to enable declarations on affine pairs (i.e., when one of the
 // components is a Point).
 template<typename T>
-class enable_if_affine {};
+struct enable_if_affine : not_constructible {};
 
 template<typename T1, typename T2>
-class enable_if_affine<Pair<Point<T1>, T2>> {
- public:
+struct enable_if_affine<Pair<Point<T1>, T2>> : not_constructible {
   using type = Pair<Point<T1>, T2>;
 };
 
 template<typename T1, typename T2>
-class enable_if_affine<Pair<T1, Point<T2>>> {
- public:
+struct enable_if_affine<Pair<T1, Point<T2>>> : not_constructible {
   using type = Pair<T1, Point<T2>>;
 };
 
 template<typename T1, typename T2>
-class enable_if_affine<Pair<Point<T1>, Point<T2>>> {
- public:
+struct enable_if_affine<Pair<Point<T1>, Point<T2>>> : not_constructible {
   using type = Pair<Point<T1>, Point<T2>>;
 };
 
 // A template to enable declarations on vector pairs (i.e., when none of the
 // components is a Point).
 template<typename T, typename U = T>
-class enable_if_vector {
- public:
+struct enable_if_vector : not_constructible {
   using type = U;
 };
 
 template<typename T1, typename T2>
-class enable_if_vector<Pair<Point<T1>, T2>> {};
+struct enable_if_vector<Pair<Point<T1>, T2>> : not_constructible {};
 
 template<typename T1, typename T2>
-class enable_if_vector<Pair<T1, Point<T2>>> {};
+struct enable_if_vector<Pair<T1, Point<T2>>> :not_constructible {};
 
 template<typename T1, typename T2>
-class enable_if_vector<Pair<Point<T1>, Point<T2>>> {};
+struct enable_if_vector<Pair<Point<T1>, Point<T2>>> : not_constructible {};
 
 // This class represents a pair of two values which can be members of an affine
 // space (i.e., Points) or of a vector space (such as double, Quantity, Vector,
@@ -90,6 +85,7 @@ template<typename T1, typename T2>
 class Pair {
  public:
   Pair(T1 const& t1, T2 const& t2);
+  virtual ~Pair() = default;
 
   Pair operator+(typename vector_of<Pair>::type const& right) const;
   Pair operator-(typename vector_of<Pair>::type const& right) const;
@@ -120,7 +116,7 @@ class Pair {
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
-  friend class base::Mappable;
+  friend struct base::Mappable;
 
   // This is needed for testing.
   template<typename T1Matcher, typename T2Matcher>
@@ -221,10 +217,9 @@ using internal_pair::vector_of;
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
 template<typename T1, typename T2, typename Weight>
-class BarycentreCalculator<Pair<T1, T2>, Weight> {
+class BarycentreCalculator<Pair<T1, T2>, Weight> final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(Pair<T1, T2> const& pair, Weight const& weight);
   Pair<T1, T2> Get() const;

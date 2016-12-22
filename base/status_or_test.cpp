@@ -62,7 +62,7 @@ class Derived : public Base1, public Base2 {
   int evenmorepad;
 };
 
-class CopyNoAssign {
+class CopyNoAssign final {
  public:
   explicit CopyNoAssign(int value) : foo(value) {}
   CopyNoAssign(const CopyNoAssign& other) : foo(other.foo) {}

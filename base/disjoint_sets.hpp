@@ -19,12 +19,12 @@ namespace base {
 
 // A subset of |T|.
 template<typename T>
-class Subset {
+class Subset final {
  public:
   // Any properties about a subset of |T| that can be efficiently maintained
   // when merging (e.g. a list of elements) should be kept in
   // |Subset<T>::Properties|; specialize it as needed.
-  class Properties {
+  class Properties final {
    public:
     void MergeWith(Properties& other) {}
   };
@@ -43,7 +43,7 @@ class Subset {
 
   Properties const& properties();
 
-  class Node {
+  class Node final {
    public:
     Node();
 

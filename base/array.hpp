@@ -10,7 +10,7 @@ namespace base {
 
 // A simple container for a pointer and size.  |data| is not owned.
 template<typename Element>
-struct Array {
+struct Array final {
   // An object of size 0.
   Array();
   // Mostly useful for adding constness.
@@ -30,7 +30,7 @@ struct Array {
 
 // A simple container for a pointer and size.  |data| is owned.
 template<typename Element>
-struct UniqueArray {
+struct UniqueArray final {
   // An object of size 0.
   UniqueArray();
   // Allocates memory for |size| elements.

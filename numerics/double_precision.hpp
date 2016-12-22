@@ -15,7 +15,7 @@ using quantities::Difference;
 // type of the value must be an affine space.  The value constructor is not
 // explicit to make it easy to construct an object with no error.
 template<typename T>
-struct DoublePrecision {
+struct DoublePrecision final {
   constexpr DoublePrecision() = default;
   constexpr DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
 

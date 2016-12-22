@@ -21,7 +21,6 @@ using base::not_null;
 class MasslessBody : public Body {
  public:
   MasslessBody() = default;
-  ~MasslessBody() = default;
 
   // Returns true.
   bool is_massless() const override;

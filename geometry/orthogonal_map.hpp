@@ -32,8 +32,6 @@ using base::not_null;
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
-  ~OrthogonalMap() override = default;
-
   Sign Determinant() const override;
 
   Rotation<FromFrame, ToFrame> const& rotation() const;

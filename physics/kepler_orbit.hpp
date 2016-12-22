@@ -20,7 +20,7 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 
 template<typename Frame>
-struct KeplerianElements {
+struct KeplerianElements final {
   double eccentricity{};
   std::experimental::optional<Length> semimajor_axis;
   std::experimental::optional<AngularFrequency> mean_motion;
@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& out,
                          KeplerianElements<Frame> const& elements);
 
 template<typename Frame>
-class KeplerOrbit {
+class KeplerOrbit final {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:

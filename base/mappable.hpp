@@ -1,10 +1,12 @@
 ﻿
 #pragma once
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 namespace base {
 
-// This class helps in declaring that a type is "mappable", i.e., that the maps
+// This struct helps in declaring that a type is "mappable", i.e., that the maps
 // declared in principia::geometry can be act on it through the operator().  To
 // use it, declare a specialization for the proper |Functor| (a class that must
 // have an operator()) and |T| (the class to be made mappable).  The third
@@ -16,8 +18,7 @@ namespace base {
 //     and returns a |type|.
 // See the comments below for example declarations.
 template<typename Functor, typename T, typename = void>
-class Mappable {
- public:
+struct Mappable : not_constructible {
   // using type = void;
   // static type Do(Functor const& functor, T const& t);
 };

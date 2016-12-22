@@ -353,7 +353,7 @@ constexpr int index_of(char const* str, std::size_t size, char const c) {
                   str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1));
 }
 
-class CStringIterator {
+class CStringIterator final {
  public:
   constexpr CStringIterator(char const* str, std::size_t size);
 
@@ -402,7 +402,7 @@ constexpr CStringIterator::CStringIterator(char const* str,
 
 // A |DateParser| contains information about a string necessary to interpret it
 // as a date representation.
-class DateParser {
+class DateParser final {
  public:
   // Returns a |Date| corresponding to the representation |str|.
   // Fails unless |str| is a date representation of one of the following forms:
@@ -566,7 +566,7 @@ constexpr Date operator""_Date(char const* str, std::size_t size) {
 
 // A |TimeParser| contains information about a string necessary to interpret it
 // as a time representation.
-class TimeParser {
+class TimeParser final {
  public:
   // Returns a |Time| corresponding to the representation |str|.
   // Fails unless |str| is a valid time representation of one of the following

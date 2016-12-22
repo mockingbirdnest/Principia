@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -15,6 +16,7 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
+using base::not_constructible;
 using geometry::Displacement;
 using geometry::Pair;
 using geometry::Position;
@@ -91,8 +93,8 @@ using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
 namespace base {
 
 template<typename Functor, typename Frame>
-class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
- public:
+struct Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>
+    : not_constructible {
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(
                                 std::declval<geometry::Displacement<Frame>>())),
@@ -110,10 +112,9 @@ class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
 namespace geometry {
 
 template<typename Frame, typename Weight>
-class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> {
+class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(physics::DegreesOfFreedom<Frame> const& degrees_of_freedom,
            Weight const& weight);
@@ -127,10 +128,10 @@ class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> {
 };
 
 template<typename Frame, typename Weight>
-class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight> {
+class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>
+    final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(physics::RelativeDegreesOfFreedom<Frame> const&
                relative_degrees_of_freedom,
