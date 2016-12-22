@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include "base/macros.hpp"
+#include "base/not_constructible.hpp"
 #include "glog/logging.h"
 
 // This file defines a pointer wrapper |not_null| that statically ensures
@@ -82,15 +83,15 @@ class not_null;
 // |is_instance<T, U>::value| is true if and only if |U| is an instance of the
 // template |T|.  It is false otherwise.
 template<template<typename...> class T, typename U>
-struct is_instance_of : std::false_type {};
+struct is_instance_of : std::false_type, not_constructible {};
 template<template<typename...> class T, typename U>
-struct is_instance_of<T, T<U>> : std::true_type {};
+struct is_instance_of<T, T<U>> : std::true_type, not_constructible {};
 
 // |remove_not_null<not_null<T>>::type| is |remove_not_null<T>::type|.
 // The recurrence ends when |T| is not an instance of |not_null|, in which case
 // |remove_not_null<T>::type| is |T|.
 template<typename Pointer>
-struct remove_not_null {
+struct remove_not_null : not_constructible {
   using type = Pointer;
 };
 template<typename Pointer>
@@ -113,10 +114,11 @@ template<typename Pointer>
 using is_instance_of_not_null = is_instance_of<not_null, Pointer>;
 
 template<typename Pointer>
-struct is_not_null_non_owner : std::false_type {};
+struct is_not_null_non_owner : std::false_type, not_constructible {};
 
 template<typename T>
-struct is_not_null_non_owner<not_null<T*>> : std::true_type {};
+struct is_not_null_non_owner<not_null<T*>> : std::true_type,
+                                             not_constructible {};
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
@@ -127,7 +129,7 @@ struct is_not_null_non_owner<not_null<T*>> : std::true_type {};
 // This is useful when a |template<typename T>| using a |not_null<T>| is
 // instanced with an instance of |not_null|.
 template<typename Pointer>
-class not_null {
+class not_null final {
  public:
   // The type of the pointer being wrapped.
   // This follows the naming convention from |std::unique_ptr|.
@@ -176,8 +178,6 @@ class not_null {
            typename = decltype(static_cast<pointer>(
                                    std::declval<OtherPointer>()))>
   explicit not_null(not_null<OtherPointer>&& other);
-
-  ~not_null() = default;
 
   // Copy assigment operators.
   not_null& operator=(not_null const&) = default;
@@ -270,7 +270,7 @@ class not_null {
   bool operator>(not_null other) const;
 
  private:
-  struct unchecked_tag {};
+  struct unchecked_tag final {};
 
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must
@@ -279,7 +279,7 @@ class not_null {
 
   pointer pointer_;
 
-  static unchecked_tag const unchecked_tag_;
+  static constexpr unchecked_tag unchecked_tag_{};
 
   template<typename OtherPointer>
   friend class not_null;

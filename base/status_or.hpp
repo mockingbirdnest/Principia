@@ -96,7 +96,7 @@ namespace principia {
 namespace base {
 
 template<typename T>
-class StatusOr {
+class StatusOr final {
  public:
   // Construct a new StatusOr with Status::UNKNOWN status
   StatusOr();

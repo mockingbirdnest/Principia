@@ -301,7 +301,7 @@ void TestSymplecticity(Integrator const& integrator,
   EXPECT_EQ(expected_energy_error, max_energy_error);
 }
 
-class SimpleHarmonicMotionTestInstance {
+class SimpleHarmonicMotionTestInstance final {
  public:
   template<typename Integrator>
   SimpleHarmonicMotionTestInstance(Integrator const& integrator,

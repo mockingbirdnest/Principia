@@ -18,7 +18,7 @@ using base::not_null;
 
 // An |R3x3Matrix| is an element of the associative algebra of 3-by-3 matrices
 // over ℝ, represented by |double|.
-class R3x3Matrix {
+class R3x3Matrix final {
  public:
   R3x3Matrix(R3Element<double> const& row_x,
              R3Element<double> const& row_y,

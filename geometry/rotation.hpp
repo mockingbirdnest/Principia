@@ -62,7 +62,7 @@ enum class CardanoAngles {
 };
 
 template<typename Frame>
-struct DefinesFrame {};
+struct DefinesFrame final {};
 
 // An orientation-preserving orthogonal map between the inner product spaces
 // |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
@@ -192,8 +192,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            Angle const& γ,
            CardanoAngles axes,
            DefinesFrame<FromFrame> tag);
-
-  ~Rotation() override = default;
 
   Sign Determinant() const override;
 

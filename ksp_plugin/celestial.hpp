@@ -28,12 +28,11 @@ using physics::MassiveBody;
 using quantities::GravitationalParameter;
 
 // Represents a KSP |CelestialBody|.
-class Celestial {
+class Celestial final {
  public:
   explicit Celestial(not_null<MassiveBody const*> body);
   Celestial(Celestial const&) = delete;
   Celestial(Celestial&&) = delete;
-  ~Celestial() = default;
 
   // True if, and only if, |trajectory_| is not null.
   bool is_initialized() const;

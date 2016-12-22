@@ -19,6 +19,8 @@ using geometry::Rotation;
 template<typename Frame, typename ThisFrame>
 class FrameField {
  public:
+  virtual ~FrameField() = default;
+
   virtual Rotation<ThisFrame, Frame> FromThisFrame(
       Position<Frame> const& q) const;
 

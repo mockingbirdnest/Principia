@@ -9,10 +9,9 @@ namespace geometry {
 
 // |Vector| must be a vector space over the field |Scalar|.
 template<typename Vector, typename Scalar>
-class BarycentreCalculator {
+class BarycentreCalculator final {
  public:
   BarycentreCalculator() = default;
-  ~BarycentreCalculator() = default;
 
   void Add(Vector const& vector, Scalar const& weight);
   Vector Get() const;

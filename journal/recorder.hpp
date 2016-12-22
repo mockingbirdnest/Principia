@@ -10,7 +10,7 @@
 namespace principia {
 namespace journal {
 
-class Recorder {
+class Recorder final {
  public:
   explicit Recorder(std::experimental::filesystem::path const& path);
   ~Recorder();

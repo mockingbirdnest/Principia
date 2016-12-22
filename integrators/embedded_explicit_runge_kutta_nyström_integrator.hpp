@@ -69,8 +69,6 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
       FixedVector<double, stages> const& b,
       FixedVector<double, stages> const& b_prime);
 
-  ~EmbeddedExplicitRungeKuttaNyströmIntegrator() = default;
-
   EmbeddedExplicitRungeKuttaNyströmIntegrator() = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;

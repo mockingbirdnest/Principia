@@ -21,13 +21,17 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using base::not_constructible;
 using base::not_null;
 using physics::SolarSystem;
 
 namespace testing_utilities {
 
 // A helper class for constructing physics::SolarSystem objects for testing.
-class SolarSystemFactory {
+// TODO(egg): should this be a namespace instead?  It contains only static
+// things, and there's no reason for it to be a type, it's not used in fancy
+// template things.
+class SolarSystemFactory : not_constructible {
  public:
   // The bodies are in decreasing order of mass.
   enum Index : int {

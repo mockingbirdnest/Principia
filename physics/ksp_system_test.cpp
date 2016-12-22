@@ -52,7 +52,7 @@ class KSPSystemTest : public ::testing::Test {
                     serialization::Frame::TEST,
                     /*frame_is_inertial=*/true>;
 
-  struct KSPCelestial {
+  struct KSPCelestial final {
     KeplerianElements<KSP> elements;
     KSPCelestial* parent = nullptr;
     MassiveBody* body;

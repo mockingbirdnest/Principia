@@ -11,7 +11,7 @@ using numerics::FixedVector;
 // Definition of an Adams-Moulton method.  Not technically an "integrator" as
 // it is not a subclass of |integrators::Integrator|.
 template<int order_>
-struct AdamsMoulton {
+struct AdamsMoulton final {
   static constexpr int order = order_;
   FixedVector<double, order> numerators;
   double denominator;

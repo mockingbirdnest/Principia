@@ -13,7 +13,7 @@ using base::not_null;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
-class AffineMap {
+class AffineMap final {
  public:
   using FromVector = Vector<Scalar, FromFrame>;
   using ToVector = Vector<Scalar, ToFrame>;

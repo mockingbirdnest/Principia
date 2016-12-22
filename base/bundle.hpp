@@ -25,7 +25,7 @@ extern thread_local std::function<bool()> AbortRequested;
 // We refer to the thread on which the |Bundle| is created as its master thread.
 // The |Bundle| itself cooperatively aborts if |AbortRequested()| on its master
 // thread.
-class Bundle {
+class Bundle final {
  public:
   using Task = std::function<Status()>;
 

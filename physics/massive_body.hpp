@@ -27,7 +27,7 @@ class MassiveBody : public Body {
   // We use the gravitational parameter μ = G M in order not to accumulate
   // unit roundoffs from repeated multiplications by G.  The parameter must not
   // be zero.
-  class Parameters {
+  class Parameters final {
    public:
     // The constructors are implicit on purpose.
     Parameters(
@@ -47,7 +47,6 @@ class MassiveBody : public Body {
   };
 
   explicit MassiveBody(Parameters const& parameters);
-  ~MassiveBody() = default;
 
   // Returns the construction parameter.
   std::string const& name() const;
