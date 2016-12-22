@@ -111,7 +111,9 @@ class PluginIntegrationTest : public testing::Test {
       // The plugin wants a |RotatingBody<Barycentric>| and will |dynamic_cast|
       // to check, so we reinterpret (which has no effect, and thus wouldn't
       // make the |dynamic_cast| work), then copy into a properly-constructed
-      // |RotatingBody<Barycentric>|.
+      // |RotatingBody<Barycentric>|.  This is horribly UB in a way that
+      // actually matters (aliasing rules can lead to unpredictable
+      // optimizations).
       // I threw up in my mouth a little bit.
       plugin_->InsertCelestialAbsoluteCartesian(
           index,

@@ -288,7 +288,11 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 void principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
   LOG(INFO) << __FUNCTION__;
-  TakeOwnershipArray(reinterpret_cast<uint8_t const**>(native_string));
+  // This is a bit convoluted, but a |std::uint8_t const*| and a |char const*|
+  // cannot be aliased.
+  auto unsigned_string = reinterpret_cast<std::uint8_t const*>(*native_string);
+  TakeOwnershipArray(&unsigned_string);
+  *native_string = reinterpret_cast<char const*>(unsigned_string);
   return m.Return();
 }
 

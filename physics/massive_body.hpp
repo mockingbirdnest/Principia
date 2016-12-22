@@ -72,10 +72,6 @@ class MassiveBody : public Body {
   virtual void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const;
 
-  // Both methods below dispatch to |OblateBody<UnknownFrame>| if the
-  // |OblateBody| extension is present in the message.  Use |reinterpret_cast|
-  // afterwards as appropriate if the frame is known.
-
   // |message.has_massive_body()| must be true.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
