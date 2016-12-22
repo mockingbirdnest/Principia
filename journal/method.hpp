@@ -4,8 +4,8 @@
 #include <functional>
 #include <memory>
 
-#include "base/not_null.hpp"
 #include "base/not_constructible.hpp"
+#include "base/not_null.hpp"
 
 namespace principia {
 

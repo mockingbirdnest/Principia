@@ -7,8 +7,8 @@
 #include <string>
 #include <type_traits>
 
-#include "base/not_null.hpp"
 #include "base/not_constructible.hpp"
+#include "base/not_null.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
