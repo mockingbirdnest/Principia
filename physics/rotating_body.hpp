@@ -34,7 +34,7 @@ class RotatingBody : public MassiveBody {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  class Parameters {
+  class Parameters final {
    public:
     // |reference_angle| is the angle of the prime meridian at
     // |reference_instant|.  |angular_frequency| gives the rate of rotation of
@@ -62,7 +62,6 @@ class RotatingBody : public MassiveBody {
 
   RotatingBody(MassiveBody::Parameters const& massive_body_parameters,
                Parameters const& parameters);
-  ~RotatingBody() = default;
 
   // Returns the radius passed at construction.
   Length mean_radius() const override;

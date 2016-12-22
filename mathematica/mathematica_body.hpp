@@ -8,8 +8,11 @@
 #include <tuple>
 #include <vector>
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 
+using base::not_constructible;
 using base::not_null;
 using quantities::DebugString;
 using quantities::IsFinite;
@@ -19,10 +22,9 @@ namespace mathematica {
 
 namespace {
 
-// A helper class to scan the elements of a tuple and stringify them.
+// A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
-class TupleHelper {
- public:
+struct TupleHelper : not_constructible {
   static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
                                    std::vector<std::string>& expressions) {
     TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
@@ -31,8 +33,7 @@ class TupleHelper {
 };
 
 template<typename... Types>
-class TupleHelper<0, Types...> {
- public:
+struct TupleHelper<0, Types...> : not_constructible {
   static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
                                    std::vector<std::string>& expressions) {}
 };

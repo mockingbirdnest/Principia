@@ -403,7 +403,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   }
 }
 
-class SimpleHarmonicMotionTestInstance {
+class SimpleHarmonicMotionTestInstance final {
  public:
   template<typename Integrator>
   SimpleHarmonicMotionTestInstance(Integrator const& integrator,

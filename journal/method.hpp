@@ -4,22 +4,24 @@
 #include <functional>
 #include <memory>
 
+#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 
 namespace principia {
 
+using base::not_constructible;
 using base::not_null;
 
 namespace journal {
 
 // The parameter |Profile| is expected to have the following structure:
 //
-//  struct SomeProfile {
-//    struct In {  // Only present if the profile has 'in' parameters.
-//      ...        // 'in' parameters copied verbatim from the actual profile.
+//  struct SomeProfile : not_constructible {
+//    struct In final {  // Only present if the profile has 'in' parameters.
+//      ...  // 'in' parameters copied verbatim from the actual profile.
 //    };
-//    struct Out {  // Only present if the profile has 'out' parameters.
-//      ...         // 'out' parameters copied verbatim from the actual profile.
+//    struct Out final {  // Only present if the profile has 'out' parameters.
+//      ...  // 'out' parameters copied verbatim from the actual profile.
 //    };
 //    using Return = ...;  // Only present if the profile does not return void.
 //
@@ -40,24 +42,27 @@ template<typename T>
 using void_if_exists = void;
 
 template<typename P, typename = void>
-struct has_in : std::false_type {};
+struct has_in : std::false_type, not_constructible {};
 template<typename P>
-struct has_in<P, void_if_exists<typename P::In>> : std::true_type {};
+struct has_in<P, void_if_exists<typename P::In>> : std::true_type,
+                                                   not_constructible {};
 
 template<typename P, typename = void>
 struct has_out : std::false_type {};
 template<typename P>
-struct has_out<P, void_if_exists<typename P::Out>> : std::true_type {};
+struct has_out<P, void_if_exists<typename P::Out>> : std::true_type,
+                                                     not_constructible {};
 
 template<typename P, typename = void>
 struct has_return : std::false_type {};
 template<typename P>
-struct has_return<P, void_if_exists<typename P::Return>> : std::true_type {};
+struct has_return<P, void_if_exists<typename P::Return>> : std::true_type,
+                                                           not_constructible {};
 
 }  // namespace internal
 
 template<typename Profile>
-class Method {
+class Method final {
  public:
   Method();
 

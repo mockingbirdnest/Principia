@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
@@ -12,16 +13,16 @@ namespace principia {
 namespace geometry {
 namespace internal_point {
 
+using base::not_constructible;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::SIUnit;
 
 template<typename Vector>
-class PointSerializer {};
+struct PointSerializer : not_constructible {};
 
 template<typename Dimensions>
-class PointSerializer<Quantity<Dimensions>> {
- public:
+struct PointSerializer<Quantity<Dimensions>> : not_constructible {
   using Vector = Quantity<Dimensions>;
   static void WriteToMessage(Vector const& coordinates,
                              not_null<serialization::Point*> const message) {
@@ -35,8 +36,7 @@ class PointSerializer<Quantity<Dimensions>> {
 };
 
 template<typename Scalar, typename Frame, int rank>
-class PointSerializer<Multivector<Scalar, Frame, rank>> {
- public:
+struct PointSerializer<Multivector<Scalar, Frame, rank>> : not_constructible {
   using Vector = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(
       Vector const& coordinates,

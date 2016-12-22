@@ -5,10 +5,9 @@ namespace principia {
 namespace base {
 
 // A boolean which is constructed true and becomes false when |Flop| is called.
-class Monostable {
+class Monostable final {
  public:
   Monostable() = default;
-  ~Monostable() = default;
 
   Monostable(Monostable const&) = delete;
   Monostable(Monostable&&) = delete;

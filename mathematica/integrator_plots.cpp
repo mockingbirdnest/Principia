@@ -79,7 +79,7 @@ using Problem = IntegrationProblem<ODE>;
 
 namespace {
 
-struct SimpleHarmonicMotionPlottedIntegrator {
+struct SimpleHarmonicMotionPlottedIntegrator final {
   FixedStepSizeIntegrator<ODE> const& integrator;
   std::string name;
   int evaluations;

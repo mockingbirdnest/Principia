@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 
+#include "base/not_constructible.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 #include "serialization/geometry.pb.h"
@@ -12,17 +13,15 @@ namespace principia {
 namespace geometry {
 namespace internal_frame {
 
+using base::not_constructible;
 using base::not_null;
 
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
-class Frame {
- public:
+struct Frame : not_constructible {
   using Tag = FrameTag;
   static Position<Frame> const origin;
   static Tag const tag = frame_tag;
   static bool const is_inertial = frame_is_inertial;
-
-  Frame() = delete;
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 

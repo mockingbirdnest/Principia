@@ -56,6 +56,7 @@ class ForkableIterator {
 
  public:
   ForkableIterator() = default;
+  virtual ~ForkableIterator() = default;
 
   bool operator==(It3rator const& right) const;
   bool operator!=(It3rator const& right) const;

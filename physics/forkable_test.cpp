@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 
+#include "base/not_constructible.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -14,6 +15,7 @@ namespace physics {
 namespace internal_forkable {
 
 using base::make_not_null_unique;
+using base::not_constructible;
 using geometry::Instant;
 using quantities::si::Second;
 using ::testing::ElementsAre;
@@ -21,7 +23,7 @@ using ::testing::ElementsAre;
 class FakeTrajectory;
 
 template<>
-struct ForkableTraits<FakeTrajectory> {
+struct ForkableTraits<FakeTrajectory> : not_constructible {
   using TimelineConstIterator = std::list<Instant>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };

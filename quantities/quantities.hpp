@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "serialization/quantities.pb.h"
 
@@ -14,6 +15,7 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
+using base::not_constructible;
 using base::not_null;
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
@@ -39,9 +41,9 @@ using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template <int n, typename Q, typename = void>
-struct NthRootGenerator {};
+struct NthRootGenerator : not_constructible {};
 template <typename T, int exponent, typename = void>
-struct ExponentiationGenerator {};
+struct ExponentiationGenerator final {};
 
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;
@@ -124,13 +126,12 @@ template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
-class Quantity {
+class Quantity final {
  public:
   using Dimensions = D;
   using Inverse = Quotient<double, Quantity>;
 
   constexpr Quantity();
-  ~Quantity() = default;
 
   constexpr Quantity operator+() const;
   constexpr Quantity operator-() const;
@@ -202,9 +203,9 @@ class Quantity {
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
-struct is_quantity : std::is_floating_point<T> {};
+struct is_quantity : std::is_floating_point<T>, not_constructible {};
 template<typename D>
-struct is_quantity<Quantity<D>> : std::true_type {};
+struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
 
 }  // namespace internal_quantities
 

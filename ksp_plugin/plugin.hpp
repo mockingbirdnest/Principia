@@ -414,14 +414,14 @@ class Plugin {
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
-  struct AbsoluteInitializationObjects {
+  struct AbsoluteInitializationObjects final{
     IndexToMassiveBody bodies;
     IndexToDegreesOfFreedom initial_state;
   };
   std::experimental::optional<AbsoluteInitializationObjects>
       absolute_initialization_;
 
-  struct HierarchicalInitializationObjects {
+  struct HierarchicalInitializationObjects final {
     HierarchicalInitializationObjects(
         not_null<std::unique_ptr<MassiveBody const>> sun)
         : system(std::move(sun)) {}
