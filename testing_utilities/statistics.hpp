@@ -11,11 +11,11 @@
 // |Quantity| or |Dimensionless|.
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_statistics {
 
 using quantities::Product;
 using quantities::Quotient;
-
-namespace testing_utilities {
 
 // The population mean μ(x) = E[x].
 template<typename T>
@@ -65,6 +65,16 @@ Quotient<U, T> Slope(std::vector<T> const& x, std::vector<U> const& y);
 template<typename T, typename U>
 std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
                                                  std::vector<U> const& y);
+
+}  // namespace internal_statistics
+
+using internal_statistics::BidimensionalDatasetMathematicaInput;
+using internal_statistics::Covariance;
+using internal_statistics::Mean;
+using internal_statistics::PearsonProductMomentCorrelationCoefficient;
+using internal_statistics::Slope;
+using internal_statistics::StandardDeviation;
+using internal_statistics::Variance;
 
 }  // namespace testing_utilities
 }  // namespace principia

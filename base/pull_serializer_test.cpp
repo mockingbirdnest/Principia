@@ -34,7 +34,10 @@ class PullSerializerTest : public ::testing::Test {
       : pull_serializer_(
             std::make_unique<PullSerializer>(chunk_size, number_of_chunks)),
         stream_(Bytes(data_, small_chunk_size),
-                std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {}
+                std::bind(&PullSerializerTest::OnFull,
+                          this,
+                          _1,
+                          std::ref(strings_))) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
     not_null<std::unique_ptr<DiscreteTrajectory>> result =
@@ -64,11 +67,9 @@ class PullSerializerTest : public ::testing::Test {
 
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
-  Bytes OnFull(Bytes const bytes,
-               not_null<std::list<std::string>*> const strings) {
-    strings->push_back(
-        std::string(reinterpret_cast<const char*>(&bytes.data[0]),
-                    static_cast<std::size_t>(bytes.size)));
+  Bytes OnFull(Bytes const bytes, std::list<std::string>& strings) {
+    strings.push_back(std::string(reinterpret_cast<const char*>(&bytes.data[0]),
+                                  static_cast<std::size_t>(bytes.size)));
     return Bytes(data_, small_chunk_size);
   }
 

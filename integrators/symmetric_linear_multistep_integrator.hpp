@@ -110,12 +110,12 @@ using internal_symmetric_linear_multistep_integrator::
 // This method and the next are from Quinlan (1999), Resonances and
 // instabilities in symmetric multistep methods,
 // https://arxiv.org/abs/astro-ph/9901136.
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
 Quinlan1999Order8A();
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
 Quinlan1999Order8B();
@@ -123,22 +123,22 @@ Quinlan1999Order8B();
 // These four methods are from Quinlan and Tremaine (1990), Symmetric multistep
 // methods for the numerical integration of planetary orbits,
 // http://adsabs.harvard.edu/full/1990AJ....100.1694Q.
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/8> const&
 QuinlanTremaine1990Order8();
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/10> const&
 QuinlanTremaine1990Order10();
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/12> const&
 QuinlanTremaine1990Order12();
 
-template <typename Position>
+template<typename Position>
 SymmetricLinearMultistepIntegrator<Position,
                                    /*order=*/14> const&
 QuinlanTremaine1990Order14();

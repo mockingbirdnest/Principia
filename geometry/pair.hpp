@@ -10,8 +10,9 @@
 namespace principia {
 
 namespace testing_utilities {
-template<typename T1Matcher, typename T2Matcher>
-class ComponentwiseMatcher2;
+FORWARD_DECLARE_FROM(componentwise,
+                     TEMPLATE(typename T1Matcher, typename T2Matcher) class,
+                     ComponentwiseMatcher2);
 }  // namespace testing_utilities
 
 namespace geometry {

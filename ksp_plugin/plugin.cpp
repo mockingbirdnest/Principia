@@ -621,7 +621,7 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
 
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
-    std::vector<IdAndOwnedPart> parts) {
+    std::vector<IdAndOwnedPart>&& parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
@@ -844,12 +844,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         DefaultEphemerisParameters());
     ReadCelestialsFromMessages(*ephemeris,
                                message.pre_bourbaki_celestial(),
-                               &celestials);
+                               celestials);
   } else {
     ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-    ReadCelestialsFromMessages(*ephemeris,
-                               message.celestial(),
-                               &celestials);
+    ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
   }
 
   GUIDToOwnedVessel vessels;
@@ -929,7 +927,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 }
 
 std::unique_ptr<Ephemeris<Barycentric>> Plugin::NewEphemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
     std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
     Instant const& initial_time,
     Length const& fitting_tolerance,
@@ -1121,13 +1119,13 @@ template<typename T>
 void Plugin::ReadCelestialsFromMessages(
   Ephemeris<Barycentric> const& ephemeris,
   google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-  not_null<IndexToOwnedCelestial*> const celestials) {
+  IndexToOwnedCelestial& celestials) {
   auto const& bodies = ephemeris.bodies();
   auto bodies_it = bodies.begin();
   for (auto const& celestial_message : celestial_messages) {
-    auto const inserted =
-      celestials->emplace(celestial_message.index(),
-                          make_not_null_unique<Celestial>(*bodies_it));
+    auto const inserted = celestials.emplace(
+        celestial_message.index(),
+        make_not_null_unique<Celestial>(*bodies_it));
     CHECK(inserted.second);
     inserted.first->second->set_trajectory(ephemeris.trajectory(*bodies_it));
     ++bodies_it;
@@ -1136,9 +1134,9 @@ void Plugin::ReadCelestialsFromMessages(
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =
-        FindOrDie(*celestials, celestial_message.index());
+        FindOrDie(celestials, celestial_message.index());
       not_null<Celestial const*> const parent =
-        FindOrDie(*celestials, celestial_message.parent_index()).get();
+        FindOrDie(celestials, celestial_message.parent_index()).get();
       celestial->set_parent(parent);
     }
   }

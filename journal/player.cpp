@@ -59,7 +59,7 @@ serialization::Method const& Player::last_method_out_return() const {
 }
 
 std::unique_ptr<serialization::Method> Player::Read() {
-  std::string const line = GetLine(&stream_);
+  std::string const line = GetLine(stream_);
   if (line.empty()) {
     return nullptr;
   }

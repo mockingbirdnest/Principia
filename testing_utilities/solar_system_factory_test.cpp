@@ -24,6 +24,7 @@ using physics::Body;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
+using physics::SolarSystem;
 using quantities::SpecificAngularMomentum;
 using quantities::SpecificEnergy;
 using quantities::GravitationalParameter;

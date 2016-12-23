@@ -40,11 +40,10 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_CONST_METHOD0(number_of_segments, int());
 
-  MOCK_CONST_METHOD3(
-      GetSegment,
-      void(int index,
-           not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
-           not_null<DiscreteTrajectory<Barycentric>::Iterator*> end));
+  MOCK_CONST_METHOD3(GetSegment,
+                     void(int index,
+                          DiscreteTrajectory<Barycentric>::Iterator& begin,
+                          DiscreteTrajectory<Barycentric>::Iterator& end));
 };
 
 }  // namespace internal_flight_plan

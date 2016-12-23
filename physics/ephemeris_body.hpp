@@ -218,9 +218,9 @@ Ephemeris<Frame>::FixedStepParameters::ReadFromMessage(
       Time::ReadFromMessage(message.step()));
 }
 
-template <typename Frame>
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     Length const& fitting_tolerance,
@@ -715,7 +715,7 @@ void Ephemeris<Frame>::ComputeApsides(
   }
 }
 
-template <typename Frame>
+template<typename Frame>
 void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       not_null<MassiveBody const*> const body2,
                                       DiscreteTrajectory<Frame>& apoapsides1,

@@ -11,6 +11,8 @@
 #include "base/not_constructible.hpp"
 
 namespace principia {
+namespace mathematica {
+namespace internal_mathematica {
 
 using base::not_constructible;
 using base::not_null;
@@ -18,29 +20,21 @@ using quantities::DebugString;
 using quantities::IsFinite;
 using quantities::SIUnit;
 
-namespace mathematica {
-
-namespace {
-
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
 struct TupleHelper : not_constructible {
-  static void ToMathematicaStrings(
-      std::tuple<Types...> const& tuple,
-      not_null<std::vector<std::string>*> const expressions) {
+  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
+                                   std::vector<std::string>& expressions) {
     TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
-    expressions->push_back(ToMathematica(std::get<index - 1>(tuple)));
+    expressions.push_back(ToMathematica(std::get<index - 1>(tuple)));
   }
 };
 
 template<typename... Types>
 struct TupleHelper<0, Types...> : not_constructible {
-  static void ToMathematicaStrings(
-      std::tuple<Types...> const& tuple,
-      not_null<std::vector<std::string>*> const expressions) {}
+  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
+                                   std::vector<std::string>& expressions) {}
 };
-
-}  // namespace
 
 inline std::string Apply(
     std::string const& function,
@@ -66,13 +60,13 @@ std::string Assign(std::string const& name, T const& right) {
 }
 
 template<typename T, typename U>
-std::string PlottableDataset(std::vector<T> x, std::vector<U> y) {
+std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y) {
   std::vector<std::string> const xy = {ToMathematica(x), ToMathematica(y)};
   return Apply("Transpose", {ToMathematica(xy)});
 }
 
 template<typename T>
-std::string ToMathematica(std::vector<T> list) {
+std::string ToMathematica(std::vector<T> const& list) {
   std::vector<std::string> expressions;
   expressions.reserve(list.size());
   for (auto const& expression : list) {
@@ -148,5 +142,6 @@ inline std::string Escape(std::string const& str) {
   return result;
 }
 
+}  // namespace internal_mathematica
 }  // namespace mathematica
 }  // namespace principia

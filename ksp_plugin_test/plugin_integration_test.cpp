@@ -25,6 +25,7 @@ using geometry::Identity;
 using geometry::Permutation;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using physics::KeplerianElements;
+using physics::SolarSystem;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::ArcTan;

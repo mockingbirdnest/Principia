@@ -98,12 +98,10 @@ class EphemerisTest : public testing::Test {
   }
 
   void SetUpEarthMoonSystem(
-      not_null<std::vector<not_null<std::unique_ptr<MassiveBody const>>>*> const
-          bodies,
-      not_null<std::vector<DegreesOfFreedom<ICRFJ2000Equator>>*> const
-          initial_state,
-      not_null<Position<ICRFJ2000Equator>*> const centre_of_mass,
-      not_null<Time*> const period) {
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>>& bodies,
+      std::vector<DegreesOfFreedom<ICRFJ2000Equator>>& initial_state,
+      Position<ICRFJ2000Equator>& centre_of_mass,
+      Time& period) {
     // Make the bodies non-oblate so that the system can be computed explicitly.
     serialization::GravityModel::Body earth_gravity_model =
         solar_system_.gravity_model_message("Earth");
@@ -130,25 +128,25 @@ class EphemerisTest : public testing::Test {
                                         4e8 * Metre,
                                         0 * Metre});
     Length const semi_major_axis = (q1 - q2).Norm();
-    *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
-                               (earth->gravitational_parameter() +
-                                moon->gravitational_parameter()));
-    *centre_of_mass =
+    period = 2 * π *
+             Sqrt(Pow<3>(semi_major_axis) / (earth->gravitational_parameter() +
+                                             moon->gravitational_parameter()));
+    centre_of_mass =
         Barycentre<Position<ICRFJ2000Equator>, Mass>(
             {q1, q2}, {earth->mass(), moon->mass()});
     Velocity<ICRFJ2000Equator> const v1(
-        {-2 * π * (q1 - *centre_of_mass).Norm() / *period,
+        {-2 * π * (q1 - centre_of_mass).Norm() / period,
          0 * SIUnit<Speed>(),
          0 * SIUnit<Speed>()});
     Velocity<ICRFJ2000Equator> const v2(
-        {2 * π * (q2 - *centre_of_mass).Norm() / *period,
+        {2 * π * (q2 - centre_of_mass).Norm() / period,
          0 * SIUnit<Speed>(),
          0 * SIUnit<Speed>()});
 
-    bodies->push_back(std::move(earth));
-    bodies->push_back(std::move(moon));
-    initial_state->emplace_back(q1, v1);
-    initial_state->emplace_back(q2, v2);
+    bodies.push_back(std::move(earth));
+    bodies.push_back(std::move(moon));
+    initial_state.emplace_back(q1, v1);
+    initial_state.emplace_back(q2, v2);
   }
 
   SolarSystem<ICRFJ2000Equator> solar_system_;
@@ -160,7 +158,7 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   Ephemeris<ICRFJ2000Equator>
       ephemeris(
@@ -201,7 +199,7 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   Position<ICRFJ2000Equator> const earth_position =
       initial_state[0].position();
@@ -254,7 +252,7 @@ TEST_F(EphemerisTest, EarthMoon) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
@@ -308,7 +306,7 @@ TEST_F(EphemerisTest, ForgetBefore) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
@@ -347,7 +345,7 @@ TEST_F(EphemerisTest, Moon) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   bodies.erase(bodies.begin());
   initial_state.erase(initial_state.begin());
@@ -406,7 +404,7 @@ TEST_F(EphemerisTest, EarthProbe) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   bodies.erase(bodies.begin() + 1);
   initial_state.erase(initial_state.begin() + 1);
@@ -529,7 +527,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   bodies.erase(bodies.begin() + 1);
   initial_state.erase(initial_state.begin() + 1);
@@ -664,7 +662,7 @@ TEST_F(EphemerisTest, Serialization) {
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
   Time period;
-  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();

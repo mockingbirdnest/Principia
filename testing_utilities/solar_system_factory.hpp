@@ -19,13 +19,13 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_solar_system_factory {
 
 using astronomy::ICRFJ2000Equator;
 using base::not_constructible;
 using base::not_null;
 using physics::SolarSystem;
-
-namespace testing_utilities {
 
 // A helper class for constructing physics::SolarSystem objects for testing.
 // TODO(egg): should this be a namespace instead?  It contains only static
@@ -98,6 +98,10 @@ class SolarSystemFactory : not_constructible {
   // The name of the body with the given |index|.
   static std::string name(int index);
 };
+
+}  // namespace internal_solar_system_factory
+
+using internal_solar_system_factory::SolarSystemFactory;
 
 }  // namespace testing_utilities
 }  // namespace principia
