@@ -388,7 +388,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
   field_cxx_deserializer_fn_[descriptor] =
       [pointer_to](std::string const& expr) {
-        return "DeserializePointer<" + pointer_to + "*>(*pointer_map, " + expr +
+        return "DeserializePointer<" + pointer_to + "*>(pointer_map, " + expr +
                ")";
       };
   field_cxx_serializer_fn_[descriptor] =
@@ -983,18 +983,15 @@ void JournalProtoProcessor::ProcessMethodExtension(
         "not_null<Message*> const message);\n";
   }
   cxx_toplevel_type_declaration_[descriptor] +=
-      "  static void Run("
-      "Message const& message,\n"
-      "                  not_null<"
-      "Player::PointerMap*> const pointer_map);"
-      "\n";
+      "  static void Run(Message const& message,\n"
+      "                  Player::PointerMap& pointer_map);\n";
   cxx_toplevel_type_declaration_[descriptor] += "};\n\n";
 
   // The Run method must come after the Fill methods for comparison with manual
   // code.
   cxx_functions_implementation_[descriptor] +=
       "void " + name + "::Run(Message const& message, "
-      "not_null<Player::PointerMap*> const pointer_map) {\n" +
+      "Player::PointerMap& pointer_map) {\n" +
       cxx_run_prolog;
   if (has_return) {
     cxx_functions_implementation_[descriptor] += "  auto const result = ";

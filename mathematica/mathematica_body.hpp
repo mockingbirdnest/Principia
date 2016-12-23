@@ -23,19 +23,17 @@ using quantities::SIUnit;
 // A helper struct to scan the elements of a tuple and stringify them.
 template<int index, typename... Types>
 struct TupleHelper : not_constructible {
-  static void ToMathematicaStrings(
-      std::tuple<Types...> const& tuple,
-      not_null<std::vector<std::string>*> const expressions) {
+  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
+                                   std::vector<std::string>& expressions) {
     TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
-    expressions->push_back(ToMathematica(std::get<index - 1>(tuple)));
+    expressions.push_back(ToMathematica(std::get<index - 1>(tuple)));
   }
 };
 
 template<typename... Types>
 struct TupleHelper<0, Types...> : not_constructible {
-  static void ToMathematicaStrings(
-      std::tuple<Types...> const& tuple,
-      not_null<std::vector<std::string>*> const expressions) {}
+  static void ToMathematicaStrings(std::tuple<Types...> const& tuple,
+                                   std::vector<std::string>& expressions) {}
 };
 
 inline std::string Apply(

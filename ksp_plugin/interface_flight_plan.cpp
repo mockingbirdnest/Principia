@@ -276,7 +276,7 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   CHECK_NOTNULL(plugin);
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
-  GetFlightPlan(*plugin, vessel_guid).GetAllSegments(&begin, &end);
+  GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
   Position<World> q_sun =
       World::origin +
       Displacement<World>(FromXYZ(sun_world_position) * Metre);
@@ -308,7 +308,7 @@ Iterator* principia__FlightPlanRenderedSegment(
   CHECK_NOTNULL(plugin);
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
-  GetFlightPlan(*plugin, vessel_guid).GetSegment(index, &begin, &end);
+  GetFlightPlan(*plugin, vessel_guid).GetSegment(index, begin, end);
   auto rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedTrajectoryFromIterators(
           begin, end,

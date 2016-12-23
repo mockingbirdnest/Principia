@@ -396,7 +396,7 @@ class Plugin {
   static void ReadCelestialsFromMessages(
       Ephemeris<Barycentric> const& ephemeris,
       google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-      not_null<IndexToOwnedCelestial*> celestials);
+      IndexToOwnedCelestial& celestials);
 
   // Computes a fingerprint for the parameters passed to
   // |InsertCelestialJacobiKeplerian|.

@@ -185,7 +185,7 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
       for (int i = 0; i < flight_plan.number_of_segments(); ++i) {
         DiscreteTrajectory<Barycentric>::Iterator begin;
         DiscreteTrajectory<Barycentric>::Iterator end;
-        flight_plan.GetSegment(i, &begin, &end);
+        flight_plan.GetSegment(i, begin, end);
         if (last_time) {
           CHECK_LE(*last_time, begin.time());
         }
