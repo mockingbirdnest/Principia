@@ -284,8 +284,7 @@ class PluginTest : public testing::Test {
   // Inserts a vessel with the given |guid| and makes it a satellite of Earth
   // with relative position |satellite_initial_displacement_| and velocity
   // |satellite_initial_velocity_|.  The vessel must not already be present.
-  // Increments the counter |number_of_new_vessels|.  |number_of_new_vessels|
-  // must not be null.
+  // Increments the counter |number_of_new_vessels|.
   void InsertVessel(GUID const& guid,
                     std::size_t& number_of_new_vessels,
                     Instant const& time) {

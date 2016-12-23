@@ -131,8 +131,9 @@ class EphemerisTest : public testing::Test {
     period = 2 * π *
              Sqrt(Pow<3>(semi_major_axis) / (earth->gravitational_parameter() +
                                              moon->gravitational_parameter()));
-    centre_of_mass = Barycentre<Position<ICRFJ2000Equator>, Mass>(
-        {q1, q2}, {earth->mass(), moon->mass()});
+    centre_of_mass =
+        Barycentre<Position<ICRFJ2000Equator>, Mass>(
+            {q1, q2}, {earth->mass(), moon->mass()});
     Velocity<ICRFJ2000Equator> const v1(
         {-2 * π * (q1 - centre_of_mass).Norm() / period,
          0 * SIUnit<Speed>(),
