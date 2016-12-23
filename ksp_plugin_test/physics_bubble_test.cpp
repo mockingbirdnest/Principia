@@ -420,6 +420,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   bubble_.VelocityCorrection(rotation_, celestial_);
 
   CreateParts();
+  parts.clear();
   parts.emplace_back(11, std::move(p1a_));
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
@@ -462,6 +463,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
 
   // For the second step the vessel only has one part.
   CreateParts();
+  parts.clear();
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_FALSE(bubble_.empty());
@@ -523,6 +525,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 
   // For the second step the vessel has two parts.
   CreateParts();
+  parts.clear();
   parts.emplace_back(11, std::move(p1a_));
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
@@ -580,6 +583,7 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   bubble_.VelocityCorrection(rotation_, celestial_);
 
   CreateParts();
+  parts.clear();
   parts.emplace_back(11, std::move(p1a_));
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
@@ -607,6 +611,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   parts.emplace_back(11, std::move(p1a_));
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  parts.clear();
   parts.emplace_back(21, std::move(p2a_));
   parts.emplace_back(22, std::move(p2b_));
   parts.emplace_back(23, std::move(p2c_));
@@ -632,9 +637,11 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
 
   // The second step.
   CreateParts();
+  parts.clear();
   parts.emplace_back(11, std::move(p1a_));
   parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  parts.clear();
   parts.emplace_back(21, std::move(p2a_));
   parts.emplace_back(22, std::move(p2b_));
   parts.emplace_back(23, std::move(p2c_));
