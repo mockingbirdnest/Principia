@@ -157,7 +157,7 @@ class TestablePlugin : public Plugin {
   // We override this part of initialization in order to create a
   // |MockEphemeris| rather than an |Ephemeris|.
   std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
       std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
       Instant const& initial_time,
       Length const& fitting_tolerance,

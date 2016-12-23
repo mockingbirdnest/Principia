@@ -263,7 +263,7 @@ class ResonanceTest : public ::testing::Test {
   }
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
-      std::vector<DegreesOfFreedom<KSP>> states) {
+      std::vector<DegreesOfFreedom<KSP>> const& states) {
     return make_not_null_unique<Ephemeris<KSP>>(
                std::move(owned_bodies_),
                states,

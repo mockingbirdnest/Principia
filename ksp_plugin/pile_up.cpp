@@ -7,7 +7,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
-PileUp::PileUp(std::list<not_null<Vessel*>> vessels)
+PileUp::PileUp(std::list<not_null<Vessel*>>&& vessels)
     : vessels_(std::move(vessels)) {}
 
 std::list<not_null<Vessel*>> const& PileUp::vessels() const {

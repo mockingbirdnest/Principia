@@ -621,7 +621,7 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
 
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
-    std::vector<IdAndOwnedPart> parts) {
+    std::vector<IdAndOwnedPart>&& parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
@@ -929,7 +929,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 }
 
 std::unique_ptr<Ephemeris<Barycentric>> Plugin::NewEphemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
     std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
     Instant const& initial_time,
     Length const& fitting_tolerance,

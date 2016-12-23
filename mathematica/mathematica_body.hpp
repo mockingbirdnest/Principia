@@ -62,13 +62,13 @@ std::string Assign(std::string const& name, T const& right) {
 }
 
 template<typename T, typename U>
-std::string PlottableDataset(std::vector<T> x, std::vector<U> y) {
+std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y) {
   std::vector<std::string> const xy = {ToMathematica(x), ToMathematica(y)};
   return Apply("Transpose", {ToMathematica(xy)});
 }
 
 template<typename T>
-std::string ToMathematica(std::vector<T> list) {
+std::string ToMathematica(std::vector<T> const& list) {
   std::vector<std::string> expressions;
   expressions.reserve(list.size());
   for (auto const& expression : list) {

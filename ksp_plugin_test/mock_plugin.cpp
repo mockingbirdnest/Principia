@@ -78,7 +78,7 @@ void MockPlugin::SetPlottingFrame(
 
 void MockPlugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
-    std::vector<IdAndOwnedPart> parts) {
+    std::vector<IdAndOwnedPart>&& parts) {
   AddVesselToNextPhysicsBubbleConstRef(vessel_guid, parts);
 }
 

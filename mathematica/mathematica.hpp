@@ -29,10 +29,10 @@ std::string Assign(std::string const& name, T const& right);
 std::string Export(std::string const& file, std::string const& expression);
 
 template<typename T, typename U>
-std::string PlottableDataset(std::vector<T> x, std::vector<U> y);
+std::string PlottableDataset(std::vector<T> const& x, std::vector<U> const& y);
 
 template<typename T>
-std::string ToMathematica(std::vector<T> list);
+std::string ToMathematica(std::vector<T> const& list);
 
 std::string ToMathematica(double const& real);
 
