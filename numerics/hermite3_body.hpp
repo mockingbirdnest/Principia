@@ -36,7 +36,7 @@ Hermite3<Argument, Value>::Hermite3(
                 one_over_Δargument_squared;
 }
 
-template <typename Argument, typename Value>
+template<typename Argument, typename Value>
 Value Hermite3<Argument, Value>::Evaluate(Argument const& argument) const {
   Difference<Argument> const Δargument = argument - arguments_.first;
   return (((a3_ * Δargument + a2_) * Δargument) + a1_) * Δargument + a0_;

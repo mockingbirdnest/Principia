@@ -50,10 +50,10 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Identity() {
                    LinearMap<FromFrame, ToFrame>::Identity());
 }
 
-template <typename FromFrame,
-          typename ToFrame,
-          typename Scalar,
-          template <typename, typename> class LinearMap>
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
 LinearMap<FromFrame, ToFrame> const&
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::linear_map() const {
   return linear_map_;

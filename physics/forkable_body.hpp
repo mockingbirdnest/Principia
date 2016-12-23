@@ -290,7 +290,7 @@ not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
   return child_forkable.get();
 }
 
-template <typename Tr4jectory, typename It3rator>
+template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
     not_null<std::unique_ptr<Tr4jectory>> fork) {
   CHECK(fork->is_root());
@@ -321,7 +321,7 @@ void Forkable<Tr4jectory, It3rator>::AttachForkToCopiedBegin(
   child_it->second->position_in_parent_timeline_ = --timeline_end();
 }
 
-template <typename Tr4jectory, typename It3rator>
+template<typename Tr4jectory, typename It3rator>
 not_null<std::unique_ptr<Tr4jectory>>
 Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
   CHECK(!is_root());

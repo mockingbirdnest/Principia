@@ -146,7 +146,7 @@ class StatusOr final {
   Status status_;
   std::experimental::optional<T> value_;
 
-  template <typename U>
+  template<typename U>
   friend class StatusOr;
 };
 

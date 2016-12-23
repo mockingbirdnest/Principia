@@ -61,7 +61,7 @@ using quantities::Length;
 using quantities::Speed;
 using internal_forkable::DiscreteTrajectoryIterator;
 
-template <typename Frame>
+template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
                                            DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
