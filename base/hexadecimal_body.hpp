@@ -26,7 +26,7 @@ static char const byte_to_hexadecimal_digits[] =
 #define SKIP_26 SKIP_7, SKIP_7, SKIP_7, 0, 0, 0, 0, 0
 #define SKIP_48 SKIP_26, SKIP_7, SKIP_7, SKIP_7, 0
 
-static uint8_t const hexadecimal_digits_to_nibble[256] = {
+static std::uint8_t const hexadecimal_digits_to_nibble[256] = {
     SKIP_48, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
     SKIP_7, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf',
     SKIP_26, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf'};
@@ -72,7 +72,7 @@ void HexadecimalDecode(Array<std::uint8_t const> input,
   CHECK(output.data <= &input.data[1] ||
         &input.data[input.size] <= output.data) << "bad overlap";
   CHECK_GE(output.size, input.size / 2) << "output too small";
-  for (uint8_t const* const input_end = input.data + input.size;
+  for (std::uint8_t const* const input_end = input.data + input.size;
        input.data != input_end;
        input.data += 2, ++output.data) {
     *output.data = (hexadecimal_digits_to_nibble[*input.data] << 4) |

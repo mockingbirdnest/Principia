@@ -93,10 +93,10 @@ int const copies_of_π = 10000;
 
 void HexEncode(benchmark::State& state,
                bool& correct,
-               std::vector<uint8_t> const& input_bytes,
-               std::vector<uint8_t> const& expected_digits) {
+               std::vector<std::uint8_t> const& input_bytes,
+               std::vector<std::uint8_t> const& expected_digits) {
   state.PauseTiming();
-  std::vector<uint8_t> digits(input_bytes.size() << 1);
+  std::vector<std::uint8_t> digits(input_bytes.size() << 1);
   state.ResumeTiming();
   HexadecimalEncode({input_bytes.data(), input_bytes.size()},
                     {digits.data(), digits.size()});
@@ -105,29 +105,29 @@ void HexEncode(benchmark::State& state,
   state.ResumeTiming();
 }
 
-std::vector<uint8_t> PiBytes() {
+std::vector<std::uint8_t> PiBytes() {
   std::string const pi_bytes(π_500_bytes, 500);
   std::string bytes_str;
   bytes_str.reserve(500 * copies_of_π);
   for (int i = 0; i < copies_of_π; ++i) {
     bytes_str += pi_bytes;
   }
-  return std::vector<uint8_t>(bytes_str.begin(), bytes_str.end());
+  return std::vector<std::uint8_t>(bytes_str.begin(), bytes_str.end());
 }
 
-std::vector<uint8_t> PiDigits() {
+std::vector<std::uint8_t> PiDigits() {
   std::string digits_str;
   digits_str.reserve(1000 * copies_of_π);
   for (int i = 0; i < copies_of_π; ++i) {
     digits_str += π_1000_hexadecimal_digits;
   }
-  return std::vector<uint8_t>(digits_str.begin(), digits_str.end());
+  return std::vector<std::uint8_t>(digits_str.begin(), digits_str.end());
 }
 
 void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   bool correct = true;
-  std::vector<uint8_t> const input_bytes = PiBytes();
-  std::vector<uint8_t> const expected_digits = PiDigits();
+  std::vector<std::uint8_t> const input_bytes = PiBytes();
+  std::vector<std::uint8_t> const expected_digits = PiDigits();
   while (state.KeepRunning()) {
     HexEncode(state, correct, input_bytes, expected_digits);
   }
@@ -140,10 +140,10 @@ BENCHMARK(BM_EncodePi);
 
 void HexDecode(benchmark::State& state,
                bool& correct,
-               std::vector<uint8_t> const& input_digits,
-               std::vector<uint8_t> const& expected_bytes) {
+               std::vector<std::uint8_t> const& input_digits,
+               std::vector<std::uint8_t> const& expected_bytes) {
   state.PauseTiming();
-  std::vector<uint8_t> bytes(input_digits.size() / 2);
+  std::vector<std::uint8_t> bytes(input_digits.size() / 2);
   state.ResumeTiming();
   HexadecimalDecode({input_digits.data(), input_digits.size()},
                     {bytes.data(), bytes.size()});
@@ -154,8 +154,8 @@ void HexDecode(benchmark::State& state,
 
 void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   bool correct = true;
-  std::vector<uint8_t> input_digits = PiDigits();
-  std::vector<uint8_t> expected_bytes = PiBytes();
+  std::vector<std::uint8_t> input_digits = PiDigits();
+  std::vector<std::uint8_t> expected_bytes = PiBytes();
   while (state.KeepRunning()) {
     HexDecode(state, correct, input_digits, expected_bytes);
   }

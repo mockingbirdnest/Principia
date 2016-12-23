@@ -267,10 +267,10 @@ class Ephemeris {
            typename MassiveBodyConstPtr>
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
-      size_t const b1,
+      std::size_t const b1,
       std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
-      size_t const b2_begin,
-      size_t const b2_end,
+      std::size_t const b2_begin,
+      std::size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations);
 
@@ -282,7 +282,7 @@ class Ephemeris {
   void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
-      size_t const b1,
+      std::size_t const b1,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations,
       typename ContinuousTrajectory<Frame>::Hint& hint1) const;

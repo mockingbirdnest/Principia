@@ -288,7 +288,11 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 void principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
   LOG(INFO) << __FUNCTION__;
-  TakeOwnershipArray(reinterpret_cast<uint8_t const**>(native_string));
+  // This is a bit convoluted, but a |std::uint8_t const*| and a |char const*|
+  // cannot be aliased.
+  auto unsigned_string = reinterpret_cast<std::uint8_t const*>(*native_string);
+  TakeOwnershipArray(&unsigned_string);
+  *native_string = reinterpret_cast<char const*>(unsigned_string);
   return m.Return();
 }
 
@@ -325,13 +329,13 @@ void principia__DeserializePlugin(char const* const serialization,
   }
 
   // Decode the hexadecimal representation.
-  uint8_t const* const hexadecimal =
-      reinterpret_cast<uint8_t const*>(serialization);
+  std::uint8_t const* const hexadecimal =
+      reinterpret_cast<std::uint8_t const*>(serialization);
   int const hexadecimal_size = serialization_size;
   int const byte_size = hexadecimal_size >> 1;
   // Ownership of the following pointer is transfered to the deserializer using
   // the callback to |Push|.
-  std::uint8_t* bytes = new uint8_t[byte_size];
+  std::uint8_t* bytes = new std::uint8_t[byte_size];
   HexadecimalDecode({hexadecimal, hexadecimal_size}, {bytes, byte_size});
 
   // Push the data, taking ownership of it.

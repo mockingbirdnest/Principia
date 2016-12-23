@@ -18,10 +18,14 @@ namespace internal_quantities {
 using base::not_constructible;
 using base::not_null;
 
-template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
-         int64_t CurrentExponent, int64_t TemperatureExponent,
-         int64_t AmountExponent, int64_t LuminousIntensityExponent,
-         int64_t AngleExponent>
+template<std::int64_t LengthExponent,
+         std::int64_t MassExponent,
+         std::int64_t TimeExponent,
+         std::int64_t CurrentExponent,
+         std::int64_t TemperatureExponent,
+         std::int64_t AmountExponent,
+         std::int64_t LuminousIntensityExponent,
+         std::int64_t AngleExponent>
 struct Dimensions;
 template<typename D> class Quantity;
 

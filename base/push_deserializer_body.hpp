@@ -136,7 +136,7 @@ inline void PushDeserializer::Push(Bytes const bytes,
       is_last = current.size <= chunk_size_;
       std::unique_lock<std::mutex> l(lock_);
       queue_has_room_.wait(l, [this]() {
-        return queue_.size() < static_cast<size_t>(number_of_chunks_);
+        return queue_.size() < static_cast<std::size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data,
                      std::min(current.size,

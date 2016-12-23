@@ -11,10 +11,14 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
-template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
-         int64_t CurrentExponent, int64_t TemperatureExponent,
-         int64_t AmountExponent, int64_t LuminousIntensityExponent,
-         int64_t AngleExponent>
+template<std::int64_t LengthExponent,
+         std::int64_t MassExponent,
+         std::int64_t TimeExponent,
+         std::int64_t CurrentExponent,
+         std::int64_t TemperatureExponent,
+         std::int64_t AmountExponent,
+         std::int64_t LuminousIntensityExponent,
+         std::int64_t AngleExponent>
 struct Dimensions : not_constructible {
   enum {
     Length            = LengthExponent,
@@ -57,7 +61,7 @@ struct Dimensions : not_constructible {
                 AngleExponent <= max_exponent,
                 "Invalid angle exponent");
 
-  static int64_t constexpr representation =
+  static std::int64_t constexpr representation =
       (LengthExponent & exponent_mask)                                 |
       (MassExponent & exponent_mask)              << 1 * exponent_bits |
       (TimeExponent & exponent_mask)              << 2 * exponent_bits |

@@ -83,7 +83,7 @@ class PushDeserializerTest : public ::testing::Test {
 
 
   static void Stomp(Bytes const& bytes) {
-    std::memset(bytes.data, 0xCD, static_cast<size_t>(bytes.size));
+    std::memset(bytes.data, 0xCD, static_cast<std::size_t>(bytes.size));
   }
 
   // Returns the first string in the list.  Note that the very first string is
@@ -192,7 +192,7 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
         std::move(read_trajectory), PushDeserializerTest::CheckSerialization);
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
+      std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
       push_deserializer_->Push(Bytes(data, bytes.size),
                                std::bind(&PushDeserializerTest::Stomp,
                                          Bytes(data, bytes.size)));

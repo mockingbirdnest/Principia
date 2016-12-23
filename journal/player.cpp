@@ -64,8 +64,8 @@ std::unique_ptr<serialization::Method> Player::Read() {
     return nullptr;
   }
 
-  uint8_t const* const hexadecimal =
-      reinterpret_cast<uint8_t const*>(line.c_str());
+  std::uint8_t const* const hexadecimal =
+      reinterpret_cast<std::uint8_t const*>(line.c_str());
   int const hexadecimal_size = strlen(line.c_str());
   UniqueBytes bytes(hexadecimal_size >> 1);
   HexadecimalDecode({hexadecimal, hexadecimal_size},
