@@ -10,15 +10,15 @@
 #include "google/protobuf/descriptor.h"
 
 namespace principia {
+namespace tools {
+namespace internal_journal_proto_processor {
 
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::FieldOptions;
 using ::google::protobuf::FileDescriptor;
 
-namespace tools {
-
-class JournalProtoProcessor {
+class JournalProtoProcessor final {
  public:
   void ProcessMessages();
 
@@ -266,6 +266,10 @@ class JournalProtoProcessor {
   // typedef.  The key is a descriptor for an In, Out or Return message.
   std::map<Descriptor const*, std::string> cxx_nested_type_declaration_;
 };
+
+}  // namespace internal_journal_proto_processor
+
+using internal_journal_proto_processor::JournalProtoProcessor;
 
 }  // namespace tools
 }  // namespace principia

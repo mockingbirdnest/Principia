@@ -5,19 +5,19 @@
 
 #include <string>
 
+#include "base/not_constructible.hpp"
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_componentwise {
 
+using base::not_constructible;
 using geometry::Point;
 using quantities::Quantity;
 using ::testing::Matcher;
-
-namespace testing_utilities {
-
-namespace {
 
 // In order to call |Describe...To| on the various matchers we need to convert
 // them to some |Matcher<T>|.  However, it is quite difficult to figure out
@@ -31,14 +31,12 @@ namespace {
 // matchers work.
 
 template<typename T>
-class MatcherParameterType {
- public:
+struct MatcherParameterType : not_constructible {
   using type = T;
 };
 
 template<typename T, template<typename> class U>
-class MatcherParameterType<U<T>> {
- public:
+struct MatcherParameterType<U<T>> : not_constructible {
   using type = typename MatcherParameterType<T>::type;
 };
 
@@ -46,27 +44,23 @@ class MatcherParameterType<U<T>> {
 // which one exactly, since |MatcherParameterType| is only used for describing
 // the matchers.  So we pick the simplest, |R3Element|.
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-class MatcherParameterType<
-          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> {
- public:
+struct MatcherParameterType<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
+    : not_constructible {
   using type =
       geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
 };
 
 // And now the cases that we *don't* want to peel away.  Yes, this smells a bit.
 template<typename T>
-class MatcherParameterType<Point<T>> {
- public:
+struct MatcherParameterType<Point<T>> : not_constructible {
   using type = Point<T>;
 };
 
 template<typename T>
-class MatcherParameterType<Quantity<T>> {
- public:
+struct MatcherParameterType<Quantity<T>> : not_constructible {
   using type = Quantity<T>;
 };
 
-}  // namespace
 template<typename T1Matcher, typename T2Matcher>
 testing::PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
 Componentwise(T1Matcher const& t1_matcher,
@@ -238,5 +232,6 @@ void ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
       z_matcher_).DescribeNegationTo(out);
 }
 
+}  // namespace internal_componentwise
 }  // namespace testing_utilities
 }  // namespace principia

@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/interface.hpp"
@@ -8,6 +9,9 @@
 
 namespace principia {
 
+// This file is not included from other headers, only translation units, so we
+// allow pollution of the principia namespace.
+using base::not_constructible;
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;

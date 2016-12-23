@@ -14,6 +14,7 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace internal_almost_equals {
 
 template<typename T>
 class AlmostEqualsMatcher;
@@ -36,12 +37,11 @@ testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     std::int64_t max_ulps);
 
 template<typename T>
-class AlmostEqualsMatcher{
+class AlmostEqualsMatcher final {
  public:
   explicit AlmostEqualsMatcher(T const& expected,
                                std::int64_t min_ulps,
                                std::int64_t max_ulps);
-  ~AlmostEqualsMatcher() = default;
 
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
@@ -76,6 +76,10 @@ class AlmostEqualsMatcher{
   std::int64_t const min_ulps_;
   std::int64_t const max_ulps_;
 };
+
+}  // namespace internal_almost_equals
+
+using internal_almost_equals::AlmostEquals;
 
 }  // namespace testing_utilities
 }  // namespace principia

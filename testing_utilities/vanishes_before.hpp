@@ -11,6 +11,7 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace internal_vanishes_before {
 
 template<typename T>
 class VanishesBeforeMatcher;
@@ -40,12 +41,11 @@ testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     std::int64_t max_ulps);
 
 template<typename T>
-class VanishesBeforeMatcher {
+class VanishesBeforeMatcher final {
  public:
   explicit VanishesBeforeMatcher(T const& reference,
                                  std::int64_t min_ulps,
                                  std::int64_t max_ulps);
-  ~VanishesBeforeMatcher() = default;
 
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
@@ -61,6 +61,10 @@ class VanishesBeforeMatcher {
   std::int64_t const min_ulps_;
   std::int64_t const max_ulps_;
 };
+
+}  // namespace internal_vanishes_before
+
+using internal_vanishes_before::VanishesBefore;
 
 }  // namespace testing_utilities
 }  // namespace principia

@@ -72,7 +72,8 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
                 "requested |composition_method| inconsistent with the "
                 "properties of this integrator");
   // The |reinterpret_cast|s are ugly, but everything else I can think of is a
-  // rabbit hole of metaprogramming.
+  // rabbit hole of metaprogramming.  They are not UB: the option that will be
+  // picked has the right type.
   std::unique_ptr<SRKN>& method =
       composition_method == BA
           ? reinterpret_cast<std::unique_ptr<SRKN>&>(ba_srkn_)

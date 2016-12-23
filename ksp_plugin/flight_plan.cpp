@@ -191,20 +191,20 @@ int FlightPlan::number_of_segments() const {
 
 void FlightPlan::GetSegment(
     int const index,
-    not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
-    not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
+    DiscreteTrajectory<Barycentric>::Iterator& begin,
+    DiscreteTrajectory<Barycentric>::Iterator& end) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  *begin = segments_[index]->Fork();
-  *end = segments_[index]->End();
+  begin = segments_[index]->Fork();
+  end = segments_[index]->End();
 }
 
 void FlightPlan::GetAllSegments(
-    not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
-    not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const {
-  *begin = segments_.back()->Find(segments_.front()->Fork().time());
-  *end = segments_.back()->End();
-  CHECK(*begin != *end);
+    DiscreteTrajectory<Barycentric>::Iterator& begin,
+    DiscreteTrajectory<Barycentric>::Iterator& end) const {
+  begin = segments_.back()->Find(segments_.front()->Fork().time());
+  end = segments_.back()->End();
+  CHECK(begin != end);
 }
 
 void FlightPlan::WriteToMessage(

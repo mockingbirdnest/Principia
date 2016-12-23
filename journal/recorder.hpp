@@ -10,7 +10,9 @@
 namespace principia {
 namespace journal {
 
-class Recorder {
+FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
+
+class Recorder final {
  public:
   explicit Recorder(std::experimental::filesystem::path const& path);
   ~Recorder();

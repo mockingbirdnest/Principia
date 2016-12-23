@@ -27,7 +27,7 @@ UniqueArray<Element>::UniqueArray() : size(0) {}
 template<typename Element>
 template<typename Size, typename>
 UniqueArray<Element>::UniqueArray(Size const size)
-    : data(new std::uint8_t[static_cast<size_t>(size)]),
+    : data(new std::uint8_t[static_cast<std::size_t>(size)]),
       size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>
@@ -49,7 +49,7 @@ bool operator==(Array<Element> left, Array<Element> right) {
   }
   return std::memcmp(left.data,
                      right.data,
-                     static_cast<size_t>(right.size)) == 0;
+                     static_cast<std::size_t>(right.size)) == 0;
 }
 
 template<typename Element>

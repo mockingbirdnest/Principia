@@ -168,7 +168,7 @@ TEST_F(FlightPlanTest, Singular) {
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
-  flight_plan_->GetSegment(0, &begin, &end);
+  flight_plan_->GetSegment(0, begin, end);
   DiscreteTrajectory<Barycentric>::Iterator back = end;
   --back;
   EXPECT_THAT(AbsoluteError(singularity, back.time()), Lt(1e-4 * Second));
@@ -191,12 +191,12 @@ TEST_F(FlightPlanTest, Singular) {
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/1 * Metre / Second)));
-  flight_plan_->GetSegment(1, &begin, &end);
+  flight_plan_->GetSegment(1, begin, end);
   back = end;
   --back;
   EXPECT_THAT(back.time(), Lt(singularity));
   EXPECT_NE(begin, back);
-  flight_plan_->GetSegment(2, &begin, &end);
+  flight_plan_->GetSegment(2, begin, end);
   back = end;
   --back;
   EXPECT_EQ(begin, back);
@@ -213,13 +213,13 @@ TEST_F(FlightPlanTest, Singular) {
                           /*specific_impulse=*/1 * Newton * Second / Kilogram,
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/-1 * Metre / Second)));
-  flight_plan_->GetSegment(1, &begin, &end);
-  flight_plan_->GetSegment(1, &begin, &end);
+  flight_plan_->GetSegment(1, begin, end);
+  flight_plan_->GetSegment(1, begin, end);
   back = end;
   --back;
   EXPECT_THAT(back.time(), Eq(t0_ + 0.5 * Second + (1 - 1 / e) / 10 * Second));
   EXPECT_NE(begin, back);
-  flight_plan_->GetSegment(2, &begin, &end);
+  flight_plan_->GetSegment(2, begin, end);
   back = end;
   --back;
   EXPECT_THAT(back.time(), AllOf(Gt(singularity), Lt(t0_ + 2 * Second)));
@@ -253,7 +253,7 @@ TEST_F(FlightPlanTest, ForgetBefore) {
   for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
     DiscreteTrajectory<Barycentric>::Iterator begin;
     DiscreteTrajectory<Barycentric>::Iterator end;
-    flight_plan_->GetSegment(i, &begin, &end);
+    flight_plan_->GetSegment(i, begin, end);
     --end;
     begin_times.push_back(begin.time());
     last_times.push_back(end.time());
@@ -358,7 +358,7 @@ TEST_F(FlightPlanTest, Segments) {
   int last_times_size = times.size();
   Instant last_t = t0_ - 2 * π * Second;
   for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
-    flight_plan_->GetSegment(i, &begin, &end);
+    flight_plan_->GetSegment(i, begin, end);
     for (auto it = begin; it != end; ++it) {
       Instant const& t = it.time();
       EXPECT_LE(last_t, t);
@@ -377,7 +377,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   EXPECT_TRUE(flight_plan_->Append(MakeFirstBurn()));
   EXPECT_TRUE(flight_plan_->Append(MakeSecondBurn()));
   EXPECT_EQ(5, flight_plan_->number_of_segments());
-  flight_plan_->GetSegment(4, &begin, &end);
+  flight_plan_->GetSegment(4, begin, end);
   --end;
   EXPECT_EQ(t0_ + 42 * Second, end.time());
 
@@ -392,7 +392,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
 
   EXPECT_EQ(5, flight_plan_->number_of_segments());
-  flight_plan_->GetSegment(4, &begin, &end);
+  flight_plan_->GetSegment(4, begin, end);
   --end;
   EXPECT_EQ(t0_ + 42 * Second, end.time());
 
@@ -405,7 +405,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
 
   EXPECT_EQ(5, flight_plan_->number_of_segments());
-  flight_plan_->GetSegment(4, &begin, &end);
+  flight_plan_->GetSegment(4, begin, end);
   --end;
   EXPECT_EQ(t0_ + 42 * Second, end.time());
 }

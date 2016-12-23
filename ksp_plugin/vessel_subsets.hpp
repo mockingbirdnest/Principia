@@ -20,7 +20,7 @@ namespace base {
 // The |Collect| operation finalizes this, destroying existing |PileUp| which
 // are strict supersets of the new sets, and creating the new |PileUp|s.
 template<>
-class Subset<ksp_plugin::Vessel>::Properties {
+class Subset<ksp_plugin::Vessel>::Properties final {
   using PileUps = std::list<ksp_plugin::PileUp>;
 
  public:
@@ -57,7 +57,7 @@ class Subset<ksp_plugin::Vessel>::Properties {
 
   // Information about a subset of the set of |Vessel|s in a |PileUp|.  Keeps
   // track of the difference of cardinalities.
-  class SubsetOfExistingPileUp {
+  class SubsetOfExistingPileUp final {
    public:
     explicit SubsetOfExistingPileUp(IteratorOn<PileUps> pile_up);
 

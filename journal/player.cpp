@@ -59,13 +59,13 @@ serialization::Method const& Player::last_method_out_return() const {
 }
 
 std::unique_ptr<serialization::Method> Player::Read() {
-  std::string const line = GetLine(&stream_);
+  std::string const line = GetLine(stream_);
   if (line.empty()) {
     return nullptr;
   }
 
-  uint8_t const* const hexadecimal =
-      reinterpret_cast<uint8_t const*>(line.c_str());
+  std::uint8_t const* const hexadecimal =
+      reinterpret_cast<std::uint8_t const*>(line.c_str());
   int const hexadecimal_size = strlen(line.c_str());
   UniqueBytes bytes(hexadecimal_size >> 1);
   HexadecimalDecode({hexadecimal, hexadecimal_size},

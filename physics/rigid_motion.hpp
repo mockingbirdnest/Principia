@@ -38,13 +38,12 @@ using RigidTransformation =
 // In order to invert, the |RigidTransformation| is needed, and we need its
 // linear part anyway, so we store it (and we forward its action on positions).
 template<typename FromFrame, typename ToFrame>
-class RigidMotion {
+class RigidMotion final {
  public:
   RigidMotion(
       RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
       AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
       Velocity<FromFrame> const& velocity_of_to_frame_origin);
-  ~RigidMotion() = default;
 
   RigidTransformation<FromFrame, ToFrame> const& rigid_transformation() const;
   // Returns |rigid_transformation().linear_map()|.
@@ -81,7 +80,7 @@ RigidMotion<FromFrame, ToFrame> operator*(
 // A |RigidTransformation|, its first derivative (a |RigidMotion|), and its
 // second derivative (angular and linear accelerations).
 template<typename FromFrame, typename ToFrame>
-class AcceleratedRigidMotion {
+class AcceleratedRigidMotion final {
  public:
   AcceleratedRigidMotion(
       RigidMotion<FromFrame, ToFrame> const& rigid_motion,

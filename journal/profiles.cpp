@@ -18,23 +18,23 @@ namespace journal {
 namespace {
 
 template<typename T>
-void Insert(not_null<Player::PointerMap*> const pointer_map,
+void Insert(Player::PointerMap& pointer_map,
             std::uint64_t const address,
             T* const pointer) {
   void* const inserted_pointer = static_cast<void*>(
       const_cast<typename std::remove_cv<T>::type*>(pointer));
-  auto inserted = pointer_map->emplace(address, inserted_pointer);
+  auto inserted = pointer_map.emplace(address, inserted_pointer);
   if (!inserted.second) {
     CHECK_EQ(inserted.first->second, inserted_pointer);
   }
 }
 
-void Delete(not_null<Player::PointerMap*> const pointer_map,
+void Delete(Player::PointerMap& pointer_map,
             std::uint64_t const address) {
   if (reinterpret_cast<void*>(address) != nullptr) {
-    auto const it = pointer_map->find(address);
-    CHECK(it != pointer_map->end()) << address;
-    pointer_map->erase(it);
+    auto const it = pointer_map.find(address);
+    CHECK(it != pointer_map.end()) << address;
+    pointer_map.erase(it);
   }
 }
 

@@ -45,6 +45,7 @@ class FlightPlan {
              not_null<Ephemeris<Barycentric>*> ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters const&
                  adaptive_step_parameters);
+  virtual ~FlightPlan() = default;
 
   virtual Instant initial_time() const;
   virtual Instant actual_final_time() const;
@@ -92,13 +93,12 @@ class FlightPlan {
 
   // |index| must be in [0, number_of_segments()[.  Sets the iterators to denote
   // the given trajectory segment.
-  virtual void GetSegment(
-      int index,
-      not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
-      not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
+  virtual void GetSegment(int index,
+                          DiscreteTrajectory<Barycentric>::Iterator& begin,
+                          DiscreteTrajectory<Barycentric>::Iterator& end) const;
   virtual void GetAllSegments(
-      not_null<DiscreteTrajectory<Barycentric>::Iterator*> begin,
-      not_null<DiscreteTrajectory<Barycentric>::Iterator*> end) const;
+      DiscreteTrajectory<Barycentric>::Iterator& begin,
+      DiscreteTrajectory<Barycentric>::Iterator& end) const;
 
   void WriteToMessage(not_null<serialization::FlightPlan*> message) const;
 

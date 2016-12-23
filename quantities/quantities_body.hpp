@@ -11,11 +11,15 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
-template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
-         int64_t CurrentExponent, int64_t TemperatureExponent,
-         int64_t AmountExponent, int64_t LuminousIntensityExponent,
-         int64_t AngleExponent>
-struct Dimensions {
+template<std::int64_t LengthExponent,
+         std::int64_t MassExponent,
+         std::int64_t TimeExponent,
+         std::int64_t CurrentExponent,
+         std::int64_t TemperatureExponent,
+         std::int64_t AmountExponent,
+         std::int64_t LuminousIntensityExponent,
+         std::int64_t AngleExponent>
+struct Dimensions : not_constructible {
   enum {
     Length            = LengthExponent,
     Mass              = MassExponent,
@@ -57,7 +61,7 @@ struct Dimensions {
                 AngleExponent <= max_exponent,
                 "Invalid angle exponent");
 
-  static int64_t constexpr representation =
+  static std::int64_t constexpr representation =
       (LengthExponent & exponent_mask)                                 |
       (MassExponent & exponent_mask)              << 1 * exponent_bits |
       (TimeExponent & exponent_mask)              << 2 * exponent_bits |
@@ -69,11 +73,15 @@ struct Dimensions {
 };
 
 template<typename Q>
-struct Collapse { using Type = Q; };
+struct Collapse : not_constructible {
+  using Type = Q;
+};
 template<>
-struct Collapse<Quantity<NoDimensions>> { using Type = double; };
+struct Collapse<Quantity<NoDimensions>> : not_constructible {
+  using Type = double;
+};
 template<typename Left, typename Right>
-struct ProductGenerator {
+struct ProductGenerator : not_constructible {
   enum {
     Length            = Left::Dimensions::Length + Right::Dimensions::Length,
     Mass              = Left::Dimensions::Mass + Right::Dimensions::Mass,
@@ -91,15 +99,19 @@ struct ProductGenerator {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> { using Type = Left; };
+struct ProductGenerator<Left, double> : not_constructible {
+  using Type = Left;
+};
 template<typename Right>
-struct ProductGenerator<double, Right> { using Type = Right; };
+struct ProductGenerator<double, Right> : not_constructible {
+  using Type = Right;
+};
 template<>
-struct ProductGenerator<double, double> {
+struct ProductGenerator<double, double> : not_constructible {
   using Type = double;
 };
 template<typename Left, typename Right>
-struct QuotientGenerator {
+struct QuotientGenerator : not_constructible {
   enum {
     Length            = Left::Dimensions::Length - Right::Dimensions::Length,
     Mass              = Left::Dimensions::Mass - Right::Dimensions::Mass,
@@ -117,13 +129,15 @@ struct QuotientGenerator {
                           LuminousIntensity, Angle>>>::Type;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> { using Type = Left; };
+struct QuotientGenerator<Left, double> : not_constructible {
+  using Type = Left;
+};
 template<>
-struct QuotientGenerator<double, double> {
+struct QuotientGenerator<double, double> : not_constructible {
   using Type = double;
 };
 template<typename Right>
-struct QuotientGenerator<double, Right> {
+struct QuotientGenerator<double, Right> : not_constructible {
   enum {
     Length            = -Right::Dimensions::Length,
     Mass              = -Right::Dimensions::Mass,

@@ -45,7 +45,7 @@ class Vessel {
   Vessel& operator=(Vessel&&) = delete;
 
   // |CHECK|s that |*this| is not piled up.
-  ~Vessel();
+  virtual ~Vessel();
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.

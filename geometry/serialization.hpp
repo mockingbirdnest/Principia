@@ -1,9 +1,13 @@
 ﻿
 #pragma once
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 namespace geometry {
 namespace internal_serialization {
+
+using base::not_constructible;
 
 // A helper class that serializes a |double|, a |Quantity| or a |Multivector|
 // to a protobuf structure like:
@@ -16,7 +20,7 @@ namespace internal_serialization {
 //   }
 // }
 template<typename T, typename Message>
-class DoubleOrQuantityOrMultivectorSerializer {};
+struct DoubleOrQuantityOrMultivectorSerializer : not_constructible {};
 
 // A helper class that serializes a |Point| or a |Multivector| to a protobuf
 // structure like:
@@ -28,7 +32,7 @@ class DoubleOrQuantityOrMultivectorSerializer {};
 //   }
 // }
 template<typename T, typename Message>
-class PointOrMultivectorSerializer {};
+struct PointOrMultivectorSerializer : not_constructible {};
 
 // A helper class that serializes a |Quantity| or a |Multivector| to a protobuf
 // structure like:
@@ -40,7 +44,7 @@ class PointOrMultivectorSerializer {};
 //   }
 // }
 template<typename T, typename Message>
-class QuantityOrMultivectorSerializer {};
+struct QuantityOrMultivectorSerializer : not_constructible {};
 
 }  // namespace internal_serialization
 

@@ -24,7 +24,7 @@ Argument Bisect(Function f,
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
 // The result may have 0, 1 or 2 values.
-template <typename Argument, typename Value>
+template<typename Argument, typename Value>
 std::set<Argument> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,

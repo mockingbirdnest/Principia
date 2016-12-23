@@ -21,6 +21,7 @@ using geometry::Point;
 using geometry::R3Element;
 using geometry::Trivector;
 using geometry::Vector;
+using numerics::ULPDistance;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using testing::AllOf;

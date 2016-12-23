@@ -11,11 +11,10 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace internal_solar_system_factory {
 
-namespace {
-
-void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
-                    SolarSystem<ICRFJ2000Equator>* const solar_system) {
+inline void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
+                           SolarSystem<ICRFJ2000Equator>* const solar_system) {
   std::set<std::string> existing;
   std::set<std::string> oblate;
   switch (accuracy) {
@@ -84,8 +83,6 @@ void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
     solar_system->RemoveOblateness(body_to_spherify);
   }
 }
-
-}  // namespace
 
 inline not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
 SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
@@ -207,5 +204,6 @@ inline std::string SolarSystemFactory::name(int const index) {
 #undef BODY_NAME
 }
 
+}  // namespace internal_solar_system_factory
 }  // namespace testing_utilities
 }  // namespace principia

@@ -22,7 +22,7 @@ using quantities::SpecificImpulse;
 
 // Parameters for constructing a |NavigationManœuvre|, excluding the initial
 // mass.  This owns a |NavigationFrame| and is therefore not copyable.
-struct Burn {
+struct Burn final {
   Force thrust;
   SpecificImpulse specific_impulse;
   not_null<std::unique_ptr<NavigationFrame const>> frame;

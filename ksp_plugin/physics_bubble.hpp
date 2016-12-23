@@ -35,19 +35,18 @@ using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
 using quantities::Acceleration;
 
-class PhysicsBubble {
+class PhysicsBubble final {
  public:
   using BarycentricToWorldSun = geometry::OrthogonalMap<Barycentric, WorldSun>;
 
   PhysicsBubble();
-  ~PhysicsBubble() = default;
 
   // Creates |next_| if it is null.  Adds the |vessel| to |next_->vessels| with
   // a list of pointers to the Parts in |parts|.  Merges |parts| into
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
   void AddVesselToNext(not_null<Vessel*> vessel,
-                       std::vector<IdAndOwnedPart> parts);
+                       std::vector<IdAndOwnedPart>&& parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
@@ -108,6 +107,12 @@ class PhysicsBubble {
 
   struct PreliminaryState {
     PreliminaryState();
+    PreliminaryState(PreliminaryState const&) = delete;
+    PreliminaryState(PreliminaryState&&) = default;
+    PreliminaryState& operator=(PreliminaryState const&) = delete;
+    PreliminaryState& operator=(PreliminaryState&&) = default;
+    virtual ~PreliminaryState() = default;
+
     std::map<not_null<Vessel*> const,
              // NOTE(Norgg) TODO(Egg) Removed const from vector,
              // custom allocator?

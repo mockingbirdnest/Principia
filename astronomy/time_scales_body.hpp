@@ -212,7 +212,7 @@ constexpr bool IsValidStretchyUTC(DateTime const& utc) {
 
 // An entry in the Experimental EOP C02 time series; represents UT1 - TAI at the
 // given |ut1_mjd|.
-struct ExperimentalEOPC02Entry {
+struct ExperimentalEOPC02Entry final {
   constexpr ExperimentalEOPC02Entry(double ut1_mjd,
                                     quantities::Time ut1_minus_tai);
 
@@ -230,7 +230,7 @@ constexpr ExperimentalEOPC02Entry::ExperimentalEOPC02Entry(
 // 00:00:00 on the given |utc_date|.  The date is given as an integer of the
 // form YYYY'MM'DD, which is then interpreted on demand, in order to limit the
 // number of constexpr steps.
-struct EOPC04Entry {
+struct EOPC04Entry final {
   constexpr EOPC04Entry(int utc_date, quantities::Time const& ut1_minus_utc);
 
   constexpr DateTime utc() const;

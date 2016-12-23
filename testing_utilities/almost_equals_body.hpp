@@ -17,10 +17,10 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_almost_equals {
 
 using numerics::ULPDistance;
-
-namespace testing_utilities {
 
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
@@ -237,5 +237,6 @@ bool AlmostEqualsMatcher<T>::MatchAndExplainIdentical(
   }
 }
 
+}  // namespace internal_almost_equals
 }  // namespace testing_utilities
 }  // namespace principia

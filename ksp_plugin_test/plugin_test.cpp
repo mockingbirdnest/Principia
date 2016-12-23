@@ -50,6 +50,7 @@ using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RigidTransformation;
+using physics::SolarSystem;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::ArcTan;
@@ -156,7 +157,7 @@ class TestablePlugin : public Plugin {
   // We override this part of initialization in order to create a
   // |MockEphemeris| rather than an |Ephemeris|.
   std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+      std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
       std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
       Instant const& initial_time,
       Length const& fitting_tolerance,
@@ -284,10 +285,9 @@ class PluginTest : public testing::Test {
   // Inserts a vessel with the given |guid| and makes it a satellite of Earth
   // with relative position |satellite_initial_displacement_| and velocity
   // |satellite_initial_velocity_|.  The vessel must not already be present.
-  // Increments the counter |*number_of_new_vessels|.  |number_of_new_vessels|
-  // must not be null.
+  // Increments the counter |number_of_new_vessels|.
   void InsertVessel(GUID const& guid,
-                    not_null<std::size_t*> const number_of_new_vessels,
+                    std::size_t& number_of_new_vessels,
                     Instant const& time) {
     bool const inserted = plugin_->InsertOrKeepVessel(
                               guid, SolarSystemFactory::Earth);
@@ -297,7 +297,7 @@ class PluginTest : public testing::Test {
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
                                       satellite_initial_velocity_));
-    ++*number_of_new_vessels;
+    ++number_of_new_vessels;
   }
 
   RotatingBody<Barycentric>::Parameters body_rotation_;

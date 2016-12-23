@@ -56,7 +56,7 @@ class Ephemeris {
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
 
-  class AdaptiveStepParameters {
+  class AdaptiveStepParameters final {
    public:
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
@@ -92,7 +92,7 @@ class Ephemeris {
     friend class Ephemeris<Frame>;
   };
 
-  class FixedStepParameters {
+  class FixedStepParameters final {
    public:
     FixedStepParameters(
         FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -115,7 +115,7 @@ class Ephemeris {
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
-  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
             Length const& fitting_tolerance,
@@ -242,7 +242,7 @@ class Ephemeris {
  private:
   // The state of the integration and of the continuous trajectory at a
   // particular time that we might want to use for compact serialization.
-  struct Checkpoint {
+  struct Checkpoint final {
     typename NewtonianMotionEquation::SystemState system_state;
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
@@ -267,10 +267,10 @@ class Ephemeris {
            typename MassiveBodyConstPtr>
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
-      size_t const b1,
+      std::size_t const b1,
       std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
-      size_t const b2_begin,
-      size_t const b2_end,
+      std::size_t const b2_begin,
+      std::size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations);
 
@@ -282,7 +282,7 @@ class Ephemeris {
   void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
-      size_t const b1,
+      std::size_t const b1,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations,
       typename ContinuousTrajectory<Frame>::Hint& hint1) const;

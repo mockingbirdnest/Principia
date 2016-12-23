@@ -27,7 +27,7 @@ class MassiveBody : public Body {
   // We use the gravitational parameter μ = G M in order not to accumulate
   // unit roundoffs from repeated multiplications by G.  The parameter must not
   // be zero.
-  class Parameters {
+  class Parameters final {
    public:
     // The constructors are implicit on purpose.
     Parameters(
@@ -47,7 +47,6 @@ class MassiveBody : public Body {
   };
 
   explicit MassiveBody(Parameters const& parameters);
-  ~MassiveBody() = default;
 
   // Returns the construction parameter.
   std::string const& name() const;
@@ -71,10 +70,6 @@ class MassiveBody : public Body {
   // superclass.
   virtual void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const;
-
-  // Both methods below dispatch to |OblateBody<UnknownFrame>| if the
-  // |OblateBody| extension is present in the message.  Use |reinterpret_cast|
-  // afterwards as appropriate if the frame is known.
 
   // |message.has_massive_body()| must be true.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(

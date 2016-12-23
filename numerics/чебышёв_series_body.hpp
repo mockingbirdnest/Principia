@@ -22,7 +22,7 @@ using quantities::SIUnit;
 // The compiler does a much better job on an |R3Element<double>| than on a
 // |Vector<Quantity>| so we specialize this case.
 template<typename Scalar, typename Frame, int rank>
-class EvaluationHelper<Multivector<Scalar, Frame, rank>> {
+class EvaluationHelper<Multivector<Scalar, Frame, rank>> final {
  public:
   EvaluationHelper(
       std::vector<Multivector<Scalar, Frame, rank>> const& coefficients,

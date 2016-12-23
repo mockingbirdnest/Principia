@@ -53,7 +53,7 @@ class DelegatingArrayOutputStream
 // finally destroys the |PullSerializer|.  |PullSerializer| is intended for use
 // in memory-critical contexts as it bounds the amount of memory used
 // irrespective of the size of the message to serialize.
-class PullSerializer {
+class PullSerializer final {
  public:
   // The |size| of the data objects returned by |Pull| are never greater than
   // |chunk_size|.  At most |number_of_chunks| chunks are held in the internal

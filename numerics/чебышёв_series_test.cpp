@@ -42,8 +42,8 @@ class ЧебышёвSeriesTest : public ::testing::Test {
   void NewhallApproximationErrors(
       std::function<Length(Instant const)> length_function,
       std::function<Speed(Instant const)> speed_function,
-      not_null<std::vector<Length>*> const length_absolute_errors,
-      not_null<std::vector<Speed>*> const speed_absolute_errors) {
+      std::vector<Length>& length_absolute_errors,
+      std::vector<Speed>& speed_absolute_errors) {
     std::vector<Length> lengths;
     std::vector<Speed> speeds;
     for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
@@ -51,8 +51,8 @@ class ЧебышёвSeriesTest : public ::testing::Test {
       speeds.push_back(speed_function(t));
     }
 
-    length_absolute_errors->clear();
-    speed_absolute_errors->clear();
+    length_absolute_errors.clear();
+    speed_absolute_errors.clear();
     for (int degree = 3; degree <= 17; ++degree) {
       ЧебышёвSeries<Length> const approximation =
           ЧебышёвSeries<Length>::NewhallApproximation(
@@ -73,8 +73,8 @@ class ЧебышёвSeriesTest : public ::testing::Test {
             std::max(speed_absolute_error,
                      AbsoluteError(expected_speed, actual_speed));
       }
-      length_absolute_errors->push_back(length_absolute_error);
-      speed_absolute_errors->push_back(speed_absolute_error);
+      length_absolute_errors.push_back(length_absolute_error);
+      speed_absolute_errors.push_back(speed_absolute_error);
 
       // Check the conditions at the bounds.
       EXPECT_THAT(approximation.Evaluate(t_min_),
@@ -307,8 +307,8 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
-                               &length_absolute_errors,
-                               &speed_absolute_errors);
+                               length_absolute_errors,
+                               speed_absolute_errors);
   }
 
   ExpectMultipart(length_absolute_errors,
@@ -357,8 +357,8 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
-                               &length_absolute_errors,
-                               &speed_absolute_errors);
+                               length_absolute_errors,
+                               speed_absolute_errors);
   }
 
   ExpectMultipart(length_absolute_errors,

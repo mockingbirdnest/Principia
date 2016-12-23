@@ -11,7 +11,7 @@ namespace base {
 namespace internal_get_line {
 
 // Recursively reads a line of arbitrary length.
-std::string GetLine(not_null<std::ifstream*> stream);
+std::string GetLine(std::ifstream& stream);
 
 }  // namespace internal_get_line
 

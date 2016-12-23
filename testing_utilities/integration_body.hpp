@@ -10,6 +10,8 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_integration {
 
 using geometry::Displacement;
 using geometry::InnerProduct;
@@ -26,8 +28,6 @@ using quantities::Sqrt;
 using quantities::Square;
 using quantities::Stiffness;
 using quantities::Time;
-
-namespace testing_utilities {
 
 inline void ComputeHarmonicOscillatorForce(
     Time const& t,
@@ -99,5 +99,6 @@ void ComputeGravitationalAcceleration(
   }
 }
 
+}  // namespace internal_integration
 }  // namespace testing_utilities
 }  // namespace principia

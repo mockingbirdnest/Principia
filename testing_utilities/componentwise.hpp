@@ -13,10 +13,10 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
+namespace internal_componentwise {
 
 using geometry::R3Element;
-
-namespace testing_utilities {
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
@@ -36,11 +36,10 @@ Componentwise(XMatcher const& x_matcher,
               ZMatcher const& z_matcher);
 
 template<typename T1Matcher, typename T2Matcher>
-class ComponentwiseMatcher2 {
+class ComponentwiseMatcher2 final {
  public:
   explicit ComponentwiseMatcher2(T1Matcher const& t1_matcher,
                                  T2Matcher const& t2_matcher);
-  ~ComponentwiseMatcher2() = default;
 
   // Note that at this point this is only useful for vector/vector pairs as we
   // don't have matchers for |Point|.
@@ -57,12 +56,11 @@ class ComponentwiseMatcher2 {
 };
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-class ComponentwiseMatcher3 {
+class ComponentwiseMatcher3 final {
  public:
   explicit ComponentwiseMatcher3(XMatcher const& x_matcher,
                                  YMatcher const& y_matcher,
                                  ZMatcher const& z_matcher);
-  ~ComponentwiseMatcher3() = default;
 
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
@@ -82,6 +80,10 @@ class ComponentwiseMatcher3 {
   YMatcher const& y_matcher_;
   ZMatcher const& z_matcher_;
 };
+
+}  // namespace internal_componentwise
+
+using internal_componentwise::Componentwise;
 
 }  // namespace testing_utilities
 }  // namespace principia

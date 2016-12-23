@@ -15,6 +15,7 @@
 
 namespace principia {
 namespace tools {
+namespace internal_journal_proto_processor {
 
 namespace {
 
@@ -387,7 +388,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
   field_cxx_deserializer_fn_[descriptor] =
       [pointer_to](std::string const& expr) {
-        return "DeserializePointer<" + pointer_to + "*>(*pointer_map, " + expr +
+        return "DeserializePointer<" + pointer_to + "*>(pointer_map, " + expr +
                ")";
       };
   field_cxx_serializer_fn_[descriptor] =
@@ -670,7 +671,7 @@ void JournalProtoProcessor::ProcessInOut(
   cxx_run_arguments_[descriptor].clear();
   cxx_run_body_epilog_[descriptor].clear();
 
-  cxx_nested_type_declaration_[descriptor] = "  struct " + name + " {\n";
+  cxx_nested_type_declaration_[descriptor] = "  struct " + name + " final {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     std::string const& field_descriptor_name = field_descriptor->name();
@@ -904,7 +905,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_prolog;
   std::string cxx_run_epilog;
-  cxx_toplevel_type_declaration_[descriptor] = "struct " + name + " {\n";
+  cxx_toplevel_type_declaration_[descriptor] =
+      "struct " + name + " : not_constructible {\n";
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
@@ -981,18 +983,15 @@ void JournalProtoProcessor::ProcessMethodExtension(
         "not_null<Message*> const message);\n";
   }
   cxx_toplevel_type_declaration_[descriptor] +=
-      "  static void Run("
-      "Message const& message,\n"
-      "                  not_null<"
-      "Player::PointerMap*> const pointer_map);"
-      "\n";
+      "  static void Run(Message const& message,\n"
+      "                  Player::PointerMap& pointer_map);\n";
   cxx_toplevel_type_declaration_[descriptor] += "};\n\n";
 
   // The Run method must come after the Fill methods for comparison with manual
   // code.
   cxx_functions_implementation_[descriptor] +=
       "void " + name + "::Run(Message const& message, "
-      "not_null<Player::PointerMap*> const pointer_map) {\n" +
+      "Player::PointerMap& pointer_map) {\n" +
       cxx_run_prolog;
   if (has_return) {
     cxx_functions_implementation_[descriptor] += "  auto const result = ";
@@ -1031,5 +1030,6 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "             *method_in, *method_out_return);\n";
 }
 
+}  // namespace internal_journal_proto_processor
 }  // namespace tools
 }  // namespace principia

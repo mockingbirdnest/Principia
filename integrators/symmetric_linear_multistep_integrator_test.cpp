@@ -15,6 +15,7 @@
 
 namespace principia {
 
+using geometry::Instant;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -24,8 +25,10 @@ using quantities::Mass;
 using quantities::Pow;
 using quantities::Power;
 using quantities::Sin;
+using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
+using quantities::Time;
 using quantities::si::Joule;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -301,7 +304,7 @@ void TestSymplecticity(Integrator const& integrator,
   EXPECT_EQ(expected_energy_error, max_energy_error);
 }
 
-class SimpleHarmonicMotionTestInstance {
+class SimpleHarmonicMotionTestInstance final {
  public:
   template<typename Integrator>
   SimpleHarmonicMotionTestInstance(Integrator const& integrator,

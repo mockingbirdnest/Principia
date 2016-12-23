@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -17,28 +18,18 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Vector;
-using geometry::Velocity;
-using quantities::Acceleration;
-using quantities::Length;
-using quantities::Speed;
-
-template<typename Frame>
-class DiscreteTrajectory;
-
-}  // namespace internal_discrete_trajectory
+FORWARD_DECLARE_FROM(discrete_trajectory,
+                     TEMPLATE(typename Frame) class,
+                     DiscreteTrajectory);
 
 // Reopening |internal_forkable| to specialize a template.
 namespace internal_forkable {
 
-using internal_discrete_trajectory::DiscreteTrajectory;
+using base::not_constructible;
 
 template<typename Frame>
-struct ForkableTraits<DiscreteTrajectory<Frame>> {
+struct ForkableTraits<DiscreteTrajectory<Frame>> : not_constructible {
   using TimelineConstIterator =
       typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
   static Instant const& time(TimelineConstIterator it);
@@ -61,9 +52,16 @@ class DiscreteTrajectoryIterator
 
 namespace internal_discrete_trajectory {
 
+using base::not_null;
+using geometry::Instant;
+using geometry::Vector;
+using geometry::Velocity;
+using quantities::Acceleration;
+using quantities::Length;
+using quantities::Speed;
 using internal_forkable::DiscreteTrajectoryIterator;
 
-template <typename Frame>
+template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
                                            DiscreteTrajectoryIterator<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;

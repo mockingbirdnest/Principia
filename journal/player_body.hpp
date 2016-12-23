@@ -21,7 +21,7 @@ bool Player::RunIfAppropriate(serialization::Method const& method_in,
     serialization::Method merged_method = method_in;
     merged_method.MergeFrom(method_out_return);
     Profile::Run(merged_method.GetExtension(Profile::Message::extension),
-                 &pointer_map_);
+                 pointer_map_);
     return true;
   }
   return false;

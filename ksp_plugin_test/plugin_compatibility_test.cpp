@@ -69,7 +69,7 @@ not_null<std::unique_ptr<TestablePlugin>> TestablePlugin::ReadFromMessage(
   serialization::Plugin const& message) {
   std::unique_ptr<Plugin> plugin = Plugin::ReadFromMessage(message);
   return std::unique_ptr<TestablePlugin>(
-      reinterpret_cast<TestablePlugin*>(plugin.release()));
+      static_cast<TestablePlugin*>(plugin.release()));
 }
 
 class PluginCompatibilityTest : public testing::Test {
@@ -95,7 +95,7 @@ class PluginCompatibilityTest : public testing::Test {
     UniqueBytes bin(hex.size() / 2);
     HexadecimalDecode(
         Array<std::uint8_t const>(
-            reinterpret_cast<const std::uint8_t*>(hex.c_str()), hex.size()),
+            reinterpret_cast<std::uint8_t const*>(hex.c_str()), hex.size()),
         bin.get());
 
     // Construct a protocol buffer from the binary data.
@@ -185,7 +185,7 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
       for (int i = 0; i < flight_plan.number_of_segments(); ++i) {
         DiscreteTrajectory<Barycentric>::Iterator begin;
         DiscreteTrajectory<Barycentric>::Iterator end;
-        flight_plan.GetSegment(i, &begin, &end);
+        flight_plan.GetSegment(i, begin, end);
         if (last_time) {
           CHECK_LE(*last_time, begin.time());
         }

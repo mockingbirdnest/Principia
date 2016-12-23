@@ -218,9 +218,9 @@ Ephemeris<Frame>::FixedStepParameters::ReadFromMessage(
       Time::ReadFromMessage(message.step()));
 }
 
-template <typename Frame>
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     Length const& fitting_tolerance,
@@ -715,7 +715,7 @@ void Ephemeris<Frame>::ComputeApsides(
   }
 }
 
-template <typename Frame>
+template<typename Frame>
 void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       not_null<MassiveBody const*> const body2,
                                       DiscreteTrajectory<Frame>& apoapsides1,
@@ -1040,10 +1040,10 @@ template<bool body1_is_oblate,
 void Ephemeris<Frame>::
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
         MassiveBody const& body1,
-        size_t const b1,
+        std::size_t const b1,
         std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
-        size_t const b2_begin,
-        size_t const b2_end,
+        std::size_t const b2_begin,
+        std::size_t const b2_end,
         std::vector<Position<Frame>> const& positions,
         std::vector<Vector<Acceleration, Frame>>& accelerations) {
   Position<Frame> const& position_of_b1 = positions[b1];
@@ -1108,7 +1108,7 @@ void Ephemeris<Frame>::
 ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Instant const& t,
     MassiveBody const& body1,
-    size_t const b1,
+    std::size_t const b1,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations,
     typename ContinuousTrajectory<Frame>::Hint& hint1) const {
@@ -1116,7 +1116,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
   Position<Frame> const position1 =
       trajectories_[b1]->EvaluatePosition(t, &hint1);
 
-  for (size_t b2 = 0; b2 < positions.size(); ++b2) {
+  for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position1 - positions[b2];
 
