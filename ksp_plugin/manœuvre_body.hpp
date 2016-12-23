@@ -143,19 +143,19 @@ bool Manœuvre<InertialFrame, Frame>::IsSingular() const {
   return !IsFinite(Δv());
 }
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
     not_null<DiscreteTrajectory<InertialFrame> const*> const trajectory) {
   coasting_trajectory_ = trajectory;
 }
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 Vector<double, InertialFrame>
     Manœuvre<InertialFrame, Frame>::InertialDirection() const {
   return FrenetFrame()(direction_);
 }
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
   CHECK_NOTNULL(coasting_trajectory_);
@@ -172,7 +172,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
   return from_frame_at_initial_time * from_frenet_frame.Forget();
 }
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 typename Ephemeris<InertialFrame>::IntrinsicAcceleration
     Manœuvre<InertialFrame, Frame>::IntrinsicAcceleration() const {
   Vector<double, InertialFrame> const inertial_direction = InertialDirection();
@@ -187,7 +187,7 @@ typename Ephemeris<InertialFrame>::IntrinsicAcceleration
   };
 }
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::WriteToMessage(
     not_null<serialization::Manoeuvre*> const message) const {
   thrust_.WriteToMessage(message->mutable_thrust());
@@ -199,7 +199,7 @@ void Manœuvre<InertialFrame, Frame>::WriteToMessage(
   frame_->WriteToMessage(message->mutable_frame());
 }
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
     serialization::Manoeuvre const& message,
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {

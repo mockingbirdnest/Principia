@@ -17,7 +17,7 @@
 // to fix these errors.
 
 // If |optional|, logs |*optional|, otherwise, logs |"nullopt"|.
-template <typename T>
+template<typename T>
 std::ostream& operator<<(std::ostream& out,
                          std::experimental::optional<T> const& optional);
 

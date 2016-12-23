@@ -40,9 +40,9 @@ using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
-template <int n, typename Q, typename = void>
+template<int n, typename Q, typename = void>
 struct NthRootGenerator : not_constructible {};
-template <typename T, int exponent, typename = void>
+template<typename T, int exponent, typename = void>
 struct ExponentiationGenerator final {};
 
 template<typename Left, typename Right>

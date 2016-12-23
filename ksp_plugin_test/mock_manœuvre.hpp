@@ -8,7 +8,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_manœuvre {
 
-template <typename InertialFrame, typename Frame>
+template<typename InertialFrame, typename Frame>
 class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
  public:
   MockManœuvre(
