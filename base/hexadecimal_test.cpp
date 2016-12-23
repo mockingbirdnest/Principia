@@ -74,7 +74,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   HexadecimalEncode(bytes_.get(), digits.get());
   EXPECT_EQ(uppercase_digits_, Bytes(digits.data.get(), digit_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&digits.data[digit_count],
-                                   &digits.data[digits_size]),
+                                        &digits.data[digits_size]),
               Each('X'));
   std::int64_t const bytes_size = byte_count + 42;
   UniqueBytes bytes(bytes_size);
@@ -82,7 +82,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   HexadecimalDecode(uppercase_digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, Bytes(bytes.data.get(), byte_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&bytes.data[byte_count],
-                                   &bytes.data[bytes_size]),
+                                        &bytes.data[bytes_size]),
               Each('Y'));
 }
 
