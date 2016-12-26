@@ -11,6 +11,9 @@ using ksp_plugin::PileUp;
 
 namespace base {
 
+// TODO(egg): we must not |Erase| the pile-ups directly here; perhaps we should
+// not be manipulating iterators.
+
 Subset<Vessel>::Properties::SubsetOfExistingPileUp::SubsetOfExistingPileUp(
     IteratorOn<PileUps> const pile_up)
     : pile_up_(pile_up) {
@@ -71,14 +74,8 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
     subset_of_existing_pile_up_->missing_ -= other.vessels_.size();
     CHECK_GE(subset_of_existing_pile_up_->missing_, 0);
   } else {
-    if (subset_of_existing_pile_up_) {
-      LOG(ERROR) << "S1";
-      subset_of_existing_pile_up_->pile_up_.Erase();
-    }
-    if (other.subset_of_existing_pile_up_) {
-      LOG(ERROR) << "S2";
-      other.subset_of_existing_pile_up_->pile_up_.Erase();
-    }
+    vessels_.front()->clear_pile_up();
+    other.vessels_.front()->clear_pile_up();
     LOG(ERROR) << "S3";
     subset_of_existing_pile_up_ = std::experimental::nullopt;
   }
