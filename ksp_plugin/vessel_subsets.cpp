@@ -19,16 +19,22 @@ Subset<Vessel>::Properties::SubsetOfExistingPileUp::SubsetOfExistingPileUp(
 
 Subset<Vessel>::Properties::Properties(not_null<ksp_plugin::Vessel*> vessel) {
   if (vessel->is_piled_up()) {
-    subset_of_existing_pile_up_.emplace(
-        SubsetOfExistingPileUp(*vessel->containing_pile_up()));
+    subset_of_existing_pile_up_ =
+        SubsetOfExistingPileUp(*vessel->containing_pile_up());
   }
   vessels_.emplace_back(vessel);
 }
 
 void Subset<ksp_plugin::Vessel>::Properties::Collect(
     not_null<PileUps*> const pile_ups) {
-  if (!collected_ && !(EqualsExistingPileUp())) {
-    collected_ = true;
+  if (collected_) {
+    return;
+  }
+  collected_ = true;
+  if (!EqualsExistingPileUp()) {
+    if (StrictSubsetOfExistingPileUp()) {
+      vessels_.front()->clear_pile_up();
+    }
     pile_ups->emplace_front(std::move(vessels_));
     auto const it = pile_ups->begin();
     for (not_null<Vessel*> const vessel : it->vessels()) {
@@ -66,11 +72,14 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
     CHECK_GE(subset_of_existing_pile_up_->missing_, 0);
   } else {
     if (subset_of_existing_pile_up_) {
+      LOG(ERROR) << "S1";
       subset_of_existing_pile_up_->pile_up_.Erase();
     }
     if (other.subset_of_existing_pile_up_) {
+      LOG(ERROR) << "S2";
       other.subset_of_existing_pile_up_->pile_up_.Erase();
     }
+    LOG(ERROR) << "S3";
     subset_of_existing_pile_up_ = std::experimental::nullopt;
   }
   vessels_.splice(vessels_.end(), other.vessels_);

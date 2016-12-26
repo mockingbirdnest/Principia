@@ -745,6 +745,20 @@ public partial class PrincipiaPluginAdapter
             active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
+      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
+        if (plugin_.HasVessel(vessel1.id.ToString())) {
+          foreach (Part part in vessel1.parts) {
+            foreach (var collider in part.currentCollisions) {
+              var vessel2 =
+                  collider.gameObject.GetComponentUpwards<Part>().vessel;
+              if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+                plugin_.ReportCollision(vessel1.id.ToString(),
+                                        vessel2.id.ToString());
+              }
+            }
+          }
+        }
+      }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
       if (ready_to_draw_active_vessel_trajectory) {
         plugin_.UpdatePrediction(active_vessel.id.ToString());
@@ -1037,6 +1051,9 @@ public partial class PrincipiaPluginAdapter
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
     // TODO(egg): remove this diagnosis when we have proper collision handling.
+    if (PluginRunning()) {
+      UnityEngine.GUILayout.TextArea(text : plugin_.PileUpInfo());
+    }
     if (FlightGlobals.ActiveVessel != null) {
       int collisions = 0;
       int part_collisions = 0;

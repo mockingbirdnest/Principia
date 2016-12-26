@@ -705,6 +705,27 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
       plugin));
 }
 
+void principia__ReportCollision(Plugin const* const plugin,
+                                char const* const vessel1_guid,
+                                char const* const vessel2_guid) {
+  journal::Method<journal::ReportCollision> m({plugin,
+                                               vessel1_guid,
+                                               vessel2_guid});
+  CHECK_NOTNULL(plugin)->ReportCollision(vessel1_guid, vessel2_guid);
+  return m.Return();
+}
+
+char const* CDECL principia__PileUpInfo(Plugin const* const plugin) {
+  journal::Method<journal::PileUpInfo> m({plugin});
+  CHECK_NOTNULL(plugin);
+  std::string info_string = plugin->PileUpInfo();
+  UniqueBytes allocated_info(info_string.size() + 1);
+  std::memcpy(allocated_info.data.get(),
+              info_string.data(),
+              info_string.size() + 1);
+  return m.Return(reinterpret_cast<char const*>(allocated_info.data.release()));
+}
+
 // Says hello, convenient for checking that calls to the DLL work.
 char const* principia__SayHello() {
   journal::Method<journal::SayHello> m;

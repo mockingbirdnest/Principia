@@ -41,7 +41,7 @@ class Subset final {
   // Returns the subset containing |element|.
   static Subset Find(T& element);
 
-  Properties const& properties();
+  Properties& properties();
 
   class Node final {
    public:
@@ -61,7 +61,8 @@ class Subset final {
     int rank_ = 0;
 
     // Do not require a default constructor for |Node|.
-    std::experimental::optional<Properties> properties_;
+    std::experimental::optional<Properties> properties_ =
+        std::experimental::nullopt;
 
     friend class Subset<T>;
   };

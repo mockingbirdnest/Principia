@@ -8,6 +8,7 @@
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/vessel_subsets.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 

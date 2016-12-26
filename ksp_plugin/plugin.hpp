@@ -82,7 +82,7 @@ class Plugin {
   Plugin(Plugin&&) = delete;
   Plugin& operator=(Plugin const&) = delete;
   Plugin& operator=(Plugin&&) = delete;
-  virtual ~Plugin() = default;
+  virtual ~Plugin();
 
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and
@@ -290,6 +290,9 @@ class Plugin {
 
   // Returns |bubble_.empty()|.
   virtual bool PhysicsBubbleIsEmpty() const;
+
+  virtual void ReportCollision(GUID const& vessel1, GUID const& vessel2) const;
+  virtual std::string PileUpInfo() const;
 
   // Computes and returns |current_physics_bubble_->displacement_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for

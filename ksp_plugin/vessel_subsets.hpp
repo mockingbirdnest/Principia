@@ -62,7 +62,7 @@ class Subset<ksp_plugin::Vessel>::Properties final {
     explicit SubsetOfExistingPileUp(IteratorOn<PileUps> pile_up);
 
     // The existing |PileUp|.
-    IteratorOn<PileUps> const pile_up_;
+    IteratorOn<PileUps> pile_up_;
     // The difference between the cardinalities; never negative.
     int missing_;
   };

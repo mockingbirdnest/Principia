@@ -8,7 +8,7 @@ namespace principia {
 namespace base {
 
 template<typename T>
-typename Subset<T>::Properties const& Subset<T>::properties() {
+typename Subset<T>::Properties& Subset<T>::properties() {
   return *node_->properties_;
 }
 
@@ -23,8 +23,8 @@ Subset<T> Subset<T>::MakeSingleton(
   not_null<Node*> node = Node::Get(element);
   node->parent_ = node;
   node->rank_ = 0;
-  node->properties_ = Properties(
-      std::forward<SubsetPropertiesArgs>(subset_properties_args)...);
+  node->properties_ =
+      Properties(std::forward<SubsetPropertiesArgs>(subset_properties_args)...);
   return Subset(node);
 }
 
