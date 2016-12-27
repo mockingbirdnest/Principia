@@ -747,6 +747,13 @@ public partial class PrincipiaPluginAdapter
       }
       foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
         if (plugin_.HasVessel(vessel1.id.ToString())) {
+          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
+            var vessel2 = vessel1.evaController.LadderPart.vessel;
+            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+              plugin_.ReportCollision(vessel1.id.ToString(),
+                                      vessel2.id.ToString());
+            }
+          }
           foreach (Part part in vessel1.parts) {
             foreach (var collider in part.currentCollisions) {
               var vessel2 =
