@@ -471,6 +471,7 @@ class Plugin {
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
 
+  // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
   // Compatibility.

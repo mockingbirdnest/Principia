@@ -132,6 +132,9 @@ class Vessel {
       not_null<Celestial const*> parent);
 
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
+  // iterator, use |clear_pile_up| instead, which will take care of letting all
+  // vessels know that their |PileUp| is gone.
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
   containing_pile_up() const;
 
