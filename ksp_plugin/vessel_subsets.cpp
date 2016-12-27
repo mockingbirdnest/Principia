@@ -76,7 +76,6 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
   } else {
     vessels_.front()->clear_pile_up();
     other.vessels_.front()->clear_pile_up();
-    LOG(ERROR) << "S3";
     subset_of_existing_pile_up_ = std::experimental::nullopt;
   }
   vessels_.splice(vessels_.end(), other.vessels_);
