@@ -772,6 +772,9 @@ public partial class PrincipiaPluginAdapter
       }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+        // TODO(egg): Tell the plugin about the vessel's position, so that its
+        // displacement from the centre of mass of its |PileUp| may be computed
+        // and used to set its position below.
         foreach (Part part in vessel.parts) {
           // TODO(egg): Tell the plugin about part.force;
         }
@@ -791,6 +794,9 @@ public partial class PrincipiaPluginAdapter
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       SetBodyFrames();
+      // TODO(egg): set the positions of vessels inside the physics bubble too;
+      // Only move the universe to set the centre of mass of all loaded PileUps
+      // at the centre of the physics bubble.
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
       if (!plugin_.PhysicsBubbleIsEmpty()) {
