@@ -337,7 +337,6 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
   Subset<Vessel>::MakeSingleton(*vessel, vessel);
-  LOG(ERROR) << "Make Singleton " << vessel;
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
@@ -373,7 +372,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
   FreeVessels();
   for (auto const& id_vessel : vessels_) {
-    LOG(ERROR) << "Collect " << id_vessel.second;
     Subset<Vessel>::Find(*id_vessel.second).properties().Collect(&pile_ups_);
   }
   ephemeris_->Prolong(t);
@@ -650,7 +648,6 @@ bool Plugin::PhysicsBubbleIsEmpty() const {
 void Plugin::ReportCollision(GUID const& vessel1, GUID const& vessel2) const {
   Vessel& v1 = *FindOrDie(vessels_, vessel1);
   Vessel& v2 = *FindOrDie(vessels_, vessel2);
-  LOG(ERROR) << "Unite " << &v1 << " and " << &v2;
   Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
 }
 
