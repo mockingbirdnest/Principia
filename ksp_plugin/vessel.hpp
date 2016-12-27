@@ -131,6 +131,7 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       not_null<Celestial const*> parent);
 
+  // Requires |!is_piled_up()|.
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
   // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
   // iterator, use |clear_pile_up| instead, which will take care of letting all
