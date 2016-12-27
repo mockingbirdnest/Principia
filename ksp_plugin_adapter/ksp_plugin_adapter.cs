@@ -767,6 +767,11 @@ public partial class PrincipiaPluginAdapter
         }
       }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+        foreach (Part part in vessel.parts) {
+          // TODO(egg): Tell the plugin about part.force;
+        }
+      }
       if (ready_to_draw_active_vessel_trajectory) {
         plugin_.UpdatePrediction(active_vessel.id.ToString());
       }
