@@ -745,6 +745,10 @@ public partial class PrincipiaPluginAdapter
             active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
+      // The collisions are reported and stored into |currentCollisions| after
+      // |FixedUpdate|; in |FixedUpdate|, these are the collisions that occured
+      // during the preceding step, which is why we report them before calling
+      // |AdvanceTime|.
       foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
         if (plugin_.HasVessel(vessel1.id.ToString())) {
           if (vessel1.isEVA && vessel1.evaController.OnALadder) {
