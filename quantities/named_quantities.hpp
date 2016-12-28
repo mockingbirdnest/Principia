@@ -8,7 +8,7 @@ namespace quantities {
 
 // The result type of +, -, * and / on arguments of types |Left| and |Right|.
 template<typename Left, typename Right>
-using Sum = decltype(std::declval<Left>() = std::declval<Right>());
+using Sum = decltype(std::declval<Left>() + std::declval<Right>());
 template<typename Left, typename Right = Left>
 using Difference = decltype(std::declval<Left>() - std::declval<Right>());
 template<typename Left, typename Right>
