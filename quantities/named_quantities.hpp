@@ -42,11 +42,11 @@ using Energy = Product<Force, Length>;
 using Power  = Variation<Energy>;
 using Action = Product<Energy, Time>;
 
+using MomentOfInertia     = Product<Square<Quotient<Length, Angle>>, Mass>;
 using AngularFrequency    = Variation<Angle>;
 using AngularAcceleration = Variation<AngularFrequency>;
-using AngularMomentum     = Product<Action, Angle>;
+using AngularMomentum     = Product<MomentOfInertia, AngularFrequency>;
 using Torque              = Variation<AngularMomentum>;
-using MomentOfInertia     = Quotient<Torque, AngularAcceleration>;
 
 using GravitationalParameter = Quotient<Exponentiation<Length, 3>,
                                         Exponentiation<Time, 2>>;

@@ -705,6 +705,16 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
       plugin));
 }
 
+void principia__ReportCollision(Plugin const* const plugin,
+                                char const* const vessel1_guid,
+                                char const* const vessel2_guid) {
+  journal::Method<journal::ReportCollision> m({plugin,
+                                               vessel1_guid,
+                                               vessel2_guid});
+  CHECK_NOTNULL(plugin)->ReportCollision(vessel1_guid, vessel2_guid);
+  return m.Return();
+}
+
 // Says hello, convenient for checking that calls to the DLL work.
 char const* principia__SayHello() {
   journal::Method<journal::SayHello> m;

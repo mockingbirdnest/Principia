@@ -39,6 +39,7 @@ using si::Candela;
 using si::Day;
 using si::Degree;
 using si::Hour;
+using si::Joule;
 using si::Kelvin;
 using si::Kilogram;
 using si::Mega;
@@ -55,6 +56,7 @@ using uk::Furlong;
 using uk::Gallon;
 using uk::Mile;
 using uk::Rood;
+using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
 
@@ -158,6 +160,16 @@ TEST_F(QuantitiesTest, PhysicalConstants) {
 }
 
 #pragma warning(default: 4566)
+
+TEST_F(QuantitiesTest, RotationalUnits) {
+  EXPECT_THAT(SIUnit<AngularFrequency>(), Eq(Radian / Second));
+  EXPECT_THAT(SIUnit<AngularAcceleration>(), Eq(Radian / Pow<2>(Second)));
+  // SI Brochure 8th edition, 2006, updated in 2014, Section 2.2.2:
+  // For example, the quantity torque may be thought of as the cross product of
+  // force and distance, suggesting the unit newton metre, or it may be thought
+  // of as energy per angle, suggesting the unit joule per radian.
+  EXPECT_THAT(SIUnit<Torque>(), Eq(Joule / Radian));
+}
 
 TEST_F(QuantitiesTest, TrigonometricFunctions) {
   EXPECT_EQ(Cos(0 * Degree), 1);

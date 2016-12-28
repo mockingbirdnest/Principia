@@ -44,42 +44,37 @@ class Subset<ksp_plugin::Vessel>::Properties final {
 
  private:
   // Whether |left| and |right| are both subsets of the same existing |PileUp|.
+  // Implies |left.SubsetOfExistingPileUp()| and
+  // |right.SubsetOfExistingPileUp()|.
   static bool SubsetsOfSamePileUp(Properties const& left,
                                   Properties const& right);
   // Whether the set of |Vessel|s in |vessels_| is equal to the set of |Vessel|s
-  // in an existing |PileUp|.  In that case
-  // |subset_of_existing_pile_up_->pile_up_| is that |PileUp|.
+  // in an existing |PileUp|.  Implies |SubsetOfExistingPileUp()|.
   bool EqualsExistingPileUp() const;
-  // Whether the set of |Vessel|s in |vessels_| is a strict subset of the set of
+  // Whether the set of |Vessel|s in |vessels_| is a subset of the set of
   // |Vessel|s in an existing |PileUp|.  In that case
-  // |subset_of_existing_pile_up_->pile_up_| is that |PileUp|.
+  // |vessels_.front()->containing_pile_up()| is that |PileUp|.
+  bool SubsetOfExistingPileUp() const;
+  // Whether the set of |Vessel|s in |vessels_| is a strict subset of the set of
+  // |Vessel|s in an existing |PileUp|.  Implies |SubsetOfExistingPileUp()|.
   bool StrictSubsetOfExistingPileUp() const;
-
-  // Information about a subset of the set of |Vessel|s in a |PileUp|.  Keeps
-  // track of the difference of cardinalities.
-  class SubsetOfExistingPileUp final {
-   public:
-    explicit SubsetOfExistingPileUp(IteratorOn<PileUps> pile_up);
-
-    // The existing |PileUp|.
-    IteratorOn<PileUps> const pile_up_;
-    // The difference between the cardinalities; never negative.
-    int missing_;
-  };
 
   // Whether |Collect| has been called.
   bool collected_ = false;
-  // Has a value if and only if the set of elements of |vessels_| is a subset
-  // of some pre-existing |PileUp|.
-  std::experimental::optional<SubsetOfExistingPileUp>
-      subset_of_existing_pile_up_;
+  // if |SubsetOfExistingPileUp()|, |missing_| is the number of vessels in that
+  // |PileUp| that are not in this subset.
+  int missing_;
   // The list of vessels in this subset.
   std::list<not_null<ksp_plugin::Vessel*>> vessels_;
 };
 
+// TODO(egg): figure out why the compiler complains if I put the implementation
+// in the cpp.
 template<>
 not_null<Subset<ksp_plugin::Vessel>::Node*>
-Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element);
+Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
+  return element.subset_node_.get();
+}
 
 }  // namespace base
 }  // namespace principia

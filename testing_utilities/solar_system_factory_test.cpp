@@ -103,9 +103,9 @@ class SolarSystemFactoryTest : public testing::Test {
         tertiary_secondary.displacement();
     Velocity<ICRFJ2000Equator> const& v = tertiary_secondary.velocity();
     Bivector<SpecificAngularMomentum, ICRFJ2000Equator> const h =
-        Wedge(r, v) * Radian;
+        Wedge(r / Radian, v);
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
-    double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() / Radian) / Pow<2>(μ));
+    double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
     EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
     if (relative_error > 1e-6) {
       EXPECT_THAT(RelativeError(excentricity, e),

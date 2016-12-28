@@ -2,6 +2,7 @@
 #pragma once
 
 #include <limits>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -37,6 +38,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::not_null;
+using base::Subset;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -81,7 +83,7 @@ class Plugin {
   Plugin(Plugin&&) = delete;
   Plugin& operator=(Plugin const&) = delete;
   Plugin& operator=(Plugin&&) = delete;
-  virtual ~Plugin() = default;
+  virtual ~Plugin();
 
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and
@@ -290,6 +292,10 @@ class Plugin {
   // Returns |bubble_.empty()|.
   virtual bool PhysicsBubbleIsEmpty() const;
 
+  // Notifies |this| that the given vessels are touching, and should gravitate
+  // as part of a single rigid body.
+  virtual void ReportCollision(GUID const& vessel1, GUID const& vessel2) const;
+
   // Computes and returns |current_physics_bubble_->displacement_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for
   // it to be in the correct position.
@@ -462,6 +468,9 @@ class Plugin {
   bool is_ksp_stock_system_ = false;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
+
+  // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
+  std::list<PileUp> pile_ups_;
 
   // Compatibility.
   bool is_pre_cardano_ = false;
