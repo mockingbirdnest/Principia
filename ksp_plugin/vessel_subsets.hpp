@@ -70,7 +70,8 @@ class Subset<ksp_plugin::Vessel>::Properties final {
 
 // TODO(egg): figure out why the compiler complains if I put the implementation
 // in the cpp.
-template<> not_null<Subset<ksp_plugin::Vessel>::Node*>
+template<>
+not_null<Subset<ksp_plugin::Vessel>::Node*>
 Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
   return element.subset_node_.get();
 }

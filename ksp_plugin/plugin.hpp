@@ -291,8 +291,9 @@ class Plugin {
   // Returns |bubble_.empty()|.
   virtual bool PhysicsBubbleIsEmpty() const;
 
+  // Notifies |this| that the given vessels are touching, and should gravitate
+  // as part of a single rigid body.
   virtual void ReportCollision(GUID const& vessel1, GUID const& vessel2) const;
-  virtual std::string PileUpInfo() const;
 
   // Computes and returns |current_physics_bubble_->displacement_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for
@@ -325,10 +326,6 @@ class Plugin {
   virtual bool MustRotateBodies() const;
 
   virtual Instant CurrentTime() const;
-
-  /*
-  virtual void ReportCollision(GUID const& first_vessel,
-                               GUID const& second_vessel);*/
 
   // Must be called after initialization.
   virtual void WriteToMessage(not_null<serialization::Plugin*> message) const;

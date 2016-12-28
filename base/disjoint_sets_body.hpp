@@ -8,7 +8,12 @@ namespace principia {
 namespace base {
 
 template<typename T>
-typename Subset<T>::Properties& Subset<T>::properties() {
+typename Subset<T>::Properties const& Subset<T>::properties() const {
+  return *node_->properties_;
+}
+
+template<typename T>
+typename Subset<T>::Properties& Subset<T>::mutable_properties() {
   return *node_->properties_;
 }
 

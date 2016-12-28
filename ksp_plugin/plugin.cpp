@@ -104,8 +104,9 @@ Plugin::Plugin(Instant const& game_epoch,
       current_time_(solar_system_epoch) {}
 
 Plugin::~Plugin() {
-  for (auto const& id_vessel : vessels_) {
-    id_vessel.second->clear_pile_up();
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.clear_pile_up();
   }
 }
 
@@ -372,7 +373,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
   FreeVessels();
   for (auto const& id_vessel : vessels_) {
-    Subset<Vessel>::Find(*id_vessel.second).properties().Collect(&pile_ups_);
+    Subset<Vessel>::Find(
+        *id_vessel.second).mutable_properties().Collect(&pile_ups_);
   }
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
@@ -649,17 +651,6 @@ void Plugin::ReportCollision(GUID const& vessel1, GUID const& vessel2) const {
   Vessel& v1 = *FindOrDie(vessels_, vessel1);
   Vessel& v2 = *FindOrDie(vessels_, vessel2);
   Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
-}
-
-std::string Plugin::PileUpInfo() const {
-  std::stringstream result;
-  for (auto const& pile_up : pile_ups_) {
-    for (auto const vessel: pile_up.vessels()) {
-      result << vessel << ";";
-    }
-    result << "\n";
-  }
-  return result.str();
 }
 
 Displacement<World> Plugin::BubbleDisplacementCorrection(

@@ -746,7 +746,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
       // The collisions are reported and stored into |currentCollisions| after
-      // |FixedUpdate|; in |FixedUpdate|, these are the collisions that occured
+      // |FixedUpdate|; in |FixedUpdate|, these are the collisions that occurred
       // during the preceding step, which is why we report them before calling
       // |AdvanceTime|.
       foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
@@ -1073,9 +1073,6 @@ public partial class PrincipiaPluginAdapter
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
     // TODO(egg): remove this diagnosis when we have proper collision handling.
-    if (PluginRunning()) {
-      UnityEngine.GUILayout.TextArea(text : plugin_.PileUpInfo());
-    }
     if (FlightGlobals.ActiveVessel != null) {
       int collisions = 0;
       int part_collisions = 0;

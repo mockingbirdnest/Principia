@@ -29,8 +29,6 @@ class PileUp final {
  public:
   explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
 
-  ~PileUp();
-
   std::list<not_null<Vessel*>> const& vessels() const;
 
  private:
