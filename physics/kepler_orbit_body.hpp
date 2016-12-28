@@ -133,12 +133,12 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Vector<double, Frame> const z({0, 0, 1});
   Bivector<double, Frame> const x_wedge_y({0, 0, 1});
 
-  Bivector<SpecificAngularMomentum, Frame> const h = Wedge(r, v) * Radian;
+  Bivector<SpecificAngularMomentum, Frame> const h = Wedge(r / Radian, v);
   // The eccentricity vector has magnitude equal to the eccentricity, and points
   // towards the periapsis.  This is a vector (the direction of the periapsis
   // does not depend on the coordinate system).
   Vector<double, Frame> const eccentricity_vector =
-      v * h / μ / Radian - Normalize(r);
+      v * h / μ * Radian - Normalize(r);
   auto const& periapsis = eccentricity_vector;
   Vector<SpecificAngularMomentum, Frame> const ascending_node = z * h;
 
