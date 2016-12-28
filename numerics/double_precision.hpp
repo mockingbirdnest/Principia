@@ -16,7 +16,7 @@ using quantities::Sum;
 
 // A simple container for accumulating a value using double precision.  The
 // type of the value must be an affine space.  The notations follow
-// Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey
+// Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey,
 // 2007.
 template<typename T>
 struct DoublePrecision final {
@@ -52,7 +52,8 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
 template<typename T>
-DoublePrecision<T> operator+(DoublePrecision<T> const& left);
+DoublePrecision<Difference<T>> operator+(
+    DoublePrecision<Difference<T>> const& left);
 
 template<typename T>
 DoublePrecision<Difference<T>> operator-(
@@ -73,6 +74,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal_double_precision
 
 using internal_double_precision::DoublePrecision;
+using internal_double_precision::TwoSum;
 
 }  // namespace numerics
 }  // namespace principia

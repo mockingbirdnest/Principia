@@ -3,8 +3,10 @@
 
 #include "numerics/double_precision.hpp"
 
-#include "base/macros.hpp"
+#include <cmath>
+
 #include "geometry/serialization.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -17,6 +19,39 @@ template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
     : value(value),
       error() {}
+
+template<typename T>
+DoublePrecision<T>& DoublePrecision<T>::operator+=(
+    Difference<T> const& right) {
+  // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
+  // This is equivalent to |QuickTwoSum(value, right + error)|.
+  T const temp = value;
+  Difference<T> const y = right + error;
+  value = temp + y;
+  error = (temp - value) + y;
+  return *this;
+}
+
+template<typename T>
+DoublePrecision<T>& DoublePrecision<T>::operator+=(
+    DoublePrecision<Difference<T>> const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename T>
+DoublePrecision<T>& DoublePrecision<T>::operator-=(
+    Difference<T> const& right) {
+  *this += -right;
+  return *this;
+}
+
+template<typename T>
+DoublePrecision<T>& DoublePrecision<T>::operator-=(
+    DoublePrecision<Difference<T>> const& right) {
+  *this = *this - right;
+  return *this;
+}
 
 template<typename T>
 void DoublePrecision<T>::WriteToMessage(
@@ -42,6 +77,79 @@ DoublePrecision<T> DoublePrecision<T>::ReadFromMessage(
   double_precision.value = ValueSerializer::ReadFromMessage(message.value());
   double_precision.error = ErrorSerializer::ReadFromMessage(message.error());
   return double_precision;
+}
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> Scale(T const & scale,
+                                     DoublePrecision<U> const& right) {
+#ifdef _DEBUG
+  double const s = scale / quantities::SIUnit<T>();
+  if (s != 0.0) {
+    int exponent;
+    double const mantissa = std::frexp(s, &exponent);
+    CHECK_EQ(0.5, std::fabs(mantissa)) << scale;
+  }
+#endif
+  DoublePrecision result;
+  result.value = right.value * scale;
+  result.error = right.error * scale;
+  return result;
+}
+
+template<typename T, typename U>
+DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
+  DCHECK_GE(std::abs(a), std::abs(b));
+  // Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey,
+  // 2007.
+  DoublePrecision<Sum<T, U>> result;
+  auto& s = result.value;
+  auto& e = result.error;
+  s = a + b;
+  e = b - (s - a);
+  return result;
+}
+
+template<typename T, typename U>
+DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
+  // Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey,
+  // 2007.
+  DoublePrecision<Sum<T, U>> result;
+  auto& s = result.value;
+  auto& e = result.error;
+  s = a + b;
+  auto const v = s - a;
+  e = (a - (s - v)) + (b - v);
+  return result;
+}
+
+template<typename T>
+DoublePrecision<Difference<T>> operator+(
+    DoublePrecision<Difference<T>> const& left) {
+  return left;
+}
+
+template<typename T>
+DoublePrecision<Difference<T>> operator-(
+    DoublePrecision<Difference<T>> const& left) {
+  DoublePrecision<Difference<T>> result;
+  result.value = -left.value;
+  result.error = -left.error;
+  return result;
+}
+
+template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
+                                     DoublePrecision<U> const& right) {
+  // Software for Doubled-Precision Floating-Point Computations, Linnainmaa,
+  // 1981, algorithm longadd.
+  auto const sum = TwoSum(left.value, right.value);
+  return QuickTwoSum(sum.value, (sum.error + left.error) + right.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
+                                            DoublePrecision<U> const& right) {
+  return left + (-right);
 }
 
 template<typename T>
