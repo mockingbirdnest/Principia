@@ -34,7 +34,7 @@ SymplecticRungeKuttaNyströmIntegrator(
   DoublePrecision<double> c_i = 0.0;
   for (int i = 0; i < stages_; ++i) {
     c_[i] = c_i.value;
-    c_i.Increment(a_[i]);
+    c_i += a_[i];
   }
   CHECK_LE(ULPDistance(1.0, c_i.value), 4);
   if (composition == ABA) {
@@ -170,10 +170,10 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     }
 
     // Increment the solution.
-    t.Increment(h);
+    t += h;
     for (int k = 0; k < dimension; ++k) {
-      q[k].Increment(Δq[k]);
-      v[k].Increment(Δv[k]);
+      q[k] += Δq[k];
+      v[k] += Δv[k];
     }
     append_state(current_state);
   }

@@ -15,7 +15,7 @@ using quantities::Sum;
 
 // A simple container for accumulating a value using double precision.  The
 // type of the value must be an affine space.  The notations follow
-// Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey
+// Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey,
 // 2007.
 template<typename T>
 struct DoublePrecision final {

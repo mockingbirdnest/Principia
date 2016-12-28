@@ -24,11 +24,12 @@ template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator+=(
     Difference<T> const& right) {
   // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
-  // This is equivalent to |QuickTwoSum(value, increment + error)|.
+  // This is equivalent to |QuickTwoSum(value, right + error)|.
   T const temp = value;
-  Difference<T> const y = increment + error;
+  Difference<T> const y = right + error;
   value = temp + y;
   error = (temp - value) + y;
+  return *this;
 }
 
 template<typename T>
@@ -41,14 +42,15 @@ DoublePrecision<T>& DoublePrecision<T>::operator+=(
 template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator-=(
     Difference<T> const& right) {
-  *this = *this - right;
+  *this += -right;
   return *this;
 }
 
 template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator-=(
     DoublePrecision<Difference<T>> const& right) {
-  *this += (-right);
+  *this = *this - right;
+  return *this;
 }
 
 template<typename T>
@@ -82,9 +84,9 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
                                      DoublePrecision<U> const& right) {
 #ifdef _DEBUG
   double const s = scale / quantities::SIUnit<T>();
-  if (scale != 0.0) {
+  if (s != 0.0) {
     int exponent;
-    double const mantissa = std::frexp(scale, &exponent);
+    double const mantissa = std::frexp(s, &exponent);
     CHECK_EQ(0.5, std::fabs(mantissa)) << scale;
   }
 #endif
@@ -97,7 +99,7 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
   DCHECK_GE(std::abs(a), std::abs(b));
-  // Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey
+  // Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey,
   // 2007.
   DoublePrecision<Sum<T, U>> result;
   auto& s = result.value;
@@ -109,7 +111,7 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
-  // Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey
+  // Library for Double-Double and Quad-Double Arithmetic, Hida, Li and Bailey,
   // 2007.
   DoublePrecision<Sum<T, U>> result;
   auto& s = result.value;
