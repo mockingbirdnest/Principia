@@ -8,6 +8,7 @@
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/vessel_subsets.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
@@ -275,6 +276,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 }
 
 void Vessel::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
+  CHECK(!is_piled_up());
   containing_pile_up_ = pile_up;
 }
 

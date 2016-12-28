@@ -37,8 +37,12 @@ template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Solve(Instant const& t_final,
       IntegrationInstance& instance) const {
-  using Displacement = typename ODE::Displacement;
   using Acceleration = typename ODE::Acceleration;
+  using Displacement = typename ODE::Displacement;
+  using DoubleDisplacement = DoublePrecision<Displacement>;
+  using DoubleDisplacements = std::vector<DoubleDisplacement>;
+  using DoublePosition = DoublePrecision<Position>;
+  using DoublePositions = std::vector<DoublePosition>;
 
   Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
   auto const& equation = down_cast_instance.equation;
@@ -64,7 +68,7 @@ Solve(Instant const& t_final,
 
   std::vector<Position> positions(dimension);
 
-  std::vector<DoublePrecision<Position>> Σj_minus_ɑj_qj(dimension);
+  DoublePositions Σj_minus_ɑj_qj(dimension);
   std::vector<Acceleration> Σj_βj_numerator_aj(dimension);
   while (h <= (t_final - t.value) - t.error) {
     // We take advantage of the symmetry to iterate on the list of previous
@@ -74,27 +78,27 @@ Solve(Instant const& t_final,
 
     // This block corresponds to j = 0.  We must not pair it with j = k.
     {
-      std::vector<Displacement> const& qj = front_it->displacements;
+      DoubleDisplacements const& qj = front_it->displacements;
       std::vector<Acceleration> const& aj = front_it->accelerations;
       double const ɑj = ɑ_[0];
       double const βj_numerator = β_numerator_[0];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d] = -ɑj * qj[d];
+        Σj_minus_ɑj_qj[d] = Scale(-ɑj, qj[d]);
         Σj_βj_numerator_aj[d] = βj_numerator * aj[d];
       }
       ++front_it;
     }
     // The generic value of j, paired with k - j.
     for (int j = 1; j < k / 2; ++j) {
-      std::vector<Displacement> const& qj = front_it->displacements;
-      std::vector<Displacement> const& qk_minus_j = back_it->displacements;
+      DoubleDisplacements const& qj = front_it->displacements;
+      DoubleDisplacements const& qk_minus_j = back_it->displacements;
       std::vector<Acceleration> const& aj = front_it->accelerations;
       std::vector<Acceleration> const& ak_minus_j = back_it->accelerations;
       double const ɑj = ɑ_[j];
       double const βj_numerator = β_numerator_[j];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d] -= ɑj * qj[d];
-        Σj_minus_ɑj_qj[d] -= ɑj * qk_minus_j[d];
+        Σj_minus_ɑj_qj[d] -= Scale(ɑj, qj[d]);
+        Σj_minus_ɑj_qj[d] -= Scale(ɑj, qk_minus_j[d]);
         Σj_βj_numerator_aj[d] += βj_numerator * (aj[d] + ak_minus_j[d]);
       }
       ++front_it;
@@ -102,12 +106,12 @@ Solve(Instant const& t_final,
     }
     // This block corresponds to j = k / 2.  We must not pair it with j = k / 2.
     {
-      std::vector<Displacement> const& qj = front_it->displacements;
+      DoubleDisplacements const& qj = front_it->displacements;
       std::vector<Acceleration> const& aj = front_it->accelerations;
       double const ɑj = ɑ_[k / 2];
       double const βj_numerator = β_numerator_[k / 2];
       for (int d = 0; d < dimension; ++d) {
-        Σj_minus_ɑj_qj[d] -= ɑj * qj[d];
+        Σj_minus_ɑj_qj[d] -= Scale(ɑj, qj[d]);
         Σj_βj_numerator_aj[d] += βj_numerator * aj[d];
       }
     }
@@ -124,9 +128,9 @@ Solve(Instant const& t_final,
     double const ɑk = ɑ_[0];
     typename ODE::SystemState& system_state = down_cast_instance.current_state;
     for (int d = 0; d < dimension; ++d) {
-      DoublePrecision<Position>& current_position = Σj_minus_ɑj_qj[d];
+      DoublePosition& current_position = Σj_minus_ɑj_qj[d];
       current_position += h * h * Σj_βj_numerator_aj[d] / β_denominator_;
-      current_step.displacements.push_back(current_position.value - Position());
+      current_step.displacements.push_back(current_position - Position());
       positions[d] = current_position.value;
       system_state.positions[d] = current_position;
     }
@@ -240,13 +244,15 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::
 FillStepFromSystemState(ODE const& equation,
                         typename ODE::SystemState const& state,
                         Step& step) {
+  std::vector<typename ODE::Position> positions;
   step.time = state.time;
   for (auto const& position : state.positions) {
-    step.displacements.push_back(position.value - Position());
+    step.displacements.push_back(position - Position());
+    positions.push_back(position.value);
   }
   step.accelerations.resize(step.displacements.size());
   equation.compute_acceleration(step.time.value,
-                                step.displacements,
+                                positions,
                                 step.accelerations);
 }
 

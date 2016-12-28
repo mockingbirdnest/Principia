@@ -90,7 +90,7 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
     CHECK_EQ(0.5, std::fabs(mantissa)) << scale;
   }
 #endif
-  DoublePrecision result;
+  DoublePrecision<Product<T, U>> result;
   result.value = right.value * scale;
   result.error = right.error * scale;
   return result;
@@ -98,7 +98,8 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
-  DCHECK_GE(std::abs(a), std::abs(b));
+  DCHECK_GE(std::abs(a / quantities::SIUnit<T>()),
+            std::abs(b / quantities::SIUnit<U>()));
   // Hida, Li and Bailey (2007), Library for Double-Double and Quad-Double
   // Arithmetic.
   DoublePrecision<Sum<T, U>> result;
@@ -147,7 +148,7 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(Difference<T> const& left,
+DoublePrecision<Sum<T, U>> operator+(T const& left,
                                      DoublePrecision<U> const& right) {
   DoublePrecision<Sum<T, U>> result = right;
   result += left;
@@ -156,25 +157,28 @@ DoublePrecision<Sum<T, U>> operator+(Difference<T> const& left,
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     Difference<U> const& right) {
+                                     U const& right) {
   return right + left;
 }
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right) {
-  return left + (-right);
+  // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
+  // Computations, algorithm longadd.
+  auto const sum = TwoSum(left.value, -right.value);
+  return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
 }
 
 template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(Difference<T> const& left,
+DoublePrecision<Difference<T, U>> operator-(T const& left,
                                             DoublePrecision<U> const& right) {
   return left + (-right);
 }
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            Difference<U> const& right) {
+                                            U const& right) {
   return left + (-right);
 }
 

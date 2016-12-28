@@ -62,7 +62,7 @@ class SymmetricLinearMultistepIntegrator
   // are really |Position|s, but we do complex computations on them and it would
   // be very inconvenient to cast these computations as barycentres.
   struct Step final {
-    std::vector<typename ODE::Displacement> displacements;
+    std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
     std::vector<typename ODE::Acceleration> accelerations;
     DoublePrecision<Instant> time;
   };

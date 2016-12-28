@@ -64,24 +64,24 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right);
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(Difference<T> const& left,
+DoublePrecision<Sum<T, U>> operator+(T const& left,
                                      DoublePrecision<U> const& right);
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     Difference<U> const& right);
+                                     U const& right);
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
 
 template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(Difference<T> const& left,
+DoublePrecision<Difference<T, U>> operator-(T const& left,
                                             DoublePrecision<U> const& right);
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            Difference<U> const& right);
+                                            U const& right);
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os,

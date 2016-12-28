@@ -10,6 +10,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
+#include "ksp_plugin/pile_up.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -18,9 +19,6 @@
 
 namespace principia {
 namespace ksp_plugin {
-
-FORWARD_DECLARE_FROM(pile_up, class, PileUp);
-
 namespace internal_vessel {
 
 using base::not_null;
@@ -133,7 +131,11 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       not_null<Celestial const*> parent);
 
+  // Requires |!is_piled_up()|.
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
+  // iterator, use |clear_pile_up| instead, which will take care of letting all
+  // vessels know that their |PileUp| is gone.
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
   containing_pile_up() const;
 

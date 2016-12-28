@@ -745,7 +745,40 @@ public partial class PrincipiaPluginAdapter
             active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
+      // The collisions are reported and stored into |currentCollisions| after
+      // |FixedUpdate|; in |FixedUpdate|, these are the collisions that occurred
+      // during the preceding step, which is why we report them before calling
+      // |AdvanceTime|.
+      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
+        if (plugin_.HasVessel(vessel1.id.ToString())) {
+          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
+            var vessel2 = vessel1.evaController.LadderPart.vessel;
+            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+              plugin_.ReportCollision(vessel1.id.ToString(),
+                                      vessel2.id.ToString());
+            }
+          }
+          foreach (Part part in vessel1.parts) {
+            foreach (var collider in part.currentCollisions) {
+              var vessel2 =
+                  collider.gameObject.GetComponentUpwards<Part>().vessel;
+              if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+                plugin_.ReportCollision(vessel1.id.ToString(),
+                                        vessel2.id.ToString());
+              }
+            }
+          }
+        }
+      }
       plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+        // TODO(egg): Tell the plugin about the vessel's position, so that its
+        // displacement from the centre of mass of its |PileUp| may be computed
+        // and used to set its position below.
+        foreach (Part part in vessel.parts) {
+          // TODO(egg): Tell the plugin about part.force;
+        }
+      }
       if (ready_to_draw_active_vessel_trajectory) {
         plugin_.UpdatePrediction(active_vessel.id.ToString());
       }
@@ -761,6 +794,9 @@ public partial class PrincipiaPluginAdapter
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       SetBodyFrames();
+      // TODO(egg): set the positions of vessels inside the physics bubble too;
+      // Only move the universe to set the centre of mass of all loaded PileUps
+      // at the centre of the physics bubble.
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
       if (!plugin_.PhysicsBubbleIsEmpty()) {
@@ -1055,6 +1091,10 @@ public partial class PrincipiaPluginAdapter
           : "Active vessel is involved in " + collisions +
                 " collision(s) including " + part_collisions +
                 " with another vessel.");
+    }
+    if (FlightGlobals.ActiveVessel != null) {
+      UnityEngine.GUILayout.TextArea(FlightGlobals.ActiveVessel.geeForce +
+                                     " g0");
     }
     String last_reset_information;
     if (!PluginRunning()) {
