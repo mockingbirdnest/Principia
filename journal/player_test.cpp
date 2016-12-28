@@ -93,7 +93,7 @@ TEST_F(PlayerTest, Benchmarks) {
   }
 }
 
-#if 1
+#if 0
 // This test is only run if the --gtest_filter flag names it explicitly.
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
@@ -114,7 +114,7 @@ TEST_F(PlayerTest, Debug) {
     LOG(ERROR) << "Last successful method out/return: \n"
                << player.last_method_out_return().DebugString();
 
-#if 1
+#if 0
     serialization::Method method_in;
     auto* extension = method_in.MutableExtension(
         serialization::ReportCollision::extension);
@@ -126,7 +126,9 @@ TEST_F(PlayerTest, Debug) {
     method_out_return.MutableExtension(
         serialization::ReportCollision::extension);
     LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-    CHECK(RunIfAppropriate<ReportCollision>(method_in, method_out_return, player));
+    CHECK(RunIfAppropriate<ReportCollision>(method_in,
+                                            method_out_return,
+                                            player));
 #endif
   }
 }
