@@ -4,6 +4,7 @@
 #include "numerics/double_precision.hpp"
 
 #include <cmath>
+#include <type_traits>
 
 #include "geometry/serialization.hpp"
 #include "quantities/si.hpp"
@@ -98,8 +99,10 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
-  DCHECK_GE(std::abs(a / quantities::SIUnit<T>()),
-            std::abs(b / quantities::SIUnit<U>()));
+  // TODO(egg): write a check that works when T is |Position|, |Multivector|,
+  // |Quantity|, |DoublePrecision|, or |DegreesOfFreedom|...
+  // DCHECK_GE(std::abs((a - T{}) / quantities::SIUnit<Difference<T>>()),
+  //           std::abs((b - U{}) / quantities::SIUnit<Difference<U>>()));
   // Hida, Li and Bailey (2007), Library for Double-Double and Quad-Double
   // Arithmetic.
   DoublePrecision<Sum<T, U>> result;
@@ -124,14 +127,14 @@ DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
 }
 
 template<typename T>
-DoublePrecision<Difference<T>> operator+(
-    DoublePrecision<Difference<T>> const& left) {
+DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
+  static_assert(std::is_same<Difference<T>, T>::value,
+                "Unary + must be used on a vector");
   return left;
 }
 
 template<typename T>
-DoublePrecision<Difference<T>> operator-(
-    DoublePrecision<Difference<T>> const& left) {
+DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left) {
   DoublePrecision<Difference<T>> result;
   result.value = -left.value;
   result.error = -left.error;
@@ -183,9 +186,20 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
 }
 
 template<typename T>
+std::string DebugString(DoublePrecision<T> const& double_precision) {
+  // We use |DebugString| to get all digits when |T| is |double|.  In that case
+  // ADL will not find it, so we need the |using|.  For some values of |T|,
+  // |DebugString| will come from elsewhere, so we cannot directly call
+  // |quantities::Multivector|.
+  using quantities::DebugString;
+  return DebugString(double_precision.value) + "|" +
+         DebugString(double_precision.error);
+}
+
+template<typename T>
 std::ostream& operator<<(std::ostream& os,
                          const DoublePrecision<T>& double_precision) {
-  os << double_precision.value << "|" << double_precision.error;
+  os << DebugString(double_precision);
   return os;
 }
 

@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <string>
+
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -35,8 +37,8 @@ struct DoublePrecision final {
   static DoublePrecision ReadFromMessage(
       serialization::DoublePrecision const& message);
 
-  T value;
-  Difference<T> error;
+  T value{};
+  Difference<T> error{};
 };
 
 // |scale| must be a signed power of two or zero.
@@ -52,12 +54,10 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
 template<typename T>
-DoublePrecision<Difference<T>> operator+(
-    DoublePrecision<Difference<T>> const& left);
+DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left);
 
 template<typename T>
-DoublePrecision<Difference<T>> operator-(
-    DoublePrecision<Difference<T>> const& left);
+DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
@@ -84,8 +84,11 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             U const& right);
 
 template<typename T>
+std::string DebugString(DoublePrecision<T> const& double_precision);
+
+template<typename T>
 std::ostream& operator<<(std::ostream& os,
-                         const DoublePrecision<T>& double_precision);
+                         DoublePrecision<T> const& double_precision);
 
 }  // namespace internal_double_precision
 
