@@ -14,6 +14,7 @@ namespace principia {
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Position;
+using quantities::Length;
 using quantities::si::Metre;
 using ::testing::Eq;
 
@@ -38,6 +39,18 @@ TEST_F(DoublePrecisionTest, CompensatedSummation) {
   }
   EXPECT_THAT((q.value - World::origin).coordinates().x, Eq((1 + ε) * Metre));
   EXPECT_THAT(q.error.coordinates().x, Eq(0 * Metre));
+}
+
+TEST_F(DoublePrecisionTest, BadlyConditionedCompensatedSummation) {
+  Length const x = (1 + ε) * Metre;
+  DoublePrecision<Length> accumulator;
+  accumulator += x;
+  accumulator -= 1 * Metre;
+  LOG(ERROR)<<accumulator;
+  accumulator += x;
+  LOG(ERROR)<<accumulator;
+  EXPECT_THAT(accumulator.value, Eq(1 * Metre));
+  EXPECT_THAT(accumulator.error, Eq(0 * Metre));
 }
 
 }  // namespace internal_double_precision
