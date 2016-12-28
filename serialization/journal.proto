@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5103.
+  extensions 5000 to 5999;  // Last used: 5104.
 }
 
 message AddVesselToNextPhysicsBubble {
