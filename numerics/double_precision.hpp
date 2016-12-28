@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -48,7 +49,7 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> TwoSum(T const& a, const& b);
+DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
 template<typename T>
 DoublePrecision<T> operator+(DoublePrecision<T> const& left);

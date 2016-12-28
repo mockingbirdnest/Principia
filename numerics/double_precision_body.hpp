@@ -19,17 +19,6 @@ constexpr DoublePrecision<T>::DoublePrecision(T const& value)
       error() {}
 
 template<typename T>
-FORCE_INLINE void DoublePrecision<T>::Increment(
-    Difference<T> const& increment) {
-  // The naming conventions follow Higham, Accuracy and Stability of Numerical
-  // Algorithms, Algorithm 4.2.
-  T const temp = value;
-  Difference<T> const y = increment + error;
-  value = temp + y;
-  error = (temp - value) + y;
-}
-
-template<typename T>
 void DoublePrecision<T>::WriteToMessage(
     not_null<serialization::DoublePrecision*> const message) const {
   using ValueSerializer = PointOrMultivectorSerializer<

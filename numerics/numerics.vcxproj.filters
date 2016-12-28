@@ -67,5 +67,8 @@
     <ClCompile Include="hermite3_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="double_precision_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
