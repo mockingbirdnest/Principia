@@ -372,9 +372,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   FreeVessels();
-  for (auto const& id_vessel : vessels_) {
-    Subset<Vessel>::Find(
-        *id_vessel.second).mutable_properties().Collect(&pile_ups_);
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
   }
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
