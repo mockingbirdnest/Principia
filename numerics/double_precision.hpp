@@ -48,10 +48,11 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> TwoSum(T const& a, const& b);
+DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
 template<typename T>
-DoublePrecision<T> operator+(DoublePrecision<T> const& left);
+DoublePrecision<Difference<T>> operator+(
+    DoublePrecision<Difference<T>> const& left);
 
 template<typename T>
 DoublePrecision<Difference<T>> operator-(
@@ -72,6 +73,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal_double_precision
 
 using internal_double_precision::DoublePrecision;
+using internal_double_precision::TwoSum;
 
 }  // namespace numerics
 }  // namespace principia

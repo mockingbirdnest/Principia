@@ -72,10 +72,9 @@ std::set<Argument> SolveQuadraticEquation(
 
   static Discriminant const discriminant_zero{};
 
-  // Use compensated summation for the discriminant because there can be
+  // Use double precision for the discriminant because there can be
   // cancellations.
-  DoublePrecision<Discriminant> discriminant(a1 * a1);
-  discriminant.Increment(-4.0 * a0 * a2);
+  DoublePrecision<Discriminant> discriminant = TwoSum(a1 * a1, -4.0 * a0 * a2);
 
   if (discriminant.value == discriminant_zero &&
       discriminant.error == discriminant_zero) {
