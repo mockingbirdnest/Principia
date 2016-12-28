@@ -41,16 +41,44 @@ TEST_F(DoublePrecisionTest, CompensatedSummation) {
   EXPECT_THAT(q.error.coordinates().x, Eq(0 * Metre));
 }
 
-TEST_F(DoublePrecisionTest, BadlyConditionedCompensatedSummation) {
+TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummation) {
   Length const x = (1 + ε) * Metre;
-  DoublePrecision<Length> accumulator;
-  accumulator += x;
-  accumulator -= 1 * Metre;
-  LOG(ERROR)<<accumulator;
-  accumulator += x;
-  LOG(ERROR)<<accumulator;
-  EXPECT_THAT(accumulator.value, Eq(1 * Metre));
-  EXPECT_THAT(accumulator.error, Eq(0 * Metre));
+  for (bool cancellation : {true, false}) {
+    Length const y = cancellation ? ε * x : π * x;
+    DoublePrecision<Length> accumulator;
+    accumulator += x;
+    accumulator -= y;
+    accumulator += x;
+    accumulator -= y;
+    accumulator -= x;
+    accumulator += y;
+    accumulator -= x;
+    accumulator += y;
+    if (cancellation) {
+      EXPECT_THAT(accumulator.value, Eq(ε² * Metre));
+    } else {
+      EXPECT_THAT(accumulator.value, Eq(0 * Metre));
+    }
+    EXPECT_THAT(accumulator.error, Eq(0 * Metre));
+  }
+}
+
+TEST_F(DoublePrecisionTest, LongAdd) {
+  Length const x = (1 + ε) * Metre;
+  for (bool cancellation : {true, false}) {
+    Length const y = cancellation ? ε * x : π * x;
+    DoublePrecision<Length> accumulator;
+    accumulator += TwoSum(x, -y);
+    accumulator += TwoSum(x, -y);
+    accumulator -= TwoSum(x, -y);
+    accumulator -= TwoSum(x, -y);
+    if (cancellation) {
+      EXPECT_THAT(accumulator.value, Eq(ε² * Metre));
+    } else {
+      EXPECT_THAT(accumulator.value, Eq(0 * Metre));
+    }
+    EXPECT_THAT(accumulator.error, Eq(0 * Metre));
+  }
 }
 
 }  // namespace internal_double_precision
