@@ -25,6 +25,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/vessel_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -101,6 +102,13 @@ Plugin::Plugin(Instant const& game_epoch,
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
       current_time_(solar_system_epoch) {}
+
+Plugin::~Plugin() {
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.clear_pile_up();
+  }
+}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
@@ -329,6 +337,7 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
+  Subset<Vessel>::MakeSingleton(*vessel, vessel);
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
@@ -363,6 +372,10 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   FreeVessels();
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
+  }
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
 
@@ -634,6 +647,12 @@ bool Plugin::PhysicsBubbleIsEmpty() const {
   VLOG_AND_RETURN(1, bubble_->empty());
 }
 
+void Plugin::ReportCollision(GUID const& vessel1, GUID const& vessel2) const {
+  Vessel& v1 = *FindOrDie(vessels_, vessel1);
+  Vessel& v2 = *FindOrDie(vessels_, vessel2);
+  Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
+}
+
 Displacement<World> Plugin::BubbleDisplacementCorrection(
     Position<World> const& sun_world_position) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
@@ -861,6 +880,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     if (vessel_message.dirty()) {
       vessel->set_dirty();
     }
+    Subset<Vessel>::MakeSingleton(*vessel, vessel.get());
     auto const inserted =
         vessels.emplace(vessel_message.guid(), std::move(vessel));
     CHECK(inserted.second);
@@ -1058,6 +1078,7 @@ void Plugin::FreeVessels() {
       ++it;
     } else {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
+      vessel->clear_pile_up();
       it = vessels_.erase(it);
     }
   }

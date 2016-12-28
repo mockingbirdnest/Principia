@@ -41,7 +41,8 @@ class Subset final {
   // Returns the subset containing |element|.
   static Subset Find(T& element);
 
-  Properties const& properties();
+  Properties const& properties() const;
+  Properties& mutable_properties();
 
   class Node final {
    public:
