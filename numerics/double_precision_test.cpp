@@ -68,17 +68,23 @@ TEST_F(DoublePrecisionTest, LongAdd) {
   for (bool cancellation : {true, false}) {
     Length const y = cancellation ? ε * x : π * x;
     DoublePrecision<Length> accumulator;
-    accumulator += TwoSum(x, -y);
-    accumulator += TwoSum(x, -y);
-    accumulator -= TwoSum(x, -y);
-    accumulator -= TwoSum(x, -y);
-    if (cancellation) {
-      EXPECT_THAT(accumulator.value, Eq(ε² * Metre));
-    } else {
-      EXPECT_THAT(accumulator.value, Eq(0 * Metre));
-    }
+    accumulator += TwoSum(+x, -y);
+    accumulator -= TwoSum(-x, +y);
+    accumulator -= TwoSum(+x, -y);
+    accumulator += TwoSum(-x, +y);
+    EXPECT_THAT(accumulator.value, Eq(0 * Metre));
     EXPECT_THAT(accumulator.error, Eq(0 * Metre));
   }
+}
+
+TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
+  DoublePrecision<DoublePrecision<Length>> accumulator = 1 * Metre;
+  Length const δ = ε² / 4 * Metre;
+  LOG(ERROR)<<accumulator;
+  for (int i = 0; i < 4; ++i) {
+    accumulator += δ;
+  }
+  LOG(ERROR)<<accumulator;
 }
 
 }  // namespace internal_double_precision
