@@ -73,7 +73,8 @@ std::set<Argument> SolveQuadraticEquation(
   static Discriminant const discriminant_zero{};
 
   // Use double precision for the discriminant because there can be
-  // cancellations.
+  // cancellations.  Higham mentions that it is necessary "to use extended
+  // precision (or some trick tantamount to the use of extended precision)."
   DoublePrecision<Discriminant> discriminant = TwoSum(a1 * a1, -4.0 * a0 * a2);
 
   if (discriminant.value == discriminant_zero &&
