@@ -53,6 +53,21 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
+// |TwoDifference| may have any of the following signatures:
+//   1. Point × Point → Vector;
+//   2. Point × Vector → Point;
+//   3. Vector × Vector → Vector;
+// The first overload handles the first case, and the second handles the last
+// two.
+template<typename T,
+         typename U,
+         typename = Difference<T, Difference<T, U>>,
+         typename = std::enable_if_t<!std::is_same<U, Difference<U>>::value>>
+DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
+
+template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
+DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
+
 template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left);
 

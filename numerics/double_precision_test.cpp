@@ -18,6 +18,7 @@ using geometry::Point;
 using quantities::Length;
 using quantities::si::Metre;
 using ::testing::Eq;
+using ::testing::Ge;
 
 namespace numerics {
 namespace internal_double_precision {
@@ -110,6 +111,39 @@ TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
   EXPECT_THAT(DebugString(long_long_long_float + long_long_long_float),
               Eq(DebugString(TwoSum(Scale(2, long_long_long_float.value),
                                     Scale(2, long_long_long_float.error)))));
+}
+
+TEST_F(DoublePrecisionTest, ComparableTwoSum) {
+  DoublePrecision<double> x = TwoSum(π, e);
+  int value_exponent;
+  int error_exponent;
+  std::frexp(x.value, &value_exponent);
+  std::frexp(x.error, &error_exponent);
+  EXPECT_THAT(value_exponent - error_exponent, Ge(53));
+}
+
+TEST_F(DoublePrecisionTest, LongAddPositions) {
+  DoublePrecision<Position<World>> accumulator;
+  Displacement<World> const δ_value(
+      {1 * Metre, 2 * Metre, 3 * Metre});
+  Displacement<World> const δ_error(
+      {ε / 4 * Metre, ε / 2 * Metre, ε / 2 * Metre});
+  DoublePrecision<Displacement<World>> const δ = TwoSum(δ_error, δ_value);
+  EXPECT_THAT(δ.value, Eq(δ_value));
+  EXPECT_THAT(δ.error, Eq(δ_error));
+  for (int i = 0; i < 4; ++i) {
+    accumulator += δ;
+  }
+  for (int i = 0; i < 3; ++i) {
+    accumulator -= δ_value;
+  }
+  DoublePrecision<Displacement<World>> const accumulated_displacement =
+      accumulator - World::origin;
+  EXPECT_THAT(accumulated_displacement.value,
+              Eq(δ_value + Displacement<World>(
+                               {ε * Metre, 2 * ε * Metre, 2 * ε * Metre})));
+  EXPECT_THAT(accumulated_displacement.error,
+              Eq(Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre})));
 }
 
 }  // namespace internal_double_precision
