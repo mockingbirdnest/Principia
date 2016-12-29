@@ -99,7 +99,7 @@ Solve(Instant const& t_final,
       for (int d = 0; d < dimension; ++d) {
         Σj_minus_ɑj_qj[d] -= Scale(ɑj, qj[d]);
         Σj_minus_ɑj_qj[d] -= Scale(ɑj, qk_minus_j[d]);
-        Σj_βj_numerator_aj[d] += βj_numerator * (aj[d] + ak_minus_j[d]);
+        Σj_βj_numerator_aj[d].Increment(βj_numerator * (aj[d] + ak_minus_j[d]));
       }
       ++front_it;
       ++back_it;
@@ -117,7 +117,7 @@ Solve(Instant const& t_final,
     }
 
     // Create a new step in the instance.
-    t += h;
+    t.Increment(h);
     previous_steps.pop_front();
     previous_steps.emplace_back();
     Step& current_step = previous_steps.back();

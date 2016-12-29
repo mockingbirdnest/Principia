@@ -8,6 +8,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -15,10 +16,16 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Position;
 using geometry::Point;
+using geometry::R3Element;
 using quantities::Length;
+using quantities::Sqrt;
+using quantities::Tan;
 using quantities::si::Metre;
+using quantities::si::Radian;
+using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::Ge;
+using ::testing::Ne;
 
 namespace numerics {
 namespace internal_double_precision {
@@ -35,13 +42,15 @@ using World = Frame<serialization::Frame::TestTag,
 class DoublePrecisionTest : public ::testing::Test {};
 
 TEST_F(DoublePrecisionTest, CompensatedSummation) {
-  DoublePrecision<Position<World>> accumulator =
+  Position<World> const initial =
       World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
+  DoublePrecision<Position<World>> accumulator = initial;
   Displacement<World> const δ({ε / 4 * Metre, 0 * Metre, 0 * Metre});
-  EXPECT_THAT((accumulator + δ).value, Eq(accumulator.value));
-  EXPECT_THAT((δ + accumulator).value, Eq(accumulator.value));
   for (int i = 0; i < 4; ++i) {
-    accumulator += δ;
+    accumulator.Increment(δ);
+    if (i < 2) {
+      EXPECT_THAT(accumulator.value, Eq(initial));
+    }
   }
   EXPECT_THAT((accumulator.value - World::origin).coordinates().x,
               Eq((1 + ε) * Metre));
@@ -54,14 +63,14 @@ TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummation) {
   for (bool cancellation : {true, false}) {
     Length const y = cancellation ? ε * x : π * x;
     DoublePrecision<Point<Length>> accumulator;
-    accumulator += x;
-    accumulator -= y;
-    accumulator += x;
-    accumulator -= y;
-    accumulator -= x;
-    accumulator += y;
-    accumulator -= x;
-    accumulator += y;
+    accumulator.Increment(+x);
+    accumulator.Increment(-y);
+    accumulator.Increment(+x);
+    accumulator.Increment(-y);
+    accumulator.Increment(-x);
+    accumulator.Increment(+y);
+    accumulator.Increment(-x);
+    accumulator.Increment(+y);
     if (cancellation) {
       EXPECT_THAT(accumulator.value - zero, Eq(ε² * Metre));
     } else {
@@ -77,40 +86,42 @@ TEST_F(DoublePrecisionTest, LongAdd) {
   for (bool cancellation : {true, false}) {
     Length const y = cancellation ? ε * x : π * x;
     DoublePrecision<Point<Length>> accumulator;
+    /*
     accumulator += TwoSum(+x, -y);
     accumulator -= TwoSum(-x, +y);
     accumulator -= TwoSum(+x, -y);
-    accumulator += TwoSum(-x, +y);
+    accumulator += TwoSum(-x, +y);*/
     EXPECT_THAT(accumulator.value - zero, Eq(0 * Metre));
     EXPECT_THAT(accumulator.error, Eq(0 * Metre));
   }
 }
 
 TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
-  DoublePrecision<DoublePrecision<double>> accumulator;
-  accumulator += 1;
-  accumulator += ε / 2;
-  double const δ = ε² / 4;
+  using DoubleDoubleDouble = DoublePrecision<DoublePrecision<double>>;
+  DoubleDoubleDouble accumulator;
+  accumulator.Increment(1);
+  accumulator.Increment(ε / 2);
+  DoubleDoubleDouble const δ = ε² / 4;
   EXPECT_THAT(DebugString(accumulator + δ),
               Eq("+1.00000000000000000e+00|+1.11022302462515654e-16|"
                  "+1.23259516440783095e-32|+0.00000000000000000e+00"));
   for (int i = 0; i < 4; ++i) {
     accumulator += δ;
   }
-  accumulator -= ε / 2;
+  accumulator -= DoubleDoubleDouble(ε / 2);
   EXPECT_THAT(DebugString(accumulator),
               Eq("+1.00000000000000000e+00|+4.93038065763132378e-32|"
                  "+0.00000000000000000e+00|+0.00000000000000000e+00"));
-  DoublePrecision<DoublePrecision<double>> const long_long_long_float =
+  DoubleDoubleDouble const long_long_long_float =
       TwoSum(TwoSum(1, ε / 2), TwoSum(ε² / 4, ε³ / 8));
   EXPECT_THAT(DebugString(long_long_long_float),
               Eq("+1.00000000000000000e+00|+1.11022302462515654e-16|"
                  "+1.23259516440783095e-32|+1.36845553156720417e-48"));
-  EXPECT_THAT(DebugString(long_long_long_float + TwoSum(0, ε⁴ / 16)),
-              Eq(DebugString(long_long_long_float)));
-  EXPECT_THAT(DebugString(long_long_long_float + long_long_long_float),
-              Eq(DebugString(TwoSum(Scale(2, long_long_long_float.value),
-                                    Scale(2, long_long_long_float.error)))));
+  EXPECT_THAT(long_long_long_float + DoubleDoubleDouble(ε⁴ / 16),
+              Eq(long_long_long_float));
+  EXPECT_THAT(long_long_long_float + long_long_long_float,
+              Eq(TwoSum(Scale(2, long_long_long_float.value),
+                        Scale(2, long_long_long_float.error))));
 }
 
 TEST_F(DoublePrecisionTest, ComparableTwoSum) {
@@ -138,12 +149,56 @@ TEST_F(DoublePrecisionTest, LongAddPositions) {
     accumulator -= δ_value;
   }
   DoublePrecision<Displacement<World>> const accumulated_displacement =
-      accumulator - World::origin;
+      accumulator - DoublePrecision<Position<World>>(World::origin);
   EXPECT_THAT(accumulated_displacement.value,
               Eq(δ_value + Displacement<World>(
                                {ε * Metre, 2 * ε * Metre, 2 * ε * Metre})));
   EXPECT_THAT(accumulated_displacement.error,
               Eq(Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre})));
+}
+
+// There is a some of replicated code (up to signs) in the differences because
+// of typing concerns.  We check consistency of many things with the the
+// operator+ on DoublePrecision<Vector>.
+TEST_F(DoublePrecisionTest, Consistencies) {
+  using Vector = R3Element<double>;
+  using Point = Point<Vector>;
+  Point const origin;
+  DoublePrecision<Point> const wide_origin;
+  Vector const null_vector{0, 0, 0};
+  Vector const v1{π, -e, Sqrt(2)};
+  Vector const v2 = 1024 * ε * Vector{(1 + Sqrt(5)) / 2, std::log(2), -Sqrt(π)};
+  Vector const v3{std::log(π), Tan(e * Radian), Sqrt(e)};
+  Vector const v4 =
+      1024 * ε *
+      Vector{std::log((1 + Sqrt(5)) / 2), Sqrt(std::log(2)), std::log(Sqrt(2))};
+  DoublePrecision<Vector> const wide_v1 = v1;
+  DoublePrecision<Vector> const w1 = TwoSum(v1, v2);
+  DoublePrecision<Vector> const w2 = TwoSum(v3, v4);
+  DoublePrecision<Point> const q1 = wide_origin + w1;
+  DoublePrecision<Point> const q2 = wide_origin + w2;
+
+  // DoublePrecision<Vector> - DoublePrecision<Vector>.
+  EXPECT_THAT(DebugString(w1 - w2), Eq(DebugString(w1 + -w2)));
+  // DoublePrecision<Point> - DoublePrecision<Vector>.
+  EXPECT_THAT(DebugString((q1 - w2) - wide_origin), Eq(DebugString(w1 + -w2)));
+  // DoublePrecision<Point> - DoublePrecision<Point>.
+  EXPECT_THAT(DebugString(q1 - q2), Eq(DebugString(w1 + -w2)));
+
+  // We now showcase the difference between |Increment| and |operator+=|.
+  auto compensated_accumulator = -w2;
+  compensated_accumulator.Increment(v1);
+  auto double_accumulator = -w2;
+  double_accumulator += v1;
+  EXPECT_THAT(compensated_accumulator.value,
+              AlmostEquals(double_accumulator.value, 1));
+  EXPECT_THAT(compensated_accumulator.error, Eq(null_vector));
+  EXPECT_THAT(double_accumulator.error, Ne(null_vector));
+  compensated_accumulator.Increment(-v1);
+  double_accumulator -= v1;
+  EXPECT_THAT(double_accumulator, Eq(-w2));
+  EXPECT_THAT(compensated_accumulator, Ne(-w2));
+  LOG(ERROR)<<compensated_accumulator;
 }
 
 }  // namespace internal_double_precision

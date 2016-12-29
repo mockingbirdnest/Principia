@@ -28,9 +28,11 @@ struct DoublePrecision final {
   // with no error.
   constexpr DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
 
-  DoublePrecision<T>& operator+=(Difference<T> const& right);
+  // Compensated summation.  This is less precise, but more efficient, than
+  // conversion followed by |operator+=|.
+  DoublePrecision<T>& Increment(Difference<T> const& right);
+
   DoublePrecision<T>& operator+=(DoublePrecision<Difference<T>> const& right);
-  DoublePrecision<T>& operator-=(Difference<T> const& right);
   DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
 
   void WriteToMessage(not_null<serialization::DoublePrecision*> message) const;
@@ -79,24 +81,16 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right);
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(T const& left,
-                                     DoublePrecision<U> const& right);
-
-template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     U const& right);
-
-template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
 
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(T const& left,
-                                            DoublePrecision<U> const& right);
+template<typename T>
+bool operator==(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
 
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            U const& right);
+template<typename T>
+bool operator!=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
 
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);

@@ -53,9 +53,8 @@ constexpr DoublePrecision<T>::DoublePrecision(T const& value)
     : value(value),
       error() {}
 
-template<typename T>
-DoublePrecision<T>& DoublePrecision<T>::operator+=(
-    Difference<T> const& right) {
+template <typename T>
+DoublePrecision<T>& DoublePrecision<T>::Increment(Difference<T> const& right) {
   // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
   // This is equivalent to |QuickTwoSum(value, right + error)|.
   T const temp = value;
@@ -69,13 +68,6 @@ template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator+=(
     DoublePrecision<Difference<T>> const& right) {
   *this = *this + right;
-  return *this;
-}
-
-template<typename T>
-DoublePrecision<T>& DoublePrecision<T>::operator-=(
-    Difference<T> const& right) {
-  *this += -right;
   return *this;
 }
 
@@ -205,48 +197,28 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(T const& left,
-                                     DoublePrecision<U> const& right) {
-  DoublePrecision<Sum<T, U>> result = right;
-  result += left;
-  return result;
-}
-
-template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     U const& right) {
-  return right + left;
-}
-
-template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right) {
   // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
   // Computations, algorithm longadd.
   auto const sum = TwoDifference(left.value, right.value);
-  LOG(ERROR)<<sum;
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
 }
 
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(T const& left,
-                                            DoublePrecision<U> const& right) {
-  DoublePrecision<Difference<T, U>> result;
-  T const y = left - right.error;
-  result.value = y - right.value;
-  result.error = y - (right.value + result.value);
-  return result;
+template<typename T>
+bool operator==(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right) {
+  // This is correct assuming that left and right have non-overlapping
+  // mantissas.
+  return left.value == right.value && left.error == right.error;
 }
 
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            U const& right) {
-  DoublePrecision<Difference<T, U>> result;
-  // Corresponds to -y in Higham's notation in operator+= above.
-  U const z = right - left.error;
-  result.value = left.value - z;
-  result.error = (left.value - result.value) - z;
-  return result;
+template<typename T>
+bool operator!=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right) {
+  // This is correct assuming that left and right have non-overlapping
+  // mantissas.
+  return left.value != right.value || left.error != right.error;
 }
 
 template<typename T>
