@@ -3,8 +3,9 @@
 
 #include "numerics/double_precision.hpp"
 
+#include <array>
 #include <cmath>
-#include <type_traits>
+#include <cstring>
 
 #include "geometry/serialization.hpp"
 #include "quantities/si.hpp"
@@ -15,6 +16,37 @@ namespace internal_double_precision {
 
 using geometry::PointOrMultivectorSerializer;
 using geometry::QuantityOrMultivectorSerializer;
+using quantities::Abs;
+using quantities::Quantity;
+using quantities::SIUnit;
+
+// Assumes that |T| and |U| have a memory representation that is a sequence of
+// |double|s, and returns the conjunction of componentwise
+// |left[i]| >= |right[i]| or left[i] == 0.
+template<typename T, typename U>
+bool ComponentwiseGreaterThanOrEqualOrZero(T const& left, U const& right) {
+  static_assert(sizeof(left) == sizeof(right),
+                "Comparing types of different sizes");
+  static_assert(sizeof(left) % sizeof(double) == 0,
+                "Types are not sequences of doubles");
+  constexpr int size = sizeof(left) / sizeof(double);
+  std::array<double, size> left_doubles;
+  std::memcpy(left_doubles.data(), &left, sizeof(left));
+  std::array<double, size> right_doubles;
+  std::memcpy(right_doubles.data(), &right, sizeof(right));
+  bool result = true;
+  for (int i = 0; i < size; ++i) {
+    result &=
+        (Abs(left_doubles[i]) >= Abs(right_doubles[i]) || left_doubles[i] == 0);
+  }
+  return result;
+}
+
+template<typename T, typename U>
+bool ComponentwiseGreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
+                                           DoublePrecision<U> const& right) {
+  return ComponentwiseGreaterThanOrEqualOrZero(left.value, right.value);
+}
 
 template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
@@ -99,10 +131,9 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
-  // TODO(egg): write a check that works when T is |Position|, |Multivector|,
-  // |Quantity|, |DoublePrecision|, or |DegreesOfFreedom|...
-  // DCHECK_GE(std::abs((a - T{}) / quantities::SIUnit<Difference<T>>()),
-  //           std::abs((b - U{}) / quantities::SIUnit<Difference<U>>()));
+  using quantities::DebugString;
+  DCHECK(ComponentwiseGreaterThanOrEqualOrZero(a, b))
+      << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
   // Hida, Li and Bailey (2007), Library for Double-Double and Quad-Double
   // Arithmetic.
   DoublePrecision<Sum<T, U>> result;

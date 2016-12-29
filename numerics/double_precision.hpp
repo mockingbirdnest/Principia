@@ -46,7 +46,7 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
 
-// The arguments must be such that |a| >= |b|.
+// The arguments must be such that |a| >= |b| or a == 0.
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
