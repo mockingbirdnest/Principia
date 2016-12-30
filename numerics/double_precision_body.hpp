@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstring>
+#include <string>
 
 #include "geometry/serialization.hpp"
 #include "quantities/si.hpp"
