@@ -42,12 +42,6 @@ bool ComponentwiseGreaterThanOrEqualOrZero(T const& left, U const& right) {
   return result;
 }
 
-template<typename T, typename U>
-bool ComponentwiseGreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
-                                           DoublePrecision<U> const& right) {
-  return ComponentwiseGreaterThanOrEqualOrZero(left.value, right.value);
-}
-
 template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
     : value(value),
@@ -173,6 +167,22 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
 }
 
 template<typename T>
+bool operator==(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right) {
+  // This is correct assuming that left and right have non-overlapping
+  // mantissas.
+  return left.value == right.value && left.error == right.error;
+}
+
+template<typename T>
+bool operator!=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right) {
+  // This is correct assuming that left and right have non-overlapping
+  // mantissas.
+  return left.value != right.value || left.error != right.error;
+}
+
+template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
   static_assert(std::is_same<Difference<T>, T>::value,
                 "Unary + must be used on a vector");
@@ -181,6 +191,8 @@ DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
 
 template<typename T>
 DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left) {
+  static_assert(std::is_same<Difference<T>, T>::value,
+                "Unary - must be used on a vector");
   DoublePrecision<Difference<T>> result;
   result.value = -left.value;
   result.error = -left.error;
@@ -203,22 +215,6 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
   // Computations, algorithm longadd.
   auto const sum = TwoDifference(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
-}
-
-template<typename T>
-bool operator==(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right) {
-  // This is correct assuming that left and right have non-overlapping
-  // mantissas.
-  return left.value == right.value && left.error == right.error;
-}
-
-template<typename T>
-bool operator!=(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right) {
-  // This is correct assuming that left and right have non-overlapping
-  // mantissas.
-  return left.value != right.value || left.error != right.error;
 }
 
 template<typename T>

@@ -2,6 +2,7 @@
 #include "numerics/double_precision.hpp"
 
 #include <limits>
+#include <random>
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
@@ -29,6 +30,13 @@ using ::testing::Ne;
 
 namespace numerics {
 namespace internal_double_precision {
+
+// Let's not try to compare those things.
+template<typename T, typename U>
+bool ComponentwiseGreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
+                                           DoublePrecision<U> const& right) {
+  return true;
+}
 
 constexpr double ε = std::numeric_limits<double>::epsilon();
 constexpr double ε² = ε * ε;
@@ -60,7 +68,7 @@ TEST_F(DoublePrecisionTest, CompensatedSummation) {
 TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummation) {
   Length const x = (1 + ε) * Metre;
   Point<Length> const zero;
-  for (bool cancellation : {true, false}) {
+  for (bool const cancellation : {true, false}) {
     Length const y = cancellation ? ε * x : π * x;
     DoublePrecision<Point<Length>> accumulator;
     accumulator.Increment(+x);
@@ -86,14 +94,37 @@ TEST_F(DoublePrecisionTest, LongAdd) {
   for (bool cancellation : {true, false}) {
     Length const y = cancellation ? ε * x : π * x;
     DoublePrecision<Point<Length>> accumulator;
-    /*
     accumulator += TwoSum(+x, -y);
     accumulator -= TwoSum(-x, +y);
     accumulator -= TwoSum(+x, -y);
-    accumulator += TwoSum(-x, +y);*/
+    accumulator += TwoSum(-x, +y);
     EXPECT_THAT(accumulator.value - zero, Eq(0 * Metre));
     EXPECT_THAT(accumulator.error, Eq(0 * Metre));
   }
+}
+
+TEST_F(DoublePrecisionTest, LongAddPositions) {
+  DoublePrecision<Position<World>> accumulator;
+  Displacement<World> const δ_value(
+      {1 * Metre, 2 * Metre, 3 * Metre});
+  Displacement<World> const δ_error(
+      {ε / 4 * Metre, ε / 2 * Metre, ε / 2 * Metre});
+  DoublePrecision<Displacement<World>> const δ = TwoSum(δ_error, δ_value);
+  EXPECT_THAT(δ.value, Eq(δ_value));
+  EXPECT_THAT(δ.error, Eq(δ_error));
+  for (int i = 0; i < 4; ++i) {
+    accumulator += δ;
+  }
+  for (int i = 0; i < 3; ++i) {
+    accumulator -= δ_value;
+  }
+  DoublePrecision<Displacement<World>> const accumulated_displacement =
+      accumulator - DoublePrecision<Position<World>>(World::origin);
+  EXPECT_THAT(accumulated_displacement.value,
+              Eq(δ_value + Displacement<World>(
+                               {ε * Metre, 2 * ε * Metre, 2 * ε * Metre})));
+  EXPECT_THAT(accumulated_displacement.error,
+              Eq(Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre})));
 }
 
 TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
@@ -133,33 +164,9 @@ TEST_F(DoublePrecisionTest, ComparableTwoSum) {
   EXPECT_THAT(value_exponent - error_exponent, Ge(53));
 }
 
-TEST_F(DoublePrecisionTest, LongAddPositions) {
-  DoublePrecision<Position<World>> accumulator;
-  Displacement<World> const δ_value(
-      {1 * Metre, 2 * Metre, 3 * Metre});
-  Displacement<World> const δ_error(
-      {ε / 4 * Metre, ε / 2 * Metre, ε / 2 * Metre});
-  DoublePrecision<Displacement<World>> const δ = TwoSum(δ_error, δ_value);
-  EXPECT_THAT(δ.value, Eq(δ_value));
-  EXPECT_THAT(δ.error, Eq(δ_error));
-  for (int i = 0; i < 4; ++i) {
-    accumulator += δ;
-  }
-  for (int i = 0; i < 3; ++i) {
-    accumulator -= δ_value;
-  }
-  DoublePrecision<Displacement<World>> const accumulated_displacement =
-      accumulator - DoublePrecision<Position<World>>(World::origin);
-  EXPECT_THAT(accumulated_displacement.value,
-              Eq(δ_value + Displacement<World>(
-                               {ε * Metre, 2 * ε * Metre, 2 * ε * Metre})));
-  EXPECT_THAT(accumulated_displacement.error,
-              Eq(Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre})));
-}
-
 // There is a some of replicated code (up to signs) in the differences because
-// of typing concerns.  We check consistency of many things with the the
-// operator+ on DoublePrecision<Vector>.
+// of typing concerns.  We check consistency of many things with the operator+
+// on DoublePrecision<Vector>.
 TEST_F(DoublePrecisionTest, Consistencies) {
   using Vector = R3Element<double>;
   using Point = Point<Vector>;
@@ -198,7 +205,6 @@ TEST_F(DoublePrecisionTest, Consistencies) {
   double_accumulator -= v1;
   EXPECT_THAT(double_accumulator, Eq(-w2));
   EXPECT_THAT(compensated_accumulator, Ne(-w2));
-  LOG(ERROR)<<compensated_accumulator;
 }
 
 }  // namespace internal_double_precision

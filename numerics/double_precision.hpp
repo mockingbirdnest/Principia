@@ -71,8 +71,18 @@ template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
 
 template<typename T>
+bool operator==(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
+
+template<typename T>
+bool operator!=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
+
+// |T| must be a vector.
+template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left);
 
+// |T| must be a vector.
 template<typename T>
 DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 
@@ -83,14 +93,6 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
-
-template<typename T>
-bool operator==(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right);
-
-template<typename T>
-bool operator!=(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right);
 
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
