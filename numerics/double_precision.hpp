@@ -1,6 +1,9 @@
 ﻿
 #pragma once
 
+#include <string>
+
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -25,17 +28,19 @@ struct DoublePrecision final {
   // with no error.
   constexpr DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
 
-  DoublePrecision<T>& operator+=(Difference<T> const& right);
+  // Compensated summation.  This is less precise, but more efficient, than
+  // conversion followed by |operator+=|.
+  DoublePrecision<T>& Increment(Difference<T> const& right);
+
   DoublePrecision<T>& operator+=(DoublePrecision<Difference<T>> const& right);
-  DoublePrecision<T>& operator-=(Difference<T> const& right);
   DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
 
   void WriteToMessage(not_null<serialization::DoublePrecision*> message) const;
   static DoublePrecision ReadFromMessage(
       serialization::DoublePrecision const& message);
 
-  T value;
-  Difference<T> error;
+  T value{};
+  Difference<T> error{};
 };
 
 // |scale| must be a signed power of two or zero.
@@ -43,48 +48,58 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
 
-// The arguments must be such that |a| >= |b|.
+// The arguments must be such that |a| >= |b| or a == 0.
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
-template<typename T>
-DoublePrecision<Difference<T>> operator+(
-    DoublePrecision<Difference<T>> const& left);
+// |TwoDifference| may have any of the following signatures:
+//   1. Point × Point → Vector;
+//   2. Point × Vector → Point;
+//   3. Vector × Vector → Vector;
+// The first overload handles the first case, and the second handles the last
+// two.
+template<typename T,
+         typename U,
+         typename = Difference<T, Difference<T, U>>,
+         typename = std::enable_if_t<!std::is_same<U, Difference<U>>::value>>
+DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
+
+template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
+DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b);
 
 template<typename T>
-DoublePrecision<Difference<T>> operator-(
-    DoublePrecision<Difference<T>> const& left);
+bool operator==(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
+
+template<typename T>
+bool operator!=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
+
+// |T| must be a vector.
+template<typename T>
+DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left);
+
+// |T| must be a vector.
+template<typename T>
+DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right);
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(T const& left,
-                                     DoublePrecision<U> const& right);
-
-template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     U const& right);
-
-template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
 
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(T const& left,
-                                            DoublePrecision<U> const& right);
-
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            U const& right);
+template<typename T>
+std::string DebugString(DoublePrecision<T> const& double_precision);
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os,
-                         const DoublePrecision<T>& double_precision);
+                         DoublePrecision<T> const& double_precision);
 
 }  // namespace internal_double_precision
 

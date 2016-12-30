@@ -245,10 +245,10 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     }
 
     // Increment the solution with the high-order approximation.
-    t += h;
+    t.Increment(h);
     for (int k = 0; k < dimension; ++k) {
-      q_hat[k] += Δq_hat[k];
-      v_hat[k] += Δv_hat[k];
+      q_hat[k].Increment(Δq_hat[k]);
+      v_hat[k].Increment(Δv_hat[k]);
     }
     append_state(current_state);
     ++step_count;

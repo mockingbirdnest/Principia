@@ -117,7 +117,7 @@ Solve(Instant const& t_final,
     }
 
     // Create a new step in the instance.
-    t += h;
+    t.Increment(h);
     previous_steps.pop_front();
     previous_steps.emplace_back();
     Step& current_step = previous_steps.back();
@@ -130,7 +130,7 @@ Solve(Instant const& t_final,
     for (int d = 0; d < dimension; ++d) {
       DoublePosition& current_position = Σj_minus_ɑj_qj[d];
       current_position += h * h * Σj_βj_numerator_aj[d] / β_denominator_;
-      current_step.displacements.push_back(current_position - Position());
+      current_step.displacements.push_back(current_position - DoublePosition());
       positions[d] = current_position.value;
       system_state.positions[d] = current_position;
     }
@@ -247,7 +247,7 @@ FillStepFromSystemState(ODE const& equation,
   std::vector<typename ODE::Position> positions;
   step.time = state.time;
   for (auto const& position : state.positions) {
-    step.displacements.push_back(position - Position());
+    step.displacements.push_back(position - DoublePrecision<Position>());
     positions.push_back(position.value);
   }
   step.accelerations.resize(step.displacements.size());

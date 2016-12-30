@@ -170,10 +170,10 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     }
 
     // Increment the solution.
-    t += h;
+    t.Increment(h);
     for (int k = 0; k < dimension; ++k) {
-      q[k] += Δq[k];
-      v[k] += Δv[k];
+      q[k].Increment(Δq[k]);
+      v[k].Increment(Δv[k]);
     }
     append_state(current_state);
   }
