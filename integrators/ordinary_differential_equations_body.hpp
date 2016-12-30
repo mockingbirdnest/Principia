@@ -13,8 +13,10 @@ namespace internal_ordinary_differential_equations {
 
 template<typename Position_>
 SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
-    std::vector<Position> const& q,
-    std::vector<Velocity> const& v,
+    std::vector<typename SpecialSecondOrderDifferentialEquation<
+        Position_>::Position> const& q,
+    std::vector<typename SpecialSecondOrderDifferentialEquation<
+        Position_>::Velocity> const& v,
     Instant const& t)
     : time(t) {
   for (int i = 0; i < positions.size(); ++i) {
