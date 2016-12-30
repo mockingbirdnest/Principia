@@ -210,5 +210,3 @@ TEST_F(DoublePrecisionTest, Consistencies) {
 }  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia
-
-#include "numerics/double_precision_body.hpp"
