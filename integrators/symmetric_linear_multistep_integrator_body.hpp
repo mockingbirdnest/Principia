@@ -129,7 +129,8 @@ Solve(Instant const& t_final,
     typename ODE::SystemState& system_state = down_cast_instance.current_state;
     for (int d = 0; d < dimension; ++d) {
       DoublePosition& current_position = Σj_minus_ɑj_qj[d];
-      current_position += h * h * Σj_βj_numerator_aj[d] / β_denominator_;
+      current_position +=
+          DoubleDisplacement(h * h * Σj_βj_numerator_aj[d] / β_denominator_);
       current_step.displacements.push_back(current_position - DoublePosition());
       positions[d] = current_position.value;
       system_state.positions[d] = current_position;
@@ -234,8 +235,8 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::
       weighted_acceleration += numerator * it->accelerations[d];
       ++it;
     }
-    velocity += instance.step * weighted_acceleration /
-                                velocity_integrator_.denominator;
+    velocity.Increment(instance.step * weighted_acceleration /
+                       velocity_integrator_.denominator);
   }
 }
 

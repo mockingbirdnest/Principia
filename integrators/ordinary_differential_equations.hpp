@@ -57,6 +57,16 @@ struct SpecialSecondOrderDifferentialEquation final {
                std::vector<Acceleration>& accelerations)>;
 
   struct SystemState final {
+    SystemState() = default;
+    SystemState(std::vector<Position> const& q,
+                std::vector<Velocity> const& v,
+                Instant const& t) : time(t) {
+      for (int i = 0; i < positions.size(); ++i) {
+        positions.emplace_back(q[i]);
+        velocities.emplace_back(v[i]);
+      }
+    }
+
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;

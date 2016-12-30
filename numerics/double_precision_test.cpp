@@ -52,7 +52,7 @@ class DoublePrecisionTest : public ::testing::Test {};
 TEST_F(DoublePrecisionTest, CompensatedSummation) {
   Position<World> const initial =
       World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
-  DoublePrecision<Position<World>> accumulator = initial;
+  DoublePrecision<Position<World>> accumulator(initial);
   Displacement<World> const δ({ε / 4 * Metre, 0 * Metre, 0 * Metre});
   for (int i = 0; i < 4; ++i) {
     accumulator.Increment(δ);
@@ -116,7 +116,7 @@ TEST_F(DoublePrecisionTest, LongAddPositions) {
     accumulator += δ;
   }
   for (int i = 0; i < 3; ++i) {
-    accumulator -= δ_value;
+    accumulator -= DoublePrecision<Displacement<World>>(δ_value);
   }
   DoublePrecision<Displacement<World>> const accumulated_displacement =
       accumulator - DoublePrecision<Position<World>>(World::origin);
@@ -128,18 +128,21 @@ TEST_F(DoublePrecisionTest, LongAddPositions) {
 }
 
 TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
-  using DoubleDoubleDouble = DoublePrecision<DoublePrecision<double>>;
+  using DoubleDouble = DoublePrecision<double>;
+  using DoubleDoubleDouble = DoublePrecision<DoubleDouble>;
+  auto wider = [](double x) { return DoubleDouble(x); };
+  auto widest = [](double x) { return DoubleDoubleDouble(DoubleDouble(x)); };
   DoubleDoubleDouble accumulator;
-  accumulator.Increment(1);
-  accumulator.Increment(ε / 2);
-  DoubleDoubleDouble const δ = ε² / 4;
+  accumulator.Increment(wider(1));
+  accumulator.Increment(wider(ε / 2));
+  DoubleDoubleDouble const δ(wider(ε² / 4));
   EXPECT_THAT(DebugString(accumulator + δ),
               Eq("+1.00000000000000000e+00|+1.11022302462515654e-16|"
                  "+1.23259516440783095e-32|+0.00000000000000000e+00"));
   for (int i = 0; i < 4; ++i) {
     accumulator += δ;
   }
-  accumulator -= DoubleDoubleDouble(ε / 2);
+  accumulator -= widest(ε / 2);
   EXPECT_THAT(DebugString(accumulator),
               Eq("+1.00000000000000000e+00|+4.93038065763132378e-32|"
                  "+0.00000000000000000e+00|+0.00000000000000000e+00"));
@@ -148,8 +151,7 @@ TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
   EXPECT_THAT(DebugString(long_long_long_float),
               Eq("+1.00000000000000000e+00|+1.11022302462515654e-16|"
                  "+1.23259516440783095e-32|+1.36845553156720417e-48"));
-  EXPECT_THAT(long_long_long_float + DoubleDoubleDouble(ε⁴ / 16),
-              Eq(long_long_long_float));
+  EXPECT_THAT(long_long_long_float + widest(ε⁴ / 16), Eq(long_long_long_float));
   EXPECT_THAT(long_long_long_float + long_long_long_float,
               Eq(TwoSum(Scale(2, long_long_long_float.value),
                         Scale(2, long_long_long_float.error))));
@@ -179,7 +181,7 @@ TEST_F(DoublePrecisionTest, Consistencies) {
   Vector const v4 =
       1024 * ε *
       Vector{std::log((1 + Sqrt(5)) / 2), Sqrt(std::log(2)), std::log(Sqrt(2))};
-  DoublePrecision<Vector> const wide_v1 = v1;
+  DoublePrecision<Vector> const wide_v1(v1);
   DoublePrecision<Vector> const w1 = TwoSum(v1, v2);
   DoublePrecision<Vector> const w2 = TwoSum(v3, v4);
   DoublePrecision<Point> const q1 = wide_origin + w1;
@@ -196,13 +198,13 @@ TEST_F(DoublePrecisionTest, Consistencies) {
   auto compensated_accumulator = -w2;
   compensated_accumulator.Increment(v1);
   auto double_accumulator = -w2;
-  double_accumulator += v1;
+  double_accumulator += wide_v1;
   EXPECT_THAT(compensated_accumulator.value,
               AlmostEquals(double_accumulator.value, 1));
   EXPECT_THAT(compensated_accumulator.error, Eq(null_vector));
   EXPECT_THAT(double_accumulator.error, Ne(null_vector));
   compensated_accumulator.Increment(-v1);
-  double_accumulator -= v1;
+  double_accumulator -= wide_v1;
   EXPECT_THAT(double_accumulator, Eq(-w2));
   EXPECT_THAT(compensated_accumulator, Ne(-w2));
 }
@@ -210,5 +212,3 @@ TEST_F(DoublePrecisionTest, Consistencies) {
 }  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia
-
-#include "numerics/double_precision_body.hpp"
