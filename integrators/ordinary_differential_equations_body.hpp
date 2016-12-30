@@ -11,6 +11,18 @@ namespace principia {
 namespace integrators {
 namespace internal_ordinary_differential_equations {
 
+template<typename Position_>
+SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
+    std::vector<Position> const& q,
+    std::vector<Velocity> const& v,
+    Instant const& t)
+    : time(t) {
+  for (int i = 0; i < positions.size(); ++i) {
+    positions.emplace_back(q[i]);
+    velocities.emplace_back(v[i]);
+  }
+}
+
 template<typename Position>
 void
 SpecialSecondOrderDifferentialEquation<Position>::SystemState::WriteToMessage(
