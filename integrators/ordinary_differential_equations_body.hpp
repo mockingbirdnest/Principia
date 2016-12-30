@@ -19,7 +19,7 @@ SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
         Position_>::Velocity> const& v,
     Instant const& t)
     : time(t) {
-  for (int i = 0; i < positions.size(); ++i) {
+  for (int i = 0; i < q.size(); ++i) {
     positions.emplace_back(q[i]);
     velocities.emplace_back(v[i]);
   }
