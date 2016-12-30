@@ -129,8 +129,8 @@ Solve(Instant const& t_final,
     typename ODE::SystemState& system_state = down_cast_instance.current_state;
     for (int d = 0; d < dimension; ++d) {
       DoublePosition& current_position = Σj_minus_ɑj_qj[d];
-      current_position +=
-          DoubleDisplacement(h * h * Σj_βj_numerator_aj[d] / β_denominator_);
+      current_position.Increment(h * h *
+                                 Σj_βj_numerator_aj[d] / β_denominator_);
       current_step.displacements.push_back(current_position - DoublePosition());
       positions[d] = current_position.value;
       system_state.positions[d] = current_position;
