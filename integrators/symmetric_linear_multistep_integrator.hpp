@@ -47,7 +47,7 @@ class SymmetricLinearMultistepIntegrator
    public:
     Status Solve(Instant const& t_final) override;
     virtual void WriteToMessage(
-        not_null<serialization::IntegrationInstance*> message) const override;
+        not_null<serialization::IntegratorInstance*> message) const override;
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
@@ -80,9 +80,9 @@ class SymmetricLinearMultistepIntegrator
       FixedVector<double, half_order_> const& β_numerator,
       double β_denominator);
 
-  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
-      typename IntegrationInstance<ODE>::AppendState&& append_state,
+      typename Integrator<ODE>::AppendState&& append_state,
       Time const& step) const override;
 
   // The actual integration, applied to |instance|.

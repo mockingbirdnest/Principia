@@ -41,8 +41,8 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
   return system_state;
 }
 
-template<typename ODE>
-IntegrationInstance<ODE>::IntegrationInstance(
+template<typename DifferentialEquation>
+Integrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState&& append_state)
     : equation_(problem.equation),
@@ -52,8 +52,8 @@ IntegrationInstance<ODE>::IntegrationInstance(
            current_state_.velocities.size());
 }
 
-template<typename ODE>
-Instant const& IntegrationInstance<ODE>::time() const {
+template<typename DifferentialEquation>
+Instant const& Integrator<DifferentialEquation>::Instance::time() const {
   return current_state_.time.value;
 }
 
@@ -69,11 +69,10 @@ void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
 
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
-    IntegrationProblem<DifferentialEquation> const& problem,
+    IntegrationProblem<ODE> const& problem,
     AppendState&& append_state,
     Time const& step)
-    : IntegrationInstance<DifferentialEquation>(problem,
-                                                std::move(append_state)),
+    : Integrator<ODE>::Instance(problem, std::move(append_state)),
       step_(step) {
   CHECK_NE(Time(), step_);
 }
@@ -115,11 +114,10 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
 
 template <typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
-    IntegrationProblem<DifferentialEquation> const& problem,
+    IntegrationProblem<ODE> const& problem,
     AppendState&& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size)
-    : IntegrationInstance<DifferentialEquation>(problem,
-                                                std::move(append_state)),
+    : Integrator<ODE>::Instance(problem, std::move(append_state)),
       adaptive_step_size_(adaptive_step_size) {
   CHECK_NE(Time(), adaptive_step_size.first_time_step);
   CHECK_GT(adaptive_step_size.safety_factor, 0);

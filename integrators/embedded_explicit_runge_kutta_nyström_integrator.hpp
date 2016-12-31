@@ -83,7 +83,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
    public:
     Status Solve(Instant const& t_final) override;
     virtual void WriteToMessage(
-        not_null<serialization::IntegrationInstance*> message) const override;
+        not_null<serialization::IntegratorInstance*> message) const override;
 
    private:
     Instance(IntegrationProblem<ODE> const& problem,
@@ -95,9 +95,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     friend class EmbeddedExplicitRungeKuttaNyströmIntegrator;
   };
 
-  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    typename Integrator<ODE>::AppendState&& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
   // The actual integration, applied to |instance|.

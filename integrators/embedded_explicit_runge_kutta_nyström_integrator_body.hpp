@@ -102,7 +102,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                  stages,
                                                  first_same_as_last>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegrationInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {}
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
@@ -122,24 +122,20 @@ Instance::Instance(
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-not_null<std::unique_ptr<IntegrationInstance<
-    SpecialSecondOrderDifferentialEquation<Position>>>>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             higher_order,
                                             lower_order,
                                             stages,
                                             first_same_as_last>::
 NewInstance(IntegrationProblem<ODE> const& problem,
-            typename IntegrationInstance<ODE>::AppendState&& append_state,
+            typename Integrator<ODE>::AppendState&& append_state,
             AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<
-      IntegrationInstance<SpecialSecondOrderDifferentialEquation<Position>>>(
-      new Instance(problem,
-                   std::move(append_state),
-                   adaptive_step_size,
-                   *this));
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
+      problem, std::move(append_state), adaptive_step_size, *this));
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,

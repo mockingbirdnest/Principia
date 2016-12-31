@@ -43,7 +43,7 @@ message FixedStepSizeIntegrator {
   required Kind kind = 1;
 }
 
-message IntegrationInstance {
+message IntegratorInstance {
   extensions 7000 to 7999;  // Last used: 7001
 
   required SystemState current_state = 1;
@@ -51,9 +51,9 @@ message IntegrationInstance {
 
 //TODO(phl):Adaptive.
 
-message SymmetricLinearMultistepIntegrationInstance {
-  extend IntegrationInstance {
-    optional SymmetricLinearMultistepIntegrationInstance extension = 7000;
+message SymmetricLinearMultistepIntegratorInstance {
+  extend IntegratorInstance {
+    optional SymmetricLinearMultistepIntegratorInstance extension = 7000;
   }
   message Step {
     repeated DoublePrecision displacements = 1;
@@ -64,9 +64,9 @@ message SymmetricLinearMultistepIntegrationInstance {
   required Quantity step = 2;
 }
 
-message SymplecticRungeKuttaNystromIntegrationInstance {
-  extend IntegrationInstance {
-    optional SymplecticRungeKuttaNystromIntegrationInstance extensions = 7001;
+message SymplecticRungeKuttaNystromIntegratorInstance {
+  extend IntegratorInstance {
+    optional SymplecticRungeKuttaNystromIntegratorInstance extensions = 7001;
   }
   required Quantity step = 1;
 }

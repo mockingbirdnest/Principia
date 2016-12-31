@@ -37,7 +37,7 @@ using geometry::R3Element;
 using geometry::Sign;
 using geometry::Velocity;
 using integrators::AdaptiveStepSize;
-using integrators::IntegrationInstance;
+using integrators::Integrator;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
 using numerics::Hermite3;

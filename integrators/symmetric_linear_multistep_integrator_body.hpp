@@ -24,7 +24,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegrationInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {}
 
 template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
@@ -76,16 +76,15 @@ SymmetricLinearMultistepIntegrator(
 }
 
 template <typename Position, int order_>
-not_null<std::unique_ptr<IntegrationInstance<
-    SpecialSecondOrderDifferentialEquation<Position>>>>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
     IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    typename Integrator<ODE>::AppendState&& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<
-      IntegrationInstance<SpecialSecondOrderDifferentialEquation<Position>>>(
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(
       new Instance(problem, std::move(append_state), step, *this));
 }
 

@@ -32,7 +32,7 @@ template<typename Position, int order, bool time_reversible, int evaluations,
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegrationInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {}
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
@@ -86,17 +86,16 @@ SymplecticRungeKuttaNyströmIntegrator(
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
-not_null<std::unique_ptr<IntegrationInstance<
-    typename SpecialSecondOrderDifferentialEquation<Position>>>>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                       evaluations, composition>::NewInstance(
     IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    typename Integrator<ODE>::AppendState&& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<
-      IntegrationInstance<SpecialSecondOrderDifferentialEquation<Position>>>(
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(
       new Instance(problem, std::move(append_state), step, *this));
 }
 
