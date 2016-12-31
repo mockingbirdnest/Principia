@@ -7,6 +7,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
@@ -31,6 +32,7 @@ constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
 namespace internal_ordinary_differential_equations {
 
 using base::Error;
+using base::not_constructible;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -85,12 +87,36 @@ struct IntegrationProblem final {
   typename ODE::SystemState const* initial_state;
 };
 
-// An opaque object for holding the state during the integration of a problem.
-struct IntegrationInstance {
-  template<typename ODE>
+// An opaque object for holding the integrator state during the integration of a
+// problem.
+template<typename ODE>
+class IntegrationInstance : public base::not_constructible {
+ public:
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
-  virtual ~IntegrationInstance() = default;  // Makes the type polymorphic.
+
+  IntegrationInstance(IntegrationProblem<ODE> const& problem,
+                      AppendState<ODE> append_state);
+
+  // The subclass must document the time passed to the last call to
+  // |append_state|.
+  virtual void Solve(Instant const& t_final) = 0;
+
+  // The last instant integrated by this instance.
+  Instant const& time() const = 0;
+
+  virtual void WriteToMessage(
+      not_null<serialization::IntegrationInstance*> message) const = 0;
+
+  // Dispatches to one of the subclasses depending on the contents of the
+  // message.
+  static not_null<std::unique_ptr<IntegrationInstance>> ReadFromMessage(
+      serialization::IntegrationInstance const& message);
+
+ private:
+  ODE equation_;
+  typename ODE::SystemState current_state_;
+  AppendState const append_state_;
 };
 
 // Settings for for adaptive step size integration.
