@@ -7,7 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
@@ -32,7 +31,6 @@ constexpr base::Error VanishingStepSize = base::Error::FAILED_PRECONDITION;
 namespace internal_ordinary_differential_equations {
 
 using base::Error;
-using base::not_constructible;
 using base::not_null;
 using base::Status;
 using geometry::Instant;
@@ -90,13 +88,14 @@ struct IntegrationProblem final {
 // An opaque object for holding the integrator state during the integration of a
 // problem.
 template<typename ODE>
-class IntegrationInstance : public base::not_constructible {
+class IntegrationInstance {
  public:
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
 
   IntegrationInstance(IntegrationProblem<ODE> const& problem,
-                      AppendState<ODE> append_state);
+                      AppendState&& append_state);
+  virtual ~IntegrationInstance() = default;
 
   // The subclass must document the time passed to the last call to
   // |append_state|.
@@ -105,16 +104,12 @@ class IntegrationInstance : public base::not_constructible {
   // The last instant integrated by this instance.
   Instant const& time() const = 0;
 
+  // |ReadFromMessage| is specific to each subclass because of the functions.
   virtual void WriteToMessage(
       not_null<serialization::IntegrationInstance*> message) const = 0;
 
-  // Dispatches to one of the subclasses depending on the contents of the
-  // message.
-  static not_null<std::unique_ptr<IntegrationInstance>> ReadFromMessage(
-      serialization::IntegrationInstance const& message);
-
  private:
-  ODE equation_;
+  ODE const equation_;
   typename ODE::SystemState current_state_;
   AppendState const append_state_;
 };
@@ -159,16 +154,26 @@ template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
+
   // The last call to |append_state| has a |state.time.value| equal to the
   // unique |Instant| of the form |problem.t_final + n * step| in
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
-  virtual void Solve(Instant const& t_final,
-                     IntegrationInstance& instance) const = 0;
+  class Instance : public IntegrationInstance<ODE> {
+   protected:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState&& append_state,
+             Time const& step);
 
+   private:
+    Time const step_;
+  };
+
+  // The factory function for instances.  It ensures that the instance has a
+  // back-pointer to its integrator.
   virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
+    IntegrationInstance<ODE>::AppendState&& append_state,
     Time const& step) const = 0;
 
   void WriteToMessage(
@@ -189,14 +194,24 @@ template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
-  // The last call to |append_state| will have |state.time.value == t_final|.
-  virtual Status Solve(Instant const& t_final,
-                       IntegrationInstance& instance) const = 0;
 
+  // The factory function for instances.  It ensures that the instance has a
+  // back-pointer to its integrator.
   virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
+    IntegrationInstance<ODE>::AppendState&& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+
+  // The last call to |append_state| will have |state.time.value == t_final|.
+  class Instance : public IntegrationInstance<DifferentialEquation> {
+   public:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState&& append_state,
+             AdaptiveStepSize<ODE> const& adaptive_step_size);
+
+   private:
+    AdaptiveStepSize<ODE> const adaptive_step_size_;
+  };
 
   void WriteToMessage(
       not_null<serialization::AdaptiveStepSizeIntegrator*> message) const;

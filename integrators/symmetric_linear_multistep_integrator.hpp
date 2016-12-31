@@ -40,6 +40,8 @@ class SymmetricLinearMultistepIntegrator
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
+  static constexpr int order = order_;
+
   SymmetricLinearMultistepIntegrator(
       serialization::FixedStepSizeIntegrator::Kind kind,
       FixedStepSizeIntegrator<ODE> const& startup_integrator,
@@ -47,54 +49,56 @@ class SymmetricLinearMultistepIntegrator
       FixedVector<double, half_order_> const& β_numerator,
       double β_denominator);
 
-  void Solve(Instant const& t_final,
-             IntegrationInstance& instance) const override;
-
-  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
-    Time const& step) const;
+    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    Time const& step) const override;
 
-  static constexpr int order = order_;
+  class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
+   public:
+
+    void Solve(Instant const& t_final) override;
+    Instant const& time() const override;
+    virtual void WriteToMessage(
+        not_null<serialization::IntegrationInstance*> message) const override;
+
+   private:
+    // The data for a previous step of the integration.  The |Displacement|s
+    // here are really |Position|s, but we do complex computations on them and
+    // it would be very inconvenient to cast these computations as barycentres.
+    struct Step final {
+      std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
+      std::vector<typename ODE::Acceleration> accelerations;
+      DoublePrecision<Instant> time;
+    };
+
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState&& append_state,
+             Time const& step,
+             SymmetricLinearMultistepIntegrator const& integrator);
+
+    // Performs the startup integration, i.e., computes enough states to either
+    // reach |t_final| or to reach a point where |instance.current_states| has
+    // |order - 1| elements.
+    void StartupSolve(Instant const& t_final,
+                      Instance& instance) const;
+
+    // Performs the velocity integration, i.e. one step of the Adams-Moulton
+    // method using the accelerations computed by the main integrator.
+    void VelocitySolve(int dimension,
+                       Instance& instance) const;
+
+    static void FillStepFromSystemState(ODE const& equation,
+                                        typename ODE::SystemState const& state,
+                                        Step& step);
+
+    SymmetricLinearMultistepIntegrator const& integrator_;
+    std::list<Step> previous_steps;  // At most |order_ - 1| elements.
+    // During startup the field |current_state_| is updated more frequently than
+    // once every |step_|.
+  };
 
  private:
-  // The data for a previous step of the integration.  The |Displacement|s here
-  // are really |Position|s, but we do complex computations on them and it would
-  // be very inconvenient to cast these computations as barycentres.
-  struct Step final {
-    std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
-    std::vector<typename ODE::Acceleration> accelerations;
-    DoublePrecision<Instant> time;
-  };
-
-  struct Instance : public IntegrationInstance {
-    Instance(IntegrationProblem<ODE> problem,
-             AppendState<ODE> append_state,
-             Time step);
-    ODE const equation;
-    std::list<Step> previous_steps;  // At most |order_ - 1| elements.
-    // During startup the following field is updated more frequently than once
-    // every |step|.
-    typename ODE::SystemState current_state;
-    AppendState<ODE> const append_state;
-    Time const step;
-  };
-
-  // Performs the startup integration, i.e., computes enough states to either
-  // reach |t_final| or to reach a point where |instance.current_states| has
-  // |order - 1| elements.
-  void StartupSolve(Instant const& t_final,
-                    Instance& instance) const;
-
-  // Performs the velocity integration, i.e. one step of the Adams-Moulton
-  // method using the accelerations computed by the main integrator.
-  void VelocitySolve(int dimension,
-                     Instance& instance) const;
-
-  static void FillStepFromSystemState(ODE const& equation,
-                                      typename ODE::SystemState const& state,
-                                      Step& step);
-
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   AdamsMoulton<velocity_order_> const& velocity_integrator_;
   FixedVector<double, half_order_> const ɑ_;

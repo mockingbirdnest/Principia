@@ -33,10 +33,21 @@ SymmetricLinearMultistepIntegrator(
   CHECK_EQ(β_numerator_[0], 0.0);
 }
 
+template <typename Position, int order_>
+not_null<std::unique_ptr<IntegrationInstance<
+    typename SpecialSecondOrderDifferentialEquation<Position>>>>
+SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    Time const& step) const {
+  return make_not_null_unique<Instance>(problem,
+                                        std::move(append_state),
+                                        step);
+}
+
 template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
-Solve(Instant const& t_final,
-      IntegrationInstance& instance) const {
+void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
+    Instant const& t_final) const {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;
   using DoubleDisplacement = DoublePrecision<Displacement>;
@@ -118,8 +129,8 @@ Solve(Instant const& t_final,
 
     // Create a new step in the instance.
     t.Increment(h);
-    previous_steps.pop_front();
-    previous_steps.emplace_back();
+    previous_steps_.pop_front();
+    previous_steps_.emplace_back();
     Step& current_step = previous_steps.back();
     current_step.time = t;
     current_step.accelerations.resize(dimension);
@@ -138,7 +149,7 @@ Solve(Instant const& t_final,
                                   positions,
                                   current_step.accelerations);
 
-    VelocitySolve(dimension, down_cast_instance);
+    VelocitySolve(dimension);
 
     // Inform the caller of the new state.
     system_state.time = t;
@@ -147,36 +158,23 @@ Solve(Instant const& t_final,
 }
 
 template<typename Position, int order_>
-not_null<std::unique_ptr<IntegrationInstance>>
-SymmetricLinearMultistepIntegrator<Position, order_>::
-NewInstance(IntegrationProblem<ODE> const& problem,
-            IntegrationInstance::AppendState<ODE> append_state,
-            Time const& step) const {
-  return make_not_null_unique<Instance>(problem,
-                                        std::move(append_state),
-                                        step);
-}
-
-template<typename Position, int order_>
-SymmetricLinearMultistepIntegrator<Position, order_>::
-Instance::Instance(IntegrationProblem<ODE> problem,
-                   AppendState<ODE> append_state,
-                   Time step)
-    : equation(std::move(problem.equation)),
-      current_state(*problem.initial_state),
-      append_state(std::move(append_state)),
-      step(std::move(step)) {
+SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
+    IntegrationProblem<ODE> const& problem,
+    AppendState&& append_state,
+    Time const& step,
+    SymmetricLinearMultistepIntegrator const& integrator)
+    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
+      integrator_(integrator) {
   CHECK_EQ(problem.initial_state->positions.size(),
            problem.initial_state->velocities.size());
 
-  previous_steps.emplace_back();
-  FillStepFromSystemState(equation, current_state, previous_steps.back());
+  previous_steps_.emplace_back();
+  FillStepFromSystemState(equation, current_state, previous_steps_.back());
 }
 
 template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
-StartupSolve(Instant const& t_final,
-             Instance& instance) const {
+void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
+    StartupSolve(Instant const& t_final) const {
   auto const& equation = instance.equation;
   auto const& previous_steps = instance.previous_steps;
   Time const& step = instance.step;
@@ -222,8 +220,8 @@ StartupSolve(Instant const& t_final,
 }
 
 template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
-    VelocitySolve(int const dimension, Instance& instance) const {
+void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
+    VelocitySolve(int const dimension) const {
   using Velocity = typename ODE::Velocity;
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = instance.current_state.velocities[d];
@@ -240,10 +238,10 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::
 }
 
 template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
-FillStepFromSystemState(ODE const& equation,
-                        typename ODE::SystemState const& state,
-                        Step& step) {
+void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
+    FillStepFromSystemState(ODE const& equation,
+                            typename ODE::SystemState const& state,
+                            Step& step) {
   std::vector<typename ODE::Position> positions;
   step.time = state.time;
   for (auto const& position : state.positions) {

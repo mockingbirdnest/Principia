@@ -41,6 +41,14 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
   return system_state;
 }
 
+template<typename ODE>
+IntegrationInstance<ODE>::IntegrationInstance(
+    IntegrationProblem<ODE> const& problem,
+    AppendState&& append_state)
+    : equation_(problem.equation),
+      current_state_(problem.initial_state),
+      append_state_(append_state) {}
+
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
@@ -50,6 +58,14 @@ void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> const message) const {
   message->set_kind(kind_);
 }
+
+template<typename DifferentialEquation>
+FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
+    IntegrationProblem<DifferentialEquation> const& problem,
+    AppendState&& append_state,
+    Time const& step)
+    : IntegrationInstance<DifferentialEquation>(problem, append_state)
+      step_(step) {}
 
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation> const&
@@ -85,6 +101,14 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
 template<typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
     serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+
+template<typename DifferentialEquation>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
+    IntegrationProblem<DifferentialEquation> const& problem,
+    AppendState&& append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size)
+    : IntegrationInstance<DifferentialEquation>(problem, append_state),
+      adaptive_step_size_(adaptive_step_size) {}
 
 template<typename DifferentialEquation>
 void AdaptiveStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
