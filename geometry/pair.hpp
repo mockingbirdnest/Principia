@@ -113,7 +113,7 @@ class Pair {
 
   // This is needed to specialize BarycentreCalculator.
   template<typename V, typename S>
-  friend class BarycentreCalculator;
+  friend class geometry::BarycentreCalculator;
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
