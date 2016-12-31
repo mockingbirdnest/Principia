@@ -95,10 +95,14 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 NewInstance(IntegrationProblem<ODE> const& problem,
             typename IntegrationInstance<ODE>::AppendState&& append_state,
             AdaptiveStepSize<ODE> const& adaptive_step_size) const {
-  return make_not_null_unique<Instance>(problem,
-                                        std::move(append_state),
-                                        adaptive_step_size,
-                                        *this);
+  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // private.
+  return std::unique_ptr<
+      IntegrationInstance<SpecialSecondOrderDifferentialEquation<Position>>>(
+      new Instance(problem,
+                   std::move(append_state),
+                   adaptive_step_size,
+                   *this));
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,
@@ -293,7 +297,7 @@ Instance::Instance(
     AdaptiveStepSize<ODE> const& adaptive_step_size,
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
     : AdaptiveStepSizeIntegrator<ODE>::Instance(
-          problem, append_state, adaptive_step_size),
+          problem, std::move(append_state), adaptive_step_size),
       integrator_(integrator) {}
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator

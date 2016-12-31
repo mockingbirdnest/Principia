@@ -21,6 +21,14 @@ using quantities::Abs;
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
+Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                             evaluations, composition>::
+Instance::Solve(Instant const& t_final) {
+  return integrator_.Solve(t_final, *this);
+}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
 SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                       evaluations, composition>::
 SymplecticRungeKuttaNyströmIntegrator(
@@ -78,28 +86,28 @@ SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     IntegrationProblem<ODE> const& problem,
     typename IntegrationInstance<ODE>::AppendState&& append_state,
     Time const& step) const {
-  return make_not_null_unique<Instance>(problem,
-                                        std::move(append_state),
-                                        step,
-                                        *this);
+  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // private.
+  return std::unique_ptr<
+      IntegrationInstance<SpecialSecondOrderDifferentialEquation<Position>>>(
+      new Instance(problem, std::move(append_state), step, *this));
 }
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
 Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                              evaluations, composition>::
-Instance::Solve(Instant const& t_final) {
+Solve(Instant const& t_final, Instance& instance) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
 
-  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
-  auto const& equation = down_cast_instance.equation;
-  auto const& append_state = down_cast_instance.append_state;
-  Time const& step = down_cast_instance.step;
+  auto const& equation = instance.equation_;
+  auto const& append_state = instance.append_state_;
+  Time const& step = instance.step_;
 
   // Gets updated as the integration progresses to allow restartability.
-  typename ODE::SystemState& current_state = down_cast_instance.current_state;
+  typename ODE::SystemState& current_state = instance.current_state_;
 
   // Argument checks.
   int const dimension = current_state.positions.size();
@@ -201,7 +209,9 @@ Instance::Instance(IntegrationProblem<ODE> const& problem,
                    AppendState&& append_state,
                    Time const& step,
                    SymplecticRungeKuttaNyströmIntegrator const& integrator)
-    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
+    : FixedStepSizeIntegrator<ODE>::Instance(problem,
+                                             std::move(append_state),
+                                             step),
       integrator_(integrator) {}
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator

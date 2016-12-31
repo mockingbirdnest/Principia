@@ -98,6 +98,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
              EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
 
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator_;
+    friend class EmbeddedExplicitRungeKuttaNyströmIntegrator;
   };
 
  protected:

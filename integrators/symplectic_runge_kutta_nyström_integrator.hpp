@@ -87,16 +87,6 @@ class SymplecticRungeKuttaNyströmIntegrator
   static constexpr int evaluations = evaluations_;
   static constexpr CompositionMethod composition = composition_;
 
-  SymplecticRungeKuttaNyströmIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind kind,
-      FixedVector<double, stages_> const& a,
-      FixedVector<double, stages_> const& b);
-
-  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
-      typename IntegrationInstance<ODE>::AppendState&& append_state,
-      Time const& step) const override;
-
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
@@ -111,7 +101,21 @@ class SymplecticRungeKuttaNyströmIntegrator
              SymplecticRungeKuttaNyströmIntegrator const& integrator);
 
     SymplecticRungeKuttaNyströmIntegrator const& integrator_;
+    friend class SymplecticRungeKuttaNyströmIntegrator;
   };
+
+  SymplecticRungeKuttaNyströmIntegrator(
+      serialization::FixedStepSizeIntegrator::Kind kind,
+      FixedVector<double, stages_> const& a,
+      FixedVector<double, stages_> const& b);
+
+  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      typename IntegrationInstance<ODE>::AppendState&& append_state,
+      Time const& step) const override;
+
+  // The actual integration, applied to |instance|.
+  Status Solve(Instant const& t_final, Instance& instance) const;
 
  private:
   FixedVector<double, stages_> const a_;

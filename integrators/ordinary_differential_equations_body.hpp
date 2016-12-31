@@ -46,8 +46,8 @@ IntegrationInstance<ODE>::IntegrationInstance(
     IntegrationProblem<ODE> const& problem,
     AppendState&& append_state)
     : equation_(problem.equation),
-      current_state_(problem.initial_state),
-      append_state_(append_state) {
+      current_state_(*problem.initial_state),
+      append_state_(std::move(append_state)) {
   CHECK_EQ(current_state_.positions.size(),
            current_state_.velocities.size());
 }
@@ -67,7 +67,8 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<DifferentialEquation> const& problem,
     AppendState&& append_state,
     Time const& step)
-    : IntegrationInstance<DifferentialEquation>(problem, append_state)
+    : IntegrationInstance<DifferentialEquation>(problem,
+                                                std::move(append_state)),
       step_(step) {
   CHECK_LT(Time(), step_);
 }
@@ -107,12 +108,13 @@ template<typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
     serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
-template<typename DifferentialEquation>
+template <typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<DifferentialEquation> const& problem,
     AppendState&& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size)
-    : IntegrationInstance<DifferentialEquation>(problem, append_state),
+    : IntegrationInstance<DifferentialEquation>(problem,
+                                                std::move(append_state)),
       adaptive_step_size_(adaptive_step_size) {}
 
 template<typename DifferentialEquation>
