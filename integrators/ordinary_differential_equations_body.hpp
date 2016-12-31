@@ -52,6 +52,11 @@ IntegrationInstance<ODE>::IntegrationInstance(
            current_state_.velocities.size());
 }
 
+template<typename ODE>
+Instant const& IntegrationInstance<ODE>::time() const {
+  return current_state_.time.value;
+}
+
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
@@ -70,7 +75,7 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     : IntegrationInstance<DifferentialEquation>(problem,
                                                 std::move(append_state)),
       step_(step) {
-  CHECK_LT(Time(), step_);
+  CHECK_NE(Time(), step_);
 }
 
 template<typename DifferentialEquation>
@@ -115,7 +120,11 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     AdaptiveStepSize<ODE> const& adaptive_step_size)
     : IntegrationInstance<DifferentialEquation>(problem,
                                                 std::move(append_state)),
-      adaptive_step_size_(adaptive_step_size) {}
+      adaptive_step_size_(adaptive_step_size) {
+  CHECK_NE(Time(), adaptive_step_size.first_time_step);
+  CHECK_GT(adaptive_step_size.safety_factor, 0);
+  CHECK_LT(adaptive_step_size.safety_factor, 1);
+}
 
 template<typename DifferentialEquation>
 void AdaptiveStepSizeIntegrator<DifferentialEquation>::WriteToMessage(

@@ -22,6 +22,11 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 }
 
 template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
+Instance::WriteToMessage(
+    not_null<serialization::IntegrationInstance*> message) const {}
+
+template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState&& append_state,
@@ -107,6 +112,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
   int const dimension = previous_steps.back().displacements.size();
 
   // Time step.
+  CHECK_LT(Time(), step);
   Time const& h = step;
   // Current time.
   DoublePrecision<Instant> t = previous_steps.back().time;
@@ -191,6 +197,8 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
     system_state.time = t;
     append_state(system_state);
   }
+
+  return Status::OK;
 }
 
 template<typename Position, int order_>

@@ -79,15 +79,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
 
-  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance<ODE>::AppendState&& append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
-
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
-    Instant const& time() const override;
     virtual void WriteToMessage(
         not_null<serialization::IntegrationInstance*> message) const override;
 
@@ -100,6 +94,14 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator_;
     friend class EmbeddedExplicitRungeKuttaNyströmIntegrator;
   };
+
+  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+
+  // The actual integration, applied to |instance|.
+  Status Solve(Instant const& t_final, Instance& instance) const;
 
  protected:
   FixedVector<double, stages> const c_;

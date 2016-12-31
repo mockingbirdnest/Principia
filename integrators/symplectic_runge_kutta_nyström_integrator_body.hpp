@@ -29,6 +29,13 @@ Instance::Solve(Instant const& t_final) {
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
+void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                           evaluations, composition>::
+Instance::WriteToMessage(
+    not_null<serialization::IntegrationInstance*> message) const {}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
 SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                       evaluations, composition>::
 SymplecticRungeKuttaNyströmIntegrator(

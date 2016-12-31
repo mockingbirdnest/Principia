@@ -102,7 +102,7 @@ class IntegrationInstance {
   virtual Status Solve(Instant const& t_final) = 0;
 
   // The last instant integrated by this instance.
-  virtual Instant const& time() const = 0;
+  Instant const& time() const;
 
   // |ReadFromMessage| is specific to each subclass because of the functions.
   virtual void WriteToMessage(
