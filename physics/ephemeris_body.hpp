@@ -15,7 +15,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
-#include "integrators/mock_ordinary_differential_equations.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -40,8 +40,6 @@ using geometry::Velocity;
 using integrators::AdaptiveStepSize;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
-// TODO(phl): Ugly to use a mock in production code.
-using integrators::MockFixedStepSizeIntegrator;
 using numerics::Bisect;
 using numerics::Hermite3;
 using quantities::Abs;
@@ -946,11 +944,11 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   return ephemeris;
 }
 
-template <typename Frame>
-Ephemeris<Frame>::Ephemeris()
-    : parameters_(typename MockFixedStepSizeIntegrator<
-                      Ephemeris<Frame>::NewtonianMotionEquation>::Get(),
-                  1 * Second) {}
+template<typename Frame>
+Ephemeris<Frame>::Ephemeris(
+    FixedStepSizeIntegrator<
+        typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
+    : parameters_(integrator, 1 * Second) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(

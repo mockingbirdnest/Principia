@@ -229,7 +229,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       max_e_error = Energy{};
       number_of_evaluations = 0;
       auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      method.integrator.Solve(tmax, *instance);
+      instance->Solve(tmax);
       // Log both the actual number of evaluations and a theoretical number that
       // ignores any startup costs; that theoretical number is the one used for
       // plotting.
@@ -343,7 +343,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       max_e_error = SpecificEnergy{};
       number_of_evaluations = 0;
       auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      method.integrator.Solve(tmax, *instance);
+      instance->Solve(tmax);
       // Log both the actual number of evaluations and a theoretical number that
       // ignores any startup costs; that theoretical number is the one used for
       // plotting.

@@ -106,7 +106,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
       integrator.NewInstance(problem, std::move(append_state), step);
 
   state.ResumeTiming();
-  integrator.Solve(t_final, *instance);
+  instance->Solve(t_final);
   state.PauseTiming();
 
   q_error = Length();
@@ -163,7 +163,7 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
       integrator.NewInstance(problem, std::move(append_state), step);
 
   state.ResumeTiming();
-  integrator.Solve(t_final, *instance);
+  instance->Solve(t_final);
   state.PauseTiming();
 
   q_error = Length();
