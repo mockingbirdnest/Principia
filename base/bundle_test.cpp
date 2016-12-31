@@ -6,6 +6,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#if !PRINCIPIA_COMPILER_CLANG
+
 namespace principia {
 
 using ::testing::Eq;
@@ -150,3 +152,5 @@ TEST_F(BundleTest, NonCooperativeDeadline) {
 
 }  // namespace base
 }  // namespace principia
+
+#endif
