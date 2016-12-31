@@ -206,6 +206,8 @@ Solve(Instant const& t_final, Instance& instance) const {
     }
     append_state(current_state);
   }
+
+  return Status::OK;
 }
 
 template<typename Position, int order_, bool time_reversible_, int evaluations_,
