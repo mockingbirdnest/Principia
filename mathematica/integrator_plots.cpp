@@ -47,6 +47,7 @@ using integrators::BA;
 using integrators::FixedStepSizeIntegrator;
 using integrators::IntegrationProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
+using numerics::DoublePrecision;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -186,7 +187,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 
   initial_state.positions.emplace_back(q_amplitude);
   initial_state.velocities.emplace_back(0 * Metre / Second);
-  initial_state.time = t0;
+  initial_state.time = DoublePrecision<Instant>(t0);
 
   Instant const tmax = t0 + 50 * Second;
 
@@ -291,7 +292,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       initial_dof.displacement().coordinates().y);
   initial_state.velocities.emplace_back(initial_dof.velocity().coordinates().x);
   initial_state.velocities.emplace_back(initial_dof.velocity().coordinates().y);
-  initial_state.time = t0;
+  initial_state.time = DoublePrecision<Instant>(t0);
 
   // Integrate over 8 orbits.
   Instant const tmax =

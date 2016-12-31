@@ -1,15 +1,35 @@
 ﻿
 #pragma once
 
+#include "integrators/ordinary_differential_equations.hpp"
+
+#include <vector>
+
 #include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
 namespace integrators {
 namespace internal_ordinary_differential_equations {
+
+// TODO(egg): for some mysterious reason MSVC wants the full
+// |typename SpecialSecondOrderDifferentialEquation<Position_>::Position|
+// where |Position| would be enough.
+template<typename Position_>
+SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
+    std::vector<typename SpecialSecondOrderDifferentialEquation<
+        Position_>::Position> const& q,
+    std::vector<typename SpecialSecondOrderDifferentialEquation<
+        Position_>::Velocity> const& v,
+    Instant const& t)
+    : time(t) {
+  for (int i = 0; i < q.size(); ++i) {
+    positions.emplace_back(q[i]);
+    velocities.emplace_back(v[i]);
+  }
+}
 
 template<typename Position>
 void
