@@ -140,6 +140,9 @@ class Integrator {
         not_null<serialization::IntegratorInstance*> message) const = 0;
 
    protected:
+    // For testing.
+    Instance();
+
     // We make the data members protected because they need to be easily
     // accessible by subclasses.
     ODE const equation_;

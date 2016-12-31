@@ -58,6 +58,9 @@ Instant const& Integrator<DifferentialEquation>::Instance::time() const {
 }
 
 template<typename DifferentialEquation>
+Integrator<DifferentialEquation>::Instance::Instance() {}
+
+template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
