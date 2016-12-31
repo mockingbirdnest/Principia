@@ -85,13 +85,30 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
+not_null<std::unique_ptr<IntegrationInstance<
+    SpecialSecondOrderDifferentialEquation<Position>>>>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::
+NewInstance(IntegrationProblem<ODE> const& problem,
+            typename IntegrationInstance<ODE>::AppendState append_state,
+            AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+  return make_not_null_unique<Instance>(problem,
+                                        std::move(append_state),
+                                        adaptive_step_size,
+                                        *this);
+}
+
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
 Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                    higher_order,
                                                    lower_order,
                                                    stages,
-                                                   first_same_as_last>::Solve(
-    Instant const& t_final,
-    IntegrationInstance& instance) const {
+                                                   first_same_as_last>::
+Instance::Solve(Instant const& t_final) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
@@ -269,38 +286,19 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-not_null<std::unique_ptr<IntegrationInstance>>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             higher_order,
                                             lower_order,
                                             stages,
                                             first_same_as_last>::
-NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
-  return make_not_null_unique<Instance>(problem,
-                                        std::move(append_state),
-                                        adaptive_step_size);
-}
-
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
-Instance::Instance(IntegrationProblem<ODE> problem,
-                   AppendState<ODE> append_state,
-                   AdaptiveStepSize<ODE> adaptive_step_size)
-    : equation(std::move(problem.equation)),
-      current_state(*problem.initial_state),
-      append_state(std::move(append_state)),
-      adaptive_step_size(std::move(adaptive_step_size)) {
-  CHECK_EQ(current_state.positions.size(),
-           current_state.velocities.size());
-}
+Instance::Instance(
+    IntegrationProblem<ODE> problem,
+    AppendState<ODE> append_state,
+    AdaptiveStepSize<ODE> adaptive_step_size,
+    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
+    : AdaptiveStepSizeIntegrator<ODE>::Instance(
+          problem, append_state, adaptive_step_size),
+      integrator_(integrator) {}
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators

@@ -71,10 +71,24 @@ SymplecticRungeKuttaNyströmIntegrator(
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
+not_null<std::unique_ptr<IntegrationInstance<
+    typename SpecialSecondOrderDifferentialEquation<Position>>>>
+SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                      evaluations, composition>::NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    Time const& step) const {
+  return make_not_null_unique<Instance>(problem,
+                                        std::move(append_state),
+                                        step,
+                                        *this);
+}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
-                                           evaluations, composition>::Solve(
-    Instant const& t_final,
-    IntegrationInstance& instance) const {
+                                           evaluations, composition>::
+Instance::Solve(Instant const& t_final) const {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
@@ -181,29 +195,14 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
 template<typename Position, int order_, bool time_reversible_, int evaluations_,
          CompositionMethod composition_>
-not_null<std::unique_ptr<IntegrationInstance>>
-SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
-                                      evaluations_, composition_>::
-NewInstance(IntegrationProblem<ODE> const& problem,
-            typename IntegrationInstance::AppendState<ODE> append_state,
-            Time const& step) const {
-  return make_not_null_unique<Instance>(problem, std::move(append_state), step);
-}
-
-template<typename Position, int order_, bool time_reversible_, int evaluations_,
-         CompositionMethod composition_>
 SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
                                       evaluations_, composition_>::
 Instance::Instance(IntegrationProblem<ODE> problem,
                    AppendState<ODE> append_state,
-                   Time step)
-    : equation(std::move(problem.equation)),
-      current_state(*problem.initial_state),
-      append_state(std::move(append_state)),
-      step(std::move(step)) {
-  CHECK_EQ(current_state.positions.size(),
-           current_state.velocities.size());
-}
+                   Time step,
+                   SymplecticRungeKuttaNyströmIntegrator const& integrator)
+    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
+      integrator_(integrator) {}
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
 

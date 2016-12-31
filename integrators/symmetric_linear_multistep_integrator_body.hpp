@@ -42,7 +42,8 @@ SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
     Time const& step) const {
   return make_not_null_unique<Instance>(problem,
                                         std::move(append_state),
-                                        step);
+                                        step,
+                                        *this);
 }
 
 template<typename Position, int order_>
@@ -165,16 +166,13 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     SymmetricLinearMultistepIntegrator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator) {
-  CHECK_EQ(problem.initial_state->positions.size(),
-           problem.initial_state->velocities.size());
-
   previous_steps_.emplace_back();
   FillStepFromSystemState(equation, current_state, previous_steps_.back());
 }
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
-    StartupSolve(Instant const& t_final) const {
+StartupSolve(Instant const& t_final) const {
   auto const& equation = instance.equation;
   auto const& previous_steps = instance.previous_steps;
   Time const& step = instance.step;
@@ -221,7 +219,7 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
-    VelocitySolve(int const dimension) const {
+VelocitySolve(int const dimension) const {
   using Velocity = typename ODE::Velocity;
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = instance.current_state.velocities[d];
@@ -239,9 +237,9 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
-    FillStepFromSystemState(ODE const& equation,
-                            typename ODE::SystemState const& state,
-                            Step& step) {
+FillStepFromSystemState(ODE const& equation,
+                        typename ODE::SystemState const& state,
+                        Step& step) {
   std::vector<typename ODE::Position> positions;
   step.time = state.time;
   for (auto const& position : state.positions) {

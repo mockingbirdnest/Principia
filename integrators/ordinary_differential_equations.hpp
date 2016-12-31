@@ -155,6 +155,13 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
 
+  // The factory function for |Instance|, below.  It ensures that the instance
+  // has a back-pointer to its integrator.
+  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    IntegrationInstance<ODE>::AppendState&& append_state,
+    Time const& step) const = 0;
+
   // The last call to |append_state| has a |state.time.value| equal to the
   // unique |Instant| of the form |problem.t_final + n * step| in
   // ]t_final - step, t_final].  |append_state| will be called with
@@ -168,13 +175,6 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
    private:
     Time const step_;
   };
-
-  // The factory function for instances.  It ensures that the instance has a
-  // back-pointer to its integrator.
-  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance<ODE>::AppendState&& append_state,
-    Time const& step) const = 0;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const;
@@ -195,16 +195,16 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
 
-  // The factory function for instances.  It ensures that the instance has a
-  // back-pointer to its integrator.
-  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance<ODE>::AppendState&& append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+  // The factory function for |Instance|, below.  It ensures that the instance
+  // has a back-pointer to its integrator.
+  virtual not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      IntegrationInstance<ODE>::AppendState&& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   // The last call to |append_state| will have |state.time.value == t_final|.
   class Instance : public IntegrationInstance<DifferentialEquation> {
-   public:
+   protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState&& append_state,
              AdaptiveStepSize<ODE> const& adaptive_step_size);

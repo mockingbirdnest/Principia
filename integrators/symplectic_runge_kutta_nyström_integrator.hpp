@@ -80,6 +80,11 @@ class SymplecticRungeKuttaNyströmIntegrator
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
+  static constexpr int order = order_;
+  static constexpr bool time_reversible = time_reversible_;
+  static constexpr int evaluations = evaluations_;
+  static constexpr CompositionMethod composition = composition_;
+
   SymplecticRungeKuttaNyströmIntegrator(
       serialization::FixedStepSizeIntegrator::Kind kind,
       FixedVector<double, stages_> const& a,
@@ -88,27 +93,28 @@ class SymplecticRungeKuttaNyströmIntegrator
   void Solve(Instant const& t_final,
              IntegrationInstance& instance) const override;
 
-  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance::AppendState<ODE> append_state,
-    Time const& step) const override;
+  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      typename IntegrationInstance::AppendState<ODE> append_state,
+      Time const& step) const override;
 
-  static constexpr int order = order_;
-  static constexpr bool time_reversible = time_reversible_;
-  static constexpr int evaluations = evaluations_;
-  static constexpr CompositionMethod composition = composition_;
+  class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
+   public:
+    void Solve(Instant const& t_final) override;
+    Instant const& time() const override;
+    virtual void WriteToMessage(
+        not_null<serialization::IntegrationInstance*> message) const override;
 
- private:
-  struct Instance : public IntegrationInstance {
-    Instance(IntegrationProblem<ODE> problem,
-             AppendState<ODE> append_state,
-             Time step);
-    ODE const equation;
-    typename ODE::SystemState current_state;
-    AppendState<ODE> const append_state;
-    Time const step;
+   private:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState&& append_state,
+             Time const& step,
+             SymplecticRungeKuttaNyströmIntegrator const& integrator);
+
+    SymplecticRungeKuttaNyströmIntegrator const& integrator_;
   };
 
+ private:
   FixedVector<double, stages_> const a_;
   FixedVector<double, stages_> const b_;
   FixedVector<double, stages_> c_;

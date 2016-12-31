@@ -47,7 +47,10 @@ IntegrationInstance<ODE>::IntegrationInstance(
     AppendState&& append_state)
     : equation_(problem.equation),
       current_state_(problem.initial_state),
-      append_state_(append_state) {}
+      append_state_(append_state) {
+  CHECK_EQ(current_state_.positions.size(),
+           current_state_.velocities.size());
+}
 
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(

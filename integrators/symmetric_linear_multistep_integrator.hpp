@@ -50,13 +50,12 @@ class SymmetricLinearMultistepIntegrator
       double β_denominator);
 
   not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance<ODE>::AppendState&& append_state,
-    Time const& step) const override;
+      IntegrationProblem<ODE> const& problem,
+      typename IntegrationInstance<ODE>::AppendState&& append_state,
+      Time const& step) const override;
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-
     void Solve(Instant const& t_final) override;
     Instant const& time() const override;
     virtual void WriteToMessage(
@@ -92,8 +91,8 @@ class SymmetricLinearMultistepIntegrator
                                         typename ODE::SystemState const& state,
                                         Step& step);
 
-    SymmetricLinearMultistepIntegrator const& integrator_;
     std::list<Step> previous_steps;  // At most |order_ - 1| elements.
+    SymmetricLinearMultistepIntegrator const& integrator_;
     // During startup the field |current_state_| is updated more frequently than
     // once every |step_|.
   };
