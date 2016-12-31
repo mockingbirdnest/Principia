@@ -68,7 +68,9 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     AppendState&& append_state,
     Time const& step)
     : IntegrationInstance<DifferentialEquation>(problem, append_state)
-      step_(step) {}
+      step_(step) {
+  CHECK_LT(Time(), step_);
+}
 
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation> const&

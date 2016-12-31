@@ -86,9 +86,9 @@ SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
-void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
-                                           evaluations, composition>::
-Instance::Solve(Instant const& t_final) const {
+Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                             evaluations, composition>::
+Instance::Solve(Instant const& t_final) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
@@ -197,9 +197,9 @@ template<typename Position, int order_, bool time_reversible_, int evaluations_,
          CompositionMethod composition_>
 SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
                                       evaluations_, composition_>::
-Instance::Instance(IntegrationProblem<ODE> problem,
-                   AppendState<ODE> append_state,
-                   Time step,
+Instance::Instance(IntegrationProblem<ODE> const& problem,
+                   AppendState&& append_state,
+                   Time const& step,
                    SymplecticRungeKuttaNyströmIntegrator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator) {}

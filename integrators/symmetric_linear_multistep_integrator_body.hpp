@@ -16,39 +16,8 @@ using base::make_not_null_unique;
 int const startup_step_divisor = 16;
 
 template<typename Position, int order_>
-SymmetricLinearMultistepIntegrator<Position, order_>::
-SymmetricLinearMultistepIntegrator(
-    serialization::FixedStepSizeIntegrator::Kind const kind,
-    FixedStepSizeIntegrator<ODE> const& startup_integrator,
-    FixedVector<double, half_order_> const & ɑ,
-    FixedVector<double, half_order_> const& β_numerator,
-    double const β_denominator)
-    : FixedStepSizeIntegrator(kind),
-      startup_integrator_(startup_integrator),
-      velocity_integrator_(AdamsMoultonOrder<velocity_order_>()),
-      ɑ_(ɑ),
-      β_numerator_(β_numerator),
-      β_denominator_(β_denominator) {
-  CHECK_EQ(ɑ_[0], 1.0);
-  CHECK_EQ(β_numerator_[0], 0.0);
-}
-
-template <typename Position, int order_>
-not_null<std::unique_ptr<IntegrationInstance<
-    typename SpecialSecondOrderDifferentialEquation<Position>>>>
-SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance<ODE>::AppendState&& append_state,
-    Time const& step) const {
-  return make_not_null_unique<Instance>(problem,
-                                        std::move(append_state),
-                                        step,
-                                        *this);
-}
-
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
-    Instant const& t_final) const {
+Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
+    Instant const& t_final) {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;
   using DoubleDisplacement = DoublePrecision<Displacement>;
@@ -56,20 +25,12 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   using DoublePosition = DoublePrecision<Position>;
   using DoublePositions = std::vector<DoublePosition>;
 
-  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
-  auto const& equation = down_cast_instance.equation;
-  auto const& append_state = down_cast_instance.append_state;
-  Time const& step = down_cast_instance.step;
-
-  auto& previous_steps = down_cast_instance.previous_steps;
-
-  if (previous_steps.size() < order_ - 1) {
-    StartupSolve(t_final, down_cast_instance);
+  if (previous_steps_.size() < order_ - 1) {
+    StartupSolve(t_final);
   }
 
   // Argument checks.
   int const dimension = previous_steps.back().displacements.size();
-  CHECK_LT(Time(), step);
 
   // Time step.
   Time const& h = step;
@@ -172,7 +133,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
-StartupSolve(Instant const& t_final) const {
+StartupSolve(Instant const& t_final) {
   auto const& equation = instance.equation;
   auto const& previous_steps = instance.previous_steps;
   Time const& step = instance.step;
@@ -219,7 +180,7 @@ StartupSolve(Instant const& t_final) const {
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::
-VelocitySolve(int const dimension) const {
+VelocitySolve(int const dimension) {
   using Velocity = typename ODE::Velocity;
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = instance.current_state.velocities[d];
@@ -250,6 +211,37 @@ FillStepFromSystemState(ODE const& equation,
   equation.compute_acceleration(step.time.value,
                                 positions,
                                 step.accelerations);
+}
+
+template<typename Position, int order_>
+SymmetricLinearMultistepIntegrator<Position, order_>::
+SymmetricLinearMultistepIntegrator(
+    serialization::FixedStepSizeIntegrator::Kind const kind,
+    FixedStepSizeIntegrator<ODE> const& startup_integrator,
+    FixedVector<double, half_order_> const & ɑ,
+    FixedVector<double, half_order_> const& β_numerator,
+    double const β_denominator)
+    : FixedStepSizeIntegrator(kind),
+      startup_integrator_(startup_integrator),
+      velocity_integrator_(AdamsMoultonOrder<velocity_order_>()),
+      ɑ_(ɑ),
+      β_numerator_(β_numerator),
+      β_denominator_(β_denominator) {
+  CHECK_EQ(ɑ_[0], 1.0);
+  CHECK_EQ(β_numerator_[0], 0.0);
+}
+
+template <typename Position, int order_>
+not_null<std::unique_ptr<IntegrationInstance<
+    typename SpecialSecondOrderDifferentialEquation<Position>>>>
+SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename IntegrationInstance<ODE>::AppendState&& append_state,
+    Time const& step) const {
+  return make_not_null_unique<Instance>(problem,
+                                        std::move(append_state),
+                                        step,
+                                        *this);
 }
 
 }  // namespace internal_symmetric_linear_multistep_integrator

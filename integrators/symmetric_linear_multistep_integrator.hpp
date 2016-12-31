@@ -23,6 +23,7 @@ namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
@@ -42,21 +43,9 @@ class SymmetricLinearMultistepIntegrator
 
   static constexpr int order = order_;
 
-  SymmetricLinearMultistepIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind kind,
-      FixedStepSizeIntegrator<ODE> const& startup_integrator,
-      FixedVector<double, half_order_> const& ɑ,
-      FixedVector<double, half_order_> const& β_numerator,
-      double β_denominator);
-
-  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
-      typename IntegrationInstance<ODE>::AppendState&& append_state,
-      Time const& step) const override;
-
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    void Solve(Instant const& t_final) override;
+    Status Solve(Instant const& t_final) override;
     Instant const& time() const override;
     virtual void WriteToMessage(
         not_null<serialization::IntegrationInstance*> message) const override;
@@ -79,23 +68,35 @@ class SymmetricLinearMultistepIntegrator
     // Performs the startup integration, i.e., computes enough states to either
     // reach |t_final| or to reach a point where |instance.current_states| has
     // |order - 1| elements.
-    void StartupSolve(Instant const& t_final,
-                      Instance& instance) const;
+    void StartupSolve(Instant const& t_final);
 
     // Performs the velocity integration, i.e. one step of the Adams-Moulton
     // method using the accelerations computed by the main integrator.
-    void VelocitySolve(int dimension,
-                       Instance& instance) const;
+    void VelocitySolve(int dimension);
 
     static void FillStepFromSystemState(ODE const& equation,
                                         typename ODE::SystemState const& state,
                                         Step& step);
 
-    std::list<Step> previous_steps;  // At most |order_ - 1| elements.
+    std::list<Step> previous_steps_;  // At most |order_ - 1| elements.
     SymmetricLinearMultistepIntegrator const& integrator_;
     // During startup the field |current_state_| is updated more frequently than
     // once every |step_|.
   };
+
+  SymmetricLinearMultistepIntegrator(
+      serialization::FixedStepSizeIntegrator::Kind kind,
+      FixedStepSizeIntegrator<ODE> const& startup_integrator,
+      FixedVector<double, half_order_> const& ɑ,
+      FixedVector<double, half_order_> const& β_numerator,
+      double β_denominator);
+
+  not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      typename IntegrationInstance<ODE>::AppendState&& append_state,
+      Time const& step) const override;
+
+  Status Solve(Instant const& t_final, Instance& instance) const;
 
  private:
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;

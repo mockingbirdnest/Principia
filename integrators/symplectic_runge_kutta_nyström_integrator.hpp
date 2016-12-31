@@ -9,6 +9,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
+#include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -17,6 +18,7 @@ namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;
@@ -90,17 +92,14 @@ class SymplecticRungeKuttaNyströmIntegrator
       FixedVector<double, stages_> const& a,
       FixedVector<double, stages_> const& b);
 
-  void Solve(Instant const& t_final,
-             IntegrationInstance& instance) const override;
-
   not_null<std::unique_ptr<IntegrationInstance<ODE>>> NewInstance(
       IntegrationProblem<ODE> const& problem,
-      typename IntegrationInstance::AppendState<ODE> append_state,
+      typename IntegrationInstance<ODE>::AppendState&& append_state,
       Time const& step) const override;
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
-    void Solve(Instant const& t_final) override;
+    Status Solve(Instant const& t_final) override;
     Instant const& time() const override;
     virtual void WriteToMessage(
         not_null<serialization::IntegrationInstance*> message) const override;
