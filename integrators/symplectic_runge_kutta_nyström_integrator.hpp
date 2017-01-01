@@ -113,9 +113,6 @@ class SymplecticRungeKuttaNyströmIntegrator
       typename Integrator<ODE>::AppendState const& append_state,
       Time const& step) const override;
 
-  // The actual integration, applied to |instance|.
-  Status Solve(Instant const& t_final, Instance& instance) const;
-
  private:
   FixedVector<double, stages_> const a_;
   FixedVector<double, stages_> const b_;
