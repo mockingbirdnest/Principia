@@ -49,26 +49,50 @@ message IntegratorInstance {
   required SystemState current_state = 1;
 }
 
-//TODO(phl):Adaptive.
+message AdaptiveStepSizeIntegratorInstance {
+  extend IntegratorInstance {
+    optional AdaptiveStepSizeIntegratorInstance extension = 7001;
+  }
+  extensions 9000 to 9999;  // Last used: 9000
+  required Quantity first_time_step = 1;
+  required double safety_factor = 2;
+  required int64 max_steps = 3;
+}
+
+message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {
+  extend AdaptiveStepSizeIntegratorInstance {
+    optional EmbeddedExplicitRungeKuttaNystromIntegratorInstance
+        extension = 9000;
+  }
+  required AdaptiveStepSizeIntegrator integrator = 1;
+}
+
+message FixedStepSizeIntegratorInstance {
+  extend IntegratorInstance {
+    optional FixedStepSizeIntegratorInstance extension = 7000;
+  }
+  extensions 8000 to 8999;  // Last used: 8001
+  required Quantity step = 1;
+}
 
 message SymmetricLinearMultistepIntegratorInstance {
-  extend IntegratorInstance {
-    optional SymmetricLinearMultistepIntegratorInstance extension = 7000;
+  extend FixedStepSizeIntegratorInstance {
+    optional SymmetricLinearMultistepIntegratorInstance extension = 8000;
   }
   message Step {
     repeated DoublePrecision displacements = 1;
-    repeated DoublePrecision accelerations = 2;
+    repeated Quantity accelerations = 2;
     required DoublePrecision time = 3;
   }
   repeated Step previous_steps = 1;
-  required Quantity step = 2;
+  required FixedStepSizeIntegrator integrator = 2;
 }
 
 message SymplecticRungeKuttaNystromIntegratorInstance {
-  extend IntegratorInstance {
-    optional SymplecticRungeKuttaNystromIntegratorInstance extensions = 7001;
+  extend FixedStepSizeIntegratorInstance {
+    optional SymplecticRungeKuttaNystromIntegratorInstance extension = 8001;
   }
-  required Quantity step = 1;
+  required FixedStepSizeIntegrator integrator = 1;
 }
 
 message SystemState {

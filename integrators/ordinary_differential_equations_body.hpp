@@ -78,6 +78,12 @@ Instant const& Integrator<DifferentialEquation>::Instance::time() const {
 }
 
 template<typename DifferentialEquation>
+void Integrator<DifferentialEquation>::Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {
+  current_state_.WriteToMessage(message->mutable_current_state());
+}
+
+template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance() {}
 
 template<typename DifferentialEquation>
@@ -88,6 +94,15 @@ template<typename DifferentialEquation>
 void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> const message) const {
   message->set_kind(kind_);
+}
+
+template<typename DifferentialEquation>
+void FixedStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {
+  Integrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension = message->MutableExtension(
+      serialization::FixedStepSizeIntegratorInstance::extension);
+  step_.WriteToMessage(extension->mutable_step());
 }
 
 template<typename DifferentialEquation>
@@ -135,7 +150,19 @@ template<typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
     serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
-template <typename DifferentialEquation>
+template<typename DifferentialEquation>
+void AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {
+  Integrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension = message->MutableExtension(
+      serialization::AdaptiveStepSizeIntegratorInstance::extension);
+  adaptive_step_size_.first_time_step.WriteToMessage(
+      extension->mutable_first_time_step());
+  extension->set_safety_factor(adaptive_step_size_.safety_factor);
+  extension->set_max_steps(adaptive_step_size_.max_steps);
+}
+
+template<typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,

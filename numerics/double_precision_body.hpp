@@ -15,8 +15,8 @@ namespace principia {
 namespace numerics {
 namespace internal_double_precision {
 
-using geometry::PointOrMultivectorSerializer;
-using geometry::QuantityOrMultivectorSerializer;
+using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
+using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Abs;
 using quantities::Quantity;
 using quantities::SIUnit;
@@ -76,9 +76,9 @@ DoublePrecision<T>& DoublePrecision<T>::operator-=(
 template<typename T>
 void DoublePrecision<T>::WriteToMessage(
     not_null<serialization::DoublePrecision*> const message) const {
-  using ValueSerializer = PointOrMultivectorSerializer<
+  using ValueSerializer = DoubleOrQuantityOrPointOrMultivectorSerializer<
                               T, serialization::DoublePrecision::Value>;
-  using ErrorSerializer = QuantityOrMultivectorSerializer<
+  using ErrorSerializer = DoubleOrQuantityOrMultivectorSerializer<
                               Difference<T>,
                               serialization::DoublePrecision::Error>;
   ValueSerializer::WriteToMessage(value, message->mutable_value());
@@ -88,9 +88,9 @@ void DoublePrecision<T>::WriteToMessage(
 template<typename T>
 DoublePrecision<T> DoublePrecision<T>::ReadFromMessage(
     serialization::DoublePrecision const& message) {
-  using ValueSerializer = PointOrMultivectorSerializer<
+  using ValueSerializer = DoubleOrQuantityOrPointOrMultivectorSerializer<
                               T, serialization::DoublePrecision::Value>;
-  using ErrorSerializer = QuantityOrMultivectorSerializer<
+  using ErrorSerializer = DoubleOrQuantityOrMultivectorSerializer<
                               Difference<T>,
                               serialization::DoublePrecision::Error>;
   DoublePrecision double_precision;

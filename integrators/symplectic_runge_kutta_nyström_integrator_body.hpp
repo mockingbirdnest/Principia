@@ -134,7 +134,17 @@ template<typename Position, int order, bool time_reversible, int evaluations,
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {
+  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension =
+      message
+          ->MutableExtension(
+              serialization::FixedStepSizeIntegratorInstance::extension)
+          ->MutableExtension(
+              serialization::SymplecticRungeKuttaNystromIntegratorInstance::
+                  extension);
+  integrator_.WriteToMessage(extension->mutable_integrator());
+}
 
 template<typename Position, int order_, bool time_reversible_, int evaluations_,
          CompositionMethod composition_>

@@ -142,7 +142,7 @@ class Integrator {
 
     // |ReadFromMessage| is specific to each subclass because of the functions.
     virtual void WriteToMessage(
-        not_null<serialization::IntegratorInstance*> message) const = 0;
+        not_null<serialization::IntegratorInstance*> message) const;
 
    protected:
     // For testing.
@@ -169,6 +169,10 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
   class Instance : public Integrator<ODE>::Instance {
+   public:
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
+
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
@@ -205,6 +209,10 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 
   // The last call to |append_state| will have |state.time.value == t_final|.
   class Instance : public Integrator<ODE>::Instance {
+   public:
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
+
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,

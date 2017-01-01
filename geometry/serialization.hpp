@@ -9,6 +9,20 @@ namespace internal_serialization {
 
 using base::not_constructible;
 
+// A helper class that serializes a |double|, a |Quantity|, a |Point| or a
+// |Multivector| to a protobuf structure like:
+//
+// message Message {
+//   oneof message {
+//     double double = 1;
+//     Quantity quantity = 2;
+//     Point point = 3;
+//     Multivector multivector = 4;
+//   }
+// }
+template<typename T, typename Message>
+struct DoubleOrQuantityOrPointOrMultivectorSerializer : not_constructible {};
+
 // A helper class that serializes a |double|, a |Quantity| or a |Multivector|
 // to a protobuf structure like:
 //
@@ -48,6 +62,7 @@ struct QuantityOrMultivectorSerializer : not_constructible {};
 
 }  // namespace internal_serialization
 
+using internal_serialization::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using internal_serialization::DoubleOrQuantityOrMultivectorSerializer;
 using internal_serialization::PointOrMultivectorSerializer;
 using internal_serialization::QuantityOrMultivectorSerializer;

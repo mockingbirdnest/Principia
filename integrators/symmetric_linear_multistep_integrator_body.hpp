@@ -129,7 +129,27 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {
+  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension =
+      message
+          ->MutableExtension(
+              serialization::FixedStepSizeIntegratorInstance::extension)
+          ->MutableExtension(
+              serialization::SymmetricLinearMultistepIntegratorInstance::
+                  extension);
+  for (auto const& previous_step : previous_steps_) {
+    auto* const serialized_step = extension->add_previous_steps();
+    for (auto const& displacement : previous_step.displacements) {
+      displacement.WriteToMessage(serialized_step->add_displacements());
+    }
+    for (auto const& acceleration : previous_step.accelerations) {
+      acceleration.WriteToMessage(serialized_step->add_accelerations());
+    }
+    previous_step.time.WriteToMessage(serialized_step->mutable_time());
+  }
+  integrator_.WriteToMessage(extension->mutable_integrator());
+}
 
 template<typename Position, int order_>
 SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(

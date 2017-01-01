@@ -273,7 +273,18 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                  stages,
                                                  first_same_as_last>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {
+  AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension =
+      message
+          ->MutableExtension(
+              serialization::AdaptiveStepSizeIntegratorInstance::extension)
+          ->MutableExtension(
+              serialization::
+                  EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
+                      extension);
+  integrator_.WriteToMessage(extension->mutable_integrator());
+}
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
