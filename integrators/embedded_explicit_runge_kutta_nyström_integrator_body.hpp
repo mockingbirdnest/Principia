@@ -113,7 +113,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             first_same_as_last>::
 Instance::Instance(
     IntegrationProblem<ODE> const& problem,
-    AppendState&& append_state,
+    AppendState const& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size,
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
     : AdaptiveStepSizeIntegrator<ODE>::Instance(
@@ -130,12 +130,12 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             stages,
                                             first_same_as_last>::
 NewInstance(IntegrationProblem<ODE> const& problem,
-            typename Integrator<ODE>::AppendState&& append_state,
+            typename Integrator<ODE>::AppendState const& append_state,
             AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
-      problem, std::move(append_state), adaptive_step_size, *this));
+      problem, append_state, adaptive_step_size, *this));
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,

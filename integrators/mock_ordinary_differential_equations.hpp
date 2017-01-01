@@ -29,7 +29,7 @@ class MockFixedStepSizeIntegrator
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
-      typename Integrator<ODE>::AppendState&& append_state,
+      typename Integrator<ODE>::AppendState const& append_state,
       Time const& step) const override {
     return make_not_null_unique<MockInstance>();
   }

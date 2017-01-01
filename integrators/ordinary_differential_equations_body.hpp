@@ -64,7 +64,7 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
 template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
-    AppendState&& append_state)
+    AppendState const& append_state)
     : equation_(problem.equation),
       current_state_(*problem.initial_state),
       append_state_(std::move(append_state)) {
@@ -93,7 +93,7 @@ void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
 template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
-    AppendState&& append_state,
+    AppendState const& append_state,
     Time const& step)
     : Integrator<ODE>::Instance(problem, std::move(append_state)),
       step_(step) {
@@ -138,7 +138,7 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
 template <typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
-    AppendState&& append_state,
+    AppendState const& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size)
     : Integrator<ODE>::Instance(problem, std::move(append_state)),
       adaptive_step_size_(adaptive_step_size) {

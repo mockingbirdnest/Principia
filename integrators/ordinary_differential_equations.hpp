@@ -130,7 +130,7 @@ class Integrator {
   class Instance {
    public:
     Instance(IntegrationProblem<ODE> const& problem,
-             AppendState&& append_state);
+             AppendState const& append_state);
     virtual ~Instance() = default;
 
     // The subclass must document the time passed to the last call to
@@ -171,7 +171,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   class Instance : public Integrator<ODE>::Instance {
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
-             AppendState&& append_state,
+             AppendState const& append_state,
              Time const& step);
 
     Time const step_;
@@ -181,7 +181,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // has a back-pointer to its integrator.
   virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
   NewInstance(IntegrationProblem<ODE> const& problem,
-              typename Integrator<ODE>::AppendState&& append_state,
+              typename Integrator<ODE>::AppendState const& append_state,
               Time const& step) const = 0;
 
   void WriteToMessage(
@@ -207,7 +207,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   class Instance : public Integrator<ODE>::Instance {
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
-             AppendState&& append_state,
+             AppendState const& append_state,
              AdaptiveStepSize<ODE> const& adaptive_step_size);
 
     AdaptiveStepSize<ODE> const adaptive_step_size_;
@@ -217,7 +217,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // has a back-pointer to its integrator.
   virtual not_null<std::unique_ptr<Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
-      typename Integrator<ODE>::AppendState&& append_state,
+      typename Integrator<ODE>::AppendState const& append_state,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   void WriteToMessage(

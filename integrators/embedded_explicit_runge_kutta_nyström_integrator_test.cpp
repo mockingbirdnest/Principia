@@ -269,7 +269,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
     acceleration.back() = mass_flow * specific_impulse / mass(t);
   };
   IntegrationProblem<ODE> problem;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
   problem.equation = rocket_equation;
@@ -287,8 +287,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
 
-  auto const instance = integrator.NewInstance(
-      problem, std::move(append_state), adaptive_step_size);
+  auto const instance =
+      integrator.NewInstance(problem, append_state, adaptive_step_size);
   auto const outcome = instance->Solve(t_final);
 
   EXPECT_EQ(termination_condition::VanishingStepSize, outcome.error());

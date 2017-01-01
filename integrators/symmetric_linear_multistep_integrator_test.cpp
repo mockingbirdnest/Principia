@@ -90,12 +90,11 @@ void TestTermination(Integrator const& integrator) {
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  auto const instance =
-      integrator.NewInstance(problem, std::move(append_state), step);
+  auto const instance = integrator.NewInstance(problem, append_state, step);
   instance->Solve(t_final);
 
   EXPECT_EQ(steps, solution.size());
@@ -140,12 +139,11 @@ void Test1000SecondsAt1Millisecond(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  auto const instance =
-      integrator.NewInstance(problem, std::move(append_state), step);
+  auto const instance = integrator.NewInstance(problem, append_state, step);
   instance->Solve(t_final);
 
   EXPECT_EQ(steps, solution.size());
@@ -271,12 +269,11 @@ void TestSymplecticity(Integrator const& integrator,
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  auto const instance =
-      integrator.NewInstance(problem, std::move(append_state), step);
+  auto const instance = integrator.NewInstance(problem, append_state, step);
   instance->Solve(t_final);
 
   std::size_t const length = solution.size();

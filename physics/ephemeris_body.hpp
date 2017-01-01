@@ -469,20 +469,20 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 
 #if defined(WE_LOVE_228)
   typename NewtonianMotionEquation::SystemState last_state;
-  auto append_state =
+  auto const append_state =
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
         last_state = state;
       };
 #else
-  auto append_state =
+  auto const append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState,
                 _1, std::cref(trajectories));
 #endif
 
   auto const instance =
       parameters.integrator_->NewInstance(
-          problem, std::move(append_state), parameters.step_);
+          problem, append_state, parameters.step_);
   instance->Solve(t);
 
 #if defined(WE_LOVE_228)

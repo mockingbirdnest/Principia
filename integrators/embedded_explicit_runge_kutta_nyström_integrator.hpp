@@ -87,7 +87,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 
    private:
     Instance(IntegrationProblem<ODE> const& problem,
-             AppendState&& append_state,
+             AppendState const& append_state,
              AdaptiveStepSize<ODE> const& adaptive_step_size,
              EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
 
@@ -97,7 +97,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    typename Integrator<ODE>::AppendState&& append_state,
+    typename Integrator<ODE>::AppendState const& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
   // The actual integration, applied to |instance|.

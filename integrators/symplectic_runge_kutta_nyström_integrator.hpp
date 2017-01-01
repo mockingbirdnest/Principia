@@ -95,7 +95,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 
    private:
     Instance(IntegrationProblem<ODE> const& problem,
-             AppendState&& append_state,
+             AppendState const& append_state,
              Time const& step,
              SymplecticRungeKuttaNyströmIntegrator const& integrator);
 
@@ -110,7 +110,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
-      typename Integrator<ODE>::AppendState&& append_state,
+      typename Integrator<ODE>::AppendState const& append_state,
       Time const& step) const override;
 
   // The actual integration, applied to |instance|.

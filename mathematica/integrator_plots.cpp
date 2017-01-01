@@ -201,8 +201,8 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   Length max_q_error;
   Speed max_v_error;
   Energy max_e_error;
-  auto append_state = [&max_q_error, &max_v_error, &max_e_error,
-                       q_amplitude, v_amplitude, ω, m, k, t0](
+  auto const append_state = [&max_q_error, &max_v_error, &max_e_error,
+                             q_amplitude, v_amplitude, ω, m, k, t0](
       ODE::SystemState const& state) {
     max_q_error = std::max(max_q_error,
         AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
@@ -311,8 +311,8 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   Length max_q_error;
   Speed max_v_error;
   SpecificEnergy max_e_error;
-  auto append_state = [&max_q_error, &max_v_error, &max_e_error, &orbit,
-                       μ, initial_specific_energy](
+  auto const append_state = [&max_q_error, &max_v_error, &max_e_error, &orbit,
+                             μ, initial_specific_energy](
       ODE::SystemState const& state) {
     Displacement<World> q(
         {state.positions[0].value, state.positions[1].value, 0 * Metre});
