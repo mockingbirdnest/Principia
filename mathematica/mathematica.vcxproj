@@ -273,6 +273,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

@@ -108,13 +108,12 @@ void TestTermination(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  auto const instance =
-      integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, *instance);
+  auto const instance = integrator.NewInstance(problem, append_state, step);
+  instance->Solve(t_final);
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
@@ -169,13 +168,12 @@ void Test1000SecondsAt1Millisecond(
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  auto const instance =
-      integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, *instance);
+  auto const instance = integrator.NewInstance(problem, append_state, step);
+  instance->Solve(t_final);
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
@@ -241,14 +239,13 @@ void TestConvergence(Integrator const& integrator,
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
   ODE::SystemState final_state;
-  auto append_state = [&final_state](ODE::SystemState const& state) {
+  auto const append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
   };
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
-    auto const instance =
-        integrator.NewInstance(problem, append_state, step);
-    integrator.Solve(t_final, *instance);
+    auto const instance = integrator.NewInstance(problem, append_state, step);
+    instance->Solve(t_final);
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
@@ -316,13 +313,12 @@ void TestSymplecticity(Integrator const& integrator,
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  auto const instance =
-      integrator.NewInstance(problem, std::move(append_state), step);
-  integrator.Solve(t_final, *instance);
+  auto const instance = integrator.NewInstance(problem, append_state, step);
+  instance->Solve(t_final);
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);
@@ -381,13 +377,13 @@ void TestTimeReversibility(Integrator const& integrator) {
   {
     problem.initial_state = &initial_state;
     auto const instance = integrator.NewInstance(problem, append_state, step);
-    integrator.Solve(t_final, *instance);
+    instance->Solve(t_final);
   }
 
   {
     problem.initial_state = &final_state;
     auto const instance = integrator.NewInstance(problem, append_state, -step);
-    integrator.Solve(t_initial, *instance);
+    instance->Solve(t_initial);
   }
 
   EXPECT_EQ(t_initial, final_state.time.value);

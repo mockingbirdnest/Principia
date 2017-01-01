@@ -89,44 +89,42 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                    higher_order,
                                                    lower_order,
                                                    stages,
-                                                   first_same_as_last>::Solve(
-    Instant const& t_final,
-    IntegrationInstance& instance) const {
+                                                   first_same_as_last>::
+Instance::Solve(Instant const& t_final) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
 
-  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
-  auto const& equation = down_cast_instance.equation;
-  auto const& append_state = down_cast_instance.append_state;
-  auto const& adaptive_step_size = down_cast_instance.adaptive_step_size;
+  auto const& a = integrator_.a_;
+  auto const& b_hat = integrator_.b_hat_;
+  auto const& b_prime_hat = integrator_.b_prime_hat_;
+  auto const& b = integrator_.b_;
+  auto const& b_prime = integrator_.b_prime_;
+  auto const& c = integrator_.c_;
 
-  // Gets updated as the integration progresses to allow restartability.
-  typename ODE::SystemState& current_state = down_cast_instance.current_state;
+  // |current_state_| gets updated as the integration progresses to allow
+  // restartability.
 
   // State before the last, truncated step.
   std::experimental::optional<typename ODE::SystemState> final_state;
 
   // Argument checks.
-  int const dimension = current_state.positions.size();
-  CHECK_NE(Time(), adaptive_step_size.first_time_step);
+  int const dimension = current_state_.positions.size();
   Sign const integration_direction =
-      Sign(adaptive_step_size.first_time_step);
+      Sign(adaptive_step_size_.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(current_state.time.value, t_final);
+    CHECK_LT(current_state_.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(current_state.time.value, t_final);
+    CHECK_GT(current_state_.time.value, t_final);
   }
-  CHECK_GT(adaptive_step_size.safety_factor, 0);
-  CHECK_LT(adaptive_step_size.safety_factor, 1);
 
   // Time step.
-  Time h = adaptive_step_size.first_time_step;
+  Time h = adaptive_step_size_.first_time_step;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
-  DoublePrecision<Instant>& t = current_state.time;
+  DoublePrecision<Instant>& t = current_state_.time;
 
   // Position increment (high-order).
   std::vector<Displacement> Δq_hat(dimension);
@@ -134,10 +132,10 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   std::vector<Velocity> Δv_hat(dimension);
   // Current position.  This is a non-const reference whose purpose is to make
   // the equations more readable.
-  std::vector<DoublePrecision<Position>>& q_hat = current_state.positions;
+  std::vector<DoublePrecision<Position>>& q_hat = current_state_.positions;
   // Current velocity.  This is a non-const reference whose purpose is to make
   // the equations more readable.
-  std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
+  std::vector<DoublePrecision<Velocity>>& v_hat = current_state_.velocities;
 
   // Difference between the low- and high-order approximations.
   typename ODE::SystemStateError error_estimate;
@@ -175,7 +173,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
-      h *= adaptive_step_size.safety_factor *
+      h *= adaptive_step_size_.safety_factor *
                std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
@@ -194,21 +192,21 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
         // The chosen step size will overshoot.  Clip it to just reach the end,
         // and terminate if the step is accepted.
         h = time_to_end;
-        final_state = current_state;
+        final_state = current_state_;
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages; ++i) {
-        Instant const t_stage = t.value + c_[i] * h;
+        Instant const t_stage = t.value + c[i] * h;
         for (int k = 0; k < dimension; ++k) {
           Acceleration Σj_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
-            Σj_a_ij_g_jk += a_[i][j] * g[j][k];
+            Σj_a_ij_g_jk += a[i][j] * g[j][k];
           }
           q_stage[k] = q_hat[k].value +
-                           h * (c_[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
+                           h * (c[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
         }
-        equation.compute_acceleration(t_stage, q_stage, g[i]);
+        equation_.compute_acceleration(t_stage, q_stage, g[i]);
       }
 
       // Increment computation and step size control.
@@ -220,10 +218,10 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
         for (int i = 0; i < stages; ++i) {
-          Σi_b_hat_i_g_ik       += b_hat_[i] * g[i][k];
-          Σi_b_i_g_ik           += b_[i] * g[i][k];
-          Σi_b_prime_hat_i_g_ik += b_prime_hat_[i] * g[i][k];
-          Σi_b_prime_i_g_ik     += b_prime_[i] * g[i][k];
+          Σi_b_hat_i_g_ik       += b_hat[i] * g[i][k];
+          Σi_b_i_g_ik           += b[i] * g[i][k];
+          Σi_b_prime_hat_i_g_ik += b_prime_hat[i] * g[i][k];
+          Σi_b_prime_i_g_ik     += b_prime[i] * g[i][k];
         }
         // The hat-less Δq and Δv are the low-order increments.
         Δq_hat[k]               = h * (h * (Σi_b_hat_i_g_ik) + v_hat[k].value);
@@ -235,7 +233,7 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
       tolerance_to_error_ratio =
-          adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
+          adaptive_step_size_.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     if (first_same_as_last) {
@@ -250,12 +248,12 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       q_hat[k].Increment(Δq_hat[k]);
       v_hat[k].Increment(Δv_hat[k]);
     }
-    append_state(current_state);
+    append_state_(current_state_);
     ++step_count;
-    if (step_count == adaptive_step_size.max_steps && !at_end) {
+    if (step_count == adaptive_step_size_.max_steps && !at_end) {
       return Status(termination_condition::ReachedMaximalStepCount,
                     "Reached maximum step count " +
-                        std::to_string(adaptive_step_size.max_steps) +
+                        std::to_string(adaptive_step_size_.max_steps) +
                         " at time " + DebugString(t.value) +
                         "; requested t_final is " + DebugString(t_final) +
                         ".");
@@ -263,26 +261,19 @@ Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   }
   // The resolution is restartable from the last non-truncated state.
   CHECK(final_state);
-  current_state = *final_state;
+  current_state_ = *final_state;
   return Status(termination_condition::Done, "");
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-not_null<std::unique_ptr<IntegrationInstance>>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
-NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
-  return make_not_null_unique<Instance>(problem,
-                                        std::move(append_state),
-                                        adaptive_step_size);
-}
+void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                                 higher_order,
+                                                 lower_order,
+                                                 stages,
+                                                 first_same_as_last>::
+Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {}
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
@@ -291,15 +282,31 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             lower_order,
                                             stages,
                                             first_same_as_last>::
-Instance::Instance(IntegrationProblem<ODE> problem,
-                   AppendState<ODE> append_state,
-                   AdaptiveStepSize<ODE> adaptive_step_size)
-    : equation(std::move(problem.equation)),
-      current_state(*problem.initial_state),
-      append_state(std::move(append_state)),
-      adaptive_step_size(std::move(adaptive_step_size)) {
-  CHECK_EQ(current_state.positions.size(),
-           current_state.velocities.size());
+Instance::Instance(
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size,
+    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
+    : AdaptiveStepSizeIntegrator<ODE>::Instance(
+          problem, std::move(append_state), adaptive_step_size),
+      integrator_(integrator) {}
+
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::
+NewInstance(IntegrationProblem<ODE> const& problem,
+            typename Integrator<ODE>::AppendState const& append_state,
+            AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // private.
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
+      problem, append_state, adaptive_step_size, *this));
 }
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator

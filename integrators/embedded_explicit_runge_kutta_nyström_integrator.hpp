@@ -79,25 +79,28 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
 
-  Status Solve(Instant const& t_final,
-               IntegrationInstance& instance) const override;
+  class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
+   public:
+    Status Solve(Instant const& t_final) override;
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
 
-  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
+   private:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             AdaptiveStepSize<ODE> const& adaptive_step_size,
+             EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
+
+    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator_;
+    friend class EmbeddedExplicitRungeKuttaNyströmIntegrator;
+  };
+
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
     IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
+    typename Integrator<ODE>::AppendState const& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
  protected:
-  struct Instance : public IntegrationInstance {
-    Instance(IntegrationProblem<ODE> problem,
-             AppendState<ODE> append_state,
-             AdaptiveStepSize<ODE> adaptive_step_size);
-    ODE equation;
-    typename ODE::SystemState current_state;
-    AppendState<ODE> const append_state;
-    AdaptiveStepSize<ODE> const adaptive_step_size;
-  };
-
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
   FixedVector<double, stages> const b_hat_;
