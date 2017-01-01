@@ -196,7 +196,7 @@ operator*(Pair<T1, T2> const& left, Scalar right);
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<Product<T1, Scalar>, Product<T2, Scalar>>>::type
+    Pair<Quotient<T1, Scalar>, Quotient<T2, Scalar>>>::type
 operator/(Pair<T1, T2> const& left, Scalar right);
 
 template<typename T1, typename T2>
