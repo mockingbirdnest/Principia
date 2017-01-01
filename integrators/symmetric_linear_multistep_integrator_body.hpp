@@ -181,7 +181,8 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Solve(
     typename ODE::SystemState& system_state = instance.current_state_;
     for (int d = 0; d < dimension; ++d) {
       DoublePosition& current_position = Σj_minus_ɑj_qj[d];
-      current_position += h * h * Σj_βj_numerator_aj[d] / β_denominator_;
+      current_position.Increment(h * h *
+                                 Σj_βj_numerator_aj[d] / β_denominator_);
       current_step.displacements.push_back(current_position - DoublePosition());
       positions[d] = current_position.value;
       system_state.positions[d] = current_position;
@@ -259,8 +260,8 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::VelocitySolve(
       weighted_acceleration += numerator * it->accelerations[d];
       ++it;
     }
-    velocity += instance.step_ * weighted_acceleration /
-                                 velocity_integrator_.denominator;
+    velocity.Increment(instance.step_ * weighted_acceleration /
+                       velocity_integrator_.denominator);
   }
 }
 

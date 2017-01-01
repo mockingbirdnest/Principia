@@ -24,9 +24,7 @@ template<typename T>
 struct DoublePrecision final {
   constexpr DoublePrecision() = default;
 
-  // This constructor is not explicit to make it easy to construct an object
-  // with no error.
-  constexpr DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
+  explicit constexpr DoublePrecision(T const& value);
 
   // Compensated summation.  This is less precise, but more efficient, than
   // conversion followed by |operator+=|.

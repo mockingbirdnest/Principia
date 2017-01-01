@@ -46,10 +46,10 @@ SymplecticRungeKuttaNyströmIntegrator(
           SpecialSecondOrderDifferentialEquation<Position>>(kind),
       a_(a),
       b_(b) {
-  DoublePrecision<double> c_i = 0.0;
+  DoublePrecision<double> c_i(0.0);
   for (int i = 0; i < stages_; ++i) {
     c_[i] = c_i.value;
-    c_i += a_[i];
+    c_i += DoublePrecision<double>(a_[i]);
   }
   CHECK_LE(ULPDistance(1.0, c_i.value), 4);
   if (composition == ABA) {

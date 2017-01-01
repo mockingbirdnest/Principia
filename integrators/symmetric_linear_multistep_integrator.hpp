@@ -46,7 +46,7 @@ class SymmetricLinearMultistepIntegrator
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
-    virtual void WriteToMessage(
+    void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 
    private:

@@ -41,6 +41,7 @@ using integrators::AdaptiveStepSize;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
+using numerics::DoublePrecision;
 using numerics::Hermite3;
 using quantities::Abs;
 using quantities::Exponentiation;
@@ -203,7 +204,7 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  last_state_.time = initial_time;
+  last_state_.time = DoublePrecision<Instant>(initial_time);
 
   for (int i = 0; i < bodies.size(); ++i) {
     auto& body = bodies[i];
@@ -228,17 +229,17 @@ Ephemeris<Frame>::Ephemeris(
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
       trajectories_.insert(trajectories_.begin(), trajectory);
-      last_state_.positions.insert(last_state_.positions.begin(),
+      last_state_.positions.emplace(last_state_.positions.begin(),
                                    degrees_of_freedom.position());
-      last_state_.velocities.insert(last_state_.velocities.begin(),
+      last_state_.velocities.emplace(last_state_.velocities.begin(),
                                     degrees_of_freedom.velocity());
       ++number_of_oblate_bodies_;
     } else {
       // Inserting at the end of the vectors is O(1).
       bodies_.push_back(std::move(body));
       trajectories_.push_back(trajectory);
-      last_state_.positions.push_back(degrees_of_freedom.position());
-      last_state_.velocities.push_back(degrees_of_freedom.velocity());
+      last_state_.positions.emplace_back(degrees_of_freedom.position());
+      last_state_.velocities.emplace_back(degrees_of_freedom.velocity());
       ++number_of_spherical_bodies_;
     }
   }
@@ -397,9 +398,9 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   typename NewtonianMotionEquation::SystemState initial_state;
   auto const trajectory_last = trajectory->last();
   auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
-  initial_state.time = trajectory_last.time();
-  initial_state.positions.push_back(last_degrees_of_freedom.position());
-  initial_state.velocities.push_back(last_degrees_of_freedom.velocity());
+  initial_state.time = DoublePrecision<Instant>(trajectory_last.time());
+  initial_state.positions.emplace_back(last_degrees_of_freedom.position());
+  initial_state.velocities.emplace_back(last_degrees_of_freedom.velocity());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massless_body_equation;
@@ -457,9 +458,9 @@ void Ephemeris<Frame>::FlowWithFixedStep(
     auto const trajectory_last = trajectory->last();
     auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
     // TODO(phl): why do we keep rewriting this?  Should we check consistency?
-    initial_state.time = trajectory_last.time();
-    initial_state.positions.push_back(last_degrees_of_freedom.position());
-    initial_state.velocities.push_back(last_degrees_of_freedom.velocity());
+    initial_state.time = DoublePrecision<Instant>(trajectory_last.time());
+    initial_state.positions.emplace_back(last_degrees_of_freedom.position());
+    initial_state.velocities.emplace_back(last_degrees_of_freedom.velocity());
   }
 
   IntegrationProblem<NewtonianMotionEquation> problem;
@@ -929,11 +930,14 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     // Fill the |last_state_| for this body.  It will be the starting state for
     // Prolong.
     last_state_time.insert(last_time);
-    ephemeris->last_state_.positions[j] = last_degrees_of_freedom.position();
-    ephemeris->last_state_.velocities[j] = last_degrees_of_freedom.velocity();
+    ephemeris->last_state_.positions[j] =
+        DoublePrecision<Position<Frame>>(last_degrees_of_freedom.position());
+    ephemeris->last_state_.velocities[j] =
+        DoublePrecision<Velocity<Frame>>(last_degrees_of_freedom.velocity());
   }
   CHECK_EQ(1, last_state_time.size());
-  ephemeris->last_state_.time = *last_state_time.cbegin();
+  ephemeris->last_state_.time =
+      DoublePrecision<Instant>(*last_state_time.cbegin());
   LOG(INFO) << "Last time in discrete trajectories is "
             << *last_state_time.cbegin();
 
