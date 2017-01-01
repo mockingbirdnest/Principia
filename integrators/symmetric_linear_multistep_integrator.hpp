@@ -64,6 +64,16 @@ class SymmetricLinearMultistepIntegrator
              Time const& step,
              SymmetricLinearMultistepIntegrator const& integrator);
 
+    // Performs the startup integration, i.e., computes enough states to either
+    // reach |t_final| or to reach a point where |instance.previous_steps_| has
+    // |order - 1| elements.  During startup |instance.current_state_| is
+    // updated more frequently than once every |instance.step_|.
+    void StartupSolve(Instant const& t_final);
+
+    // Performs the velocity integration, i.e. one step of the Adams-Moulton
+    // method using the accelerations computed by the main integrator.
+    void VelocitySolve(int dimension);
+
     static void FillStepFromSystemState(ODE const& equation,
                                         typename ODE::SystemState const& state,
                                         Step& step);
@@ -85,20 +95,7 @@ class SymmetricLinearMultistepIntegrator
       typename Integrator<ODE>::AppendState const& append_state,
       Time const& step) const override;
 
-  // The actual integration, applied to |instance|.
-  Status Solve(Instant const& t_final, Instance& instance) const;
-
  private:
-  // Performs the startup integration, i.e., computes enough states to either
-  // reach |t_final| or to reach a point where |instance.previous_steps_| has
-  // |order - 1| elements.  During startup |instance.current_state_| is updated
-  // more frequently than once every |instance.step_|.
-  void StartupSolve(Instant const& t_final, Instance& instance) const;
-
-  // Performs the velocity integration, i.e. one step of the Adams-Moulton
-  // method using the accelerations computed by the main integrator.
-  void VelocitySolve(int dimension, Instance& instance) const;
-
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   AdamsMoulton<velocity_order_> const& velocity_integrator_;
   FixedVector<double, half_order_> const ɑ_;

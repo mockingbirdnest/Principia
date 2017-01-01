@@ -100,9 +100,6 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     typename Integrator<ODE>::AppendState const& append_state,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
-  // The actual integration, applied to |instance|.
-  Status Solve(Instant const& t_final, Instance& instance) const;
-
  protected:
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
