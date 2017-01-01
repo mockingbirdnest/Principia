@@ -14,6 +14,9 @@ namespace principia {
 namespace integrators {
 namespace internal_ordinary_differential_equations {
 
+// TODO(egg): for some mysterious reason MSVC wants the full
+// |typename SpecialSecondOrderDifferentialEquation<Position_>::Position|
+// where |Position| would be enough.
 template<typename Position_>
 SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
     std::vector<typename SpecialSecondOrderDifferentialEquation<
@@ -59,6 +62,25 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
 }
 
 template<typename DifferentialEquation>
+Integrator<DifferentialEquation>::Instance::Instance(
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state)
+    : equation_(problem.equation),
+      current_state_(*problem.initial_state),
+      append_state_(std::move(append_state)) {
+  CHECK_EQ(current_state_.positions.size(),
+           current_state_.velocities.size());
+}
+
+template<typename DifferentialEquation>
+Instant const& Integrator<DifferentialEquation>::Instance::time() const {
+  return current_state_.time.value;
+}
+
+template<typename DifferentialEquation>
+Integrator<DifferentialEquation>::Instance::Instance() {}
+
+template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
@@ -66,6 +88,16 @@ template<typename DifferentialEquation>
 void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> const message) const {
   message->set_kind(kind_);
+}
+
+template<typename DifferentialEquation>
+FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    Time const& step)
+    : Integrator<ODE>::Instance(problem, std::move(append_state)),
+      step_(step) {
+  CHECK_NE(Time(), step_);
 }
 
 template<typename DifferentialEquation>
@@ -102,6 +134,18 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
 template<typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
     serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+
+template <typename DifferentialEquation>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size)
+    : Integrator<ODE>::Instance(problem, std::move(append_state)),
+      adaptive_step_size_(adaptive_step_size) {
+  CHECK_NE(Time(), adaptive_step_size.first_time_step);
+  CHECK_GT(adaptive_step_size.safety_factor, 0);
+  CHECK_LT(adaptive_step_size.safety_factor, 1);
+}
 
 template<typename DifferentialEquation>
 void AdaptiveStepSizeIntegrator<DifferentialEquation>::WriteToMessage(

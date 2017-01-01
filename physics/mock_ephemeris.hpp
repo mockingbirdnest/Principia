@@ -4,11 +4,14 @@
 #include <vector>
 
 #include "gmock/gmock.h"
+#include "integrators/mock_ordinary_differential_equations.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_ephemeris {
+
+using integrators::MockFixedStepSizeIntegrator;
 
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {
@@ -16,7 +19,10 @@ class MockEphemeris : public Ephemeris<Frame> {
   using typename Ephemeris<Frame>::AdaptiveStepParameters;
   using typename Ephemeris<Frame>::FixedStepParameters;
 
-  MockEphemeris() : Ephemeris<Frame>() {}
+  MockEphemeris()
+      : Ephemeris<Frame>(
+            MockFixedStepSizeIntegrator<
+                typename Ephemeris<Frame>::NewtonianMotionEquation>::Get()) {}
 
   MOCK_CONST_METHOD0_T(bodies,
                        std::vector<not_null<MassiveBody const*>> const&());

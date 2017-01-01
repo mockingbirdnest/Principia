@@ -90,14 +90,6 @@ struct IntegrationProblem final {
   typename ODE::SystemState const* initial_state;
 };
 
-// An opaque object for holding the state during the integration of a problem.
-struct IntegrationInstance {
-  template<typename ODE>
-  using AppendState =
-      std::function<void(typename ODE::SystemState const& state)>;
-  virtual ~IntegrationInstance() = default;  // Makes the type polymorphic.
-};
-
 // Settings for for adaptive step size integration.
 template<typename ODE>
 struct AdaptiveStepSize final {
@@ -130,6 +122,39 @@ class Integrator {
  public:
   using ODE = DifferentialEquation;
 
+  using AppendState =
+      std::function<void(typename ODE::SystemState const& state)>;
+
+  // An object for holding the integrator state during the integration of a
+  // problem.
+  class Instance {
+   public:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state);
+    virtual ~Instance() = default;
+
+    // The subclass must document the time passed to the last call to
+    // |append_state|.
+    virtual Status Solve(Instant const& t_final) = 0;
+
+    // The last instant integrated by this instance.
+    Instant const& time() const;
+
+    // |ReadFromMessage| is specific to each subclass because of the functions.
+    virtual void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const = 0;
+
+   protected:
+    // For testing.
+    Instance();
+
+    // We make the data members protected because they need to be easily
+    // accessible by subclasses.
+    ODE const equation_;
+    typename ODE::SystemState current_state_;
+    AppendState const append_state_;
+  };
+
   virtual ~Integrator() = default;
 };
 
@@ -138,17 +163,26 @@ template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
+
   // The last call to |append_state| has a |state.time.value| equal to the
   // unique |Instant| of the form |problem.t_final + n * step| in
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
-  virtual void Solve(Instant const& t_final,
-                     IntegrationInstance& instance) const = 0;
+  class Instance : public Integrator<ODE>::Instance {
+   protected:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             Time const& step);
 
-  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
-    Time const& step) const = 0;
+    Time const step_;
+  };
+
+  // The factory function for |Instance|, above.  It ensures that the instance
+  // has a back-pointer to its integrator.
+  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  NewInstance(IntegrationProblem<ODE> const& problem,
+              typename Integrator<ODE>::AppendState const& append_state,
+              Time const& step) const = 0;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const;
@@ -168,14 +202,23 @@ template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
-  // The last call to |append_state| will have |state.time.value == t_final|.
-  virtual Status Solve(Instant const& t_final,
-                       IntegrationInstance& instance) const = 0;
 
-  virtual not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+  // The last call to |append_state| will have |state.time.value == t_final|.
+  class Instance : public Integrator<ODE>::Instance {
+   protected:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             AdaptiveStepSize<ODE> const& adaptive_step_size);
+
+    AdaptiveStepSize<ODE> const adaptive_step_size_;
+  };
+
+  // The factory function for |Instance|, above.  It ensures that the instance
+  // has a back-pointer to its integrator.
+  virtual not_null<std::unique_ptr<Integrator<ODE>::Instance>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      typename Integrator<ODE>::AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   void WriteToMessage(
       not_null<serialization::AdaptiveStepSizeIntegrator*> message) const;
@@ -195,7 +238,6 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 using internal_ordinary_differential_equations::AdaptiveStepSize;
 using internal_ordinary_differential_equations::AdaptiveStepSizeIntegrator;
 using internal_ordinary_differential_equations::FixedStepSizeIntegrator;
-using internal_ordinary_differential_equations::IntegrationInstance;
 using internal_ordinary_differential_equations::IntegrationProblem;
 using internal_ordinary_differential_equations::Integrator;
 using internal_ordinary_differential_equations::

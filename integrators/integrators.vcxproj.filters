@@ -50,6 +50,9 @@
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="mock_ordinary_differential_equations.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">
