@@ -174,12 +174,15 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
   class Instance : public Integrator<ODE>::Instance {
    public:
+    // The integrator corresponding to this instance.
+    virtual FixedStepSizeIntegrator const& integrator() const = 0;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    static not_null<std::unique_ptr<FixedStepSizeIntegrator>> ReadFromMessage(
-        serialization::IntegratorInstance const& message,
-        ODE const& equation,
-        AppendState const& append_state);
+    static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+    ReadFromMessage(serialization::IntegratorInstance const& message,
+                    ODE const& equation,
+                    AppendState const& append_state);
 
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
@@ -195,6 +198,16 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   NewInstance(IntegrationProblem<ODE> const& problem,
               typename Integrator<ODE>::AppendState const& append_state,
               Time const& step) const = 0;
+
+  // For convenience, deserialization is an instance member of the |Integrator|,
+  // not a static member of the |Instance|.  Which makes sense if you see
+  // |Integrator| as a factory for |Instance|.
+  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  ReadFromMessage(
+      serialization::FixedStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      Time const& step) const = 0;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const;
@@ -218,6 +231,9 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // The last call to |append_state| will have |state.time.value == t_final|.
   class Instance : public Integrator<ODE>::Instance {
    public:
+    // The integrator corresponding to this instance.
+    virtual AdaptiveStepSizeIntegrator const& integrator() const = 0;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 

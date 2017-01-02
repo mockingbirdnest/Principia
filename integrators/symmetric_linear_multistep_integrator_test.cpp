@@ -244,7 +244,7 @@ void TestConvergence(Integrator const& integrator,
 #endif
 }
 
-// Test that the error in energy does not correlate with the number of steps
+// Tests that the error in energy does not correlate with the number of steps
 // taken, and checks the actual value of the error.
 template<typename Integrator>
 void TestSymplecticity(Integrator const& integrator,
@@ -301,6 +301,43 @@ void TestSymplecticity(Integrator const& integrator,
   EXPECT_EQ(expected_energy_error, max_energy_error);
 }
 
+// Tests that serialization and deserialization work.
+template<typename Integrator>
+void TestSerialization(Integrator const& integrator) {
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Instant const t_initial;
+  Time const step = 0.2 * Second;
+
+  Mass const m = 1 * Kilogram;
+  Stiffness const k = SIUnit<Stiffness>();
+  Energy const initial_energy =
+      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = &initial_state;
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  auto const instance1 = integrator.NewInstance(problem, append_state, step);
+  serialization::IntegratorInstance message1;
+  instance1->WriteToMessage(&message1);
+  auto const instance2 =
+      FixedStepSizeIntegrator<Integrator::ODE>::Instance::ReadFromMessage(
+          message1, harmonic_oscillator, append_state);
+  serialization::IntegratorInstance message2;
+  instance2->WriteToMessage(&message2);
+  EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());
+}
+
 class SimpleHarmonicMotionTestInstance final {
  public:
   template<typename Integrator>
@@ -324,6 +361,9 @@ class SimpleHarmonicMotionTestInstance final {
             std::bind(TestSymplecticity<Integrator>,
                       integrator,
                       expected_energy_error)),
+        test_serialization_(
+            std::bind(TestSerialization<Integrator>,
+                      integrator)),
         name_(name) {}
 
   std::string const& name() const {
@@ -342,8 +382,12 @@ class SimpleHarmonicMotionTestInstance final {
     test_convergence_();
   }
 
-  void RunSymplecticity()  const {
+  void RunSymplecticity() const {
     test_symplecticity_();
+  }
+
+  void RunSerialization() const {
+    test_serialization_();
   }
 
  private:
@@ -351,6 +395,7 @@ class SimpleHarmonicMotionTestInstance final {
   std::function<void()> test_1000_seconds_at_1_millisecond_;
   std::function<void()> test_convergence_;
   std::function<void()> test_symplecticity_;
+  std::function<void()> test_serialization_;
   std::string name_;
 };
 
@@ -424,6 +469,11 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Termination) {
 TEST_P(SymmetricLinearMultistepIntegratorTest, LongIntegration) {
   LOG(INFO) << GetParam();
   GetParam().Run1000SecondsAt1Millisecond();
+}
+
+TEST_P(SymmetricLinearMultistepIntegratorTest, Serialization) {
+  LOG(INFO) << GetParam();
+  GetParam().RunSerialization();
 }
 
 }  // namespace integrators

@@ -267,6 +267,22 @@ Instance::Solve(Instant const& t_final) {
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::
+Instance::integrator() const {
+  return integrator_;
+}
+
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
 void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                  higher_order,
                                                  lower_order,
@@ -283,7 +299,6 @@ Instance::WriteToMessage(
               serialization::
                   EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
                       extension);
-  integrator_.WriteToMessage(extension->mutable_integrator());
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,

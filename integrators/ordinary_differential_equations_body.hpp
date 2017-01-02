@@ -112,16 +112,20 @@ void FixedStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::FixedStepSizeIntegratorInstance::extension);
   step_.WriteToMessage(extension->mutable_step());
+  integrator().WriteToMessage(extension->mutable_integrator());
 }
 
 template<typename DifferentialEquation>
-not_null<std::unique_ptr<FixedStepSizeIntegrator<DifferentialEquation>>>
+not_null<std::unique_ptr<typename Integrator<DifferentialEquation>::Instance>>
 FixedStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
     ODE const& equation,
     AppendState const& append_state) {
   auto const current_state =
       ODE::SystemState::ReadFromMessage(message.current_state());
+  IntegrationProblem<ODE> problem;
+  problem.equation = equation;
+  problem.initial_state = &current_state;
 
   CHECK(message.HasExtension(
       serialization::FixedStepSizeIntegratorInstance::extension))
@@ -129,17 +133,20 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
   auto const& extension = message.GetExtension(
       serialization::FixedStepSizeIntegratorInstance::extension);
   Time const step = Time::ReadFromMessage(extension.step());
+  FixedStepSizeIntegrator const& integrator =
+      FixedStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
   if (extension.HasExtension(
           serialization::SymmetricLinearMultistepIntegratorInstance::
               extension)) {
+    return integrator.ReadFromMessage(extension, problem, append_state, step);
   }
   if (extension.HasExtension(
           serialization::SymplecticRungeKuttaNystromIntegratorInstance::
               extension)) {
   }
 
-  LOG(FATAL) << "No fixed-step integrator instance extension found in "
+  LOG(FATAL) << "No fixed-step integrator instance extension in "
              << message.DebugString();
   base::noreturn();
 }
@@ -196,6 +203,7 @@ void AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   adaptive_step_size_.WriteToMessage(extension->mutable_adaptive_step_size());
+  integrator().WriteToMessage(extension->mutable_integrator());
 }
 
 template<typename DifferentialEquation>

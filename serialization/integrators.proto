@@ -5,6 +5,8 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+// TODO(phl): This message seems unused as we don't ever serialize/deserialize
+// an |Integrator|.  Remove it.
 message Integrator {
   extensions 3000 to 3999;  // Last used: 3001.
 }
@@ -60,6 +62,7 @@ message AdaptiveStepSizeIntegratorInstance {
     required int64 max_steps = 3;
   }
   required AdaptiveStepSize adaptive_step_size = 1;
+  required AdaptiveStepSizeIntegrator integrator = 2;
 }
 
 message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {
@@ -67,7 +70,6 @@ message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {
     optional EmbeddedExplicitRungeKuttaNystromIntegratorInstance
         extension = 9000;
   }
-  required AdaptiveStepSizeIntegrator integrator = 1;
 }
 
 message FixedStepSizeIntegratorInstance {
@@ -76,6 +78,7 @@ message FixedStepSizeIntegratorInstance {
   }
   extensions 8000 to 8999;  // Last used: 8001
   required Quantity step = 1;
+  required FixedStepSizeIntegrator integrator = 2;
 }
 
 message SymmetricLinearMultistepIntegratorInstance {
@@ -88,14 +91,12 @@ message SymmetricLinearMultistepIntegratorInstance {
     required DoublePrecision time = 3;
   }
   repeated Step previous_steps = 1;
-  required FixedStepSizeIntegrator integrator = 2;
 }
 
 message SymplecticRungeKuttaNystromIntegratorInstance {
   extend FixedStepSizeIntegratorInstance {
     optional SymplecticRungeKuttaNystromIntegratorInstance extension = 8001;
   }
-  required FixedStepSizeIntegrator integrator = 1;
 }
 
 message SystemState {

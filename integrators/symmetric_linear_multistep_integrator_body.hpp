@@ -127,6 +127,13 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 }
 
 template<typename Position, int order_>
+SymmetricLinearMultistepIntegrator<Position, order_> const&
+SymmetricLinearMultistepIntegrator<Position, order_>::Instance::integrator()
+    const {
+  return integrator_;
+}
+
+template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
@@ -141,28 +148,6 @@ Instance::WriteToMessage(
   for (auto const& previous_step : previous_steps_) {
     previous_step.WriteToMessage(extension->add_previous_steps());
   }
-  integrator_.WriteToMessage(extension->mutable_integrator());
-}
-
-template<typename Position, int order_>
-not_null<std::unique_ptr<
-    typename SymmetricLinearMultistepIntegrator<Position, order_>::Instance>>
-SymmetricLinearMultistepIntegrator<Position, order_>::Instance::ReadFromMessage(
-    serialization::SymmetricLinearMultistepIntegratorInstance const& message,
-    IntegrationProblem<ODE> const& problem,
-    AppendState const& append_state,
-    Time const& step) {
-  std::list<Step> previous_steps;
-  for (auto const& previous_step : message.previous_steps()) {
-    previous_steps.push_back(Step::ReadFromMessage(previous_step));
-  }
-  return make_not_null_unique<Instance>(
-      problem,
-      append_state,
-      step;
-      previous_steps,
-      SymmetricLinearMultistepIntegrator::ReadFromMessage(
-          message.integrator()));
 }
 
 template<typename Position, int order_>
@@ -195,7 +180,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
     step.accelerations.push_back(
         ODE::Acceleration::ReadFromMessage(acceleration));
   }
-  step.time = Time::ReadFromMessage(message.step());
+  step.time = DoublePrecision<Instant>::ReadFromMessage(message.time());
   return step;
 }
 
@@ -327,12 +312,35 @@ not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
     IntegrationProblem<ODE> const& problem,
-    typename Integrator<ODE>::AppendState const& append_state,
+    AppendState const& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<typename Integrator<ODE>::Instance>(
       new Instance(problem, append_state, step, *this));
+}
+
+template<typename Position, int order_>
+not_null<std::unique_ptr<
+    typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+SymmetricLinearMultistepIntegrator<Position, order_>::ReadFromMessage(
+    serialization::FixedStepSizeIntegratorInstance const& message,
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    Time const& step) const {
+  CHECK(message.HasExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension))
+      << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::SymmetricLinearMultistepIntegratorInstance::extension);
+
+  std::list<Instance::Step> previous_steps;
+  for (auto const& previous_step : extension.previous_steps()) {
+    previous_steps.push_back(Instance::Step::ReadFromMessage(previous_step));
+  }
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(
+      new Instance(problem, append_state, step, previous_steps, *this));
 }
 
 }  // namespace internal_symmetric_linear_multistep_integrator

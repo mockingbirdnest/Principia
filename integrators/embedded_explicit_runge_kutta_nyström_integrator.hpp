@@ -82,6 +82,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
+    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator()
+        const override;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 
