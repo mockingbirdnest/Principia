@@ -106,9 +106,9 @@ struct SimpleHarmonicMotionPlottedIntegrator final {
 // 6. method name.
 std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
   return {// Order 2
-          SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, ABA),/*
-          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),*/
-          SPRK_INTEGRATOR(McLachlan1995S2, ABA),/*
+          SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, ABA),
+          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),
+          SPRK_INTEGRATOR(McLachlan1995S2, ABA),
           // Order 3
           SPRK_INTEGRATOR(Ruth1983, BA),
           SPRK_INTEGRATOR(McLachlanAtela1992Order3Optimal, BA),
@@ -132,19 +132,19 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SPRK_INTEGRATOR(McLachlan1995SS9, ABA),
           SPRK_INTEGRATOR(BlanesMoan2002S10, ABA),
           SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
-          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),*/
-          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),/*
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
           // Order 8
           SPRK_INTEGRATOR(Yoshida1990Order8A, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8B, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8C, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8D, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8E, ABA),
-          SPRK_INTEGRATOR(McLachlan1995SS15, ABA),*/
+          SPRK_INTEGRATOR(McLachlan1995SS15, ABA),
           SPRK_INTEGRATOR(McLachlan1995SS17, ABA),
-          SLMS_INTEGRATOR(QuinlanTremaine1990Order8),/*
+          SLMS_INTEGRATOR(QuinlanTremaine1990Order8),
           SLMS_INTEGRATOR(Quinlan1999Order8A),
-          SLMS_INTEGRATOR(Quinlan1999Order8B),*/
+          SLMS_INTEGRATOR(Quinlan1999Order8B),
           // Order 10
           SLMS_INTEGRATOR(QuinlanTremaine1990Order10),
           // Order 12
