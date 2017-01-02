@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "geometry/serialization.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
@@ -12,6 +13,7 @@ namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
 using base::make_not_null_unique;
+using geometry::QuantityOrMultivectorSerializer;
 
 int const startup_step_divisor = 16;
 
@@ -46,7 +48,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 
   std::vector<Position> positions(dimension);
 
-  DoublePositions Σj_minus_ɑj_qj(dimension);
+  DoubleDisplacements Σj_minus_ɑj_qj(dimension);
   std::vector<Acceleration> Σj_βj_numerator_aj(dimension);
   while (h <= (t_final - t.value) - t.error) {
     // We take advantage of the symmetry to iterate on the list of previous
@@ -105,10 +107,12 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
     // Fill the new step.  We skip the division by ɑk as it is equal to 1.0.
     double const ɑk = ɑ[0];
     for (int d = 0; d < dimension; ++d) {
-      DoublePosition& current_position = Σj_minus_ɑj_qj[d];
-      current_position.Increment(h * h *
-                                 Σj_βj_numerator_aj[d] / β_denominator);
-      current_step.displacements.push_back(current_position - DoublePosition());
+      DoubleDisplacement& current_displacement = Σj_minus_ɑj_qj[d];
+      current_displacement.Increment(h * h *
+                                     Σj_βj_numerator_aj[d] / β_denominator);
+      current_step.displacements.push_back(current_displacement);
+      DoublePosition const current_position =
+          DoublePosition() + current_displacement;
       positions[d] = current_position.value;
       current_state_.positions[d] = current_position;
     }
@@ -155,11 +159,16 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
     WriteToMessage(
         not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                      Step*> const message) const {
+  using AccelerationSerializer = QuantityOrMultivectorSerializer<
+      ODE::Acceleration,
+      serialization::SymmetricLinearMultistepIntegratorInstance::Step::
+          Acceleration>;
   for (auto const& displacement : displacements) {
     displacement.WriteToMessage(message->add_displacements());
   }
   for (auto const& acceleration : accelerations) {
-    acceleration.WriteToMessage(message->add_accelerations());
+    AccelerationSerializer::WriteToMessage(acceleration,
+                                           message->add_accelerations());
   }
   time.WriteToMessage(message->mutable_time());
 }
@@ -170,6 +179,10 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
     ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
             message) {
+  using AccelerationSerializer = QuantityOrMultivectorSerializer<
+      ODE::Acceleration,
+      serialization::SymmetricLinearMultistepIntegratorInstance::Step::
+          Acceleration>;
   Step step;
   for (auto const& displacement : message.displacements()) {
     step.displacements.push_back(
@@ -178,7 +191,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
   }
   for (auto const& acceleration : message.accelerations()) {
     step.accelerations.push_back(
-        ODE::Acceleration::ReadFromMessage(acceleration));
+        AccelerationSerializer::ReadFromMessage(acceleration));
   }
   step.time = DoublePrecision<Instant>::ReadFromMessage(message.time());
   return step;
@@ -256,6 +269,7 @@ template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::VelocitySolve(int const dimension) {
   using Velocity = typename ODE::Velocity;
+  using Acceleration = typename ODE::Acceleration;
   auto const& velocity_integrator = integrator_.velocity_integrator_;
 
   for (int d = 0; d < dimension; ++d) {

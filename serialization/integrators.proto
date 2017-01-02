@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "serialization/geometry.proto";
 import "serialization/numerics.proto";
 import "serialization/quantities.proto";
 
@@ -86,8 +87,14 @@ message SymmetricLinearMultistepIntegratorInstance {
     optional SymmetricLinearMultistepIntegratorInstance extension = 8000;
   }
   message Step {
+    message Acceleration {
+      oneof acceleration {
+        Quantity quantity = 1;
+        Multivector multivector = 2;
+      }
+    }
     repeated DoublePrecision displacements = 1;
-    repeated Quantity accelerations = 2;
+    repeated Acceleration accelerations = 2;
     required DoublePrecision time = 3;
   }
   repeated Step previous_steps = 1;
