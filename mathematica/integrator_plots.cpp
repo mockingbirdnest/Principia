@@ -202,8 +202,8 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   Length max_q_error;
   Speed max_v_error;
   Energy max_e_error;
-  auto append_state = [&max_q_error, &max_v_error, &max_e_error,
-                       q_amplitude, v_amplitude, ω, m, k, t0](
+  auto const append_state = [&max_q_error, &max_v_error, &max_e_error,
+                             q_amplitude, v_amplitude, ω, m, k, t0](
       ODE::SystemState const& state) {
     max_q_error = std::max(max_q_error,
         AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
@@ -231,7 +231,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       max_e_error = Energy{};
       number_of_evaluations = 0;
       auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      method.integrator.Solve(tmax, *instance);
+      instance->Solve(tmax);
       // Log both the actual number of evaluations and a theoretical number that
       // ignores any startup costs; that theoretical number is the one used for
       // plotting.
@@ -276,10 +276,12 @@ class WorkErrorGraphGenerator {
                          std::vector<Acceleration>& result,
                          int* evaluations)> compute_accelerations,
       ODE::SystemState initial_state,
-      std::function<Errors(ODE::SystemState const&)> compute_errors)
+      std::function<Errors(ODE::SystemState const&)> compute_errors,
+      Instant const& tmax)
       : methods_(Methods()),
         compute_accelerations_(compute_accelerations),
-        initial_state_(initial_state) {
+        initial_state_(initial_state),
+        tmax_(tmax) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
     e_errors_.resize(methods_.size());
@@ -292,17 +294,39 @@ class WorkErrorGraphGenerator {
     }
   }
 
-  void Generate() {
-    base::Bundle bundle;
-    for (int method_index = 0; i < methods_.size(); ++i) {
+  std::string GetData() {
+    base::Bundle bundle(/*workers=*/8);
+    for (int method_index = 0; method_index < methods_.size(); ++method_index) {
       for (int time_step_index = 0;
-           time_step_index < integrations_per_integrator_) {
+           time_step_index < integrations_per_integrator_;
+           ++time_step_index) {
         bundle.Add(std::bind(&WorkErrorGraphGenerator::Integrate,
                              this,
                              method_index,
                              time_step_index));
       }
     }
+    bundle.Join();
+
+    std::vector<std::string> q_error_data;
+    std::vector<std::string> v_error_data;
+    std::vector<std::string> e_error_data;
+    std::vector<std::string> names;
+    for (int i = 0; i < methods_.size(); ++i) {
+      q_error_data.emplace_back(
+          PlottableDataset(evaluations_[i], q_errors_[i]));
+      v_error_data.emplace_back(
+          PlottableDataset(evaluations_[i], v_errors_[i]));
+      e_error_data.emplace_back(
+          PlottableDataset(evaluations_[i], e_errors_[i]));
+      names.emplace_back(methods_[i].name);
+    }
+    std::string result;
+    result += Assign("qErrorData", q_error_data);
+    result += Assign("vErrorData", v_error_data);
+    result += Assign("eErrorData", e_error_data);
+    result += Assign("names", names);
+    return result;
   }
 
  private:
@@ -313,7 +337,8 @@ class WorkErrorGraphGenerator {
     int number_of_evaluations = 0;
     problem.equation.compute_acceleration = std::bind(
         compute_accelerations_, _1, _2, _3, &number_of_evaluations);
-    problem.initial_state = &initial_state;
+    problem.initial_state = &initial_state_;
+    auto const t0 = problem.initial_state->time.value;
     Length max_q_error;
     Speed max_v_error;
     SpecificEnergy max_e_error;
@@ -328,12 +353,12 @@ class WorkErrorGraphGenerator {
                     std::pow(step_reduction_, time_step_index);
     auto instance = method.integrator.NewInstance(problem, append_state, Δt);
 
-    method.integrator.Solve(tmax, *instance);
+    instance->Solve(tmax_);
     // Log both the actual number of evaluations and a theoretical number
     // that ignores any startup costs; that theoretical number is the one
     // used for plotting.
     int const amortized_evaluations =
-        method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+        method.evaluations * static_cast<int>(std::floor((tmax_ - t0) / Δt));
     LOG_EVERY_N(INFO, 50) << "[" << method_index << "," << time_step_index
                           << "] " << number_of_evaluations
                           << " actual evaluations (" << amortized_evaluations
@@ -345,6 +370,7 @@ class WorkErrorGraphGenerator {
     v_errors_[method_index][time_step_index] = max_v_error;
     e_errors_[method_index][time_step_index] = max_e_error;
     evaluations_[method_index][time_step_index] = amortized_evaluations;
+
     return base::Status::OK;
   }
 
@@ -360,6 +386,7 @@ class WorkErrorGraphGenerator {
   std::vector<std::vector<Speed>> v_errors_;
   std::vector<std::vector<SpecificEnergy>> e_errors_;
   std::vector<std::vector<double>> evaluations_;
+  Instant const tmax_;
   double const step_reduction_ = 1.015;
   Time const starting_step_size_per_evaluation_ = 1 * Second;
   int const integrations_per_integrator_ = 500;
@@ -367,14 +394,7 @@ class WorkErrorGraphGenerator {
 
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   ODE::SystemState initial_state;
-  Problem problem;
-  int number_of_evaluations;
-  problem.equation.compute_acceleration =
-      std::bind(ComputeKeplerAcceleration, _1, _2, _3, &number_of_evaluations);
-  problem.initial_state = &initial_state;
-
   Instant const t0;
-
   GravitationalParameter const μ = SIUnit<GravitationalParameter>();
   MassiveBody b1(μ);
   MasslessBody b2;
@@ -407,54 +427,32 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       InnerProduct(initial_dof.velocity(), initial_dof.velocity()) / 2 -
       μ / initial_dof.displacement().Norm();
 
-  double const step_reduction = 1.015;
+  Length max_q_error;
+  Speed max_v_error;
+  SpecificEnergy max_e_error;
+  auto const compute_error = [&orbit, μ, initial_specific_energy](
+      ODE::SystemState const& state) {
+    Displacement<World> q(
+        {state.positions[0].value, state.positions[1].value, 0 * Metre});
+    Velocity<World> v({state.velocities[0].value,
+                       state.velocities[1].value,
+                       0 * Metre / Second});
+    auto const expected_dof = orbit.StateVectors(state.time.value);
+    return WorkErrorGraphGenerator::Errors{
+        AbsoluteError(expected_dof.displacement(), q),
+        AbsoluteError(expected_dof.velocity(), v),
+        AbsoluteError(initial_specific_energy,
+                      InnerProduct(v, v) / 2 - μ / q.Norm())};
+  };
 
-  std::vector<std::string> q_error_data;
-  std::vector<std::string> v_error_data;
-  std::vector<std::string> e_error_data;
-
-  std::vector<std::string> names;
-  for (auto const& method : Methods()) {
-    LOG(INFO) << " Kepler problem with e = " << eccentricity << ": "
-              << method.name;
-    Time Δt = method.evaluations * 1 * Second;
-    constexpr int integrations = 500;
-    std::vector<Length> q_errors;
-    q_errors.resize(integrations);
-    std::vector<Speed> v_errors;
-    v_errors.resize(integrations);
-    std::vector<SpecificEnergy> e_errors;
-    e_errors.resize(integrations);
-    std::vector<double> evaluations;
-    evaluations.resize(integrations);
-    for (int i = 0; i < integrations; ++i, Δt /= step_reduction) {
-      auto integrate = [i,
-                        Δt,
-                        &method,
-                        &problem,
-                        &append_state
-                        &q_errors,
-                        &v_errors,
-                        &e_errors,
-                        &evaluations]() {
-        max_q_error = Length{};
-        max_v_error = Speed{};
-        max_e_error = SpecificEnergy{};
-        number_of_evaluations = 0;
-      };
-    }
-    q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
-    v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));
-    e_error_data.emplace_back(PlottableDataset(evaluations, e_errors));
-    names.emplace_back(Escape(method.name));
-  }
+  WorkErrorGraphGenerator generator(ComputeKeplerAcceleration,
+                                    initial_state,
+                                    compute_error,
+                                    tmax);
   std::ofstream file;
   file.open("kepler_problem_graphs_" + std::to_string(eccentricity) +
             ".generated.wl");
-  file << Assign("qErrorData", q_error_data);
-  file << Assign("vErrorData", v_error_data);
-  file << Assign("eErrorData", e_error_data);
-  file << Assign("names", names);
+  file << generator.GetData();
   file.close();
 }
 

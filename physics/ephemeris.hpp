@@ -235,9 +235,10 @@ class Ephemeris {
       typename Ephemeris<Frame>::FixedStepParameters const& fixed_parameters);
 
  protected:
-  // For mocking purposes, leaves everything uninitialized and uses a dummy
-  // integrator that crashes when used.
-  Ephemeris();
+  // For mocking purposes, leaves everything uninitialized and uses the given
+  // |integrator|.
+  explicit Ephemeris(FixedStepSizeIntegrator<typename Ephemeris<
+                         Frame>::NewtonianMotionEquation> const& integrator);
 
  private:
   // The state of the integration and of the continuous trajectory at a

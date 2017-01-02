@@ -21,6 +21,136 @@ using quantities::Abs;
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
+Status SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                             evaluations, composition>::
+Instance::Solve(Instant const& t_final) {
+  using Displacement = typename ODE::Displacement;
+  using Velocity = typename ODE::Velocity;
+  using Acceleration = typename ODE::Acceleration;
+
+  auto const& a = integrator_.a_;
+  auto const& b = integrator_.b_;
+  auto const& c = integrator_.c_;
+
+  // |current_state_| is updated as the integration progresses to allow
+  // restartability.
+
+  // Argument checks.
+  int const dimension = current_state_.positions.size();
+  CHECK_NE(Time(), step_);
+  Sign const integration_direction = Sign(step_);
+  if (integration_direction.Positive()) {
+    // Integrating forward.
+    CHECK_LT(current_state_.time.value, t_final);
+  } else {
+    // Integrating backward.
+    CHECK_GT(current_state_.time.value, t_final);
+  }
+
+  // Time step.
+  Time const& h = step_;
+  Time const abs_h = integration_direction * h;
+  // Current time.  This is a non-const reference whose purpose is to make the
+  // equations more readable.
+  DoublePrecision<Instant>& t = current_state_.time;
+
+  // Position increment.
+  std::vector<Displacement> Δq(dimension);
+  // Velocity increment.
+  std::vector<Velocity> Δv(dimension);
+  // Current position.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
+  std::vector<DoublePrecision<Position>>& q = current_state_.positions;
+  // Current velocity.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
+  std::vector<DoublePrecision<Velocity>>& v = current_state_.velocities;
+
+  // Current Runge-Kutta-Nyström stage.
+  std::vector<Position> q_stage(dimension);
+  // Accelerations at the current stage.
+  std::vector<Acceleration> g(dimension);
+
+  // The first full stage of the step, i.e. the first stage where
+  // exp(bᵢ h B) exp(aᵢ h A) must be entirely computed.
+  // 0 in the non-FSAL BA case, 1 in the ABA case since b₀ = 0 means the first
+  // stage is only exp(a₀ h A), 1 in the BAB case, since the previous
+  // right-hand-side evaluation can be used for exp(bᵢ h B).  Note that in the
+  // BAB case, we need to start things with an evaluation since there is no
+  // previous evaluation.
+  constexpr int first_stage = composition == BA ? 0 : 1;
+
+  if (composition == BAB) {
+    for (int k = 0; k < dimension; ++k) {
+      q_stage[k] = q[k].value;
+    }
+    equation_.compute_acceleration(t.value, q_stage, g);
+  }
+
+  while (abs_h <= Abs((t_final - t.value) - t.error)) {
+    std::fill(Δq.begin(), Δq.end(), Displacement{});
+    std::fill(Δv.begin(), Δv.end(), Velocity{});
+
+    if (first_stage == 1) {
+      for (int k = 0; k < dimension; ++k) {
+        if (composition == BAB) {
+          // exp(b₀ h B)
+          Δv[k] += h * b[0] * g[k];
+        }
+        // exp(a₀ h A)
+        Δq[k] += h * a[0] * (v[k].value + Δv[k]);
+      }
+    }
+
+    for (int i = first_stage; i < stages_; ++i) {
+      for (int k = 0; k < dimension; ++k) {
+        q_stage[k] = q[k].value + Δq[k];
+      }
+      equation_.compute_acceleration(t.value + c[i] * h, q_stage, g);
+      for (int k = 0; k < dimension; ++k) {
+        // exp(bᵢ h B)
+        Δv[k] += h * b[i] * g[k];
+        // NOTE(egg): in the BAB case, at the last stage, this will be an
+        // exercise in adding 0.  I don't think the optimizer can know that.  Do
+        // we care?
+        // exp(aᵢ h A)
+        Δq[k] += h * a[i] * (v[k].value + Δv[k]);
+      }
+    }
+
+    // Increment the solution.
+    t.Increment(h);
+    for (int k = 0; k < dimension; ++k) {
+      q[k].Increment(Δq[k]);
+      v[k].Increment(Δv[k]);
+    }
+    append_state_(current_state_);
+  }
+
+  return Status::OK;
+}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
+void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                           evaluations, composition>::
+Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {}
+
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
+SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
+                                      evaluations_, composition_>::
+Instance::Instance(IntegrationProblem<ODE> const& problem,
+                   AppendState const& append_state,
+                   Time const& step,
+                   SymplecticRungeKuttaNyströmIntegrator const& integrator)
+    : FixedStepSizeIntegrator<ODE>::Instance(problem,
+                                             std::move(append_state),
+                                             step),
+      integrator_(integrator) {}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
 SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                       evaluations, composition>::
 SymplecticRungeKuttaNyströmIntegrator(
@@ -71,138 +201,17 @@ SymplecticRungeKuttaNyströmIntegrator(
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
-void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
-                                           evaluations, composition>::Solve(
-    Instant const& t_final,
-    IntegrationInstance& instance) const {
-  using Displacement = typename ODE::Displacement;
-  using Velocity = typename ODE::Velocity;
-  using Acceleration = typename ODE::Acceleration;
-
-  Instance& down_cast_instance = dynamic_cast<Instance&>(instance);
-  auto const& equation = down_cast_instance.equation;
-  auto const& append_state = down_cast_instance.append_state;
-  Time const& step = down_cast_instance.step;
-
-  // Gets updated as the integration progresses to allow restartability.
-  typename ODE::SystemState& current_state = down_cast_instance.current_state;
-
-  // Argument checks.
-  int const dimension = current_state.positions.size();
-  CHECK_NE(Time(), step);
-  Sign const integration_direction = Sign(step);
-  if (integration_direction.Positive()) {
-    // Integrating forward.
-    CHECK_LT(current_state.time.value, t_final);
-  } else {
-    // Integrating backward.
-    CHECK_GT(current_state.time.value, t_final);
-  }
-
-  // Time step.
-  Time const& h = step;
-  Time const abs_h = integration_direction * h;
-  // Current time.  This is a non-const reference whose purpose is to make the
-  // equations more readable.
-  DoublePrecision<Instant>& t = current_state.time;
-
-  // Position increment.
-  std::vector<Displacement> Δq(dimension);
-  // Velocity increment.
-  std::vector<Velocity> Δv(dimension);
-  // Current position.  This is a non-const reference whose purpose is to make
-  // the equations more readable.
-  std::vector<DoublePrecision<Position>>& q = current_state.positions;
-  // Current velocity.  This is a non-const reference whose purpose is to make
-  // the equations more readable.
-  std::vector<DoublePrecision<Velocity>>& v = current_state.velocities;
-
-  // Current Runge-Kutta-Nyström stage.
-  std::vector<Position> q_stage(dimension);
-  // Accelerations at the current stage.
-  std::vector<Acceleration> g(dimension);
-
-  // The first full stage of the step, i.e. the first stage where
-  // exp(bᵢ h B) exp(aᵢ h A) must be entirely computed.
-  // 0 in the non-FSAL BA case, 1 in the ABA case since b₀ = 0 means the first
-  // stage is only exp(a₀ h A), 1 in the BAB case, since the previous
-  // right-hand-side evaluation can be used for exp(bᵢ h B).  Note that in the
-  // BAB case, we need to start things with an evaluation since there is no
-  // previous evaluation.
-  constexpr int first_stage = composition == BA ? 0 : 1;
-
-  if (composition == BAB) {
-    for (int k = 0; k < dimension; ++k) {
-      q_stage[k] = q[k].value;
-    }
-    equation.compute_acceleration(t.value, q_stage, g);
-  }
-
-  while (abs_h <= Abs((t_final - t.value) - t.error)) {
-    std::fill(Δq.begin(), Δq.end(), Displacement{});
-    std::fill(Δv.begin(), Δv.end(), Velocity{});
-
-    if (first_stage == 1) {
-      for (int k = 0; k < dimension; ++k) {
-        if (composition == BAB) {
-          // exp(b₀ h B)
-          Δv[k] += h * b_[0] * g[k];
-        }
-        // exp(a₀ h A)
-        Δq[k] += h * a_[0] * (v[k].value + Δv[k]);
-      }
-    }
-
-    for (int i = first_stage; i < stages_; ++i) {
-      for (int k = 0; k < dimension; ++k) {
-        q_stage[k] = q[k].value + Δq[k];
-      }
-      equation.compute_acceleration(t.value + c_[i] * h, q_stage, g);
-      for (int k = 0; k < dimension; ++k) {
-        // exp(bᵢ h B)
-        Δv[k] += h * b_[i] * g[k];
-        // NOTE(egg): in the BAB case, at the last stage, this will be an
-        // exercise in adding 0.  I don't think the optimizer can know that.  Do
-        // we care?
-        // exp(aᵢ h A)
-        Δq[k] += h * a_[i] * (v[k].value + Δv[k]);
-      }
-    }
-
-    // Increment the solution.
-    t.Increment(h);
-    for (int k = 0; k < dimension; ++k) {
-      q[k].Increment(Δq[k]);
-      v[k].Increment(Δv[k]);
-    }
-    append_state(current_state);
-  }
-}
-
-template<typename Position, int order_, bool time_reversible_, int evaluations_,
-         CompositionMethod composition_>
-not_null<std::unique_ptr<IntegrationInstance>>
-SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
-                                      evaluations_, composition_>::
-NewInstance(IntegrationProblem<ODE> const& problem,
-            typename IntegrationInstance::AppendState<ODE> append_state,
-            Time const& step) const {
-  return make_not_null_unique<Instance>(problem, std::move(append_state), step);
-}
-
-template<typename Position, int order_, bool time_reversible_, int evaluations_,
-         CompositionMethod composition_>
-SymplecticRungeKuttaNyströmIntegrator<Position, order_, time_reversible_,
-                                      evaluations_, composition_>::
-Instance::Instance(IntegrationProblem<ODE> problem,
-                   AppendState<ODE> append_state,
-                   Time step)
-    : equation(std::move(problem.equation)),
-      current_state(*problem.initial_state),
-      append_state(std::move(append_state)),
-      step(std::move(step)) {
-  CHECK_EQ(current_state.positions.size(),
-           current_state.velocities.size());
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                      evaluations, composition>::NewInstance(
+    IntegrationProblem<ODE> const& problem,
+    typename Integrator<ODE>::AppendState const& append_state,
+    Time const& step) const {
+  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // private.
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(
+      new Instance(problem, append_state, step, *this));
 }
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator

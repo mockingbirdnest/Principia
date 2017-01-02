@@ -9,6 +9,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
+#include "base/status.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -17,6 +18,7 @@ namespace integrators {
 namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;
@@ -80,35 +82,38 @@ class SymplecticRungeKuttaNyströmIntegrator
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
-  SymplecticRungeKuttaNyströmIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind kind,
-      FixedVector<double, stages_> const& a,
-      FixedVector<double, stages_> const& b);
-
-  void Solve(Instant const& t_final,
-             IntegrationInstance& instance) const override;
-
-  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename IntegrationInstance::AppendState<ODE> append_state,
-    Time const& step) const override;
-
   static constexpr int order = order_;
   static constexpr bool time_reversible = time_reversible_;
   static constexpr int evaluations = evaluations_;
   static constexpr CompositionMethod composition = composition_;
 
- private:
-  struct Instance : public IntegrationInstance {
-    Instance(IntegrationProblem<ODE> problem,
-             AppendState<ODE> append_state,
-             Time step);
-    ODE const equation;
-    typename ODE::SystemState current_state;
-    AppendState<ODE> const append_state;
-    Time const step;
+  class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
+   public:
+    Status Solve(Instant const& t_final) override;
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
+
+   private:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             Time const& step,
+             SymplecticRungeKuttaNyströmIntegrator const& integrator);
+
+    SymplecticRungeKuttaNyströmIntegrator const& integrator_;
+    friend class SymplecticRungeKuttaNyströmIntegrator;
   };
 
+  SymplecticRungeKuttaNyströmIntegrator(
+      serialization::FixedStepSizeIntegrator::Kind kind,
+      FixedVector<double, stages_> const& a,
+      FixedVector<double, stages_> const& b);
+
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      typename Integrator<ODE>::AppendState const& append_state,
+      Time const& step) const override;
+
+ private:
   FixedVector<double, stages_> const a_;
   FixedVector<double, stages_> const b_;
   FixedVector<double, stages_> c_;

@@ -15,6 +15,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -37,7 +38,7 @@ using geometry::R3Element;
 using geometry::Sign;
 using geometry::Velocity;
 using integrators::AdaptiveStepSize;
-using integrators::IntegrationInstance;
+using integrators::Integrator;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
 using numerics::DoublePrecision;
@@ -90,34 +91,6 @@ Order2ZonalAcceleration(OblateBody<Frame> const& body,
                   r_axis_projection * one_over_r_squared)) * r;
   return axis_effect + radial_effect;
 }
-
-// For mocking purposes.
-template<typename Frame>
-class DummyIntegrator
-    : public FixedStepSizeIntegrator<
-                 typename Ephemeris<Frame>::NewtonianMotionEquation> {
-  using ODE = typename Ephemeris<Frame>::NewtonianMotionEquation;
-  DummyIntegrator() : FixedStepSizeIntegrator<ODE>(
-      serialization::FixedStepSizeIntegrator::DUMMY) {}
-
- public:
-  void Solve(Instant const& t_final,
-             IntegrationInstance& instance) const override {
-    LOG(FATAL) << "dummy";
-  }
-
-  not_null<std::unique_ptr<IntegrationInstance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    IntegrationInstance::AppendState<ODE> append_state,
-    Time const& step) const override {
-    return make_not_null_unique<IntegrationInstance>();
-  }
-
-  static DummyIntegrator const& Instance() {
-    static DummyIntegrator const instance;
-    return instance;
-  }
-};
 
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
@@ -379,7 +352,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    parameters_.integrator_->Solve(t_final, *instance);
+    instance->Solve(t_final);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -452,7 +425,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
           &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories)),
       step_size);
 
-  auto const status = parameters.integrator_->Solve(t_final, *instance);
+  auto const status = instance->Solve(t_final);
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
@@ -496,21 +469,21 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 
 #if defined(WE_LOVE_228)
   typename NewtonianMotionEquation::SystemState last_state;
-  auto append_state =
+  auto const append_state =
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
         last_state = state;
       };
 #else
-  auto append_state =
+  auto const append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState,
                 _1, std::cref(trajectories));
 #endif
 
   auto const instance =
       parameters.integrator_->NewInstance(
-          problem, std::move(append_state), parameters.step_);
-  parameters.integrator_->Solve(t, *instance);
+          problem, append_state, parameters.step_);
+  instance->Solve(t);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
@@ -976,8 +949,10 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
 }
 
 template<typename Frame>
-Ephemeris<Frame>::Ephemeris()
-    : parameters_(DummyIntegrator<Frame>::Instance(), 1 * Second) {}
+Ephemeris<Frame>::Ephemeris(
+    FixedStepSizeIntegrator<
+        typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
+    : parameters_(integrator, 1 * Second) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(

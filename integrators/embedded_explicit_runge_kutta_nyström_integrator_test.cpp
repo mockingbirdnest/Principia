@@ -117,7 +117,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
 
   auto instance =
       integrator.NewInstance(problem, append_state, adaptive_step_size);
-  auto outcome = integrator.Solve(t_final, *instance);
+  auto outcome = instance->Solve(t_final);
 
   EXPECT_EQ(termination_condition::Done, outcome.error());
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
@@ -145,7 +145,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
 
   instance =
       integrator.NewInstance(problem, append_state, adaptive_step_size);
-  outcome = integrator.Solve(t_initial, *instance);
+  outcome = instance->Solve(t_initial);
 
   EXPECT_EQ(termination_condition::Done, outcome.error());
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
@@ -201,7 +201,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
 
   auto const instance =
       integrator.NewInstance(problem, append_state, adaptive_step_size);
-  auto const outcome = integrator.Solve(t_final, *instance);
+  auto const outcome = instance->Solve(t_final);
 
   EXPECT_EQ(termination_condition::ReachedMaximalStepCount, outcome.error());
   EXPECT_THAT(AbsoluteError(
@@ -224,7 +224,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
     adaptive_step_size.max_steps = steps_forward;
     auto const instance =
         integrator.NewInstance(problem, append_state, adaptive_step_size);
-    auto const outcome = integrator.Solve(t_final, *instance);
+    auto const outcome = instance->Solve(t_final);
     EXPECT_EQ(termination_condition::Done, outcome.error());
     EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
                 AllOf(Ge(3e-4 * Metre), Le(4e-4 * Metre)));
@@ -269,7 +269,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
     acceleration.back() = mass_flow * specific_impulse / mass(t);
   };
   IntegrationProblem<ODE> problem;
-  auto append_state = [&solution](ODE::SystemState const& state) {
+  auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
   problem.equation = rocket_equation;
@@ -287,9 +287,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
 
-  auto const instance = integrator.NewInstance(
-      problem, std::move(append_state), adaptive_step_size);
-  auto const outcome = integrator.Solve(t_final, *instance);
+  auto const instance =
+      integrator.NewInstance(problem, append_state, adaptive_step_size);
+  auto const outcome = instance->Solve(t_final);
 
   EXPECT_EQ(termination_condition::VanishingStepSize, outcome.error());
   EXPECT_EQ(130, solution.size());
