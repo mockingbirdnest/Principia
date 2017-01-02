@@ -311,7 +311,8 @@ SymmetricLinearMultistepIntegrator(
     FixedVector<double, half_order_> const & ɑ,
     FixedVector<double, half_order_> const& β_numerator,
     double const β_denominator)
-    : FixedStepSizeIntegrator(kind),
+    : FixedStepSizeIntegrator<
+          SpecialSecondOrderDifferentialEquation<Position>>(kind),
       startup_integrator_(startup_integrator),
       velocity_integrator_(AdamsMoultonOrder<velocity_order_>()),
       ɑ_(ɑ),
