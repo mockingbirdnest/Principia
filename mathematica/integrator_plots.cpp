@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bundle.hpp"
 #include "glog/logging.h"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -103,9 +104,9 @@ struct SimpleHarmonicMotionPlottedIntegrator final {
 // 6. method name.
 std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
   return {// Order 2
-          SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, ABA),
-          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),
-          SPRK_INTEGRATOR(McLachlan1995S2, ABA),
+          SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, ABA),/*
+          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),*/
+          SPRK_INTEGRATOR(McLachlan1995S2, ABA),/*
           // Order 3
           SPRK_INTEGRATOR(Ruth1983, BA),
           SPRK_INTEGRATOR(McLachlanAtela1992Order3Optimal, BA),
@@ -129,19 +130,19 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SPRK_INTEGRATOR(McLachlan1995SS9, ABA),
           SPRK_INTEGRATOR(BlanesMoan2002S10, ABA),
           SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
-          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
-          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),*/
+          SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),/*
           // Order 8
           SPRK_INTEGRATOR(Yoshida1990Order8A, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8B, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8C, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8D, ABA),
           SPRK_INTEGRATOR(Yoshida1990Order8E, ABA),
-          SPRK_INTEGRATOR(McLachlan1995SS15, ABA),
+          SPRK_INTEGRATOR(McLachlan1995SS15, ABA),*/
           SPRK_INTEGRATOR(McLachlan1995SS17, ABA),
-          SLMS_INTEGRATOR(QuinlanTremaine1990Order8),
+          SLMS_INTEGRATOR(QuinlanTremaine1990Order8),/*
           SLMS_INTEGRATOR(Quinlan1999Order8A),
-          SLMS_INTEGRATOR(Quinlan1999Order8B),
+          SLMS_INTEGRATOR(Quinlan1999Order8B),*/
           // Order 10
           SLMS_INTEGRATOR(QuinlanTremaine1990Order10),
           // Order 12
@@ -280,7 +281,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   KeplerianElements<World> elements;
   elements.semimajor_axis = 1 * Metre;
   elements.eccentricity = eccentricity;
-  KeplerOrbit<World> orbit(b1, b2, elements, t0);
+  KeplerOrbit<World> const orbit(b1, b2, elements, t0);
 
   auto const initial_dof = orbit.StateVectors(t0);
   CHECK_EQ(initial_dof.displacement().coordinates().z, 0 * Metre);
@@ -296,7 +297,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
 
   // Integrate over 8 orbits.
   Instant const tmax =
-      t0 + 8 * (2 * π * Radian) / *orbit.elements_at_epoch().mean_motion;
+      t0 + 80 * (2 * π * Radian) / *orbit.elements_at_epoch().mean_motion;
 
   SpecificEnergy const initial_specific_energy =
       InnerProduct(initial_dof.velocity(), initial_dof.velocity()) / 2 -
@@ -334,31 +335,48 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
     LOG(INFO) << " Kepler problem with e = " << eccentricity << ": "
               << method.name;
     Time Δt = method.evaluations * 1 * Second;
+    constexpr int integrations = 500;
     std::vector<Length> q_errors;
+    q_errors.resize(integrations);
     std::vector<Speed> v_errors;
+    v_errors.resize(integrations);
     std::vector<SpecificEnergy> e_errors;
+    e_errors.resize(integrations);
     std::vector<double> evaluations;
-    for (int i = 0; i < 500; ++i, Δt /= step_reduction) {
-      max_q_error = Length{};
-      max_v_error = Speed{};
-      max_e_error = SpecificEnergy{};
-      number_of_evaluations = 0;
-      auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      method.integrator.Solve(tmax, *instance);
-      // Log both the actual number of evaluations and a theoretical number that
-      // ignores any startup costs; that theoretical number is the one used for
-      // plotting.
-      int const amortized_evaluations =
-          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
-                                      << amortized_evaluations << ")";
-      // We plot the maximum error, i.e., the L∞ norm of the error.
-      // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
-      // the average error (the normalized L¹ norm) instead.
-      q_errors.emplace_back(max_q_error);
-      v_errors.emplace_back(max_v_error);
-      e_errors.emplace_back(max_e_error);
-      evaluations.emplace_back(amortized_evaluations);
+    evaluations.resize(integrations);
+    for (int i = 0; i < integrations; ++i, Δt /= step_reduction) {
+      auto integrate = [i,
+                        Δt,
+                        &method,
+                        &problem,
+                        &append_state
+                        &result_lock,
+                        &q_errors,
+                        &v_errors,
+                        &e_errors,
+                        &evaluations]() {
+        max_q_error = Length{};
+        max_v_error = Speed{};
+        max_e_error = SpecificEnergy{};
+        number_of_evaluations = 0;
+        auto instance = method.integrator.NewInstance(problem, append_state, Δt);
+        method.integrator.Solve(tmax, *instance);
+        // Log both the actual number of evaluations and a theoretical number
+        // that ignores any startup costs; that theoretical number is the one
+        // used for plotting.
+        int const amortized_evaluations =
+            method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+        LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
+                                        << amortized_evaluations << ")";
+        // We plot the maximum error, i.e., the L∞ norm of the error.
+        // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
+        // the average error (the normalized L¹ norm) instead.
+        q_errors.emplace_back(max_q_error);
+        v_errors.emplace_back(max_v_error);
+        e_errors.emplace_back(max_e_error);
+        evaluations.emplace_back(amortized_evaluations);
+        return base::Status::OK;
+      };
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
     v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));
