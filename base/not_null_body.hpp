@@ -176,10 +176,6 @@ not_null<Pointer>::not_null(pointer other, unchecked_tag const tag)
     : pointer_(std::move(other)) {}
 
 template<typename Pointer>
-typename not_null<Pointer>::unchecked_tag const
-    not_null<Pointer>::unchecked_tag_ = {};
-
-template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer) {
   CHECK(pointer != nullptr);
   return not_null<typename std::remove_reference<Pointer>::type>(
