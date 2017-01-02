@@ -107,16 +107,6 @@ template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance() {}
 
 template<typename DifferentialEquation>
-FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
-    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
-
-template<typename DifferentialEquation>
-void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
-    not_null<serialization::FixedStepSizeIntegrator*> const message) const {
-  message->set_kind(kind_);
-}
-
-template<typename DifferentialEquation>
 void FixedStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   Integrator<ODE>::Instance::WriteToMessage(message);
@@ -158,6 +148,12 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     : Integrator<ODE>::Instance(problem, std::move(append_state)),
       step_(step) {
   CHECK_NE(Time(), step_);
+}
+
+template<typename DifferentialEquation>
+void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
+    not_null<serialization::FixedStepSizeIntegrator*> const message) const {
+  message->set_kind(kind_);
 }
 
 template<typename DifferentialEquation>
@@ -208,8 +204,8 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
 }
 
 template<typename DifferentialEquation>
-AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
-    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
+    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename DifferentialEquation>
 void AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
@@ -282,6 +278,10 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
       base::noreturn();
   }
 }
+
+template<typename DifferentialEquation>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
+    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 }  // namespace internal_ordinary_differential_equations
 }  // namespace integrators

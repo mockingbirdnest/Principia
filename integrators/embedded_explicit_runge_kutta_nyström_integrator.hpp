@@ -103,13 +103,13 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
+ private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
- protected:
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
   FixedVector<double, stages> const b_hat_;

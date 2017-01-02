@@ -115,13 +115,13 @@ class SymplecticRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
+ private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
- private:
   FixedVector<double, stages_> const a_;
   FixedVector<double, stages_> const b_;
   FixedVector<double, stages_> c_;

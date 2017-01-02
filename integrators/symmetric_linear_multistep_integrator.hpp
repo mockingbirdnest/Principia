@@ -111,13 +111,13 @@ class SymmetricLinearMultistepIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
+ private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
 
- private:
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   AdamsMoulton<velocity_order_> const& velocity_integrator_;
   FixedVector<double, half_order_> const ɑ_;

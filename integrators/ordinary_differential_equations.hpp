@@ -202,6 +202,12 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
               typename Integrator<ODE>::AppendState const& append_state,
               Time const& step) const = 0;
 
+  void WriteToMessage(
+      not_null<serialization::FixedStepSizeIntegrator*> message) const;
+  static FixedStepSizeIntegrator const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+
+ protected:
   // For convenience, deserialization is an instance member of the |Integrator|,
   // not a static member of the |Instance|.  Which makes sense if you see
   // |Integrator| as a factory for |Instance|.
@@ -212,12 +218,6 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
       AppendState const& append_state,
       Time const& step) const = 0;
 
-  void WriteToMessage(
-      not_null<serialization::FixedStepSizeIntegrator*> message) const;
-  static FixedStepSizeIntegrator const& ReadFromMessage(
-      serialization::FixedStepSizeIntegrator const& message);
-
- protected:
   explicit FixedStepSizeIntegrator(
       serialization::FixedStepSizeIntegrator::Kind kind);
 
@@ -262,6 +262,12 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
       typename Integrator<ODE>::AppendState const& append_state,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
+  void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegrator*> message) const;
+  static AdaptiveStepSizeIntegrator const& ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegrator const& message);
+
+ protected:
   // For convenience, deserialization is an instance member of the |Integrator|,
   // not a static member of the |Instance|.  Which makes sense if you see
   // |Integrator| as a factory for |Instance|.
@@ -272,12 +278,6 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
       AppendState const& append_state,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
-  void WriteToMessage(
-      not_null<serialization::AdaptiveStepSizeIntegrator*> message) const;
-  static AdaptiveStepSizeIntegrator const& ReadFromMessage(
-      serialization::AdaptiveStepSizeIntegrator const& message);
-
- protected:
   explicit AdaptiveStepSizeIntegrator(
       serialization::AdaptiveStepSizeIntegrator::Kind kind);
 
