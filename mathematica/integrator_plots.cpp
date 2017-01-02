@@ -210,7 +210,7 @@ class WorkErrorGraphGenerator {
     }
   }
 
-  std::string GetData() {
+  std::string GetMathematicaData() {
     LOG(INFO) << "Using " << std::thread::hardware_concurrency()
               << " worker threads";
     Bundle bundle(/*workers=*/std::thread::hardware_concurrency());
@@ -248,7 +248,7 @@ class WorkErrorGraphGenerator {
   }
 
  private:
-  Status Integrate(int method_index, int time_step_index) {
+  Status Integrate(int const method_index, int const time_step_index) {
     auto const& method = methods_[method_index];
     Problem problem;
     int number_of_evaluations = 0;
@@ -268,7 +268,8 @@ class WorkErrorGraphGenerator {
     };
     Time const Δt = method.evaluations * starting_step_size_per_evaluation_ /
                     std::pow(step_reduction_, time_step_index);
-    auto instance = method.integrator.NewInstance(problem, append_state, Δt);
+    auto const instance =
+        method.integrator.NewInstance(problem, append_state, Δt);
 
     instance->Solve(tmax_);
     // Log both the actual number of evaluations and a theoretical number
@@ -346,7 +347,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 
   std::ofstream file;
   file.open("simple_harmonic_motion_graphs.generated.wl");
-  file << generator.GetData();
+  file << generator.GetMathematicaData();
   file.close();
 }
 
@@ -410,7 +411,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   std::ofstream file;
   file.open("kepler_problem_graphs_" + std::to_string(eccentricity) +
             ".generated.wl");
-  file << generator.GetData();
+  file << generator.GetMathematicaData();
   file.close();
 }
 
