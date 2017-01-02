@@ -172,97 +172,6 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> ReferenceMethods() {
 
 }  // namespace
 
-void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
-  ODE::SystemState initial_state;
-  Problem problem;
-  int number_of_evaluations;
-  problem.equation.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, &number_of_evaluations);
-  problem.initial_state = &initial_state;
-
-  Instant const t0;
-  Length const q_amplitude = 1 * Metre;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Stiffness const k = SIUnit<Stiffness>();
-  Mass const m = 1 * Kilogram;
-
-  initial_state.positions.emplace_back(q_amplitude);
-  initial_state.velocities.emplace_back(0 * Metre / Second);
-  initial_state.time = DoublePrecision<Instant>(t0);
-
-  Instant const tmax = t0 + 50 * Second;
-
-  double const step_reduction = 1.015;
-
-
-  std::vector<std::string> q_error_data;
-  std::vector<std::string> v_error_data;
-  std::vector<std::string> e_error_data;
-
-  Length max_q_error;
-  Speed max_v_error;
-  Energy max_e_error;
-  auto const append_state = [&max_q_error, &max_v_error, &max_e_error,
-                             q_amplitude, v_amplitude, ω, m, k, t0](
-      ODE::SystemState const& state) {
-    max_q_error = std::max(max_q_error,
-        AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
-                      state.positions[0].value));
-    max_v_error = std::max(max_v_error,
-        AbsoluteError(-v_amplitude * Sin(ω * (state.time.value - t0)),
-                      state.velocities[0].value));
-    max_e_error = std::max(max_e_error,
-        AbsoluteError(0.5 * Joule,
-                      (m * Pow<2>(state.velocities[0].value) +
-                       k * Pow<2>(state.positions[0].value)) / 2));
-  };
-
-  std::vector<std::string> names;
-  for (auto const& method : Methods()) {
-    LOG(INFO) << "Harmonic oscillator: " << method.name;
-    Time Δt = method.evaluations * 1 * Second;
-    std::vector<Length> q_errors;
-    std::vector<Speed> v_errors;
-    std::vector<Energy> e_errors;
-    std::vector<double> evaluations;
-    for (int i = 0; i < 500; ++i, Δt /= step_reduction) {
-      max_q_error = Length{};
-      max_v_error = Speed{};
-      max_e_error = Energy{};
-      number_of_evaluations = 0;
-      auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-      instance->Solve(tmax);
-      // Log both the actual number of evaluations and a theoretical number that
-      // ignores any startup costs; that theoretical number is the one used for
-      // plotting.
-      int const amortized_evaluations =
-          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
-                                      << amortized_evaluations << ")";
-      // We plot the maximum error, i.e., the L∞ norm of the error.
-      // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
-      // the average error (the normalized L¹ norm) instead.
-      q_errors.emplace_back(max_q_error);
-      v_errors.emplace_back(max_v_error);
-      e_errors.emplace_back(max_e_error);
-      evaluations.emplace_back(amortized_evaluations);
-    }
-    q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
-    v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));
-    e_error_data.emplace_back(PlottableDataset(evaluations, e_errors));
-    names.emplace_back(Escape(method.name));
-  }
-  std::ofstream file;
-  file.open("simple_harmonic_motion_graphs.generated.wl");
-  file << Assign("qErrorData", q_error_data);
-  file << Assign("vErrorData", v_error_data);
-  file << Assign("eErrorData", e_error_data);
-  file << Assign("names", names);
-  file.close();
-}
-
 // Templatized to allow for problems where specific energy is more convenient
 // than energy.
 template<typename Energy>
@@ -281,12 +190,14 @@ class WorkErrorGraphGenerator {
                          int* evaluations)> compute_accelerations,
       ODE::SystemState initial_state,
       std::function<Errors(ODE::SystemState const&)> compute_errors,
-      Instant const& tmax)
+      Instant const& tmax,
+      std::string const& problem_name)
       : methods_(Methods()),
         compute_accelerations_(compute_accelerations),
         initial_state_(initial_state),
         compute_errors_(compute_errors),
-        tmax_(tmax) {
+        tmax_(tmax),
+        problem_name_(problem_name) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
     e_errors_.resize(methods_.size());
@@ -326,7 +237,7 @@ class WorkErrorGraphGenerator {
           PlottableDataset(evaluations_[i], v_errors_[i]));
       e_error_data.emplace_back(
           PlottableDataset(evaluations_[i], e_errors_[i]));
-      names.emplace_back(methods_[i].name);
+      names.emplace_back(Escape(methods_[i].name));
     }
     std::string result;
     result += Assign("qErrorData", q_error_data);
@@ -366,9 +277,10 @@ class WorkErrorGraphGenerator {
     int const amortized_evaluations =
         method.evaluations * static_cast<int>(std::floor((tmax_ - t0) / Δt));
     LOG_EVERY_N(INFO, 50) << "[" << method_index << "," << time_step_index
-                          << "] " << number_of_evaluations
-                          << " actual evaluations (" << amortized_evaluations
-                          << " amortized) with " << method.name;
+                          << "] " << problem_name_ << ": "
+                          << number_of_evaluations << " actual evaluations ("
+                          << amortized_evaluations << " amortized) with "
+                          << method.name;
     // We plot the maximum error, i.e., the L∞ norm of the error.
     // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
     // the average error (the normalized L¹ norm) instead.
@@ -393,10 +305,50 @@ class WorkErrorGraphGenerator {
   std::vector<std::vector<Energy>> e_errors_;
   std::vector<std::vector<double>> evaluations_;
   Instant const tmax_;
+  std::string const problem_name_;
   double const step_reduction_ = 1.015;
   Time const starting_step_size_per_evaluation_ = 1 * Second;
   int const integrations_per_integrator_ = 500;
 };
+
+
+void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
+  ODE::SystemState initial_state;
+  Instant const t0;
+  Length const q_amplitude = 1 * Metre;
+  Speed const v_amplitude = 1 * Metre / Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Stiffness const k = SIUnit<Stiffness>();
+  Mass const m = 1 * Kilogram;
+
+  initial_state.positions.emplace_back(q_amplitude);
+  initial_state.velocities.emplace_back(0 * Metre / Second);
+  initial_state.time = DoublePrecision<Instant>(t0);
+
+  Instant const tmax = t0 + 50 * Second;
+  auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
+      ODE::SystemState const& state) {
+    return WorkErrorGraphGenerator<Energy>::Errors{
+        AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
+                      state.positions[0].value),
+        AbsoluteError(-v_amplitude * Sin(ω * (state.time.value - t0)),
+                      state.velocities[0].value),
+        AbsoluteError(0.5 * Joule,
+                      (m * Pow<2>(state.velocities[0].value) +
+                       k * Pow<2>(state.positions[0].value)) / 2)};
+  };
+  WorkErrorGraphGenerator<Energy> generator(
+      ComputeHarmonicOscillatorAcceleration,
+      initial_state,
+      compute_error,
+      tmax,
+      "Harmonic oscillator");
+
+  std::ofstream file;
+  file.open("simple_harmonic_motion_graphs.generated.wl");
+  file << generator.GetData();
+  file.close();
+}
 
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   ODE::SystemState initial_state;
@@ -441,7 +393,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
                        state.velocities[1].value,
                        0 * Metre / Second});
     auto const expected_dof = orbit.StateVectors(state.time.value);
-    return WorkErrorGraphGenerator::Errors{
+    return WorkErrorGraphGenerator<SpecificEnergy>::Errors{
         AbsoluteError(expected_dof.displacement(), q),
         AbsoluteError(expected_dof.velocity(), v),
         AbsoluteError(initial_specific_energy,
@@ -452,7 +404,9 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       ComputeKeplerAcceleration,
       initial_state,
       compute_error,
-      tmax);
+      tmax,
+      " Kepler problem with e = " + std::to_string(eccentricity));
+
   std::ofstream file;
   file.open("kepler_problem_graphs_" + std::to_string(eccentricity) +
             ".generated.wl");
