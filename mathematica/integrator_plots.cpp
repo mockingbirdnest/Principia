@@ -269,18 +269,51 @@ class WorkErrorGraphGenerator {
     Speed v_error;
     SpecificEnergy e_error;
   };
- private:
-  base::Status Integrate(SimpleHarmonicMotionPlottedIntegrator const& method,
-                 int method_index,
-                 int time_step_index,
-                 Time const Δt) {
-    Problem problem;
-    int number_of_evaluations;
-    problem.equation.compute_acceleration = std::bind(
-        ComputeKeplerAcceleration, _1, _2, _3, &number_of_evaluations);
-    problem.initial_state = &initial_state;
 
+  WorkErrorGraphGenerator(
+      std::function<void(Instant const& t,
+                         std::vector<Length> const& q,
+                         std::vector<Acceleration>& result,
+                         int* evaluations)> compute_accelerations,
+      ODE::SystemState initial_state,
+      std::function<Errors(ODE::SystemState const&)> compute_errors)
+      : methods_(Methods()),
+        compute_accelerations_(compute_accelerations),
+        initial_state_(initial_state) {
+    q_errors_.resize(methods_.size());
+    v_errors_.resize(methods_.size());
+    e_errors_.resize(methods_.size());
+    evaluations_.resize(methods_.size());
+    for (int i = 0; i < methods_.size(); ++i) {
+      q_errors_[i].resize(integrations_per_integrator_);
+      v_errors_[i].resize(integrations_per_integrator_);
+      e_errors_[i].resize(integrations_per_integrator_);
+      evaluations_[i].resize(integrations_per_integrator_);
+    }
+  }
+
+  void Generate() {
+    base::Bundle bundle;
+    for (int method_index = 0; i < methods_.size(); ++i) {
+      for (int time_step_index = 0;
+           time_step_index < integrations_per_integrator_) {
+        bundle.Add(std::bind(&WorkErrorGraphGenerator::Integrate,
+                             this,
+                             method_index,
+                             time_step_index));
+      }
+    }
+  }
+
+ private:
+  base::Status Integrate(int method_index,
+                         int time_step_index) {
+    auto const& method = methods_[method_index];
+    Problem problem;
     int number_of_evaluations = 0;
+    problem.equation.compute_acceleration = std::bind(
+        compute_accelerations_, _1, _2, _3, &number_of_evaluations);
+    problem.initial_state = &initial_state;
     Length max_q_error;
     Speed max_v_error;
     SpecificEnergy max_e_error;
@@ -291,15 +324,20 @@ class WorkErrorGraphGenerator {
       max_v_error = std::max(max_v_error, errors.v_error);
       max_e_error = std::max(max_e_error, errors.e_error);
     };
+    Time const Δt = method.evaluations * starting_step_size_per_evaluation_ /
+                    std::pow(step_reduction_, time_step_index);
     auto instance = method.integrator.NewInstance(problem, append_state, Δt);
+
     method.integrator.Solve(tmax, *instance);
     // Log both the actual number of evaluations and a theoretical number
     // that ignores any startup costs; that theoretical number is the one
     // used for plotting.
     int const amortized_evaluations =
         method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-    LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
-                                    << amortized_evaluations << ")";
+    LOG_EVERY_N(INFO, 50) << "[" << method_index << "," << time_step_index
+                          << "] " << number_of_evaluations
+                          << " actual evaluations (" << amortized_evaluations
+                          << " amortized) with " << method.name;
     // We plot the maximum error, i.e., the L∞ norm of the error.
     // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
     // the average error (the normalized L¹ norm) instead.
@@ -310,12 +348,21 @@ class WorkErrorGraphGenerator {
     return base::Status::OK;
   }
 
+  std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;
+  std::function<void(Instant const& t,
+                     std::vector<Length> const& q,
+                     std::vector<Acceleration>& result,
+                     int* evaluations)>
+      compute_accelerations_;
+  ODE::SystemState initial_state_;
   std::function<Errors(ODE::SystemState const&)> compute_errors_;
-  std::vector<std::string> names_;
   std::vector<std::vector<Length>> q_errors_;
   std::vector<std::vector<Speed>> v_errors_;
   std::vector<std::vector<SpecificEnergy>> e_errors_;
   std::vector<std::vector<double>> evaluations_;
+  double const step_reduction_ = 1.015;
+  Time const starting_step_size_per_evaluation_ = 1 * Second;
+  int const integrations_per_integrator_ = 500;
 };
 
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
