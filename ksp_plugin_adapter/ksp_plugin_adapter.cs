@@ -856,6 +856,8 @@ public partial class PrincipiaPluginAdapter
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
      // transforms of loaded vessels & their parts.
+     // TODO(egg): pass vessel positions to the plugin, then get the nudged
+     // positions and call Vessel.SetPosition.  Hopefully that will be enough.
    }
 
   private void SetBodyFramesAndPrecalculateVessels() {
@@ -883,9 +885,6 @@ public partial class PrincipiaPluginAdapter
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-      // TODO(egg): Tell the plugin about the vessel's position, so that its
-      // displacement from the centre of mass of its |PileUp| may be computed
-      // and used to set its position below.
       foreach (Part part in vessel.parts) {
         // TODO(egg): Tell the plugin about part.force, part.forces
       }
