@@ -429,12 +429,12 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    0.4 * Second,
                    9.96980276113390573e-14 * Metre,
                    9.97778248912339905e-14 * Metre / Second,
-                   4.11567868674467263e-09 * Joule),
+                   4.11567613323171599e-09 * Joule),
           INSTANCE(QuinlanTremaine1990Order12,
                    0.2 * Second,
                    9.90457715843717779e-14 * Metre,
                    9.98021110198976658e-14 * Metre / Second,
-                   8.86155593349258197e-11 * Joule)};
+                   8.86197226712681640e-11 * Joule)};
 }
 
 }  // namespace
