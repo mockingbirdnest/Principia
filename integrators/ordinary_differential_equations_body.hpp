@@ -61,6 +61,15 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
   return system_state;
 }
 
+template<typename ODE>
+void AdaptiveStepSize<ODE>::WriteToMessage(
+    not_null<serialization::AdaptiveStepSizeIntegratorInstance::
+                 AdaptiveStepSize*> const message) const {
+  first_time_step.WriteToMessage(message->mutable_first_time_step());
+  message->set_safety_factor(safety_factor);
+  message->set_max_steps(max_steps);
+}
+
 template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
@@ -156,10 +165,7 @@ void AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
   Integrator<ODE>::Instance::WriteToMessage(message);
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
-  adaptive_step_size_.first_time_step.WriteToMessage(
-      extension->mutable_first_time_step());
-  extension->set_safety_factor(adaptive_step_size_.safety_factor);
-  extension->set_max_steps(adaptive_step_size_.max_steps);
+  adaptive_step_size_.WriteToMessage(extension->mutable_adaptive_step_size());
 }
 
 template<typename DifferentialEquation>

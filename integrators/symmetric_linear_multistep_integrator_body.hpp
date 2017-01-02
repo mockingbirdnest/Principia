@@ -139,16 +139,23 @@ Instance::WriteToMessage(
               serialization::SymmetricLinearMultistepIntegratorInstance::
                   extension);
   for (auto const& previous_step : previous_steps_) {
-    auto* const serialized_step = extension->add_previous_steps();
-    for (auto const& displacement : previous_step.displacements) {
-      displacement.WriteToMessage(serialized_step->add_displacements());
-    }
-    for (auto const& acceleration : previous_step.accelerations) {
-      acceleration.WriteToMessage(serialized_step->add_accelerations());
-    }
-    previous_step.time.WriteToMessage(serialized_step->mutable_time());
+    previous_step.WriteToMessage(extension->add_previous_steps());
   }
   integrator_.WriteToMessage(extension->mutable_integrator());
+}
+
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
+    WriteToMessage(
+        not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
+                     Step*> const message) const {
+  for (auto const& displacement : displacements) {
+    displacement.WriteToMessage(message->add_displacements());
+  }
+  for (auto const& acceleration : accelerations) {
+    acceleration.WriteToMessage(message->add_accelerations());
+  }
+  time.WriteToMessage(message->mutable_time());
 }
 
 template<typename Position, int order_>

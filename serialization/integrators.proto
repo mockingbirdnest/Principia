@@ -54,9 +54,12 @@ message AdaptiveStepSizeIntegratorInstance {
     optional AdaptiveStepSizeIntegratorInstance extension = 7001;
   }
   extensions 9000 to 9999;  // Last used: 9000
-  required Quantity first_time_step = 1;
-  required double safety_factor = 2;
-  required int64 max_steps = 3;
+  message AdaptiveStepSize {
+    required Quantity first_time_step = 1;
+    required double safety_factor = 2;
+    required int64 max_steps = 3;
+  }
+  required AdaptiveStepSize adaptive_step_size = 1;
 }
 
 message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {

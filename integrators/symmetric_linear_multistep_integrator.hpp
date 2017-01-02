@@ -57,6 +57,10 @@ class SymmetricLinearMultistepIntegrator
       std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
       std::vector<typename ODE::Acceleration> accelerations;
       DoublePrecision<Instant> time;
+
+      void WriteToMessage(
+          not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
+                       Step*> const message) const;
     };
 
     Instance(IntegrationProblem<ODE> const& problem,

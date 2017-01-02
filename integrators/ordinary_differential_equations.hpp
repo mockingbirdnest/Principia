@@ -114,6 +114,10 @@ struct AdaptiveStepSize final {
   // Integration will stop after |*max_steps| even if it has not reached
   // |t_final|.
   std::int64_t max_steps = std::numeric_limits<std::int64_t>::max();
+
+  void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegratorInstance::
+                   AdaptiveStepSize*> const message) const;
 };
 
 // A base class for integrators.
