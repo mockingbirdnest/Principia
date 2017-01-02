@@ -246,8 +246,6 @@ ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
   CHECK(message.HasExtension(
       serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
       << message.DebugString();
-  auto const& extension = message.GetExtension(
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension);
 
   return std::unique_ptr<typename Integrator<ODE>::Instance>(
       new Instance(problem, append_state, step, *this));

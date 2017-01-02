@@ -70,6 +70,17 @@ void AdaptiveStepSize<ODE>::WriteToMessage(
   message->set_max_steps(max_steps);
 }
 
+template<typename ODE>
+AdaptiveStepSize<ODE> AdaptiveStepSize<ODE>::ReadFromMessage(
+    serialization::AdaptiveStepSizeIntegratorInstance::AdaptiveStepSize const&
+        message) {
+  AdaptiveStepSize result;
+  result.first_time_step = Time::ReadFromMessage(message.first_time_step());
+  result.safety_factor = message.safety_factor();
+  result.max_steps = message.max_steps();
+  return result;
+}
+
 template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
@@ -208,6 +219,35 @@ void AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   adaptive_step_size_.WriteToMessage(extension->mutable_adaptive_step_size());
   integrator().WriteToMessage(extension->mutable_integrator());
+}
+
+template<typename DifferentialEquation>
+not_null<std::unique_ptr<typename Integrator<DifferentialEquation>::Instance>>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
+    serialization::IntegratorInstance const& message,
+    ODE const& equation,
+    AppendState const& append_state,
+    typename AdaptiveStepSize<ODE>::ToleranceToErrorRatio const&
+        tolerance_to_error_ratio) {
+  auto const current_state =
+      ODE::SystemState::ReadFromMessage(message.current_state());
+  IntegrationProblem<ODE> problem;
+  problem.equation = equation;
+  problem.initial_state = &current_state;
+
+  CHECK(message.HasExtension(
+      serialization::AdaptiveStepSizeIntegratorInstance::extension))
+      << "Not an adaptive-step integrator instance " << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::AdaptiveStepSizeIntegratorInstance::extension);
+  auto adaptive_step_size =
+      AdaptiveStepSize<ODE>::ReadFromMessage(extension.adaptive_step_size());
+  adaptive_step_size.tolerance_to_error_ratio = tolerance_to_error_ratio;
+  AdaptiveStepSizeIntegrator const& integrator =
+      AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
+
+  return integrator.ReadFromMessage(
+      extension, problem, append_state, adaptive_step_size);
 }
 
 template<typename DifferentialEquation>

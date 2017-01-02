@@ -99,9 +99,15 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   };
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename Integrator<ODE>::AppendState const& append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
  protected:
   FixedVector<double, stages> const c_;

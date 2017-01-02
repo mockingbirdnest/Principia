@@ -327,8 +327,33 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             stages,
                                             first_same_as_last>::
 NewInstance(IntegrationProblem<ODE> const& problem,
-            typename Integrator<ODE>::AppendState const& append_state,
+            AppendState const& append_state,
             AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // private.
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
+      problem, append_state, adaptive_step_size, *this));
+}
+
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            higher_order,
+                                            lower_order,
+                                            stages,
+                                            first_same_as_last>::
+ReadFromMessage(
+    serialization::AdaptiveStepSizeIntegratorInstance const& message,
+    IntegrationProblem<ODE> const& problem,
+    AppendState const& append_state,
+    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+  CHECK(message.HasExtension(
+      serialization::EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
+          extension))
+      << message.DebugString();
+
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(

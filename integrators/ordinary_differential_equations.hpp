@@ -118,6 +118,9 @@ struct AdaptiveStepSize final {
   void WriteToMessage(
       not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                    AdaptiveStepSize*> const message) const;
+  static AdaptiveStepSize ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegratorInstance::AdaptiveStepSize const&
+          message);
 };
 
 // A base class for integrators.
@@ -236,6 +239,13 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+    ReadFromMessage(
+        serialization::IntegratorInstance const& message,
+        ODE const& equation,
+        AppendState const& append_state,
+        typename AdaptiveStepSize<ODE>::ToleranceToErrorRatio const&
+            tolerance_to_error_ratio);
 
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
@@ -250,6 +260,16 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   virtual not_null<std::unique_ptr<Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
       typename Integrator<ODE>::AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+
+  // For convenience, deserialization is an instance member of the |Integrator|,
+  // not a static member of the |Instance|.  Which makes sense if you see
+  // |Integrator| as a factory for |Instance|.
+  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
       AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 
   void WriteToMessage(
