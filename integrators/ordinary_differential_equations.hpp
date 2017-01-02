@@ -176,6 +176,10 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
    public:
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<FixedStepSizeIntegrator>> ReadFromMessage(
+        serialization::IntegratorInstance const& message,
+        ODE const& equation,
+        AppendState const& append_state);
 
    protected:
     Instance(IntegrationProblem<ODE> const& problem,

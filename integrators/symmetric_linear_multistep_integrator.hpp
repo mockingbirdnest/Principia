@@ -46,8 +46,15 @@ class SymmetricLinearMultistepIntegrator
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<Instance>> ReadFromMessage(
+        serialization::SymmetricLinearMultistepIntegratorInstance const&
+            message,
+        IntegrationProblem<ODE> const& problem,
+        AppendState const& append_state,
+        Time const& step);
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
@@ -61,11 +68,21 @@ class SymmetricLinearMultistepIntegrator
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> const message) const;
+      static Step ReadFromMessage(
+          serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
+              message);
     };
 
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
+             SymmetricLinearMultistepIntegrator const& integrator);
+
+    // For deserialization.
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             Time const& step,
+             std::list<Step> const& previous_steps,
              SymmetricLinearMultistepIntegrator const& integrator);
 
     // Performs the startup integration, i.e., computes enough states to either

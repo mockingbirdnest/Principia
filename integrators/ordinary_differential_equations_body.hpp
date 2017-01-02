@@ -115,6 +115,36 @@ void FixedStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
 }
 
 template<typename DifferentialEquation>
+not_null<std::unique_ptr<FixedStepSizeIntegrator<DifferentialEquation>>>
+FixedStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
+    serialization::IntegratorInstance const& message,
+    ODE const& equation,
+    AppendState const& append_state) {
+  auto const current_state =
+      ODE::SystemState::ReadFromMessage(message.current_state());
+
+  CHECK(message.HasExtension(
+      serialization::FixedStepSizeIntegratorInstance::extension))
+      << "Not a fixed-step integrator instance " << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::FixedStepSizeIntegratorInstance::extension);
+  Time const step = Time::ReadFromMessage(extension.step());
+
+  if (extension.HasExtension(
+          serialization::SymmetricLinearMultistepIntegratorInstance::
+              extension)) {
+  }
+  if (extension.HasExtension(
+          serialization::SymplecticRungeKuttaNystromIntegratorInstance::
+              extension)) {
+  }
+
+  LOG(FATAL) << "No fixed-step integrator instance extension found in "
+             << message.DebugString();
+  base::noreturn();
+}
+
+template<typename DifferentialEquation>
 FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
