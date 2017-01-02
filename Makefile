@@ -14,6 +14,7 @@ GENERATED_SOURCES := journal/profiles.generated.h \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
 
+STATUS_OBJECTS := base/status.o
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
 TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
 TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
@@ -82,12 +83,12 @@ check: run_tests
 $(ADAPTER): $(GENERATED_SOURCES)
 	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
-$(TOOLS_BIN): $(PROTO_OBJECTS) $(TOOLS_OBJECTS)
+$(TOOLS_BIN): $(PROTO_OBJECTS) $(TOOLS_OBJECTS) $(STATUS_OBJECTS)
 	$(CXX) $(LDFLAGS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS) -o $(TOOLS_BIN) $(LIBS)
 
 .SECONDEXPANSION:
-$(LIB): $(PROTO_OBJECTS) $$(ksp_plugin_objects) $$(journal_objects) $(LIB_DIR)
-	$(CXX) -shared $(LDFLAGS) $(PROTO_OBJECTS) $(ksp_plugin_objects) $(journal_objects) -o $(LIB) $(LIBS)
+$(LIB): $(PROTO_OBJECTS) $$(ksp_plugin_objects) $$(journal_objects) $(LIB_DIR) $(STATUS_OBJECTS)
+	$(CXX) -shared $(LDFLAGS) $(PROTO_OBJECTS) $(STATUS_OBJECTS) $(ksp_plugin_objects) $(journal_objects) -o $(LIB) $(LIBS)
 
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
@@ -142,16 +143,16 @@ journal_objects = journal/profiles.o journal/recorder.o
 # We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin
 # and journal.  The other tests don't do this.
 .SECONDEXPANSION:
-ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 # We cannot link the player test because we do not have the benchmarks.  We only build the recorder test.
 .SECONDEXPANSION:
-journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journal/recorder_test.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journal/recorder_test.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 .SECONDEXPANSION:
-%/test: $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS)
+%/test: $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 ##### CLEAN #####

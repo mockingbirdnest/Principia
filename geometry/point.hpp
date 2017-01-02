@@ -78,7 +78,7 @@ class Point final {
   friend std::string DebugString(Point<V> const& point);
 
   template<typename V, typename S>
-  friend class BarycentreCalculator;
+  friend class geometry::BarycentreCalculator;
 };
 
 // TODO(egg): constexpr these operators.

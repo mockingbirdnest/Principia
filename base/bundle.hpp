@@ -14,6 +14,8 @@
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 
+#if !PRINCIPIA_COMPILER_CLANG
+
 namespace principia {
 namespace base {
 
@@ -70,7 +72,6 @@ class Bundle final {
   // to an error.
   // Workers wait on this when no |tasks_| are available.
   std::condition_variable tasks_not_empty_or_terminate_;
-
   std::shared_mutex status_lock_;
   // If |!status_.ok()|, currently-running tasks should cooperatively abort, and
   // workers will terminate without considering queued tasks.  Set by |Abort|,
@@ -93,3 +94,5 @@ class Bundle final {
 
 }  // namespace base
 }  // namespace principia
+
+#endif

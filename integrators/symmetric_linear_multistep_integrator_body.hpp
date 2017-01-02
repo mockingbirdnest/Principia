@@ -190,6 +190,7 @@ template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::VelocitySolve(int const dimension) {
   using Velocity = typename ODE::Velocity;
+  using Acceleration = typename ODE::Acceleration;
   auto const& velocity_integrator = integrator_.velocity_integrator_;
 
   for (int d = 0; d < dimension; ++d) {
@@ -231,7 +232,8 @@ SymmetricLinearMultistepIntegrator(
     FixedVector<double, half_order_> const & ɑ,
     FixedVector<double, half_order_> const& β_numerator,
     double const β_denominator)
-    : FixedStepSizeIntegrator(kind),
+    : FixedStepSizeIntegrator<
+          SpecialSecondOrderDifferentialEquation<Position>>(kind),
       startup_integrator_(startup_integrator),
       velocity_integrator_(AdamsMoultonOrder<velocity_order_>()),
       ɑ_(ɑ),
