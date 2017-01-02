@@ -21,23 +21,25 @@
 #include "testing_utilities/numerics.hpp"
 
 #define SLMS_INTEGRATOR(name) \
-  { (integrators::name<Length>()), #name, 1 }
+  { (integrators::name<Length>()), u8#name, 1 }
 #define SRKN_INTEGRATOR(name)                     \
   {                                               \
-    (integrators::name<Length>()), #name,         \
+    (integrators::name<Length>()), u8#name,       \
         (integrators::name<Length>()).evaluations \
   }
 #define SPRK_INTEGRATOR(name, composition)                 \
   {                                                        \
     (integrators::name<Length, Speed>()                    \
          .AsRungeKuttaNyströmIntegrator<(composition)>()), \
-        #name " " #composition,                            \
+        u8#name " " u8#composition,                        \
         (integrators::name<Length, Speed>()).evaluations   \
   }
 
 namespace principia {
 
+using base::Bundle;
 using base::not_null;
+using base::Status;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
 using geometry::InnerProduct;
@@ -261,13 +263,15 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   file.close();
 }
 
-
+// Templatized to allow for problems where specific energy is more convenient
+// than energy.
+template<typename Energy>
 class WorkErrorGraphGenerator {
  public:
   struct Errors {
     Length q_error;
     Speed v_error;
-    SpecificEnergy e_error;
+    Energy e_error;
   };
 
   WorkErrorGraphGenerator(
@@ -281,6 +285,7 @@ class WorkErrorGraphGenerator {
       : methods_(Methods()),
         compute_accelerations_(compute_accelerations),
         initial_state_(initial_state),
+        compute_errors_(compute_errors),
         tmax_(tmax) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
@@ -295,7 +300,9 @@ class WorkErrorGraphGenerator {
   }
 
   std::string GetData() {
-    base::Bundle bundle(/*workers=*/8);
+    LOG(INFO) << "Using " << std::thread::hardware_concurrency()
+              << " worker threads";
+    Bundle bundle(/*workers=*/std::thread::hardware_concurrency());
     for (int method_index = 0; method_index < methods_.size(); ++method_index) {
       for (int time_step_index = 0;
            time_step_index < integrations_per_integrator_;
@@ -330,8 +337,7 @@ class WorkErrorGraphGenerator {
   }
 
  private:
-  base::Status Integrate(int method_index,
-                         int time_step_index) {
+  Status Integrate(int method_index, int time_step_index) {
     auto const& method = methods_[method_index];
     Problem problem;
     int number_of_evaluations = 0;
@@ -341,7 +347,7 @@ class WorkErrorGraphGenerator {
     auto const t0 = problem.initial_state->time.value;
     Length max_q_error;
     Speed max_v_error;
-    SpecificEnergy max_e_error;
+    Energy max_e_error;
     auto append_state = [this, &max_q_error, &max_v_error, &max_e_error](
       ODE::SystemState const& state) {
       auto const errors = compute_errors_(state);
@@ -371,7 +377,7 @@ class WorkErrorGraphGenerator {
     e_errors_[method_index][time_step_index] = max_e_error;
     evaluations_[method_index][time_step_index] = amortized_evaluations;
 
-    return base::Status::OK;
+    return Status::OK;
   }
 
   std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;
@@ -384,7 +390,7 @@ class WorkErrorGraphGenerator {
   std::function<Errors(ODE::SystemState const&)> compute_errors_;
   std::vector<std::vector<Length>> q_errors_;
   std::vector<std::vector<Speed>> v_errors_;
-  std::vector<std::vector<SpecificEnergy>> e_errors_;
+  std::vector<std::vector<Energy>> e_errors_;
   std::vector<std::vector<double>> evaluations_;
   Instant const tmax_;
   double const step_reduction_ = 1.015;
@@ -421,15 +427,12 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
 
   // Integrate over 8 orbits.
   Instant const tmax =
-      t0 + 80 * (2 * π * Radian) / *orbit.elements_at_epoch().mean_motion;
+      t0 + 8 * (2 * π * Radian) / *orbit.elements_at_epoch().mean_motion;
 
   SpecificEnergy const initial_specific_energy =
       InnerProduct(initial_dof.velocity(), initial_dof.velocity()) / 2 -
       μ / initial_dof.displacement().Norm();
 
-  Length max_q_error;
-  Speed max_v_error;
-  SpecificEnergy max_e_error;
   auto const compute_error = [&orbit, μ, initial_specific_energy](
       ODE::SystemState const& state) {
     Displacement<World> q(
@@ -445,10 +448,11 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
                       InnerProduct(v, v) / 2 - μ / q.Norm())};
   };
 
-  WorkErrorGraphGenerator generator(ComputeKeplerAcceleration,
-                                    initial_state,
-                                    compute_error,
-                                    tmax);
+  WorkErrorGraphGenerator<SpecificEnergy> generator(
+      ComputeKeplerAcceleration,
+      initial_state,
+      compute_error,
+      tmax);
   std::ofstream file;
   file.open("kepler_problem_graphs_" + std::to_string(eccentricity) +
             ".generated.wl");
