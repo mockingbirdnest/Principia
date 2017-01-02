@@ -136,19 +136,7 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
   FixedStepSizeIntegrator const& integrator =
       FixedStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
-  if (extension.HasExtension(
-          serialization::SymmetricLinearMultistepIntegratorInstance::
-              extension)) {
-    return integrator.ReadFromMessage(extension, problem, append_state, step);
-  }
-  if (extension.HasExtension(
-          serialization::SymplecticRungeKuttaNystromIntegratorInstance::
-              extension)) {
-  }
-
-  LOG(FATAL) << "No fixed-step integrator instance extension in "
-             << message.DebugString();
-  base::noreturn();
+  return integrator.ReadFromMessage(extension, problem, append_state, step);
 }
 
 template<typename DifferentialEquation>
@@ -185,6 +173,22 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
                  typename DifferentialEquation::Position>();
     case FSSI::OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13:
       return OkunborSkeel1994Order6Method13<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_1999_ORDER_8A:
+      return Quinlan1999Order8A<typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_1999_ORDER_8B:
+      return Quinlan1999Order8B<typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_8:
+      return QuinlanTremaine1990Order8<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_10:
+      return QuinlanTremaine1990Order10<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_12:
+      return QuinlanTremaine1990Order12<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_14:
+      return QuinlanTremaine1990Order14<
                  typename DifferentialEquation::Position>();
     default:
       LOG(FATAL) << message.kind();
