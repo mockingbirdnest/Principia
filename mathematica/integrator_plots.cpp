@@ -261,6 +261,63 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   file.close();
 }
 
+
+class WorkErrorGraphGenerator {
+ public:
+  struct Errors {
+    Length q_error;
+    Speed v_error;
+    SpecificEnergy e_error;
+  };
+ private:
+  base::Status Integrate(SimpleHarmonicMotionPlottedIntegrator const& method,
+                 int method_index,
+                 int time_step_index,
+                 Time const Δt) {
+    Problem problem;
+    int number_of_evaluations;
+    problem.equation.compute_acceleration = std::bind(
+        ComputeKeplerAcceleration, _1, _2, _3, &number_of_evaluations);
+    problem.initial_state = &initial_state;
+
+    int number_of_evaluations = 0;
+    Length max_q_error;
+    Speed max_v_error;
+    SpecificEnergy max_e_error;
+    auto append_state = [this, &max_q_error, &max_v_error, &max_e_error](
+      ODE::SystemState const& state) {
+      auto const errors = compute_errors_(state);
+      max_q_error = std::max(max_q_error, errors.q_error);
+      max_v_error = std::max(max_v_error, errors.v_error);
+      max_e_error = std::max(max_e_error, errors.e_error);
+    };
+    auto instance = method.integrator.NewInstance(problem, append_state, Δt);
+    method.integrator.Solve(tmax, *instance);
+    // Log both the actual number of evaluations and a theoretical number
+    // that ignores any startup costs; that theoretical number is the one
+    // used for plotting.
+    int const amortized_evaluations =
+        method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+    LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
+                                    << amortized_evaluations << ")";
+    // We plot the maximum error, i.e., the L∞ norm of the error.
+    // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
+    // the average error (the normalized L¹ norm) instead.
+    q_errors_[method_index][time_step_index] = max_q_error;
+    v_errors_[method_index][time_step_index] = max_v_error;
+    e_errors_[method_index][time_step_index] = max_e_error;
+    evaluations_[method_index][time_step_index] = amortized_evaluations;
+    return base::Status::OK;
+  }
+
+  std::function<Errors(ODE::SystemState const&)> compute_errors_;
+  std::vector<std::string> names_;
+  std::vector<std::vector<Length>> q_errors_;
+  std::vector<std::vector<Speed>> v_errors_;
+  std::vector<std::vector<SpecificEnergy>> e_errors_;
+  std::vector<std::vector<double>> evaluations_;
+};
+
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   ODE::SystemState initial_state;
   Problem problem;
@@ -309,27 +366,6 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   std::vector<std::string> v_error_data;
   std::vector<std::string> e_error_data;
 
-  Length max_q_error;
-  Speed max_v_error;
-  SpecificEnergy max_e_error;
-  auto append_state = [&max_q_error, &max_v_error, &max_e_error, &orbit,
-                       μ, initial_specific_energy](
-      ODE::SystemState const& state) {
-    Displacement<World> q(
-        {state.positions[0].value, state.positions[1].value, 0 * Metre});
-    Velocity<World> v({state.velocities[0].value,
-                       state.velocities[1].value,
-                       0 * Metre / Second});
-    auto const expected_dof = orbit.StateVectors(state.time.value);
-    max_q_error = std::max(max_q_error,
-        AbsoluteError(expected_dof.displacement(), q));
-    max_v_error = std::max(max_v_error,
-        AbsoluteError(expected_dof.velocity(), v));
-    max_e_error = std::max(max_e_error,
-        AbsoluteError(initial_specific_energy,
-                      InnerProduct(v, v) / 2 - μ / q.Norm()));
-  };
-
   std::vector<std::string> names;
   for (auto const& method : Methods()) {
     LOG(INFO) << " Kepler problem with e = " << eccentricity << ": "
@@ -350,7 +386,6 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
                         &method,
                         &problem,
                         &append_state
-                        &result_lock,
                         &q_errors,
                         &v_errors,
                         &e_errors,
@@ -359,23 +394,6 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
         max_v_error = Speed{};
         max_e_error = SpecificEnergy{};
         number_of_evaluations = 0;
-        auto instance = method.integrator.NewInstance(problem, append_state, Δt);
-        method.integrator.Solve(tmax, *instance);
-        // Log both the actual number of evaluations and a theoretical number
-        // that ignores any startup costs; that theoretical number is the one
-        // used for plotting.
-        int const amortized_evaluations =
-            method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-        LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations << "("
-                                        << amortized_evaluations << ")";
-        // We plot the maximum error, i.e., the L∞ norm of the error.
-        // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
-        // the average error (the normalized L¹ norm) instead.
-        q_errors.emplace_back(max_q_error);
-        v_errors.emplace_back(max_v_error);
-        e_errors.emplace_back(max_e_error);
-        evaluations.emplace_back(amortized_evaluations);
-        return base::Status::OK;
       };
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
