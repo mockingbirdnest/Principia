@@ -704,7 +704,6 @@ public partial class PrincipiaPluginAdapter
           FlightGlobals.currentMainBody.GetValueOrDefault(
               FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-
       if (has_inertial_physics_bubble_in_space() &&
           (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
            previous_bubble_reference_body_ == null)) {
@@ -809,8 +808,8 @@ public partial class PrincipiaPluginAdapter
      universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
      // The collisions are reported and stored into |currentCollisions| in
-     // OnCollisionEnter|Stay|Exit, which occured while we yielded.
-     // Here, the |currentCollisions| are the collisions that occured in the
+     // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
+     // Here, the |currentCollisions| are the collisions that occurred in the
      // physics simulation, which is why we report them before calling
      // |AdvanceTime|.
      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
@@ -837,7 +836,7 @@ public partial class PrincipiaPluginAdapter
 
      double plugin_time = plugin_.CurrentTime();
      if (plugin_time > universal_time) {
-       // TODO(Egg): Make this resistant to bad floating points up to 2ULPs,
+       // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
        // and make it fatal again.
        Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
                  universal_time + " plugin-universal=" +
