@@ -61,6 +61,26 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
   return system_state;
 }
 
+template<typename ODE>
+void AdaptiveStepSize<ODE>::WriteToMessage(
+    not_null<serialization::AdaptiveStepSizeIntegratorInstance::
+                 AdaptiveStepSize*> const message) const {
+  first_time_step.WriteToMessage(message->mutable_first_time_step());
+  message->set_safety_factor(safety_factor);
+  message->set_max_steps(max_steps);
+}
+
+template<typename ODE>
+AdaptiveStepSize<ODE> AdaptiveStepSize<ODE>::ReadFromMessage(
+    serialization::AdaptiveStepSizeIntegratorInstance::AdaptiveStepSize const&
+        message) {
+  AdaptiveStepSize result;
+  result.first_time_step = Time::ReadFromMessage(message.first_time_step());
+  result.safety_factor = message.safety_factor();
+  result.max_steps = message.max_steps();
+  return result;
+}
+
 template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
@@ -78,16 +98,46 @@ Instant const& Integrator<DifferentialEquation>::Instance::time() const {
 }
 
 template<typename DifferentialEquation>
+void Integrator<DifferentialEquation>::Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {
+  current_state_.WriteToMessage(message->mutable_current_state());
+}
+
+template<typename DifferentialEquation>
 Integrator<DifferentialEquation>::Instance::Instance() {}
 
 template<typename DifferentialEquation>
-FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
-    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+void FixedStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {
+  Integrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension = message->MutableExtension(
+      serialization::FixedStepSizeIntegratorInstance::extension);
+  step_.WriteToMessage(extension->mutable_step());
+  integrator().WriteToMessage(extension->mutable_integrator());
+}
 
 template<typename DifferentialEquation>
-void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
-    not_null<serialization::FixedStepSizeIntegrator*> const message) const {
-  message->set_kind(kind_);
+not_null<std::unique_ptr<typename Integrator<DifferentialEquation>::Instance>>
+FixedStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
+    serialization::IntegratorInstance const& message,
+    ODE const& equation,
+    AppendState const& append_state) {
+  auto const current_state =
+      ODE::SystemState::ReadFromMessage(message.current_state());
+  IntegrationProblem<ODE> problem;
+  problem.equation = equation;
+  problem.initial_state = &current_state;
+
+  CHECK(message.HasExtension(
+      serialization::FixedStepSizeIntegratorInstance::extension))
+      << "Not a fixed-step integrator instance " << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::FixedStepSizeIntegratorInstance::extension);
+  Time const step = Time::ReadFromMessage(extension.step());
+  FixedStepSizeIntegrator const& integrator =
+      FixedStepSizeIntegrator::ReadFromMessage(extension.integrator());
+
+  return integrator.ReadFromMessage(extension, problem, append_state, step);
 }
 
 template<typename DifferentialEquation>
@@ -98,6 +148,12 @@ FixedStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     : Integrator<ODE>::Instance(problem, std::move(append_state)),
       step_(step) {
   CHECK_NE(Time(), step_);
+}
+
+template<typename DifferentialEquation>
+void FixedStepSizeIntegrator<DifferentialEquation>::WriteToMessage(
+    not_null<serialization::FixedStepSizeIntegrator*> const message) const {
+  message->set_kind(kind_);
 }
 
 template<typename DifferentialEquation>
@@ -125,6 +181,22 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
     case FSSI::OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13:
       return OkunborSkeel1994Order6Method13<
                  typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_1999_ORDER_8A:
+      return Quinlan1999Order8A<typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_1999_ORDER_8B:
+      return Quinlan1999Order8B<typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_8:
+      return QuinlanTremaine1990Order8<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_10:
+      return QuinlanTremaine1990Order10<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_12:
+      return QuinlanTremaine1990Order12<
+                 typename DifferentialEquation::Position>();
+    case FSSI::QUINLAN_TREMAINE_1990_ORDER_14:
+      return QuinlanTremaine1990Order14<
+                 typename DifferentialEquation::Position>();
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();
@@ -132,10 +204,49 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
 }
 
 template<typename DifferentialEquation>
-AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
-    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
+    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
-template <typename DifferentialEquation>
+template<typename DifferentialEquation>
+void AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::WriteToMessage(
+    not_null<serialization::IntegratorInstance*> message) const {
+  Integrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension = message->MutableExtension(
+      serialization::AdaptiveStepSizeIntegratorInstance::extension);
+  adaptive_step_size_.WriteToMessage(extension->mutable_adaptive_step_size());
+  integrator().WriteToMessage(extension->mutable_integrator());
+}
+
+template<typename DifferentialEquation>
+not_null<std::unique_ptr<typename Integrator<DifferentialEquation>::Instance>>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::ReadFromMessage(
+    serialization::IntegratorInstance const& message,
+    ODE const& equation,
+    AppendState const& append_state,
+    typename AdaptiveStepSize<ODE>::ToleranceToErrorRatio const&
+        tolerance_to_error_ratio) {
+  auto const current_state =
+      ODE::SystemState::ReadFromMessage(message.current_state());
+  IntegrationProblem<ODE> problem;
+  problem.equation = equation;
+  problem.initial_state = &current_state;
+
+  CHECK(message.HasExtension(
+      serialization::AdaptiveStepSizeIntegratorInstance::extension))
+      << "Not an adaptive-step integrator instance " << message.DebugString();
+  auto const& extension = message.GetExtension(
+      serialization::AdaptiveStepSizeIntegratorInstance::extension);
+  auto adaptive_step_size =
+      AdaptiveStepSize<ODE>::ReadFromMessage(extension.adaptive_step_size());
+  adaptive_step_size.tolerance_to_error_ratio = tolerance_to_error_ratio;
+  AdaptiveStepSizeIntegrator const& integrator =
+      AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
+
+  return integrator.ReadFromMessage(
+      extension, problem, append_state, adaptive_step_size);
+}
+
+template<typename DifferentialEquation>
 AdaptiveStepSizeIntegrator<DifferentialEquation>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
@@ -167,6 +278,10 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
       base::noreturn();
   }
 }
+
+template<typename DifferentialEquation>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
+    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 }  // namespace internal_ordinary_differential_equations
 }  // namespace integrators

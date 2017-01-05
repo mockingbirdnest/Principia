@@ -131,10 +131,29 @@ Instance::Solve(Instant const& t_final) {
 
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
+SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                      evaluations, composition> const&
+SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                      evaluations, composition>::
+Instance::integrator() const {
+  return integrator_;
+}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                            evaluations, composition>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {}
+    not_null<serialization::IntegratorInstance*> message) const {
+  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
+  auto* const extension =
+      message
+          ->MutableExtension(
+              serialization::FixedStepSizeIntegratorInstance::extension)
+          ->MutableExtension(
+              serialization::SymplecticRungeKuttaNystromIntegratorInstance::
+                  extension);
+}
 
 template<typename Position, int order_, bool time_reversible_, int evaluations_,
          CompositionMethod composition_>
@@ -206,10 +225,28 @@ not_null<std::unique_ptr<typename Integrator<
 SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                       evaluations, composition>::NewInstance(
     IntegrationProblem<ODE> const& problem,
-    typename Integrator<ODE>::AppendState const& append_state,
+    AppendState const& append_state,
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
+  return std::unique_ptr<typename Integrator<ODE>::Instance>(
+      new Instance(problem, append_state, step, *this));
+}
+
+template<typename Position, int order, bool time_reversible, int evaluations,
+         CompositionMethod composition>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                      evaluations, composition>::
+ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
+                IntegrationProblem<ODE> const& problem,
+                AppendState const& append_state,
+                Time const& step) const {
+  CHECK(message.HasExtension(
+      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
+      << message.DebugString();
+
   return std::unique_ptr<typename Integrator<ODE>::Instance>(
       new Instance(problem, append_state, step, *this));
 }
