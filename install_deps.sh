@@ -23,7 +23,7 @@ else
 fi
 
 LD_FLAGS="$C_FLAGS -stdlib=libc++"
-CXX_FLAGS="-std=c++1y $LD_FLAGS"
+CXX_FLAGS="-std=c++14 $LD_FLAGS"
 
 mkdir -p deps
 cd deps
