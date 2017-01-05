@@ -408,8 +408,12 @@ public partial class PrincipiaPluginAdapter
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
                                  SetBodyFramesAndPrecalculateVessels);
+    // Timing3, 7.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
+                                 ReportNonConservativeForces);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -696,23 +700,10 @@ public partial class PrincipiaPluginAdapter
     }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      double plugin_time = plugin_.CurrentTime();
-      if (plugin_time > universal_time) {
-        // TODO(Egg): Make this resistant to bad floating points up to 2ULPs,
-        // and make it fatal again.
-        Log.Error("Closed Timelike Curve: " +
-                  plugin_time + " > " + universal_time +
-                  " plugin-universal=" + (plugin_time - universal_time));
-        time_is_advancing_ = false;
-        return;
-      } else if (plugin_time == universal_time) {
-        time_is_advancing_ = false;
-        return;
-      }
-      time_is_advancing_ = true;
       plugin_.SetMainBody(
           FlightGlobals.currentMainBody.GetValueOrDefault(
               FlightGlobals.GetHomeBody()).flightGlobalsIndex);
+
       if (has_inertial_physics_bubble_in_space() &&
           (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
            previous_bubble_reference_body_ == null)) {
@@ -745,45 +736,12 @@ public partial class PrincipiaPluginAdapter
             active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
       }
-      // The collisions are reported and stored into |currentCollisions| after
-      // |FixedUpdate|; in |FixedUpdate|, these are the collisions that occurred
-      // during the preceding step, which is why we report them before calling
-      // |AdvanceTime|.
-      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-        if (plugin_.HasVessel(vessel1.id.ToString())) {
-          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
-            var vessel2 = vessel1.evaController.LadderPart.vessel;
-            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-              plugin_.ReportCollision(vessel1.id.ToString(),
-                                      vessel2.id.ToString());
-            }
-          }
-          foreach (Part part in vessel1.parts) {
-            foreach (var collider in part.currentCollisions) {
-              var vessel2 =
-                  collider.gameObject.GetComponentUpwards<Part>().vessel;
-              if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-                plugin_.ReportCollision(vessel1.id.ToString(),
-                                        vessel2.id.ToString());
-              }
-            }
-          }
-        }
-      }
-      plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-        // TODO(egg): Tell the plugin about the vessel's position, so that its
-        // displacement from the centre of mass of its |PileUp| may be computed
-        // and used to set its position below.
-        foreach (Part part in vessel.parts) {
-          // TODO(egg): Tell the plugin about part.force;
-        }
-      }
+
       if (ready_to_draw_active_vessel_trajectory) {
         plugin_.UpdatePrediction(active_vessel.id.ToString());
       }
-      plugin_.ForgetAllHistoriesBefore(
-          universal_time - history_lengths_[history_length_index_]);
+      plugin_.ForgetAllHistoriesBefore(universal_time -
+                                       history_lengths_[history_length_index_]);
       if (FlightGlobals.currentMainBody != null) {
         FlightGlobals.currentMainBody.rotationPeriod =
             plugin_.CelestialRotationPeriod(
@@ -802,17 +760,23 @@ public partial class PrincipiaPluginAdapter
       if (!plugin_.PhysicsBubbleIsEmpty()) {
         Vector3d displacement_offset =
             (Vector3d)plugin_.PhysicsBubbleDisplacementCorrection(
-                          (XYZ)Planetarium.fetch.Sun.position);
+                (XYZ)Planetarium.fetch.Sun.position);
         Vector3d velocity_offset =
             (Vector3d)plugin_.PhysicsBubbleVelocityCorrection(
-                          active_vessel.orbit.referenceBody.flightGlobalsIndex);
+                active_vessel.orbit.referenceBody.flightGlobalsIndex);
         if (krakensbane_ == null) {
           krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
         }
         FloatingOrigin.SetOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
-      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
+
+      // Now we let the game and Unity do their thing. among other things,
+      // the FashionablyLate callbacks, including ReportNonConservativeForces,
+      // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
+      // and eventually the physics simulation.
+      StartCoroutine(
+          AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation(universal_time));
     }
   }
 
@@ -828,14 +792,101 @@ public partial class PrincipiaPluginAdapter
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
                                     SetBodyFramesAndPrecalculateVessels);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
+                                    ReportNonConservativeForces);
   }
 
   #endregion
 
+  private System.Collections.IEnumerator
+  AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
+     yield return new UnityEngine.WaitForFixedUpdate();
+     // Unity's physics has just finished doing its thing.  If we correct the
+     // positions here, nobody will know that they're not the ones obtained by
+     // Unity.  Careful however: while the positions here are those of the next
+     // step, the Planetarium hasn't run yet, and still has its old time.
+     universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+
+     // The collisions are reported and stored into |currentCollisions| in
+     // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
+     // Here, the |currentCollisions| are the collisions that occurred in the
+     // physics simulation, which is why we report them before calling
+     // |AdvanceTime|.
+     foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
+       if (plugin_.HasVessel(vessel1.id.ToString())) {
+         if (vessel1.isEVA && vessel1.evaController.OnALadder) {
+           var vessel2 = vessel1.evaController.LadderPart.vessel;
+           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+             plugin_.ReportCollision(vessel1.id.ToString(),
+                                     vessel2.id.ToString());
+           }
+         }
+         foreach (Part part in vessel1.parts) {
+           foreach (var collider in part.currentCollisions) {
+             var vessel2 =
+                 collider.gameObject.GetComponentUpwards<Part>().vessel;
+             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+               plugin_.ReportCollision(vessel1.id.ToString(),
+                                       vessel2.id.ToString());
+             }
+           }
+         }
+       }
+     }
+
+     double plugin_time = plugin_.CurrentTime();
+     if (plugin_time > universal_time) {
+       // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
+       // and make it fatal again.
+       Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
+                 universal_time + " plugin-universal=" +
+                 (plugin_time - universal_time));
+       time_is_advancing_ = false;
+       yield break;
+     } else if (plugin_time == universal_time) {
+       time_is_advancing_ = false;
+       yield break;
+     }
+     time_is_advancing_ = true;
+
+     plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+     is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
+
+     // We don't want to do too many things here, since all the KSP classes
+     // still think they're in the preceding step.  We only nudge the Unity
+     // transforms of loaded vessels & their parts.
+     // TODO(egg): pass vessel positions to the plugin, then get the nudged
+     // positions and call Vessel.SetPosition.  Hopefully that will be enough.
+   }
+
   private void SetBodyFramesAndPrecalculateVessels() {
     SetBodyFrames();
-    foreach (var Vessel in FlightGlobals.Vessels) {
-      Vessel.precalc.FixedUpdate();
+    // Unfortunately there is no way to get scheduled between Planetarium and
+    // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
+    // body frames for our weird tilt, and run VesselPrecalculate again.  Sob.
+    foreach (var vessel in FlightGlobals.Vessels) {
+      vessel.precalc.FixedUpdate();
+      // TODO(egg): either set the following from accelerations known to the
+      // plugin combined with measurements for accelerations due to interactions
+      // inside a PileUp, or set vessel.graviticAcceleration around the call
+      // to precalc.FixedUpdate above so that vessel.UpdateAcceleration sets
+      // them to the right thing.
+      // vessel.acceleration = ???;
+      // vessel.acceleration_immediate = ???;
+      // vessel.geeForce = ???;
+      // vessel.geeForce_immediate = ???;
+    }
+  }
+
+ private
+  void ReportNonConservativeForces() {
+    // We fetch the forces from the census of nonconservatives here;
+    // part.forces, part.force, and part.torque are cleared by the/
+    // FlightIntegrator's FixedUpdate (while we are yielding).
+    foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+      foreach (Part part in vessel.parts) {
+        // TODO(egg): Tell the plugin about part.force, part.forces
+      }
     }
   }
 
