@@ -2,6 +2,14 @@ CXX := clang++
 
 VERSION_HEADER := base/version.generated.h
 
+#TESTING CRAP REMOVE
+b.test : a.test
+	echo "b?"
+	if test -e b.test; then echo "b exists"; else touch b.test; echo "made b"; fi
+c.test : b.test
+	echo "making c"
+	touch c.test
+
 PLUGIN_TRANSLATION_UNITS      := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS := $(wildcard ksp_plugin_test/*_test.cpp)
 JOURNAL_TRANSLATION_UNITS     := $(wildcard journal/*.cpp)
@@ -42,7 +50,7 @@ DEP_DIR := deps
 LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I$(DEP_DIR)/googlemock/ -I$(DEP_DIR)/googletest/ 
 INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional -I$(DEP_DIR)/eggsperimental_filesystem/
-SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic \
+SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer -Wall -Wpedantic \
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
 	-DNDEBUG
@@ -72,21 +80,21 @@ $(JOURNAL_DEPENDENCIES)     : | $(GENERATED_PROFILES)
 
 $(NON_TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
-	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $^ > $@.temp
+	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
 $(TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
-	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $(TEST_INCLUDES) $^ > $@.temp
+	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $(TEST_INCLUDES) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
 TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 NON_TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
 
-#include $(NON_TEST_DEPENDENCIES)
-#include $(TEST_DEPENDENCIES)
+include $(NON_TEST_DEPENDENCIES)
+include $(TEST_DEPENDENCIES)
 
 TOOLS_BIN := $(BIN_DIRECTORY)/tools
 TOOLS_BIN: $(TOOLS_OBJECTS) $(PROTO_OBJECTS)

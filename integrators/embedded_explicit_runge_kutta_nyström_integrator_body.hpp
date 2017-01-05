@@ -102,29 +102,33 @@ Instance::Solve(Instant const& t_final) {
   auto const& b_prime = integrator_.b_prime_;
   auto const& c = integrator_.c_;
 
-  // |current_state_| gets updated as the integration progresses to allow
+  auto& current_state = this->current_state_;
+  auto& adaptive_step_size = this->adaptive_step_size;
+  auto const& equation = this->equation;
+
+  // |current_state| gets updated as the integration progresses to allow
   // restartability.
 
   // State before the last, truncated step.
   std::experimental::optional<typename ODE::SystemState> final_state;
 
   // Argument checks.
-  int const dimension = current_state_.positions.size();
+  int const dimension = current_state.positions.size();
   Sign const integration_direction =
-      Sign(adaptive_step_size_.first_time_step);
+      Sign(adaptive_step_size.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(current_state_.time.value, t_final);
+    CHECK_LT(current_state.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(current_state_.time.value, t_final);
+    CHECK_GT(current_state.time.value, t_final);
   }
 
   // Time step.
-  Time h = adaptive_step_size_.first_time_step;
+  Time h = adaptive_step_size.first_time_step;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
-  DoublePrecision<Instant>& t = current_state_.time;
+  DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment (high-order).
   std::vector<Displacement> Δq_hat(dimension);
@@ -132,10 +136,10 @@ Instance::Solve(Instant const& t_final) {
   std::vector<Velocity> Δv_hat(dimension);
   // Current position.  This is a non-const reference whose purpose is to make
   // the equations more readable.
-  std::vector<DoublePrecision<Position>>& q_hat = current_state_.positions;
+  std::vector<DoublePrecision<Position>>& q_hat = current_state.positions;
   // Current velocity.  This is a non-const reference whose purpose is to make
   // the equations more readable.
-  std::vector<DoublePrecision<Velocity>>& v_hat = current_state_.velocities;
+  std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
 
   // Difference between the low- and high-order approximations.
   typename ODE::SystemStateError error_estimate;
@@ -173,7 +177,7 @@ Instance::Solve(Instant const& t_final) {
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
-      h *= adaptive_step_size_.safety_factor *
+      h *= adaptive_step_size.safety_factor *
                std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
@@ -192,7 +196,7 @@ Instance::Solve(Instant const& t_final) {
         // The chosen step size will overshoot.  Clip it to just reach the end,
         // and terminate if the step is accepted.
         h = time_to_end;
-        final_state = current_state_;
+        final_state = current_state;
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
@@ -206,7 +210,7 @@ Instance::Solve(Instant const& t_final) {
           q_stage[k] = q_hat[k].value +
                            h * (c[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
         }
-        equation_.compute_acceleration(t_stage, q_stage, g[i]);
+        equation.compute_acceleration(t_stage, q_stage, g[i]);
       }
 
       // Increment computation and step size control.
@@ -233,7 +237,7 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
       tolerance_to_error_ratio =
-          adaptive_step_size_.tolerance_to_error_ratio(h, error_estimate);
+          adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     if (first_same_as_last) {
@@ -248,12 +252,12 @@ Instance::Solve(Instant const& t_final) {
       q_hat[k].Increment(Δq_hat[k]);
       v_hat[k].Increment(Δv_hat[k]);
     }
-    append_state_(current_state_);
+    append_state_(current_state);
     ++step_count;
-    if (step_count == adaptive_step_size_.max_steps && !at_end) {
+    if (step_count == adaptive_step_size.max_steps && !at_end) {
       return Status(termination_condition::ReachedMaximalStepCount,
                     "Reached maximum step count " +
-                        std::to_string(adaptive_step_size_.max_steps) +
+                        std::to_string(adaptive_step_size.max_steps) +
                         " at time " + DebugString(t.value) +
                         "; requested t_final is " + DebugString(t_final) +
                         ".");
@@ -261,7 +265,7 @@ Instance::Solve(Instant const& t_final) {
   }
   // The resolution is restartable from the last non-truncated state.
   CHECK(final_state);
-  current_state_ = *final_state;
+  current_state = *final_state;
   return Status(termination_condition::Done, "");
 }
 

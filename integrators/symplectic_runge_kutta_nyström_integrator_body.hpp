@@ -32,27 +32,32 @@ Instance::Solve(Instant const& t_final) {
   auto const& b = integrator_.b_;
   auto const& c = integrator_.c_;
 
-  // |current_state_| is updated as the integration progresses to allow
+  auto& current_state = this->current_state_;
+  auto& append_state = this->append_state_;
+  auto const& equation = this->equation_;
+  auto const& step = this->step_;
+
+  // |current_state| is updated as the integration progresses to allow
   // restartability.
 
   // Argument checks.
-  int const dimension = current_state_.positions.size();
-  CHECK_NE(Time(), step_);
-  Sign const integration_direction = Sign(step_);
+  int const dimension = current_state.positions.size();
+  CHECK_NE(Time(), step);
+  Sign const integration_direction = Sign(step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(current_state_.time.value, t_final);
+    CHECK_LT(current_state.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(current_state_.time.value, t_final);
+    CHECK_GT(current_state.time.value, t_final);
   }
 
   // Time step.
-  Time const& h = step_;
+  Time const& h = step;
   Time const abs_h = integration_direction * h;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
-  DoublePrecision<Instant>& t = current_state_.time;
+  DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment.
   std::vector<Displacement> Δq(dimension);
@@ -60,10 +65,10 @@ Instance::Solve(Instant const& t_final) {
   std::vector<Velocity> Δv(dimension);
   // Current position.  This is a non-const reference whose purpose is to make
   // the equations more readable.
-  std::vector<DoublePrecision<Position>>& q = current_state_.positions;
+  std::vector<DoublePrecision<Position>>& q = current_state.positions;
   // Current velocity.  This is a non-const reference whose purpose is to make
   // the equations more readable.
-  std::vector<DoublePrecision<Velocity>>& v = current_state_.velocities;
+  std::vector<DoublePrecision<Velocity>>& v = current_state.velocities;
 
   // Current Runge-Kutta-Nyström stage.
   std::vector<Position> q_stage(dimension);
@@ -83,7 +88,7 @@ Instance::Solve(Instant const& t_final) {
     for (int k = 0; k < dimension; ++k) {
       q_stage[k] = q[k].value;
     }
-    equation_.compute_acceleration(t.value, q_stage, g);
+    equation.compute_acceleration(t.value, q_stage, g);
   }
 
   while (abs_h <= Abs((t_final - t.value) - t.error)) {
@@ -105,7 +110,7 @@ Instance::Solve(Instant const& t_final) {
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      equation_.compute_acceleration(t.value + c[i] * h, q_stage, g);
+      equation.compute_acceleration(t.value + c[i] * h, q_stage, g);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b[i] * g[k];
@@ -123,7 +128,7 @@ Instance::Solve(Instant const& t_final) {
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
-    append_state_(current_state_);
+    append_state(current_state);
   }
 
   return Status::OK;

@@ -31,6 +31,11 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   auto const& β_numerator = integrator_.β_numerator_;
   auto const& β_denominator = integrator_.β_denominator_;
 
+  auto& current_state = this->current_state_;
+  auto& append_state = this->append_state_;
+  auto const& step = this->step_;
+  auto const& equation = this->equation_;
+
   if (previous_steps_.size() < order_ - 1) {
     StartupSolve(t_final);
   }
@@ -39,8 +44,8 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   int const dimension = previous_steps_.back().displacements.size();
 
   // Time step.
-  CHECK_LT(Time(), step_);
-  Time const& h = step_;
+  CHECK_LT(Time(), step);
+  Time const& h = step;
   // Current time.
   DoublePrecision<Instant> t = previous_steps_.back().time;
   // Order.
@@ -114,17 +119,17 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
       DoublePosition const current_position =
           DoublePosition() + current_displacement;
       positions[d] = current_position.value;
-      current_state_.positions[d] = current_position;
+      current_state.positions[d] = current_position;
     }
-    equation_.compute_acceleration(t.value,
+    equation.compute_acceleration(t.value,
                                    positions,
                                    current_step.accelerations);
 
     VelocitySolve(dimension);
 
     // Inform the caller of the new state.
-    current_state_.time = t;
-    append_state_(current_state_);
+    current_state.time = t;
+    append_state(current_state);
   }
 
   return Status::OK;
@@ -160,7 +165,7 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
         not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                      Step*> const message) const {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
-      ODE::Acceleration,
+      typename ODE::Acceleration,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::
           Acceleration>;
   for (auto const& displacement : displacements) {
@@ -180,7 +185,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
         serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
             message) {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
-      ODE::Acceleration,
+      typename ODE::Acceleration,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::
           Acceleration>;
   Step step;
@@ -208,7 +213,9 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
                                              step),
       integrator_(integrator) {
   previous_steps_.emplace_back();
-  FillStepFromSystemState(equation_, current_state_, previous_steps_.back());
+  FillStepFromSystemState(this->equation_,
+                          this->current_state_,
+                          this->previous_steps_.back());
 }
 
 template<typename Position, int order_>
@@ -227,7 +234,12 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::StartupSolve(Instant const& t_final) {
-  Time const startup_step = step_ / startup_step_divisor;
+  auto& current_state = this->current_state_;
+  auto& append_state = this->append_state_;
+  auto const& step = this->step_;
+  auto const& equation = this->equation_;
+
+  Time const startup_step = step / startup_step_divisor;
 
   CHECK(!previous_steps_.empty());
   CHECK_LT(previous_steps_.size(), order_);
@@ -238,28 +250,28 @@ Instance::StartupSolve(Instant const& t_final) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
         if (previous_steps_.size() < order_) {
-          current_state_ = state;
+          current_state = state;
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
           if (++startup_step_index % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order_);
             previous_steps_.emplace_back();
-            append_state_(state);
+            append_state(state);
             FillStepFromSystemState(
-                equation_, current_state_, previous_steps_.back());
+                equation, current_state, previous_steps_.back());
           }
         }
       };
 
   auto const startup_instance =
-      integrator_.startup_integrator_.NewInstance({equation_, &current_state_},
+      integrator_.startup_integrator_.NewInstance({equation, &current_state},
                                                   startup_append_state,
                                                   startup_step);
 
   startup_instance->Solve(
-      std::min(current_state_.time.value +
-                   (order_ - previous_steps_.size()) * step_ + step_ / 2.0,
+      std::min(current_state.time.value +
+                   (order_ - previous_steps_.size()) * step + step / 2.0,
                t_final));
 
   CHECK_LE(previous_steps_.size(), order_);
@@ -272,8 +284,11 @@ Instance::VelocitySolve(int const dimension) {
   using Acceleration = typename ODE::Acceleration;
   auto const& velocity_integrator = integrator_.velocity_integrator_;
 
+  auto const& current_state = this->current_state_;
+  auto const& step = this->step_;
+
   for (int d = 0; d < dimension; ++d) {
-    DoublePrecision<Velocity>& velocity = current_state_.velocities[d];
+    DoublePrecision<Velocity>& velocity = current_state.velocities[d];
     auto it = previous_steps_.rbegin();
     Acceleration weighted_acceleration;
     for (int i = 0; i < velocity_integrator.numerators.size; ++i) {
@@ -281,7 +296,7 @@ Instance::VelocitySolve(int const dimension) {
       weighted_acceleration += numerator * it->accelerations[d];
       ++it;
     }
-    velocity.Increment(step_ * weighted_acceleration /
+    velocity.Increment(step * weighted_acceleration /
                        velocity_integrator.denominator);
   }
 }
@@ -350,7 +365,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::ReadFromMessage(
   auto const& extension = message.GetExtension(
       serialization::SymmetricLinearMultistepIntegratorInstance::extension);
 
-  std::list<Instance::Step> previous_steps;
+  std::list<typename Instance::Step> previous_steps;
   for (auto const& previous_step : extension.previous_steps()) {
     previous_steps.push_back(Instance::Step::ReadFromMessage(previous_step));
   }
