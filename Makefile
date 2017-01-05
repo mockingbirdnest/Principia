@@ -10,15 +10,16 @@ c.test : b.test
 	echo "making c"
 	touch c.test
 
-PLUGIN_TRANSLATION_UNITS      := $(wildcard ksp_plugin/*.cpp)
-PLUGIN_TEST_TRANSLATION_UNITS := $(wildcard ksp_plugin_test/*_test.cpp) $(wildcard ksp_plugin_test/mock_*.cpp)
-JOURNAL_TRANSLATION_UNITS     := $(wildcard journal/*.cpp)
-TEST_TRANSLATION_UNITS        := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
-TOOLS_TRANSLATION_UNITS       := $(wildcard tools/*.cpp)
-NON_TEST_TRANSLATION_UNITS    := $(filter-out $(TEST_TRANSLATION_UNITS), $(wildcard */*.cpp))
-PROTO_FILES                   := $(wildcard */*.proto)
-PROTO_TRANSLATION_UNITS       := $(PROTO_FILES:.proto=.pb.cc)
-PROTO_HEADERS                 := $(PROTO_FILES:.proto=.pb.h)
+PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
+PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
+JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
+TEST_OR_MOCK_TRANSLATION_UNITS := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
+#UNIT_TEST_TRANSLATION_UNITS   := $(wildcard */*_test.cpp)
+TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
+NON_TEST_TRANSLATION_UNITS     := $(filter-out $(TEST_TRANSLATION_UNITS), $(wildcard */*.cpp))
+PROTO_FILES                    := $(wildcard */*.proto)
+PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
+PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
 
 GENERATED_PROFILES :=                    \
 	journal/profiles.generated.h     \
@@ -51,70 +52,6 @@ SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit
 
 COMPILER_OPTIONS = -c $(SHARED_ARGS) $(INCLUDES)
 
-BUILD_DIRECTORY := build/
-BIN_DIRECTORY   := bin/
-
-# We don't do dependency resolution on the protos; we compile them all at once.
-$(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
-	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $^ --cpp_out=.
-
-TEST_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.d))
-TOOLS_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
-NON_TEST_DEPENDENCIES    := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.d))
-PLUGIN_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
-PLUGIN_TEST_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
-JOURNAL_DEPENDENCIES     := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
-
-# As a prerequisite for listing the includes of things that depend on
-# generated headers, we must generate said code.
-# Note that the prerequisites for dependency files are order-only: once
-# we have the dependency files, their own actual dependency on generated headers
-# and on the translation unit will be listed there and recomputed as needed.
-$(PLUGIN_DEPENDENCIES)      : | $(GENERATED_PROFILES)
-$(PLUGIN_TEST_DEPENDENCIES) : | $(GENERATED_PROFILES)
-$(JOURNAL_DEPENDENCIES)     : | $(GENERATED_PROFILES)
-
-$(NON_TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
-	@mkdir -p $(@D)
-	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
-	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
-	rm -f $@.temp
-
-$(TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
-	@mkdir -p $(@D)
-	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
-	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
-	rm -f $@.temp
-
-TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
-NON_TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
-TOOLS_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
-PROTO_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
-
-include $(NON_TEST_DEPENDENCIES)
-include $(TEST_DEPENDENCIES)
-
-TOOLS_BIN := $(BIN_DIRECTORY)tools
-
-$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
-	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBS)
-
-$(GENERATED_PROFILES) : $(TOOLS_BIN)
-	$^ generate_profiles
-
-$(TEST_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cpp
-	@mkdir -p $(@D)
-	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
-
-$(NON_TEST_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cpp
-	@mkdir -p $(@D)
-	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
-
-$(PROTO_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cc
-	@mkdir -p $(@D)
-	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
-
 # detect OS
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -131,8 +68,96 @@ ifeq ($(UNAME_S),Darwin)
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
 endif
 
+########## Dependency resolution
+
+BUILD_DIRECTORY := build/
+
+TEST_OR_MOCK_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
+TOOLS_DEPENDENCIES               := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
+NON_TEST_DEPENDENCIES            := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_DEPENDENCIES              := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_TEST_DEPENDENCIES         := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
+JOURNAL_DEPENDENCIES             := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
+
+# As a prerequisite for listing the includes of things that depend on
+# generated headers, we must generate said code.
+# Note that the prerequisites for dependency files are order-only, for
+# bootstrapping: once we have the dependency files, their own actual dependency
+# on generated headers and on the translation unit will be listed there and
+# recomputed as needed.
+$(PLUGIN_DEPENDENCIES)              : | $(GENERATED_PROFILES)
+$(PLUGIN_TEST_DEPENDENCIES)         : | $(GENERATED_PROFILES)
+$(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
+
+$(NON_TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+	@mkdir -p $(@D)
+	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
+	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	rm -f $@.temp
+
+$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+	@mkdir -p $(@D)
+	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
+	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	rm -f $@.temp
+
+include $(NON_TEST_DEPENDENCIES)
+include $(TEST_DEPENDENCIES)
+
+########## Compilation
+
+##### C# and C++ code generation
+
+#TODO(egg): version header here
+
+# We don't do dependency resolution on the protos; we compile them all at once.
+$(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
+	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $^ --cpp_out=.
+
+$(GENERATED_PROFILES) : $(TOOLS_BIN)
+	$^ generate_profiles
+
+##### C++ compilation
+
+OBJ_DIRECTORY := obj/
+
+TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
+NON_TEST_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
+TOOLS_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
+
+$(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
+
+$(NON_TEST_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
+
+$(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
+
+########## Linkage
+
+BIN_DIRECTORY   := bin/
+
+##### tools
+
+TOOLS_BIN := $(BIN_DIRECTORY)tools
+
+$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBS)
+
+##### unit tests
+
+UNIT_TEST_OBJECTS := $(wildcard */*_test.cpp)
+
+
 CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
+
 
 
 .PHONY: all adapter lib tests tools check plugin run_tests clean
