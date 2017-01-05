@@ -331,8 +331,8 @@ NewInstance(IntegrationProblem<ODE> const& problem,
             AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
-      problem, append_state, adaptive_step_size, *this));
+  return std::unique_ptr<Instance>(
+      new Instance(problem, append_state, adaptive_step_size, *this));
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,

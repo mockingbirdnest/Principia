@@ -332,7 +332,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
     Time const& step) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<typename Integrator<ODE>::Instance>(
+  return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));
 }
 
