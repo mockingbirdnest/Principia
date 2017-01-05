@@ -15,7 +15,7 @@ PLUGIN_TEST_TRANSLATION_UNITS := $(wildcard ksp_plugin_test/*_test.cpp)
 JOURNAL_TRANSLATION_UNITS     := $(wildcard journal/*.cpp)
 TEST_TRANSLATION_UNITS        := $(wildcard */*_test.cpp)
 TOOLS_TRANSLATION_UNITS       := $(wildcard tools/*.cpp)
-NON_TEST_TRANSLATION_UNITS    := $(filter-out $(wildcard */*.cpp), $(TEST_TRANSLATION_UNITS))
+NON_TEST_TRANSLATION_UNITS    := $(filter-out $(TEST_TRANSLATION_UNITS), $(wildcard */*.cpp))
 PROTO_FILES                   := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS       := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                 := $(PROTO_FILES:.proto=.pb.h)
@@ -27,9 +27,6 @@ GENERATED_PROFILES :=                    \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
 
-STATUS_OBJECTS := base/status.o
-PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
-TOOLS_OBJECTS := $(TOOLS_TRANSLATION_UNITS:.cpp=.o)
 TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
 TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
@@ -39,9 +36,6 @@ ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj
 ADAPTER_CONFIGURATION := Debug
 FINAL_PRODUCTS_DIR := Debug
 ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
-
-TOOLS_DIR := tools/
-TOOLS_BIN := tools/tools
 
 LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
 LIB := $(LIB_DIR)/principia.so
@@ -54,6 +48,8 @@ SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
 	-DNDEBUG
+
+COMPILER_OPTIONS = -c $(SHARED_ARGS) $(INCLUDES)
 
 BUILD_DIRECTORY := build/
 BIN_DIRECTORY   := bin/
@@ -80,36 +76,44 @@ $(JOURNAL_DEPENDENCIES)     : | $(GENERATED_PROFILES)
 
 $(NON_TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
-	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $< > $@.temp
+	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
 $(TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
-	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $(TEST_INCLUDES) $< > $@.temp
+	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
 TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 NON_TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
+TOOLS_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+PROTO_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 
 include $(NON_TEST_DEPENDENCIES)
 include $(TEST_DEPENDENCIES)
 
-TOOLS_BIN := $(BIN_DIRECTORY)/tools
-TOOLS_BIN: $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
+TOOLS_BIN := $(BIN_DIRECTORY)tools
+
+$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ -o $(TOOLS_BIN) $(LIBS)
+	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBS)
+
 $(GENERATED_PROFILES) : $(TOOLS_BIN)
 	$^ generate_profiles
 
 $(TEST_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) $(SHARED_ARGS) $(INCLUDES) $(TEST_INCLUDES) $^ -o $@
+	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
 $(NON_TEST_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) $(SHARED_ARGS) $(INCLUDES) $^ -o $@
+	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
+
+$(PROTO_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
 
 # detect OS
 UNAME_S := $(shell uname -s)
@@ -152,8 +156,8 @@ check: run_tests
 $(ADAPTER): $(GENERATED_SOURCES)
 	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
-$(TOOLS_BIN): $(PROTO_OBJECTS) $(TOOLS_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS) -o $(TOOLS_BIN) $(LIBS)
+#$(TOOLS_BIN): $(PROTO_OBJECTS) $(TOOLS_OBJECTS) $(STATUS_OBJECTS)
+#	$(CXX) $(LDFLAGS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS) -o $(TOOLS_BIN) $(LIBS)
 
 .SECONDEXPANSION:
 $(LIB): $(PROTO_OBJECTS) $$(ksp_plugin_objects) $$(journal_objects) $(LIB_DIR) $(STATUS_OBJECTS)
