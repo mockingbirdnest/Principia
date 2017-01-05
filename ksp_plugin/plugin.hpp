@@ -13,7 +13,6 @@
 #include "base/monostable.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
-#include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"

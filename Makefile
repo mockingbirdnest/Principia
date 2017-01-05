@@ -11,9 +11,9 @@ c.test : b.test
 	touch c.test
 
 PLUGIN_TRANSLATION_UNITS      := $(wildcard ksp_plugin/*.cpp)
-PLUGIN_TEST_TRANSLATION_UNITS := $(wildcard ksp_plugin_test/*_test.cpp)
+PLUGIN_TEST_TRANSLATION_UNITS := $(wildcard ksp_plugin_test/*_test.cpp) $(wildcard ksp_plugin_test/mock_*.cpp)
 JOURNAL_TRANSLATION_UNITS     := $(wildcard journal/*.cpp)
-TEST_TRANSLATION_UNITS        := $(wildcard */*_test.cpp)
+TEST_TRANSLATION_UNITS        := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
 TOOLS_TRANSLATION_UNITS       := $(wildcard tools/*.cpp)
 NON_TEST_TRANSLATION_UNITS    := $(filter-out $(TEST_TRANSLATION_UNITS), $(wildcard */*.cpp))
 PROTO_FILES                   := $(wildcard */*.proto)
@@ -172,8 +172,8 @@ $(VERSION_HEADER): .git
 $(GENERATED_SOURCES): $(TOOLS_BIN) serialization/journal.proto
 	tools/tools generate_profiles
 
-%.pb.cc %.pb.h: %.proto
-	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
+#%.pb.cc %.pb.h: %.proto
+#	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
 
 %.pb.o: %.pb.cc $(PROTO_HEADERS)
 	$(CXX) $(CXXFLAGS) $< -o $@ 
