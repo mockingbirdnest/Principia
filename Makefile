@@ -23,7 +23,7 @@ PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
 
 DEP_DIR := deps/
 
-GMOCK_TRANSLATION_UNITS        :=             \
+GMOCK_TRANSLATION_UNITS :=                     \
 	$(DEP_DIR)googlemock/src/gmock-all.cc  \
 	$(DEP_DIR)googlemock/src/gmock_main.cc \
 	$(DEP_DIR)googletest/src/gtest-all.cc
@@ -35,8 +35,8 @@ GENERATED_PROFILES :=                    \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
 
-TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
-TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
+#TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
+#TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
 PROJECT_DIR := ksp_plugin_adapter/
 SOLUTION_DIR := ./
@@ -170,8 +170,14 @@ $(UNIT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
+$(BIN_DIRECTORY)test : $(UNIT_TEST_OBJECTS) $(GMOCK_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+
 CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
+
+
 
 
 
@@ -244,29 +250,29 @@ run_tests: tests
 	-testing_utilities/test
 	-numerics/test
 
-TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
+#TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
 
-GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gmock_main.cc $(DEP_DIR)/googletest/src/gtest-all.cc
-GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
+#GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gmock_main.cc $(DEP_DIR)/googletest/src/gtest-all.cc
+#GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $(@D)/*.cpp))
-ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
-journal_objects = journal/profiles.o journal/recorder.o
+#ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
+#journal_objects = journal/profiles.o journal/recorder.o
 
 # We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin
 # and journal.  The other tests don't do this.
-.SECONDEXPANSION:
-ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+#.SECONDEXPANSION:
+#ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
+#	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 # We cannot link the player test because we do not have the benchmarks.  We only build the recorder test.
-.SECONDEXPANSION:
-journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journal/recorder_test.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+#.SECONDEXPANSION:
+#journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journal/recorder_test.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
+#	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
-.SECONDEXPANSION:
-%/test: $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+#.SECONDEXPANSION:
+#%/test: $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
+#	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
 
 ##### CLEAN #####
 clean:
