@@ -21,10 +21,12 @@ PROTO_FILES                    := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
 
-GMOCK_TRANSLATION_UNITS        :=               \
-	$(DEP_DIR)/googlemock/src/gmock-all.cc  \
-	$(DEP_DIR)/googlemock/src/gmock_main.cc \
-	$(DEP_DIR)/googletest/src/gtest-all.cc
+DEP_DIR := deps/
+
+GMOCK_TRANSLATION_UNITS        :=             \
+	$(DEP_DIR)googlemock/src/gmock-all.cc  \
+	$(DEP_DIR)googlemock/src/gmock_main.cc \
+	$(DEP_DIR)googletest/src/gtest-all.cc
 
 GENERATED_PROFILES :=                    \
 	journal/profiles.generated.h     \
@@ -46,7 +48,6 @@ ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
 LIB := $(LIB_DIR)/principia.so
 
-DEP_DIR := deps
 LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I$(DEP_DIR)/googlemock/ -I$(DEP_DIR)/googletest/ 
 INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional -I$(DEP_DIR)/eggsperimental_filesystem/
@@ -129,8 +130,13 @@ OBJ_DIRECTORY := obj/
 TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 NON_TEST_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
+GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
 
 $(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
+
+$(GMOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
@@ -155,16 +161,14 @@ $(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
-##### unit tests
-
-GMOCK_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
+##### Unit tests
 
 UNIT_TEST_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=.o))
 UNIT_TEST_BINS    := $(addprefix $(BIN_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=))
 
-$(UNIT_TEST_BINS) : $(BIN_DIRECTORY)% : %.o $(GMOCK_OBJECTS)
+$(UNIT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS)
+	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
-
 
 CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
