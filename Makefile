@@ -14,12 +14,17 @@ PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
 TEST_OR_MOCK_TRANSLATION_UNITS := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
-#UNIT_TEST_TRANSLATION_UNITS   := $(wildcard */*_test.cpp)
+UNIT_TEST_TRANSLATION_UNITS    := $(wildcard */*_test.cpp)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
-NON_TEST_TRANSLATION_UNITS     := $(filter-out $(TEST_TRANSLATION_UNITS), $(wildcard */*.cpp))
+NON_TEST_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
 PROTO_FILES                    := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
+
+GMOCK_TRANSLATION_UNITS        :=               \
+	$(DEP_DIR)/googlemock/src/gmock-all.cc  \
+	$(DEP_DIR)/googlemock/src/gmock_main.cc \
+	$(DEP_DIR)/googletest/src/gtest-all.cc
 
 GENERATED_PROFILES :=                    \
 	journal/profiles.generated.h     \
@@ -123,7 +128,6 @@ OBJ_DIRECTORY := obj/
 
 TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 NON_TEST_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
-TOOLS_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 
 $(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
@@ -144,15 +148,22 @@ BIN_DIRECTORY   := bin/
 
 ##### tools
 
-TOOLS_BIN := $(BIN_DIRECTORY)tools
+TOOLS_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 $(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBS)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 ##### unit tests
 
-UNIT_TEST_OBJECTS := $(wildcard */*_test.cpp)
+GMOCK_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
+
+UNIT_TEST_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=.o))
+UNIT_TEST_BINS    := $(addprefix $(BIN_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=))
+
+$(UNIT_TEST_BINS) : $(BIN_DIRECTORY)% : %.o $(GMOCK_OBJECTS)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 
 CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
