@@ -2,21 +2,26 @@ CXX := clang++
 
 VERSION_HEADER := base/version.generated.h
 
-CPP_SOURCES := ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp 
-TOOLS_SOURCES := $(wildcard tools/*.cpp)
-PROTO_SOURCES := $(wildcard */*.proto)
-PROTO_CC_SOURCES := $(PROTO_SOURCES:.proto=.pb.cc)
-PROTO_HEADERS := $(PROTO_SOURCES:.proto=.pb.h)
+PLUGIN_TRANSLATION_UNITS      := $(wildcard ksp_plugin/*.cpp)
+PLUGIN_TEST_TRANSLATION_UNITS := $(wildcard ksp_plugin_test/*_test.cpp)
+JOURNAL_TRANSLATION_UNITS     := $(wildcard journal/*.cpp)
+TEST_TRANSLATION_UNITS        := $(wildcard */*_test.cpp)
+TOOLS_TRANSLATION_UNITS       := $(wildcard tools/*.cpp)
+NON_TEST_TRANSLATION_UNITS    := $(filter-out $(wildcard */*.cpp), $(TEST_TRANSLATION_UNITS))
+PROTO_FILES                   := $(wildcard */*.proto)
+PROTO_TRANSLATION_UNITS       := $(PROTO_FILES:.proto=.pb.cc)
+PROTO_HEADERS                 := $(PROTO_FILES:.proto=.pb.h)
 
-GENERATED_SOURCES := journal/profiles.generated.h \
-	journal/profiles.generated.cc \
-	journal/player.generated.cc \
+GENERATED_PROFILES :=                    \
+	journal/profiles.generated.h     \
+	journal/profiles.generated.cc    \
+	journal/player.generated.cc      \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
 
 STATUS_OBJECTS := base/status.o
 PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
-TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
+TOOLS_OBJECTS := $(TOOLS_TRANSLATION_UNITS:.cpp=.o)
 TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
 TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
@@ -35,12 +40,68 @@ LIB := $(LIB_DIR)/principia.so
 
 DEP_DIR := deps
 LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
-TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I $(DEP_DIR)/googlemock/ -I $(DEP_DIR)/googletest/ -I $(DEP_DIR)/eggsperimental_filesystem/
-INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional $(TEST_INCLUDES)
+TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I$(DEP_DIR)/googlemock/ -I$(DEP_DIR)/googletest/ 
+INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional -I$(DEP_DIR)/eggsperimental_filesystem/
 SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic \
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
 	-DNDEBUG
+
+BUILD_DIRECTORY := build/
+BIN_DIRECTORY   := bin/
+
+# We don't do dependency resolution on the protos; we compile them all at once.
+$(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
+	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $^ --cpp_out=.
+
+TEST_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.d))
+TOOLS_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
+NON_TEST_DEPENDENCIES    := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_TEST_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
+JOURNAL_DEPENDENCIES     := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
+
+# As a prerequisite for listing the includes of things that depend on
+# generated headers, we must generate said code.
+# Note that the prerequisites for dependency files are order-only: once
+# we have the dependency files, their own actual dependency on generated headers
+# and on the translation unit will be listed there and recomputed as needed.
+$(PLUGIN_DEPENDENCIES)      : | $(GENERATED_PROFILES)
+$(PLUGIN_TEST_DEPENDENCIES) : | $(GENERATED_PROFILES)
+$(JOURNAL_DEPENDENCIES)     : | $(GENERATED_PROFILES)
+
+$(NON_TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+	@mkdir -p $(@D)
+	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $^ > $@.temp
+	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	rm -f $@.temp
+
+$(TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+	@mkdir -p $(@D)
+	$(CXX) -M $(SHARED_ARGS) $(INCLUDES) $(TEST_INCLUDES) $^ > $@.temp
+	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	rm -f $@.temp
+
+TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
+NON_TEST_OBJECTS := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
+
+#include $(NON_TEST_DEPENDENCIES)
+#include $(TEST_DEPENDENCIES)
+
+TOOLS_BIN := $(BIN_DIRECTORY)/tools
+TOOLS_BIN: $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ -o $(TOOLS_BIN) $(LIBS)
+$(GENERATED_PROFILES) : $(TOOLS_BIN)
+	$^ generate_profiles
+
+$(TEST_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(SHARED_ARGS) $(INCLUDES) $(TEST_INCLUDES) $^ -o $@
+
+$(NON_TEST_OBJECTS): $(BUILD_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(SHARED_ARGS) $(INCLUDES) $^ -o $@
 
 # detect OS
 UNAME_S := $(shell uname -s)
