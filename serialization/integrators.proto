@@ -1,10 +1,13 @@
 syntax = "proto2";
 
+import "serialization/geometry.proto";
 import "serialization/numerics.proto";
 import "serialization/quantities.proto";
 
 package principia.serialization;
 
+// TODO(phl): This message seems unused as we don't ever serialize/deserialize
+// an |Integrator|.  Remove it.
 message Integrator {
   extensions 3000 to 3999;  // Last used: 3001.
 }
@@ -49,26 +52,58 @@ message IntegratorInstance {
   required SystemState current_state = 1;
 }
 
-//TODO(phl):Adaptive.
+message AdaptiveStepSizeIntegratorInstance {
+  extend IntegratorInstance {
+    optional AdaptiveStepSizeIntegratorInstance extension = 7001;
+  }
+  extensions 9000 to 9999;  // Last used: 9000
+  message AdaptiveStepSize {
+    required Quantity first_time_step = 1;
+    required double safety_factor = 2;
+    required int64 max_steps = 3;
+  }
+  required AdaptiveStepSize adaptive_step_size = 1;
+  required AdaptiveStepSizeIntegrator integrator = 2;
+}
+
+message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {
+  extend AdaptiveStepSizeIntegratorInstance {
+    optional EmbeddedExplicitRungeKuttaNystromIntegratorInstance
+        extension = 9000;
+  }
+}
+
+message FixedStepSizeIntegratorInstance {
+  extend IntegratorInstance {
+    optional FixedStepSizeIntegratorInstance extension = 7000;
+  }
+  extensions 8000 to 8999;  // Last used: 8001
+  required Quantity step = 1;
+  required FixedStepSizeIntegrator integrator = 2;
+}
 
 message SymmetricLinearMultistepIntegratorInstance {
-  extend IntegratorInstance {
-    optional SymmetricLinearMultistepIntegratorInstance extension = 7000;
+  extend FixedStepSizeIntegratorInstance {
+    optional SymmetricLinearMultistepIntegratorInstance extension = 8000;
   }
   message Step {
+    message Acceleration {
+      oneof acceleration {
+        Quantity quantity = 1;
+        Multivector multivector = 2;
+      }
+    }
     repeated DoublePrecision displacements = 1;
-    repeated DoublePrecision accelerations = 2;
+    repeated Acceleration accelerations = 2;
     required DoublePrecision time = 3;
   }
   repeated Step previous_steps = 1;
-  required Quantity step = 2;
 }
 
 message SymplecticRungeKuttaNystromIntegratorInstance {
-  extend IntegratorInstance {
-    optional SymplecticRungeKuttaNystromIntegratorInstance extensions = 7001;
+  extend FixedStepSizeIntegratorInstance {
+    optional SymplecticRungeKuttaNystromIntegratorInstance extension = 8001;
   }
-  required Quantity step = 1;
 }
 
 message SystemState {

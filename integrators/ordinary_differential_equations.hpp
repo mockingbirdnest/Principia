@@ -114,6 +114,13 @@ struct AdaptiveStepSize final {
   // Integration will stop after |*max_steps| even if it has not reached
   // |t_final|.
   std::int64_t max_steps = std::numeric_limits<std::int64_t>::max();
+
+  void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegratorInstance::
+                   AdaptiveStepSize*> const message) const;
+  static AdaptiveStepSize ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegratorInstance::AdaptiveStepSize const&
+          message);
 };
 
 // A base class for integrators.
@@ -142,7 +149,7 @@ class Integrator {
 
     // |ReadFromMessage| is specific to each subclass because of the functions.
     virtual void WriteToMessage(
-        not_null<serialization::IntegratorInstance*> message) const = 0;
+        not_null<serialization::IntegratorInstance*> message) const;
 
    protected:
     // For testing.
@@ -169,6 +176,17 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
   class Instance : public Integrator<ODE>::Instance {
+   public:
+    // The integrator corresponding to this instance.
+    virtual FixedStepSizeIntegrator const& integrator() const = 0;
+
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+    ReadFromMessage(serialization::IntegratorInstance const& message,
+                    ODE const& equation,
+                    AppendState const& append_state);
+
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
@@ -190,6 +208,16 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
       serialization::FixedStepSizeIntegrator const& message);
 
  protected:
+  // For convenience, deserialization is an instance member of the |Integrator|,
+  // not a static member of the |Instance|.  Which makes sense if you see
+  // |Integrator| as a factory for |Instance|.
+  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  ReadFromMessage(
+      serialization::FixedStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      Time const& step) const = 0;
+
   explicit FixedStepSizeIntegrator(
       serialization::FixedStepSizeIntegrator::Kind kind);
 
@@ -205,6 +233,20 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 
   // The last call to |append_state| will have |state.time.value == t_final|.
   class Instance : public Integrator<ODE>::Instance {
+   public:
+    // The integrator corresponding to this instance.
+    virtual AdaptiveStepSizeIntegrator const& integrator() const = 0;
+
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
+    static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+    ReadFromMessage(
+        serialization::IntegratorInstance const& message,
+        ODE const& equation,
+        AppendState const& append_state,
+        typename AdaptiveStepSize<ODE>::ToleranceToErrorRatio const&
+            tolerance_to_error_ratio);
+
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
@@ -226,6 +268,16 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
       serialization::AdaptiveStepSizeIntegrator const& message);
 
  protected:
+  // For convenience, deserialization is an instance member of the |Integrator|,
+  // not a static member of the |Instance|.  Which makes sense if you see
+  // |Integrator| as a factory for |Instance|.
+  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+
   explicit AdaptiveStepSizeIntegrator(
       serialization::AdaptiveStepSizeIntegrator::Kind kind);
 

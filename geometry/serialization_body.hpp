@@ -18,15 +18,16 @@ using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
 
 template<typename Message>
-class DoubleOrQuantityOrMultivectorSerializer<double, Message>
+class DoubleOrQuantityOrPointOrMultivectorSerializer<double, Message>
     : public DoubleOrQuantitySerializer<double, Message> {};
 
 template<typename Dimensions, typename Message>
-class DoubleOrQuantityOrMultivectorSerializer<Quantity<Dimensions>, Message>
+class DoubleOrQuantityOrPointOrMultivectorSerializer<
+    Quantity<Dimensions>, Message>
     : public DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {};
 
 template<typename Scalar, typename Frame, int rank, typename Message>
-struct DoubleOrQuantityOrMultivectorSerializer<
+struct DoubleOrQuantityOrPointOrMultivectorSerializer<
     Multivector<Scalar, Frame, rank>, Message> : not_constructible {
   using T = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
@@ -40,7 +41,7 @@ struct DoubleOrQuantityOrMultivectorSerializer<
 };
 
 template<typename Vector, typename Message>
-struct PointOrMultivectorSerializer<Point<Vector>, Message>
+struct DoubleOrQuantityOrPointOrMultivectorSerializer<Point<Vector>, Message>
     : not_constructible {
   using T = Point<Vector>;
   static void WriteToMessage(T const& t, not_null<Message*> const message) {
@@ -53,14 +54,33 @@ struct PointOrMultivectorSerializer<Point<Vector>, Message>
   }
 };
 
+template<typename Message>
+class DoubleOrQuantityOrMultivectorSerializer<double, Message>
+    : public DoubleOrQuantitySerializer<double, Message> {};
+
+template<typename Dimensions, typename Message>
+class DoubleOrQuantityOrMultivectorSerializer<Quantity<Dimensions>, Message>
+    : public DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {};
+
+template<typename Scalar, typename Frame, int rank, typename Message>
+struct DoubleOrQuantityOrMultivectorSerializer<
+    Multivector<Scalar, Frame, rank>, Message>
+    : public DoubleOrQuantityOrPointOrMultivectorSerializer<
+                 Multivector<Scalar, Frame, rank>, Message> {};
+
+template<typename Vector, typename Message>
+struct PointOrMultivectorSerializer<Point<Vector>, Message>
+    : public DoubleOrQuantityOrPointOrMultivectorSerializer<
+                 Point<Vector>, Message> {};
+
 template<typename Scalar, typename Frame, int rank, typename Message>
 class PointOrMultivectorSerializer<Multivector<Scalar, Frame, rank>, Message>
-    : public DoubleOrQuantityOrMultivectorSerializer<
+    : public DoubleOrQuantityOrPointOrMultivectorSerializer<
                  Multivector<Scalar, Frame, rank>, Message> {};
 
 template<typename Scalar, typename Frame, int rank, typename Message>
 class QuantityOrMultivectorSerializer<Multivector<Scalar, Frame, rank>, Message>
-    : public DoubleOrQuantityOrMultivectorSerializer<
+    : public DoubleOrQuantityOrPointOrMultivectorSerializer<
                  Multivector<Scalar, Frame, rank>, Message> {};
 
 template<typename Dimensions, typename Message>

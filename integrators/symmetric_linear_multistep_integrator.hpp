@@ -46,6 +46,8 @@ class SymmetricLinearMultistepIntegrator
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
+    SymmetricLinearMultistepIntegrator const& integrator() const override;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 
@@ -57,11 +59,25 @@ class SymmetricLinearMultistepIntegrator
       std::vector<DoublePrecision<typename ODE::Displacement>> displacements;
       std::vector<typename ODE::Acceleration> accelerations;
       DoublePrecision<Instant> time;
+
+      void WriteToMessage(
+          not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
+                       Step*> const message) const;
+      static Step ReadFromMessage(
+          serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
+              message);
     };
 
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
+             SymmetricLinearMultistepIntegrator const& integrator);
+
+    // For deserialization.
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             Time const& step,
+             std::list<Step> const& previous_steps,
              SymmetricLinearMultistepIntegrator const& integrator);
 
     // Performs the startup integration, i.e., computes enough states to either
@@ -92,10 +108,16 @@ class SymmetricLinearMultistepIntegrator
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
-      typename Integrator<ODE>::AppendState const& append_state,
+      AppendState const& append_state,
       Time const& step) const override;
 
  private:
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
+      serialization::FixedStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      Time const& step) const override;
+
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   AdamsMoulton<velocity_order_> const& velocity_integrator_;
   FixedVector<double, half_order_> const ɑ_;

@@ -299,6 +299,53 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
               AlmostEquals(specific_impulse * initial_mass / mass_flow, 711));
 }
 
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
+  AdaptiveStepSizeIntegrator<ODE> const& integrator =
+      DormandElMikkawyPrince1986RKN434FM<Length>();
+  Length const x_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Time const period = 2 * π * Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 10 * period;
+  Length const length_tolerance = 1 * Milli(Metre);
+  Speed const speed_tolerance = 1 * Milli(Metre) / Second;
+
+  auto const step_size_callback = [](bool tolerable) {};
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
+  problem.initial_state = &initial_state;
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+  AdaptiveStepSize<ODE> adaptive_step_size;
+  adaptive_step_size.first_time_step = t_final - t_initial;
+  adaptive_step_size.safety_factor = 0.9;
+  adaptive_step_size.tolerance_to_error_ratio =
+      std::bind(HarmonicOscillatorToleranceRatio,
+                _1, _2, length_tolerance, speed_tolerance, step_size_callback);
+
+  auto const instance1 =
+      integrator.NewInstance(problem, append_state, adaptive_step_size);
+  serialization::IntegratorInstance message1;
+  instance1->WriteToMessage(&message1);
+  auto const instance2 =
+      AdaptiveStepSizeIntegrator<ODE>::Instance::ReadFromMessage(
+          message1,
+          harmonic_oscillator,
+          append_state,
+          adaptive_step_size.tolerance_to_error_ratio);
+  serialization::IntegratorInstance message2;
+  instance2->WriteToMessage(&message2);
+  EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());
+}
+
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

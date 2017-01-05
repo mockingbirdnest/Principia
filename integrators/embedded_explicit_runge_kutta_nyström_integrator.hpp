@@ -82,6 +82,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
+    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator()
+        const override;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 
@@ -96,11 +99,17 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   };
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-    IntegrationProblem<ODE> const& problem,
-    typename Integrator<ODE>::AppendState const& append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
- protected:
+ private:
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
   FixedVector<double, stages> const b_hat_;

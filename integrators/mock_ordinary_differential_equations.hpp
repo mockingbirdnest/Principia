@@ -21,18 +21,22 @@ class MockFixedStepSizeIntegrator
     MockInstance() : Integrator<ODE>::Instance() {}
 
     MOCK_METHOD1_T(Solve, Status(Instant const& t_final));
-
-    MOCK_CONST_METHOD1_T(
-        WriteToMessage,
-        void(not_null<serialization::IntegratorInstance*> message));
   };
 
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
-      IntegrationProblem<ODE> const& problem,
-      typename Integrator<ODE>::AppendState const& append_state,
-      Time const& step) const override {
-    return make_not_null_unique<MockInstance>();
-  }
+  MOCK_CONST_METHOD3_T(
+      NewInstance,
+      not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>(
+          IntegrationProblem<ODE> const& problem,
+          typename Integrator<ODE>::AppendState const& append_state,
+          Time const& step));
+
+  MOCK_CONST_METHOD4_T(
+      ReadFromMessage,
+      not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>(
+          serialization::FixedStepSizeIntegratorInstance const& message,
+          IntegrationProblem<ODE> const& problem,
+          AppendState const& append_state,
+          Time const& step));
 
   static MockFixedStepSizeIntegrator const& Get() {
     static MockFixedStepSizeIntegrator const integrator;

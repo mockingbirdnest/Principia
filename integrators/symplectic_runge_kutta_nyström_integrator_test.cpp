@@ -64,7 +64,8 @@ using ::testing::ValuesIn;
                                      (beginning_of_convergence),  \
                                      (expected_position_error),   \
                                      (expected_velocity_error),   \
-                                     (expected_energy_error))
+                                     (expected_energy_error),     \
+                                     true)
 
 #define SPRK_INSTANCE(integrator,                                     \
                       composition,                                    \
@@ -79,7 +80,8 @@ using ::testing::ValuesIn;
       (beginning_of_convergence),                                     \
       (expected_position_error),                                      \
       (expected_velocity_error),                                      \
-      (expected_energy_error))
+      (expected_energy_error),                                        \
+      false)
 
 namespace integrators {
 
@@ -401,6 +403,42 @@ void TestTimeReversibility(Integrator const& integrator) {
                 Gt(1e-6 * Metre / Second));
   }
 }
+// Tests that serialization and deserialization work.
+template<typename Integrator>
+void TestSerialization(Integrator const& integrator) {
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Instant const t_initial;
+  Time const step = 0.2 * Second;
+
+  Mass const m = 1 * Kilogram;
+  Stiffness const k = SIUnit<Stiffness>();
+  Energy const initial_energy =
+      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = &initial_state;
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  auto const instance1 = integrator.NewInstance(problem, append_state, step);
+  serialization::IntegratorInstance message1;
+  instance1->WriteToMessage(&message1);
+  auto const instance2 =
+      FixedStepSizeIntegrator<Integrator::ODE>::Instance::ReadFromMessage(
+          message1, harmonic_oscillator, append_state);
+  serialization::IntegratorInstance message2;
+  instance2->WriteToMessage(&message2);
+  EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());
+}
 
 class SimpleHarmonicMotionTestInstance final {
  public:
@@ -410,7 +448,8 @@ class SimpleHarmonicMotionTestInstance final {
                                    Time const& beginning_of_convergence,
                                    Length const& expected_position_error,
                                    Speed const& expected_velocity_error,
-                                   Energy const& expected_energy_error)
+                                   Energy const& expected_energy_error,
+                                   bool const serializable)
       : test_termination_(std::bind(TestTermination<Integrator>, integrator)),
         test_1000_seconds_at_1_millisecond_(
             std::bind(Test1000SecondsAt1Millisecond<Integrator>,
@@ -428,7 +467,11 @@ class SimpleHarmonicMotionTestInstance final {
         test_time_reversibility_(
             std::bind(TestTimeReversibility<Integrator>,
                       integrator)),
-        name_(name) {}
+        test_serialization_(
+            std::bind(TestSerialization<Integrator>,
+                      integrator)),
+        name_(name),
+        serializable_(serializable) {}
 
   std::string const& name() const {
     return name_;
@@ -454,13 +497,21 @@ class SimpleHarmonicMotionTestInstance final {
     test_time_reversibility_();
   }
 
+  void RunSerialization() const {
+    if (serializable_) {
+      test_serialization_();
+    }
+  }
+
  private:
   std::function<void()> test_termination_;
   std::function<void()> test_1000_seconds_at_1_millisecond_;
   std::function<void()> test_convergence_;
   std::function<void()> test_symplecticity_;
   std::function<void()> test_time_reversibility_;
-  std::string name_;
+  std::function<void()> test_serialization_;
+  std::string const name_;
+  bool const serializable_;
 };
 
 // This allows the test output to be legible, i.e.,
@@ -698,6 +749,11 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Termination) {
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
   LOG(INFO) << GetParam();
   GetParam().Run1000SecondsAt1Millisecond();
+}
+
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Serialization) {
+  LOG(INFO) << GetParam();
+  GetParam().RunSerialization();
 }
 
 }  // namespace integrators

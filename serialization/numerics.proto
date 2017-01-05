@@ -23,12 +23,15 @@ message ChebyshevSeries {
 message DoublePrecision {
   message Error {
     oneof error {
+      double double = 3;
       Quantity quantity = 1;
       Multivector multivector = 2;
     }
   }
   message Value {
     oneof value {
+      double double = 3;
+      Quantity quantity = 4;
       Point point = 1;
       Multivector multivector = 2;
     }
