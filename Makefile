@@ -1,6 +1,5 @@
 CXX := clang++
 
-VERSION_HEADER := base/version.generated.h
 
 #TESTING CRAP REMOVE
 b.test : a.test
@@ -14,7 +13,7 @@ PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
 TEST_OR_MOCK_TRANSLATION_UNITS := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
-TEST_TRANSLATION_UNITS    := $(wildcard */*_test.cpp)
+TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
 LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
 JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
@@ -30,15 +29,14 @@ GMOCK_TRANSLATION_UNITS :=                     \
 	$(DEP_DIR)googlemock/src/gmock_main.cc \
 	$(DEP_DIR)googletest/src/gtest-all.cc
 
+VERSION_HEADER := base/version.generated.h
+
 GENERATED_PROFILES :=                    \
 	journal/profiles.generated.h     \
 	journal/profiles.generated.cc    \
 	journal/player.generated.cc      \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
-
-#TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
-#TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
 
 PROJECT_DIR := ksp_plugin_adapter/
 SOLUTION_DIR := ./
@@ -80,12 +78,12 @@ endif
 
 BUILD_DIRECTORY := build/
 
-TEST_OR_MOCK_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
-TOOLS_DEPENDENCIES               := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
-LIBRARY_DEPENDENCIES             := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TEST_TRANSLATION_UNITS:.cpp=.d))
-PLUGIN_DEPENDENCIES              := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
-PLUGIN_TEST_DEPENDENCIES         := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
-JOURNAL_DEPENDENCIES             := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
+TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
+TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
+LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TEST_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_TEST_DEPENDENCIES  := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
+JOURNAL_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
 
 # As a prerequisite for listing the includes of things that depend on
 # generated headers, we must generate said code.
@@ -116,7 +114,8 @@ include $(TEST_DEPENDENCIES)
 
 ##### C# and C++ code generation
 
-#TODO(egg): version header here
+$(VERSION_HEADER): .git
+	./generate_version_header.sh
 
 # We don't do dependency resolution on the protos; we compile them all at once.
 $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
@@ -133,11 +132,11 @@ TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION
 LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
-TOOLS_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
-PLUGIN_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
-JOURNAL_LIB_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
-BASE_LIB_OBJECTS    := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
-TEST_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
+TOOLS_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+PLUGIN_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
+JOURNAL_LIB_OBJECTS  := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
+BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
+TEST_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 
 $(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
@@ -224,9 +223,6 @@ $(LIB): $(PROTO_OBJECTS) $$(ksp_plugin_objects) $$(journal_objects) $(LIB_DIR) $
 
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
-
-$(VERSION_HEADER): .git
-	./generate_version_header.sh
 
 $(GENERATED_SOURCES): $(TOOLS_BIN) serialization/journal.proto
 	tools/tools generate_profiles
