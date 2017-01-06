@@ -1,5 +1,6 @@
 CXX := clang++
 
+# TODO(egg): build benchmarks
 
 #TESTING CRAP REMOVE
 b.test : a.test
@@ -13,10 +14,11 @@ PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
 MOCK_TRANSLATION_UNITS         := $(wildcard */mock_*.cpp)
+BENCHMARK_TRANSLATION_UNITS    := $(wildcard benchmarks/*.cpp)
 TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
 TEST_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(MOCK_TRANSLATION_UNITS)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
-LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
 JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
 BASE_LIB_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
 PROTO_FILES                    := $(wildcard */*.proto)
@@ -99,20 +101,22 @@ $(PLUGIN_DEPENDENCIES)              : | $(GENERATED_PROFILES)
 $(PLUGIN_TEST_DEPENDENCIES)         : | $(GENERATED_PROFILES)
 $(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
 
-$(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+$(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
-$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
+ifneq ($(MAKECMDGOALS),clean)
 include $(LIBRARY_DEPENDENCIES)
 include $(TEST_OR_MOCK_DEPENDENCIES)
+endif
 
 ########## Compilation
 
