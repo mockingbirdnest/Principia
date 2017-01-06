@@ -12,8 +12,9 @@ c.test : b.test
 PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
-TEST_OR_MOCK_TRANSLATION_UNITS := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
+MOCK_TRANSLATION_UNITS         := $(wildcard */mock_*.cpp)
 TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
+TEST_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(MOCK_TRANSLATION_UNITS)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
 LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
 JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
@@ -137,6 +138,7 @@ PLUGIN_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS
 JOURNAL_LIB_OBJECTS  := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
 BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
 TEST_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
+MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(MOCK_TRANSLATION_UNITS:.cpp=.o))
 
 $(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
@@ -179,16 +181,29 @@ LDFLAGS := $(SHARED_ARGS)
 
 ##### Unit tests
 
-TEST_BINS          := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
-PRINCIPIA_TEST_BIN := $(BIN_DIRECTORY)test
+TEST_BINS                    := $(filter-out bin/journal/player_test, $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=)))
+PACKAGE_TEST_BINS            := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
+PLUGIN_DEPENDENT_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
+PLUGIN_INDEPENDENT_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
+PRINCIPIA_TEST_BIN           := $(BIN_DIRECTORY)test
+log :
+	@echo $(PACKAGE_TEST_BINS)
 
-$(TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(JOURNAL_LIB_OBJECTS)
+an_apple_pie : the_universe
+
+$(PLUGIN_INDEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
-# Link against the principia shared library instead of statically linking the
-# objects.  Also note that we do not link the $(LIBS), since they are in the
-# $(KSP_PLUGIN).  We still need pthread though.
+# For tests that depend on the plugin, we link against the principia shared
+# library instead of statically linking the objects.  Also note that we do not
+# link the $(LIBS), since they are in the $(KSP_PLUGIN).  We still need pthread
+# though.
+
+$(PLUGIN_DEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
+
 $(PRINCIPIA_TEST_BIN) : $(filter-out obj/journal/player_test.o, $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
@@ -199,6 +214,7 @@ $(PRINCIPIA_TEST_BIN) : $(filter-out obj/journal/player_test.o, $(TEST_OR_MOCK_O
 .SUFFIXES:
 
 ##### CONVENIENCE TARGETS #####
+unit_tests : $(TEST_BINS)
 all: $(LIB) $(ADAPTER) tests
 
 adapter: $(ADAPTER)
