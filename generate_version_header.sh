@@ -1,5 +1,5 @@
 #!/bin/bash
-TEMPORARY_FILE="/tmp/$RANDOM"
+TEMPORARY_FILE="/tmp/${RANDOM}"
 VERSION_TEMPLATE="\xef\xbb\xbf
 #pragma once
 

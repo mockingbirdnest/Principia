@@ -27,34 +27,37 @@ OBJ_DIRECTORY := obj/
 BIN_DIRECTORY := bin/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
-GMOCK_TRANSLATION_UNITS :=                     \
+GMOCK_TRANSLATION_UNITS := \
 	$(DEP_DIR)googlemock/src/gmock-all.cc  \
 	$(DEP_DIR)googlemock/src/gmock_main.cc \
 	$(DEP_DIR)googletest/src/gtest-all.cc
 
 VERSION_HEADER := base/version.generated.h
 
-GENERATED_PROFILES :=                    \
+GENERATED_PROFILES := \
 	journal/profiles.generated.h     \
 	journal/profiles.generated.cc    \
 	journal/player.generated.cc      \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
 
-PROJECT_DIR := ksp_plugin_adapter/
-SOLUTION_DIR := ./
-ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj/
+PROJECT_DIR           := ksp_plugin_adapter/
+SOLUTION_DIR          := ./
+ADAPTER_BUILD_DIR     := ksp_plugin_adapter/obj/
 ADAPTER_CONFIGURATION := Release
-FINAL_PRODUCTS_DIR := Release/
-ADAPTER := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
-PLUGIN_DIRECTORY := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
+FINAL_PRODUCTS_DIR    := Release/
+ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
+PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
-TEST_LIBS := $(DEP_DIR)benchmark/src/libbenchmark.a
-LIBS      := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a
+LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := -I$(DEP_DIR)googlemock/include -I$(DEP_DIR)googletest/include -I$(DEP_DIR)googlemock/ -I$(DEP_DIR)googletest/ -I$(DEP_DIR)benchmark/include 
-INCLUDES := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
-SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer -Wall -Wpedantic \
-	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
+INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
+SHARED_ARGS   := \
+	-std=c++14 -stdlib=libc++ -O3 -g                                        \
+	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer              \
+	-Wall -Wpedantic                                                        \
+	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'   \
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
 	-DNDEBUG
 
@@ -110,7 +113,7 @@ $(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(
 	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
-ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS), clean)
 include $(LIBRARY_DEPENDENCIES)
 include $(TEST_OR_MOCK_DEPENDENCIES)
 endif
