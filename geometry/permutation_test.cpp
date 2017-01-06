@@ -1,11 +1,13 @@
 ﻿
-#include "geometry/permutation.hpp"
 
 #include <vector>
 
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
+// TODO(egg): this should be at the top, but there's a circular dependency due
+// to compatibility test.
+#include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
