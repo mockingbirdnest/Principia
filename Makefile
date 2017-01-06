@@ -48,7 +48,7 @@ ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
 LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
 LIB := $(LIB_DIR)/principia.so
-TEST_LIBS := $(DEP_DIR)benchmark/src/libbenchmark.a 
+TEST_LIBS := $(DEP_DIR)benchmark/src/libbenchmark.a
 LIBS      := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := -I$(DEP_DIR)googlemock/include -I$(DEP_DIR)googletest/include -I$(DEP_DIR)googlemock/ -I$(DEP_DIR)googletest/ -I$(DEP_DIR)benchmark/include 
 INCLUDES := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
