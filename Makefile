@@ -48,10 +48,10 @@ ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
 LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
 LIB := $(LIB_DIR)/principia.so
-
-LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
-TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I$(DEP_DIR)/googlemock/ -I$(DEP_DIR)/googletest/ 
-INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional -I$(DEP_DIR)/eggsperimental_filesystem/
+TEST_LIBS := $(DEP_DIR)benchmark/src/libbenchmark.a 
+LIBS      := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+TEST_INCLUDES := -I$(DEP_DIR)googlemock/include -I$(DEP_DIR)googletest/include -I$(DEP_DIR)googlemock/ -I$(DEP_DIR)googletest/ -I$(DEP_DIR)benchmark/include 
+INCLUDES := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
 SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer -Wall -Wpedantic \
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
@@ -181,7 +181,7 @@ LDFLAGS := $(SHARED_ARGS)
 
 ##### Unit tests
 
-TEST_BINS                    := $(filter-out bin/journal/player_test, $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=)))
+TEST_BINS                    := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
 PACKAGE_TEST_BINS            := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
 PLUGIN_DEPENDENT_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
 PLUGIN_INDEPENDENT_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
@@ -200,11 +200,11 @@ $(PLUGIN_INDEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOC
 # link the $(LIBS), since they are in the $(KSP_PLUGIN).  We still need pthread
 # though.
 
-$(PLUGIN_DEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
+$(PLUGIN_DEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
-$(PRINCIPIA_TEST_BIN) : $(filter-out obj/journal/player_test.o, $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
+$(PRINCIPIA_TEST_BIN) : $(TEST_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
