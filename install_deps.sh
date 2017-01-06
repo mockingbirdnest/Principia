@@ -58,6 +58,6 @@ git clone "https://github.com/mockingbirdnest/Optional.git"
 # TODO(egg): This probably needs to be compiled
 git clone "https://github.com/mockingbirdnest/benchmark"
 pushd benchmark
-cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++ -DCMAKE_C_FLAGS="$C_FLAGS" -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DCMAKE_LD_FLAGS="$LD_FLAGS"
+cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="$C_FLAGS" -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DCMAKE_LD_FLAGS="$LD_FLAGS"
 make -j8
 popd
