@@ -16,7 +16,9 @@ JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
 TEST_OR_MOCK_TRANSLATION_UNITS := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
 UNIT_TEST_TRANSLATION_UNITS    := $(wildcard */*_test.cpp)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
-NON_TEST_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
+BASE_LIB_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
 PROTO_FILES                    := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
@@ -80,7 +82,7 @@ BUILD_DIRECTORY := build/
 
 TEST_OR_MOCK_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
 TOOLS_DEPENDENCIES               := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
-NON_TEST_DEPENDENCIES            := $(addprefix $(BUILD_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.d))
+LIBRARY_DEPENDENCIES             := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TEST_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_DEPENDENCIES              := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_TEST_DEPENDENCIES         := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
 JOURNAL_DEPENDENCIES             := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
@@ -95,7 +97,7 @@ $(PLUGIN_DEPENDENCIES)              : | $(GENERATED_PROFILES)
 $(PLUGIN_TEST_DEPENDENCIES)         : | $(GENERATED_PROFILES)
 $(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
 
-$(NON_TEST_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+$(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
@@ -107,7 +109,7 @@ $(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
-include $(NON_TEST_DEPENDENCIES)
+include $(LIBRARY_DEPENDENCIES)
 include $(TEST_DEPENDENCIES)
 
 ########## Compilation
@@ -128,7 +130,7 @@ $(GENERATED_PROFILES) : $(TOOLS_BIN)
 OBJ_DIRECTORY := obj/
 
 TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
-NON_TEST_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(NON_TEST_TRANSLATION_UNITS:.cpp=.o))
+LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
 
@@ -140,7 +142,7 @@ $(GMOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
-$(NON_TEST_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+$(LIBRARY_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
 
@@ -166,13 +168,15 @@ $(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 UNIT_TEST_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=.o))
 UNIT_TEST_BINS    := $(addprefix $(BIN_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=))
 
-PLUGIN_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
+PLUGIN_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
+JOURNAL_LIB_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
+BASE_LIB_OBJECTS    := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
 
 $(UNIT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
-$(BIN_DIRECTORY)test : $(TEST_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(PLUGIN_OBJECTS)
+$(BIN_DIRECTORY)test : $(filter-out obj/journal/player_test.o, $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 

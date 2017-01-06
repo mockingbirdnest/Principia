@@ -24,10 +24,10 @@ class Subset final {
   // Any properties about a subset of |T| that can be efficiently maintained
   // when merging (e.g. a list of elements) should be kept in
   // |Subset<T>::Properties|; specialize it as needed.
-  class Properties final {
+  class Properties; /* final {
    public:
     void MergeWith(Properties& other) {}
-  };
+  };*/
 
   // The |SubsetPropertiesArgs| are forwarded to the constructor of
   // |Properties|.

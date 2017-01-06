@@ -3,6 +3,7 @@
 #include <list>
 
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/vessel.hpp"
 
 namespace principia {
 
@@ -69,6 +70,12 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
     other.vessels_.front()->clear_pile_up();
   }
   vessels_.splice(vessels_.end(), other.vessels_);
+}
+ 
+template<>
+not_null<Subset<ksp_plugin::Vessel>::Node*>
+Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
+  return element.subset_node_.get();
 }
 
 }  // namespace base
