@@ -103,8 +103,9 @@ Instance::Solve(Instant const& t_final) {
   auto const& c = integrator_.c_;
 
   auto& current_state = this->current_state_;
-  auto& adaptive_step_size = this->adaptive_step_size;
-  auto const& equation = this->equation;
+  auto& append_state = this->append_state_;
+  auto& adaptive_step_size = this->adaptive_step_size_;
+  auto const& equation = this->equation_;
 
   // |current_state| gets updated as the integration progresses to allow
   // restartability.
@@ -252,7 +253,7 @@ Instance::Solve(Instant const& t_final) {
       q_hat[k].Increment(Δq_hat[k]);
       v_hat[k].Increment(Δv_hat[k]);
     }
-    append_state_(current_state);
+    append_state(current_state);
     ++step_count;
     if (step_count == adaptive_step_size.max_steps && !at_end) {
       return Status(termination_condition::ReachedMaximalStepCount,

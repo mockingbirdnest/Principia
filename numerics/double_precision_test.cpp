@@ -173,7 +173,7 @@ TEST_F(DoublePrecisionTest, Consistencies) {
   using Vector = R3Element<double>;
   using Point = Point<Vector>;
   Point const origin;
-  DoublePrecision<Point> const wide_origin;
+  DoublePrecision<Point> const wide_origin{};
   Vector const null_vector{0, 0, 0};
   Vector const v1{π, -e, Sqrt(2)};
   Vector const v2 = 1024 * ε * Vector{(1 + Sqrt(5)) / 2, std::log(2), -Sqrt(π)};

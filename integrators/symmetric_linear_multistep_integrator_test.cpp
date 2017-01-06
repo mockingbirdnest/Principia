@@ -331,7 +331,7 @@ void TestSerialization(Integrator const& integrator) {
   serialization::IntegratorInstance message1;
   instance1->WriteToMessage(&message1);
   auto const instance2 =
-      FixedStepSizeIntegrator<Integrator::ODE>::Instance::ReadFromMessage(
+      FixedStepSizeIntegrator<typename Integrator::ODE>::Instance::ReadFromMessage(
           message1, harmonic_oscillator, append_state);
   serialization::IntegratorInstance message2;
   instance2->WriteToMessage(&message2);

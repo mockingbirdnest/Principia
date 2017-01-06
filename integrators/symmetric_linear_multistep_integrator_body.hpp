@@ -251,16 +251,17 @@ Instance::StartupSolve(Instant const& t_final) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
         if (previous_steps_.size() < order_) {
-          current_state = state;
+          this->current_state_ = state;
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
           if (++startup_step_index % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order_);
             previous_steps_.emplace_back();
-            append_state(state);
-            FillStepFromSystemState(
-                equation, current_state, previous_steps_.back());
+            this->append_state_(state);
+            FillStepFromSystemState(this->equation_,
+                                    this->current_state_,
+                                    previous_steps_.back());
           }
         }
       };
@@ -285,7 +286,7 @@ Instance::VelocitySolve(int const dimension) {
   using Acceleration = typename ODE::Acceleration;
   auto const& velocity_integrator = integrator_.velocity_integrator_;
 
-  auto const& current_state = this->current_state_;
+  auto& current_state = this->current_state_;
   auto const& step = this->step_;
 
   for (int d = 0; d < dimension; ++d) {
