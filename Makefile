@@ -178,8 +178,6 @@ PACKAGE_TEST_BINS            := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, 
 PLUGIN_DEPENDENT_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
 PLUGIN_INDEPENDENT_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
 PRINCIPIA_TEST_BIN           := $(BIN_DIRECTORY)test
-log :
-	@echo $(PACKAGE_TEST_BINS)
 
 $(PLUGIN_INDEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
@@ -199,6 +197,12 @@ $(PRINCIPIA_TEST_BIN) : $(TEST_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
 ########## Testing
+
+TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(TEST_BINS))
+
+# make base/not_null_test compiles bin/base/not_null_test and runs it.
+$(TEST_TARGETS) : % : $(BIN_DIRECTORY)%
+	-$^
 
 test: $(PRINCIPIA_TEST_BIN)
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
@@ -245,7 +249,7 @@ plugin: $(KSP_PLUGIN)
 unit_tests : $(TEST_BINS)
 tidy : $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
 
-.PHONY: all tools adapter plugin unit_tests test release clean normalize_bom tidy $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
+.PHONY: all tools adapter plugin unit_tests test release clean normalize_bom tidy $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(TEST_TARGETS)
 .PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS)
 .DEFAULT_GOAL := all
 .SUFFIXES:
