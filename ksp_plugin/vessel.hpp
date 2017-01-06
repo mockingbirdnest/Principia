@@ -210,7 +210,7 @@ using internal_vessel::Vessel;
 namespace base {
 
 template<>
-not_null<Subset<ksp_plugin::Vessel>::Node*>
+inline not_null<Subset<ksp_plugin::Vessel>::Node*>
 Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
   return element.subset_node_.get();
 }
