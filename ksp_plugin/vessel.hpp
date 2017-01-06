@@ -206,4 +206,14 @@ using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
+
+namespace base {
+
+template<>
+not_null<Subset<ksp_plugin::Vessel>::Node*>
+Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
+  return element.subset_node_.get();
+}
+
+}  // namespace base
 }  // namespace principia
