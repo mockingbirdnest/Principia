@@ -57,3 +57,6 @@ git clone "https://github.com/mockingbirdnest/Optional.git"
 
 # TODO(egg): This probably needs to be compiled
 git clone "https://github.com/mockingbirdnest/benchmark"
+pushd benchmark
+CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi" cmake -DBENCHMARK_USE_LIBCXX:BOOL=ON
+popd
