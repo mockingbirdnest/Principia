@@ -187,11 +187,11 @@ PLUGIN_INDEPENDENT_TEST_BINS         := $(filter-out $(PLUGIN_DEPENDENT_TEST_BIN
 PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS), $(PACKAGE_TEST_BINS))
 PRINCIPIA_TEST_BIN                   := $(BIN_DIRECTORY)test
 
-$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
-	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+$(TEST_BINS)          : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o
+$(PACKAGE_TEST_BINS)  : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OBJECTS))
+$(PRINCIPIA_TEST_BIN) : $(TEST_OBJECTS)
 
-$(PLUGIN_INDEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
+$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
@@ -199,18 +199,13 @@ $(PLUGIN_INDEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOC
 # library instead of statically linking the objects.  Also note that we do not
 # link the $(LIBS), since they are in the $(KSP_PLUGIN).  We still need pthread
 # though.
+# NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
+# against mock objects.  The classes further up that are big enough to be mocked
+# are likely to be highly templatized, so this will probably hold for a while.
 
-$(PLUGIN_DEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
-
-$(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
-	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
-
-$(PRINCIPIA_TEST_BIN) : $(TEST_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
-	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
 ########## Testing
 
