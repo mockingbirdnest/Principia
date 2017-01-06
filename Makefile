@@ -25,6 +25,9 @@ PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
 
 DEP_DIR := deps/
 
+BIN_DIRECTORY := bin/
+TOOLS_BIN     := $(BIN_DIRECTORY)tools
+
 GMOCK_TRANSLATION_UNITS :=                     \
 	$(DEP_DIR)googlemock/src/gmock-all.cc  \
 	$(DEP_DIR)googlemock/src/gmock_main.cc \
@@ -81,7 +84,7 @@ BUILD_DIRECTORY := build/
 
 TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
 TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
-LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TEST_TRANSLATION_UNITS:.cpp=.d))
+LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_TEST_DEPENDENCIES  := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
 JOURNAL_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
@@ -109,7 +112,7 @@ $(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	rm -f $@.temp
 
 include $(LIBRARY_DEPENDENCIES)
-include $(TEST_DEPENDENCIES)
+include $(TEST_OR_MOCK_DEPENDENCIES)
 
 ########## Compilation
 
@@ -158,11 +161,7 @@ $(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 
 ########## Linkage
 
-BIN_DIRECTORY   := bin/
-
 ##### tools
-
-TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 $(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 	@mkdir -p $(@D)
@@ -225,8 +224,8 @@ release: $(ADAPTER) $(KSP_PLUGIN)
 ########## Cleaning
 
 clean:
-	rm -R $(BUILD_DIRECTORY) $(OBJ_DIRECTORY) $(BIN_DIRECTORY) $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm $(VERSION_HEADER) $(PROTO_TRANSLATION_UNITS) $(PROTO_HEADERS) $(GENERATED_PROFILES)
+	rm -rf $(BUILD_DIRECTORY) $(OBJ_DIRECTORY) $(BIN_DIRECTORY) $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
+	rm -f $(VERSION_HEADER) $(PROTO_TRANSLATION_UNITS) $(PROTO_HEADERS) $(GENERATED_PROFILES)
 
 REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f | awk NF{p=1}p > $$f.nobom; mv $$f.nobom $$f; done
 RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf\n")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
