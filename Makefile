@@ -46,13 +46,12 @@ GENERATED_PROFILES :=                    \
 
 PROJECT_DIR := ksp_plugin_adapter/
 SOLUTION_DIR := ./
-ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj
+ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj/
 ADAPTER_CONFIGURATION := Release
-FINAL_PRODUCTS_DIR := Release
-ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
+FINAL_PRODUCTS_DIR := Release/
+ADAPTER := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
+PLUGIN_DIRECTORY := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
-LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
-LIB := $(LIB_DIR)/principia.so
 TEST_LIBS := $(DEP_DIR)benchmark/src/libbenchmark.a
 LIBS      := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := -I$(DEP_DIR)googlemock/include -I$(DEP_DIR)googletest/include -I$(DEP_DIR)googlemock/ -I$(DEP_DIR)googletest/ -I$(DEP_DIR)benchmark/include 
@@ -61,8 +60,6 @@ SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
 	-DNDEBUG
-
-COMPILER_OPTIONS = -c $(SHARED_ARGS) $(INCLUDES)
 
 # detect OS
 UNAME_S := $(shell uname -s)
@@ -79,6 +76,9 @@ ifeq ($(UNAME_S),Darwin)
     SHARED_ARGS += -mmacosx-version-min=10.7 -arch i386
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
 endif
+
+COMPILER_OPTIONS := -c $(SHARED_ARGS) $(INCLUDES)
+LDFLAGS := $(SHARED_ARGS)
 
 ########## Dependency resolution
 
@@ -173,14 +173,11 @@ $(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 
 ##### KSP plugin
 
-KSP_PLUGIN := $(LIB_DIR)principia.so
+KSP_PLUGIN := $(PLUGIN_DIRECTORY)principia.so
 
 $(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) -shared $(LDFLAGS) $^ $(LIBS) -o $@
-
-CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
-LDFLAGS := $(SHARED_ARGS)
 
 ##### Unit tests
 
