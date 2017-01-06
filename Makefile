@@ -1,3 +1,6 @@
+.SECONDEXPANSION:
+PERCENT := %
+
 CXX := clang++
 
 # TODO(egg): build benchmarks
@@ -171,13 +174,19 @@ $(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE
 	@mkdir -p $(@D)
 	$(CXX) -shared $(LDFLAGS) $^ $(LIBS) -o $@
 
-##### Unit tests
+##### Tests
 
-TEST_BINS                    := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
-PACKAGE_TEST_BINS            := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
-PLUGIN_DEPENDENT_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
-PLUGIN_INDEPENDENT_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
-PRINCIPIA_TEST_BIN           := $(BIN_DIRECTORY)test
+TEST_BINS                            := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
+PACKAGE_TEST_BINS                    := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
+PLUGIN_DEPENDENT_TEST_BINS           := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
+PLUGIN_DEPENDENT_PACKAGE_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(PACKAGE_TEST_BINS))
+PLUGIN_INDEPENDENT_TEST_BINS         := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
+PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS), $(PACKAGE_TEST_BINS))
+PRINCIPIA_TEST_BIN                   := $(BIN_DIRECTORY)test
+
+$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 $(PLUGIN_INDEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
@@ -192,16 +201,25 @@ $(PLUGIN_DEPENDENT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(MOCK_O
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
+$(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
+
 $(PRINCIPIA_TEST_BIN) : $(TEST_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(TEST_LIBS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
 ########## Testing
 
-TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(TEST_BINS))
+TEST_TARGETS         := $(patsubst $(BIN_DIRECTORY)%, %, $(TEST_BINS))
+PACKAGE_TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_TEST_BINS))
 
 # make base/not_null_test compiles bin/base/not_null_test and runs it.
 $(TEST_TARGETS) : % : $(BIN_DIRECTORY)%
+	-$^
+
+# make base/test compiles bin/base/test and runs it.
+$(PACKAGE_TEST_TARGETS) : % : $(BIN_DIRECTORY)%
 	-$^
 
 test: $(PRINCIPIA_TEST_BIN)
@@ -241,15 +259,18 @@ $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
 	@mkdir -p $(@D)
 	clang-tidy $< $(tidy_options) -- $(COMPILER_OPTIONS)
 
+TIDY_TARGETS = $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
+
 ########## Convenience targets
 all: test release
 tools: $(TOOLS_BIN)
 adapter: $(ADAPTER)
 plugin: $(KSP_PLUGIN)
-unit_tests : $(TEST_BINS)
-tidy : $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
+each_test : $(TEST_TARGETS)
+each_package_test : $(PACKAGE_TEST_TARGETS)
+tidy : $(TIDY_TARGETS)
 
-.PHONY: all tools adapter plugin unit_tests test release clean normalize_bom tidy $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(TEST_TARGETS)
+.PHONY: all tools adapter plugin each_test test release clean normalize_bom tidy $(TIDY_TARGETS) $(TEST_TARGETS) $(PACKAGE_TEST_TARGETS)
 .PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS)
 .DEFAULT_GOAL := all
 .SUFFIXES:
