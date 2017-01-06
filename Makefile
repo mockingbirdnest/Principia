@@ -2,14 +2,6 @@ CXX := clang++
 
 # TODO(egg): build benchmarks
 
-#TESTING CRAP REMOVE
-b.test : a.test
-	echo "b?"
-	if test -e b.test; then echo "b exists"; else touch b.test; echo "made b"; fi
-c.test : b.test
-	echo "making c"
-	touch c.test
-
 PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
