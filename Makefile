@@ -208,12 +208,23 @@ $(PRINCIPIA_TEST_BIN) : $(TEST_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
-.PHONY: all adapter lib tests tools check plugin run_tests clean
+########## clang-tidy
+
+$(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
+	@mkdir -p $(@D)
+	clang-tidy $< $(TIDY_CHECKS) -- $(COMPILER_OPTIONS) $(TEST_INCLUDES)
+
+$(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
+	@mkdir -p $(@D)
+	clang-tidy $< $(TIDY_CHECKS) -- $(COMPILER_OPTIONS)
+
+.PHONY: all adapter lib tests tools check plugin run_tests clean tidy $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
 .PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES)
 .DEFAULT_GOAL := plugin
 .SUFFIXES:
 
 ##### CONVENIENCE TARGETS #####
+tidy : $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
 unit_tests : $(TEST_BINS)
 all: $(LIB) $(ADAPTER) tests
 
