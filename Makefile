@@ -14,7 +14,7 @@ PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
 TEST_OR_MOCK_TRANSLATION_UNITS := $(wildcard */*_test.cpp) $(wildcard */mock_*.cpp)
-UNIT_TEST_TRANSLATION_UNITS    := $(wildcard */*_test.cpp)
+TEST_TRANSLATION_UNITS    := $(wildcard */*_test.cpp)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
 LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard */*.cpp))
 JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
@@ -133,6 +133,11 @@ TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION
 LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
+TOOLS_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+PLUGIN_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
+JOURNAL_LIB_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
+BASE_LIB_OBJECTS    := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
+TEST_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 
 $(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
@@ -144,11 +149,11 @@ $(GMOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 
 $(LIBRARY_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
 $(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
-	$(CXX) $(COMPILER_OPTIONS) $(INCLUDES) $< -o $@
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
 ########## Linkage
 
@@ -156,36 +161,38 @@ BIN_DIRECTORY   := bin/
 
 ##### tools
 
-TOOLS_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 $(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
-##### Unit tests
+##### KSP plugin
 
-UNIT_TEST_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=.o))
-UNIT_TEST_BINS    := $(addprefix $(BIN_DIRECTORY), $(UNIT_TEST_TRANSLATION_UNITS:.cpp=))
+KSP_PLUGIN := $(BIN_DIRECTORY)principia.so
 
-PLUGIN_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
-JOURNAL_LIB_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
-BASE_LIB_OBJECTS    := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
-
-$(UNIT_TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS)
+$(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
-
-$(BIN_DIRECTORY)test : $(filter-out obj/journal/player_test.o, $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
-	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) -shared $(LDFLAGS) $^ $(LIBS) -o $@
 
 CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
 
+##### Unit tests
 
+TEST_BINS          := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
+PRINCIPIA_TEST_BIN := $(BIN_DIRECTORY)test
 
+$(TEST_BINS) : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(JOURNAL_LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
+# Link against the principia shared library instead of statically linking the
+# objects.  Also note that we do not link the $(LIBS), since they are in the
+# $(KSP_PLUGIN).  We still need pthread though.
+$(PRINCIPIA_TEST_BIN) : $(filter-out obj/journal/player_test.o, $(TEST_OR_MOCK_OBJECTS)) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ -lpthread -o $@
 
 .PHONY: all adapter lib tests tools check plugin run_tests clean
 .PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES)
