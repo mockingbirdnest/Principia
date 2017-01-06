@@ -1,5 +1,4 @@
 ﻿
-
 #include <vector>
 
 #include "geometry/frame.hpp"

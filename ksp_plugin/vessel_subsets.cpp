@@ -1,3 +1,4 @@
+﻿
 #include "ksp_plugin/vessel_subsets.hpp"
 
 #include <list>

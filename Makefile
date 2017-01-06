@@ -27,6 +27,8 @@ PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
 
 DEP_DIR := deps/
 
+OBJ_DIRECTORY := obj/
+
 BIN_DIRECTORY := bin/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
@@ -104,13 +106,13 @@ $(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
 $(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
-	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
 $(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
-	sed 's!.*\.o[ :]*!$(BUILD_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -133,8 +135,6 @@ $(GENERATED_PROFILES) : $(TOOLS_BIN)
 	$^ generate_profiles
 
 ##### C++ compilation
-
-OBJ_DIRECTORY := obj/
 
 TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
