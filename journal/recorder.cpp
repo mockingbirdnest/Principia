@@ -50,7 +50,7 @@ bool Recorder::IsActivated() {
   return active_recorder_ != nullptr;
 }
 
-Recorder* Recorder::active_recorder_ = nullptr;
+thread_local Recorder* Recorder::active_recorder_ = nullptr;
 
 }  // namespace journal
 }  // namespace principia
