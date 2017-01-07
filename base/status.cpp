@@ -1,3 +1,4 @@
+﻿
 // This code comes from:
 // https://github.com/google/protobuf/tree/master/src/google/protobuf/stubs
 // and was adapted to Visual Studio and to the needs of this project.

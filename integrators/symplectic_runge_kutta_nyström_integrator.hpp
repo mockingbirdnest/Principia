@@ -81,6 +81,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+  using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr int order = order_;
   static constexpr bool time_reversible = time_reversible_;

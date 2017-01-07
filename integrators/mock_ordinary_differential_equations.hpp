@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "base/not_null.hpp"
@@ -15,6 +16,7 @@ class MockFixedStepSizeIntegrator
     : public FixedStepSizeIntegrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
+  using AppendState = typename Integrator<ODE>::AppendState;
 
   class MockInstance : public Integrator<ODE>::Instance {
    public:

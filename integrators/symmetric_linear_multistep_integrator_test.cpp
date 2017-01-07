@@ -1,4 +1,5 @@
-﻿#include "integrators/symmetric_linear_multistep_integrator.hpp"
+﻿
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -330,9 +331,10 @@ void TestSerialization(Integrator const& integrator) {
   auto const instance1 = integrator.NewInstance(problem, append_state, step);
   serialization::IntegratorInstance message1;
   instance1->WriteToMessage(&message1);
-  auto const instance2 =
-      FixedStepSizeIntegrator<Integrator::ODE>::Instance::ReadFromMessage(
-          message1, harmonic_oscillator, append_state);
+  auto const instance2 = FixedStepSizeIntegrator<
+      typename Integrator::ODE>::Instance::ReadFromMessage(message1,
+                                                           harmonic_oscillator,
+                                                           append_state);
   serialization::IntegratorInstance message2;
   instance2->WriteToMessage(&message2);
   EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());

@@ -130,21 +130,6 @@ QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
 
 int const trajectory_size = 10;
 
-ACTION_P2(FillBarycentricRotatingDynamicFrame, primary_index, secondary_index) {
-  auto* extension = arg0->MutableExtension(
-                        serialization::BarycentricRotatingDynamicFrame::
-                            barycentric_rotating_dynamic_frame);
-  extension->set_primary(primary_index);
-  extension->set_secondary(secondary_index);
-}
-
-ACTION_P(FillBodyCentredDynamicFrame, centre_index) {
-  auto* extension = arg0->MutableExtension(
-                        serialization::BodyCentredNonRotatingDynamicFrame::
-                            body_centred_non_rotating_dynamic_frame);
-  extension->set_centre(centre_index);
-}
-
 ACTION_TEMPLATE(FillUniquePtr,
                 // Note the comma between int and k:
                 HAS_1_TEMPLATE_PARAMS(int, k),
