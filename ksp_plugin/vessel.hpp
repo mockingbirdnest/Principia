@@ -11,6 +11,7 @@
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/vessel_subsets.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -205,4 +206,14 @@ using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
+
+namespace base {
+
+template<>
+inline not_null<Subset<ksp_plugin::Vessel>::Node*>
+Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
+  return element.subset_node_.get();
+}
+
+}  // namespace base
 }  // namespace principia

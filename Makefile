@@ -1,44 +1,63 @@
+.SECONDEXPANSION:
+PERCENT := %
+
 CXX := clang++
+
+# TODO(egg): build benchmarks
+
+PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
+PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
+JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
+MOCK_TRANSLATION_UNITS         := $(wildcard */mock_*.cpp)
+BENCHMARK_TRANSLATION_UNITS    := $(wildcard benchmarks/*.cpp)
+TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
+TEST_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(MOCK_TRANSLATION_UNITS)
+TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
+LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
+BASE_LIB_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
+PROTO_FILES                    := $(wildcard */*.proto)
+PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
+PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
+
+DEP_DIR := deps/
+
+OBJ_DIRECTORY := obj/
+
+BIN_DIRECTORY := bin/
+TOOLS_BIN     := $(BIN_DIRECTORY)tools
+
+GMOCK_TRANSLATION_UNITS := \
+	$(DEP_DIR)googlemock/src/gmock-all.cc  \
+	$(DEP_DIR)googlemock/src/gmock_main.cc \
+	$(DEP_DIR)googletest/src/gtest-all.cc
 
 VERSION_HEADER := base/version.generated.h
 
-CPP_SOURCES := ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp 
-TOOLS_SOURCES := $(wildcard tools/*.cpp)
-PROTO_SOURCES := $(wildcard */*.proto)
-PROTO_CC_SOURCES := $(PROTO_SOURCES:.proto=.pb.cc)
-PROTO_HEADERS := $(PROTO_SOURCES:.proto=.pb.h)
-
-GENERATED_SOURCES := journal/profiles.generated.h \
-	journal/profiles.generated.cc \
-	journal/player.generated.cc \
+GENERATED_PROFILES := \
+	journal/profiles.generated.h     \
+	journal/profiles.generated.cc    \
+	journal/player.generated.cc      \
 	ksp_plugin/interface.generated.h \
 	ksp_plugin_adapter/interface.generated.cs
 
-STATUS_OBJECTS := base/status.o
-PROTO_OBJECTS := $(PROTO_CC_SOURCES:.cc=.o)
-TOOLS_OBJECTS := $(TOOLS_SOURCES:.cpp=.o)
-TEST_DIRS := astronomy base geometry integrators journal ksp_plugin_test numerics physics quantities testing_utilities
-TEST_BINS := $(addsuffix /test,$(TEST_DIRS))
+PROJECT_DIR           := ksp_plugin_adapter/
+SOLUTION_DIR          := ./
+ADAPTER_BUILD_DIR     := ksp_plugin_adapter/obj/
+ADAPTER_CONFIGURATION := Release
+FINAL_PRODUCTS_DIR    := Release/
+ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
+PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
-PROJECT_DIR := ksp_plugin_adapter/
-SOLUTION_DIR := ./
-ADAPTER_BUILD_DIR := ksp_plugin_adapter/obj
-ADAPTER_CONFIGURATION := Debug
-FINAL_PRODUCTS_DIR := Debug
-ADAPTER := $(ADAPTER_BUILD_DIR)/$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
-
-TOOLS_DIR := tools/
-TOOLS_BIN := tools/tools
-
-LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia/Linux64
-LIB := $(LIB_DIR)/principia.so
-
-DEP_DIR := deps
-LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
-TEST_INCLUDES := -I$(DEP_DIR)/googlemock/include -I$(DEP_DIR)/googletest/include -I $(DEP_DIR)/googlemock/ -I $(DEP_DIR)/googletest/ -I $(DEP_DIR)/eggsperimental_filesystem/
-INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include -I$(DEP_DIR)/Optional $(TEST_INCLUDES)
-SHARED_ARGS := -std=c++14 -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic \
-	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'\
+TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a
+LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+TEST_INCLUDES := -I$(DEP_DIR)googlemock/include -I$(DEP_DIR)googletest/include -I$(DEP_DIR)googlemock/ -I$(DEP_DIR)googletest/ -I$(DEP_DIR)benchmark/include 
+INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
+SHARED_ARGS   := \
+	-std=c++14 -stdlib=libc++ -O3 -g                                        \
+	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer              \
+	-Wall -Wpedantic                                                        \
+	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'   \
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
 	-DNDEBUG
 
@@ -58,118 +77,208 @@ ifeq ($(UNAME_S),Darwin)
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
 endif
 
-CXXFLAGS := -c $(SHARED_ARGS) $(INCLUDES)
+COMPILER_OPTIONS := -c $(SHARED_ARGS) $(INCLUDES)
 LDFLAGS := $(SHARED_ARGS)
 
+########## Dependency resolution
 
-.PHONY: all adapter lib tests tools check plugin run_tests clean
-.PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES)
-.DEFAULT_GOAL := plugin
-.SUFFIXES:
+BUILD_DIRECTORY := build/
 
-##### CONVENIENCE TARGETS #####
-all: $(LIB) $(ADAPTER) tests
+TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
+TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
+LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_TEST_DEPENDENCIES  := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
+JOURNAL_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
 
-adapter: $(ADAPTER)
-lib: $(LIB)
+# As a prerequisite for listing the includes of things that depend on
+# generated headers, we must generate said code.
+# Note that the prerequisites for dependency files are order-only, for
+# bootstrapping: once we have the dependency files, their own actual dependency
+# on generated headers and on the translation unit will be listed there and
+# recomputed as needed.
+$(PLUGIN_DEPENDENCIES)              : | $(GENERATED_PROFILES)
+$(PLUGIN_TEST_DEPENDENCIES)         : | $(GENERATED_PROFILES)
+$(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
 
-tests: $(TEST_BINS)
+$(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
+	@mkdir -p $(@D)
+	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
+	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	rm -f $@.temp
 
-tools: $(TOOLS_BIN)
+$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
+	@mkdir -p $(@D)
+	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
+	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
+	rm -f $@.temp
 
-check: run_tests
+ifneq ($(MAKECMDGOALS), clean)
+include $(LIBRARY_DEPENDENCIES)
+include $(TEST_OR_MOCK_DEPENDENCIES)
+endif
 
-##### CORE #####
-$(ADAPTER): $(GENERATED_SOURCES)
-	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
+########## Compilation
 
-$(TOOLS_BIN): $(PROTO_OBJECTS) $(TOOLS_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $(PROTO_OBJECTS) $(TOOLS_OBJECTS) -o $(TOOLS_BIN) $(LIBS)
-
-.SECONDEXPANSION:
-$(LIB): $(PROTO_OBJECTS) $$(ksp_plugin_objects) $$(journal_objects) $(LIB_DIR) $(STATUS_OBJECTS)
-	$(CXX) -shared $(LDFLAGS) $(PROTO_OBJECTS) $(STATUS_OBJECTS) $(ksp_plugin_objects) $(journal_objects) -o $(LIB) $(LIBS)
-
-$(LIB_DIR):
-	mkdir -p $(LIB_DIR)
+##### C# and C++ code generation
 
 $(VERSION_HEADER): .git
 	./generate_version_header.sh
 
-$(GENERATED_SOURCES): $(TOOLS_BIN) serialization/journal.proto
-	tools/tools generate_profiles
+# We don't do dependency resolution on the protos; we compile them all at once.
+$(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
+	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $^ --cpp_out=.
 
-%.pb.cc %.pb.h: %.proto
-	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $< --cpp_out=.
+$(GENERATED_PROFILES) : $(TOOLS_BIN)
+	$^ generate_profiles
 
-%.pb.o: %.pb.cc $(PROTO_HEADERS)
-	$(CXX) $(CXXFLAGS) $< -o $@ 
+##### C++ compilation
 
-tools/%.o: tools/%.cpp $(VERSION_HEADER) $(PROTO_HEADERS)
-	$(CXX) $(CXXFLAGS) $< -o $@
+TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
+LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
+PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
+GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
+TOOLS_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+PLUGIN_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
+JOURNAL_LIB_OBJECTS  := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
+BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
+TEST_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
+MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(MOCK_TRANSLATION_UNITS:.cpp=.o))
 
-%.o: %.cpp $(VERSION_HEADER) $(PROTO_HEADERS) $(GENERATED_SOURCES)
-	$(CXX) $(CXXFLAGS) $< -o $@ 
+$(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
-%.o: %.cc $(VERSION_HEADER) $(PROTO_HEADERS) $(GENERATED_SOURCES)
-	$(CXX) $(CXXFLAGS) $< -o $@ 
+$(GMOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
-##### DISTRIBUTION #####
-plugin: $(ADAPTER) $(LIB)
-	cd $(FINAL_PRODUCTS_DIR); zip -r Principia-$(UNAME_S)-$(shell git describe)-$(shell date "+%Y-%m-%d").zip GameData/
+$(LIBRARY_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
-##### TESTS #####
-run_tests: tests
+$(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
+
+########## Linkage
+
+##### tools
+
+$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+
+##### KSP plugin
+
+KSP_PLUGIN := $(PLUGIN_DIRECTORY)principia.so
+
+$(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) -shared $(LDFLAGS) $^ $(LIBS) -o $@
+
+##### Tests
+
+TEST_BINS                            := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
+PACKAGE_TEST_BINS                    := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
+PLUGIN_DEPENDENT_TEST_BINS           := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
+PLUGIN_DEPENDENT_PACKAGE_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(PACKAGE_TEST_BINS))
+PLUGIN_INDEPENDENT_TEST_BINS         := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
+PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS), $(PACKAGE_TEST_BINS))
+PRINCIPIA_TEST_BIN                   := $(BIN_DIRECTORY)test
+
+$(TEST_BINS)          : $(BIN_DIRECTORY)% : $(OBJ_DIRECTORY)%.o
+$(PACKAGE_TEST_BINS)  : $(BIN_DIRECTORY)%test : $$(filter $(OBJ_DIRECTORY)%$$(PERCENT), $(TEST_OBJECTS))
+$(PRINCIPIA_TEST_BIN) : $(TEST_OBJECTS)
+
+$(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+
+# For tests that depend on the plugin, we link against the principia shared
+# library instead of statically linking the objects.  Also note that we do not
+# link the $(LIBS), since they are in the $(KSP_PLUGIN).  We still need pthread
+# though.
+# NOTE(egg): this assumes that only the plugin-dependent tests need to be linked
+# against mock objects.  The classes further up that are big enough to be mocked
+# are likely to be highly templatized, so this will probably hold for a while.
+
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
+
+########## Testing
+
+TEST_TARGETS         := $(patsubst $(BIN_DIRECTORY)%, %, $(TEST_BINS))
+PACKAGE_TEST_TARGETS := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_TEST_BINS))
+
+# make base/not_null_test compiles bin/base/not_null_test and runs it.
+$(TEST_TARGETS) : % : $(BIN_DIRECTORY)%
+	-$^
+
+# make base/test compiles bin/base/test and runs it.
+$(PACKAGE_TEST_TARGETS) : % : $(BIN_DIRECTORY)%
+	-$^
+
+test: $(PRINCIPIA_TEST_BIN)
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
-	-astronomy/test
-	-base/test
-	-geometry/test
-	-integrators/test
-	-ksp_plugin_test/test
-	-physics/test
-	-quantities/test
-	-testing_utilities/test
-	-numerics/test
+	-$^
 
-TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
+########## Adapter
 
-GMOCK_SOURCE=$(DEP_DIR)/googlemock/src/gmock-all.cc $(DEP_DIR)/googlemock/src/gmock_main.cc $(DEP_DIR)/googletest/src/gtest-all.cc
-GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
+$(ADAPTER): $(GENERATED_PROFILES)
+	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
-test_objects = $(patsubst %.cpp,%.o,$(wildcard $(@D)/*.cpp))
-ksp_plugin_objects = $(patsubst %.cpp,%.o,$(wildcard ksp_plugin/*.cpp))
-journal_objects = journal/profiles.o journal/recorder.o
+######### Distribution
 
-# We need to special-case ksp_plugin_test and journal because they require object files from ksp_plugin
-# and journal.  The other tests don't do this.
-.SECONDEXPANSION:
-ksp_plugin_test/test: $$(ksp_plugin_objects) $$(journal_objects) $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+release: $(ADAPTER) $(KSP_PLUGIN)
+	cd $(FINAL_PRODUCTS_DIR); zip -r principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long).zip GameData/
 
-# We cannot link the player test because we do not have the benchmarks.  We only build the recorder test.
-.SECONDEXPANSION:
-journal/test: $$(ksp_plugin_objects) $$(journal_objects) journal/player.o journal/recorder_test.o $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
+########## Cleaning
 
-.SECONDEXPANSION:
-%/test: $$(test_objects) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(STATUS_OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -o $@
-
-##### CLEAN #####
 clean:
-	rm -rf $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm -f $(LIB) $(VERSION_HEADER) $(PROTO_HEADERS) $(PROTO_CC_SOURCES) $(GENERATED_SOURCES) $(TEST_BINS) $(TOOLS_BIN) $(LIB) */*.o
+	rm -rf $(BUILD_DIRECTORY) $(OBJ_DIRECTORY) $(BIN_DIRECTORY) $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
+	rm -f $(VERSION_HEADER) $(PROTO_TRANSLATION_UNITS) $(PROTO_HEADERS) $(GENERATED_PROFILES)
 
-##### EVERYTHING #####
-# Compiles everything, but does not link anything.  Used to check standard compliance on code that we don't want to run on *nix.
-compile_everything: $(patsubst %.cpp,%.o,$(wildcard */*.cpp))
+REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f | awk NF{p=1}p > $$f.nobom; mv $$f.nobom $$f; done
+RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf\n")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
+
+normalize_bom:
+	$(REMOVE_BOM)
+	$(RESTORE_BOM)
+
+##### clang-tidy
+
+$(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
+	@mkdir -p $(@D)
+	clang-tidy $< $(tidy_options) -- $(COMPILER_OPTIONS) $(TEST_INCLUDES)
+
+$(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
+	@mkdir -p $(@D)
+	clang-tidy $< $(tidy_options) -- $(COMPILER_OPTIONS)
+
+TIDY_TARGETS = $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
+
+########## Convenience targets
+all: test release
+tools: $(TOOLS_BIN)
+adapter: $(ADAPTER)
+plugin: $(KSP_PLUGIN)
+each_test : $(TEST_TARGETS)
+each_package_test : $(PACKAGE_TEST_TARGETS)
+tidy : $(TIDY_TARGETS)
+
+.PHONY: all tools adapter plugin each_test test release clean normalize_bom tidy $(TIDY_TARGETS) $(TEST_TARGETS) $(PACKAGE_TEST_TARGETS)
+.PRECIOUS: %.o $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS)
+.DEFAULT_GOAL := all
+.SUFFIXES:
+
+an_apple_pie : the_universe
 
 ##### IWYU #####
 IWYU := deps/include-what-you-use/bin/include-what-you-use
 IWYU_FLAGS := -Xiwyu --max_line_length=200 -Xiwyu --mapping_file="iwyu.imp" -Xiwyu --check_also=*/*.hpp
 IWYU_NOSAFE_HEADERS := --nosafe_headers
-REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f | awk NF{p=1}p > $$f.nobom; mv $$f.nobom $$f; done
-RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf\n")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done
 FIX_INCLUDES := deps/include-what-you-use/bin/fix_includes.py
 IWYU_CHECK_ERROR := tee /dev/tty | test ! "`grep ' error: '`"
 IWYU_TARGETS := $(wildcard */*.cpp)
@@ -199,6 +308,3 @@ iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
 iwyu_clean:
 	$(IWYU_CLEAN)
 
-normalize_bom:
-	$(REMOVE_BOM)
-	$(RESTORE_BOM)

@@ -1,8 +1,10 @@
+﻿
 #include "ksp_plugin/vessel_subsets.hpp"
 
 #include <list>
 
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/vessel.hpp"
 
 namespace principia {
 

@@ -40,6 +40,7 @@ class SymmetricLinearMultistepIntegrator
   static constexpr int velocity_order_ = order_ - 1;
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+  using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr int order = order_;
 

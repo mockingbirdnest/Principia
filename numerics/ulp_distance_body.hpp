@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "numerics/ulp_distance.hpp"

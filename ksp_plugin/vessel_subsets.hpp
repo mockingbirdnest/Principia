@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include <list>
@@ -5,12 +6,16 @@
 #include "base/disjoint_sets.hpp"
 
 #include "ksp_plugin/pile_up.hpp"
-#include "ksp_plugin/vessel.hpp"
 
 // This ksp_plugin file is in namespace |base| to specialize templates declared
 // therein.
 
 namespace principia {
+
+namespace ksp_plugin {
+FORWARD_DECLARE_FROM(vessel, class, Vessel);
+}  // namespace ksp_plugin
+
 namespace base {
 
 // Within an union-find on |Vessel|s, we maintain lists of the elements in the
@@ -67,14 +72,6 @@ class Subset<ksp_plugin::Vessel>::Properties final {
   // The list of vessels in this subset.
   std::list<not_null<ksp_plugin::Vessel*>> vessels_;
 };
-
-// TODO(egg): figure out why the compiler complains if I put the implementation
-// in the cpp.
-template<>
-not_null<Subset<ksp_plugin::Vessel>::Node*>
-Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
-  return element.subset_node_.get();
-}
 
 }  // namespace base
 }  // namespace principia
