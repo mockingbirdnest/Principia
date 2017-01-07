@@ -26,7 +26,7 @@ class Recorder final {
  private:
   std::ofstream stream_;
 
-  static Recorder* active_recorder_;
+  static thread_local Recorder* active_recorder_;
 
   template<typename>
   friend class Method;

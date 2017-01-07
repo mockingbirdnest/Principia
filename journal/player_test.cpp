@@ -3,6 +3,7 @@
 
 #include <list>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "benchmark/benchmark.h"
@@ -39,14 +40,7 @@ class PlayerTest : public ::testing::Test {
       : test_info_(testing::UnitTest::GetInstance()->current_test_info()),
         test_case_name_(test_info_->test_case_name()),
         test_name_(test_info_->name()),
-        plugin_(interface::principia__NewPlugin("0 s", "0 s", 0)),
-        recorder_(new Recorder(test_name_ + ".journal.hex")) {
-    Recorder::Activate(recorder_);
-  }
-
-  ~PlayerTest() override {
-    Recorder::Deactivate();
-  }
+        plugin_(interface::principia__NewPlugin("0 s", "0 s", 0)) {}
 
   template<typename Profile>
   bool RunIfAppropriate(serialization::Method const& method_in,
@@ -59,25 +53,31 @@ class PlayerTest : public ::testing::Test {
   std::string const test_case_name_;
   std::string const test_name_;
   std::unique_ptr<ksp_plugin::Plugin> plugin_;
-  Recorder* recorder_;
 };
 
 TEST_F(PlayerTest, PlayTiny) {
-  {
-    Method<NewPlugin> m({"1 s", "2 s", 3});
-    m.Return(plugin_.get());
-  }
-  {
-    const ksp_plugin::Plugin* plugin = plugin_.get();
-    Method<DeletePlugin> m({&plugin}, {&plugin});
-    m.Return();
-  }
+  // Do the recording in a separate thread to make sure that it activates using
+  // a different static variable than the one in the plugin dynamic library.
+  std::thread recorder([this]() {
+    Recorder* const r(new Recorder(test_name_ + ".journal.hex"));
+    Recorder::Activate(r);
+
+    {
+      Method<NewPlugin> m({"1 s", "2 s", 3});
+      m.Return(plugin_.get());
+    }
+    {
+      const ksp_plugin::Plugin* plugin = plugin_.get();
+      Method<DeletePlugin> m({&plugin}, {&plugin});
+      m.Return();
+    }
+    Recorder::Deactivate();
+  });
+  recorder.join();
 
   Player player(test_name_ + ".journal.hex");
 
-  // Replay the journal.  Note that the journal doesn't grow as we replay
-  // because we didn't call principia__ActivateRecorder so there is no active
-  // journal in the ksp_plugin assembly.
+  // Replay the journal.
   int count = 0;
   while (player.Play()) {
     ++count;
