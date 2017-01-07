@@ -26,10 +26,12 @@ using base::not_null;
 using base::IteratorOn;
 using base::Subset;
 using geometry::Instant;
+using geometry::Vector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::MasslessBody;
+using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Mass;
 
@@ -125,12 +127,17 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  // The vessel must satisfy |is_initialized()|.
-  virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
-  static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
-      serialization::Vessel const& message,
-      not_null<Ephemeris<Barycentric>*> ephemeris,
-      not_null<Celestial const*> parent);
+  // Clears or increments the mass.  Event though a vessel is massless in the
+  // sense that it doesn't exert gravity, it has a mass used to determine its
+  // intrinsic acceleration.
+  virtual void clear_mass();
+  virtual void increment_mass(Mass const& mass);
+
+  // Clears or increments the intrinsic force exerted on the vessel by its
+  // engines (or a tractor beam).
+  virtual void clear_intrinsic_force();
+  virtual void increment_intrinsic_force(
+      Vector<Force, Barycentric> const& force);
 
   // Requires |!is_piled_up()|.
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
@@ -146,6 +153,13 @@ class Vessel {
   // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
   // After this call, all vessels in that |PileUp| are no longer piled up.
   void clear_pile_up();
+
+  // The vessel must satisfy |is_initialized()|.
+  virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
+  static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
+      serialization::Vessel const& message,
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      not_null<Celestial const*> parent);
 
  protected:
   // For mocking.

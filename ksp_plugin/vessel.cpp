@@ -177,6 +177,32 @@ void Vessel::UpdatePrediction(Instant const& last_time) {
   FlowPrediction(last_time);
 }
 
+void Vessel::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
+  CHECK(!is_piled_up());
+  containing_pile_up_ = pile_up;
+}
+
+std::experimental::optional<IteratorOn<std::list<PileUp>>>
+Vessel::containing_pile_up() const {
+  return containing_pile_up_;
+}
+
+bool Vessel::is_piled_up() const {
+  // TODO(egg): |has_value()| once we have a standard |optional|.
+  return static_cast<bool>(containing_pile_up_);
+}
+
+void Vessel::clear_pile_up() {
+  if (is_piled_up()) {
+    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
+    for (not_null<Vessel*> const vessel : pile_up.iterator()->vessels()) {
+      vessel->containing_pile_up_ = std::experimental::nullopt;
+    }
+    CHECK(!is_piled_up());
+    pile_up.Erase();
+  }
+}
+
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   CHECK(is_initialized());
@@ -273,32 +299,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->is_dirty_ = message.is_dirty();
   }
   return std::move(vessel);
-}
-
-void Vessel::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
-  CHECK(!is_piled_up());
-  containing_pile_up_ = pile_up;
-}
-
-std::experimental::optional<IteratorOn<std::list<PileUp>>>
-Vessel::containing_pile_up() const {
-  return containing_pile_up_;
-}
-
-bool Vessel::is_piled_up() const {
-  // TODO(egg): |has_value()| once we have a standard |optional|.
-  return static_cast<bool>(containing_pile_up_);
-}
-
-void Vessel::clear_pile_up() {
-  if (is_piled_up()) {
-    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
-    for (not_null<Vessel*> const vessel : pile_up.iterator()->vessels()) {
-      vessel->containing_pile_up_ = std::experimental::nullopt;
-    }
-    CHECK(!is_piled_up());
-    pile_up.Erase();
-  }
 }
 
 Vessel::Vessel()
