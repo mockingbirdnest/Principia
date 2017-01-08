@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5103.
+  extensions 5000 to 5999;  // Last used: 5107.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -1222,6 +1222,30 @@ message VesselBinormal {
   optional Return return = 3;
 }
 
+message VesselClearIntrinsicForce {
+  extend Method {
+    optional VesselClearIntrinsicForce extension = 5104;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  optional In in = 1;
+}
+
+message VesselClearMass {
+  extend Method {
+    optional VesselClearMass extension = 5105;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  optional In in = 1;
+}
+
 message VesselFromParent {
   extend Method {
     optional VesselFromParent extension = 5034;
@@ -1252,6 +1276,32 @@ message VesselGetPredictionAdaptiveStepParameters {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message VesselIncrementIntrinsicForce {
+  extend Method {
+    optional VesselIncrementIntrinsicForce extension = 5106;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ intrinsic_force_in_kilonewtons = 3;
+  }
+  optional In in = 1;
+}
+
+message VesselIncrementMass {
+  extend Method {
+    optional VesselIncrementMass extension = 5107;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double mass_in_tonnes = 3;
+  }
+  optional In in = 1;
 }
 
 message VesselNormal {
