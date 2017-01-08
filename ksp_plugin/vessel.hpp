@@ -127,17 +127,19 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  // Clears or increments the mass.  Event though a vessel is massless in the
-  // sense that it doesn't exert gravity, it has a mass used to determine its
-  // intrinsic acceleration.
+  // Clears, increments or returns the mass.  Event though a vessel is massless
+  // in the sense that it doesn't exert gravity, it has a mass used to determine
+  // its intrinsic acceleration.
   virtual void clear_mass();
   virtual void increment_mass(Mass const& mass);
+  virtual Mass const& mass() const;
 
-  // Clears or increments the intrinsic force exerted on the vessel by its
-  // engines (or a tractor beam).
+  // Clears, increments or returns the intrinsic force exerted on the vessel by
+  // its engines (or a tractor beam).
   virtual void clear_intrinsic_force();
   virtual void increment_intrinsic_force(
-      Vector<Force, Barycentric> const& force);
+      Vector<Force, Barycentric> const& intrinsic_force);
+  virtual Vector<Force, Barycentric> const& intrinsic_force() const;
 
   // Requires |!is_piled_up()|.
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
@@ -197,6 +199,9 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
+
+  Mass mass_;
+  Vector<Force, Barycentric> intrinsic_force_;
 
   // The |PileUp| containing |this|.
   std::experimental::optional<IteratorOn<std::list<PileUp>>>

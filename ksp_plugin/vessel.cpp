@@ -11,6 +11,7 @@
 #include "ksp_plugin/vessel_subsets.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
+#include "vessel.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -175,6 +176,31 @@ void Vessel::UpdatePrediction(Instant const& last_time) {
                         prolongation_last.degrees_of_freedom());
   }
   FlowPrediction(last_time);
+}
+
+void Vessel::clear_mass() {
+  mass_ = Mass();
+}
+
+void Vessel::increment_mass(Mass const& mass) {
+  mass_ += mass;
+}
+
+Mass const & Vessel::mass() const {
+  return mass_;
+}
+
+void Vessel::clear_intrinsic_force() {
+  intrinsic_force_ = Vector<Force, Barycentric>();
+}
+
+void Vessel::increment_intrinsic_force(
+    Vector<Force, Barycentric> const& intrinsic_force) {
+  intrinsic_force_ += intrinsic_force;
+}
+
+Vector<Force, Barycentric> const & Vessel::intrinsic_force() const {
+  return intrinsic_force_;
 }
 
 void Vessel::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
