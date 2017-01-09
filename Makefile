@@ -28,9 +28,9 @@ BIN_DIRECTORY := bin/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 GMOCK_TRANSLATION_UNITS := \
-	$(DEP_DIR)googlemock/src/gmock-all.cc  \
-	$(DEP_DIR)googlemock/src/gmock_main.cc \
-	$(DEP_DIR)googletest/src/gtest-all.cc
+	$(DEP_DIR)googletest/googlemock/src/gmock-all.cc  \
+	$(DEP_DIR)googletest/googlemock/src/gmock_main.cc \
+	$(DEP_DIR)googletest/googletest/src/gtest-all.cc
 
 VERSION_HEADER := base/version.generated.h
 
@@ -51,7 +51,9 @@ PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a
 LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
-TEST_INCLUDES := -I$(DEP_DIR)googlemock/include -I$(DEP_DIR)googletest/include -I$(DEP_DIR)googlemock/ -I$(DEP_DIR)googletest/ -I$(DEP_DIR)benchmark/include 
+TEST_INCLUDES := \
+	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
+	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
 INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
 SHARED_ARGS   := \
 	-std=c++14 -stdlib=libc++ -O3 -g                                        \
