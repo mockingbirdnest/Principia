@@ -849,14 +849,16 @@ public partial class PrincipiaPluginAdapter
      }
      time_is_advancing_ = true;
 
+     // TODO(egg): pass vessel positions here.
+
      plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
 
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
      // transforms of loaded vessels & their parts.
-     // TODO(egg): pass vessel positions to the plugin, then get the nudged
-     // positions and call Vessel.SetPosition.  Hopefully that will be enough.
+     // TODO(egg): get vessel nudged positions and call Vessel.SetPosition.
+     // Hopefully that will be enough.
    }
 
   private void SetBodyFramesAndPrecalculateVessels() {
@@ -878,8 +880,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
- private
-  void ReportNonConservativeForces() {
+  private void ReportNonConservativeForces() {
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).

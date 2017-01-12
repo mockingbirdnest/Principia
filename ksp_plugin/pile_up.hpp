@@ -43,7 +43,12 @@ class PileUp final {
   // the histories of the vessels.  After this call, the histories of |*this|
   // and of its vessels have a (possibly non-authoritative) final point exactly
   // at |t|.
-  void AdvanceTime(Ephemeris<Barycentric>& ephemeris, Instant const& t);
+  void AdvanceTime(
+      Ephemeris<Barycentric>& ephemeris,
+      Instant const& t,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_step_parameters);
 
  private:
   std::list<not_null<Vessel*>> vessels_;
@@ -51,14 +56,9 @@ class PileUp final {
   Vector<Force, Barycentric> intrinsic_force_;
   DiscreteTrajectory<Barycentric> history_;
   // True if the last point should be flowed from; otherwise, the last point
-  // should be removed before flowing the trajectory (in that case, there is
-  // a penultimate point, and it is authoritative).
+  // should be removed before flowing the trajectory (in that case, there is a
+  // penultimate point, and it is authoritative).
   bool last_point_is_authoritative_;
-
-  Ephemeris<Barycentric>::FixedStepParameters const
-      fixed_step_parameters_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters const
-      adaptive_step_parameters_;
 };
 
 }  // namespace internal_pile_up
