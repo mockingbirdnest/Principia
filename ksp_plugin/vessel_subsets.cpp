@@ -18,6 +18,8 @@ Subset<Vessel>::Properties::Properties(not_null<ksp_plugin::Vessel*> vessel) {
     missing_ = vessel->containing_pile_up()->iterator()->vessels().size() - 1;
   }
   vessels_.emplace_back(vessel);
+  total_mass_ = vessel->mass();
+  total_intrinsic_force_ = vessel->intrinsic_force();
 }
 
 void Subset<ksp_plugin::Vessel>::Properties::Collect(
@@ -36,6 +38,8 @@ void Subset<ksp_plugin::Vessel>::Properties::Collect(
       vessel->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
     }
   }
+  PileUp& pile_up = *vessels_.front()->containing_pile_up()->iterator();
+  pile_up.set_mass_and_intrinsic_force(total_mass_, total_intrinsic_force_);
 }
 
 bool Subset<ksp_plugin::Vessel>::Properties::SubsetsOfSamePileUp(
@@ -71,6 +75,8 @@ void Subset<Vessel>::Properties::MergeWith(Properties& other) {
     other.vessels_.front()->clear_pile_up();
   }
   vessels_.splice(vessels_.end(), other.vessels_);
+  total_mass_ += other.total_mass_;
+  total_intrinsic_force_ += other.total_intrinsic_force_;
 }
 
 }  // namespace base
