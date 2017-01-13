@@ -90,7 +90,6 @@ void PileUp::AdvanceTime(
   ++it;
   for (; it != history_.End(); ++it) {
     auto const& pile_up_dof = it.degrees_of_freedom();
-    // TODO(egg): somehow append to the histories of the vessels.
     RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
         RigidTransformation<Barycentric, RigidPileUp>(
             pile_up_dof.position(),

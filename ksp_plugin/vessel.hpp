@@ -74,6 +74,7 @@ class Vessel {
 
   // These three functions require |is_initialized()|.
   virtual DiscreteTrajectory<Barycentric> const& history() const;
+  virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
   // Requires |has_flight_plan()|.
@@ -164,7 +165,9 @@ class Vessel {
 
   void AppendToHistory(Instant const& time,
                        DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-                       bool authoritative);
+                       bool authoritative) {
+    LOG(FATAL) << "Not yet implemented";
+  }
 
  protected:
   // For mocking.
@@ -187,8 +190,16 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
+  // The past and present trajectory of the body. It ends at |HistoryTime()|
+  // unless |*this| was created after |HistoryTime()|, in which case it ends
+  // at |current_time_|.  It is advanced with a constant time step.
   std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
   bool last_history_point_is_authoritative_;
+
+  // A child trajectory of |*history_|. It is forked at |history_->last_time()|
+  // and continues until |current_time_|. It is computed with a non-constant
+  // timestep, which breaks symplecticity.
+  DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
 
   // Child trajectory of |*history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
