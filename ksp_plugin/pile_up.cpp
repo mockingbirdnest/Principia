@@ -52,7 +52,7 @@ void PileUp::AdvanceTime(
     psychohistory_.ForgetAfter(penultimate.time());
     psychohistory_is_history_ = true;
   }
-  auto const last_preexisting_authoritative_point_ = psychohistory_.last();
+  auto const last_preexisting_historical_point = psychohistory_.last();
 
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     ephemeris.FlowWithFixedStep(
@@ -87,7 +87,7 @@ void PileUp::AdvanceTime(
         adaptive_step_parameters,
         Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
   }
-  auto it = last_preexisting_authoritative_point_;
+  auto it = last_preexisting_historical_point;
   ++it;
   for (; it != psychohistory_.End(); ++it) {
     auto const& pile_up_dof = it.degrees_of_freedom();

@@ -884,9 +884,17 @@ public partial class PrincipiaPluginAdapter
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
-    foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-      foreach (Part part in vessel.parts) {
-        // TODO(egg): Tell the plugin about part.force, part.forces
+    if (PluginRunning()) {
+      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+        String vessel_guid = vessel.id.ToString();
+        foreach (Part part in vessel.parts) {
+          plugin_.VesselIncrementMass(vessel_guid, part.mass);
+          plugin_.VesselIncrementIntrinsicForce(vessel_guid, (XYZ)part.force);
+          foreach(var force in part.forces) {
+            plugin_.VesselIncrementIntrinsicForce(vessel_guid,
+                                                  (XYZ)force.force);
+          }
+        }
       }
     }
   }
