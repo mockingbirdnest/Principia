@@ -44,8 +44,8 @@ class PileUp final {
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the vessels.  After this call, the histories of |*this|
-  // and of its vessels have a (possibly non-authoritative) final point exactly
-  // at |t|.
+  // and of its vessels have a (possibly ahistorical) final point exactly at
+  // |t|.
   void AdvanceTime(
       Ephemeris<Barycentric>& ephemeris,
       Instant const& t,
@@ -57,11 +57,11 @@ class PileUp final {
   std::list<not_null<Vessel*>> vessels_;
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
-  DiscreteTrajectory<Barycentric> history_;
-  // True if the last point should be flowed from; otherwise, the last point
-  // should be removed before flowing the trajectory (in that case, there is a
-  // penultimate point, and it is authoritative).
-  bool last_point_is_authoritative_;
+  DiscreteTrajectory<Barycentric> psychohistory_;
+  // True if the last point of the |psychohistory_| should be flowed from;
+  // otherwise, the last point should be removed before flowing the trajectory
+  // (in that case, there is a penultimate point, and it is historical).
+  bool psychohistory_is_history_;
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
   // of freedom of the vessels in the frame of that can be set, however their
   // motion is not integrated; this is simply applied as an offset from the
