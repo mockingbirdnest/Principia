@@ -50,9 +50,9 @@ TEST_F(TimeScalesDeathTest, WarWasBeginning) {
 }
 
 TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
-  EXPECT_DEATH("2017-06-30T23:59:60"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2017-06-30T24:00:00"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2017-07-01T00:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2017-12-31T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2017-12-31T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2018-01-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
