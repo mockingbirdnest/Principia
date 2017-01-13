@@ -6,12 +6,16 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_pile_up {
 
+using base::FindOrDie;
+using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
+using geometry::OrthogonalMap;
 using geometry::Position;
 using physics::DegreesOfFreedom;
-
-namespace internal_pile_up {
+using physics::RigidMotion;
+using physics::RigidTransformation;
 
 PileUp::PileUp(std::list<not_null<Vessel*>>&& vessels)
     : vessels_(std::move(vessels)) {
@@ -47,6 +51,7 @@ void PileUp::AdvanceTime(
     history_.ForgetAfter(penultimate.time());
     last_point_is_authoritative_ = true;
   }
+  auto const last_preexisting_authoritative_point_ = history_.last();
 
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     ephemeris.FlowWithFixedStep(
@@ -81,7 +86,28 @@ void PileUp::AdvanceTime(
         adaptive_step_parameters,
         Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
   }
-  // TODO(egg): somehow append to the histories of the vessels.
+  auto it = last_preexisting_authoritative_point_;
+  ++it;
+  for (; it != history_.End(); ++it) {
+    auto const& pile_up_dof = it.degrees_of_freedom();
+    // TODO(egg): somehow append to the histories of the vessels.
+    RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
+        RigidTransformation<Barycentric, RigidPileUp>(
+            pile_up_dof.position(),
+            RigidPileUp::origin,
+            OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
+        AngularVelocity<Barycentric>{},
+        pile_up_dof.velocity());
+    auto const to_barycentric = from_barycentric.Inverse();
+    bool const authoritative =
+        last_point_is_authoritative_ || it != history_.last();
+    for (not_null<Vessel*> const vessel : vessels_)  {
+      vessel->AppendToHistory(
+          it.time(),
+          to_barycentric(FindOrDie(vessel_degrees_of_freedom_, vessel)),
+          authoritative);
+    }
+  }
 }
 
 }  // namespace internal_pile_up

@@ -54,7 +54,6 @@ not_null<MasslessBody const*> Vessel::body() const {
 }
 
 bool Vessel::is_initialized() const {
-  CHECK_EQ(history_ == nullptr, prolongation_ == nullptr);
   CHECK_EQ(history_ == nullptr, prediction_ == nullptr);
   return history_ != nullptr;
 }
@@ -70,11 +69,6 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 DiscreteTrajectory<Barycentric> const& Vessel::history() const {
   CHECK(is_initialized());
   return *history_;
-}
-
-DiscreteTrajectory<Barycentric> const& Vessel::prolongation() const {
-  CHECK(is_initialized());
-  return *prolongation_;
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {

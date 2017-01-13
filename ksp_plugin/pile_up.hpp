@@ -18,11 +18,14 @@ FORWARD_DECLARE_FROM(vessel, class, Vessel);
 namespace internal_pile_up {
 
 using base::not_null;
+using geometry::Frame;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DiscreteTrajectory;
+using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::MasslessBody;
+using physics::RelativeDegreesOfFreedom;
 using quantities::Force;
 using quantities::Mass;
 
@@ -59,6 +62,15 @@ class PileUp final {
   // should be removed before flowing the trajectory (in that case, there is a
   // penultimate point, and it is authoritative).
   bool last_point_is_authoritative_;
+  // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
+  // of freedom of the vessels in the frame of that can be set, however their
+  // motion is not integrated; this is simply applied as an offset from the
+  // rigid body motion of the |PileUp|.
+  using RigidPileUp = Frame<serialization::Frame::PluginTag,
+                            serialization::Frame::RIGID_PILE_UP,
+                            /*frame_is_inertial=*/false>;
+  std::map<not_null<Vessel*>, DegreesOfFreedom<RigidPileUp>>
+      vessel_degrees_of_freedom_;
 };
 
 }  // namespace internal_pile_up
