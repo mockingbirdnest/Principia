@@ -116,6 +116,9 @@ void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_initialized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
+  // TODO(egg): proper initialization.
+  psychohistory_.Append(time, degrees_of_freedom);
+  last_psychohistory_point_is_authoritative_ = true;
   prolongation_ = history_->NewForkAtLast();
   prediction_ = history_->NewForkAtLast();
 }
@@ -223,6 +226,7 @@ void Vessel::clear_pile_up() {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Vessel*> const vessel : pile_up.iterator()->vessels()) {
       vessel->containing_pile_up_ = std::experimental::nullopt;
+      vessel->last_psychohistory_point_is_authoritative_ = true;
     }
     CHECK(!is_piled_up());
     pile_up.Erase();
@@ -324,7 +328,31 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     }
     vessel->is_dirty_ = message.is_dirty();
   }
+  // TODO(egg): serialize the psychohistory instead of horribly piggybacking.
+  vessel->psychohistory_.Append(vessel->history_->last().time(),
+                                vessel->history_->last().degrees_of_freedom());
+  vessel->last_psychohistory_point_is_authoritative_ = true;
   return std::move(vessel);
+}
+
+void Vessel::AppendToPsychohistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+    bool authoritative) {
+  if (!last_psychohistory_point_is_authoritative_) {
+    auto const penultimate = --psychohistory_.last();
+    psychohistory_.ForgetAfter(penultimate.time());
+  }
+  psychohistory_.Append(time, degrees_of_freedom);
+  last_psychohistory_point_is_authoritative_ = authoritative;
+}
+
+DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
+  return psychohistory_;
+}
+
+bool Vessel::last_point_psychohistory_point_is_authoritative() const {
+  return last_psychohistory_point_is_authoritative_;
 }
 
 Vessel::Vessel()

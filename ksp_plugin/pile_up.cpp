@@ -21,10 +21,11 @@ PileUp::PileUp(std::list<not_null<Vessel*>>&& vessels)
     : vessels_(std::move(vessels)) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> barycentre;
   for (not_null<Vessel*> vessel : vessels_) {
-    barycentre.Add(vessel->prolongation().last().degrees_of_freedom(),
+    CHECK(vessel->last_point_psychohistory_point_is_authoritative());
+    barycentre.Add(vessel->psychohistory().last().degrees_of_freedom(),
                    vessel->mass());
   }
-  history_.Append(vessels_.front()->prolongation().last().time(),
+  history_.Append(vessels_.front()->psychohistory().last().time(),
                   barycentre.Get());
   last_point_is_authoritative_ = true;
 }
@@ -101,7 +102,7 @@ void PileUp::AdvanceTime(
     bool const authoritative =
         last_point_is_authoritative_ || it != history_.last();
     for (not_null<Vessel*> const vessel : vessels_)  {
-      vessel->AppendToHistory(
+      vessel->AppendToPsychohistory(
           it.time(),
           to_barycentric(FindOrDie(vessel_degrees_of_freedom_, vessel)),
           authoritative);

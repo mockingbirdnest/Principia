@@ -163,11 +163,13 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       not_null<Celestial const*> parent);
 
-  void AppendToHistory(Instant const& time,
-                       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-                       bool authoritative) {
-    LOG(FATAL) << "Not yet implemented";
-  }
+  void AppendToPsychohistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+      bool authoritative);
+
+  DiscreteTrajectory<Barycentric> const& psychohistory() const;
+  bool last_point_psychohistory_point_is_authoritative() const;
 
  protected:
   // For mocking.
@@ -194,7 +196,10 @@ class Vessel {
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.  It is advanced with a constant time step.
   std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
-  bool last_history_point_is_authoritative_;
+
+  // The new implementation of history, also encompasses the prolongation.
+  DiscreteTrajectory<Barycentric> psychohistory_;
+  bool last_psychohistory_point_is_authoritative_;
 
   // A child trajectory of |*history_|. It is forked at |history_->last_time()|
   // and continues until |current_time_|. It is computed with a non-constant
