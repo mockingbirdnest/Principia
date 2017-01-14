@@ -53,7 +53,7 @@ void principia__VesselIncrementIntrinsicForce(
     XYZ const intrinsic_force_in_kilonewtons) {
   journal::Method<journal::VesselIncrementIntrinsicForce> m(
       {plugin, vessel_guid, intrinsic_force_in_kilonewtons});
-  // TODO(egg): this is profoundly incorrect! the vector is given in World, not
+  // TODO(phl): this is profoundly incorrect! the vector is given in World, not
   // Barycentric (KSP doesn't know about Barycentric).
   GetVessel(*plugin, vessel_guid)
       ->increment_intrinsic_force(Vector<Force, Barycentric>(

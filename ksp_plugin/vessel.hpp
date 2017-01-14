@@ -169,7 +169,7 @@ class Vessel {
       bool authoritative);
 
   DiscreteTrajectory<Barycentric> const& psychohistory() const;
-  bool psychohistory_is_history() const;
+  bool psychohistory_is_authoritative() const;
 
  protected:
   // For mocking.
@@ -199,7 +199,7 @@ class Vessel {
 
   // The new implementation of history, also encompasses the prolongation.
   DiscreteTrajectory<Barycentric> psychohistory_;
-  bool psychohistory_is_history_;
+  bool psychohistory_is_authoritative_;
 
   // A child trajectory of |*history_|. It is forked at |history_->last_time()|
   // and continues until |current_time_|. It is computed with a non-constant

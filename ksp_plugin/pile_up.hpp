@@ -2,6 +2,7 @@
 #pragma once
 
 #include <list>
+#include <map>
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -36,9 +37,8 @@ class PileUp final {
  public:
   explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
 
-  void set_mass_and_intrinsic_force(
-      Mass const& mass,
-      Vector<Force, Barycentric> const& intrinsic_force);
+  void set_mass(Mass const& mass, );
+  void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
 
   std::list<not_null<Vessel*>> const& vessels() const;
 
@@ -61,11 +61,14 @@ class PileUp final {
   // True if the last point of the |psychohistory_| should be flowed from;
   // otherwise, the last point should be removed before flowing the trajectory
   // (in that case, there is a penultimate point, and it is historical).
-  bool psychohistory_is_history_;
+  bool psychohistory_is_authoritative_;
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
-  // of freedom of the vessels in the frame of that can be set, however their
-  // motion is not integrated; this is simply applied as an offset from the
-  // rigid body motion of the |PileUp|.
+  // of freedom of the vessels in the frame of that body can be set, however
+  // their motion is not integrated; this is simply applied as an offset from
+  // the rigid body motion of the |PileUp|.
+  // The origin of |RigidPileUp| is the centre of mass of the pile up.
+  // its axes are those of Barycentric for now; eventually we will probably want
+  // to use the inertia ellipsoid.
   using RigidPileUp = Frame<serialization::Frame::PluginTag,
                             serialization::Frame::RIGID_PILE_UP,
                             /*frame_is_inertial=*/false>;

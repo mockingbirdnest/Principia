@@ -118,7 +118,7 @@ void Vessel::CreateHistoryAndForkProlongation(
   history_->Append(time, degrees_of_freedom);
   // TODO(egg): proper initialization.
   psychohistory_.Append(time, degrees_of_freedom);
-  psychohistory_is_history_ = true;
+  psychohistory_is_authoritative_ = true;
   prolongation_ = history_->NewForkAtLast();
   prediction_ = history_->NewForkAtLast();
 }
@@ -226,7 +226,7 @@ void Vessel::clear_pile_up() {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Vessel*> const vessel : pile_up.iterator()->vessels()) {
       vessel->containing_pile_up_ = std::experimental::nullopt;
-      vessel->psychohistory_is_history_ = true;
+      vessel->psychohistory_is_authoritative_ = true;
     }
     CHECK(!is_piled_up());
     pile_up.Erase();
@@ -331,28 +331,28 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   // TODO(egg): serialize the psychohistory instead of horribly piggybacking.
   vessel->psychohistory_.Append(vessel->history_->last().time(),
                                 vessel->history_->last().degrees_of_freedom());
-  vessel->psychohistory_is_history_ = true;
+  vessel->psychohistory_is_authoritative_ = true;
   return std::move(vessel);
 }
 
 void Vessel::AppendToPsychohistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-    bool historical) {
-  if (!psychohistory_is_history_) {
+    bool const authoritative) {
+  if (!psychohistory_is_authoritative_) {
     auto const penultimate = --psychohistory_.last();
     psychohistory_.ForgetAfter(penultimate.time());
   }
   psychohistory_.Append(time, degrees_of_freedom);
-  psychohistory_is_history_ = historical;
+  psychohistory_is_authoritative_ = authoritative;
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
   return psychohistory_;
 }
 
-bool Vessel::psychohistory_is_history() const {
-  return psychohistory_is_history_;
+bool Vessel::psychohistory_is_authoritative() const {
+  return psychohistory_is_authoritative_;
 }
 
 Vessel::Vessel()
