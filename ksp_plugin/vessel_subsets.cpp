@@ -28,6 +28,7 @@ void Subset<ksp_plugin::Vessel>::Properties::Collect(
     return;
   }
   collected_ = true;
+  PileUps::iterator pile_up;
   if (!EqualsExistingPileUp()) {
     if (StrictSubsetOfExistingPileUp()) {
       vessels_.front()->clear_pile_up();
@@ -37,9 +38,11 @@ void Subset<ksp_plugin::Vessel>::Properties::Collect(
     for (not_null<Vessel*> const vessel : it->vessels()) {
       vessel->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
     }
+    pile_up = it;
+  } else {
+    pile_up = vessels_.front()->containing_pile_up()->iterator();
   }
-  PileUp& pile_up = *vessels_.front()->containing_pile_up()->iterator();
-  pile_up.set_mass_and_intrinsic_force(total_mass_, total_intrinsic_force_);
+  pile_up->set_mass_and_intrinsic_force(total_mass_, total_intrinsic_force_);
 }
 
 bool Subset<ksp_plugin::Vessel>::Properties::SubsetsOfSamePileUp(
