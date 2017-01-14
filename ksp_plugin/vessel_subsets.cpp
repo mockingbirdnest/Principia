@@ -37,7 +37,6 @@ void Subset<ksp_plugin::Vessel>::Properties::Collect(
     for (not_null<Vessel*> const vessel : it->vessels()) {
       vessel->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
     }
-    pile_up = it;
   } else {
     PileUp& pile_up = *vessels_.front()->containing_pile_up()->iterator();
     pile_up.set_mass(total_mass_);
