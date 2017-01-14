@@ -37,7 +37,7 @@ class PileUp final {
  public:
   explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
 
-  void set_mass(Mass const& mass, );
+  void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
 
   std::list<not_null<Vessel*>> const& vessels() const;
