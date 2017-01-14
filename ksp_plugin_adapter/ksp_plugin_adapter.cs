@@ -887,6 +887,8 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
         String vessel_guid = vessel.id.ToString();
+        plugin_.VesselClearMass(vessel_guid);
+        plugin_.VesselClearIntrinsicForce(vessel_guid);
         foreach (Part part in vessel.parts) {
           plugin_.VesselIncrementMass(vessel_guid, part.mass);
           plugin_.VesselIncrementIntrinsicForce(vessel_guid, (XYZ)part.force);
