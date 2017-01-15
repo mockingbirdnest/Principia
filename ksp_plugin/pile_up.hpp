@@ -67,7 +67,7 @@ class PileUp final {
   // their motion is not integrated; this is simply applied as an offset from
   // the rigid body motion of the |PileUp|.
   // The origin of |RigidPileUp| is the centre of mass of the pile up.
-  // its axes are those of Barycentric for now; eventually we will probably want
+  // Its axes are those of Barycentric for now; eventually we will probably want
   // to use the inertia ellipsoid.
   using RigidPileUp = Frame<serialization::Frame::PluginTag,
                             serialization::Frame::RIGID_PILE_UP,
