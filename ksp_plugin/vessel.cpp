@@ -400,7 +400,8 @@ void Vessel::FlowProlongation(Instant const& time) {
       Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       time,
       prolongation_adaptive_step_parameters_,
-      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+      /*last_point_only=*/false);
 }
 
 void Vessel::FlowPrediction(Instant const& time) {
@@ -414,7 +415,8 @@ void Vessel::FlowPrediction(Instant const& time) {
         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         t,
         prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame);
+        FlightPlan::max_ephemeris_steps_per_frame,
+        /*last_point_only=*/false);
     if (!finite_time && reached_t) {
       // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
       ephemeris_->FlowWithAdaptiveStep(
@@ -422,7 +424,8 @@ void Vessel::FlowPrediction(Instant const& time) {
         Ephemeris<Barycentric>::NoIntrinsicAcceleration,
         time,
         prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame);
+        FlightPlan::max_ephemeris_steps_per_frame,
+        /*last_point_only=*/false);
     }
   }
 }

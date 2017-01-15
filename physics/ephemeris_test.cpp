@@ -233,7 +233,8 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps));
+      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+      /*last_point_only=*/false));
   EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
@@ -243,7 +244,8 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps));
+      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+      /*last_point_only=*/false));
 }
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
@@ -449,7 +451,8 @@ TEST_F(EphemerisTest, EarthProbe) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-          Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
+          Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+          /*last_point_only=*/false);
 
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -513,7 +516,8 @@ TEST_F(EphemerisTest, EarthProbe) {
               max_steps,
               1e-9 * Metre,
               2.6e-15 * Metre / Second),
-          /*max_ephemeris_steps=*/0));
+          /*max_ephemeris_steps=*/0,
+          /*last_point_only=*/false));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
   EXPECT_THAT(trajectory.last().time(), Eq(old_t_max));
 }
@@ -764,7 +768,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           max_steps,
           1e-9 * Metre,
           2.6e-15 * Metre / Second),
-          Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps);
+          Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+          /*last_point_only=*/false);
 
   Speed const v_elephant_y =
       trajectory.last().degrees_of_freedom().velocity().coordinates().y;
@@ -970,7 +975,8 @@ TEST_F(EphemerisTest, ComputeApsidesDiscreteTrajectory) {
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
-      Ephemeris<World>::unlimited_max_ephemeris_steps);
+      Ephemeris<World>::unlimited_max_ephemeris_steps,
+      /*last_point_only=*/false);
 
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;

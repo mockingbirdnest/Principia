@@ -69,15 +69,13 @@ void PileUp::AdvanceTime(
         t,
         fixed_step_parameters);
     if (psychohistory_.last().time() < t) {
-      Ephemeris<Barycentric>::AdaptiveStepParameters
-          psychohistory_adaptive_step_parameters = adaptive_step_parameters;
-      psychohistory_adaptive_step_parameters.set_last_point_only(true);
       ephemeris.FlowWithAdaptiveStep(
           &psychohistory_,
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           t,
-          psychohistory_adaptive_step_parameters,
-          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+          adaptive_step_parameters,
+          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+          /*last_point_only=*/true);
       psychohistory_is_authoritative_ = false;
     }
   } else {
@@ -88,7 +86,8 @@ void PileUp::AdvanceTime(
         intrinsic_acceleration,
         t,
         adaptive_step_parameters,
-        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+        /*last_point_only=*/false);
   }
   auto it = last_preexisting_authoritative_point;
   ++it;

@@ -68,13 +68,9 @@ class Ephemeris {
         Speed const& speed_integration_tolerance);
 
     std::int64_t max_steps() const;
-    bool last_point_only() const;
     Length length_integration_tolerance() const;
     Speed speed_integration_tolerance() const;
 
-    // If |last_point_only| is true, only the last point is appended to the
-    // trajectory.
-    void set_last_point_only(bool last_point_only);
     void set_length_integration_tolerance(
         Length const& length_integration_tolerance);
     void set_speed_integration_tolerance(
@@ -91,7 +87,6 @@ class Ephemeris {
     not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
         integrator_;
     std::int64_t max_steps_;
-    bool last_point_only_ = false;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;
@@ -157,14 +152,17 @@ class Ephemeris {
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // Prolongs the ephemeris by at most |max_ephemeris_steps|.
-  // Returns true if and only if |*trajectory| was integrated until |t|.
+  // Prolongs the ephemeris by at most |max_ephemeris_steps|.  If
+  // |last_point_only| is true, only the last point is appended to the
+  // trajectory.  Returns true if and only if |*trajectory| was integrated until
+  // |t|.
   virtual bool FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
-      std::int64_t max_ephemeris_steps);
+      std::int64_t max_ephemeris_steps,
+      bool last_point_only);
 
   // Integrates, until at most |t|, the |trajectories| followed by massless
   // bodies in the gravitational potential described by |*this|.  If

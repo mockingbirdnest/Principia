@@ -89,7 +89,6 @@ message Ephemeris {
   message AdaptiveStepParameters {
     required AdaptiveStepSizeIntegrator integrator = 1;
     required int64 max_steps = 2;
-    optional bool last_point_only = 5;  // required.
     required Quantity length_integration_tolerance = 3;
     required Quantity speed_integration_tolerance = 4;
   }

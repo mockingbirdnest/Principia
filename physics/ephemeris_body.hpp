@@ -113,11 +113,6 @@ std::int64_t Ephemeris<Frame>::AdaptiveStepParameters::max_steps() const {
 }
 
 template<typename Frame>
-bool Ephemeris<Frame>::AdaptiveStepParameters::last_point_only() const {
-  return last_point_only_;
-}
-
-template<typename Frame>
 Length Ephemeris<Frame>::AdaptiveStepParameters::length_integration_tolerance()
     const {
   return length_integration_tolerance_;
@@ -127,12 +122,6 @@ template<typename Frame>
 Speed Ephemeris<Frame>::AdaptiveStepParameters::speed_integration_tolerance()
     const {
   return speed_integration_tolerance_;
-}
-
-template<typename Frame>
-void Ephemeris<Frame>::AdaptiveStepParameters::set_last_point_only(
-    bool last_point_only) {
-  last_point_only_ = last_point_only;
 }
 
 template<typename Frame>
@@ -153,7 +142,6 @@ void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
     const {
   integrator_->WriteToMessage(message->mutable_integrator());
   message->set_max_steps(max_steps_);
-  message->set_last_point_only(last_point_only_);
   length_integration_tolerance_.WriteToMessage(
       message->mutable_length_integration_tolerance());
   speed_integration_tolerance_.WriteToMessage(
@@ -164,16 +152,12 @@ template<typename Frame>
 typename Ephemeris<Frame>::AdaptiveStepParameters
 Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(
     serialization::Ephemeris::AdaptiveStepParameters const& message) {
-  AdaptiveStepParameters result(
+  return AdaptiveStepParameters(
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
           message.integrator()),
       message.max_steps(),
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
-  if (message.has_last_point_only()) {
-    result.set_last_point_only(message.last_point_only());
-  }
-  return result;
 }
 
 template<typename Frame>
@@ -382,7 +366,8 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     AdaptiveStepParameters const& parameters,
-    std::int64_t const max_ephemeris_steps) {
+    std::int64_t const max_ephemeris_steps,
+    bool const last_point_only) {
   Instant const& trajectory_last_time = trajectory->last().time();
   if (trajectory_last_time == t) {
     return true;
@@ -438,7 +423,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::AppendState
       append_state;
   typename NewtonianMotionEquation::SystemState last_state;
-  if (parameters.last_point_only_) {
+  if (last_point_only) {
     append_state =
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
@@ -453,7 +438,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
       parameters.integrator_->NewInstance(problem, append_state, step_size);
   auto const status = instance->Solve(t_final);
 
-  if (parameters.last_point_only_) {
+  if (last_point_only) {
     AppendMasslessBodiesState(last_state, trajectories);
   }
 
