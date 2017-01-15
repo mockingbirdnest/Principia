@@ -53,9 +53,12 @@ void principia__VesselIncrementIntrinsicForce(
     XYZ const intrinsic_force_in_kilonewtons) {
   journal::Method<journal::VesselIncrementIntrinsicForce> m(
       {plugin, vessel_guid, intrinsic_force_in_kilonewtons});
+  auto const intrinsic_force_in_world = Vector<Force, World>(
+      FromXYZ(intrinsic_force_in_kilonewtons) * Kilo(Newton));
+  Vector<Force, Barycentric> const intrinsic_force_in_barycentric =
+      plugin->WorldToBarycentric()(intrinsic_force_in_world);
   GetVessel(*plugin, vessel_guid)
-      ->increment_intrinsic_force(Vector<Force, Barycentric>(
-          FromXYZ(intrinsic_force_in_kilonewtons) * Kilo(Newton)));
+      ->increment_intrinsic_force(intrinsic_force_in_barycentric);
   return m.Return();
 }
 

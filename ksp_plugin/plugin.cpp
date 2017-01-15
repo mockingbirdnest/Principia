@@ -486,11 +486,6 @@ Plugin::RenderedTrajectoryFromIterators(
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
   auto result = make_not_null_unique<DiscreteTrajectory<World>>();
-  auto const to_world =
-      AffineMap<Barycentric, World, Length, OrthogonalMap>(
-          sun_->current_position(current_time_),
-          sun_world_position,
-          OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
   // Compute the trajectory in the navigation frame.
   DiscreteTrajectory<Navigation> intermediate_trajectory;
@@ -505,7 +500,7 @@ Plugin::RenderedTrajectoryFromIterators(
   DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
       intermediate_trajectory.End();
   auto from_navigation_frame_to_world_at_current_time =
-      to_world *
+      BarycentricToWorld(sun_world_position) *
           plotting_frame_->
               FromThisFrameAtTime(current_time_).rigid_transformation();
   for (auto intermediate_it = intermediate_trajectory.Begin();
@@ -692,24 +687,18 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
       Instant const& current_time = plugin_->current_time_;
       plugin_->ephemeris_->Prolong(current_time);
 
-      OrthogonalMap<Barycentric, World> const barycentric_to_world =
-          OrthogonalMap<WorldSun, World>::Identity() *
-          plugin_->BarycentricToWorldSun();
       OrthogonalMap<Navigation, World> const navigation_to_world =
-          barycentric_to_world *
+          plugin_->BarycentricToWorld() *
           plugin_->plotting_frame_->FromThisFrameAtTime(current_time)
               .orthogonal_map();
 
-      AffineMap<World, Barycentric, Length, OrthogonalMap> const
-          world_to_barycentric(sun_world_position_,
-                               plugin_->sun_->current_position(current_time),
-                               barycentric_to_world.Inverse());
       AffineMap<Barycentric, Navigation, Length, OrthogonalMap> const
           barycentric_to_navigation =
               plugin_->plotting_frame_->ToThisFrameAtTime(current_time)
                   .rigid_transformation();
       Position<Navigation> const q_in_navigation =
-          (barycentric_to_navigation * world_to_barycentric)(q);
+          (barycentric_to_navigation *
+           plugin_->WorldToBarycentric(sun_world_position_))(q);
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
@@ -770,8 +759,32 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
           plotting_frame_degrees_of_freedom.velocity())));
 }
 
+AffineMap<Barycentric, World, Length, OrthogonalMap> Plugin::BarycentricToWorld(
+    Position<World> const& sun_world_position) const {
+  return AffineMap<Barycentric, World, Length, OrthogonalMap>(
+      sun_->current_position(current_time_),
+      sun_world_position,
+      BarycentricToWorld());
+}
+
+OrthogonalMap<Barycentric, World> Plugin::BarycentricToWorld() const {
+  return OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
+}
+
 OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
   return sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget();
+}
+
+AffineMap<World, Barycentric, Length, OrthogonalMap> Plugin::WorldToBarycentric(
+    Position<World> const& sun_world_position) const {
+  return AffineMap<World, Barycentric, Length, OrthogonalMap>(
+      sun_world_position,
+      sun_->current_position(current_time_),
+      WorldToBarycentric());
+}
+
+OrthogonalMap<World, Barycentric> Plugin::WorldToBarycentric() const {
+  return BarycentricToWorld().Inverse();
 }
 
 Instant Plugin::GameEpoch() const {
