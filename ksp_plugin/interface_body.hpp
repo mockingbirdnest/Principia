@@ -168,11 +168,13 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
 inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
-  return Ephemeris<Barycentric>::AdaptiveStepParameters(
+  Ephemeris<Barycentric>::AdaptiveStepParameters result(
       DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
       adaptive_step_parameters.max_steps,
       adaptive_step_parameters.length_integration_tolerance * Metre,
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
+  result.set_last_point_only(adaptive_step_parameters.last_point_only); 
+  return result;
 }
 
 inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
@@ -208,6 +210,7 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
   return {adaptive_step_parameters.max_steps(),
+          adaptive_step_parameters.last_point_only(),
           adaptive_step_parameters.length_integration_tolerance() / Metre,
           adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};

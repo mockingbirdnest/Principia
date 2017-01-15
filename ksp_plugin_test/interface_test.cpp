@@ -924,6 +924,7 @@ TEST_F(InterfaceTest, FlightPlan) {
                   plugin_.get(),
                   vessel_guid,
                   {/*max_step=*/11,
+                   /*last_point_only=*/false,
                    /*length_integration_tolerance=*/22,
                    /*speed_integration_tolerance=*/33}));
 
@@ -936,6 +937,7 @@ TEST_F(InterfaceTest, FlightPlan) {
       .WillOnce(ReturnRef(adaptive_step_parameters));
   AdaptiveStepParameters expected_adaptive_step_parameters = {
       /*max_step=*/111,
+      /*last_point_only=*/false,
       /*length_integration_tolerance=*/222,
       /*speed_integration_tolerance=*/333};
   EXPECT_EQ(expected_adaptive_step_parameters,

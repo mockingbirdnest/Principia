@@ -113,6 +113,11 @@ std::int64_t Ephemeris<Frame>::AdaptiveStepParameters::max_steps() const {
 }
 
 template<typename Frame>
+bool Ephemeris<Frame>::AdaptiveStepParameters::last_point_only() const {
+  return last_point_only_;
+}
+
+template<typename Frame>
 Length Ephemeris<Frame>::AdaptiveStepParameters::length_integration_tolerance()
     const {
   return length_integration_tolerance_;
@@ -122,6 +127,12 @@ template<typename Frame>
 Speed Ephemeris<Frame>::AdaptiveStepParameters::speed_integration_tolerance()
     const {
   return speed_integration_tolerance_;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::AdaptiveStepParameters::set_last_point_only(
+    bool last_point_only) {
+  last_point_only_ = last_point_only;
 }
 
 template<typename Frame>
@@ -142,6 +153,7 @@ void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
     const {
   integrator_->WriteToMessage(message->mutable_integrator());
   message->set_max_steps(max_steps_);
+  message->set_last_point_only(last_point_only_);
   length_integration_tolerance_.WriteToMessage(
       message->mutable_length_integration_tolerance());
   speed_integration_tolerance_.WriteToMessage(
@@ -152,12 +164,16 @@ template<typename Frame>
 typename Ephemeris<Frame>::AdaptiveStepParameters
 Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(
     serialization::Ephemeris::AdaptiveStepParameters const& message) {
-  return AdaptiveStepParameters(
+  AdaptiveStepParameters result(
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
           message.integrator()),
       message.max_steps(),
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));
+  if (message.has_last_point_only()) {
+    result.set_last_point_only(message.last_point_only());
+  }
+  return result;
 }
 
 template<typename Frame>
@@ -419,13 +435,28 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, _2);
   step_size.max_steps = parameters.max_steps_;
 
-  auto const instance = parameters.integrator_->NewInstance(
-      problem,
-      std::bind(
-          &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories)),
-      step_size);
+  typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::AppendState
+      append_state;
+  typename NewtonianMotionEquation::SystemState last_state;
+  if (parameters.last_point_only_) {
+    append_state =
+      [&last_state](
+          typename NewtonianMotionEquation::SystemState const& state) {
+        last_state = state;
+      };
+  } else {
+    append_state = std::bind(
+        &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
+  }
 
+  auto const instance =
+      parameters.integrator_->NewInstance(problem, append_state, step_size);
   auto const status = instance->Solve(t_final);
+
+  if (parameters.last_point_only_) {
+    AppendMasslessBodiesState(last_state, trajectories);
+  }
+
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if

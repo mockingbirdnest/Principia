@@ -68,9 +68,13 @@ class Ephemeris {
         Speed const& speed_integration_tolerance);
 
     std::int64_t max_steps() const;
+    bool last_point_only() const;
     Length length_integration_tolerance() const;
     Speed speed_integration_tolerance() const;
 
+    // If |last_point_only| is true, only the last point is appended to the
+    // trajectory.
+    void set_last_point_only(bool last_point_only);
     void set_length_integration_tolerance(
         Length const& length_integration_tolerance);
     void set_speed_integration_tolerance(
@@ -87,6 +91,7 @@ class Ephemeris {
     not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
         integrator_;
     std::int64_t max_steps_;
+    bool last_point_only_ = false;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;
