@@ -5,6 +5,7 @@
 
 #include "base/disjoint_sets.hpp"
 
+#include "geometry/grassmann.hpp"
 #include "ksp_plugin/pile_up.hpp"
 
 // This ksp_plugin file is in namespace |base| to specialize templates declared
@@ -71,6 +72,11 @@ class Subset<ksp_plugin::Vessel>::Properties final {
   int missing_;
   // The list of vessels in this subset.
   std::list<not_null<ksp_plugin::Vessel*>> vessels_;
+  // The sum of the masses of the |vessels_|.
+  quantities::Mass total_mass_;
+  // The sum of the |intrinsic_force|s on the |vessels_|.
+  geometry::Vector<quantities::Force, ksp_plugin::Barycentric>
+      total_intrinsic_force_;
 };
 
 }  // namespace base
