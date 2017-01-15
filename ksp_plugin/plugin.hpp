@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/monostable.hpp"
+#include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "ksp_plugin/celestial.hpp"
@@ -38,6 +39,7 @@ namespace internal_plugin {
 
 using base::not_null;
 using base::Subset;
+using geometry::AffineMap;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -318,9 +320,14 @@ class Plugin {
 
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
-  // Returns
-  // |sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget()|.
+  // Coordinate transforms.
+  virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
+  BarycentricToWorld(Position<World> const& sun_world_position) const;
+  virtual OrthogonalMap<Barycentric, World> BarycentricToWorld() const;
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
+  virtual AffineMap<World, Barycentric, Length, OrthogonalMap>
+  WorldToBarycentric(Position<World> const& sun_world_position) const;
+  virtual OrthogonalMap<World, Barycentric> WorldToBarycentric() const;
 
   virtual Instant GameEpoch() const;
   virtual bool MustRotateBodies() const;
