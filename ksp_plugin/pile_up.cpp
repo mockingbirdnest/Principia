@@ -69,20 +69,13 @@ void PileUp::AdvanceTime(
         t,
         fixed_step_parameters);
     if (psychohistory_.last().time() < t) {
-      // TODO(egg): this is clumsy, we need an option for FlowWithAdaptiveStep
-      // to only add the last point.  Amusingly, this is the unwanted behaviour
-      // of FlowWithFixedStep (#228).
-      DiscreteTrajectory<Barycentric> prolongation;
-      prolongation.Append(psychohistory_.last().time(),
-                          psychohistory_.last().degrees_of_freedom());
       ephemeris.FlowWithAdaptiveStep(
           &psychohistory_,
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           t,
           adaptive_step_parameters,
-          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
-      psychohistory_.Append(prolongation.last().time(),
-                            prolongation.last().degrees_of_freedom());
+          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+          /*last_point_only=*/true);
       psychohistory_is_authoritative_ = false;
     }
   } else {
@@ -93,7 +86,8 @@ void PileUp::AdvanceTime(
         intrinsic_acceleration,
         t,
         adaptive_step_parameters,
-        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+        /*last_point_only=*/false);
   }
   auto it = last_preexisting_authoritative_point;
   ++it;

@@ -366,7 +366,8 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     AdaptiveStepParameters const& parameters,
-    std::int64_t const max_ephemeris_steps) {
+    std::int64_t const max_ephemeris_steps,
+    bool const last_point_only) {
   Instant const& trajectory_last_time = trajectory->last().time();
   if (trajectory_last_time == t) {
     return true;
@@ -419,13 +420,28 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, _2);
   step_size.max_steps = parameters.max_steps_;
 
-  auto const instance = parameters.integrator_->NewInstance(
-      problem,
-      std::bind(
-          &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories)),
-      step_size);
+  typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::AppendState
+      append_state;
+  typename NewtonianMotionEquation::SystemState last_state;
+  if (last_point_only) {
+    append_state =
+      [&last_state](
+          typename NewtonianMotionEquation::SystemState const& state) {
+        last_state = state;
+      };
+  } else {
+    append_state = std::bind(
+        &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
+  }
 
+  auto const instance =
+      parameters.integrator_->NewInstance(problem, append_state, step_size);
   auto const status = instance->Solve(t_final);
+
+  if (last_point_only) {
+    AppendMasslessBodiesState(last_state, trajectories);
+  }
+
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
