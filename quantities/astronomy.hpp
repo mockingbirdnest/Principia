@@ -14,13 +14,13 @@ namespace quantities {
 // accepted for use with the SI.
 namespace astronomy {
 
-quantities::Mass   const SolarMass     = 1.98855e30 * si::Kilogram;
-quantities::Mass   const JupiterMass   = 1.8986e27 * si::Kilogram;
-quantities::Mass   const EarthMass     = 5.9742e24 * si::Kilogram;
-quantities::Time   const JulianYear    = 365.25 * si::Day;
-quantities::Length const Parsec        = 648000 / π * si::AstronomicalUnit;
-quantities::Length const LightYear     = constants::SpeedOfLight * JulianYear;
-quantities::Length const LunarDistance = 384400000 * si::Metre;
+constexpr Mass   SolarMass     = 1.98855e30 * si::Kilogram;
+constexpr Mass   JupiterMass   = 1.8986e27 * si::Kilogram;
+constexpr Mass   EarthMass     = 5.9742e24 * si::Kilogram;
+constexpr Time   JulianYear    = 365.25 * si::Day;
+constexpr Length Parsec        = 648000 / π * si::AstronomicalUnit;
+constexpr Length LightYear     = constants::SpeedOfLight * JulianYear;
+constexpr Length LunarDistance = 384400000 * si::Metre;
 
 }  // namespace astronomy
 }  // namespace quantities
