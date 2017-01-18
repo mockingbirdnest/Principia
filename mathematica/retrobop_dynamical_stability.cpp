@@ -1,5 +1,5 @@
 
-#include "mathematica/ksp_dynamical_stability.hpp"
+#include "mathematica/retrobop_dynamical_stability.hpp"
 
 #include <array>
 #include <fstream>
@@ -65,13 +65,33 @@ enum Celestial {
   Eeloo,
 };
 
+constexpr std::array<char const*, 17> names = {
+    "Sun",
+    "Moho",
+    "Eve",
+    "Gilly",
+    "Kerbin",
+    "Mun",
+    "Minmus",
+    "Duna",
+    "Ike",
+    "Dres",
+    "Jool",
+    "Laythe",
+    "Vall",
+    "Tylo",
+    "Bop",
+    "Pol",
+    "Eeloo",
+};
+
 constexpr Instant ksp_epoch;
-constexpr Instant a_century_hence = ksp_epoch + 5 * JulianYear;
+constexpr Instant a_century_hence = ksp_epoch + 1000 * JulianYear;
+constexpr Time step = 8 * Minute;
 
 constexpr std::array<Celestial, 6> jool_system =
     {Jool, Laythe, Vall, Tylo, Bop, Pol};
 constexpr std::array<Celestial, 5> jool_moons = {Laythe, Vall, Tylo, Bop, Pol};
-
 template<typename Message>
 std::unique_ptr<Message> Read(std::ifstream & file) {
   std::string const line = GetLine(file);
@@ -96,7 +116,7 @@ void FillPositions(
     Time const& duration,
     std::vector<std::vector<Vector<double, Barycentric>>>& container) {
   for (Instant t = initial_time; t < initial_time + duration;
-       t += 8 * Minute) {
+       t += step) {
     auto const position = [t, &ephemeris](Celestial celestial) {
       return ephemeris.trajectory(ephemeris.bodies()[celestial])
           ->EvaluatePosition(t, /*hint=*/nullptr);
@@ -118,7 +138,7 @@ void FillPositions(
 
 }  // namespace
 
-void SimulateStockSystem() {
+void SimulateFixedSystem(bool produce_file) {
   std::ifstream input_file("ksp_fixed_system.proto.hex", std::ios::in);
   CHECK(!input_file.fail());
   HierarchicalSystem<Barycentric>::BarycentricSystem system;
@@ -142,7 +162,11 @@ void SimulateStockSystem() {
       /*fitting_tolerance=*/1 * Milli(Metre),
       Ephemeris<Barycentric>::FixedStepParameters(
           integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
-          /*step=*/8 * Minute));
+          step));
+  for (int i = 1; i < (a_century_hence - ksp_epoch) / JulianYear; ++i) {
+    LOG(INFO) << "year " << i;
+    ephemeris.Prolong(ksp_epoch + i * JulianYear);
+  }
   ephemeris.Prolong(a_century_hence);
 
   std::map<Celestial, std::vector<double>> extremal_separations_in_m;
@@ -166,6 +190,8 @@ void SimulateStockSystem() {
   std::vector<double> tylo_bop_separations_in_m;
   std::vector<double> pol_bop_separations_in_m;
 
+  std::map<Celestial, double> record_separation_in_m;
+
   for (auto const moon : jool_moons) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
@@ -187,6 +213,17 @@ void SimulateStockSystem() {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
                                                      Metre);
         times_in_s[moon].emplace_back((t - 1 * Hour - ksp_epoch) / Second);
+        record_separation_in_m[moon] =
+            std::max(record_separation_in_m[moon],
+                     extremal_separations_in_m[moon].back());
+        if (extremal_separations_in_m[moon].back() > 2.2e+08 &&
+            extremal_separations_in_m[moon].back() ==
+                record_separation_in_m[moon]) {
+          LOG(WARNING) << "After "
+                       << times_in_s[moon].back() * Second / JulianYear
+                       << " a, " << names[moon] << " has an apsis at "
+                       << extremal_separations_in_m[moon].back() * Metre;
+        }
       }
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
@@ -215,7 +252,8 @@ void SimulateStockSystem() {
     }
 
     {
-      BarycentreCalculator<DegreesOfFreedom<Barycentric>, GravitationalParameter>
+      BarycentreCalculator<DegreesOfFreedom<Barycentric>,
+                           GravitationalParameter>
           innermost_jool_system;
       for (auto const celestial : {Jool, Laythe, Vall, Tylo}) {
         innermost_jool_system.Add(
@@ -238,16 +276,22 @@ void SimulateStockSystem() {
     }
   }
 
-  std::vector<std::vector<Vector<double, Barycentric>>> barycentric_positions_1_year;
+  std::vector<std::vector<Vector<double, Barycentric>>>
+      barycentric_positions_1_year;
   FillPositions(ephemeris,
                 ksp_epoch,
                 1 * JulianYear,
                 barycentric_positions_1_year);
-  std::vector<std::vector<Vector<double, Barycentric>>> barycentric_positions_2_year;
+  std::vector<std::vector<Vector<double, Barycentric>>>
+      barycentric_positions_2_year;
   FillPositions(ephemeris,
                 ksp_epoch,
                 2 * JulianYear,
                 barycentric_positions_2_year);
+
+  if (!produce_file) {
+    return;
+  }
 
   std::ofstream file;
   file.open("ksp_system.generated.wl");
@@ -286,9 +330,6 @@ void SimulateStockSystem() {
   file << mathematica::Assign("barycentricPositions2",
                               barycentric_positions_2_year);
   file.close();
-}
-
-void SimulateFixedSystem() {
 }
 
 }  // namespace mathematica

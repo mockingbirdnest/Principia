@@ -26,7 +26,7 @@
     <ClCompile Include="..\base\bundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ksp_dynamical_stability.cpp">
+    <ClCompile Include="retrobop_dynamical_stability.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -40,7 +40,7 @@
     <ClInclude Include="integrator_plots.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ksp_dynamical_stability.hpp">
+    <ClInclude Include="retrobop_dynamical_stability.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

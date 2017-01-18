@@ -3,8 +3,7 @@
 namespace principia {
 namespace mathematica {
 
-void SimulateStockSystem();
-void SimulateFixedSystem();
+void SimulateFixedSystem(bool produce_file);
 
 }  // namespace mathematica
 }  // namespace principia
