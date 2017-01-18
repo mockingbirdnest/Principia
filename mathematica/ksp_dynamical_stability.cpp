@@ -9,20 +9,30 @@
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/hierarchical_system.hpp"
+#include "quantities/astronomy.hpp"
 
 namespace principia {
 
 using base::GetLine;
 using base::HexadecimalDecode;
 using base::UniqueBytes;
+using geometry::Instant;
+using geometry::Position;
 using ksp_plugin::Barycentric;
 using physics::DegreesOfFreedom;
+using physics::Ephemeris;
 using physics::HierarchicalSystem;
 using physics::MassiveBody;
+using quantities::astronomy::JulianYear;
+using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Minute;
 
 namespace mathematica {
 
 namespace {
+
+constexpr Instant ksp_epoch;
 
 template<typename Message>
 std::unique_ptr<Message> Read(std::ifstream& file) {
@@ -61,6 +71,15 @@ void SimulateStockSystem() {
     LOG(ERROR) << system.degrees_of_freedom.back();
   }
   file.close();
+  Ephemeris<Barycentric> ephemeris(
+      std::move(system.bodies),
+      system.degrees_of_freedom,
+      ksp_epoch,
+      /*fitting_tolerance=*/1 * Milli(Metre),
+      Ephemeris<Barycentric>::FixedStepParameters(
+          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+          /*step=*/8 * Minute));
+  ephemeris.Prolong(ksp_epoch + 100 * JulianYear);
 }
 
 void SimulateFixedSystem() {
