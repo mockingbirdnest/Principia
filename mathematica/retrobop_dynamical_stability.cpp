@@ -136,13 +136,11 @@ void FillPositions(
   }
 }
 
-}  // namespace
-
-void SimulateFixedSystem(bool produce_file) {
-  std::ifstream input_file("ksp_fixed_system.proto.hex", std::ios::in);
+HierarchicalSystem<Barycentric> ReadSystem(std::string const& file_name) {
+  std::ifstream input_file(file_name, std::ios::in);
   CHECK(!input_file.fail());
   HierarchicalSystem<Barycentric>::BarycentricSystem system;
-
+  
   for (auto body = Read<serialization::MassiveBody>(input_file);
        body != nullptr;
        body = Read<serialization::MassiveBody>(input_file)) {
@@ -155,6 +153,11 @@ void SimulateFixedSystem(bool produce_file) {
     LOG(ERROR) << system.degrees_of_freedom.back();
   }
   input_file.close();
+  return system;
+}
+
+void SimulateSystem(HierarchicalSystem<Barycentric>&& system,
+                    bool const produce_file) {
   Ephemeris<Barycentric> ephemeris(
       std::move(system.bodies),
       system.degrees_of_freedom,
@@ -330,6 +333,12 @@ void SimulateFixedSystem(bool produce_file) {
   file << mathematica::Assign("barycentricPositions2",
                               barycentric_positions_2_year);
   file.close();
+}
+
+}  // namespace
+
+void SimulateFixedSystem(bool produce_file) {
+  SimulateSystem(ReadSystem("ksp_fixed_system.proto.hex"));
 }
 
 }  // namespace mathematica
