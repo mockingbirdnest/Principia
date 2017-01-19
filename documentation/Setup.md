@@ -18,7 +18,7 @@ This directory should not contain any of the following subfolders:
 This project depends upon:
 - the KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`,
   found in `<KSP directory>\KSP_Data\Managed`;
-- the Unity assembly `UnityEngine.dll`, found in
+- the Unity assemblies `UnityEngine.dll` and `UnityEngine.UI.dll`, found in
   `<KSP directory>\KSP_Data\Managed`;
 - our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
   library;
