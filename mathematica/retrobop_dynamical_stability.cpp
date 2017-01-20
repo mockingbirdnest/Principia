@@ -1,20 +1,25 @@
-
+﻿
 #include "mathematica/retrobop_dynamical_stability.hpp"
 
 #include <array>
 #include <fstream>
 #include <memory>
+#include <random>
 
 #include "base/array.hpp"
+#include "base/bundle.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
+using base::Bundle;
+using base::Status;
 using base::GetLine;
 using base::HexadecimalDecode;
 using base::UniqueBytes;
@@ -23,6 +28,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
+using integrators::FixedStepSizeIntegrator;
 using ksp_plugin::Barycentric;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -30,8 +36,13 @@ using physics::HierarchicalSystem;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
+using quantities::Angle;
+using quantities::Cos;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::Pow;
+using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
@@ -40,6 +51,8 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
+using quantities::si::Radian;
+using testing_utilities::AbsoluteError;
 
 namespace mathematica {
 
@@ -136,11 +149,11 @@ void FillPositions(
   }
 }
 
-HierarchicalSystem<Barycentric> ReadSystem(std::string const& file_name) {
+HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
+    std::string const& file_name) {
   std::ifstream input_file(file_name, std::ios::in);
   CHECK(!input_file.fail());
   HierarchicalSystem<Barycentric>::BarycentricSystem system;
-  
   for (auto body = Read<serialization::MassiveBody>(input_file);
        body != nullptr;
        body = Read<serialization::MassiveBody>(input_file)) {
@@ -149,23 +162,26 @@ HierarchicalSystem<Barycentric> ReadSystem(std::string const& file_name) {
     system.bodies.push_back(MassiveBody::ReadFromMessage(*body));
     system.degrees_of_freedom.push_back(
         DegreesOfFreedom<Barycentric>::ReadFromMessage(*degrees_of_freedom));
-    LOG(ERROR) << system.bodies.back()->gravitational_parameter();
-    LOG(ERROR) << system.degrees_of_freedom.back();
   }
   input_file.close();
   return system;
 }
 
-void SimulateSystem(HierarchicalSystem<Barycentric>&& system,
-                    bool const produce_file) {
-  Ephemeris<Barycentric> ephemeris(
+std::unique_ptr<Ephemeris<Barycentric>> MakeEphemeris(
+    HierarchicalSystem<Barycentric>::BarycentricSystem&& system,
+    FixedStepSizeIntegrator<
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Time const& step) {
+  return std::make_unique<Ephemeris<Barycentric>>(
       std::move(system.bodies),
       system.degrees_of_freedom,
       ksp_epoch,
       /*fitting_tolerance=*/1 * Milli(Metre),
-      Ephemeris<Barycentric>::FixedStepParameters(
-          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
-          step));
+      Ephemeris<Barycentric>::FixedStepParameters(integrator, step));
+}
+
+void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
+                    bool const produce_file) {
   for (int i = 1; i < (a_century_hence - ksp_epoch) / JulianYear; ++i) {
     LOG(INFO) << "year " << i;
     ephemeris.Prolong(ksp_epoch + i * JulianYear);
@@ -335,10 +351,97 @@ void SimulateSystem(HierarchicalSystem<Barycentric>&& system,
   file.close();
 }
 
+template<typename BitGenerator>
+Vector<double, Barycentric> RandomUnitVector(BitGenerator& generator) {
+  std::uniform_real_distribution<> longitude_distribution(-π, π);
+  std::uniform_real_distribution<> z_distribution(-1, 1);
+  double const z = z_distribution(generator);
+  Angle const longitude = longitude_distribution(generator) * Radian;
+  return Vector<double, Barycentric>({Cos(longitude) * Sqrt(1 - Pow<2>(z)),
+                                      Sin(longitude) * Sqrt(1 - Pow<2>(z)),
+                                      z});
+}
+
 }  // namespace
 
-void SimulateFixedSystem(bool produce_file) {
-  SimulateSystem(ReadSystem("ksp_fixed_system.proto.hex"));
+void SimulateFixedSystem(bool const produce_file) {
+  std::mt19937_64 generator;
+  auto reference_ephemeris = MakeEphemeris(
+      ReadSystem("ksp_fixed_system.proto.hex"),
+      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      step);
+  std::list<std::unique_ptr<Ephemeris<Barycentric>>> perturbed_ephemerides;
+  for (int i = 0; i < 100; ++i) {
+    auto system = ReadSystem("ksp_fixed_system.proto.hex");
+    for (auto const celestial : jool_system) {
+      system.degrees_of_freedom[celestial] = {
+          system.degrees_of_freedom[celestial].position() +
+              RandomUnitVector(generator) * Milli(Metre),
+          system.degrees_of_freedom[celestial].velocity()};
+    }
+    perturbed_ephemerides.emplace_back(MakeEphemeris(
+        std::move(system),
+        integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+        step));
+  }
+  int total_breakdowns = 0;
+  for (int year = 1; year <= 100; ++year) {
+    Instant const t = ksp_epoch + year * JulianYear;
+    Bundle bundle(7);
+    bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
+      reference_ephemeris.Prolong(t);
+      reference_ephemeris.ForgetBefore(t);
+      return Status::OK;
+    });
+    for (auto const& ephemeris : perturbed_ephemerides) {
+      bundle.Add([&ephemeris = *ephemeris, t]() {
+        ephemeris.Prolong(t);
+        ephemeris.ForgetBefore(t);
+        return Status::OK;
+      });
+    }
+    bundle.Join();
+    LOG(INFO) << "year " << year;
+    int yearly_breakdowns = 0;
+    for (auto it = perturbed_ephemerides.begin();
+         it != perturbed_ephemerides.end();) {
+      Ephemeris<Barycentric> const& ephemeris = **it;
+      for (auto const celestial : jool_moons) {
+        if ((ephemeris.trajectory(ephemeris.bodies()[celestial])
+                 ->EvaluatePosition(t, nullptr) -
+             ephemeris.trajectory(ephemeris.bodies()[Jool])
+                 ->EvaluatePosition(t, nullptr))
+                .Norm() > 3e8 * Metre) {
+          ++yearly_breakdowns;
+          ++total_breakdowns;
+          perturbed_ephemerides.erase(it++);
+        } else {
+          ++it;
+        }
+      }
+    }
+    LOG_IF(INFO, yearly_breakdowns > 0) << yearly_breakdowns << " breakdowns";
+    LOG_IF(INFO, total_breakdowns > 0) << total_breakdowns << " thus far";
+    for (auto const celestial : jool_moons) {
+      Length error;
+      for (auto const& ephemeris : perturbed_ephemerides) {
+        error = std::max(
+            error,
+            AbsoluteError(
+                ephemeris->trajectory(ephemeris->bodies()[celestial])
+                        ->EvaluatePosition(t, nullptr) -
+                    ephemeris->trajectory(ephemeris->bodies()[Jool])
+                        ->EvaluatePosition(t, nullptr),
+                reference_ephemeris
+                        ->trajectory(reference_ephemeris->bodies()[celestial])
+                        ->EvaluatePosition(t, nullptr) -
+                    reference_ephemeris
+                        ->trajectory(reference_ephemeris->bodies()[Jool])
+                        ->EvaluatePosition(t, nullptr)));
+      }
+      LOG(INFO) << error;
+    }
+  }
 }
 
 }  // namespace mathematica

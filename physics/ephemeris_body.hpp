@@ -315,10 +315,9 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
                 [](Instant const& left, Checkpoint const& right) {
                   return left < right.system_state.time.value;
                 });
-  if (it == checkpoints_.end()) {
-    return;
+  if (it != checkpoints_.end()) {
+    CHECK_LT(t, it->system_state.time.value);
   }
-  CHECK_LT(t, it->system_state.time.value);
 
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;

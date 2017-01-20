@@ -95,10 +95,10 @@ Status ContinuousTrajectory<Frame>::Append(
 
   Status status;
   if (last_points_.size() == divisions) {
-    // These vectors are static to avoid deallocation/reallocation each time we
-    // go through this code path.
-    static std::vector<Displacement<Frame>> q(divisions + 1);
-    static std::vector<Velocity<Frame>> v(divisions + 1);
+    // These vectors are thread-local to avoid deallocation/reallocation each
+    // time we go through this code path.
+    thread_local std::vector<Displacement<Frame>> q(divisions + 1);
+    thread_local std::vector<Velocity<Frame>> v(divisions + 1);
     q.clear();
     v.clear();
 
