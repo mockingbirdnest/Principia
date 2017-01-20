@@ -426,6 +426,7 @@ void SimulateFixedSystem(bool const produce_file) {
     for (auto it = perturbed_ephemerides.begin();
          it != perturbed_ephemerides.end();) {
       Ephemeris<Barycentric> const& ephemeris = **it;
+      // TODO(egg): check for apocalypses.
       for (auto const moon : jool_moons) {
         Length const distance =
             (ephemeris.trajectory(ephemeris.bodies()[moon])
