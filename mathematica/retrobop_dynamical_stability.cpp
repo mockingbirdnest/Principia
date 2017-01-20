@@ -79,6 +79,26 @@ enum Celestial {
   Eeloo,
 };
 
+constexpr std::array<Celestial, 17> celestials = {
+    Sun,
+    Moho,
+    Eve,
+    Gilly,
+    Kerbin,
+    Mun,
+    Minmus,
+    Duna,
+    Ike,
+    Dres,
+    Jool,
+    Laythe,
+    Vall,
+    Tylo,
+    Bop,
+    Pol,
+    Eeloo,
+};
+
 constexpr std::array<char const*, 17> names = {
     "Sun",
     "Moho",
@@ -367,7 +387,7 @@ Vector<double, Barycentric> RandomUnitVector(BitGenerator& generator) {
 
 void SimulateFixedSystem(bool const produce_file) {
   std::mt19937_64 generator;
-  auto reference_ephemeris = MakeEphemeris(
+  std::unique_ptr<Ephemeris<Barycentric>> reference_ephemeris = MakeEphemeris(
       ReadSystem("ksp_fixed_system.proto.hex"),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step);
@@ -377,6 +397,7 @@ void SimulateFixedSystem(bool const produce_file) {
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides;
+  std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
   for (int i = 0; i < 100; ++i) {
     auto system = ReadSystem("ksp_fixed_system.proto.hex");
     for (auto const celestial : jool_system) {
@@ -389,9 +410,15 @@ void SimulateFixedSystem(bool const produce_file) {
         std::move(system),
         integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
         step));
+    perturbed_ephemerides.back()->Prolong(ksp_epoch);
+    numerically_unsound[perturbed_ephemerides.back().get()] = false;
   }
   bool log_diametre = true;
   int total_breakdowns = 0;
+  // If the error between an integration at step and one at step/2 exceeds this
+  // over a year, we assume that things have happened that our integrator cannot
+  // handle, probably close encounters.
+  Length const yearly_allowed_numerical_error = 100 * Metre;
   // Errors below this are invisible on plots.
   Length const visible_threshold = 1e6 * Metre;
   // Errors above this mean we are pretty much completely out of phase.
@@ -400,11 +427,13 @@ void SimulateFixedSystem(bool const produce_file) {
   for (int year = 1; year <= 200; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
     Bundle bundle(7);
-    bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
-      reference_ephemeris.Prolong(t);
-      reference_ephemeris.ForgetBefore(t);
-      return Status::OK;
-    });
+    if (reference_ephemeris != nullptr) {
+      bundle.Add([&reference_ephemeris = *reference_ephemeris, t ]() {
+        reference_ephemeris.Prolong(t);
+        reference_ephemeris.ForgetBefore(t);
+        return Status::OK;
+      });
+    }
     if (refined_ephemeris != nullptr) {
       bundle.Add([&refined_ephemeris = *refined_ephemeris, t ]() {
         refined_ephemeris.Prolong(t);
@@ -413,9 +442,52 @@ void SimulateFixedSystem(bool const produce_file) {
       });
     }
     for (auto const& ephemeris : perturbed_ephemerides) {
-      bundle.Add([&ephemeris = *ephemeris, t]() {
-        ephemeris.Prolong(t);
-        ephemeris.ForgetBefore(t);
+      bundle.Add([
+        &numerically_unsound,
+        ephemeris = ephemeris.get(),
+        t,
+        yearly_allowed_numerical_error
+      ]() {
+        auto system = ReadSystem("ksp_fixed_system.proto.hex");
+        for (auto const celestial : celestials) {
+          system.degrees_of_freedom[celestial] =
+              ephemeris->trajectory(ephemeris->bodies()[celestial])
+                  ->EvaluateDegreesOfFreedom(ephemeris->t_min(), nullptr);
+        }
+        Ephemeris<Barycentric> refined(
+            std::move(system.bodies),
+            system.degrees_of_freedom,
+            ephemeris->t_min(),
+            1 * Milli(Metre),
+            Ephemeris<Barycentric>::FixedStepParameters(
+                integrators::QuinlanTremaine1990Order12<
+                    Position<Barycentric>>(),
+                step / 2));
+        ephemeris->Prolong(t);
+        ephemeris->ForgetBefore(t);
+        refined.Prolong(t);
+        Length numerical_error;
+        Celestial most_erroneous_moon;
+        for (auto const moon : jool_moons) {
+          Length const moon_error =
+              AbsoluteError(refined.trajectory(refined.bodies()[moon])
+                                    ->EvaluatePosition(t, nullptr) -
+                                refined.trajectory(refined.bodies()[Jool])
+                                    ->EvaluatePosition(t, nullptr),
+                            ephemeris->trajectory(ephemeris->bodies()[moon])
+                                    ->EvaluatePosition(t, nullptr) -
+                                ephemeris->trajectory(ephemeris->bodies()[Jool])
+                                    ->EvaluatePosition(t, nullptr));
+          if (moon_error > numerical_error) {
+            numerical_error = moon_error;
+            most_erroneous_moon = moon;
+          }
+        }
+        if (numerical_error > yearly_allowed_numerical_error) {
+          LOG(INFO) << "high numerical error " << numerical_error << " ("
+                    << names[most_erroneous_moon] << ")";
+          numerically_unsound[ephemeris] = true;
+        }
         return Status::OK;
       });
     }
@@ -425,8 +497,11 @@ void SimulateFixedSystem(bool const produce_file) {
     int yearly_breakdowns = 0;
     for (auto it = perturbed_ephemerides.begin();
          it != perturbed_ephemerides.end();) {
+      if (numerically_unsound[it->get()]) {
+        perturbed_ephemerides.erase(it++);
+        goto next_perturbed_ephemeris;
+      }
       Ephemeris<Barycentric> const& ephemeris = **it;
-      // TODO(egg): check for apocalypses.
       for (auto const moon : jool_moons) {
         Length const distance =
             (ephemeris.trajectory(ephemeris.bodies()[moon])
@@ -446,6 +521,7 @@ void SimulateFixedSystem(bool const produce_file) {
     next_perturbed_ephemeris:
       continue;
     }
+    LOG(INFO) << "cluster size is " << perturbed_ephemerides.size();
     LOG_IF(INFO, yearly_breakdowns > 0) << yearly_breakdowns << " breakdowns";
     LOG_IF(INFO, total_breakdowns > 0) << total_breakdowns << " thus far";
 
@@ -507,6 +583,8 @@ void SimulateFixedSystem(bool const produce_file) {
         LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
         log_diametre = false;
       }
+    } else if (refined_ephemeris == nullptr) {
+      reference_ephemeris.reset();
     }
   }
 }
