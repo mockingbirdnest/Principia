@@ -148,6 +148,9 @@ class Integrator {
     // The last instant integrated by this instance.
     DoublePrecision<Instant> const& time() const;
 
+    // Performs a copy of this object.
+    virtual not_null<std::unique_ptr<Instance>> Clone() const = 0;
+
     // |ReadFromMessage| is specific to each subclass because of the functions.
     virtual void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const;

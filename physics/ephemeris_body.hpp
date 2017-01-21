@@ -855,12 +855,14 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
                 ephemeris.get(), _1, _2, _3);
+  CHECK(message.has_instance()) << "No pre-Cardano compatibility";
   ephemeris->instance_ =
-    FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::ReadFromMessage(
-        message.instance(),
-        equation,
-        /*append_state=*/std::bind(
-            &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
+      FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+      ReadFromMessage(
+          message.instance(),
+          equation,
+          /*append_state=*/std::bind(
+              &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
 
   int index = 0;
   ephemeris->bodies_to_trajectories_.clear();
@@ -1033,7 +1035,7 @@ typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
   for (auto const& trajectory : trajectories_) {
     checkpoints.push_back(trajectory->GetCheckpoint());
   }
-  return Checkpoint({instance_, checkpoints});
+  return Checkpoint({instance_->Clone(), checkpoints});
 }
 
 template<typename Frame>

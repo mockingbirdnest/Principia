@@ -247,7 +247,7 @@ class Ephemeris {
   // The state of the integration and of the continuous trajectory at a
   // particular time that we might want to use for compact serialization.
   struct Checkpoint final {
-    std::shared_ptr<
+    std::unique_ptr<
         typename Integrator<NewtonianMotionEquation>::Instance> instance;
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
@@ -344,7 +344,7 @@ class Ephemeris {
 
   FixedStepParameters const parameters_;
   Length const fitting_tolerance_;
-  std::shared_ptr<
+  std::unique_ptr<
       typename Integrator<NewtonianMotionEquation>::Instance> instance_;
 
   // These are the states other that the last which we preserve in order to

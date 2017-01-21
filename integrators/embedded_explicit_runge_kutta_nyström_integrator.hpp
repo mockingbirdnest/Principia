@@ -86,6 +86,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator()
         const override;
 
+    not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
+        const override;
+
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 

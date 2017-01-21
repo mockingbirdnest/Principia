@@ -145,6 +145,13 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::integrator()
 }
 
 template<typename Position, int order_>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Clone() const {
+  return std::unique_ptr<Instance>(new Instance(*this));
+}
+
+template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
