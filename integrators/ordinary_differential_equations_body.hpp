@@ -93,8 +93,9 @@ Integrator<DifferentialEquation>::Instance::Instance(
 }
 
 template<typename DifferentialEquation>
-Instant const& Integrator<DifferentialEquation>::Instance::time() const {
-  return current_state_.time.value;
+DoublePrecision<Instant> const&
+Integrator<DifferentialEquation>::Instance::time() const {
+  return current_state_.time;
 }
 
 template<typename DifferentialEquation>

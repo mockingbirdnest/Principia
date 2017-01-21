@@ -204,7 +204,8 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  last_state_.time = DoublePrecision<Instant>(initial_time);
+  typename NewtonianMotionEquation::SystemState state;
+  state.time = DoublePrecision<Instant>(initial_time);
 
   for (int i = 0; i < bodies.size(); ++i) {
     auto& body = bodies[i];
@@ -229,24 +230,32 @@ Ephemeris<Frame>::Ephemeris(
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
       trajectories_.insert(trajectories_.begin(), trajectory);
-      last_state_.positions.emplace(last_state_.positions.begin(),
-                                   degrees_of_freedom.position());
-      last_state_.velocities.emplace(last_state_.velocities.begin(),
-                                    degrees_of_freedom.velocity());
+      state.positions.emplace(state.positions.begin(),
+                              degrees_of_freedom.position());
+      state.velocities.emplace(state.velocities.begin(),
+                               degrees_of_freedom.velocity());
       ++number_of_oblate_bodies_;
     } else {
       // Inserting at the end of the vectors is O(1).
       bodies_.push_back(std::move(body));
       trajectories_.push_back(trajectory);
-      last_state_.positions.emplace_back(degrees_of_freedom.position());
-      last_state_.velocities.emplace_back(degrees_of_freedom.velocity());
+      state.positions.emplace_back(degrees_of_freedom.position());
+      state.velocities.emplace_back(degrees_of_freedom.velocity());
       ++number_of_spherical_bodies_;
     }
   }
 
-  massive_bodies_equation_.compute_acceleration =
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
                 this, _1, _2, _3);
+  problem.initial_state = &state;
+
+  instance_ = parameters.integrator_->NewInstance(
+      problem,
+      /*append_state=*/std::bind(
+          &Ephemeris::AppendMassiveBodiesState, this, _1),
+      parameters.step_);
 }
 
 template<typename Frame>
@@ -280,7 +289,7 @@ Instant Ephemeris<Frame>::t_min() const {
     t_min = std::max(t_min, trajectory->t_min());
   }
   CHECK(checkpoints_.empty() ||
-        checkpoints_.front().system_state.time.value >= t_min);
+        checkpoints_.front().instance->time().value >= t_min);
   return t_min;
 }
 
@@ -313,12 +322,12 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   auto it = std::upper_bound(
                 checkpoints_.begin(), checkpoints_.end(), t,
                 [](Instant const& left, Checkpoint const& right) {
-                  return left < right.system_state.time.value;
+                  return left < right.instance->time().value;
                 });
   if (it == checkpoints_.end()) {
     return;
   }
-  CHECK_LT(t, it->system_state.time.value);
+  CHECK_LT(t, it->instance->time().value);
 
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
@@ -329,21 +338,12 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
 
 template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
-  IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = massive_bodies_equation_;
-  problem.initial_state = &last_state_;
-
-  auto const instance = parameters_.integrator_->NewInstance(
-      problem,
-      std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1),
-      parameters_.step_);
-
   // Note that |t| may be before the last time that we integrated and still
   // after |t_max()|.  In this case we want to make sure that the integrator
   // makes progress.
   Instant t_final;
-  if (t <= last_state_.time.value) {
-    t_final = last_state_.time.value + parameters_.step_;
+  if (t <= instance_->time().value) {
+    t_final = instance_->time().value + parameters_.step_;
   } else {
     t_final = t;
   }
@@ -352,7 +352,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
-    instance->Solve(t_final);
+    instance_->Solve(t_final);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
@@ -382,7 +382,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // forward.  We use |last_state_.time.value| because this is always finite,
   // contrary to |t_max()|, which is -∞ when |empty()|.
   Instant const t_final =
-      std::min(std::max(last_state_.time.value +
+      std::min(std::max(instance_->time().value +
                             max_ephemeris_steps * parameters_.step(),
                         trajectory_last_time + parameters_.step()),
                t);
@@ -796,7 +796,7 @@ void Ephemeris<Frame>::WriteToMessage(
     for (auto const& trajectory : trajectories_) {
       trajectory->WriteToMessage(message->add_trajectory());
     }
-    last_state_.WriteToMessage(message->mutable_last_state());
+    instance_->WriteToMessage(message->mutable_instance());
   } else {
     auto const& checkpoints = checkpoints_.front().checkpoints;
     CHECK_EQ(trajectories_.size(), checkpoints.size());
@@ -804,8 +804,8 @@ void Ephemeris<Frame>::WriteToMessage(
       trajectories_[i]->WriteToMessage(message->add_trajectory(),
                                        checkpoints[i]);
     }
-    checkpoints_.front().system_state.WriteToMessage(
-        message->mutable_last_state());
+    checkpoints_.front().instance->WriteToMessage(
+        message->mutable_instance());
     t_max().WriteToMessage(message->mutable_t_max());
   }
   parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
@@ -850,9 +850,18 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        initial_time,
                        fitting_tolerance,
                        *parameters);
-  ephemeris->last_state_ =
-      NewtonianMotionEquation::SystemState::ReadFromMessage(
-          message.last_state());
+
+  NewtonianMotionEquation equation;
+  equation.compute_acceleration =
+      std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
+                ephemeris.get(), _1, _2, _3);
+  ephemeris->instance_ =
+    FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::ReadFromMessage(
+        message.instance(),
+        equation,
+        /*append_state=*/std::bind(
+            &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
+
   int index = 0;
   ephemeris->bodies_to_trajectories_.clear();
   ephemeris->trajectories_.clear();
@@ -973,7 +982,6 @@ Ephemeris<Frame>::Ephemeris(
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
-  last_state_ = state;
   int index = 0;
   for (int i = 0; i < trajectories_.size(); ++i) {
     auto const& trajectory = trajectories_[i];
@@ -999,7 +1007,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
   Instant const t_last_intermediate_state =
       checkpoints_.empty()
           ? astronomy::InfinitePast
-          : checkpoints_.back().system_state.time.value;
+          : checkpoints_.back().instance->time().value;
   if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
   }
@@ -1025,7 +1033,7 @@ typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
   for (auto const& trajectory : trajectories_) {
     checkpoints.push_back(trajectory->GetCheckpoint());
   }
-  return Checkpoint({last_state_, checkpoints});
+  return Checkpoint({instance_, checkpoints});
 }
 
 template<typename Frame>
