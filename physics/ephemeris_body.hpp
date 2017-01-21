@@ -885,6 +885,54 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
+std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
+    google::protobuf::RepeatedPtrField<
+        serialization::Plugin::CelestialAndProperties> const& messages,
+    Length const& fitting_tolerance,
+    typename Ephemeris<Frame>::FixedStepParameters const& fixed_parameters) {
+  LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
+            << " bytes in pre-Bourbaki compatibility mode ";
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<Frame>> initial_state;
+  std::vector<std::unique_ptr<DiscreteTrajectory<Frame>>> histories;
+  std::set<Instant> initial_time;
+  std::set<Instant> final_time;
+  for (auto const& message : messages) {
+    serialization::Celestial const& celestial = message.celestial();
+    bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
+    histories.emplace_back(DiscreteTrajectory<Frame>::ReadFromMessage(
+        celestial.history_and_prolongation().history(), /*forks=*/{}));
+    auto const prolongation =
+        DiscreteTrajectory<Frame>::ReadPointerFromMessage(
+            celestial.history_and_prolongation().prolongation(),
+            histories.back().get());
+    typename DiscreteTrajectory<Frame>::Iterator const history_begin =
+        histories.back()->Begin();
+    initial_state.push_back(history_begin.degrees_of_freedom());
+    initial_time.insert(history_begin.time());
+    final_time.insert(prolongation->last().time());
+  }
+  CHECK_EQ(1, initial_time.size());
+  CHECK_EQ(1, final_time.size());
+  LOG(INFO) << "Initial time is " << *initial_time.cbegin()
+            << ", final time is " << *final_time.cbegin();
+
+  // Construct a new ephemeris using the bodies and initial states and time
+  // extracted from the serialized celestials.
+  auto ephemeris = std::make_unique<Ephemeris<Frame>>(std::move(bodies),
+                                                      initial_state,
+                                                      *initial_time.cbegin(),
+                                                      fitting_tolerance,
+                                                      fixed_parameters);
+
+  // Prolong the ephemeris to the final time.  This might create discrepancies
+  // from the discrete trajectories.
+  ephemeris->Prolong(*final_time.cbegin());
+
+  return ephemeris;
+}
+
+template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)

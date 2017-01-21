@@ -138,6 +138,87 @@ TEST_F(PluginCompatibilityTest, PreBorel) {
   EXPECT_EQ(expected_u, u);
 }
 
+TEST_F(PluginCompatibilityTest, PreBourbaki) {
+  serialization::Plugin pre_bourbaki_serialized_plugin =
+      ReadFromFile("borel.proto.hex");
+  auto plugin = TestablePlugin::ReadFromMessage(pre_bourbaki_serialized_plugin);
+
+  // Do some operations on the plugin.
+  plugin->KeepAllVessels();
+  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Second, 2 * Radian);
+  plugin->KeepAllVessels();
+  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
+
+  // Serialize and deserialize it in the new format.
+  serialization::Plugin post_bourbaki_serialized_plugin;
+  plugin->WriteToMessage(&post_bourbaki_serialized_plugin);
+  plugin = TestablePlugin::ReadFromMessage(post_bourbaki_serialized_plugin);
+}
+
+TEST_F(PluginCompatibilityTest, PreБуняковский) {
+  serialization::Plugin pre_буняковский_serialized_plugin =
+      ReadFromFile("brouwer.proto.hex");
+  auto plugin = TestablePlugin::ReadFromMessage(
+                    pre_буняковский_serialized_plugin);
+
+  // Do some operations on the plugin.
+  plugin->KeepAllVessels();
+  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Second, 2 * Radian);
+  plugin->KeepAllVessels();
+  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
+
+  int number_of_flight_plans = 0;
+  int number_of_predictions_bucket1 = 0;
+  int number_of_predictions_bucket2 = 0;
+  int number_of_predictions_bucket3 = 0;
+  for (auto const& pair : plugin->vessels()) {
+    Vessel const* const vessel = pair.second;
+    if (vessel->has_flight_plan()) {
+      ++number_of_flight_plans;
+      // In this file, only one vessel has a flight plan.
+      auto const& flight_plan = vessel->flight_plan();
+      EXPECT_EQ(2, flight_plan.number_of_manœuvres());
+      EXPECT_EQ(5, flight_plan.number_of_segments());
+
+      // Check that the times are in ascending order.
+      std::experimental::optional<Instant> last_time;
+      for (int i = 0; i < flight_plan.number_of_segments(); ++i) {
+        DiscreteTrajectory<Barycentric>::Iterator begin;
+        DiscreteTrajectory<Barycentric>::Iterator end;
+        flight_plan.GetSegment(i, begin, end);
+        if (last_time) {
+          CHECK_LE(*last_time, begin.time());
+        }
+        last_time = begin.time();
+      }
+    }
+
+    Time const last_time_from_current = vessel->prediction().last().time() -
+                                        plugin->CurrentTime();
+    if (last_time_from_current > 4000 * Second &&
+        last_time_from_current < 5000 * Second) {
+      ++number_of_predictions_bucket1;
+    } else if (last_time_from_current > -7000 * Second &&
+               last_time_from_current < -6000 * Second) {
+      ++number_of_predictions_bucket2;
+    } else if (last_time_from_current > -4000 * Second &&
+               last_time_from_current < -3000 * Second) {
+      ++number_of_predictions_bucket3;
+    }
+  }
+  // There is one flight plan in the message but it is anomalous so we dropped
+  // it.
+  EXPECT_EQ(0, number_of_flight_plans);
+  EXPECT_EQ(1, number_of_predictions_bucket1);
+  EXPECT_EQ(1, number_of_predictions_bucket2);
+  EXPECT_EQ(15, number_of_predictions_bucket3);
+
+  // Serialize and deserialize it in the new format.
+  serialization::Plugin post_буняковский_serialized_plugin;
+  plugin->WriteToMessage(&post_буняковский_serialized_plugin);
+  plugin = TestablePlugin::ReadFromMessage(post_буняковский_serialized_plugin);
+}
+
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
