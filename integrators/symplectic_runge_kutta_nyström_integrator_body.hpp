@@ -144,6 +144,19 @@ Instance::integrator() const {
   return integrator_;
 }
 
+template<typename Position,
+         int order,
+         bool time_reversible,
+         int evaluations,
+         CompositionMethod composition>
+not_null<std::unique_ptr<typename Integrator<
+    SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
+SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
+                                      evaluations, composition>::
+Instance::Clone() const {
+  return std::unique_ptr<Instance>(new Instance(*this));
+}
+
 template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
 void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,

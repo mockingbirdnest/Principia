@@ -39,14 +39,15 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
-  MOCK_METHOD5_T(
+  MOCK_METHOD6_T(
       FlowWithAdaptiveStep,
       bool(not_null<DiscreteTrajectory<Frame>*> trajectory,
            typename Ephemeris<Frame>::IntrinsicAcceleration
                intrinsic_acceleration,
            Instant const& t,
            AdaptiveStepParameters const& parameters,
-           std::int64_t max_ephemeris_steps));
+           std::int64_t max_ephemeris_steps,
+           bool last_point_only));
   MOCK_METHOD4_T(
       FlowWithFixedStep,
       void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&

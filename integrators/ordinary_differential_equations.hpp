@@ -87,6 +87,7 @@ struct SpecialSecondOrderDifferentialEquation final {
 template<typename ODE>
 struct IntegrationProblem final {
   ODE equation;
+  // TODO(phl): This should not be a pointer.
   typename ODE::SystemState const* initial_state;
 };
 
@@ -145,7 +146,10 @@ class Integrator {
     virtual Status Solve(Instant const& t_final) = 0;
 
     // The last instant integrated by this instance.
-    Instant const& time() const;
+    DoublePrecision<Instant> const& time() const;
+
+    // Performs a copy of this object.
+    virtual not_null<std::unique_ptr<Instance>> Clone() const = 0;
 
     // |ReadFromMessage| is specific to each subclass because of the functions.
     virtual void WriteToMessage(

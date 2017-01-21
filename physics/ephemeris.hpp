@@ -247,7 +247,8 @@ class Ephemeris {
   // The state of the integration and of the continuous trajectory at a
   // particular time that we might want to use for compact serialization.
   struct Checkpoint final {
-    typename NewtonianMotionEquation::SystemState system_state;
+    std::unique_ptr<
+        typename Integrator<NewtonianMotionEquation>::Instance> instance;
     std::vector<typename ContinuousTrajectory<Frame>::Checkpoint> checkpoints;
   };
 
@@ -343,7 +344,8 @@ class Ephemeris {
 
   FixedStepParameters const parameters_;
   Length const fitting_tolerance_;
-  typename NewtonianMotionEquation::SystemState last_state_;
+  std::unique_ptr<
+      typename Integrator<NewtonianMotionEquation>::Instance> instance_;
 
   // These are the states other that the last which we preserve in order to
   // implement compact serialization.  The vector is time-ordered.
@@ -351,8 +353,6 @@ class Ephemeris {
 
   int number_of_oblate_bodies_ = 0;
   int number_of_spherical_bodies_ = 0;
-
-  NewtonianMotionEquation massive_bodies_equation_;
 
   Status last_severe_integration_status_;
 };

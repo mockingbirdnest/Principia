@@ -88,7 +88,8 @@ Status ContinuousTrajectory<Frame>::Append(
              ULPDistance((last_points_.back().first + step_ - t0) /
                              SIUnit<Time>(),
                          (time - t0) / SIUnit<Time>()))
-        << "Append at times that are not equally spaced";
+        << "Append at times that are not equally spaced, expected " << step_
+        << ", found " << last_points_.back().first << " and " << time;
   } else {
     first_time_ = time;
   }
