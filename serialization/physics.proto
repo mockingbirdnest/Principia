@@ -99,9 +99,10 @@ message Ephemeris {
   repeated MassiveBody body = 1;
   repeated ContinuousTrajectory trajectory = 2;
   required Quantity fitting_tolerance = 5;
-  required SystemState last_state = 6;
+  optional SystemState last_state = 6;  // Pre-Cardano.
   optional FixedStepParameters fixed_step_parameters = 7;  // required.
   optional Point t_max = 8;
+  optional IntegratorInstance instance = 9;  // required.
 
   // Pre-Буняковский.
   optional FixedStepSizeIntegrator planetary_integrator = 3;
