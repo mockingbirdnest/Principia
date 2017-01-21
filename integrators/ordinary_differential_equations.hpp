@@ -87,7 +87,7 @@ struct SpecialSecondOrderDifferentialEquation final {
 template<typename ODE>
 struct IntegrationProblem final {
   ODE equation;
-  //TODO(phl): This should not be a pointer.
+  // TODO(phl): This should not be a pointer.
   typename ODE::SystemState const* initial_state;
 };
 
