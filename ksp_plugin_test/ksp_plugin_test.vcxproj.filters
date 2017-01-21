@@ -113,6 +113,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="brouwer.proto.hex">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="borel.proto.hex">
       <Filter>Resource Files</Filter>
     </None>
