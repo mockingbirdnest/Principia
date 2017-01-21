@@ -94,27 +94,6 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
-char const serialized_boring_plugin[] =
-    "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
-    "\xB9\x1\n\xAE\x1\n\x12\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\0\x12"
-    "\x97\x1\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\x84\x1\n>\x12<\n:\n-\n"
-    "\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\x12\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\x1A"
-    "\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\"\t\r\xAF\x1F\xB1y\x10\x3\x18\x1\x12"
-    "B\n@\n3\n\xF\x12\r\b\x81\xF8\x1\x11\0\0\0\0\0\0\0\0\x12\xF\x12\r\b\x81\xF8"
-    "\x1\x11\0\0\0\0\0\0\0\0\x1A\xF\x12\r\b\x81\xF8\x1\x11\0\0\0\0\0\0\0\0\"\t"
-    "\r\xAF\x1F\xB1y\x10\x3\x18\x1\x12\x6\n\x4\b\0\x10\0\x1A\x2\n\0\"\x10\b\x80"
-    "\x80\x80\x80\x80\x1\x11\0\0\0\0\0\0\0\0*\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0"
-    "\0\0""0\0";
-
-char const hexadecimal_boring_plugin[] =
-    "12D201080012CD010A0F0A0D0883F00111000000000000F03F12B9010AAE010A120A0E120C"
-    "08800811000000000000000012001297010A0E120C0880081100000000000000001284010A"
-    "3E123C0A3A0A2D0A0D120B0801110000000000000000120D120B0801110000000000000000"
-    "1A0D120B080111000000000000000022090DAF1FB1791003180112420A400A330A0F120D08"
-    "81F801110000000000000000120F120D0881F8011100000000000000001A0F120D0881F801"
-    "11000000000000000022090DAF1FB1791003180112060A04080010001A020A002210088080"
-    "808080011100000000000000002A0E120C0880081100000000000000003000";
-
 char const vessel_guid[] = "NCC-1701-D";
 
 Index const celestial_index = 1;
@@ -774,24 +753,6 @@ TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_THAT(t0_ + current_time * Second, Eq(mjd0));
 }
 
-TEST_F(InterfaceTest, SerializePlugin) {
-  PullSerializer* serializer = nullptr;
-  std::string const message_bytes =
-      std::string(serialized_boring_plugin,
-                  (sizeof(serialized_boring_plugin) - 1) / sizeof(char));
-  principia::serialization::Plugin message;
-  message.ParseFromString(message_bytes);
-
-  EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
-  char const* serialization =
-      principia__SerializePlugin(plugin_.get(), &serializer);
-  EXPECT_STREQ(hexadecimal_boring_plugin, serialization);
-  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
-  principia__DeleteString(&serialization);
-  EXPECT_THAT(serialization, IsNull());
-}
-
-
 TEST_F(InterfaceTest, Apocalypse) {
   char const* details;
   EXPECT_CALL(*plugin_, HasEncounteredApocalypse(_)).WillOnce(Return(false));
@@ -804,23 +765,6 @@ TEST_F(InterfaceTest, Apocalypse) {
   EXPECT_STREQ(silly_string, details);
   principia__DeleteString(&details);
   EXPECT_THAT(details, IsNull());
-}
-
-TEST_F(InterfaceTest, DeserializePlugin) {
-  PushDeserializer* deserializer = nullptr;
-  Plugin const* plugin = nullptr;
-  principia__DeserializePlugin(
-          hexadecimal_boring_plugin,
-          (sizeof(hexadecimal_boring_plugin) - 1) / sizeof(char),
-          &deserializer,
-          &plugin);
-  principia__DeserializePlugin(hexadecimal_boring_plugin,
-                               0,
-                               &deserializer,
-                               &plugin);
-  EXPECT_THAT(plugin, NotNull());
-  EXPECT_EQ(Instant(), plugin->CurrentTime());
-  principia__DeletePlugin(&plugin);
 }
 
 TEST_F(InterfaceDeathTest, SettersAndGetters) {
