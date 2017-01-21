@@ -851,18 +851,33 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        fitting_tolerance,
                        *parameters);
 
+  bool const is_pre_cardano = !message.has_instance();
   NewtonianMotionEquation equation;
   equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
                 ephemeris.get(), _1, _2, _3);
-  CHECK(message.has_instance()) << "No pre-Cardano compatibility";
-  ephemeris->instance_ =
-      FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-      ReadFromMessage(
-          message.instance(),
-          equation,
-          /*append_state=*/std::bind(
-              &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
+  if (is_pre_cardano) {
+    auto const last_state =
+        NewtonianMotionEquation::SystemState::ReadFromMessage(
+            message.last_state());
+    IntegrationProblem<NewtonianMotionEquation> problem;
+    problem.equation = equation;
+    problem.initial_state = &last_state;
+
+    ephemeris->instance_ = parameters->integrator_->NewInstance(
+        problem,
+        /*append_state=*/std::bind(
+            &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1),
+        parameters->step_);
+  } else {
+    ephemeris->instance_ =
+        FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+        ReadFromMessage(
+            message.instance(),
+            equation,
+            /*append_state=*/std::bind(
+                &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
+  }
 
   int index = 0;
   ephemeris->bodies_to_trajectories_.clear();
