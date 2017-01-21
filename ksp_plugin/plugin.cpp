@@ -869,18 +869,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris;
   IndexToOwnedCelestial celestials;
 
-  if (is_pre_bourbaki) {
-    ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
-        message.pre_bourbaki_celestial(),
-        fitting_tolerance,
-        DefaultEphemerisParameters());
-    ReadCelestialsFromMessages(*ephemeris,
-                               message.pre_bourbaki_celestial(),
-                               celestials);
-  } else {
-    ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-    ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
-  }
+  CHECK(!is_pre_bourbaki) << "Pre-Bourbaki compatibility not supported";
+  ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+  ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
 
   GUIDToOwnedVessel vessels;
   for (auto const& vessel_message : message.vessel()) {

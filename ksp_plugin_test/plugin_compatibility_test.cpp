@@ -138,23 +138,6 @@ TEST_F(PluginCompatibilityTest, PreBorel) {
   EXPECT_EQ(expected_u, u);
 }
 
-TEST_F(PluginCompatibilityTest, PreBourbaki) {
-  serialization::Plugin pre_bourbaki_serialized_plugin =
-      ReadFromFile("borel.proto.hex");
-  auto plugin = TestablePlugin::ReadFromMessage(pre_bourbaki_serialized_plugin);
-
-  // Do some operations on the plugin.
-  plugin->KeepAllVessels();
-  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Second, 2 * Radian);
-  plugin->KeepAllVessels();
-  plugin->AdvanceTime(plugin->CurrentTime() + 1 * Hour, 3 * Radian);
-
-  // Serialize and deserialize it in the new format.
-  serialization::Plugin post_bourbaki_serialized_plugin;
-  plugin->WriteToMessage(&post_bourbaki_serialized_plugin);
-  plugin = TestablePlugin::ReadFromMessage(post_bourbaki_serialized_plugin);
-}
-
 TEST_F(PluginCompatibilityTest, PreБуняковский) {
   serialization::Plugin pre_буняковский_serialized_plugin =
       ReadFromFile("brouwer.proto.hex");
