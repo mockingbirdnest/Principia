@@ -31,6 +31,8 @@ int main(int argc, char const* argv[]) {
       principia::mathematica::AnalyseGlobalError();
     } else if (target == "statistically_analyse_stability") {
       principia::mathematica::StatisticallyAnalyseStability();
+    } else {
+      LOG(FATAL) << "unexpected target " << target;
     }
   } else {
     LOG(FATAL) << "unexpected argument " << argv[1];
