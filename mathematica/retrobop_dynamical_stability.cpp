@@ -119,6 +119,8 @@ constexpr std::array<char const*, 17> names = {
     "Eeloo",
 };
 
+constexpr char const* system_file = "ksp_fixed_system.proto.hex";
+
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
 constexpr Time step = 5 * Minute;
@@ -223,7 +225,7 @@ MakePerturbedEphemerides(int const count,
   std::mt19937_64 generator;
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>> result;
   for (int i = 0; i < count; ++i) {
-    auto system = ReadSystem("ksp_fixed_system.proto.hex");
+    auto system = ReadSystem(system_file);
     for (auto const celestial : jool_system) {
       system.degrees_of_freedom[celestial] = {
           system.degrees_of_freedom[celestial].position() +
@@ -420,7 +422,7 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
 
 void PlotPredictableYears() {
   auto const ephemeris = MakeEphemeris(
-      ReadSystem("ksp_fixed_system.proto.hex"),
+      ReadSystem(system_file),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step);
 
@@ -455,18 +457,18 @@ void PlotPredictableYears() {
 
 void PlotCentury() {
   ProduceCenturyPlots(*MakeEphemeris(
-      ReadSystem("ksp_fixed_system.proto.hex"),
+      ReadSystem(system_file),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step));
 }
 
 void AnalyseGlobalError() {
   auto const reference_ephemeris = MakeEphemeris(
-      ReadSystem("ksp_fixed_system.proto.hex"),
+      ReadSystem(system_file),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step);
   std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = MakeEphemeris(
-      ReadSystem("ksp_fixed_system.proto.hex"),
+      ReadSystem(system_file),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
@@ -572,6 +574,10 @@ void StatisticallyAnalyseStability() {
   // If the error between an integration at step and one at step/2 exceeds this
   // over a year, we assume that things have happened that our integrator cannot
   // handle, probably close encounters.
+  // TODO(egg): This is a very lousy substitute for a proper estimation of the
+  // local forward error.  We probably want to have a way to actually estimate
+  // the local error (on every step), and perhaps even the local backward error
+  // (though that may be costly if done naïvely).
   Length const yearly_allowed_numerical_error = 1000 * Metre;
 
   for (int year = 1; year <= 200; ++year) {
@@ -584,7 +590,7 @@ void StatisticallyAnalyseStability() {
         t,
         yearly_allowed_numerical_error
       ]() {
-        auto system = ReadSystem("ksp_fixed_system.proto.hex");
+        auto system = ReadSystem(system_file);
         for (auto const celestial : celestials) {
           system.degrees_of_freedom[celestial] =
               EvaluateDegreesOfFreedom(*ephemeris,

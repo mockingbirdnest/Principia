@@ -210,7 +210,6 @@ void Plugin::EndInitialization() {
     }
     auto const parents = std::move(hierarchical_initialization_->parents);
     hierarchical_initialization_ = std::experimental::nullopt;
-#define LOG_KSP_SYSTEM 1
 #if LOG_KSP_SYSTEM
     std::ofstream file;
     if (system_fingerprint == ksp_stock_system_fingerprint) {
