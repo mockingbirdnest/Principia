@@ -120,7 +120,7 @@ constexpr std::array<char const*, 17> names = {
 };
 
 constexpr Instant ksp_epoch;
-constexpr Instant a_century_hence = ksp_epoch + 1000 * JulianYear;
+constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
 constexpr Time step = 5 * Minute;
 
 constexpr std::array<Celestial, 6> jool_system =
