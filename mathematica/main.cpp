@@ -21,14 +21,17 @@ int main(int argc, char const* argv[]) {
     principia::mathematica::GenerateKeplerProblemWorkErrorGraphs(0.967);
   } else if (std::string(argv[1]) == "retrobop_dynamical_stability") {
     bool produce_file = false;
-    if (argc == 3) {
-      if (std::string(argv[2]) == "--produce_file") {
-        produce_file = true;
-      } else {
-        LOG(FATAL) << "unexpected argument " << argv[3];
-      }
+    CHECK_EQ(argc, 3);
+    std::string const target = argv[2];
+    if (target == "plot_predictable_years") {
+      principia::mathematica::PlotPredictableYears();
+    } else if (target == "plot_century") {
+      principia::mathematica::PlotCentury();
+    } else if (target == "analyse_global_error") {
+      principia::mathematica::AnalyseGlobalError();
+    } else if (target == "statistically_analyse_stability") {
+      principia::mathematica::StatisticallyAnalyseStability();
     }
-    principia::mathematica::SimulateFixedSystem(produce_file);
   } else {
     LOG(FATAL) << "unexpected argument " << argv[1];
   }

@@ -556,7 +556,7 @@ void AnalyseGlobalError() {
   }
 }
 
-void AnalyseStatisticalStability() {
+void StatisticallyAnalyseStability() {
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,

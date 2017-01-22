@@ -3,7 +3,10 @@
 namespace principia {
 namespace mathematica {
 
-void SimulateFixedSystem(bool produce_file);
+void PlotPredictableYears();
+void PlotCentury();
+void AnalyseGlobalError();
+void StatisticallyAnalyseStability();
 
 }  // namespace mathematica
 }  // namespace principia
