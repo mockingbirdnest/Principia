@@ -385,6 +385,14 @@ Vector<double, Barycentric> RandomUnitVector(BitGenerator& generator) {
 
 }  // namespace
 
+void PlotPredictableYears() {}
+
+void PlotCentury() {}
+
+void AnalyseGlobalError() {}
+
+void AnalyseStatisticalStability() {}
+
 void SimulateFixedSystem(bool const produce_file) {
   std::mt19937_64 generator;
   std::unique_ptr<Ephemeris<Barycentric>> reference_ephemeris = MakeEphemeris(
