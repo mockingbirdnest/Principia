@@ -2,6 +2,7 @@
 #include "ksp_plugin/pile_up.hpp"
 
 #include <list>
+#include <map>
 
 #include "geometry/identity.hpp"
 #include "ksp_plugin/vessel.hpp"

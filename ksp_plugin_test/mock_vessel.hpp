@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <list>
+
 #include "gmock/gmock.h"
 #include "ksp_plugin/vessel.hpp"
 
