@@ -531,7 +531,7 @@ void AnalyseGlobalError() {
       for (auto const& ephemeris : perturbed_ephemerides) {
         Length moon_error;
         Celestial moon;
-        ComputeHighestMoonError(*refined_ephemeris,
+        ComputeHighestMoonError(*ephemeris,
                                 *reference_ephemeris,
                                 t,
                                 moon_error,
