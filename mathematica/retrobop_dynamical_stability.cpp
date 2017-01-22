@@ -126,6 +126,7 @@ constexpr Time step = 5 * Minute;
 constexpr std::array<Celestial, 6> jool_system =
     {Jool, Laythe, Vall, Tylo, Bop, Pol};
 constexpr std::array<Celestial, 5> jool_moons = {Laythe, Vall, Tylo, Bop, Pol};
+
 template<typename Message>
 std::unique_ptr<Message> Read(std::ifstream & file) {
   std::string const line = GetLine(file);
@@ -142,32 +143,6 @@ std::unique_ptr<Message> Read(std::ifstream & file) {
   CHECK(
       message->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
   return std::move(message);
-}
-
-void FillPositions(
-    Ephemeris<Barycentric> const& ephemeris,
-    Instant const& initial_time,
-    Time const& duration,
-    std::vector<std::vector<Vector<double, Barycentric>>>& container) {
-  for (Instant t = initial_time; t < initial_time + duration;
-       t += step) {
-    auto const position = [t, &ephemeris](Celestial celestial) {
-      return ephemeris.trajectory(ephemeris.bodies()[celestial])
-          ->EvaluatePosition(t, /*hint=*/nullptr);
-    };
-    BarycentreCalculator<Position<Barycentric>, GravitationalParameter>
-        jool_system_barycentre;
-    for (auto const celestial : jool_system) {
-      jool_system_barycentre.Add(
-          position(celestial),
-          ephemeris.bodies()[celestial]->gravitational_parameter());
-    }
-    container.emplace_back();
-    for (auto const celestial : jool_system) {
-      container.back().emplace_back(
-          (position(celestial) - jool_system_barycentre.Get()) / Metre);
-    }
-  }
 }
 
 HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
@@ -188,6 +163,34 @@ HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
   return system;
 }
 
+Position<Barycentric> EvaluatePosition(Ephemeris<Barycentric> const& ephemeris,
+                                       Celestial const celestial,
+                                       Instant const& t) {
+  return ephemeris.trajectory(ephemeris.bodies()[celestial])
+      ->EvaluatePosition(t, /*hint=*/nullptr);
+}
+
+DegreesOfFreedom<Barycentric> EvaluateDegreesOfFreedom(
+    Ephemeris<Barycentric> const& ephemeris,
+    Celestial const celestial,
+    Instant const& t) {
+  return ephemeris.trajectory(ephemeris.bodies()[celestial])
+      ->EvaluateDegreesOfFreedom(t, /*hint=*/nullptr);
+}
+
+DegreesOfFreedom<Barycentric> JoolSystemBarycentre(
+    Ephemeris<Barycentric> const& ephemeris,
+    Instant const& t) {
+  BarycentreCalculator<DegreesOfFreedom<Barycentric>, GravitationalParameter>
+      jool_system_barycentre;
+  for (auto const celestial : jool_system) {
+    jool_system_barycentre.Add(
+        EvaluateDegreesOfFreedom(ephemeris, celestial, t),
+        ephemeris.bodies()[celestial]->gravitational_parameter());
+  }
+  return jool_system_barycentre.Get();
+}
+
 not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
     HierarchicalSystem<Barycentric>::BarycentricSystem&& system,
     FixedStepSizeIntegrator<
@@ -201,8 +204,56 @@ not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
       Ephemeris<Barycentric>::FixedStepParameters(integrator, step));
 }
 
-void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
-                    bool const produce_file) {
+template<typename BitGenerator>
+Vector<double, Barycentric> RandomUnitVector(BitGenerator& generator) {
+  std::uniform_real_distribution<> longitude_distribution(-π, π);
+  std::uniform_real_distribution<> z_distribution(-1, 1);
+  double const z = z_distribution(generator);
+  Angle const longitude = longitude_distribution(generator) * Radian;
+  return Vector<double, Barycentric>({Cos(longitude) * Sqrt(1 - Pow<2>(z)),
+                                      Sin(longitude) * Sqrt(1 - Pow<2>(z)),
+                                      z});
+}
+
+template<typename Integrator>
+std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
+MakePerturbedEphemerides(int const count,
+                         Integrator const& integrator,
+                         Time const& step) {
+  std::mt19937_64 generator;
+  std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>> result;
+  for (int i = 0; i < count; ++i) {
+    auto system = ReadSystem("ksp_fixed_system.proto.hex");
+    for (auto const celestial : jool_system) {
+      system.degrees_of_freedom[celestial] = {
+          system.degrees_of_freedom[celestial].position() +
+              RandomUnitVector(generator) * Milli(Metre),
+          system.degrees_of_freedom[celestial].velocity()};
+    }
+    result.emplace_back(MakeEphemeris(std::move(system), integrator, step));
+  }
+  return result;
+}
+
+void FillPositions(
+    Ephemeris<Barycentric> const& ephemeris,
+    Instant const& initial_time,
+    Time const& duration,
+    std::vector<std::vector<Vector<double, Barycentric>>>& container) {
+  for (int n = 0; n * step < duration; ++n) {
+    Instant const t = initial_time + n * step;
+    Position<Barycentric> const jool_system_barycentre =
+        JoolSystemBarycentre(ephemeris, t).position();
+    container.emplace_back();
+    for (auto const celestial : jool_system) {
+      container.back().emplace_back(
+          (EvaluatePosition(ephemeris, celestial, t) - jool_system_barycentre) /
+          Metre);
+    }
+  }
+}
+
+void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   for (int i = 1; i < (a_century_hence - ksp_epoch) / JulianYear; ++i) {
     LOG(INFO) << "year " << i;
     ephemeris.Prolong(ksp_epoch + i * JulianYear);
@@ -236,18 +287,11 @@ void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
     last_separation_changes.emplace(moon, Sign(+1));
   }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
-    auto const position = [t, &ephemeris](Celestial const celestial) {
-      return ephemeris.trajectory(ephemeris.bodies()[celestial])
-          ->EvaluatePosition(t, /*hint=*/nullptr);
-    };
-    auto const degrees_of_freedom = [t, &ephemeris](Celestial const celestial) {
-      return ephemeris.trajectory(ephemeris.bodies()[celestial])
-          ->EvaluateDegreesOfFreedom(t, /*hint=*/nullptr);
-    };
-    auto const jool_position = position(Jool);
+    auto const jool_position = EvaluatePosition(ephemeris, Jool, t);
 
     for (auto const moon : jool_moons) {
-      Length const separation = (jool_position - position(moon)).Norm();
+      Length const separation =
+          (jool_position - EvaluatePosition(ephemeris, moon, t)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
@@ -270,9 +314,11 @@ void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
     }
 
     tylo_bop_separations_in_m.emplace_back(
-        (position(Tylo) - position(Bop)).Norm() / Metre);
+        (EvaluatePosition(ephemeris, Tylo, t) -
+         EvaluatePosition(ephemeris, Bop, t)).Norm() / Metre);
     pol_bop_separations_in_m.emplace_back(
-        (position(Pol) - position(Bop)).Norm() / Metre);
+        (EvaluatePosition(ephemeris, Pol, t) -
+         EvaluatePosition(ephemeris, Bop, t)).Norm() / Metre);
 
     {
       // KSP's osculating elements.
@@ -280,8 +326,9 @@ void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
           KeplerOrbit<Barycentric>(
               *ephemeris.bodies()[Jool],
               MasslessBody(),
-              degrees_of_freedom(Bop) - degrees_of_freedom(Jool),
-              t).elements_at_epoch();
+              EvaluateDegreesOfFreedom(ephemeris, Bop, t) -
+                  EvaluateDegreesOfFreedom(ephemeris, Jool, t), t)
+              .elements_at_epoch();
       bop_eccentricities.emplace_back(bop_elements.eccentricity);
       bop_inclinations_in_degrees.emplace_back(bop_elements.inclination /
                                                Degree);
@@ -297,15 +344,15 @@ void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
           innermost_jool_system;
       for (auto const celestial : {Jool, Laythe, Vall, Tylo}) {
         innermost_jool_system.Add(
-            degrees_of_freedom(celestial),
+            EvaluateDegreesOfFreedom(ephemeris, celestial, t),
             ephemeris.bodies()[celestial]->gravitational_parameter());
       }
       auto const bop_jacobi_elements =
-          KeplerOrbit<Barycentric>(
-              MassiveBody(innermost_jool_system.weight()),
-              *ephemeris.bodies()[Bop],
-              degrees_of_freedom(Bop) - innermost_jool_system.Get(),
-              t).elements_at_epoch();
+          KeplerOrbit<Barycentric>(MassiveBody(innermost_jool_system.weight()),
+                                   *ephemeris.bodies()[Bop],
+                                   EvaluateDegreesOfFreedom(ephemeris, Bop, t) -
+                                       innermost_jool_system.Get(),
+                                   t).elements_at_epoch();
       bop_jacobi_eccentricities.emplace_back(bop_jacobi_elements.eccentricity);
       bop_jacobi_inclinations_in_degrees.emplace_back(
           bop_jacobi_elements.inclination / Degree);
@@ -316,25 +363,8 @@ void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
     }
   }
 
-  std::vector<std::vector<Vector<double, Barycentric>>>
-      barycentric_positions_1_year;
-  FillPositions(ephemeris,
-                ksp_epoch,
-                1 * JulianYear,
-                barycentric_positions_1_year);
-  std::vector<std::vector<Vector<double, Barycentric>>>
-      barycentric_positions_2_year;
-  FillPositions(ephemeris,
-                ksp_epoch,
-                2 * JulianYear,
-                barycentric_positions_2_year);
-
-  if (!produce_file) {
-    return;
-  }
-
   std::ofstream file;
-  file.open("ksp_system.generated.wl");
+  file.open("retrobop_century.generated.wl");
   file << mathematica::Assign("laytheTimes", times_in_s[Laythe]);
   file << mathematica::Assign("vallTimes", times_in_s[Vall]);
   file << mathematica::Assign("tyloTimes", times_in_s[Tylo]);
@@ -364,38 +394,74 @@ void SimulateSystem(Ephemeris<Barycentric>& ephemeris,
 
   file << mathematica::Assign("tyloBop", tylo_bop_separations_in_m);
   file << mathematica::Assign("polBop", pol_bop_separations_in_m);
-
-  file << mathematica::Assign("barycentricPositions1",
-                              barycentric_positions_1_year);
-  file << mathematica::Assign("barycentricPositions2",
-                              barycentric_positions_2_year);
   file.close();
 }
 
-template<typename BitGenerator>
-Vector<double, Barycentric> RandomUnitVector(BitGenerator& generator) {
-  std::uniform_real_distribution<> longitude_distribution(-π, π);
-  std::uniform_real_distribution<> z_distribution(-1, 1);
-  double const z = z_distribution(generator);
-  Angle const longitude = longitude_distribution(generator) * Radian;
-  return Vector<double, Barycentric>({Cos(longitude) * Sqrt(1 - Pow<2>(z)),
-                                      Sin(longitude) * Sqrt(1 - Pow<2>(z)),
-                                      z});
+void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
+                             Ephemeris<Barycentric> const& right,
+                             Instant const& t,
+                             Length& error,
+                             Celestial& most_erroneous_moon) {
+  error = Length{};
+  auto const left_barycentre = JoolSystemBarycentre(left, t).position();
+  auto const right_barycentre = JoolSystemBarycentre(right, t).position();
+  for (auto const moon : jool_moons) {
+    Length const moon_error =
+        AbsoluteError(EvaluatePosition(left, moon, t) - left_barycentre,
+                      EvaluatePosition(right, moon, t) - right_barycentre);
+    if (moon_error > error) {
+      error = moon_error;
+      most_erroneous_moon = moon;
+    }
+  }
 }
 
 }  // namespace
 
-void PlotPredictableYears() {}
+void PlotPredictableYears() {
+  auto const ephemeris = MakeEphemeris(
+      ReadSystem("ksp_fixed_system.proto.hex"),
+      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      step);
 
-void PlotCentury() {}
+  for (int i = 1; i <= 5; ++i) {
+    ephemeris->Prolong(ksp_epoch + i * JulianYear);
+    LOG(INFO) << "Prolonged to year " << i;
+  }
 
-void AnalyseGlobalError() {}
+  std::vector<std::vector<Vector<double, Barycentric>>>
+      barycentric_positions_1_year;
+  FillPositions(
+      *ephemeris, ksp_epoch, 1 * JulianYear, barycentric_positions_1_year);
+  std::vector<std::vector<Vector<double, Barycentric>>>
+      barycentric_positions_2_year;
+  FillPositions(
+      *ephemeris, ksp_epoch, 2 * JulianYear, barycentric_positions_2_year);
+  std::vector<std::vector<Vector<double, Barycentric>>>
+      barycentric_positions_5_year;
+  FillPositions(
+      *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
-void AnalyseStatisticalStability() {}
+  std::ofstream file;
+  file.open("retrobop_predictable_years.generated.wl");
+  file << mathematica::Assign("barycentricPositions1",
+                              barycentric_positions_1_year);
+  file << mathematica::Assign("barycentricPositions2",
+                              barycentric_positions_2_year);
+  file << mathematica::Assign("barycentricPositions5",
+                              barycentric_positions_5_year);
+  file.close();
+}
 
-void SimulateFixedSystem(bool const produce_file) {
-  std::mt19937_64 generator;
-  std::unique_ptr<Ephemeris<Barycentric>> reference_ephemeris = MakeEphemeris(
+void PlotCentury() {
+  ProduceCenturyPlots(*MakeEphemeris(
+      ReadSystem("ksp_fixed_system.proto.hex"),
+      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      step));
+}
+
+void AnalyseGlobalError() {
+  auto const reference_ephemeris = MakeEphemeris(
       ReadSystem("ksp_fixed_system.proto.hex"),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step);
@@ -404,37 +470,20 @@ void SimulateFixedSystem(bool const produce_file) {
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
-      perturbed_ephemerides;
-  std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
-  for (int i = 0; i < 100; ++i) {
-    auto system = ReadSystem("ksp_fixed_system.proto.hex");
-    for (auto const celestial : jool_system) {
-      system.degrees_of_freedom[celestial] = {
-          system.degrees_of_freedom[celestial].position() +
-              RandomUnitVector(generator) * Milli(Metre),
-          system.degrees_of_freedom[celestial].velocity()};
-    }
-    perturbed_ephemerides.emplace_back(MakeEphemeris(
-        std::move(system),
-        integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
-        step));
-    perturbed_ephemerides.back()->Prolong(ksp_epoch);
-    numerically_unsound[perturbed_ephemerides.back().get()] = false;
-  }
-  bool log_diametre = true;
-  int total_breakdowns = 0;
-  // If the error between an integration at step and one at step/2 exceeds this
-  // over a year, we assume that things have happened that our integrator cannot
-  // handle, probably close encounters.
-  Length const yearly_allowed_numerical_error = 1000 * Metre;
+      perturbed_ephemerides = MakePerturbedEphemerides(
+          100,
+          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+          step);
+
+  bool log_radius = true;
   // Errors below this are invisible on plots.
   Length const visible_threshold = 1e6 * Metre;
   // Errors above this mean we are pretty much completely out of phase.
   Length const chaotic_threshold = 1e8 * Metre;
 
-  for (int year = 1; year <= 200; ++year) {
+  for (int year = 1;; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
-    Bundle bundle(7);
+    Bundle bundle{7};
     if (reference_ephemeris != nullptr) {
       bundle.Add([&reference_ephemeris = *reference_ephemeris, t ]() {
         reference_ephemeris.Prolong(t);
@@ -450,6 +499,85 @@ void SimulateFixedSystem(bool const produce_file) {
       });
     }
     for (auto const& ephemeris : perturbed_ephemerides) {
+      bundle.Add([ephemeris = ephemeris.get(), t]() {
+        ephemeris->Prolong(t);
+        ephemeris->ForgetBefore(t);
+        return Status::OK;
+      });
+    }
+    bundle.Join();
+    LOG(INFO) << "year " << year;
+
+    if (refined_ephemeris != nullptr) {
+      Length numerical_error;
+      Celestial most_erroneous_moon;
+      ComputeHighestMoonError(*refined_ephemeris,
+                              *reference_ephemeris,
+                              t,
+                              numerical_error,
+                              most_erroneous_moon);
+      LOG(INFO) << "Numerical error: " << numerical_error << " ("
+                << names[most_erroneous_moon] << ")";
+      LOG_IF(INFO, numerical_error < visible_threshold) << "invisible on plots";
+      if (numerical_error > chaotic_threshold) {
+        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
+        refined_ephemeris.reset();
+      }
+    }
+
+    if (log_radius) {
+      Length cluster_radius;
+      Celestial most_erroneous_moon;
+      for (auto const& ephemeris : perturbed_ephemerides) {
+        Length moon_error;
+        Celestial moon;
+        ComputeHighestMoonError(*refined_ephemeris,
+                                *reference_ephemeris,
+                                t,
+                                moon_error,
+                                moon);
+        if (moon_error > cluster_radius) {
+          cluster_radius = moon_error;
+          most_erroneous_moon = moon;
+        }
+      }
+      LOG(INFO) << "Cluster radius: " << cluster_radius << " ("
+                << names[most_erroneous_moon] << ")";
+      LOG_IF(INFO, cluster_radius < visible_threshold) << "invisible on plots";
+      if (cluster_radius > chaotic_threshold) {
+        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
+        log_radius = false;
+      }
+    }
+
+    if (!log_radius && refined_ephemeris == nullptr) {
+      return;
+    }
+  }
+}
+
+void AnalyseStatisticalStability() {
+  std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
+      perturbed_ephemerides = MakePerturbedEphemerides(
+          100,
+          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+          step);
+
+  std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
+  for (auto const& ephemeris : perturbed_ephemerides) {
+    ephemeris->Prolong(ksp_epoch);
+    numerically_unsound[ephemeris.get()] = false;
+  }
+  int total_breakdowns = 0;
+  // If the error between an integration at step and one at step/2 exceeds this
+  // over a year, we assume that things have happened that our integrator cannot
+  // handle, probably close encounters.
+  Length const yearly_allowed_numerical_error = 1000 * Metre;
+
+  for (int year = 1; year <= 200; ++year) {
+    Instant const t = ksp_epoch + year * JulianYear;
+    Bundle bundle{7};
+    for (auto const& ephemeris : perturbed_ephemerides) {
       bundle.Add([
         &numerically_unsound,
         ephemeris = ephemeris.get(),
@@ -459,8 +587,9 @@ void SimulateFixedSystem(bool const produce_file) {
         auto system = ReadSystem("ksp_fixed_system.proto.hex");
         for (auto const celestial : celestials) {
           system.degrees_of_freedom[celestial] =
-              ephemeris->trajectory(ephemeris->bodies()[celestial])
-                  ->EvaluateDegreesOfFreedom(ephemeris->t_min(), nullptr);
+              EvaluateDegreesOfFreedom(*ephemeris,
+                                       celestial,
+                                       ephemeris->t_min());
         }
         Ephemeris<Barycentric> refined(
             std::move(system.bodies),
@@ -476,21 +605,11 @@ void SimulateFixedSystem(bool const produce_file) {
         refined.Prolong(t);
         Length numerical_error;
         Celestial most_erroneous_moon;
-        for (auto const moon : jool_moons) {
-          Length const moon_error =
-              AbsoluteError(refined.trajectory(refined.bodies()[moon])
-                                    ->EvaluatePosition(t, nullptr) -
-                                refined.trajectory(refined.bodies()[Jool])
-                                    ->EvaluatePosition(t, nullptr),
-                            ephemeris->trajectory(ephemeris->bodies()[moon])
-                                    ->EvaluatePosition(t, nullptr) -
-                                ephemeris->trajectory(ephemeris->bodies()[Jool])
-                                    ->EvaluatePosition(t, nullptr));
-          if (moon_error > numerical_error) {
-            numerical_error = moon_error;
-            most_erroneous_moon = moon;
-          }
-        }
+        ComputeHighestMoonError(refined,
+                                *ephemeris,
+                                t,
+                                numerical_error,
+                                most_erroneous_moon);
         if (numerical_error > yearly_allowed_numerical_error) {
           LOG(INFO) << "high numerical error " << numerical_error << " ("
                     << names[most_erroneous_moon] << ")";
@@ -506,94 +625,31 @@ void SimulateFixedSystem(bool const produce_file) {
     for (auto it = perturbed_ephemerides.begin();
          it != perturbed_ephemerides.end();) {
       if (numerically_unsound[it->get()]) {
-        perturbed_ephemerides.erase(it++);
-        goto next_perturbed_ephemeris;
-      }
-      Ephemeris<Barycentric> const& ephemeris = **it;
-      for (auto const moon : jool_moons) {
-        Length const distance =
-            (ephemeris.trajectory(ephemeris.bodies()[moon])
-                 ->EvaluatePosition(t, nullptr) -
-             ephemeris.trajectory(ephemeris.bodies()[Jool])
-                 ->EvaluatePosition(t, nullptr))
-                .Norm();
-        if (distance > 3e8 * Metre) {
-          LOG(INFO) << names[moon] << " escape, " << distance << " from Jool.";
-          ++yearly_breakdowns;
-          ++total_breakdowns;
-          perturbed_ephemerides.erase(it++);
-          goto next_perturbed_ephemeris;
+        goto erase_and_skip_to_next_perturbed_ephemeris;
+      } else {
+        Ephemeris<Barycentric> const& ephemeris = **it;
+        auto const jool_barycentre =
+            JoolSystemBarycentre(ephemeris, t).position();
+        for (auto const moon : jool_moons) {
+          Length const distance =
+              (EvaluatePosition(ephemeris, moon, t) - jool_barycentre).Norm();
+          if (distance > 3e8 * Metre) {
+            LOG(INFO) << names[moon] << " escape, " << distance
+                      << " from Jool.";
+            ++yearly_breakdowns;
+            ++total_breakdowns;
+            goto erase_and_skip_to_next_perturbed_ephemeris;
+          }
         }
       }
       ++it;
-    next_perturbed_ephemeris:
       continue;
+    erase_and_skip_to_next_perturbed_ephemeris:
+      perturbed_ephemerides.erase(it++);
     }
     LOG(INFO) << "cluster size is " << perturbed_ephemerides.size();
     LOG_IF(INFO, yearly_breakdowns > 0) << yearly_breakdowns << " breakdowns";
     LOG_IF(INFO, total_breakdowns > 0) << total_breakdowns << " thus far";
-
-    if (refined_ephemeris != nullptr) {
-      Length numerical_error;
-      Celestial most_erroneous_moon;
-      for (auto const moon : jool_moons) {
-        Length const moon_error = AbsoluteError(
-            refined_ephemeris->trajectory(refined_ephemeris->bodies()[moon])
-                    ->EvaluatePosition(t, nullptr) -
-                refined_ephemeris->trajectory(refined_ephemeris->bodies()[Jool])
-                    ->EvaluatePosition(t, nullptr),
-            reference_ephemeris->trajectory(reference_ephemeris->bodies()[moon])
-                    ->EvaluatePosition(t, nullptr) -
-                reference_ephemeris
-                    ->trajectory(reference_ephemeris->bodies()[Jool])
-                    ->EvaluatePosition(t, nullptr));
-        if (moon_error > numerical_error) {
-          numerical_error = moon_error;
-          most_erroneous_moon = moon;
-        }
-      }
-      LOG(INFO) << "Numerical error: " << numerical_error << " ("
-                << names[most_erroneous_moon] << ")";
-      LOG_IF(INFO, numerical_error < visible_threshold) << "invisible on plots";
-      if (numerical_error > chaotic_threshold) {
-        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
-        refined_ephemeris.reset();
-      }
-    }
-
-    if (log_diametre) {
-      Length cluster_radius;
-      Celestial most_erroneous_moon;
-      for (auto const& ephemeris : perturbed_ephemerides) {
-        for (auto const moon : jool_moons) {
-          Length const moon_error = AbsoluteError(
-              ephemeris->trajectory(ephemeris->bodies()[moon])
-                      ->EvaluatePosition(t, nullptr) -
-                  ephemeris->trajectory(ephemeris->bodies()[Jool])
-                      ->EvaluatePosition(t, nullptr),
-              reference_ephemeris
-                      ->trajectory(reference_ephemeris->bodies()[moon])
-                      ->EvaluatePosition(t, nullptr) -
-                  reference_ephemeris
-                      ->trajectory(reference_ephemeris->bodies()[Jool])
-                      ->EvaluatePosition(t, nullptr));
-          if (moon_error > cluster_radius) {
-            cluster_radius = moon_error;
-            most_erroneous_moon = moon;
-          }
-        }
-      }
-      LOG(INFO) << "Cluster radius: " << cluster_radius << " ("
-                << names[most_erroneous_moon] << ")";
-      LOG_IF(INFO, cluster_radius < visible_threshold)
-          << "invisible on plots";
-      if (cluster_radius > chaotic_threshold) {
-        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
-        log_diametre = false;
-      }
-    } else if (refined_ephemeris == nullptr) {
-      reference_ephemeris.reset();
-    }
   }
 }
 
