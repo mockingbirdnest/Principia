@@ -426,7 +426,7 @@ void SimulateFixedSystem(bool const produce_file) {
   // If the error between an integration at step and one at step/2 exceeds this
   // over a year, we assume that things have happened that our integrator cannot
   // handle, probably close encounters.
-  Length const yearly_allowed_numerical_error = 100 * Metre;
+  Length const yearly_allowed_numerical_error = 1000 * Metre;
   // Errors below this are invisible on plots.
   Length const visible_threshold = 1e6 * Metre;
   // Errors above this mean we are pretty much completely out of phase.
