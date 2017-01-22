@@ -80,20 +80,6 @@ void PileUp::UpdateVesselsInPileUp() {
           apparent_vessel_degrees_of_freedom_.cend());
   }
 
-  // A motion that maps the actual centre of mass of the pile-up to the origin
-  // of the pile-up frame.
-  auto const actual_centre_of_mass =
-      psychohistory_.last().degrees_of_freedom();
-  RigidTransformation<Barycentric, RigidPileUp> const
-      barycentric_to_pile_up_transformation(
-          actual_centre_of_mass.position(),
-          RigidPileUp::origin,
-          Identity<Barycentric, RigidPileUp>().Forget());
-  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up_motion(
-      barycentric_to_pile_up_transformation,
-      AngularVelocity<Barycentric>(),
-      actual_centre_of_mass.velocity());
-
   // Compute the apparent centre of mass of the vessels.
   BarycentreCalculator<DegreesOfFreedom<ApparentBarycentric>, Mass> calculator;
   for (auto it = apparent_vessel_degrees_of_freedom_.cbegin();
@@ -107,20 +93,16 @@ void PileUp::UpdateVesselsInPileUp() {
 
   // A motion that maps the apparent centre of mass of the vessels to the actual
   // centre of mass of the pile-up.
-  RigidTransformation<ApparentBarycentric, Barycentric> const
-      apparent_barycentric_to_barycentric_transformation(
+  RigidTransformation<ApparentBarycentric, RigidPileUp> const
+      apparent_barycentric_to_pile_up_transformation(
           apparent_centre_of_mass.position(),
-          actual_centre_of_mass.position(),
-          Identity<ApparentBarycentric, Barycentric>().Forget());
-  RigidMotion<ApparentBarycentric, Barycentric> const
-      apparent_barycentric_to_barycentric_motion(
-          apparent_barycentric_to_barycentric_transformation,
+          RigidPileUp::origin,
+          Identity<ApparentBarycentric, RigidPileUp>().Forget());
+  RigidMotion<ApparentBarycentric, RigidPileUp> const
+      apparent_barycentric_to_pile_up_motion(
+          apparent_barycentric_to_pile_up_transformation,
           AngularVelocity<ApparentBarycentric>(),
           apparent_centre_of_mass.velocity());
-
-  RigidMotion<ApparentBarycentric, RigidPileUp> apparent_to_pile_up_motion =
-      barycentric_to_pile_up_motion *
-      apparent_barycentric_to_barycentric_motion;
 
   // Now update the positions of the vessels in the pile-up frame.
   vessel_degrees_of_freedom_.clear();
@@ -129,8 +111,9 @@ void PileUp::UpdateVesselsInPileUp() {
        ++it) {
     auto const vessel = it->first;
     auto const apparent_vessel_degrees_of_freedom = it->second;
-    vessel_degrees_of_freedom_.emplace(
-        vessel, apparent_to_pile_up_motion(apparent_vessel_degrees_of_freedom));
+    vessel_degrees_of_freedom_.emplace(vessel,
+                                       apparent_barycentric_to_pile_up_motion(
+                                           apparent_vessel_degrees_of_freedom));
   }
   apparent_vessel_degrees_of_freedom_.clear();
 }

@@ -233,6 +233,26 @@ void Vessel::clear_pile_up() {
   }
 }
 
+void Vessel::AppendToPsychohistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+    bool const authoritative) {
+  if (!psychohistory_is_authoritative_) {
+    auto const penultimate = --psychohistory_.last();
+    psychohistory_.ForgetAfter(penultimate.time());
+  }
+  psychohistory_.Append(time, degrees_of_freedom);
+  psychohistory_is_authoritative_ = authoritative;
+}
+
+DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
+  return psychohistory_;
+}
+
+bool Vessel::psychohistory_is_authoritative() const {
+  return psychohistory_is_authoritative_;
+}
+
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   CHECK(is_initialized());
@@ -333,26 +353,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                 vessel->history_->last().degrees_of_freedom());
   vessel->psychohistory_is_authoritative_ = true;
   return std::move(vessel);
-}
-
-void Vessel::AppendToPsychohistory(
-    Instant const& time,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-    bool const authoritative) {
-  if (!psychohistory_is_authoritative_) {
-    auto const penultimate = --psychohistory_.last();
-    psychohistory_.ForgetAfter(penultimate.time());
-  }
-  psychohistory_.Append(time, degrees_of_freedom);
-  psychohistory_is_authoritative_ = authoritative;
-}
-
-DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
-  return psychohistory_;
-}
-
-bool Vessel::psychohistory_is_authoritative() const {
-  return psychohistory_is_authoritative_;
 }
 
 Vessel::Vessel()

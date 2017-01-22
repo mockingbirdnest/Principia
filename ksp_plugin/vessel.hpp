@@ -142,19 +142,27 @@ class Vessel {
   virtual Vector<Force, Barycentric> const& intrinsic_force() const;
 
   // Requires |!is_piled_up()|.
-  void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
   // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
   // iterator, use |clear_pile_up| instead, which will take care of letting all
   // vessels know that their |PileUp| is gone.
-  std::experimental::optional<IteratorOn<std::list<PileUp>>>
+  virtual std::experimental::optional<IteratorOn<std::list<PileUp>>>
   containing_pile_up() const;
 
   // Whether |this| is in a |PileUp|.  Equivalent to |containing_pile_up()|.
-  bool is_piled_up() const;
+  virtual bool is_piled_up() const;
 
   // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
   // After this call, all vessels in that |PileUp| are no longer piled up.
-  void clear_pile_up();
+  virtual void clear_pile_up();
+
+  virtual void AppendToPsychohistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+      bool authoritative);
+
+  virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
+  virtual bool psychohistory_is_authoritative() const;
 
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
@@ -162,14 +170,6 @@ class Vessel {
       serialization::Vessel const& message,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       not_null<Celestial const*> parent);
-
-  void AppendToPsychohistory(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-      bool authoritative);
-
-  DiscreteTrajectory<Barycentric> const& psychohistory() const;
-  bool psychohistory_is_authoritative() const;
 
  protected:
   // For mocking.
