@@ -32,7 +32,7 @@ using quantities::Mass;
 
 // A |PileUp| handles a connected component of the graph of |Vessels| under
 // physical contact.  It advances the history and prolongation of its component
-// |Vessels|, modeling them as massless bodies at their centre of mass.
+// |Vessels|, modeling them as a massless body at their centre of mass.
 class PileUp final {
  public:
   explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
