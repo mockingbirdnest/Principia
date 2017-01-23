@@ -63,6 +63,13 @@ PlotRange->Full,ImageSize->800,AxesLabel->{"t (h)","\!\(\*SubscriptBox[\(\[Omega
 
 
 Export[
+"retrobop_inclinations.png",
+ListPlot[
+{Range[Length[#]]/(24*365.25),#}\[Transpose]&/@{bopInclinations,bopJacobiInclinations},
+PlotRange->Full,ImageSize->800,AxesLabel->{"t (a)","\!\(\*SubscriptBox[\(i\), \(Bop\)]\) (\[Degree])"}]]
+
+
+Export[
 "retrobop_apsides_1_a.png",
 ListPlot[
 {#[[1]]/(60*60*24*365.25),#[[2]]}&/@#&/@{
@@ -84,3 +91,17 @@ ListPlot[
  {vallTimes,vallSeparations}\[Transpose],
  {laytheTimes,laytheSeparations}\[Transpose]},
 PlotRange->{{0,10},{0,2.2*^8}},ImageSize->800,AxesLabel->{"t (a)","apsides (m)"}]]
+
+
+Export[
+"retrobop_inclinations_5_a.png",
+ListPlot[
+{Range[Length[#]]/(24*365.25),#}\[Transpose]&/@{bopInclinations,bopJacobiInclinations},
+PlotRange->{{0,5},Full},ImageSize->800,AxesLabel->{"t (a)","\!\(\*SubscriptBox[\(i\), \(Bop\)]\) (\[Degree])"}]]
+
+
+Export[
+"retrobop_eccentricities_5_a.png",
+ListPlot[
+{Range[Length[#]]/(24*365.25),#}\[Transpose]&/@{bopEccentricities,bopJacobiEccentricities},
+PlotRange->{{0,5},Full},ImageSize->800,AxesLabel->{"t (a)","\!\(\*SubscriptBox[\(e\), \(Bop\)]\)"}]]
