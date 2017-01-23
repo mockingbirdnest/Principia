@@ -1,10 +1,15 @@
 ﻿
 #include "mathematica/retrobop_dynamical_stability.hpp"
 
+#include <algorithm>
 #include <array>
 #include <fstream>
+#include <list>
+#include <map>
 #include <memory>
 #include <random>
+#include <string>
+#include <vector>
 
 #include "base/array.hpp"
 #include "base/bundle.hpp"
@@ -194,7 +199,7 @@ DegreesOfFreedom<Barycentric> JoolSystemBarycentre(
 }
 
 not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
-    HierarchicalSystem<Barycentric>::BarycentricSystem&& system,
+    HierarchicalSystem<Barycentric>::BarycentricSystem&& system,  // NOLINT
     FixedStepSizeIntegrator<
         Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
     Time const& step) {
