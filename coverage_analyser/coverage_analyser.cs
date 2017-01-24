@@ -68,11 +68,10 @@ class CoverageAnalyser {
                     CoverageStatistics stats = CoverageInfo.GetMethodStatistics(
                         coverageBuffer, new List<BlockLineRange>{line});
                     if (line.StartLine != line.EndLine ||
-                        stats.LinesCovered +
-                        stats.LinesNotCovered != 1) {
+                        stats.LinesCovered + stats.LinesNotCovered != 1) {
                       Console.WriteLine("in " + methodName);
                       Console.WriteLine(line.SourceFile + ":" + line.StartLine +
-                                      "-" + line.EndLine);
+                                        "-" + line.EndLine);
                       Console.WriteLine(stats.LinesCovered + "," +
                                         stats.LinesNotCovered);
                       Environment.Exit(1);
