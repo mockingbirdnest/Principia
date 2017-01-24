@@ -84,9 +84,7 @@ class CoverageAnalyser {
                       covered.Add(code_line, new Dictionary<UInt32, bool>());
                     }
                     if (covered[code_line].ContainsKey(line.BlockIndex)) {
-                      covered[code_line][line.BlockIndex] =
-                          covered[code_line][line.BlockIndex] ||
-                          block_is_covered;
+                      covered[code_line][line.BlockIndex] |= block_is_covered;
                     } else {
                       covered[code_line].Add(line.BlockIndex, block_is_covered);
                     }

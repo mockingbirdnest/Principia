@@ -24,9 +24,9 @@ class ParallelTestRunner {
         if (arg == "--granularity:Package") {
           granularity_option = Granularity.Package;
         } else if (arg == "--granularity:TestCase") {
-          granularity_option = Granularity.Package;
+          granularity_option = Granularity.TestCase;
         } else if (arg == "--granularity:Test") {
-          granularity_option = Granularity.Package;
+          granularity_option = Granularity.Test;
         } else {
           Console.WriteLine("Invalid argument " + arg);
           Environment.Exit(1);
