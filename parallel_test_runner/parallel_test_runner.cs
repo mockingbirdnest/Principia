@@ -8,12 +8,49 @@ namespace principia {
 namespace parallel_test_runner {
 
 class ParallelTestRunner {
-  static void Main(string[] args) {
+  enum Granularity {
+    Package,
+    TestCase,
+    Test,
+  }
+
+  static void
+  Main(string[] args) {
     var processes = new List<Process>();
     int test_process_counter = 0;
-    foreach (string directory in args) {
-      string[] test_binaries = Directory.GetFiles(directory, "*_tests.exe");
+    Granularity? granularity_option = null;
+    foreach (string arg in args) {
+      if (arg.StartsWith("--granularity:")) {
+        if (arg == "--granularity:Package") {
+          granularity_option = Granularity.Package;
+        } else if (arg == "--granularity:TestCase") {
+          granularity_option = Granularity.Package;
+        } else if (arg == "--granularity:Test") {
+          granularity_option = Granularity.Package;
+        } else {
+          Console.WriteLine("Invalid argument " + arg);
+          Environment.Exit(1);
+        }
+        continue;
+      }
+      Granularity granularity =
+          granularity_option.GetValueOrDefault(Granularity.Test);
+      granularity_option = null;
+
+      string[] test_binaries = Directory.GetFiles(arg, "*_tests.exe");
       foreach (string test_binary in test_binaries) {
+        if (granularity == Granularity.Package) {
+          var process = new Process();
+          process.StartInfo.UseShellExecute = false;
+          process.StartInfo.RedirectStandardOutput = true;
+          process.StartInfo.RedirectStandardError = true;
+          process.StartInfo.FileName = test_binary;
+          process.StartInfo.Arguments +=
+              " --gtest_output=xml:TestResults\\gtest_results_" +
+              test_process_counter++ + ".xml";
+          processes.Add(process);
+          continue;
+        }
         var info = new ProcessStartInfo(test_binary, "--gtest_list_tests");
         info.UseShellExecute = false;
         info.RedirectStandardOutput = true;
@@ -24,7 +61,19 @@ class ParallelTestRunner {
           string line = output.ReadLine();
           if (line[0] != ' ') {
             test_case = line;
-          } else {
+            if (granularity == Granularity.TestCase) {
+              var process = new Process();
+              process.StartInfo.UseShellExecute = false;
+              process.StartInfo.RedirectStandardOutput = true;
+              process.StartInfo.RedirectStandardError = true;
+              process.StartInfo.FileName = test_binary;
+              process.StartInfo.Arguments = "--gtest_filter=" + test_case + "*";
+              process.StartInfo.Arguments +=
+                  " --gtest_output=xml:TestResults\\gtest_results_" +
+                  test_process_counter++ + ".xml";
+              processes.Add(process);
+            }
+          } else if (granularity == Granularity.Test) {
             var process = new Process();
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
@@ -62,12 +111,19 @@ class ParallelTestRunner {
           Console.WriteLine("Exit code " + process.ExitCode + " from " +
                             process.StartInfo.FileName + " " +
                             process.StartInfo.Arguments);
-          Console.WriteLine("stderr follows:");
-          Console.WriteLine(process.StandardError.ReadToEnd());
           Environment.Exit(process.ExitCode);
         }
       });
       tasks[i].Start();
+    }
+    // We need to listen to stderr, otherwise the buffer fills up and the
+    // process hangs.
+    foreach (var process in processes) {
+      new Task(async () => {
+        while (!process.StandardError.EndOfStream) {
+          await process.StandardError.ReadLineAsync();
+        }
+      }).Start();
     }
 
     Console.WriteLine(tasks.Length);
