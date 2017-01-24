@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace principia {
@@ -13,6 +10,7 @@ namespace parallel_test_runner {
 class ParallelTestRunner {
   static void Main(string[] args) {
     var processes = new List<Process>();
+    int test_process_counter = 0;
     foreach (string directory in args) {
       string[] test_binaries = Directory.GetFiles(directory, "*_tests.exe");
       foreach (string test_binary in test_binaries) {
@@ -38,6 +36,9 @@ class ParallelTestRunner {
                 "--gtest_filter=PlayerTest.Benchmarks") {
               continue;
             }
+            process.StartInfo.Arguments +=
+                " --gtest_output=xml:TestResults\\gtest_results_" +
+                test_process_counter++ + ".xml";
             processes.Add(process);
           }
         }
