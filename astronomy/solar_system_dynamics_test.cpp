@@ -371,7 +371,7 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
 }
 #endif
 
-#if NDEBUG
+#if !_DEBUG
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
 TEST(MarsTest, Phobos) {
