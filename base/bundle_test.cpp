@@ -139,7 +139,7 @@ TEST_F(BundleTest, NonCooperativeDeadline) {
   for (int i = 0; i < 10 * workers; ++i) {
     // Waiters with no cooperative abort.
     bundle_.Add([this] {
-      std::this_thread::sleep_for(100ms);
+      std::this_thread::sleep_for(1000ms);
       ++waiters_terminated_;
       return Status::OK;
     });

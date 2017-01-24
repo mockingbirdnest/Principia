@@ -371,6 +371,7 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
 }
 #endif
 
+#if !_DEBUG
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
 TEST(MarsTest, Phobos) {
@@ -424,6 +425,8 @@ TEST(MarsTest, Phobos) {
                               mars_phobos_velocities);
   file.close();
 }
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
