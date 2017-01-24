@@ -16,6 +16,7 @@ namespace internal_mathematica {
 using geometry::Point;
 using geometry::Vector;
 using quantities::Quantity;
+using quantities::Quotient;
 
 std::string Apply(std::string const& function,
                   std::vector<std::string> const& arguments);
@@ -55,12 +56,26 @@ std::string ToMathematica(std::string const& str);
 // TODO(egg): escape things properly.
 std::string Escape(std::string const& str);
 
+template<typename T>
+struct RemoveUnit;
+
+template<typename T>
+typename RemoveUnit<T>::Unitless ExpressIn(
+    typename RemoveUnit<T>::Unit const& unit,
+    T const& value);
+
+template<typename T>
+typename RemoveUnit<std::vector<T>>::Unitless ExpressIn(
+    typename RemoveUnit<std::vector<T>>::Unit const& unit,
+    std::vector<T> const& values);
+
 }  // namespace internal_mathematica
 
 using internal_mathematica::Apply;
 using internal_mathematica::Assign;
 using internal_mathematica::Escape;
 using internal_mathematica::Export;
+using internal_mathematica::ExpressIn;
 using internal_mathematica::Option;
 using internal_mathematica::PlottableDataset;
 using internal_mathematica::ToMathematica;

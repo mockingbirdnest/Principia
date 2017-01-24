@@ -142,6 +142,42 @@ inline std::string Escape(std::string const& str) {
   return result;
 }
 
+template<typename T>
+struct RemoveUnit<Quantity<T>> {
+  using Unit = Quantity<T>;
+  using Unitless = double;
+};
+
+template<typename T, typename F>
+struct RemoveUnit<Vector<T, F>> {
+  using Unit = typename RemoveUnit<T>::Unit;
+  using Unitless = Vector<typename RemoveUnit<T>::Unitless, F>;
+};
+
+template<typename T>
+struct RemoveUnit<std::vector<T>> {
+  using Unit = typename RemoveUnit<T>::Unit;
+  using Unitless = std::vector<typename RemoveUnit<T>::Unitless>;
+};
+
+template<typename T>
+typename RemoveUnit<T>::Unitless ExpressIn(
+    typename RemoveUnit<T>::Unit const& unit,
+    T const& value) {
+  return value / unit;
+}
+
+template<typename T>
+typename RemoveUnit<std::vector<T>>::Unitless ExpressIn(
+    typename RemoveUnit<std::vector<T>>::Unit const& unit,
+    std::vector<T> const& values) {
+  typename RemoveUnit<std::vector<T>>::Unitless result;
+  for (auto const& value : values) {
+    result.push_back(ExpressIn(unit, value));
+  }
+  return result;
+}
+
 }  // namespace internal_mathematica
 }  // namespace mathematica
 }  // namespace principia

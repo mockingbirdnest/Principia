@@ -53,6 +53,7 @@ using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;
+using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -124,18 +125,20 @@ constexpr std::array<char const*, 17> names = {
     "Eeloo",
 };
 
-constexpr char const* system_file = "ksp_fixed_system.proto.hex";
+constexpr char system_file[] = "ksp_fixed_system.proto.hex";
 
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
 constexpr Time step = 5 * Minute;
+
+constexpr Length jool_system_radius_bound = 3e8 * Metre;
 
 constexpr std::array<Celestial, 6> jool_system =
     {Jool, Laythe, Vall, Tylo, Bop, Pol};
 constexpr std::array<Celestial, 5> jool_moons = {Laythe, Vall, Tylo, Bop, Pol};
 
 template<typename Message>
-std::unique_ptr<Message> Read(std::ifstream & file) {
+std::unique_ptr<Message> Read(std::ifstream& file) {
   std::string const line = GetLine(file);
   if (line.empty()) {
     return nullptr;
@@ -230,8 +233,9 @@ MakePerturbedEphemerides(int const count,
   std::mt19937_64 generator;
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>> result;
   for (int i = 0; i < count; ++i) {
-    auto system = ReadSystem(system_file);
-    for (auto const celestial : jool_system) {
+    HierarchicalSystem<Barycentric>::BarycentricSystem system =
+        ReadSystem(system_file);
+    for (Celestial const celestial : jool_system) {
       system.degrees_of_freedom[celestial] = {
           system.degrees_of_freedom[celestial].position() +
               RandomUnitVector(generator) * Milli(Metre),
@@ -242,20 +246,19 @@ MakePerturbedEphemerides(int const count,
   return result;
 }
 
-void FillPositions(
-    Ephemeris<Barycentric> const& ephemeris,
-    Instant const& initial_time,
-    Time const& duration,
-    std::vector<std::vector<Vector<double, Barycentric>>>& container) {
+void FillPositions(Ephemeris<Barycentric> const& ephemeris,
+                   Instant const& initial_time,
+                   Time const& duration,
+                   std::vector<std::vector<Vector<Length, Barycentric>>>&
+                       offsets_from_barycentre) {
   for (int n = 0; n * step < duration; ++n) {
     Instant const t = initial_time + n * step;
     Position<Barycentric> const jool_system_barycentre =
         JoolSystemBarycentre(ephemeris, t).position();
-    container.emplace_back();
+    offsets_from_barycentre.emplace_back();
     for (auto const celestial : jool_system) {
-      container.back().emplace_back(
-          (EvaluatePosition(ephemeris, celestial, t) - jool_system_barycentre) /
-          Metre);
+      offsets_from_barycentre.back().emplace_back(
+          (EvaluatePosition(ephemeris, celestial, t) - jool_system_barycentre));
     }
   }
 }
@@ -267,65 +270,62 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   }
   ephemeris.Prolong(a_century_hence);
 
-  std::map<Celestial, std::vector<double>> extremal_separations_in_m;
-  std::map<Celestial, std::vector<double>> times_in_s;
+  std::map<Celestial, std::vector<Length>> extremal_separations;
+  std::map<Celestial, std::vector<Time>> times_from_epoch;
   Instant t = ksp_epoch;
   std::map<Celestial, Length> last_separations;
   std::map<Celestial, Sign> last_separation_changes;
 
   // Stock elements.
   std::vector<double> bop_eccentricities;
-  std::vector<double> bop_inclinations_in_degrees;
-  std::vector<double> bop_nodes_in_degrees;
-  std::vector<double> bop_arguments_of_periapsis_in_degrees;
+  std::vector<Angle> bop_inclinations;
+  std::vector<Angle> bop_nodes;
+  std::vector<Angle> bop_arguments_of_periapsis;
 
   // Elements around the barycentre of Jool, Laythe, and Vall.
   std::vector<double> bop_jacobi_eccentricities;
-  std::vector<double> bop_jacobi_nodes_in_degrees;
-  std::vector<double> bop_jacobi_inclinations_in_degrees;
-  std::vector<double> bop_jacobi_arguments_of_periapsis_in_degrees;
+  std::vector<Angle> bop_jacobi_nodes;
+  std::vector<Angle> bop_jacobi_inclinations;
+  std::vector<Angle> bop_jacobi_arguments_of_periapsis;
 
-  std::vector<double> tylo_bop_separations_in_m;
-  std::vector<double> pol_bop_separations_in_m;
+  std::vector<Length> tylo_bop_separations;
+  std::vector<Length> pol_bop_separations;
 
-  std::map<Celestial, double> record_separation_in_m;
+  std::map<Celestial, Length> record_separation;
 
-  for (auto const moon : jool_moons) {
+  for (Celestial const moon : jool_moons) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
     auto const jool_position = EvaluatePosition(ephemeris, Jool, t);
 
-    for (auto const moon : jool_moons) {
+    for (Celestial const moon : jool_moons) {
       Length const separation =
           (jool_position - EvaluatePosition(ephemeris, moon, t)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
-        extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
-                                                     Metre);
-        times_in_s[moon].emplace_back((t - 1 * Hour - ksp_epoch) / Second);
-        record_separation_in_m[moon] =
-            std::max(record_separation_in_m[moon],
-                     extremal_separations_in_m[moon].back());
-        if (extremal_separations_in_m[moon].back() > 2.2e+08 &&
-            extremal_separations_in_m[moon].back() ==
-                record_separation_in_m[moon]) {
+        extremal_separations[moon].emplace_back(last_separations[moon]);
+        times_from_epoch[moon].emplace_back(t - 1 * Hour - ksp_epoch);
+        record_separation[moon] = std::max(record_separation[moon],
+                                           extremal_separations[moon].back());
+        if (extremal_separations[moon].back() > jool_system_radius_bound &&
+            extremal_separations[moon].back() == record_separation[moon]) {
           LOG(WARNING) << "After "
-                       << times_in_s[moon].back() * Second / JulianYear
+                       << times_from_epoch[moon].back() / JulianYear
                        << " a, " << names[moon] << " has an apsis at "
-                       << extremal_separations_in_m[moon].back() * Metre;
+                       << extremal_separations[moon].back();
         }
       }
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
     }
 
-    tylo_bop_separations_in_m.emplace_back(
+    tylo_bop_separations.emplace_back(
         (EvaluatePosition(ephemeris, Tylo, t) -
-         EvaluatePosition(ephemeris, Bop, t)).Norm() / Metre);
-    pol_bop_separations_in_m.emplace_back(
+         EvaluatePosition(ephemeris, Bop, t)).Norm());
+    pol_bop_separations.emplace_back(
         (EvaluatePosition(ephemeris, Pol, t) -
-         EvaluatePosition(ephemeris, Bop, t)).Norm() / Metre);
+         EvaluatePosition(ephemeris, Bop, t)).Norm());
 
     {
       // KSP's osculating elements.
@@ -337,12 +337,10 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
                   EvaluateDegreesOfFreedom(ephemeris, Jool, t), t)
               .elements_at_epoch();
       bop_eccentricities.emplace_back(bop_elements.eccentricity);
-      bop_inclinations_in_degrees.emplace_back(bop_elements.inclination /
-                                               Degree);
-      bop_nodes_in_degrees.emplace_back(
-          bop_elements.longitude_of_ascending_node / Degree);
-      bop_arguments_of_periapsis_in_degrees.emplace_back(
-          bop_elements.argument_of_periapsis / Degree);
+      bop_inclinations.emplace_back(bop_elements.inclination);
+      bop_nodes.emplace_back(bop_elements.longitude_of_ascending_node);
+      bop_arguments_of_periapsis.emplace_back(
+          bop_elements.argument_of_periapsis);
     }
 
     {
@@ -361,46 +359,43 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
                                        innermost_jool_system.Get(),
                                    t).elements_at_epoch();
       bop_jacobi_eccentricities.emplace_back(bop_jacobi_elements.eccentricity);
-      bop_jacobi_inclinations_in_degrees.emplace_back(
-          bop_jacobi_elements.inclination / Degree);
-      bop_jacobi_nodes_in_degrees.emplace_back(
-          bop_jacobi_elements.longitude_of_ascending_node / Degree);
-      bop_jacobi_arguments_of_periapsis_in_degrees.emplace_back(
-          bop_jacobi_elements.argument_of_periapsis / Degree);
+      bop_jacobi_inclinations.emplace_back(bop_jacobi_elements.inclination);
+      bop_jacobi_nodes.emplace_back(
+          bop_jacobi_elements.longitude_of_ascending_node);
+      bop_jacobi_arguments_of_periapsis.emplace_back(
+          bop_jacobi_elements.argument_of_periapsis);
     }
   }
 
   std::ofstream file;
   file.open("retrobop_century.generated.wl");
-  file << mathematica::Assign("laytheTimes", times_in_s[Laythe]);
-  file << mathematica::Assign("vallTimes", times_in_s[Vall]);
-  file << mathematica::Assign("tyloTimes", times_in_s[Tylo]);
-  file << mathematica::Assign("polTimes", times_in_s[Pol]);
-  file << mathematica::Assign("bopTimes", times_in_s[Bop]);
-  file << mathematica::Assign("laytheSeparations",
-                              extremal_separations_in_m[Laythe]);
-  file << mathematica::Assign("vallSeparations",
-                              extremal_separations_in_m[Vall]);
-  file << mathematica::Assign("tyloSeparations",
-                              extremal_separations_in_m[Tylo]);
-  file << mathematica::Assign("polSeparations", extremal_separations_in_m[Pol]);
-  file << mathematica::Assign("bopSeparations", extremal_separations_in_m[Bop]);
+  file << Assign("laytheTimes", ExpressIn(Second, times_from_epoch[Laythe]));
+  file << Assign("vallTimes", ExpressIn(Second, times_from_epoch[Vall]));
+  file << Assign("tyloTimes", ExpressIn(Second, times_from_epoch[Tylo]));
+  file << Assign("polTimes", ExpressIn(Second, times_from_epoch[Pol]));
+  file << Assign("bopTimes", ExpressIn(Second, times_from_epoch[Bop]));
+  file << Assign("laytheSeparations",
+                 ExpressIn(Metre, extremal_separations[Laythe]));
+  file << Assign("vallSeparations",
+                 ExpressIn(Metre, extremal_separations[Vall]));
+  file << Assign("tyloSeparations",
+                 ExpressIn(Metre, extremal_separations[Tylo]));
+  file << Assign("polSeparations", ExpressIn(Metre, extremal_separations[Pol]));
+  file << Assign("bopSeparations", ExpressIn(Metre, extremal_separations[Bop]));
 
-  file << mathematica::Assign("bopEccentricities", bop_eccentricities);
-  file << mathematica::Assign("bopInclinations", bop_inclinations_in_degrees);
-  file << mathematica::Assign("bopNodes", bop_nodes_in_degrees);
-  file << mathematica::Assign("bopArguments",
-                              bop_arguments_of_periapsis_in_degrees);
-  file << mathematica::Assign("bopJacobiEccentricities",
-                              bop_jacobi_eccentricities);
-  file << mathematica::Assign("bopJacobiInclinations",
-                              bop_jacobi_inclinations_in_degrees);
-  file << mathematica::Assign("bopJacobiNodes", bop_jacobi_nodes_in_degrees);
-  file << mathematica::Assign("bopJacobiArguments",
-                              bop_jacobi_arguments_of_periapsis_in_degrees);
+  file << Assign("bopEccentricities", bop_eccentricities);
+  file << Assign("bopInclinations", ExpressIn(Degree, bop_inclinations));
+  file << Assign("bopNodes", ExpressIn(Degree, bop_nodes));
+  file << Assign("bopArguments", ExpressIn(Degree, bop_arguments_of_periapsis));
+  file << Assign("bopJacobiEccentricities", bop_jacobi_eccentricities);
+  file << Assign("bopJacobiInclinations",
+                 ExpressIn(Degree, bop_jacobi_inclinations));
+  file << Assign("bopJacobiNodes", bop_jacobi_nodes);
+  file << Assign("bopJacobiArguments",
+                 ExpressIn(Degree, bop_jacobi_arguments_of_periapsis));
 
-  file << mathematica::Assign("tyloBop", tylo_bop_separations_in_m);
-  file << mathematica::Assign("polBop", pol_bop_separations_in_m);
+  file << Assign("tyloBop", ExpressIn(Metre, tylo_bop_separations));
+  file << Assign("polBop", ExpressIn(Metre, pol_bop_separations));
   file.close();
 }
 
@@ -412,7 +407,7 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
   error = Length{};
   auto const left_barycentre = JoolSystemBarycentre(left, t).position();
   auto const right_barycentre = JoolSystemBarycentre(right, t).position();
-  for (auto const moon : jool_moons) {
+  for (Celestial const moon : jool_moons) {
     Length const moon_error =
         AbsoluteError(EvaluatePosition(left, moon, t) - left_barycentre,
                       EvaluatePosition(right, moon, t) - right_barycentre);
@@ -436,27 +431,27 @@ void PlotPredictableYears() {
     LOG(INFO) << "Prolonged to year " << i;
   }
 
-  std::vector<std::vector<Vector<double, Barycentric>>>
+  std::vector<std::vector<Vector<Length, Barycentric>>>
       barycentric_positions_1_year;
   FillPositions(
       *ephemeris, ksp_epoch, 1 * JulianYear, barycentric_positions_1_year);
-  std::vector<std::vector<Vector<double, Barycentric>>>
+  std::vector<std::vector<Vector<Length, Barycentric>>>
       barycentric_positions_2_year;
   FillPositions(
       *ephemeris, ksp_epoch, 2 * JulianYear, barycentric_positions_2_year);
-  std::vector<std::vector<Vector<double, Barycentric>>>
+  std::vector<std::vector<Vector<Length, Barycentric>>>
       barycentric_positions_5_year;
   FillPositions(
       *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
   std::ofstream file;
   file.open("retrobop_predictable_years.generated.wl");
-  file << mathematica::Assign("barycentricPositions1",
-                              barycentric_positions_1_year);
-  file << mathematica::Assign("barycentricPositions2",
-                              barycentric_positions_2_year);
-  file << mathematica::Assign("barycentricPositions5",
-                              barycentric_positions_5_year);
+  file << Assign("barycentricPositions1",
+                 ExpressIn(Metre, barycentric_positions_1_year));
+  file << Assign("barycentricPositions2",
+                 ExpressIn(Metre, barycentric_positions_2_year));
+  file << Assign("barycentricPositions5",
+                 ExpressIn(Metre, barycentric_positions_5_year));
   file.close();
 }
 
@@ -490,16 +485,16 @@ void AnalyseGlobalError() {
 
   for (int year = 1;; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
-    Bundle bundle{7};
+    Bundle bundle{static_cast<int>(std::thread::hardware_concurrency() - 1)};
     if (reference_ephemeris != nullptr) {
-      bundle.Add([&reference_ephemeris = *reference_ephemeris, t ]() {
+      bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
         reference_ephemeris.Prolong(t);
         reference_ephemeris.ForgetBefore(t);
         return Status::OK;
       });
     }
     if (refined_ephemeris != nullptr) {
-      bundle.Add([&refined_ephemeris = *refined_ephemeris, t ]() {
+      bundle.Add([&refined_ephemeris = *refined_ephemeris, t]() {
         refined_ephemeris.Prolong(t);
         refined_ephemeris.ForgetBefore(t);
         return Status::OK;
@@ -583,7 +578,7 @@ void StatisticallyAnalyseStability() {
   // local forward error.  We probably want to have a way to actually estimate
   // the local error (on every step), and perhaps even the local backward error
   // (though that may be costly if done naïvely).
-  Length const yearly_allowed_numerical_error = 1000 * Metre;
+  Length const yearly_allowed_numerical_error = 1 * Kilo(Metre);
 
   for (int year = 1; year <= 200; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
@@ -636,7 +631,8 @@ void StatisticallyAnalyseStability() {
     for (auto it = perturbed_ephemerides.begin();
          it != perturbed_ephemerides.end();) {
       if (numerically_unsound[it->get()]) {
-        goto erase_and_skip_to_next_perturbed_ephemeris;
+        perturbed_ephemerides.erase(it++);
+        goto continue_perturbed_ephemerides;
       } else {
         Ephemeris<Barycentric> const& ephemeris = **it;
         auto const jool_barycentre =
@@ -644,19 +640,19 @@ void StatisticallyAnalyseStability() {
         for (auto const moon : jool_moons) {
           Length const distance =
               (EvaluatePosition(ephemeris, moon, t) - jool_barycentre).Norm();
-          if (distance > 3e8 * Metre) {
+          if (distance > jool_system_radius_bound) {
             LOG(INFO) << names[moon] << " escape, " << distance
                       << " from Jool.";
             ++yearly_breakdowns;
             ++total_breakdowns;
-            goto erase_and_skip_to_next_perturbed_ephemeris;
+            perturbed_ephemerides.erase(it++);
+            goto continue_perturbed_ephemerides;
           }
         }
       }
       ++it;
+    continue_perturbed_ephemerides:
       continue;
-    erase_and_skip_to_next_perturbed_ephemeris:
-      perturbed_ephemerides.erase(it++);
     }
     LOG(INFO) << "cluster size is " << perturbed_ephemerides.size();
     LOG_IF(INFO, yearly_breakdowns > 0) << yearly_breakdowns << " breakdowns";
