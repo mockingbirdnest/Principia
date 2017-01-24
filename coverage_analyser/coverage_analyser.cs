@@ -133,27 +133,25 @@ class CoverageAnalyser {
     Console.WriteLine("  Completely : " +
                           ValueAndPercentage(lines_covered, total));
     Console.WriteLine("Not Covered  : " +
-                          ValueAndPercentage(lines_not_covered, total));/*
+                          ValueAndPercentage(lines_not_covered, total));
     File.WriteAllText(
-        Path.Combine(tests_directory.FullName, "jenkins_percent_coverage.csv"),
+        Path.Combine(coverage_file.Directory.FullName,
+                     "jenkins_percent_coverage.csv"),
         "not covered, partially covered, fully covered\n" +
             ((double)lines_not_covered / (double)total) * 100.0 + ", " +
             ((double)lines_partially_covered / (double)total) * 100.0 + ", " +
             ((double)lines_covered / (double)total) * 100.0);
-    File.WriteAllText(
-        Path.Combine(tests_directory.FullName, "jenkins_lines_coverage.csv"),
-        "not covered, partially covered, fully covered\n" +
-            lines_not_covered + ", " +
-            lines_partially_covered + ", " +
-            lines_covered);
-    File.WriteAllText(
-        Path.Combine(tests_directory.FullName,
-                     "jenkins_lines_coverage_breakdown.csv"),
-        unit_names + "\n" + breakdown_lines_not_covered);
-    File.WriteAllText(
-        Path.Combine(tests_directory.FullName,
-                     "jenkins_percent_coverage_breakdown.csv"),
-        unit_names + "\n" + breakdown_percent_not_covered);*/
+    File.WriteAllText(Path.Combine(coverage_file.Directory.FullName,
+                                   "jenkins_lines_coverage.csv"),
+                      "not covered, partially covered, fully covered\n" +
+                          lines_not_covered + ", " + lines_partially_covered +
+                          ", " + lines_covered);
+    File.WriteAllText(Path.Combine(coverage_file.Directory.FullName,
+                                   "jenkins_lines_coverage_breakdown.csv"),
+                      unit_names + "\n" + breakdown_lines_not_covered);
+    File.WriteAllText(Path.Combine(coverage_file.Directory.FullName,
+                                   "jenkins_percent_coverage_breakdown.csv"),
+                      unit_names + "\n" + breakdown_percent_not_covered);
   }
 
   private static string ValueAndPercentage(Int64 value, Int64 total) {
