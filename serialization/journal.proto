@@ -930,21 +930,6 @@ message NewPlugin {
   optional Return return = 3;
 }
 
-message PhysicsBubbleIsEmpty {
-  extend Method {
-    optional PhysicsBubbleIsEmpty extension = 5052;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-  }
-  message Return {
-    required bool result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message PhysicsBubbleDisplacementCorrection {
   extend Method {
     optional PhysicsBubbleDisplacementCorrection extension = 5046;
@@ -956,6 +941,21 @@ message PhysicsBubbleDisplacementCorrection {
   }
   message Return {
     required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PhysicsBubbleIsEmpty {
+  extend Method {
+    optional PhysicsBubbleIsEmpty extension = 5052;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -975,6 +975,17 @@ message PhysicsBubbleVelocityCorrection {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message PluginUpdateAllVesselsInPileUps {
+  extend Method {
+    optional PluginUpdateAllVesselsInPileUps extension = 5110;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
+                                 (is_subject) = true];
+  }
+  optional In in = 1;
 }
 
 message RenderedPrediction {
@@ -1345,7 +1356,7 @@ message VesselSetApparentDegreesOfFreedom {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
-    required QP result = 3;
+    required QP qp = 3;
     required XYZ sun_world_position = 4;
   }
   optional In in = 1;
@@ -1378,18 +1389,6 @@ message VesselTangent {
   }
   optional In in = 1;
   optional Return return = 3;
-}
-
-message VesselUpdateDegreesOfFreedomInPileUp {
-  extend Method {
-    optional VesselUpdateDegreesOfFreedomInPileUp extension = 5110;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  optional In in = 1;
 }
 
 message VesselVelocity{

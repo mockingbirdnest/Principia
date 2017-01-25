@@ -4,13 +4,18 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
 
+using geometry::Displacement;
 using geometry::Vector;
+using geometry::Velocity;
+using physics::DegreesOfFreedom;
 using quantities::Force;
 using quantities::si::Kilo;
 using quantities::si::Newton;
@@ -35,6 +40,28 @@ void principia__VesselClearMass(Plugin const* const plugin,
   journal::Method<journal::VesselClearMass> m({plugin, vessel_guid});
   GetVessel(*plugin, vessel_guid)->clear_mass();
   return m.Return();
+}
+
+QP principia__VesselGetActualDegreesOfFreedom(Plugin const* const plugin,
+                                              char const* const vessel_guid,
+                                              XYZ const sun_world_position) {
+  journal::Method<journal::VesselGetActualDegreesOfFreedom> m(
+      {plugin, vessel_guid, sun_world_position});
+  Position<World> const sun_word_position_in_world =
+      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre);
+
+  auto const vessel = GetVessel(*plugin, vessel_guid);
+  PileUp& pile_up = GetPileUp(*vessel);
+  auto const degrees_of_freedom_in_barycentric =
+      pile_up.GetVesselActualDegreesOfFreedom(vessel);
+  auto const position_in_world = plugin->BarycentricToWorld(
+      sun_word_position_in_world)(degrees_of_freedom_in_barycentric.position());
+  auto const velocity_in_world = plugin->BarycentricToWorld()(
+      degrees_of_freedom_in_barycentric.velocity());
+  XYZ const q =
+      ToXYZ((position_in_world - World::origin).coordinates() / Metre);
+  XYZ const p = ToXYZ(velocity_in_world.coordinates() / (Metre / Second));
+  return m.Return({q, p});
 }
 
 AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
@@ -76,6 +103,32 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid).coordinates()));
+}
+
+void principia__VesselSetApparentDegreesOfFreedom(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    QP const qp,
+  XYZ const sun_world_position) {
+  journal::Method<journal::VesselSetApparentDegreesOfFreedom> m(
+      {plugin, vessel_guid, qp, sun_world_position});
+  Position<World> const sun_word_position_in_world =
+      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre);
+
+  auto const position_in_barycentric =
+      plugin->WorldToBarycentric(sun_word_position_in_world)(
+          World::origin + Displacement<World>(FromXYZ(qp.q) * Metre));
+  auto const velocity_in_barycentric = plugin->WorldToBarycentric()(
+      Velocity<World>(FromXYZ(qp.p) * (Metre / Second)));
+
+  auto const vessel = GetVessel(*plugin, vessel_guid);
+  PileUp& pile_up = GetPileUp(*vessel);
+  pile_up.SetVesselApparentDegreesOfFreedom(
+      vessel,
+      DegreesOfFreedom<Barycentric>(position_in_barycentric,
+                                    velocity_in_barycentric));
+
+  return m.Return();
 }
 
 void principia__VesselSetPredictionAdaptiveStepParameters(

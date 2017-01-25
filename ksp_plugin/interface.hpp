@@ -10,6 +10,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -28,6 +29,7 @@ using base::PushDeserializer;
 using geometry::Instant;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
+using ksp_plugin::PileUp;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
@@ -137,6 +139,9 @@ XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 Instant FromGameTime(Plugin const& plugin, double t);
 double ToGameTime(Plugin const& plugin, Instant const& t);
 
+PileUp& GetPileUp(Vessel const& vessel);
+
+// TODO(phl): Return a reference.
 not_null<Vessel*> GetVessel(Plugin const& plugin, char const* vessel_guid);
 
 // A factory for NavigationFrame objects.
