@@ -390,7 +390,7 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   file << Assign("bopJacobiEccentricities", bop_jacobi_eccentricities);
   file << Assign("bopJacobiInclinations",
                  ExpressIn(Degree, bop_jacobi_inclinations));
-  file << Assign("bopJacobiNodes", bop_jacobi_nodes);
+  file << Assign("bopJacobiNodes", ExpressIn(Degree, bop_jacobi_nodes));
   file << Assign("bopJacobiArguments",
                  ExpressIn(Degree, bop_jacobi_arguments_of_periapsis));
 
