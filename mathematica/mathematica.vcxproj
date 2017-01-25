@@ -276,10 +276,12 @@
     <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
+    <ClCompile Include="retrobop_dynamical_stability.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="integrator_plots.hpp" />
+    <ClInclude Include="retrobop_dynamical_stability.hpp" />
     <ClInclude Include="mathematica.hpp" />
     <ClInclude Include="mathematica_body.hpp" />
   </ItemGroup>

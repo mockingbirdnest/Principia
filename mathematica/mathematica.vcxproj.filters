@@ -26,6 +26,9 @@
     <ClCompile Include="..\base\bundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="retrobop_dynamical_stability.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mathematica.hpp">
@@ -35,6 +38,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="integrator_plots.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="retrobop_dynamical_stability.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

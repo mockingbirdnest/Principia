@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <ios>
 #include <limits>
 #include <map>
@@ -209,7 +210,43 @@ void Plugin::EndInitialization() {
     }
     auto const parents = std::move(hierarchical_initialization_->parents);
     hierarchical_initialization_ = std::experimental::nullopt;
+#if LOG_KSP_SYSTEM
+    std::ofstream file;
+    if (system_fingerprint == ksp_stock_system_fingerprint) {
+      file.open("ksp_stock_system.proto.hex");
+    } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
+      file.open("ksp_fixed_system.proto.hex");
+    } else {
+      file.open("unknown_system.proto.hex");
+    }
+    std::string bytes;
+    base::UniqueArray<std::uint8_t> hex;
+#endif
     for (int i = 0; i < system.bodies.size(); ++i) {
+#if LOG_KSP_SYSTEM
+      serialization::MassiveBody body_message;
+      serialization::Pair degrees_of_freedom_message;
+      system.bodies[i]->WriteToMessage(&body_message);
+      system.degrees_of_freedom[i].WriteToMessage(&degrees_of_freedom_message);
+      body_message.SerializeToString(&bytes);
+      hex = base::UniqueArray<std::uint8_t>((bytes.size() << 1) + 1);
+      base::HexadecimalEncode(
+          base::Array<std::uint8_t const>(
+              reinterpret_cast<std::uint8_t const*>(bytes.data()),
+              bytes.size()),
+          hex.get());
+      hex.data[hex.size - 1] = 0;
+      file << reinterpret_cast<char const*>(hex.data.get()) << "\n";
+      degrees_of_freedom_message.SerializeToString(&bytes);
+      hex = base::UniqueArray<std::uint8_t>((bytes.size() << 1) + 1);
+      base::HexadecimalEncode(
+          base::Array<std::uint8_t const>(
+              reinterpret_cast<std::uint8_t const*>(bytes.data()),
+              bytes.size()),
+          hex.get());
+      hex.data[hex.size - 1] = 0;
+      file << reinterpret_cast<char const*>(hex.data.get()) << "\n";
+#endif
       Index const celestial_index = bodies_to_indices[system.bodies[i].get()];
       InsertCelestialAbsoluteCartesian(
           celestial_index,
@@ -217,6 +254,9 @@ void Plugin::EndInitialization() {
           system.degrees_of_freedom[i],
           std::move(system.bodies[i]));
     }
+#if LOG_KSP_SYSTEM
+    file.close();
+#endif
   }
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
