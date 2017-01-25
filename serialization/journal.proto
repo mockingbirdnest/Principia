@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5107.
+  extensions 5000 to 5999;  // Last used: 5110.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -1262,6 +1262,23 @@ message VesselFromParent {
   optional Return return = 3;
 }
 
+message VesselGetActualDegreesOfFreedom {
+  extend Method {
+    optional VesselGetActualDegreesOfFreedom extension = 5108;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message VesselGetPredictionAdaptiveStepParameters {
   extend Method {
     optional VesselGetPredictionAdaptiveStepParameters extension = 5090;
@@ -1320,6 +1337,20 @@ message VesselNormal {
   optional Return return = 3;
 }
 
+message VesselSetApparentDegreesOfFreedom {
+  extend Method {
+    optional VesselSetApparentDegreesOfFreedom extension = 5109;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required QP result = 3;
+    required XYZ sun_world_position = 4;
+  }
+  optional In in = 1;
+}
+
 message VesselSetPredictionAdaptiveStepParameters {
   extend Method {
     optional VesselSetPredictionAdaptiveStepParameters extension = 5091;
@@ -1347,6 +1378,18 @@ message VesselTangent {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message VesselUpdateDegreesOfFreedomInPileUp {
+  extend Method {
+    optional VesselUpdateDegreesOfFreedomInPileUp extension = 5110;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  optional In in = 1;
 }
 
 message VesselVelocity{
