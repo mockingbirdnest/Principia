@@ -799,6 +799,12 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
           plotting_frame_degrees_of_freedom.velocity())));
 }
 
+void Plugin::UpdateAllVesselsInPileUps() {
+  for (auto& pile_up : pile_ups_) {
+    pile_up.UpdateVesselsInPileUp();
+  }
+}
+
 AffineMap<Barycentric, World, Length, OrthogonalMap> Plugin::BarycentricToWorld(
     Position<World> const& sun_world_position) const {
   return AffineMap<Barycentric, World, Length, OrthogonalMap>(

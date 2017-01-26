@@ -199,27 +199,6 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-XYZ principia__PhysicsBubbleDisplacementCorrection(Plugin const* const plugin,
-                                                   XYZ const sun_position) {
-  journal::Method<journal::PhysicsBubbleDisplacementCorrection> m(
-      {plugin, sun_position});
-  CHECK_NOTNULL(plugin);
-  Displacement<World> const result =
-      plugin->BubbleDisplacementCorrection(
-          World::origin + Displacement<World>(FromXYZ(sun_position) * Metre));
-  return m.Return(ToXYZ(result.coordinates() / Metre));
-}
-
-XYZ principia__PhysicsBubbleVelocityCorrection(Plugin const* const plugin,
-                                               int const reference_body_index) {
-  journal::Method<journal::PhysicsBubbleVelocityCorrection> m(
-      {plugin, reference_body_index});
-  CHECK_NOTNULL(plugin);
-  Velocity<World> const result =
-      plugin->BubbleVelocityCorrection(reference_body_index);
-  return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
-}
-
 // Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 QP principia__CelestialFromParent(Plugin const* const plugin,
@@ -634,10 +613,39 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
   return m.Return(result.release());
 }
 
+XYZ principia__PhysicsBubbleDisplacementCorrection(Plugin const* const plugin,
+                                                   XYZ const sun_position) {
+  journal::Method<journal::PhysicsBubbleDisplacementCorrection> m(
+      {plugin, sun_position});
+  CHECK_NOTNULL(plugin);
+  Displacement<World> const result =
+      plugin->BubbleDisplacementCorrection(
+          World::origin + Displacement<World>(FromXYZ(sun_position) * Metre));
+  return m.Return(ToXYZ(result.coordinates() / Metre));
+}
+
 bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
   journal::Method<journal::PhysicsBubbleIsEmpty> m({plugin});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->PhysicsBubbleIsEmpty());
+}
+
+XYZ principia__PhysicsBubbleVelocityCorrection(Plugin const* const plugin,
+                                               int const reference_body_index) {
+  journal::Method<journal::PhysicsBubbleVelocityCorrection> m(
+      {plugin, reference_body_index});
+  CHECK_NOTNULL(plugin);
+  Velocity<World> const result =
+      plugin->BubbleVelocityCorrection(reference_body_index);
+  return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
+}
+
+void principia__PluginUpdateAllVesselsInPileUps(
+    Plugin* const plugin) {
+  journal::Method<journal::PluginUpdateAllVesselsInPileUps> m(
+      {plugin});
+  CHECK_NOTNULL(plugin)->UpdateAllVesselsInPileUps();
+  return m.Return();
 }
 
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
