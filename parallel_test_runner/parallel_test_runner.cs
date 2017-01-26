@@ -164,15 +164,16 @@ class ParallelTestRunner {
         }
       });
       tasks[i].Start();
+    }
+    // For some reason if I create those tasks in the loop above, they throw
+    // exceptions complaining that stderr isn't redirected.  Here it works...
+    for (int i = 0; i < processes.Count; ++i) {
+      var process = processes[i];
+      int index = i;
       new Task(async () => {
-        try {
-          while (!process.StandardError.EndOfStream) {
-            Console.WriteLine("E" + index.ToString().PadLeft(4) + " " +
-                              await process.StandardError.ReadLineAsync());
-          }
-        } catch (System.InvalidOperationException) {
-          // Sometimes it complains that stderr hasn't been redirected.  I
-          // have no idea why...
+        while (!process.StandardError.EndOfStream) {
+          Console.WriteLine("E" + index.ToString().PadLeft(4) + " " +
+                            await process.StandardError.ReadLineAsync());
         }
       }).Start();
     }
