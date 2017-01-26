@@ -98,30 +98,32 @@ class ParallelTestRunner {
     Task[] tasks = new Task[processes.Count];
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
+      // We cannot use i in the lambdas, it would be captured by reference.
+      int index = i;
       tasks[i] = new Task(async () => {
         process.Start();
         while (!process.StandardOutput.EndOfStream) {
-          string output = await process.StandardOutput.ReadLineAsync();
-          if (output.StartsWith("[ ") && !output.StartsWith("[  PASSED  ]")) {
-            Console.WriteLine(output);
-          }
+          Console.WriteLine("O" + index.ToString().PadLeft(4) + " " +
+                            await process.StandardOutput.ReadLineAsync());
         }
         if (process.ExitCode != 0) {
-          Console.WriteLine(process.StandardOutput.ReadToEnd());
-          Console.WriteLine("Exit code " + process.ExitCode + " from " +
+          Console.WriteLine("Exit code " + process.ExitCode + " from (" +
+                            index.ToString() + ") " +
                             process.StartInfo.FileName + " " +
                             process.StartInfo.Arguments);
           Environment.Exit(process.ExitCode);
         }
       });
       tasks[i].Start();
-    }
-    // We need to listen to stderr, otherwise the buffer fills up and the
-    // process hangs.
-    foreach (var process in processes) {
       new Task(async () => {
-        while (!process.StandardError.EndOfStream) {
-          await process.StandardError.ReadLineAsync();
+        try {
+          while (!process.StandardError.EndOfStream) {
+            Console.WriteLine("E" + index.ToString().PadLeft(4) + " " +
+                              await process.StandardError.ReadLineAsync());
+          }
+        } catch (System.InvalidOperationException) {
+          // Sometimes it complains that stderr hasn't been redirected.  I
+          // have no idea why...
         }
       }).Start();
     }
