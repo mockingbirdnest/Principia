@@ -14,31 +14,68 @@ class ParallelTestRunner {
     Test,
   }
 
-  static void
-  Main(string[] args) {
+  private static T ParseEnum<T>(string value) {
+    return (T)Enum.Parse(typeof(T), value, true);
+  }
+
+  const string vsinstr =
+      @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\" +
+      @"Performance Tools\vsinstr.exe";
+
+  static Task RunProcessAsync(string file_name, string args) {
+    var task_completion_source = new TaskCompletionSource<bool>();
+    var process = new Process{StartInfo = {FileName = file_name,
+                                           Arguments = args,
+                                           UseShellExecute = false,
+                                           RedirectStandardError = false,
+                                           RedirectStandardOutput = true},
+                              EnableRaisingEvents = true};
+    return new Task(async () => {
+      process.Start();
+      while (!process.StandardOutput.EndOfStream) {
+        Console.WriteLine(await process.StandardOutput.ReadLineAsync());
+      }
+      process.WaitForExit();
+    });
+  }
+
+  static void Main(string[] args) {
+    Granularity? granularity_option = null;
+    bool? instrument_option = null;
+
     var processes = new List<Process>();
     int test_process_counter = 0;
-    Granularity? granularity_option = null;
+
+    var instrument_tests = new List<Task>();
+
     foreach (string arg in args) {
-      if (arg.StartsWith("--granularity:")) {
-        if (arg == "--granularity:Package") {
-          granularity_option = Granularity.Package;
-        } else if (arg == "--granularity:TestCase") {
-          granularity_option = Granularity.TestCase;
-        } else if (arg == "--granularity:Test") {
-          granularity_option = Granularity.Test;
+      if (arg.StartsWith("--") && arg.Contains(":")) {
+        string[] split =
+            arg.Split(new string[]{"--", ":"}, StringSplitOptions.None);
+        string option = split[1];
+        string value = split[2];
+        if (option == "granularity") {
+          granularity_option = ParseEnum<Granularity>(value);
+        } else if (option == "instrument") {
+          instrument_option = bool.Parse(value);
         } else {
-          Console.WriteLine("Invalid argument " + arg);
+          Console.WriteLine("Unknown option " + option);
           Environment.Exit(1);
         }
         continue;
       }
       Granularity granularity =
           granularity_option.GetValueOrDefault(Granularity.Test);
+      bool instrument = instrument_option.GetValueOrDefault(false);
       granularity_option = null;
+      instrument_option = null;
 
       string[] test_binaries = Directory.GetFiles(arg, "*_tests.exe");
       foreach (string test_binary in test_binaries) {
+        if (instrument) {
+          instrument_tests.Add(
+              RunProcessAsync(vsinstr, "/coverage \"" + test_binary + "\""));
+        }
         if (granularity == Granularity.Package) {
           var process = new Process();
           process.StartInfo.UseShellExecute = false;
@@ -94,21 +131,33 @@ class ParallelTestRunner {
       }
     }
     var stopwatch = new Stopwatch();
+
+    Console.WriteLine("Instrumenting " + instrument_tests.Count +
+                      " processes...");
     stopwatch.Start();
+    if (instrument_tests.Count > 0) {
+      instrument_tests.ForEach(task => task.Start());
+      Task.WaitAll(instrument_tests.ToArray());
+      Console.WriteLine("Done (" + stopwatch.ElapsedMilliseconds + " ms)");
+    }
+
+    Console.WriteLine("Running " + processes.Count + " processes...");
+    stopwatch.Restart();
+
     Task[] tasks = new Task[processes.Count];
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
+      // We cannot use i in the lambdas, it would be captured by reference.
+      int index = i;
       tasks[i] = new Task(async () => {
         process.Start();
         while (!process.StandardOutput.EndOfStream) {
-          string output = await process.StandardOutput.ReadLineAsync();
-          if (output.StartsWith("[ ") && !output.StartsWith("[  PASSED  ]")) {
-            Console.WriteLine(output);
-          }
+          Console.WriteLine("O" + index.ToString().PadLeft(4) + " " +
+                            await process.StandardOutput.ReadLineAsync());
         }
         if (process.ExitCode != 0) {
-          Console.WriteLine(process.StandardOutput.ReadToEnd());
-          Console.WriteLine("Exit code " + process.ExitCode + " from " +
+          Console.WriteLine("Exit code " + process.ExitCode + " from (" +
+                            index.ToString() + ") " +
                             process.StartInfo.FileName + " " +
                             process.StartInfo.Arguments);
           Environment.Exit(process.ExitCode);
@@ -116,17 +165,19 @@ class ParallelTestRunner {
       });
       tasks[i].Start();
     }
-    // We need to listen to stderr, otherwise the buffer fills up and the
-    // process hangs.
-    foreach (var process in processes) {
+    // For some reason if I create those tasks in the loop above, they throw
+    // exceptions complaining that stderr isn't redirected.  Here it works...
+    for (int i = 0; i < processes.Count; ++i) {
+      var process = processes[i];
+      int index = i;
       new Task(async () => {
         while (!process.StandardError.EndOfStream) {
-          await process.StandardError.ReadLineAsync();
+          Console.WriteLine("E" + index.ToString().PadLeft(4) + " " +
+                            await process.StandardError.ReadLineAsync());
         }
       }).Start();
     }
 
-    Console.WriteLine(tasks.Length);
     Task.WaitAll(tasks);
     Console.WriteLine("Done (" + stopwatch.ElapsedMilliseconds + " ms)");
   }
