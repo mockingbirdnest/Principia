@@ -347,6 +347,13 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
   return m.Return();
 }
 
+void principia__FreeVesselsAndCollectPileUps(Plugin* const plugin) {
+  journal::Method<journal::FreeVesselsAndCollectPileUps> m({plugin});
+  CHECK_NOTNULL(plugin);
+  plugin->FreeVesselsAndCollectPileUps();
+  return m.Return();
+}
+
 int principia__GetBufferDuration() {
   journal::Method<journal::GetBufferDuration> m;
   return m.Return(FLAGS_logbufsecs);

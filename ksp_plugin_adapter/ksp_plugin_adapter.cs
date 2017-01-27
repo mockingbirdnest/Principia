@@ -179,6 +179,19 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void ApplyToVesselsInSpace(VesselProcessor process_vessel) {
+     foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+       process_vessel(vessel);
+    }
+  }
+
+  private void ApplyToVesselsOnRails(VesselProcessor process_vessel) {
+    foreach (Vessel vessel in
+             FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
+      process_vessel(vessel);
+    }
+  }
+
   private void UpdateBody(CelestialBody body, double universal_time) {
     plugin_.UpdateCelestialHierarchy(
         body.flightGlobalsIndex,
@@ -212,16 +225,20 @@ public partial class PrincipiaPluginAdapter
                                       universal_time);
   }
 
-  private void UpdateVessel(Vessel vessel, double universal_time) {
+  private void InsertOrKeepVessel(Vessel vessel) {
     bool inserted = plugin_.InsertOrKeepVessel(
         vessel.id.ToString(),
         vessel.orbit.referenceBody.flightGlobalsIndex);
+    // TODO(egg): I'm not sure whether those are the degrees of freedom we want.
     if (inserted) {
       plugin_.SetVesselStateOffset(
           vessel_guid : vessel.id.ToString(),
           from_parent : new QP{q = (XYZ)vessel.orbit.pos,
                                p = (XYZ)vessel.orbit.vel});
     }
+   }
+
+  private void UpdateVessel(Vessel vessel, double universal_time) {
     QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
     vessel.orbit.UpdateFromStateVectors(
         pos     : (Vector3d)from_parent.q,
@@ -664,6 +681,10 @@ public partial class PrincipiaPluginAdapter
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       SetBodyFrames();
+      ApplyToVesselsInSpace(InsertOrKeepVessel);
+      ApplyToVesselsOnRails(vessel => UpdateVessel(vessel, universal_time));
+      // TODO(egg): Set the degrees of freedom of the origin of |World| (by
+      // toying with Krakensbane and FloatingOrigin) here.
 
       // Now we let the game and Unity do their thing. among other things,
       // the FashionablyLate callbacks, including ReportNonConservativeForces,
@@ -743,11 +764,13 @@ public partial class PrincipiaPluginAdapter
      }
      time_is_advancing_ = true;
 
+     plugin_.FreeVesselsAndCollectPileUps();
+
      var apparent_world_positions = new Dictionary<Vessel, Vector3d>();
      var apparent_world_velocities = new Dictionary<Vessel, Vector3d>();
 
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-       if (vessel.packed) {
+       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
        }
        // As far as I can tell, |Vessel| uses the centre of mass of the command
@@ -772,7 +795,7 @@ public partial class PrincipiaPluginAdapter
        vessel_world_velocity /= vessel_mass;
 
        apparent_world_positions.Add(vessel, vessel_world_position);
-       apparent_world_positions.Add(vessel, vessel_world_velocity);
+       apparent_world_velocities.Add(vessel, vessel_world_velocity);
 
        plugin_.VesselSetApparentDegreesOfFreedom(
            vessel.id.ToString(),
@@ -792,7 +815,7 @@ public partial class PrincipiaPluginAdapter
      // TODO(egg): get vessel nudged positions and call Vessel.SetPosition.
      // Hopefully that will be enough.
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-       if (vessel.packed) {
+       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
        }
        // TODO(egg): Using the sun's position here is probably a *very bad
@@ -804,6 +827,11 @@ public partial class PrincipiaPluginAdapter
            vessel.id.ToString(), (XYZ)Planetarium.fetch.Sun.position);
        Vector3d vessel_actual_world_position = (Vector3d)vessel_actual_dof.q;
        Vector3d vessel_actual_world_velocity = (Vector3d)vessel_actual_dof.p;
+
+       Log.Error("q correction:" + (vessel_actual_world_position -
+                                    apparent_world_positions[vessel]));
+       Log.Error("v correction:" + (vessel_actual_world_velocity -
+                                    apparent_world_velocities[vessel]));
 
        // SetPosition puts |vesselTransform.position| at its argument; on an
        // unpacked vessel, it does so by computing the offset from
@@ -847,6 +875,9 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
         String vessel_guid = vessel.id.ToString();
+        if (!plugin_.HasVessel(vessel_guid)) {
+          continue;
+        }
         plugin_.VesselClearMass(vessel_guid);
         plugin_.VesselClearIntrinsicForce(vessel_guid);
         foreach (Part part in vessel.parts) {

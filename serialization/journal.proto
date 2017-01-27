@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5110.
+  extensions 5000 to 5999;  // Last used: 5111.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -559,6 +559,16 @@ message ForgetAllHistoriesBefore {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double t = 2;
+  }
+  optional In in = 1;
+}
+
+message FreeVesselsAndCollectPileUps {
+  extend Method {
+    optional FreeVesselsAndCollectPileUps extension = 5111;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   optional In in = 1;
 }
