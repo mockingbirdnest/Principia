@@ -100,7 +100,6 @@ public partial class PrincipiaPluginAdapter
   }
   private PluginSource plugin_source_;
 
-  private Krakensbane krakensbane_;
   private KSP.UI.Screens.Flight.NavBall navball_;
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
@@ -122,6 +121,14 @@ public partial class PrincipiaPluginAdapter
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
   private String bad_installation_popup_;
+  
+  private Krakensbane krakensbane_;
+  private Krakensbane krakensbane {
+    get {
+     return krakensbane_.GetValueOrDefault(
+         krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane)));
+    }
+  }
 
   // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
@@ -844,8 +851,8 @@ public partial class PrincipiaPluginAdapter
        // all parts.  |ChangeWorldVelocity| is an increment, so that works.
        // Again when we start dealing with rotation we'll have to set the
        // velocities of the parts individually.
-       vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
-                                  apparent_world_velocities[vessel]);
+       //vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
+         //                         apparent_world_velocities[vessel]);
      }
    }
 
