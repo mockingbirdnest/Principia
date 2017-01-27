@@ -320,7 +320,7 @@ class Plugin {
 
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
-  // Calls |UpdateVesselsInPileUp| on all the pile-ups.
+  // Calls |UpdateVesselsInPileUpIfUpdated| on all the pile-ups.
   virtual void UpdateAllVesselsInPileUps();
 
   // Coordinate transforms.

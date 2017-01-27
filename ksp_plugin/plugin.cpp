@@ -801,7 +801,7 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
 
 void Plugin::UpdateAllVesselsInPileUps() {
   for (auto& pile_up : pile_ups_) {
-    pile_up.UpdateVesselsInPileUp();
+    pile_up.UpdateVesselsInPileUpIfUpdated();
   }
 }
 

@@ -87,7 +87,7 @@ TEST_F(PileUpTest, ApparentDegreesOfFreedom) {
                                  50 * Metre / Second,
                                  40 * Metre / Second})));
 
-  pile_up.UpdateVesselsInPileUp();
+  pile_up.UpdateVesselsInPileUpIfUpdated();
 
   EXPECT_THAT(
       pile_up.GetVesselActualDegreesOfFreedom(&v1_),
