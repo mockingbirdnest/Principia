@@ -20,14 +20,28 @@ $versionheadertext = [string]::format(
     $newdate.ToUniversalTime(),
     $newversion)
 
-if ((test-path -path $headerpath) -and
-    [system.io.file]::readalltext($headerpath).equals($versionheadertext)) {
-  echo "No change to git describe, leaving base/version.generated.h untouched"
-  return
+for(;;) {
+  try {
+    if ((test-path -path $headerpath) -and
+        [system.io.file]::readalltext($headerpath).equals($versionheadertext)) {
+      echo "No change to git describe, leaving base/version.generated.h untouched"
+      return
+    }
+    break
+  } catch {
+    start-sleep -m 10
+  }
 }
 
-echo "Updating base/version.generated.h, version is $newversion"
-[system.io.file]::writealltext(
-      $headerpath,
-      $versionheadertext,
-      [system.text.encoding]::utf8)
+for(;;) {
+  try {
+    echo "Updating base/version.generated.h, version is $newversion"
+    [system.io.file]::writealltext(
+          $headerpath,
+          $versionheadertext,
+          [system.text.encoding]::utf8)
+    break
+  } catch {
+      start-sleep -m 10
+  }
+}
