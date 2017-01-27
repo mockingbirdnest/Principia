@@ -149,8 +149,8 @@ class ParallelTestRunner {
       var process = processes[i];
       // We cannot use i in the lambdas, it would be captured by reference.
       int index = i;
-      tasks[i] = new Task(async () => {
-        process.Start();
+      process.Start();
+      tasks[i] = Task.Run(async () => {
         while (!process.StandardOutput.EndOfStream) {
           Console.WriteLine("O" + index.ToString().PadLeft(4) + " " +
                             await process.StandardOutput.ReadLineAsync());
@@ -163,19 +163,12 @@ class ParallelTestRunner {
           Environment.Exit(process.ExitCode);
         }
       });
-      tasks[i].Start();
-    }
-    // For some reason if I create those tasks in the loop above, they throw
-    // exceptions complaining that stderr isn't redirected.  Here it works...
-    for (int i = 0; i < processes.Count; ++i) {
-      var process = processes[i];
-      int index = i;
-      new Task(async () => {
+      Task.Run(async () => {
         while (!process.StandardError.EndOfStream) {
           Console.WriteLine("E" + index.ToString().PadLeft(4) + " " +
                             await process.StandardError.ReadLineAsync());
         }
-      }).Start();
+      });
     }
 
     Task.WaitAll(tasks);
