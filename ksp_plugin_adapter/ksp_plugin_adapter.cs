@@ -100,14 +100,11 @@ public partial class PrincipiaPluginAdapter
   }
   private PluginSource plugin_source_;
 
-  private Krakensbane krakensbane_;
   private KSP.UI.Screens.Flight.NavBall navball_;
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
   private bool navball_changed_ = true;
-
-  private CelestialBody previous_bubble_reference_body_;
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -124,6 +121,14 @@ public partial class PrincipiaPluginAdapter
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
 
   private String bad_installation_popup_;
+  
+  private Krakensbane krakensbane_;
+  private Krakensbane krakensbane {
+    get {
+     return krakensbane_.GetValueOrDefault(
+         krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane)));
+    }
+  }
 
   // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
@@ -181,23 +186,15 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  // Applies |process_vessel| to all vessels in space.
-  private void ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
-      VesselProcessor process_vessel) {
-    var vessels = from vessel in FlightGlobals.Vessels
-                  where is_on_rails_in_space(vessel) ||
-                        is_in_inertial_physics_bubble_in_space(vessel)
-                  select vessel;
-    foreach (Vessel vessel in vessels) {
-      process_vessel(vessel);
+  private void ApplyToVesselsInSpace(VesselProcessor process_vessel) {
+     foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+       process_vessel(vessel);
     }
   }
 
-  private void ApplyToVesselsInPhysicsBubble(VesselProcessor process_vessel) {
-    var vessels = from vessel in FlightGlobals.Vessels
-                  where is_in_physics_bubble(vessel)
-                  select vessel;
-    foreach (Vessel vessel in vessels) {
+  private void ApplyToVesselsOnRails(VesselProcessor process_vessel) {
+    foreach (Vessel vessel in
+             FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
       process_vessel(vessel);
     }
   }
@@ -235,57 +232,26 @@ public partial class PrincipiaPluginAdapter
                                       universal_time);
   }
 
-  private void UpdateVessel(Vessel vessel, double universal_time) {
+  private void InsertOrKeepVessel(Vessel vessel) {
     bool inserted = plugin_.InsertOrKeepVessel(
         vessel.id.ToString(),
         vessel.orbit.referenceBody.flightGlobalsIndex);
+    // TODO(egg): I'm not sure whether those are the degrees of freedom we want.
     if (inserted) {
       plugin_.SetVesselStateOffset(
           vessel_guid : vessel.id.ToString(),
           from_parent : new QP{q = (XYZ)vessel.orbit.pos,
                                p = (XYZ)vessel.orbit.vel});
     }
+   }
+
+  private void UpdateVessel(Vessel vessel, double universal_time) {
     QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
     vessel.orbit.UpdateFromStateVectors(
         pos     : (Vector3d)from_parent.q,
         vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
-  }
-
-  private void AddToPhysicsBubble(Vessel vessel) {
-    if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
-      Log.Info("Killing stock gravity");
-      PhysicsGlobals.GraviticForceMultiplier = 0;
-    }
-    Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
-    KSPPart[] parts =
-        (from part in vessel.parts
-         where part.rb != null  // Physicsless parts have no rigid body.
-         select new KSPPart {
-             world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
-             world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
-             mass_in_tonnes =
-                 (double)part.mass + (double)part.GetResourceMass(),
-             gravitational_acceleration_to_be_applied_by_ksp = default(XYZ),
-             id = part.flightID}).ToArray();
-    if (parts.Count() > 0) {
-      bool inserted = plugin_.InsertOrKeepVessel(
-          vessel.id.ToString(),
-          vessel.orbit.referenceBody.flightGlobalsIndex);
-      if (inserted) {
-        // NOTE(egg): this is only used when a (plugin-managed) physics bubble
-        // appears with a new vessel (e.g. when exiting the atmosphere).
-        plugin_.SetVesselStateOffset(
-            vessel_guid : vessel.id.ToString(),
-            from_parent : new QP{
-                q = (XYZ)vessel.orbit.pos,
-                p = (XYZ)vessel.orbit.vel});
-      }
-      plugin_.AddVesselToNextPhysicsBubble(vessel_guid : vessel.id.ToString(),
-                                           parts       : parts,
-                                           count       : parts.Count());
-    }
   }
 
   private bool is_in_space(Vessel vessel) {
@@ -299,27 +265,9 @@ public partial class PrincipiaPluginAdapter
     return vessel.packed && is_in_space(vessel);
   }
 
-  private bool is_in_physics_bubble(Vessel vessel) {
-    return !vessel.packed && vessel.loaded;
-  }
-
-  private bool is_in_inertial_physics_bubble_in_space(Vessel vessel) {
-    return is_in_physics_bubble(vessel) &&
-           !Planetarium.FrameIsRotating() &&
-           is_in_space(vessel);
-  }
-
-  private bool has_inertial_physics_bubble_in_space() {
-    Vessel active_vessel = FlightGlobals.ActiveVessel;
-    return active_vessel != null &&
-           is_in_inertial_physics_bubble_in_space(active_vessel);
-  }
-
   private bool has_active_vessel_in_space() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    return active_vessel != null &&
-           (is_on_rails_in_space(active_vessel) ||
-           is_in_inertial_physics_bubble_in_space(active_vessel));
+    return active_vessel != null && is_in_space(active_vessel);
   }
 
   private bool draw_active_vessel_trajectory() {
@@ -704,18 +652,6 @@ public partial class PrincipiaPluginAdapter
           FlightGlobals.currentMainBody.GetValueOrDefault(
               FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-      if (has_inertial_physics_bubble_in_space() &&
-          (FlightGlobals.currentMainBody == previous_bubble_reference_body_ ||
-           previous_bubble_reference_body_ == null)) {
-        ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
-        previous_bubble_reference_body_ = FlightGlobals.currentMainBody;
-      } else {
-        if (PhysicsGlobals.GraviticForceMultiplier != 1) {
-          Log.Info("Reinstating stock gravity");
-          PhysicsGlobals.GraviticForceMultiplier = 1;  // sic.
-        }
-        previous_bubble_reference_body_ = null;
-      }
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
@@ -752,24 +688,10 @@ public partial class PrincipiaPluginAdapter
       }
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       SetBodyFrames();
-      // TODO(egg): set the positions of vessels inside the physics bubble too;
-      // Only move the universe to set the centre of mass of all loaded PileUps
-      // at the centre of the physics bubble.
-      ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
-          vessel => UpdateVessel(vessel, universal_time));
-      if (!plugin_.PhysicsBubbleIsEmpty()) {
-        Vector3d displacement_offset =
-            (Vector3d)plugin_.PhysicsBubbleDisplacementCorrection(
-                (XYZ)Planetarium.fetch.Sun.position);
-        Vector3d velocity_offset =
-            (Vector3d)plugin_.PhysicsBubbleVelocityCorrection(
-                active_vessel.orbit.referenceBody.flightGlobalsIndex);
-        if (krakensbane_ == null) {
-          krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
-        }
-        FloatingOrigin.SetOffset(displacement_offset);
-        krakensbane_.FrameVel += velocity_offset;
-      }
+      ApplyToVesselsInSpace(InsertOrKeepVessel);
+      ApplyToVesselsOnRails(vessel => UpdateVessel(vessel, universal_time));
+      // TODO(egg): Set the degrees of freedom of the origin of |World| (by
+      // toying with Krakensbane and FloatingOrigin) here.
 
       // Now we let the game and Unity do their thing. among other things,
       // the FashionablyLate callbacks, including ReportNonConservativeForces,
@@ -849,7 +771,47 @@ public partial class PrincipiaPluginAdapter
      }
      time_is_advancing_ = true;
 
-     // TODO(egg): pass vessel positions here.
+     plugin_.FreeVesselsAndCollectPileUps();
+
+     var apparent_world_positions = new Dictionary<Vessel, Vector3d>();
+     var apparent_world_velocities = new Dictionary<Vessel, Vector3d>();
+
+     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+         continue;
+       }
+       // As far as I can tell, |Vessel| uses the centre of mass of the command
+       // pod as its position in SetPosition, and while it provides the position
+       // of the centre of mass, it doesn't provide its velocity.  We'll have to
+       // iterate over the parts (and make the C++ aware of them) when we start
+       // dealing with rotation anyway, so ¯\_(ツ)_/¯.
+       // We're accumulating in double-precision and the numbers we get from
+       // Unity are single-precision, so no need for compensated summation.
+       Vector3d vessel_world_position = Vector3d.zero;
+       Vector3d vessel_world_velocity = Vector3d.zero;
+       double vessel_mass = 0;
+       foreach (Part part in vessel.parts) {
+         if (part.rb == null) {
+           continue;
+         }
+         vessel_mass += part.rb.mass;
+         vessel_world_position += (Vector3d)part.rb.centerOfMass * part.rb.mass;
+         vessel_world_velocity += (Vector3d)part.rb.velocity * part.rb.mass;
+       }
+       vessel_world_position /= vessel_mass;
+       vessel_world_velocity /= vessel_mass;
+
+       apparent_world_positions.Add(vessel, vessel_world_position);
+       apparent_world_velocities.Add(vessel, vessel_world_velocity);
+
+       plugin_.VesselSetApparentDegreesOfFreedom(
+           vessel.id.ToString(),
+           new QP{q = (XYZ)vessel_world_position,
+                  p = (XYZ)vessel_world_velocity},
+           (XYZ)Planetarium.fetch.Sun.position);
+     }
+
+     plugin_.PluginUpdateAllVesselsInPileUps();
 
      plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
@@ -859,6 +821,39 @@ public partial class PrincipiaPluginAdapter
      // transforms of loaded vessels & their parts.
      // TODO(egg): get vessel nudged positions and call Vessel.SetPosition.
      // Hopefully that will be enough.
+     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+         continue;
+       }
+       // TODO(egg): Using the sun's position here is probably a *very bad
+       // idea*, it is still in its position from the previous frame.  This
+       // should all be done with respect to the centre of mass of the set of
+       // loaded unpacked vessels, which we can force to be the |World| origin,
+       // and then position properly by moving the universe.
+       QP vessel_actual_dof = plugin_.VesselGetActualDegreesOfFreedom(
+           vessel.id.ToString(), (XYZ)Planetarium.fetch.Sun.position);
+       Vector3d vessel_actual_world_position = (Vector3d)vessel_actual_dof.q;
+       Vector3d vessel_actual_world_velocity = (Vector3d)vessel_actual_dof.p;
+
+       Log.Error("q correction:" + (vessel_actual_world_position -
+                                    apparent_world_positions[vessel]));
+       Log.Error("v correction:" + (vessel_actual_world_velocity -
+                                    apparent_world_velocities[vessel]));
+
+       // SetPosition puts |vesselTransform.position| at its argument; on an
+       // unpacked vessel, it does so by computing the offset from
+       // |vesselTransform.position|, and nudging the parts accordingly; we want
+       // to set the centre of mass, hence the dance.
+       vessel.SetPosition(vessel.vesselTransform.position -
+                          apparent_world_positions[vessel] +
+                          vessel_actual_world_position);
+       // We cannot use |SetWorldVelocity|, as this simply sets the velocity of
+       // all parts.  |ChangeWorldVelocity| is an increment, so that works.
+       // Again when we start dealing with rotation we'll have to set the
+       // velocities of the parts individually.
+       vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
+                                  apparent_world_velocities[vessel]);
+     }
    }
 
   private void SetBodyFramesAndPrecalculateVessels() {
@@ -887,6 +882,9 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
         String vessel_guid = vessel.id.ToString();
+        if (!plugin_.HasVessel(vessel_guid)) {
+          continue;
+        }
         plugin_.VesselClearMass(vessel_guid);
         plugin_.VesselClearIntrinsicForce(vessel_guid);
         foreach (Part part in vessel.parts) {
@@ -1128,10 +1126,8 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
       plugin_state = "holding";
-    } else if (plugin_.PhysicsBubbleIsEmpty()) {
-      plugin_state = "running";
     } else {
-      plugin_state = "managing physics bubble";
+      plugin_state = "running";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
     // TODO(egg): remove this diagnosis when we have proper collision handling.
@@ -1477,8 +1473,8 @@ public partial class PrincipiaPluginAdapter
         Log.Fatal("Cartesian config without gravity models");
       }
       try {
-        ConfigNode initial_states =
-            GameDatabase.Instance.GetConfigs(principia_initial_state_config_name)[0].config;
+        ConfigNode initial_states = GameDatabase.Instance.GetConfigs(
+            principia_initial_state_config_name)[0].config;
         plugin_ =
             Interface.NewPlugin(initial_states.GetValue("game_epoch"),
                                 initial_states.GetValue("solar_system_epoch"),
@@ -1622,7 +1618,6 @@ public partial class PrincipiaPluginAdapter
                                             p = (XYZ)vessel.orbit.vel});
       }
     };
-    ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(insert_vessel);
   }
 
   private void SetRotatingFrameThresholds() {

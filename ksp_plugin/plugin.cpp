@@ -406,16 +406,20 @@ void Plugin::SetVesselStateOffset(
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
 }
 
-void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(t) << '\n' << NAMED(planetarium_rotation);
+void Plugin::FreeVesselsAndCollectPileUps() {
   CHECK(!initializing_);
-  CHECK_GT(t, current_time_);
   FreeVessels();
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
   }
+}
+
+void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(t) << '\n' << NAMED(planetarium_rotation);
+  CHECK(!initializing_);
+  CHECK_GT(t, current_time_);
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
 
@@ -801,7 +805,7 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
 
 void Plugin::UpdateAllVesselsInPileUps() {
   for (auto& pile_up : pile_ups_) {
-    pile_up.UpdateVesselsInPileUp();
+    pile_up.UpdateVesselsInPileUpIfUpdated();
   }
 }
 

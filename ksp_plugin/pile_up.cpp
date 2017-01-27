@@ -72,7 +72,10 @@ void PileUp::SetVesselApparentDegreesOfFreedom(
                   << degrees_of_freedom;
 }
 
-void PileUp::UpdateVesselsInPileUp() {
+void PileUp::UpdateVesselsInPileUpIfUpdated() {
+  if (apparent_vessel_degrees_of_freedom_.empty()) {
+    return;
+  }
   // A consistency check that |SetVesselApparentDegreesOfFreedom| was called for
   // all the vessels.
   CHECK_EQ(vessels_.size(), apparent_vessel_degrees_of_freedom_.size());

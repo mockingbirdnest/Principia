@@ -166,6 +166,11 @@ class Plugin {
       GUID const& vessel_guid,
       RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
+  // Destroys the vessels for which |InsertOrKeepVessel| has not been called
+  // since the last call to |FreeVesselsAndCollectPileUps|, and updates the list
+  // of |pile_ups_| according to the reported collisions.
+  virtual void FreeVesselsAndCollectPileUps();
+
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
@@ -320,7 +325,7 @@ class Plugin {
 
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
-  // Calls |UpdateVesselsInPileUp| on all the pile-ups.
+  // Calls |UpdateVesselsInPileUpIfUpdated| on all the pile-ups.
   virtual void UpdateAllVesselsInPileUps();
 
   // Coordinate transforms.

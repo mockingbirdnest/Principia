@@ -52,8 +52,8 @@ class PileUp final {
   // Update the degrees of freedom of all the vessels by comparing the centre of
   // mass of the *apparent* degrees of freedom to the centre of mass computed by
   // integration.  |SetVesselApparentDegreesOfFreedom| must have been called for
-  // each vessel in the pile-up.
-  void UpdateVesselsInPileUp();
+  // each vessel in the pile-up, or for none.
+  void UpdateVesselsInPileUpIfUpdated();
 
   // Obtains the *actual* degrees of freedom for the given |vessel|.  The vessel
   // in the game should be nudged to match the value returned by this function.
