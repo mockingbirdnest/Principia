@@ -851,8 +851,8 @@ public partial class PrincipiaPluginAdapter
        // all parts.  |ChangeWorldVelocity| is an increment, so that works.
        // Again when we start dealing with rotation we'll have to set the
        // velocities of the parts individually.
-       //vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
-         //                         apparent_world_velocities[vessel]);
+       vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
+                                  apparent_world_velocities[vessel]);
      }
    }
 
@@ -1473,8 +1473,8 @@ public partial class PrincipiaPluginAdapter
         Log.Fatal("Cartesian config without gravity models");
       }
       try {
-        ConfigNode initial_states =
-            GameDatabase.Instance.GetConfigs(principia_initial_state_config_name)[0].config;
+        ConfigNode initial_states = GameDatabase.Instance.GetConfigs(
+            principia_initial_state_config_name)[0].config;
         plugin_ =
             Interface.NewPlugin(initial_states.GetValue("game_epoch"),
                                 initial_states.GetValue("solar_system_epoch"),
