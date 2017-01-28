@@ -624,51 +624,6 @@ TEST_F(InterfaceTest, PredictionGettersAndSetters) {
   principia__SetPredictionLength(plugin_.get(), 42);
 }
 
-TEST_F(InterfaceTest, PhysicsBubble) {
-  KSPPart parts[3] = {{{1, 2, 3}, {10, 20, 30}, 300.0, {0, 0, 0}, 1},
-                      {{4, 5, 6}, {40, 50, 60}, 600.0, {3, 3, 3}, 4},
-                      {{7, 8, 9}, {70, 80, 90}, 900.0, {6, 6, 6}, 7}};
-  EXPECT_CALL(*plugin_,
-              AddVesselToNextPhysicsBubbleConstRef(
-                  vessel_guid,
-                  ElementsAre(
-                      testing::Pair(1, Pointee(Property(&Part<World>::mass,
-                                                        300.0 * Tonne))),
-                      testing::Pair(4, Pointee(Property(&Part<World>::mass,
-                                                        600.0 * Tonne))),
-                      testing::Pair(7, Pointee(Property(&Part<World>::mass,
-                                                        900.0 * Tonne))))));
-  principia__AddVesselToNextPhysicsBubble(plugin_.get(),
-                                          vessel_guid,
-                                          &parts[0],
-                                          3);
-
-  EXPECT_CALL(*plugin_,
-              BubbleDisplacementCorrection(
-                  World::origin + Displacement<World>(
-                                      {parent_position.x * SIUnit<Length>(),
-                                       parent_position.y * SIUnit<Length>(),
-                                       parent_position.z * SIUnit<Length>()})))
-      .WillOnce(Return(Displacement<World>({77 * SIUnit<Length>(),
-                                            88 * SIUnit<Length>(),
-                                            99 * SIUnit<Length>()})));
-  XYZ const displacement = principia__PhysicsBubbleDisplacementCorrection(
-      plugin_.get(), parent_position);
-  EXPECT_THAT(displacement, Eq(XYZ{77, 88, 99}));
-
-  EXPECT_CALL(*plugin_, BubbleVelocityCorrection(parent_index))
-      .WillOnce(Return(Velocity<World>({66 * SIUnit<Speed>(),
-                                        55 * SIUnit<Speed>(),
-                                        44 * SIUnit<Speed>()})));
-  XYZ const velocity =
-      principia__PhysicsBubbleVelocityCorrection(plugin_.get(), parent_index);
-  EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
-
-  EXPECT_CALL(*plugin_, PhysicsBubbleIsEmpty()).WillOnce(Return(true));
-  bool const empty = principia__PhysicsBubbleIsEmpty(plugin_.get());
-  EXPECT_TRUE(empty);
-}
-
 TEST_F(InterfaceTest, NavballOrientation) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =

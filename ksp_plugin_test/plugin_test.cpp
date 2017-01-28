@@ -436,7 +436,6 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ((HistoryTime(time, 4) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
 #endif
-  EXPECT_FALSE(message.bubble().has_current());
   EXPECT_TRUE(message.has_plotting_frame());
   EXPECT_TRUE(message.plotting_frame().HasExtension(
       serialization::BodyCentredNonRotatingDynamicFrame::extension));

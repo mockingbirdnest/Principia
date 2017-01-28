@@ -96,8 +96,7 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
 Plugin::Plugin(Instant const& game_epoch,
                Instant const& solar_system_epoch,
                Angle const& planetarium_rotation)
-    : bubble_(make_not_null_unique<PhysicsBubble>()),
-      history_parameters_(DefaultHistoryParameters()),
+    : history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
@@ -421,14 +420,10 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   ephemeris_->Prolong(t);
-  bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
 
-  EvolveBubble(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    if (!bubble_->contains(vessel.get())) {
-      vessel->AdvanceTimeNotInBubble(t);
-    }
+    vessel->AdvanceTime(t);
   }
 
   VLOG(1) << "Time has been advanced" << '\n'
@@ -671,42 +666,10 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
 }
 
-void Plugin::AddVesselToNextPhysicsBubble(
-    GUID const& vessel_guid,
-    std::vector<IdAndOwnedPart>&& parts) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_LT(0, kept_vessels_.count(vessel.get()));
-  bubble_->AddVesselToNext(vessel.get(), std::move(parts));
-}
-
-bool Plugin::PhysicsBubbleIsEmpty() const {
-  VLOG(1) << __FUNCTION__;
-  VLOG_AND_RETURN(1, bubble_->empty());
-}
-
 void Plugin::ReportCollision(GUID const& vessel1, GUID const& vessel2) const {
   Vessel& v1 = *FindOrDie(vessels_, vessel1);
   Vessel& v2 = *FindOrDie(vessels_, vessel2);
   Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
-}
-
-Displacement<World> Plugin::BubbleDisplacementCorrection(
-    Position<World> const& sun_world_position) const {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
-  VLOG_AND_RETURN(1, bubble_->DisplacementCorrection(BarycentricToWorldSun(),
-                                                     *sun_,
-                                                     sun_world_position));
-}
-
-Velocity<World> Plugin::BubbleVelocityCorrection(
-    Index const reference_body_index) const {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(reference_body_index);
-  Celestial const& reference_body =
-      *FindOrDie(celestials_, reference_body_index);
-  VLOG_AND_RETURN(1, bubble_->VelocityCorrection(BarycentricToWorldSun(),
-                                                 reference_body));
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
@@ -892,12 +855,6 @@ void Plugin::WriteToMessage(
   prediction_parameters_.WriteToMessage(
       message->mutable_prediction_parameters());
 
-  bubble_->WriteToMessage(
-      [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
-        return FindOrDie(vessel_to_guid, vessel);
-      },
-      message->mutable_bubble());
-
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   if (!is_pre_cardano_) {
     // A pre-Cardano save stays pre-Cardano; we cannot pull rotational
@@ -948,12 +905,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         vessels.emplace(vessel_message.guid(), std::move(vessel));
     CHECK(inserted.second);
   }
-  not_null<std::unique_ptr<PhysicsBubble>> bubble =
-      PhysicsBubble::ReadFromMessage(
-          [&vessels](GUID guid) -> not_null<Vessel*> {
-            return FindOrDie(vessels, guid).get();
-          },
-          message.bubble());
 
   Instant const current_time = Instant::ReadFromMessage(message.current_time());
 
@@ -985,7 +936,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   auto plugin = std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
                  std::move(celestials),
-                 std::move(bubble),
                  std::move(ephemeris),
                  history_parameters,
                  prolongation_parameters,
@@ -1025,7 +975,6 @@ std::unique_ptr<Ephemeris<Barycentric>> Plugin::NewEphemeris(
 Plugin::Plugin(
     GUIDToOwnedVessel vessels,
     IndexToOwnedCelestial celestials,
-    not_null<std::unique_ptr<PhysicsBubble>> bubble,
     std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
     Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -1038,7 +987,6 @@ Plugin::Plugin(
     bool const is_pre_cardano)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
-      bubble_(std::move(bubble)),
       ephemeris_(std::move(ephemeris)),
       history_parameters_(history_parameters),
       prolongation_parameters_(prolongation_parameters),
@@ -1144,38 +1092,6 @@ void Plugin::FreeVessels() {
       vessel->clear_pile_up();
       it = vessels_.erase(it);
     }
-  }
-}
-
-void Plugin::EvolveBubble(Instant const& t) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  if (bubble_->empty()) {
-    return;
-  }
-  auto const& trajectory = bubble_->mutable_centre_of_mass_trajectory();
-  VLOG(1) << "Evolving bubble\n"
-          << "from : " << trajectory->last().time() << "\n"
-          << "to   : " << t;
-  auto const& intrinsic_acceleration =
-      bubble_->centre_of_mass_intrinsic_acceleration();
-
-  bool const reached_final_time = ephemeris_->FlowWithAdaptiveStep(
-      trajectory,
-      intrinsic_acceleration,
-      t,
-      prolongation_parameters_,
-      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-      /*last_point_only=*/false);
-  CHECK(reached_final_time) << t << " " << trajectory->last().time();
-
-  DegreesOfFreedom<Barycentric> const& centre_of_mass =
-      bubble_->centre_of_mass_trajectory().last().degrees_of_freedom();
-  for (not_null<Vessel*> vessel : bubble_->vessels()) {
-    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-        bubble_->from_centre_of_mass(vessel);
-    vessel->AdvanceTimeInBubble(
-        t,
-        centre_of_mass + from_centre_of_mass);
   }
 }
 

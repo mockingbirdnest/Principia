@@ -123,19 +123,10 @@ void Vessel::CreateHistoryAndForkProlongation(
   prediction_ = history_->NewForkAtLast();
 }
 
-void Vessel::AdvanceTimeNotInBubble(Instant const& time) {
+void Vessel::AdvanceTime(Instant const& time) {
   CHECK(is_initialized());
   AdvanceHistoryIfNeeded(time);
   FlowProlongation(time);
-}
-
-void Vessel::AdvanceTimeInBubble(
-    Instant const& time,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(is_initialized());
-  AdvanceHistoryIfNeeded(time);
-  prolongation_->Append(time, degrees_of_freedom);
-  is_dirty_ = true;
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
