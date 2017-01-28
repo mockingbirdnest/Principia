@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5111.
+  extensions 5000 to 5999;  // Last used: 5112.
 }
 
 message AddVesselToNextPhysicsBubble {
@@ -593,6 +593,22 @@ message GetBufferedLogging {
   optional Return return = 3;
 }
 
+message GetCelestialDegreesOfFreedom {
+  extend Method {
+    optional GetCelestialDegreesOfFreedom extension = 5112;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 index = 2;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message GetPlottingFrame {
   extend Method {
     optional GetPlottingFrame extension = 5061;
@@ -726,6 +742,7 @@ message InsertOrKeepVessel {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required int32 parent_index = 3;
+    required double mass_in_tonnes = 4;
   }
   message Return {
     required bool result = 1;
@@ -1291,7 +1308,6 @@ message VesselGetActualDegreesOfFreedom {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
-    required XYZ sun_world_position = 3;
   }
   message Return {
     required QP result = 1;
@@ -1363,11 +1379,10 @@ message VesselSetApparentDegreesOfFreedom {
     optional VesselSetApparentDegreesOfFreedom extension = 5109;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required QP qp = 3;
-    required XYZ sun_world_position = 4;
   }
   optional In in = 1;
 }

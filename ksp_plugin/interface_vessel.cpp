@@ -12,10 +12,16 @@
 namespace principia {
 namespace interface {
 
+using geometry::AngularVelocity;
 using geometry::Displacement;
+using geometry::OrthogonalMap;
 using geometry::Vector;
 using geometry::Velocity;
+using ksp_plugin::ApparentBubble;
+using ksp_plugin::Bubble;
 using physics::DegreesOfFreedom;
+using physics::RigidMotion;
+using physics::RigidTransformation;
 using quantities::Force;
 using quantities::si::Kilo;
 using quantities::si::Newton;
@@ -43,24 +49,30 @@ void principia__VesselClearMass(Plugin const* const plugin,
 }
 
 QP principia__VesselGetActualDegreesOfFreedom(Plugin const* const plugin,
-                                              char const* const vessel_guid,
-                                              XYZ const sun_world_position) {
+                                              char const* const vessel_guid) {
   journal::Method<journal::VesselGetActualDegreesOfFreedom> m(
-      {plugin, vessel_guid, sun_world_position});
-  Position<World> const sun_word_position_in_world =
-      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre);
+      {plugin, vessel_guid});
 
+  RigidMotion<Bubble, World> bubble_to_world{
+      RigidTransformation<Bubble, World>{
+          Bubble::origin,
+          World::origin,
+          plugin->BarycentricToWorld() *
+              OrthogonalMap<Bubble, Barycentric>::Identity()},
+      AngularVelocity<Bubble>{},
+      Velocity<Bubble>{}};
   auto const vessel = GetVessel(*plugin, vessel_guid);
   PileUp& pile_up = GetPileUp(*vessel);
-  auto const degrees_of_freedom_in_barycentric =
-      pile_up.GetVesselActualDegreesOfFreedom(vessel);
-  auto const position_in_world = plugin->BarycentricToWorld(
-      sun_word_position_in_world)(degrees_of_freedom_in_barycentric.position());
-  auto const velocity_in_world = plugin->BarycentricToWorld()(
-      degrees_of_freedom_in_barycentric.velocity());
-  XYZ const q =
-      ToXYZ((position_in_world - World::origin).coordinates() / Metre);
-  XYZ const p = ToXYZ(velocity_in_world.coordinates() / (Metre / Second));
+  auto const degrees_of_freedom_in_bubble =
+      pile_up.GetVesselActualDegreesOfFreedom(vessel,
+                                              plugin->GetBubbleBarycentre());
+  auto const degrees_of_freedom_in_world =
+      bubble_to_world(degrees_of_freedom_in_bubble);
+  XYZ const q = ToXYZ(
+      (degrees_of_freedom_in_world.position() - World::origin).coordinates() /
+      Metre);
+  XYZ const p = ToXYZ(degrees_of_freedom_in_world.velocity().coordinates() /
+                      (Metre / Second));
   return m.Return({q, p});
 }
 
@@ -106,27 +118,30 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
 }
 
 void principia__VesselSetApparentDegreesOfFreedom(
-    Plugin const* const plugin,
+    Plugin* const plugin,
     char const* const vessel_guid,
-    QP const qp,
-  XYZ const sun_world_position) {
+    QP const qp) {
   journal::Method<journal::VesselSetApparentDegreesOfFreedom> m(
-      {plugin, vessel_guid, qp, sun_world_position});
-  Position<World> const sun_word_position_in_world =
-      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre);
+      {plugin, vessel_guid, qp});
 
-  auto const position_in_barycentric =
-      plugin->WorldToBarycentric(sun_word_position_in_world)(
-          World::origin + Displacement<World>(FromXYZ(qp.q) * Metre));
-  auto const velocity_in_barycentric = plugin->WorldToBarycentric()(
-      Velocity<World>(FromXYZ(qp.p) * (Metre / Second)));
-
+  RigidMotion<World, ApparentBubble> world_to_apparent_bubble(
+      RigidTransformation<World, ApparentBubble>{
+          World::origin,
+          ApparentBubble::origin,
+          OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
+              plugin->WorldToBarycentric()},
+      AngularVelocity<World>{},
+      Velocity<World>{});
+  DegreesOfFreedom<World> const world_degrees_of_freedom{
+      World::origin + Displacement<World>(FromXYZ(qp.q) * Metre),
+      Velocity<World>(FromXYZ(qp.p) * (Metre / Second))};
   auto const vessel = GetVessel(*plugin, vessel_guid);
   PileUp& pile_up = GetPileUp(*vessel);
+
+  plugin->AddPileUpToBubble(vessel->containing_pile_up()->iterator());
   pile_up.SetVesselApparentDegreesOfFreedom(
       vessel,
-      DegreesOfFreedom<Barycentric>(position_in_barycentric,
-                                    velocity_in_barycentric));
+      world_to_apparent_bubble(world_degrees_of_freedom));
 
   return m.Return();
 }

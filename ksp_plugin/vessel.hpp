@@ -206,8 +206,7 @@ class Vessel {
   // timestep, which breaks symplecticity.
   DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
 
-  // Child trajectory of |*history_|.
-  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  DiscreteTrajectory<Barycentric> prediction_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;

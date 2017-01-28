@@ -364,6 +364,16 @@ int principia__GetBufferedLogging() {
   return m.Return(FLAGS_logbuflevel);
 }
 
+QP principia__GetCelestialDegreesOfFreedom(Plugin const* const plugin,
+                                           int const index) {
+  journal::Method<journal::GetCelestialDegreesOfFreedom> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  auto const result = plugin->GetCelestialDegreesOfFreedom(index);
+  return m.Return(
+      {ToXYZ((result.position() - World::origin).coordinates() / Metre),
+       ToXYZ(result.velocity().coordinates() / (Metre / Second))});
+}
+
 // Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
 // ownership.  The returned pointer is never null.
 NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
@@ -534,12 +544,16 @@ void principia__InsertCelestialJacobiKeplerian(
 // |plugin| must not be null.  No transfer of ownership.
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
-                                   int const parent_index) {
+                                   int const parent_index,
+                                   double const mass_in_tonnes) {
   journal::Method<journal::InsertOrKeepVessel> m({plugin,
                                                   vessel_guid,
-                                                  parent_index});
+                                                  parent_index,
+                                                  mass_in_tonnes});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->InsertOrKeepVessel(vessel_guid, parent_index));
+  return m.Return(plugin->InsertOrKeepVessel(vessel_guid,
+                                             parent_index,
+                                             mass_in_tonnes * Tonne));
 }
 
 bool principia__IsKspStockSystem(Plugin* const plugin) {
@@ -687,7 +701,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Fork(),
+                                  prediction.Begin(),
                                   prediction.End(),
                                   q_sun,
                                   rendered_apoapsides,

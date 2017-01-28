@@ -235,7 +235,8 @@ public partial class PrincipiaPluginAdapter
   private void InsertOrKeepVessel(Vessel vessel) {
     bool inserted = plugin_.InsertOrKeepVessel(
         vessel.id.ToString(),
-        vessel.orbit.referenceBody.flightGlobalsIndex);
+        vessel.orbit.referenceBody.flightGlobalsIndex,
+        vessel.GetTotalMass());
     // TODO(egg): I'm not sure whether those are the degrees of freedom we want.
     if (inserted) {
       plugin_.SetVesselStateOffset(
@@ -807,8 +808,7 @@ public partial class PrincipiaPluginAdapter
        plugin_.VesselSetApparentDegreesOfFreedom(
            vessel.id.ToString(),
            new QP{q = (XYZ)vessel_world_position,
-                  p = (XYZ)vessel_world_velocity},
-           (XYZ)Planetarium.fetch.Sun.position);
+                  p = (XYZ)vessel_world_velocity});
      }
 
      plugin_.PluginUpdateAllVesselsInPileUps();
@@ -830,15 +830,20 @@ public partial class PrincipiaPluginAdapter
        // should all be done with respect to the centre of mass of the set of
        // loaded unpacked vessels, which we can force to be the |World| origin,
        // and then position properly by moving the universe.
-       QP vessel_actual_dof = plugin_.VesselGetActualDegreesOfFreedom(
-           vessel.id.ToString(), (XYZ)Planetarium.fetch.Sun.position);
+       QP vessel_actual_dof =
+           plugin_.VesselGetActualDegreesOfFreedom(vessel.id.ToString());
        Vector3d vessel_actual_world_position = (Vector3d)vessel_actual_dof.q;
        Vector3d vessel_actual_world_velocity = (Vector3d)vessel_actual_dof.p;
 
-       Log.Error("q correction:" + (vessel_actual_world_position -
-                                    apparent_world_positions[vessel]));
-       Log.Error("v correction:" + (vessel_actual_world_velocity -
-                                    apparent_world_velocities[vessel]));
+       Log.Error("q apparent:" +
+                 apparent_world_positions[vessel].ToString("R"));
+       Log.Error("q actual:" + vessel_actual_world_position.ToString("R"));
+       Log.Error("q correction:" +
+                 (vessel_actual_world_position -
+                  apparent_world_positions[vessel]).ToString("R"));
+       Log.Error("v correction:" +
+                 (vessel_actual_world_velocity -
+                  apparent_world_velocities[vessel]).ToString("R"));
 
        // SetPosition puts |vesselTransform.position| at its argument; on an
        // unpacked vessel, it does so by computing the offset from
@@ -853,6 +858,23 @@ public partial class PrincipiaPluginAdapter
        // velocities of the parts individually.
        vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
                                   apparent_world_velocities[vessel]);
+     }
+     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
+       QP main_body_dof = plugin_.GetCelestialDegreesOfFreedom(
+           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
+       krakensbane.FrameVel = (Vector3d)main_body_dof.p;
+       Vector3d offset = (Vector3d)main_body_dof.q -
+                         FlightGlobals.ActiveVessel.mainBody.position;
+       // We cannot use FloatingOrigin.SetOffset to move the world here, because
+       // as far as I can tell, that does not move the bubble relative to the
+       // rest of the universe.
+       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+         celestial.position += offset;
+       }
+       foreach (
+           Vessel vessel in FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
+         vessel.SetPosition(vessel.transform.position + offset);
+       }
      }
    }
 
@@ -1609,7 +1631,8 @@ public partial class PrincipiaPluginAdapter
       bool inserted =
           plugin_.InsertOrKeepVessel(
               vessel.id.ToString(),
-              vessel.orbit.referenceBody.flightGlobalsIndex);
+              vessel.orbit.referenceBody.flightGlobalsIndex,
+              vessel.GetTotalMass());
       if (!inserted) {
         Log.Fatal("Plugin initialization: vessel not inserted");
       } else {
