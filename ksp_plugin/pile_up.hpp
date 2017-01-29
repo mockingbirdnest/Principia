@@ -10,6 +10,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/part.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -35,18 +36,18 @@ using quantities::Mass;
 // |Vessels|, modeling them as a massless body at their centre of mass.
 class PileUp final {
  public:
-  explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
+  explicit PileUp(std::list<not_null<Part*>>&& parts);
 
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
 
-  std::list<not_null<Vessel*>> const& vessels() const;
+  std::list<not_null<Part*>> const& parts() const;
 
-  // Set the |degrees_of_freedom| for the given |vessel|.  These degrees of
+  // Set the |degrees_of_freedom| for the given |part|.  These degrees of
   // freedom are *apparent* in the sense that they were reported by the game but
   // we know better since we are doing science.
-  void SetVesselApparentDegreesOfFreedom(
-      not_null<Vessel*> vessel,
+  void SetPartApparentDegreesOfFreedom(
+      not_null<Part*> part,
       DegreesOfFreedom<Barycentric> degrees_of_freedom);
 
   // Update the degrees of freedom of all the vessels by comparing the centre of
