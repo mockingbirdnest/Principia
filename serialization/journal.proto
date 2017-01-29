@@ -200,6 +200,22 @@ message CelestialSphereRotation {
   optional Return return = 3;
 }
 
+message CelestialWorldDegreesOfFreedom {
+  extend Method {
+    optional CelestialWorldDegreesOfFreedom extension = 5112;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 index = 2;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message CurrentTime {
   extend Method {
     optional CurrentTime extension = 5048;
@@ -590,22 +606,6 @@ message GetBufferedLogging {
   message Return {
     required int32 result = 1;
   }
-  optional Return return = 3;
-}
-
-message GetCelestialDegreesOfFreedom {
-  extend Method {
-    optional GetCelestialDegreesOfFreedom extension = 5112;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 index = 2;
-  }
-  message Return {
-    required QP result = 1;
-  }
-  optional In in = 1;
   optional Return return = 3;
 }
 

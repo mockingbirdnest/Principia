@@ -47,7 +47,7 @@ class PileUp final {
   // we know better since we are doing science.
   void SetVesselApparentDegreesOfFreedom(
       not_null<Vessel*> vessel,
-      DegreesOfFreedom<ApparentBubble> degrees_of_freedom);
+      DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
 
   // Update the degrees of freedom of all the vessels by comparing the centre of
   // mass of the *apparent* degrees of freedom to the centre of mass computed by
@@ -59,7 +59,7 @@ class PileUp final {
   // in the game should be nudged to match the value returned by this function.
   DegreesOfFreedom<Bubble> GetVesselActualDegreesOfFreedom(
       not_null<Vessel*> vessel,
-      DegreesOfFreedom<Barycentric> bubble_barycentre) const;
+      DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the vessels.  After this call, the histories of |*this|

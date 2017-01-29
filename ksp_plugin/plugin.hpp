@@ -192,7 +192,7 @@ class Plugin {
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
   // |Index|, identifying the origin of |World| with that of |Bubble|.
-  virtual DegreesOfFreedom<World> GetCelestialDegreesOfFreedom(
+  virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index) const;
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.

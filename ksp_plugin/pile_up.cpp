@@ -56,13 +56,11 @@ PileUp::PileUp(std::list<not_null<Vessel*>>&& vessels)
 }
 
 void PileUp::set_mass(Mass const& mass) {
-  LOG(ERROR)<<FUNCTION_SIGNATURE<<"\n"<<NAMED(mass);
   mass_ = mass;
 }
 
 void PileUp::set_intrinsic_force(
     Vector<Force, Barycentric> const& intrinsic_force) {
-  LOG(ERROR)<<FUNCTION_SIGNATURE<<"\n"<<NAMED(intrinsic_force);
   intrinsic_force_ = intrinsic_force;
 }
 
@@ -72,7 +70,7 @@ std::list<not_null<Vessel*>> const& PileUp::vessels() const {
 
 void PileUp::SetVesselApparentDegreesOfFreedom(
     not_null<Vessel*> const vessel,
-    DegreesOfFreedom<ApparentBubble> const degrees_of_freedom) {
+    DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom) {
   std::map<not_null<Vessel*>, DegreesOfFreedom<ApparentBubble>>::iterator it;
   bool inserted;
   std::tie(it, inserted) =
@@ -133,7 +131,7 @@ void PileUp::UpdateVesselsInPileUpIfUpdated() {
 
 DegreesOfFreedom<Bubble> PileUp::GetVesselActualDegreesOfFreedom(
     not_null<Vessel*> const vessel,
-    DegreesOfFreedom<Barycentric> bubble_barycentre) const {
+    DegreesOfFreedom<Barycentric> const& bubble_barycentre) const {
   auto const actual_centre_of_mass =
       psychohistory_.last().degrees_of_freedom();
 
@@ -189,9 +187,7 @@ void PileUp::AdvanceTime(
     }
   } else {
     auto const a = intrinsic_force_ / mass_;
-    LOG(ERROR)<<a<<"="<<intrinsic_force_<<"/"<<mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    LOG(ERROR)<<psychohistory_.last().degrees_of_freedom();
     ephemeris.FlowWithAdaptiveStep(
         &psychohistory_,
         intrinsic_acceleration,

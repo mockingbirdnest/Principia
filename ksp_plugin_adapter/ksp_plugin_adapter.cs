@@ -859,7 +859,7 @@ public partial class PrincipiaPluginAdapter
                                   apparent_world_velocities[vessel]);
      }
      if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
-       QP main_body_dof = plugin_.GetCelestialDegreesOfFreedom(
+       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
        krakensbane.FrameVel = (Vector3d)main_body_dof.p;
        Vector3d offset = (Vector3d)main_body_dof.q -

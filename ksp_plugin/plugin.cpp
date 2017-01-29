@@ -417,7 +417,7 @@ void Plugin::FreeVesselsAndCollectPileUps() {
   }
 }
 
-void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator pile_up) {
+void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator const pile_up) {
   pile_ups_in_bubble_.push_back(pile_up);
 }
 
@@ -464,7 +464,7 @@ DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {
   return *bubble_barycentre_;
 }
 
-DegreesOfFreedom<World> Plugin::GetCelestialDegreesOfFreedom(
+DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index) const {
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{GetBubbleBarycentre().position(),
