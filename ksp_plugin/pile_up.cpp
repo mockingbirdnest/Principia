@@ -195,7 +195,6 @@ void PileUp::AdvanceTime(
         adaptive_step_parameters,
         Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
         /*last_point_only=*/false);
-    LOG(ERROR)<<psychohistory_.last().degrees_of_freedom();
   }
   auto it = last_preexisting_authoritative_point;
   ++it;

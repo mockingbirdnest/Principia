@@ -6,6 +6,7 @@
 #include <fstream>
 #include <ios>
 #include <limits>
+#include <list>
 #include <map>
 #include <string>
 #include <utility>
