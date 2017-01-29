@@ -241,7 +241,7 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 }
 
 QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
-                                           int const index) {
+                                             int const index) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m({plugin, index});
   CHECK_NOTNULL(plugin);
   auto const result = plugin->CelestialWorldDegreesOfFreedom(index);
