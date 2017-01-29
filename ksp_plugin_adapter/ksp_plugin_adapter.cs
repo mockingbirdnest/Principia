@@ -235,8 +235,7 @@ public partial class PrincipiaPluginAdapter
   private void InsertOrKeepVessel(Vessel vessel) {
     bool inserted = plugin_.InsertOrKeepVessel(
         vessel.id.ToString(),
-        vessel.orbit.referenceBody.flightGlobalsIndex,
-        vessel.GetTotalMass());
+        vessel.orbit.referenceBody.flightGlobalsIndex);
     // TODO(egg): I'm not sure whether those are the degrees of freedom we want.
     if (inserted) {
       plugin_.SetVesselStateOffset(
@@ -1631,8 +1630,7 @@ public partial class PrincipiaPluginAdapter
       bool inserted =
           plugin_.InsertOrKeepVessel(
               vessel.id.ToString(),
-              vessel.orbit.referenceBody.flightGlobalsIndex,
-              vessel.GetTotalMass());
+              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
         Log.Fatal("Plugin initialization: vessel not inserted");
       } else {

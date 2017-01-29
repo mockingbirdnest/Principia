@@ -544,16 +544,12 @@ void principia__InsertCelestialJacobiKeplerian(
 // |plugin| must not be null.  No transfer of ownership.
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
-                                   int const parent_index,
-                                   double const mass_in_tonnes) {
+                                   int const parent_index) {
   journal::Method<journal::InsertOrKeepVessel> m({plugin,
                                                   vessel_guid,
-                                                  parent_index,
-                                                  mass_in_tonnes});
+                                                  parent_index});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->InsertOrKeepVessel(vessel_guid,
-                                             parent_index,
-                                             mass_in_tonnes * Tonne));
+  return m.Return(plugin->InsertOrKeepVessel(vessel_guid, parent_index));
 }
 
 bool principia__IsKspStockSystem(Plugin* const plugin) {
@@ -701,7 +697,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Begin(),
+                                  prediction.Fork(),
                                   prediction.End(),
                                   q_sun,
                                   rendered_apoapsides,

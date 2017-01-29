@@ -154,9 +154,7 @@ class Plugin {
   // vessel is known. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
-  virtual bool InsertOrKeepVessel(GUID const& vessel_guid,
-                                  Index parent_index,
-                                  Mass const& mass);
+  virtual bool InsertOrKeepVessel(GUID const& vessel_guid, Index parent_index);
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| must only

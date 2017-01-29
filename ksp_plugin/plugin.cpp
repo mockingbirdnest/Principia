@@ -363,8 +363,7 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
-                                Index const parent_index,
-                                Mass const& mass) {
+                                Index const parent_index) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(vessel_guid) << '\n' << NAMED(parent_index);
   CHECK(!initializing_);
@@ -380,13 +379,6 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
-  vessel->clear_mass();
-  if (mass == Mass{}) {
-    LOG(ERROR) << FUNCTION_SIGNATURE << " with vanishing mass";
-    vessel->increment_mass(quantities::si::Kilogram);
-  } else {
-    vessel->increment_mass(mass);
-  }
   Subset<Vessel>::MakeSingleton(*vessel, vessel);
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
@@ -425,10 +417,6 @@ void Plugin::FreeVesselsAndCollectPileUps() {
   }
 }
 
-void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator pile_up) {
-  pile_ups_in_bubble_.push_back(pile_up);
-}
-
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
@@ -436,12 +424,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
   ephemeris_->Prolong(t);
 
-  for (auto& pile_up : pile_ups_) {
-    pile_up.AdvanceTime(*ephemeris_,
-                        t,
-                        DefaultHistoryParameters(),
-                        DefaultProlongationParameters());
-  }
 
   if (pile_ups_in_bubble_.empty()) {
     bubble_barycentre_ = std::experimental::nullopt;
@@ -453,6 +435,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
             vessel->psychohistory().last().degrees_of_freedom(),
             vessel->mass());
       }
+  EvolveBubble(t);
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    if (!bubble_->contains(vessel.get())) {
+      vessel->AdvanceTimeNotInBubble(t);
     }
     bubble_barycentre_ = bubble_barycentre.Get();
   }
@@ -501,7 +488,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                   << " was not given an initial state";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      vessel->psychohistory().last().degrees_of_freedom() -
+      vessel->prolongation().last().degrees_of_freedom() -
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
@@ -554,8 +541,8 @@ Plugin::RenderedVesselTrajectory(
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
-  return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
-                                         vessel->psychohistory().End(),
+  return RenderedTrajectoryFromIterators(vessel->history().Begin(),
+                                         vessel->history().End(),
                                          sun_world_position);
 }
 
@@ -564,7 +551,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  return RenderedTrajectoryFromIterators(vessel.prediction().Begin(),
+  return RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
                                          vessel.prediction().End(),
                                          sun_world_position);
 }
