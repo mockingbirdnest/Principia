@@ -60,6 +60,15 @@ class Part final {
       Vector<Force, Barycentric> const& intrinsic_force);
   virtual Vector<Force, Barycentric> const& intrinsic_force() const;
 
+  // Clears, sets or returns the degrees of freedom of the part.  A part that is
+  // not in the bubble (i.e., that belongs to a pile-up that is not in the
+  // bubble) doesn't have degrees of freedom.
+  virtual void clear_degrees_of_freedom();
+  virtual void set_degrees_of_freedom(
+      DegreesOfFreedom<Bubble> const& degrees_of_freedom);
+  virtual std::experimental::optional<DegreesOfFreedom<Bubble>> const&
+  degrees_of_freedom();
+
   // Requires |!is_piled_up()|.
   virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
 

@@ -63,8 +63,10 @@ class PileUp final {
       DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
   // Flows the history authoritatively as far as possible up to |t|, advances
-  // the histories of the parts.  After this call, the histories of |*this| and
-  // of its vessels have a (possibly ahistorical) final point exactly at |t|.
+  // the histories of the vessels and updates the degrees of freedom of the
+  // parts if the pile-up is in the bubble.  After this call, the histories of
+  // |*this| and of its vessels have a (possibly ahistorical) final point
+  // exactly at |t|.
   void AdvanceTime(
       Ephemeris<Barycentric>& ephemeris,
       Instant const& t,
