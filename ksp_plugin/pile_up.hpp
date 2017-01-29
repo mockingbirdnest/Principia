@@ -46,9 +46,9 @@ class PileUp final {
   // Set the |degrees_of_freedom| for the given |part|.  These degrees of
   // freedom are *apparent* in the sense that they were reported by the game but
   // we know better since we are doing science.
-  void SetPartApparentDegreesOfFreedom(
-      not_null<Part*> part,
-      DegreesOfFreedom<Barycentric> degrees_of_freedom);
+  void SetVesselApparentDegreesOfFreedom(
+      not_null<Vessel*> vessel,
+      DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
 
   // Update the degrees of freedom of all the vessels by comparing the centre of
   // mass of the *apparent* degrees of freedom to the centre of mass computed by
@@ -58,8 +58,9 @@ class PileUp final {
 
   // Obtains the *actual* degrees of freedom for the given |vessel|.  The vessel
   // in the game should be nudged to match the value returned by this function.
-  DegreesOfFreedom<Barycentric> GetVesselActualDegreesOfFreedom(
-      not_null<Vessel*> vessel) const;
+  DegreesOfFreedom<Bubble> GetVesselActualDegreesOfFreedom(
+      not_null<Vessel*> vessel,
+      DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the vessels.  After this call, the histories of |*this|
@@ -95,14 +96,7 @@ class PileUp final {
 
   std::map<not_null<Vessel*>, DegreesOfFreedom<RigidPileUp>>
       vessel_degrees_of_freedom_;
-
-  // To take advantage of strong typing the apparent degrees of freedom obtained
-  // from the game are converted to frame |ApparentBarycentric|, which is
-  // identical to |Barycentric|, except that it's distinct.
-  using ApparentBarycentric = Frame<serialization::Frame::PluginTag,
-                                    serialization::Frame::APPARENT_BARYCENTRIC,
-                                    /*frame_is_inertial*/ false>;
-  std::map<not_null<Vessel*>, DegreesOfFreedom<ApparentBarycentric>>
+  std::map<not_null<Vessel*>, DegreesOfFreedom<ApparentBubble>>
       apparent_vessel_degrees_of_freedom_;
 };
 

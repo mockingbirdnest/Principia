@@ -240,6 +240,16 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
   return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
 }
 
+QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
+                                             int const index) {
+  journal::Method<journal::CelestialWorldDegreesOfFreedom> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  auto const result = plugin->CelestialWorldDegreesOfFreedom(index);
+  return m.Return(
+      {ToXYZ((result.position() - World::origin).coordinates() / Metre),
+       ToXYZ(result.velocity().coordinates() / (Metre / Second))});
+}
+
 double principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
   CHECK_NOTNULL(plugin);
