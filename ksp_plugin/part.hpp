@@ -37,16 +37,16 @@ using PartId = std::uint32_t;
 class Part final {
  public:
   Part(PartId part_id,
+       Mass const& mass,
        not_null<Vessel const*> vessel);
 
   PartId part_id() const;
   not_null<Vessel const*> vessel() const;
 
-  // Clears, increments or returns the mass.  Event though a part is massless in
-  // the sense that it doesn't exert gravity, it has a mass used to determine
-  // its intrinsic acceleration.
-  virtual void clear_mass();
-  virtual void increment_mass(Mass const& mass);
+  // Sets or returns the mass.  Event though a part is massless in the sense
+  // that it doesn't exert gravity, it has a mass used to determine its
+  // intrinsic acceleration.
+  virtual void set_mass(Mass const& mass);
   virtual Mass const& mass() const;
 
   // Clears, increments or returns the intrinsic force exerted on the part by
@@ -69,7 +69,7 @@ class Part final {
   virtual bool is_piled_up() const;
 
   // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
-  // After this call, all vessels in that |PileUp| are no longer piled up.
+  // After this call, all parts in that |PileUp| are no longer piled up.
   virtual void clear_pile_up();
 
   void WriteToMessage(not_null<serialization::Part*> message) const;

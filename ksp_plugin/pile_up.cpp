@@ -48,7 +48,7 @@ PileUp::PileUp(std::list<not_null<Vessel*>>&& vessels)
       AngularVelocity<Barycentric>{},
       barycentre.Get().velocity()};
   for (not_null<Vessel*> const vessel : vessels_) {
-    vessel_degrees_of_freedom_.emplace(
+    part_degrees_of_freedom_.emplace(
         vessel,
         barycentric_to_pile_up(
             vessel->psychohistory().last().degrees_of_freedom()));
@@ -74,27 +74,27 @@ void PileUp::SetVesselApparentDegreesOfFreedom(
   std::map<not_null<Vessel*>, DegreesOfFreedom<ApparentBubble>>::iterator it;
   bool inserted;
   std::tie(it, inserted) =
-      apparent_vessel_degrees_of_freedom_.emplace(vessel, degrees_of_freedom);
+      apparent_part_degrees_of_freedom_.emplace(vessel, degrees_of_freedom);
   CHECK(inserted) << "Duplicate vessel " << vessel << " at "
                   << degrees_of_freedom;
 }
 
 void PileUp::UpdateVesselsInPileUpIfUpdated() {
-  if (apparent_vessel_degrees_of_freedom_.empty()) {
+  if (apparent_part_degrees_of_freedom_.empty()) {
     return;
   }
   // A consistency check that |SetVesselApparentDegreesOfFreedom| was called for
   // all the vessels.
-  CHECK_EQ(vessels_.size(), apparent_vessel_degrees_of_freedom_.size());
+  CHECK_EQ(vessels_.size(), apparent_part_degrees_of_freedom_.size());
   for (auto it = vessels_.cbegin(); it != vessels_.cend(); ++it) {
-    CHECK(apparent_vessel_degrees_of_freedom_.find(*it) !=
-          apparent_vessel_degrees_of_freedom_.cend());
+    CHECK(apparent_part_degrees_of_freedom_.find(*it) !=
+          apparent_part_degrees_of_freedom_.cend());
   }
 
   // Compute the apparent centre of mass of the vessels.
   BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto it = apparent_vessel_degrees_of_freedom_.cbegin();
-       it != apparent_vessel_degrees_of_freedom_.cend();
+  for (auto it = apparent_part_degrees_of_freedom_.cbegin();
+       it != apparent_part_degrees_of_freedom_.cend();
        ++it) {
     auto const vessel = it->first;
     auto const apparent_vessel_degrees_of_freedom = it->second;
@@ -116,17 +116,17 @@ void PileUp::UpdateVesselsInPileUpIfUpdated() {
           apparent_centre_of_mass.velocity());
 
   // Now update the positions of the vessels in the pile-up frame.
-  vessel_degrees_of_freedom_.clear();
-  for (auto it = apparent_vessel_degrees_of_freedom_.cbegin();
-       it != apparent_vessel_degrees_of_freedom_.cend();
+  part_degrees_of_freedom_.clear();
+  for (auto it = apparent_part_degrees_of_freedom_.cbegin();
+       it != apparent_part_degrees_of_freedom_.cend();
        ++it) {
     auto const vessel = it->first;
     auto const apparent_vessel_degrees_of_freedom = it->second;
-    vessel_degrees_of_freedom_.emplace(vessel,
+    part_degrees_of_freedom_.emplace(vessel,
                                        apparent_bubble_to_pile_up_motion(
                                            apparent_vessel_degrees_of_freedom));
   }
-  apparent_vessel_degrees_of_freedom_.clear();
+  apparent_part_degrees_of_freedom_.clear();
 }
 
 DegreesOfFreedom<Bubble> PileUp::GetVesselActualDegreesOfFreedom(
@@ -150,8 +150,8 @@ DegreesOfFreedom<Bubble> PileUp::GetVesselActualDegreesOfFreedom(
       AngularVelocity<Barycentric>(),
       bubble_barycentre.velocity()};
 
-  auto const it = vessel_degrees_of_freedom_.find(vessel);
-  CHECK(it != vessel_degrees_of_freedom_.cend());
+  auto const it = part_degrees_of_freedom_.find(vessel);
+  CHECK(it != part_degrees_of_freedom_.cend());
   return (barycentric_to_bubble * barycentric_to_pile_up.Inverse())(it->second);
 }
 
@@ -213,7 +213,7 @@ void PileUp::AdvanceTime(
     for (not_null<Vessel*> const vessel : vessels_)  {
       vessel->AppendToPsychohistory(
           it.time(),
-          to_barycentric(FindOrDie(vessel_degrees_of_freedom_, vessel)),
+          to_barycentric(FindOrDie(part_degrees_of_freedom_, vessel)),
           authoritative);
     }
   }
