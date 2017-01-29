@@ -171,6 +171,8 @@ class Plugin {
   // of |pile_ups_| according to the reported collisions.
   virtual void FreeVesselsAndCollectPileUps();
 
+  virtual void AddPileUpToBubble(std::list<PileUp>::iterator pile_up);
+
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
@@ -185,6 +187,13 @@ class Plugin {
   // precision value).  Note that KSP's |Planetarium.InverseRotAngle| is in
   // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
+
+  virtual DegreesOfFreedom<Barycentric> GetBubbleBarycentre() const;
+
+  // Returns the |World| degrees of freedom of the |Celestial| with the given
+  // |Index|, identifying the origin of |World| with that of |Bubble|.
+  virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
+      Index const index) const;
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
@@ -485,6 +494,9 @@ class Plugin {
 
   // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
+
+  std::list<std::list<PileUp>::iterator> pile_ups_in_bubble_;
+  std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.
   bool is_pre_cardano_ = false;
