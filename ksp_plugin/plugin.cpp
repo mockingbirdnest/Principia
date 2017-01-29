@@ -417,13 +417,25 @@ void Plugin::FreeVesselsAndCollectPileUps() {
   }
 }
 
+void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator pile_up) {
+  pile_ups_in_bubble_.push_back(pile_up);
+}
+
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   ephemeris_->Prolong(t);
+  bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
 
+  EvolveBubble(t);
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    if (!bubble_->contains(vessel.get())) {
+      vessel->AdvanceTimeNotInBubble(t);
+    }
+  }
 
   if (pile_ups_in_bubble_.empty()) {
     bubble_barycentre_ = std::experimental::nullopt;
@@ -435,11 +447,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
             vessel->psychohistory().last().degrees_of_freedom(),
             vessel->mass());
       }
-  EvolveBubble(t);
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    if (!bubble_->contains(vessel.get())) {
-      vessel->AdvanceTimeNotInBubble(t);
     }
     bubble_barycentre_ = bubble_barycentre.Get();
   }

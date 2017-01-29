@@ -36,14 +36,14 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
 // physics bubble, that is, the barycentre of the set of unpacked vessels.
 // We identify the origin of |World| with it.
 using Bubble = Frame<serialization::Frame::PluginTag,
-                     serialization::Frame::BUBBLE, true>;
+                     serialization::Frame::BUBBLE, false>;
 
 // The axes are those of |Barycentre|.  The origin is that of |World|.  This
 // frame is used for degrees of freedom obtained after the physics simulation of
 // the game has run, and before we perform our correction: the origin has no
 // physical significance.
 using ApparentBubble = Frame<serialization::Frame::PluginTag,
-                             serialization::Frame::APPARENT_BUBBLE, true>;
+                             serialization::Frame::APPARENT_BUBBLE, false>;
 
 // |Barycentric|, with its y and z axes swapped; the basis is left-handed.
 using CelestialSphere = Frame<serialization::Frame::PluginTag,
