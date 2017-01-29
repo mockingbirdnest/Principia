@@ -40,8 +40,11 @@ class Part final {
        Mass const& mass,
        not_null<Vessel const*> vessel);
 
-  PartId part_id() const;
-  not_null<Vessel const*> vessel() const;
+  virtual PartId part_id() const;
+
+  // Sets or returns the containing vessel.  A part always belongs to a vessel.
+  virtual void set_vessel(not_null<Vessel const*> vessel);
+  virtual not_null<Vessel const*> vessel() const;
 
   // Sets or returns the mass.  Event though a part is massless in the sense
   // that it doesn't exert gravity, it has a mass used to determine its
@@ -51,6 +54,7 @@ class Part final {
 
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
+  // TODO(phl): Keep track of the point where the force is applied.
   virtual void clear_intrinsic_force();
   virtual void increment_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
