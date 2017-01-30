@@ -72,44 +72,45 @@ TEST_F(PileUpTest, ApparentDegreesOfFreedom) {
 
   pile_up.SetVesselApparentDegreesOfFreedom(
       &v1_,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin +
-              Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
-          Velocity<Barycentric>({10 * Metre / Second,
-                                 20 * Metre / Second,
-                                 30 * Metre / Second})));
+      DegreesOfFreedom<ApparentBubble>(
+          ApparentBubble::origin +
+              Displacement<ApparentBubble>({1 * Metre, 2 * Metre, 3 * Metre}),
+          Velocity<ApparentBubble>({10 * Metre / Second,
+                                    20 * Metre / Second,
+                                    30 * Metre / Second})));
   pile_up.SetVesselApparentDegreesOfFreedom(
       &v2_,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin +
-              Displacement<Barycentric>({6 * Metre, 5 * Metre, 4 * Metre}),
-          Velocity<Barycentric>({60 * Metre / Second,
-                                 50 * Metre / Second,
-                                 40 * Metre / Second})));
+      DegreesOfFreedom<ApparentBubble>(
+          ApparentBubble::origin +
+              Displacement<ApparentBubble>({6 * Metre, 5 * Metre, 4 * Metre}),
+          Velocity<ApparentBubble>({60 * Metre / Second,
+                                    50 * Metre / Second,
+                                    40 * Metre / Second})));
 
   pile_up.UpdateVesselsInPileUpIfUpdated();
 
   EXPECT_THAT(
-      pile_up.GetVesselActualDegreesOfFreedom(&v1_),
+      pile_up.GetVesselActualDegreesOfFreedom(
+          &v1_, {Barycentric::origin, Velocity<Barycentric>{}}),
       Componentwise(
-          AlmostEquals(
-              Barycentric::origin +
-                  Displacement<Barycentric>({7 * Metre, 8 * Metre, 9 * Metre}),
-              1),
-          AlmostEquals(Velocity<Barycentric>({(170.0 / 3.0) * Metre / Second,
-                                              80 * Metre / Second,
-                                              (310.0 / 3.0) * Metre / Second}),
+          AlmostEquals(Bubble::origin + Displacement<Bubble>(
+                                            {7 * Metre, 8 * Metre, 9 * Metre}),
+                       1),
+          AlmostEquals(Velocity<Bubble>({(170.0 / 3.0) * Metre / Second,
+                                         80 * Metre / Second,
+                                         (310.0 / 3.0) * Metre / Second}),
                        1)));
   EXPECT_THAT(
-      pile_up.GetVesselActualDegreesOfFreedom(&v2_),
+      pile_up.GetVesselActualDegreesOfFreedom(
+          &v2_, {Barycentric::origin, Velocity<Barycentric>{}}),
       Componentwise(
           AlmostEquals(
-              Barycentric::origin + Displacement<Barycentric>(
-                                        {12 * Metre, 11 * Metre, 10 * Metre}),
+              Bubble::origin +
+                  Displacement<Bubble>({12 * Metre, 11 * Metre, 10 * Metre}),
               0),
-          AlmostEquals(Velocity<Barycentric>({(320.0 / 3.0) * Metre / Second,
-                                              110 * Metre / Second,
-                                              (340.0 / 3.0) * Metre / Second}),
+          AlmostEquals(Velocity<Bubble>({(320.0 / 3.0) * Metre / Second,
+                                         110 * Metre / Second,
+                                         (340.0 / 3.0) * Metre / Second}),
                        1)));
 }
 

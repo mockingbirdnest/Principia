@@ -6,6 +6,7 @@
 #include <fstream>
 #include <ios>
 #include <limits>
+#include <list>
 #include <map>
 #include <string>
 #include <utility>
@@ -67,6 +68,8 @@ using physics::DynamicFrame;
 using physics::Frenet;
 using physics::KeplerianElements;
 using physics::RotatingBody;
+using physics::RigidMotion;
+using physics::RigidTransformation;
 using quantities::Force;
 using quantities::Length;
 using quantities::si::Milli;
@@ -414,6 +417,10 @@ void Plugin::FreeVesselsAndCollectPileUps() {
   }
 }
 
+void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator const pile_up) {
+  pile_ups_in_bubble_.push_back(pile_up);
+}
+
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
@@ -426,11 +433,44 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     vessel->AdvanceTime(t);
   }
 
+  if (pile_ups_in_bubble_.empty()) {
+    bubble_barycentre_ = std::experimental::nullopt;
+  } else {
+    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> bubble_barycentre;
+    for (auto const it : pile_ups_in_bubble_) {
+      for (not_null<Vessel*> const vessel : it->vessels()) {
+        bubble_barycentre.Add(
+            vessel->psychohistory().last().degrees_of_freedom(),
+            vessel->mass());
+      }
+    }
+    bubble_barycentre_ = bubble_barycentre.Get();
+  }
+  pile_ups_in_bubble_.clear();
+
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+}
+
+DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {
+  CHECK(bubble_barycentre_);
+  return *bubble_barycentre_;
+}
+
+DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
+    Index const index) const {
+  RigidMotion<Barycentric, World> barycentric_to_world{
+      RigidTransformation<Barycentric, World>{GetBubbleBarycentre().position(),
+                                              World::origin,
+                                              BarycentricToWorld()},
+      AngularVelocity<Barycentric>{},
+      GetBubbleBarycentre().velocity()};
+  return barycentric_to_world(
+      FindOrDie(celestials_, index)->trajectory().EvaluateDegreesOfFreedom(
+          current_time_, /*hint=*/nullptr));
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
@@ -755,7 +795,7 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  auto const& last = vessel.prolongation().last();
+  auto const& last = vessel.psychohistory().last();
   Instant const& time = last.time();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       last.degrees_of_freedom();
@@ -1098,7 +1138,7 @@ void Plugin::FreeVessels() {
 Vector<double, World> Plugin::FromVesselFrenetFrame(
     Vessel const& vessel,
     Vector<double, Frenet<Navigation>> const& vector) const {
-  auto const& last = vessel.prolongation().last();
+  auto const& last = vessel.psychohistory().last();
   Instant const& time = last.time();
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
       last.degrees_of_freedom();

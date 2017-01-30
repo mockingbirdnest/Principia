@@ -133,9 +133,10 @@ message Frame {
   enum PluginTag {
     ALICE_SUN = 1;
     ALICE_WORLD = 2;
-    APPARENT_BARYCENTRIC = 12;
+    APPARENT_BUBBLE = 12;
     BARYCENTRIC = 7;
     BODY_WORLD = 9;
+    BUBBLE = 13;
     CELESTIAL_SPHERE = 8;
     NAVBALL = 10;
     NAVIGATION = 4;
