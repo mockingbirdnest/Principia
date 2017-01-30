@@ -133,14 +133,36 @@ TEST_F(VesselTest, Parent) {
   EXPECT_EQ(&celestial, vessel_->parent());
 }
 
+TEST_F(VesselTest, AdvanceTimeInBubble) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeInBubble(t2_, d2_);
+  EXPECT_EQ(t2_ - 0.2 * Second, vessel_->history().last().time());
+  EXPECT_EQ(t2_, vessel_->prolongation().last().time());
+  EXPECT_EQ(d2_, vessel_->prolongation().last().degrees_of_freedom());
+  EXPECT_TRUE(vessel_->is_dirty());
+  vessel_->AdvanceTimeInBubble(t3_, d3_);
+  EXPECT_TRUE(vessel_->is_dirty());
+}
+
+TEST_F(VesselTest, AdvanceTimeNotInBubble) {
+  vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
+  EXPECT_EQ(t2_ - 0.2 * Second, vessel_->history().last().time());
+  EXPECT_EQ(t2_, vessel_->prolongation().last().time());
+  EXPECT_NE(d2_, vessel_->prolongation().last().degrees_of_freedom());
+  EXPECT_FALSE(vessel_->is_dirty());
+}
+
 TEST_F(VesselTest, Prediction) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
   vessel_->UpdatePrediction(t3_);
   EXPECT_LE(t3_, vessel_->prediction().last().time());
 }
 
 TEST_F(VesselTest, FlightPlan) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
   EXPECT_FALSE(vessel_->has_flight_plan());
   vessel_->CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
   EXPECT_TRUE(vessel_->has_flight_plan());
@@ -164,6 +186,7 @@ TEST_F(VesselDeathTest, SerializationError) {
 TEST_F(VesselTest, SerializationSuccess) {
   serialization::Vessel message;
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
   vessel_->UpdatePrediction(t3_);
   vessel_->CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
 
@@ -179,6 +202,7 @@ TEST_F(VesselTest, SerializationSuccess) {
 
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
   vessel_->CreateHistoryAndForkProlongation(t1_, d1_);
+  vessel_->AdvanceTimeNotInBubble(t2_);
   vessel_->set_prediction_adaptive_step_parameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),

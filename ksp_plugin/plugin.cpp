@@ -428,11 +428,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
   ephemeris_->Prolong(t);
 
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->AdvanceTime(t);
-  }
-
   if (pile_ups_in_bubble_.empty()) {
     bubble_barycentre_ = std::experimental::nullopt;
   } else {

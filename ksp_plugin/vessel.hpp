@@ -101,8 +101,14 @@ class Vessel {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // Advances time for a vessel.  This may clean the vessel.
-  virtual void AdvanceTime(Instant const& time);
+  // Advances time for a vessel not in the physics bubble.  This may clean the
+  // vessel.
+  virtual void AdvanceTimeNotInBubble(Instant const& time);
+
+  // Advances time for a vessel in the physics bubble.  This dirties the vessel.
+  virtual void AdvanceTimeInBubble(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Forgets the trajectories and flight plan before |time|.  This may delete
   // the flight plan.
