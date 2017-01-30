@@ -242,6 +242,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   }
 }
 
+#if 0
 TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -649,6 +650,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
                         World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
 }
+#endif
 
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
