@@ -7,6 +7,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/vessel.hpp"
 
 // This ksp_plugin file is in namespace |base| to specialize templates declared
 // therein.

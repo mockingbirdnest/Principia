@@ -8,7 +8,7 @@
 
 #include "base/container_iterator.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/pile_up.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -18,6 +18,9 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+FORWARD_DECLARE_FROM(vessel, class, Vessel);
+
 namespace internal_part {
 
 using base::IteratorOn;
@@ -89,18 +92,21 @@ class Part final {
   static Part ReadFromMessage(serialization::Part const& message);
 
  private:
+  PartId const part_id_;
   Mass mass_;
+  not_null<Vessel const*> vessel_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |PileUp| containing |this|.
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
       containing_pile_up_;
 
+  std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
+
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
 };
 
-template<typename Frame>
 std::ostream& operator<<(std::ostream& out, Part const& part);
 
 using PartIdToOwnedPart = std::map<PartId, not_null<std::unique_ptr<Part>>>;

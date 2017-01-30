@@ -10,12 +10,11 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/part.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(vessel, class, Vessel);
+FORWARD_DECLARE_FROM(part, class, Part);
 
 namespace internal_pile_up {
 
@@ -31,9 +30,9 @@ using physics::RelativeDegreesOfFreedom;
 using quantities::Force;
 using quantities::Mass;
 
-// A |PileUp| handles a connected component of the graph of |Vessels| under
+// A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and prolongation of its component
-// |Vessels|, modeling them as a massless body at their centre of mass.
+// |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp final {
  public:
   explicit PileUp(std::list<not_null<Part*>>&& parts);
@@ -63,21 +62,15 @@ class PileUp final {
       DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
   // Flows the history authoritatively as far as possible up to |t|, advances
-  // the histories of the vessels and updates the degrees of freedom of the
-  // parts if the pile-up is in the bubble.  After this call, the histories of
-  // |*this| and of its vessels have a (possibly ahistorical) final point
-  // exactly at |t|.
+  // the histories of the parts and updates the degrees of freedom of the parts
+  // if the pile-up is in the bubble.  After this call, the histories of |*this|
+  // and of its vessels have a (possibly ahistorical) final point exactly at |t|.
   void AdvanceTime(
       Ephemeris<Barycentric>& ephemeris,
       Instant const& t,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters);
-
-  // A pile-up outside of the bubble only evolves through gravity and inertia
-  // and the apparent degrees of freedom of its parts cannot be modified.
-  void EnterBubble();
-  void LeaveBubble();
 
  private:
   std::list<not_null<Part*>> parts_;
