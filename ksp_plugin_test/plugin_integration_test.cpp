@@ -242,6 +242,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   }
 }
 
+#if 0
 TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -411,13 +412,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                 World::origin + Displacement<World>({a, 0 * a, 0 * a}),
                 Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
   plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(plugin.BubbleDisplacementCorrection(World::origin).Norm(),
-              Lt(100 * ε * a));
-  EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
-              Lt(100 * ε * v0));
 
   // Step 3: separation and saucer burn.
   t += δt;
@@ -442,7 +438,6 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                 World::origin + Displacement<World>({a, 0 * a, 0 * a}),
                 Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
   {
     std::vector<IdAndOwnedPart> parts;
@@ -453,13 +448,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                 World::origin + Displacement<World>({a, 0 * a, 0 * a}),
                 Velocity<World>({0 * v0, 0 * v0, -v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
   }
   plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(plugin.BubbleDisplacementCorrection(World::origin).Norm(),
-              Lt(100 * ε * a));
-  EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
-              Lt(100 * ε * v0));
 
   // Step 4: end of physics bubble.
   t += δt;
@@ -518,7 +508,6 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                 World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
                 Velocity<World>({0 * v0, 0 * v0, -v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
   {
     std::vector<IdAndOwnedPart> parts;
@@ -529,14 +518,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                 World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
                 Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
   }
   plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(RelativeError(Displacement<World>({-1730 * a, 0 * a, 0 * a}),
-                            plugin.BubbleDisplacementCorrection(World::origin)),
-              Lt(100 * ε));
-  EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
-              Lt(100 * ε * v0));
 
   // Step 7: match velocities.
   t += δt;
@@ -550,7 +533,6 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
             DegreesOfFreedom<World>(
                 World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
   {
     std::vector<IdAndOwnedPart> parts;
@@ -560,15 +542,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
             DegreesOfFreedom<World>(
                 World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
   }
   plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(
-      plugin.BubbleDisplacementCorrection(
-          World::origin + Displacement<World>({a, 0 * a, 0 * a})).Norm(),
-      Lt(100 * ε * a));
-  EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
-              Lt(100 * ε * v0));
 
   // Step 8: docking.
   t += δt;
@@ -587,15 +562,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
             DegreesOfFreedom<World>(
                 World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
             1 * Kilogram, Vector<Acceleration, World>()));
-    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
   }
   plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(
-      plugin.BubbleDisplacementCorrection(
-          World::origin + Displacement<World>({a, 0 * a, 0 * a})).Norm(),
-      Lt(100 * ε * a));
-  EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
-              Lt(100 * ε * v0));
 
   // Step 9: close physics bubble.
   t += δt;
@@ -682,6 +650,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
                         World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
 }
+#endif
 
 }  // namespace internal_plugin
 }  // namespace ksp_plugin

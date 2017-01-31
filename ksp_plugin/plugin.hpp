@@ -17,7 +17,6 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
-#include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
@@ -177,15 +176,12 @@ class Plugin {
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
   // Must be called after initialization.  |t| must be greater than
-  // |current_time_|.  If |PhysicsBubble::AddVesselToNext| was called since the
-  // last call to |AdvanceTime|, |PhysicsBubble::DisplacementCorrection| and
-  // |PhysicsBubble::DisplacementVelocity| must have been called too.
-  // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
-  // at instant |t|, which provides the rotation between the |World| axes and
-  // the |Barycentric| axes (we don't use Planetarium.Rotation since it
-  // undergoes truncation to single-precision even though it's a double-
-  // precision value).  Note that KSP's |Planetarium.InverseRotAngle| is in
-  // degrees.
+  // |current_time_|.  |planetarium_rotation| is the value of KSP's
+  // |Planetarium.InverseRotAngle| at instant |t|, which provides the rotation
+  // between the |World| axes and the |Barycentric| axes (we don't use
+  // Planetarium.Rotation since it undergoes truncation to single-precision even
+  // though it's a double-precision value).  Note that KSP's
+  // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
   virtual DegreesOfFreedom<Barycentric> GetBubbleBarycentre() const;
@@ -292,35 +288,9 @@ class Plugin {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
-  // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
-  // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
-  // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
-  // Marks the vessel as dirty.
-  // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
-  // vessel with GUID |vessel_guid| must not already be in
-  // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
-  // already in |next_physics_bubble_->parts|.
-  virtual void AddVesselToNextPhysicsBubble(
-      GUID const& vessel_guid,
-      std::vector<IdAndOwnedPart>&& parts);
-
-  // Returns |bubble_.empty()|.
-  virtual bool PhysicsBubbleIsEmpty() const;
-
   // Notifies |this| that the given vessels are touching, and should gravitate
   // as part of a single rigid body.
   virtual void ReportCollision(GUID const& vessel1, GUID const& vessel2) const;
-
-  // Computes and returns |current_physics_bubble_->displacement_correction|.
-  // This is the |World| shift to be applied to the physics bubble in order for
-  // it to be in the correct position.
-  virtual Displacement<World> BubbleDisplacementCorrection(
-      Position<World> const& sun_world_position) const;
-  // Computes and returns |current_physics_bubble_->velocity_correction|.
-  // This is the |World| shift to be applied to the physics bubble in order for
-  // it to have the correct velocity.
-  virtual Velocity<World> BubbleVelocityCorrection(
-      Index reference_body_index) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
@@ -382,7 +352,6 @@ class Plugin {
   // are added to |kept_vessels_|  The resulting plugin is not |initializing_|.
   Plugin(GUIDToOwnedVessel vessels,
          IndexToOwnedCelestial celestials,
-         not_null<std::unique_ptr<PhysicsBubble>> bubble,
          std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
          Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -412,8 +381,6 @@ class Plugin {
 
   // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
   void FreeVessels();
-  // Evolves the trajectory of the |current_physics_bubble_|.
-  void EvolveBubble(Instant const& t);
 
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
@@ -441,8 +408,6 @@ class Plugin {
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*>> kept_vessels_;
-
-  not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
   struct AbsoluteInitializationObjects final{
     IndexToMassiveBody bodies;

@@ -97,18 +97,6 @@ message Method {
   extensions 5000 to 5999;  // Last used: 5112.
 }
 
-message AddVesselToNextPhysicsBubble {
-  extend Method {
-    optional AddVesselToNextPhysicsBubble extension = 5045;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required string vessel_guid = 2;
-    repeated KSPPart parts = 3 [(size) = "count"];
-  }
-  optional In in = 1;
-}
-
 message AdvanceTime {
   extend Method {
     optional AdvanceTime extension = 5019;
@@ -951,53 +939,6 @@ message NewPlugin {
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Plugin",
                                  (is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message PhysicsBubbleDisplacementCorrection {
-  extend Method {
-    optional PhysicsBubbleDisplacementCorrection extension = 5046;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required XYZ sun_position = 2;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message PhysicsBubbleIsEmpty {
-  extend Method {
-    optional PhysicsBubbleIsEmpty extension = 5052;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-  }
-  message Return {
-    required bool result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message PhysicsBubbleVelocityCorrection {
-  extend Method {
-    optional PhysicsBubbleVelocityCorrection extension = 5047;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 reference_body_index = 2;
-  }
-  message Return {
-    required XYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

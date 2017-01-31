@@ -339,6 +339,7 @@ TEST_F(PluginDeathTest, SerializationError) {
   }, "!initializing");
 }
 
+#if 0
 TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
@@ -436,7 +437,6 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_EQ((HistoryTime(time, 4) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
 #endif
-  EXPECT_FALSE(message.bubble().has_current());
   EXPECT_TRUE(message.has_plotting_frame());
   EXPECT_TRUE(message.plotting_frame().HasExtension(
       serialization::BodyCentredNonRotatingDynamicFrame::extension));
@@ -445,6 +445,7 @@ TEST_F(PluginTest, Serialization) {
                 serialization::BodyCentredNonRotatingDynamicFrame::extension).
                     centre());
 }
+#endif
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
@@ -632,6 +633,7 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
+#if 0
 TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
 
@@ -746,6 +748,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   auto const rendered_prediction =
       plugin_->RenderedPrediction(guid, World::origin);
 }
+#endif
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";

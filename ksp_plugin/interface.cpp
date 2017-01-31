@@ -157,39 +157,6 @@ void principia__ActivateRecorder(bool const activate) {
   }
 }
 
-void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
-                                             char const* const vessel_guid,
-                                             KSPPart const* const parts,
-                                             int count) {
-  journal::Method<journal::AddVesselToNextPhysicsBubble> m({plugin,
-                                                            vessel_guid,
-                                                            parts,
-                                                            count});
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
-  CHECK_NOTNULL(plugin);
-  std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
-  vessel_parts.reserve(count);
-  for (KSPPart const* part = parts; part < parts + count; ++part) {
-    vessel_parts.push_back(
-        std::make_pair(
-            part->id,
-            make_not_null_unique<Part<World>>(
-                DegreesOfFreedom<World>(
-                    World::origin +
-                        Displacement<World>(
-                            FromXYZ(part->world_position) * Metre),
-                    Velocity<World>(
-                        FromXYZ(part->world_velocity) * (Metre / Second))),
-                part->mass_in_tonnes * Tonne,
-                Vector<Acceleration, World>(
-                    FromXYZ(
-                        part->gravitational_acceleration_to_be_applied_by_ksp) *
-                    (Metre / Pow<2>(Second))))));
-  }
-  plugin->AddVesselToNextPhysicsBubble(vessel_guid, std::move(vessel_parts));
-  return m.Return();
-}
-
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
@@ -628,33 +595,6 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return m.Return(result.release());
-}
-
-XYZ principia__PhysicsBubbleDisplacementCorrection(Plugin const* const plugin,
-                                                   XYZ const sun_position) {
-  journal::Method<journal::PhysicsBubbleDisplacementCorrection> m(
-      {plugin, sun_position});
-  CHECK_NOTNULL(plugin);
-  Displacement<World> const result =
-      plugin->BubbleDisplacementCorrection(
-          World::origin + Displacement<World>(FromXYZ(sun_position) * Metre));
-  return m.Return(ToXYZ(result.coordinates() / Metre));
-}
-
-bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
-  journal::Method<journal::PhysicsBubbleIsEmpty> m({plugin});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->PhysicsBubbleIsEmpty());
-}
-
-XYZ principia__PhysicsBubbleVelocityCorrection(Plugin const* const plugin,
-                                               int const reference_body_index) {
-  journal::Method<journal::PhysicsBubbleVelocityCorrection> m(
-      {plugin, reference_body_index});
-  CHECK_NOTNULL(plugin);
-  Velocity<World> const result =
-      plugin->BubbleVelocityCorrection(reference_body_index);
-  return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
 }
 
 void principia__PluginUpdateAllVesselsInPileUps(
