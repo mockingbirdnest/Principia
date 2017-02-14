@@ -7,57 +7,106 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-template<typename Frame>
-Part<Frame>::Part(
-    DegreesOfFreedom<Frame> const& degrees_of_freedom,
-    Mass const& mass,
-    Vector<Acceleration, Frame> const&
-        gravitational_acceleration_to_be_applied_by_ksp)
-    : degrees_of_freedom_(degrees_of_freedom),
+Part::Part(PartId part_id, Mass const& mass, not_null<Vessel const*> vessel)
+    : part_id_(part_id),
       mass_(mass),
-      gravitational_acceleration_to_be_applied_by_ksp_(
-          gravitational_acceleration_to_be_applied_by_ksp) {}
+      vessel_(vessel) {}
 
-template<typename Frame>
-DegreesOfFreedom<Frame> const& Part<Frame>::degrees_of_freedom() const {
-  return degrees_of_freedom_;
+PartId Part::part_id() const {
+  return part_id_;
 }
 
-template<typename Frame>
-Mass const& Part<Frame>::mass() const {
+void Part::set_vessel(not_null<Vessel const*> vessel) {
+  vessel_ = vessel;
+}
+
+not_null<Vessel const*> Part::vessel() const {
+  return vessel_;
+}
+
+void Part::set_mass(Mass const& mass) {
+  mass_ = mass;
+}
+
+Mass const& Part::mass() const {
   return mass_;
 }
 
-template<typename Frame>
-Vector<Acceleration, Frame> const&
-    Part<Frame>::gravitational_acceleration_to_be_applied_by_ksp() const {
-  return gravitational_acceleration_to_be_applied_by_ksp_;
+void Part::clear_intrinsic_force() {
+  intrinsic_force_ = Vector<Force, Barycentric>{};
 }
 
-template<typename Frame>
-void Part<Frame>::WriteToMessage(
-    not_null<serialization::Part*> const message) const {
-  degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
-  mass_.WriteToMessage(message->mutable_mass());
-  gravitational_acceleration_to_be_applied_by_ksp_.WriteToMessage(
-      message->mutable_gravitational_acceleration_to_be_applied_by_ksp());
+void Part::increment_intrinsic_force(
+    Vector<Force, Barycentric> const& intrinsic_force) {
+  intrinsic_force_ += intrinsic_force;
 }
 
-template<typename Frame>
-Part<Frame> Part<Frame>::ReadFromMessage(serialization::Part const& message) {
-  return Part(DegreesOfFreedom<Frame>::ReadFromMessage(
-                  message.degrees_of_freedom()),
-              Mass::ReadFromMessage(message.mass()),
-              Vector<Acceleration, Frame>::ReadFromMessage(
-                  message.gravitational_acceleration_to_be_applied_by_ksp()));
+Vector<Force, Barycentric> const& Part::intrinsic_force() const {
+  return intrinsic_force_;
 }
 
-template<typename Frame>
-std::ostream& operator<<(std::ostream& out, Part<Frame> const& part) {
+void Part::clear_degrees_of_freedom() {
+  degrees_of_freedom_ = std::experimental::nullopt;
+}
+
+void Part::set_degrees_of_freedom(
+    DegreesOfFreedom<Bubble> const& degrees_of_freedom) {
+  degrees_of_freedom_ = degrees_of_freedom;
+}
+
+std::experimental::optional<DegreesOfFreedom<Bubble>> const&
+Part::degrees_of_freedom() {
+  return degrees_of_freedom_;
+}
+
+void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
+  CHECK(!is_piled_up());
+  containing_pile_up_ = pile_up;
+}
+
+std::experimental::optional<IteratorOn<std::list<PileUp>>>
+Part::containing_pile_up() const {
+  return containing_pile_up_;
+}
+
+bool Part::is_piled_up() const {
+  // TODO(egg): |has_value()| once we have a standard |optional|.
+  return static_cast<bool>(containing_pile_up_);
+}
+
+void Part::clear_pile_up() {
+  if (is_piled_up()) {
+    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
+    for (not_null<Part*> const part : pile_up.iterator()->parts()) {
+      part->containing_pile_up_ = std::experimental::nullopt;
+      part->psychohistory_is_authoritative_ = true;
+    }
+    CHECK(!is_piled_up());
+    pile_up.Erase();
+  }
+}
+
+void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
+  //TODO(phl): fix.
+  //degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
+  //mass_.WriteToMessage(message->mutable_mass());
+  //gravitational_acceleration_to_be_applied_by_ksp_.WriteToMessage(
+  //    message->mutable_gravitational_acceleration_to_be_applied_by_ksp());
+}
+
+Part Part::ReadFromMessage(serialization::Part const& message) {
+  //TODO(phl): fix.
+  //return Part(DegreesOfFreedom<Frame>::ReadFromMessage(
+  //                message.degrees_of_freedom()),
+  //            Mass::ReadFromMessage(message.mass()),
+  //            Vector<Acceleration, Frame>::ReadFromMessage(
+  //                message.gravitational_acceleration_to_be_applied_by_ksp()));
+}
+
+std::ostream& operator<<(std::ostream& out, Part const& part) {
   return out << "{"
-      << part.degrees_of_freedom() << ", "
-      << part.mass() << ", "
-      << part.gravitational_acceleration_to_be_applied_by_ksp() << "}";
+             << part.part_id() << ", "
+             << part.mass() << "}";
 }
 
 }  // namespace internal_part

@@ -181,58 +181,6 @@ void Vessel::UpdatePrediction(Instant const& last_time) {
   FlowPrediction(last_time);
 }
 
-void Vessel::clear_mass() {
-  mass_ = Mass();
-}
-
-void Vessel::increment_mass(Mass const& mass) {
-  mass_ += mass;
-}
-
-Mass const & Vessel::mass() const {
-  return mass_;
-}
-
-void Vessel::clear_intrinsic_force() {
-  intrinsic_force_ = Vector<Force, Barycentric>();
-}
-
-void Vessel::increment_intrinsic_force(
-    Vector<Force, Barycentric> const& intrinsic_force) {
-  intrinsic_force_ += intrinsic_force;
-}
-
-Vector<Force, Barycentric> const & Vessel::intrinsic_force() const {
-  return intrinsic_force_;
-}
-
-void Vessel::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
-  CHECK(!is_piled_up());
-  containing_pile_up_ = pile_up;
-}
-
-std::experimental::optional<IteratorOn<std::list<PileUp>>>
-Vessel::containing_pile_up() const {
-  return containing_pile_up_;
-}
-
-bool Vessel::is_piled_up() const {
-  // TODO(egg): |has_value()| once we have a standard |optional|.
-  return static_cast<bool>(containing_pile_up_);
-}
-
-void Vessel::clear_pile_up() {
-  if (is_piled_up()) {
-    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
-    for (not_null<Vessel*> const vessel : pile_up.iterator()->vessels()) {
-      vessel->containing_pile_up_ = std::experimental::nullopt;
-      vessel->psychohistory_is_authoritative_ = true;
-    }
-    CHECK(!is_piled_up());
-    pile_up.Erase();
-  }
-}
-
 void Vessel::AppendToPsychohistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,

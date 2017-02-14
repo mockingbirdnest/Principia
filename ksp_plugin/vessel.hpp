@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/container_iterator.hpp"
 #include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
@@ -23,7 +22,6 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::not_null;
-using base::IteratorOn;
 using base::Subset;
 using geometry::Instant;
 using geometry::Vector;
@@ -127,35 +125,6 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  // Clears, increments or returns the mass.  Event though a vessel is massless
-  // in the sense that it doesn't exert gravity, it has a mass used to determine
-  // its intrinsic acceleration.
-  virtual void clear_mass();
-  virtual void increment_mass(Mass const& mass);
-  virtual Mass const& mass() const;
-
-  // Clears, increments or returns the intrinsic force exerted on the vessel by
-  // its engines (or a tractor beam).
-  virtual void clear_intrinsic_force();
-  virtual void increment_intrinsic_force(
-      Vector<Force, Barycentric> const& intrinsic_force);
-  virtual Vector<Force, Barycentric> const& intrinsic_force() const;
-
-  // Requires |!is_piled_up()|.
-  virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
-  // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
-  // iterator, use |clear_pile_up| instead, which will take care of letting all
-  // vessels know that their |PileUp| is gone.
-  virtual std::experimental::optional<IteratorOn<std::list<PileUp>>>
-  containing_pile_up() const;
-
-  // Whether |this| is in a |PileUp|.  Equivalent to |containing_pile_up()|.
-  virtual bool is_piled_up() const;
-
-  // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
-  // After this call, all vessels in that |PileUp| are no longer piled up.
-  virtual void clear_pile_up();
-
   virtual void AppendToPsychohistory(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
@@ -211,13 +180,6 @@ class Vessel {
 
   std::unique_ptr<FlightPlan> flight_plan_;
   bool is_dirty_ = false;
-
-  Mass mass_;
-  Vector<Force, Barycentric> intrinsic_force_;
-
-  // The |PileUp| containing |this|.
-  std::experimental::optional<IteratorOn<std::list<PileUp>>>
-      containing_pile_up_;
 
   // We will use union-find algorithms on |Vessel|s.
   not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
