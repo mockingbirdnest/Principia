@@ -49,9 +49,9 @@ class PileUp final {
       not_null<Part*> part,
       DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
 
-  // Update the degrees of freedom (in |Bubble|) of all the parts by translating
-  // the *apparent* degrees of freedom so that their centre of mass matches that
-  // computed by integration.
+  // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
+  // translating the *apparent* degrees of freedom so that their centre of mass
+  // matches that computed by integration.
   // |SetPartApparentDegreesOfFreedom| must have been called for each part in
   // the pile-up, or for none.
   // The degrees of freedom set by |NudgePartsInPileUpIfNeeded| are used by
@@ -59,12 +59,12 @@ class PileUp final {
   // NOTE(egg): Eventually, this will also nudge their velocities and angular
   // velocities so that the angular momentum matches that which has been
   // computed for |this| |PileUp|.
-  void NudgePartsInPileUpIfNeeded();
+  void DeformPileUpIfNeeded();
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the parts and updates the degrees of freedom of the parts
-  // if the pile-up is in the bubble.  After this call, the histories of |*this|
-  // and of its vessels have a (possibly ahistorical) final point exactly at |t|.
+  // if the pile-up is in the bubble.  After this call, the ??? (of |*this|)?
+  // and of its parts have a (possibly ahistorical) final point exactly at |t|.
   void AdvanceTime(
       Ephemeris<Barycentric>& ephemeris,
       Instant const& t,
@@ -72,8 +72,15 @@ class PileUp final {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters);
 
+  // Adjusts the |Bubble| degrees of freedom of all parts in this pile up based
+  // on the origin of |Bubble| given in |Barycentric|, and on the |RigidPileUp|
+  // degrees of freedom of the parts (as set by |DeformPileUpIfNeeded|).
+  void NudgeParts(DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
+
  private:
   std::list<not_null<Part*>> parts_;
+  // An optimization: the sum of the masses and intrinsic forces of the
+  // |parts_|, computed by the union-find.
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
   DiscreteTrajectory<Barycentric> psychohistory_;
@@ -94,7 +101,7 @@ class PileUp final {
                             /*frame_is_inertial=*/false>;
 
   std::map<not_null<Part*>, DegreesOfFreedom<RigidPileUp>>
-      part_degrees_of_freedom_;
+      actual_part_degrees_of_freedom_;
   std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>
       apparent_part_degrees_of_freedom_;
 };
