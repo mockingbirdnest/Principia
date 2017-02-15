@@ -62,51 +62,19 @@ class Vessel {
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
 
-  // True if, and only if, |prolongation_| is not null, i.e., if either
-  // |CreateProlongation| or |CreateHistoryAndForkProlongation| was called at
-  // some point.
-  virtual bool is_initialized() const;
-
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  // These three functions require |is_initialized()|.
-  virtual DiscreteTrajectory<Barycentric> const& history() const;
-  virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
+  virtual void clear_parts();
+  virtual void add_part(not_null<Part const*> part);
+
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
   // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
 
-  // A vessel that was in the physics since the last time its history advanced
-  // (which with the time when its prolongation was reset).  For such a vessel,
-  // the prolongation, not the history, is authoritative.
-  virtual void set_dirty();
-  virtual bool is_dirty() const;
-
-  virtual void set_prediction_adaptive_step_parameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          prediction_adaptive_step_parameters);
-  virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
-      prediction_adaptive_step_parameters() const;
-
-  // Creates a |history_| for this vessel and appends a point with the
-  // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
-  // |time|.  Nulls |owned_prolongation_|.  The vessel must not satisfy
-  // |is_initialized()|.  The vessel |is_initialized()| after the call.
-  virtual void CreateHistoryAndForkProlongation(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
-
-  // Advances time for a vessel not in the physics bubble.  This may clean the
-  // vessel.
-  virtual void AdvanceTimeNotInBubble(Instant const& time);
-
-  // Advances time for a vessel in the physics bubble.  This dirties the vessel.
-  virtual void AdvanceTimeInBubble(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+  virtual void AdvanceTime(Instant const& time);
 
   // Forgets the trajectories and flight plan before |time|.  This may delete
   // the flight plan.
@@ -161,25 +129,16 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  // The past and present trajectory of the body. It ends at |HistoryTime()|
-  // unless |*this| was created after |HistoryTime()|, in which case it ends
-  // at |current_time_|.  It is advanced with a constant time step.
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
+  std::vector<not_null<Part const*>> parts_;
 
   // The new implementation of history, also encompasses the prolongation.
   DiscreteTrajectory<Barycentric> psychohistory_;
   bool psychohistory_is_authoritative_;
 
-  // A child trajectory of |*history_|. It is forked at |history_->last_time()|
-  // and continues until |current_time_|. It is computed with a non-constant
-  // timestep, which breaks symplecticity.
-  DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
-
   // Child trajectory of |*history_|.
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   std::unique_ptr<FlightPlan> flight_plan_;
-  bool is_dirty_ = false;
 
   // We will use union-find algorithms on |Vessel|s.
   not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
