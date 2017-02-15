@@ -49,17 +49,17 @@ class PileUp final {
       not_null<Part*> part,
       DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
 
-  // Update the degrees of freedom of all the parts by comparing the centre of
-  // mass of the *apparent* degrees of freedom to the centre of mass computed by
-  // integration.  |SetPartApparentDegreesOfFreedom| must have been called for
-  // each part in the pile-up, or for none.
-  void UpdatePartsInPileUpIfNeeded();
-
-  // Obtains the *actual* degrees of freedom for the given |part|.  The part in
-  // the game should be nudged to match the value returned by this function.
-  DegreesOfFreedom<Bubble> GetPartActualDegreesOfFreedom(
-      not_null<Part*> part,
-      DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
+  // Update the degrees of freedom (in |Bubble|) of all the parts by translating
+  // the *apparent* degrees of freedom so that their centre of mass matches that
+  // computed by integration.
+  // |SetPartApparentDegreesOfFreedom| must have been called for each part in
+  // the pile-up, or for none.
+  // The degrees of freedom set by |NudgePartsInPileUpIfNeeded| are used by
+  // |AdvanceTime|.
+  // NOTE(egg): Eventually, this will also nudge their velocities and angular
+  // velocities so that the angular momentum matches that which has been
+  // computed for |this| |PileUp|.
+  void NudgePartsInPileUpIfNeeded();
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the parts and updates the degrees of freedom of the parts
