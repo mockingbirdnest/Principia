@@ -18,9 +18,6 @@
 
 namespace principia {
 namespace ksp_plugin {
-
-FORWARD_DECLARE_FROM(vessel, class, Vessel);
-
 namespace internal_part {
 
 using base::IteratorOn;
@@ -29,6 +26,7 @@ using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 using quantities::Force;
 using quantities::Mass;
 
@@ -39,15 +37,9 @@ using PartId = std::uint32_t;
 // Represents a KSP part.
 class Part final {
  public:
-  Part(PartId part_id,
-       Mass const& mass,
-       not_null<Vessel const*> vessel);
+  Part(PartId part_id, Mass const& mass);
 
   virtual PartId part_id() const;
-
-  // Sets or returns the containing vessel.  A part always belongs to a vessel.
-  virtual void set_vessel(not_null<Vessel const*> vessel);
-  virtual not_null<Vessel const*> vessel() const;
 
   // Sets or returns the mass.  Event though a part is massless in the sense
   // that it doesn't exert gravity, it has a mass used to determine its
@@ -72,6 +64,12 @@ class Part final {
   virtual std::experimental::optional<DegreesOfFreedom<Bubble>> const&
   degrees_of_freedom();
 
+  // This temporarily holds the trajectory followed by the part during the call
+  // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
+  // by |Vessel::AdvanceTime| for the containing |Vessel|.
+  virtual DiscreteTrajectory<Barycentric>& trajectory();
+  virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
+
   // Requires |!is_piled_up()|.
   virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
 
@@ -94,7 +92,6 @@ class Part final {
  private:
   PartId const part_id_;
   Mass mass_;
-  not_null<Vessel const*> vessel_;
   Vector<Force, Barycentric> intrinsic_force_;
 
   // The |PileUp| containing |this|.
@@ -102,6 +99,7 @@ class Part final {
       containing_pile_up_;
 
   std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
+  DiscreteTrajectory<Barycentric> trajectory_;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
