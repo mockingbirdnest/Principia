@@ -15,14 +15,6 @@ PartId Part::part_id() const {
   return part_id_;
 }
 
-void Part::set_vessel(not_null<Vessel const*> vessel) {
-  vessel_ = vessel;
-}
-
-not_null<Vessel const*> Part::vessel() const {
-  return vessel_;
-}
-
 void Part::set_mass(Mass const& mass) {
   mass_ = mass;
 }
@@ -56,6 +48,14 @@ void Part::set_degrees_of_freedom(
 std::experimental::optional<DegreesOfFreedom<Bubble>> const&
 Part::degrees_of_freedom() {
   return degrees_of_freedom_;
+}
+
+DiscreteTrajectory<Barycentric>& Part::trajectory() {
+  return trajectory_;
+}
+
+DiscreteTrajectory<Barycentric> const& Part::trajectory() const {
+  return trajectory_;
 }
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
