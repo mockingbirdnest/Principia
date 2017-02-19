@@ -100,6 +100,7 @@ class Part final {
 
   std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
   DiscreteTrajectory<Barycentric> tail_;
+  bool tail_is_authoritative_;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.

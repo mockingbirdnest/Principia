@@ -122,13 +122,13 @@ void PileUp::DeformPileUpIfNeeded() {
           apparent_centre_of_mass.velocity());
 
   // Now update the positions of the parts in the pile-up frame.
-  part_degrees_of_freedom_.clear();
+  actual_part_degrees_of_freedom_.clear();
   for (auto it = apparent_part_degrees_of_freedom_.cbegin();
        it != apparent_part_degrees_of_freedom_.cend();
        ++it) {
     auto const part = it->first;
     auto const apparent_part_degrees_of_freedom = it->second;
-    part_degrees_of_freedom_.emplace(part,
+    actual_part_degrees_of_freedom_.emplace(part,
                                        apparent_bubble_to_pile_up_motion(
                                            apparent_part_degrees_of_freedom));
   }
@@ -193,7 +193,7 @@ void PileUp::AdvanceTime(
     for (not_null<Part*> const part : parts_)  {
       part->AppendToPsychohistory(
           it.time(),
-          to_barycentric(FindOrDie(part_degrees_of_freedom_, part)),
+          to_barycentric(FindOrDie(actual_part_degrees_of_freedom_, part)),
           authoritative);
     }
   }
@@ -219,8 +219,8 @@ void PileUp::NudgeParts(
       AngularVelocity<Barycentric>(),
       bubble_barycentre.velocity()};
 
-  auto const it = part_degrees_of_freedom_.find(part);
-  CHECK(it != part_degrees_of_freedom_.cend());
+  auto const it = actual_part_degrees_of_freedom_.find(part);
+  CHECK(it != actual_part_degrees_of_freedom_.cend());
   return (barycentric_to_bubble * barycentric_to_pile_up.Inverse())(it->second);
 }
 
