@@ -119,5 +119,3 @@ using internal_part::PartIdToOwnedPart;
 
 }  // namespace ksp_plugin
 }  // namespace principia
-
-#include "ksp_plugin/part_body.hpp"

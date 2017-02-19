@@ -32,9 +32,6 @@
     <ClInclude Include="part.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="part_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="manœuvre.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -98,6 +95,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vessel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="part.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
