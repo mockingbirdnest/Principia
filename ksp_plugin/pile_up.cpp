@@ -45,7 +45,6 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts,
           AngularVelocity<Barycentric>{},
           bubble_barycentre.velocity()}.Inverse();
   psychohistory_.Append(t, bubble_to_barycentric(barycentre.Get()));
-  psychohistory_is_authoritative_ = true;
 
   RigidMotion<Bubble, RigidPileUp> bubble_to_pile_up{
       RigidTransformation<Bubble, RigidPileUp>{
@@ -141,13 +140,9 @@ void PileUp::AdvanceTime(
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
-  if (!psychohistory_is_authoritative_) {
-    CHECK_GT(psychohistory_.Size(), 1);
-    auto const penultimate = --psychohistory_.last();
-    psychohistory_.ForgetAfter(penultimate.time());
-    psychohistory_is_authoritative_ = true;
-  }
-  auto const last_preexisting_authoritative_point = psychohistory_.last();
+  CHECK_EQ(psychohistory_.Size(), 1);
+
+  DiscreteTrajectory<Barycentric> prolongation;
 
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     ephemeris.FlowWithFixedStep(
@@ -156,14 +151,16 @@ void PileUp::AdvanceTime(
         t,
         fixed_step_parameters);
     if (psychohistory_.last().time() < t) {
+      prolongation.Append(prolongation.last().time(),
+                          prolongation.last().degrees_of_freedom());
       ephemeris.FlowWithAdaptiveStep(
-          &psychohistory_,
+          &prolongation,
           Ephemeris<Barycentric>::NoIntrinsicAcceleration,
           t,
           adaptive_step_parameters,
           Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
           /*last_point_only=*/true);
-      psychohistory_is_authoritative_ = false;
+      CHECK_EQ(prolongation.Size(), 2);
     }
   } else {
     auto const a = intrinsic_force_ / mass_;
@@ -176,27 +173,17 @@ void PileUp::AdvanceTime(
         Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
         /*last_point_only=*/false);
   }
-  auto it = last_preexisting_authoritative_point;
+  auto it = psychohistory_.Begin();
   ++it;
   for (; it != psychohistory_.End(); ++it) {
-    auto const& pile_up_dof = it.degrees_of_freedom();
-    RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
-        RigidTransformation<Barycentric, RigidPileUp>(
-            pile_up_dof.position(),
-            RigidPileUp::origin,
-            OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
-        AngularVelocity<Barycentric>{},
-        pile_up_dof.velocity());
-    auto const to_barycentric = from_barycentric.Inverse();
-    bool const authoritative =
-        psychohistory_is_authoritative_ || it != psychohistory_.last();
-    for (not_null<Part*> const part : parts_)  {
-      part->AppendToPsychohistory(
-          it.time(),
-          to_barycentric(FindOrDie(actual_part_degrees_of_freedom_, part)),
-          authoritative);
-    }
+    AppendToPartTails(it, /*authoritative=*/true);
   }
+  // TODO(phl): you have reinvented the map.  Now I want an empty :-p
+  if (prolongation.Size() != 0) {
+    CHECK_EQ(prolongation.Size(), 2);
+    AppendToPartTails(prolongation.last(), /*authoritative=*/false);
+  }
+  psychohistory_.ForgetBefore(psychohistory_.last().time());
 }
 
 void PileUp::NudgeParts(
@@ -218,10 +205,32 @@ void PileUp::NudgeParts(
           Identity<Barycentric, Bubble>().Forget()},
       AngularVelocity<Barycentric>(),
       bubble_barycentre.velocity()};
+  auto const pile_up_to_bubble =
+      barycentric_to_bubble * barycentric_to_pile_up.Inverse();
+  for (not_null<Part*> const part : parts_) {
+    part->set_degrees_of_freedom(
+        pile_up_to_bubble(FindOrDie(actual_part_degrees_of_freedom_, part)));
+  }
+}
 
-  auto const it = actual_part_degrees_of_freedom_.find(part);
-  CHECK(it != actual_part_degrees_of_freedom_.cend());
-  return (barycentric_to_bubble * barycentric_to_pile_up.Inverse())(it->second);
+void PileUp::AppendToPartTails(
+    DiscreteTrajectory<Barycentric>::Iterator const it,
+    bool const authoritative) const {
+  auto const& pile_up_dof = it.degrees_of_freedom();
+  RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
+      RigidTransformation<Barycentric, RigidPileUp>(
+          pile_up_dof.position(),
+          RigidPileUp::origin,
+          OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
+      AngularVelocity<Barycentric>{},
+      pile_up_dof.velocity());
+  auto const to_barycentric = from_barycentric.Inverse();
+  for (not_null<Part*> const part : parts_) {
+    part->tail().Append(
+        it.time(),
+        to_barycentric(FindOrDie(actual_part_degrees_of_freedom_, part)));
+    part->set_tail_is_authoritative(authoritative);
+  }
 }
 
 }  // namespace internal_pile_up

@@ -80,6 +80,9 @@ class PileUp final {
   void NudgeParts(DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
  private:
+  void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
+                         bool authoritative) const;
+
   std::list<not_null<Part*>> parts_;
   // An optimization: the sum of the masses and intrinsic forces of the
   // |parts_|, computed by the union-find.
@@ -88,10 +91,6 @@ class PileUp final {
 
   // TODO(phl): replace by an instance.
   DiscreteTrajectory<Barycentric> psychohistory_;
-  // True if the last point of the |psychohistory_| should be flowed from;
-  // otherwise, the last point should be removed before flowing the trajectory
-  // (in that case, there is a penultimate point, and it is historical).
-  bool psychohistory_is_authoritative_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
   // of freedom of the parts in the frame of that body can be set, however their
