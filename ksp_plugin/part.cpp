@@ -50,12 +50,12 @@ Part::degrees_of_freedom() {
   return degrees_of_freedom_;
 }
 
-DiscreteTrajectory<Barycentric>& Part::trajectory() {
-  return trajectory_;
+DiscreteTrajectory<Barycentric>& Part::tail() {
+  return tail_;
 }
 
-DiscreteTrajectory<Barycentric> const& Part::trajectory() const {
-  return trajectory_;
+DiscreteTrajectory<Barycentric> const& Part::tail() const {
+  return tail_;
 }
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {

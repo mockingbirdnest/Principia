@@ -67,8 +67,8 @@ class Part final {
   // This temporarily holds the trajectory followed by the part during the call
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
   // by |Vessel::AdvanceTime| for the containing |Vessel|.
-  virtual DiscreteTrajectory<Barycentric>& trajectory();
-  virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
+  virtual DiscreteTrajectory<Barycentric>& tail();
+  virtual DiscreteTrajectory<Barycentric> const& tail() const;
 
   // Requires |!is_piled_up()|.
   virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
@@ -99,7 +99,7 @@ class Part final {
       containing_pile_up_;
 
   std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
-  DiscreteTrajectory<Barycentric> trajectory_;
+  DiscreteTrajectory<Barycentric> tail_;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
