@@ -70,6 +70,9 @@ class Part final {
   virtual DiscreteTrajectory<Barycentric>& tail();
   virtual DiscreteTrajectory<Barycentric> const& tail() const;
 
+  virtual bool tail_is_authoritative() const;
+  virtual void set_tail_is_authoritative(bool tail_is_authoritative);
+
   // Requires |!is_piled_up()|.
   virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
 

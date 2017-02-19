@@ -58,6 +58,14 @@ DiscreteTrajectory<Barycentric> const& Part::tail() const {
   return tail_;
 }
 
+bool Part::tail_is_authoritative() const {
+  return tail_is_authoritative_;
+}
+
+void Part::set_tail_is_authoritative(bool tail_is_authoritative) {
+  tail_is_authoritative_ = tail_is_authoritative;
+}
+
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
   CHECK(!is_piled_up());
   containing_pile_up_ = pile_up;
