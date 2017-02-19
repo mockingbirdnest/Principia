@@ -7,10 +7,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-Part::Part(PartId part_id, Mass const& mass, not_null<Vessel const*> vessel)
+Part::Part(PartId part_id, Mass const& mass)
     : part_id_(part_id),
-      mass_(mass),
-      vessel_(vessel) {}
+      mass_(mass) {}
 
 PartId Part::part_id() const {
   return part_id_;
