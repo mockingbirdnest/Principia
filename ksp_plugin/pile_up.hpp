@@ -35,7 +35,9 @@ using quantities::Mass;
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp final {
  public:
-  explicit PileUp(std::list<not_null<Part*>>&& parts);
+  PileUp(std::list<not_null<Part*>>&& parts,
+         DegreesOfFreedom<Barycentric> const& bubble_barycentre,
+         Instant const& t);
 
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
@@ -83,6 +85,8 @@ class PileUp final {
   // |parts_|, computed by the union-find.
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
+
+  // TODO(phl): replace by an instance.
   DiscreteTrajectory<Barycentric> psychohistory_;
   // True if the last point of the |psychohistory_| should be flowed from;
   // otherwise, the last point should be removed before flowing the trajectory

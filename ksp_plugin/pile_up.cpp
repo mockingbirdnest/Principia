@@ -24,42 +24,40 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 
 PileUp::PileUp(std::list<not_null<Part*>>&& parts,
-               DegreesOfFreedom<Barycentric> const& bubble_barycentre)
+               DegreesOfFreedom<Barycentric> const& bubble_barycentre,
+               Instant const& t)
     : parts_(std::move(parts)) {
-  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> barycentre;
+  BarycentreCalculator<DegreesOfFreedom<Bubble>, Mass> barycentre;
   Vector<Force, Barycentric> total_intrinsic_force;
-  RigidMotion<Barycentric, Bubble> barycentric_to_bubble{
-      RigidTransformation<Barycentric, Bubble>{
-          bubble_barycentre.position(),
-          Bubble::origin,
-          OrthogonalMap<Barycentric, Bubble>::Identity()},
-      AngularVelocity<Barycentric>{},
-      bubble_barycentre.velocity()};
-  auto const bubble_to_barycentric = barycentric_to_bubble.Inverse();
   for (not_null<Part*> const part : parts_) {
     total_intrinsic_force += part->intrinsic_force();
-    barycentre.Add(bubble_to_barycentric(*part->degrees_of_freedom()),
-                   part->mass());
+    barycentre.Add(*part->degrees_of_freedom(), part->mass());
   }
   mass_ = barycentre.weight();
   intrinsic_force_ = total_intrinsic_force;
 
-  psychohistory_.Append(parts_.front()->psychohistory().last().time(),
-                        barycentre.Get());
+  RigidMotion<Bubble, Barycentric> const bubble_to_barycentric =
+      RigidMotion<Barycentric, Bubble>{
+          RigidTransformation<Barycentric, Bubble>{
+              bubble_barycentre.position(),
+              Bubble::origin,
+              OrthogonalMap<Barycentric, Bubble>::Identity()},
+          AngularVelocity<Barycentric>{},
+          bubble_barycentre.velocity()}.Inverse();
+  psychohistory_.Append(t, bubble_to_barycentric(barycentre.Get()));
   psychohistory_is_authoritative_ = true;
 
-  RigidMotion<Barycentric, RigidPileUp> barycentric_to_pile_up{
-      RigidTransformation<Barycentric, RigidPileUp>{
+  RigidMotion<Bubble, RigidPileUp> bubble_to_pile_up{
+      RigidTransformation<Bubble, RigidPileUp>{
           barycentre.Get().position(),
           RigidPileUp::origin,
-          OrthogonalMap<Barycentric, RigidPileUp>::Identity()},
-      AngularVelocity<Barycentric>{},
+          OrthogonalMap<Bubble, RigidPileUp>::Identity()},
+      AngularVelocity<Bubble>{},
       barycentre.Get().velocity()};
   for (not_null<Part*> const part : parts_) {
-    part_degrees_of_freedom_.emplace(
+    actual_part_degrees_of_freedom_.emplace(
         part,
-        barycentric_to_pile_up(
-            part->psychohistory().last().degrees_of_freedom()));
+        bubble_to_pile_up(*part->degrees_of_freedom()));
   }
 }
 
