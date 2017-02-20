@@ -89,7 +89,11 @@ class PileUp final {
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 
-  // TODO(phl): replace by an instance.
+  // TODO(phl): replace by an instance.  Specifically, this should contain
+  // either an adaptive step instance (if the last call to AdvanceTime occurred
+  // with nonzero intrinsic force), or a fixed step instance otherwise (with the
+  // prolongation being computed by an instance local to the body of
+  // |AdvanceTime|.
   DiscreteTrajectory<Barycentric> psychohistory_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
