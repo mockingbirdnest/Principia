@@ -86,7 +86,6 @@ void Part::clear_pile_up() {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Part*> const part : pile_up.iterator()->parts()) {
       part->containing_pile_up_ = std::experimental::nullopt;
-      part->psychohistory_is_authoritative_ = true;
     }
     CHECK(!is_piled_up());
     pile_up.Erase();
