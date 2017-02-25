@@ -45,8 +45,7 @@ class Vessel {
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
 
-  // |CHECK|s that |*this| is not piled up.
-  virtual ~Vessel();
+  virtual ~Vessel() = default;
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
@@ -62,7 +61,7 @@ class Vessel {
   virtual void set_parent(not_null<Celestial const*> parent);
 
   virtual void clear_parts();
-  virtual void add_part(not_null<Part const*> part);
+  virtual void add_part(not_null<Part*> part);
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
@@ -111,6 +110,8 @@ class Vessel {
 
   void FlowPrediction(Instant const& time);
 
+  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
+
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
       prediction_adaptive_step_parameters_;
@@ -118,14 +119,13 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  std::vector<not_null<Part const*>> parts_;
+  std::vector<not_null<Part*>> parts_;
 
   // The new implementation of history, also encompasses the prolongation.
   DiscreteTrajectory<Barycentric> psychohistory_;
   bool psychohistory_is_authoritative_;
 
-  // Child trajectory of |*history_|.
-  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 };
