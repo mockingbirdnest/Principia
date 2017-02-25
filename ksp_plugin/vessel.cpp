@@ -97,25 +97,36 @@ void Vessel::AdvanceTime(Instant const& time) {
   for (auto const part : parts_) {
     its.push_back(part->tail().Begin());
   }
-  bool at_end = false;
-  while (!at_end) {
+  for (;;) {
     Instant const time = its[0].time();
+    bool const at_end_of_tail = its[0] == parts_[0]->tail().last();
+    bool const tail_is_authoritative = parts_[0]->tail_is_authoritative();
+
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     for (int i = 0; i < parts_.size(); ++i) {
       auto const part = parts_[i];
-      auto const it = its[i];
-      CHECK_EQ(time, it.time());
+      auto& it = its[i];
       calculator.Add(it.degrees_of_freedom(), part->mass());
+      CHECK_EQ(time, it.time());
+      CHECK_EQ(at_end_of_tail, it == part->tail().last());
+      CHECK_EQ(tail_is_authoritative, part->tail_is_authoritative());
+      if (at_end_of_tail) {
+        part->tail().ForgetBefore(astronomy::InfiniteFuture);
+      } else {
+        ++it;
+      }
     }
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();
     AppendToPsychohistory(
-        common_time,
+        time,
         vessel_degrees_of_freedom,
-        /*authoritative=*/its[0] != parts_[0]->tail().last() ||
-            parts_[0]->tail_is_authoritative);
+        /*authoritative=*/!at_end_of_tail || tail_is_authoritative);
+
+    if (at_end_of_tail) {
+      return;
+    }
   }
-  FlowProlongation(time);
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
@@ -187,6 +198,17 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()) {}
+
+void Vessel::AppendToPsychohistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+    bool const authoritative) {
+  if (!psychohistory_is_authoritative_) {
+    psychohistory_.ForgetAfter((--psychohistory_.last()).time());
+  }
+  psychohistory_.Append(time, degrees_of_freedom);
+  psychohistory_is_authoritative_ = authoritative;
+}
 
 void Vessel::FlowPrediction(Instant const& time) {
   if (time > prediction_->last().time()) {
