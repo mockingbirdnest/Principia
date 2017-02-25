@@ -52,10 +52,6 @@ class Vessel {
   // ownership.
   Vessel(not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             history_fixed_step_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             prolongation_adaptive_step_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_adaptive_step_parameters);
 
@@ -93,11 +89,6 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  virtual void AppendToPsychohistory(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-      bool authoritative);
-
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
   virtual bool psychohistory_is_authoritative() const;
 
@@ -113,16 +104,14 @@ class Vessel {
   Vessel();
 
  private:
-  void AdvanceHistoryIfNeeded(Instant const& time);
-  void FlowHistory(Instant const& time);
-  void FlowProlongation(Instant const& time);
+  void AppendToPsychohistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+      bool authoritative);
+
   void FlowPrediction(Instant const& time);
 
   MasslessBody const body_;
-  Ephemeris<Barycentric>::FixedStepParameters const
-      history_fixed_step_parameters_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters const
-      prolongation_adaptive_step_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
       prediction_adaptive_step_parameters_;
   // The parent body for the 2-body approximation. Not owning.
@@ -139,10 +128,6 @@ class Vessel {
   DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   std::unique_ptr<FlightPlan> flight_plan_;
-
-  // We will use union-find algorithms on |Vessel|s.
-  not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
-  friend class Subset<Vessel>::Node;
 };
 
 // Factories for use by the clients and the compatibility code.
@@ -158,14 +143,4 @@ using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
-
-namespace base {
-
-template<>
-inline not_null<Subset<ksp_plugin::Vessel>::Node*>
-Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
-  return element.subset_node_.get();
-}
-
-}  // namespace base
 }  // namespace principia

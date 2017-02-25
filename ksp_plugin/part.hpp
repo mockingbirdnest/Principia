@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/container_iterator.hpp"
+#include "base/disjoint_sets.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "geometry/grassmann.hpp"
@@ -22,6 +23,7 @@ namespace internal_part {
 
 using base::IteratorOn;
 using base::not_null;
+using base::Subset;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
@@ -107,6 +109,10 @@ class Part final {
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
+
+  // We will use union-find algorithms on |Part|s.
+  not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;
+  friend class Subset<Part>::Node;
 };
 
 std::ostream& operator<<(std::ostream& out, Part const& part);
@@ -122,4 +128,14 @@ using internal_part::PartId;
 using internal_part::PartIdToOwnedPart;
 
 }  // namespace ksp_plugin
+
+namespace base {
+
+template<>
+inline not_null<Subset<ksp_plugin::Part>::Node*>
+Subset<ksp_plugin::Part>::Node::Get(ksp_plugin::Part& element) {
+  return element.subset_node_.get();
+}
+
+}  // namespace base
 }  // namespace principia
