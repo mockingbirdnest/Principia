@@ -92,6 +92,9 @@
     <ClCompile Include="pile_up_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\ksp_plugin\part.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
