@@ -86,9 +86,6 @@
     <ClCompile Include="..\ksp_plugin\pile_up.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ksp_plugin\vessel_subsets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pile_up_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>

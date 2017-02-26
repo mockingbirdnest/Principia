@@ -114,22 +114,22 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message) {
-  not_null<std::unique_ptr<Part>> const result =
+  not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
                                  Mass::ReadFromMessage(message.mass()));
-  result->increment_intrinsic_force(
+  part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (message.has_containing_pile_up()) {
     // TODO(phl): Implement.
   }
   if (message.has_degrees_of_freedom()) {
-    result->set_degrees_of_freedom(DegreesOfFreedom<Bubble>::ReadFromMessage(
+    part->set_degrees_of_freedom(DegreesOfFreedom<Bubble>::ReadFromMessage(
         message.degrees_of_freedom()));
   }
-  result->tail_ =
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
-                                                       /*forks=*/{});
-  result->set_tail_is_authoritative(message.tail_is_authoritative());
+  part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
+                                                                 /*forks=*/{});
+  part->set_tail_is_authoritative(message.tail_is_authoritative());
+  return part;
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {
