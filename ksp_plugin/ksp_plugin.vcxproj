@@ -331,6 +331,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="burn.hpp" />
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
+    <ClInclude Include="part_subsets.hpp" />
     <ClInclude Include="pile_up.hpp" />
     <ClInclude Include="flight_plan.hpp" />
     <ClInclude Include="frames.hpp" />
@@ -349,7 +350,6 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="vessel.hpp" />
-    <ClInclude Include="vessel_subsets.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
@@ -362,10 +362,10 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClCompile Include="interface_iterator.cpp" />
     <ClCompile Include="interface_vessel.cpp" />
     <ClCompile Include="part.cpp" />
+    <ClCompile Include="part_subsets.cpp" />
     <ClCompile Include="pile_up.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="vessel.cpp" />
-    <ClCompile Include="vessel_subsets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">

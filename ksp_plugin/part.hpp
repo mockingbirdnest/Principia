@@ -9,6 +9,7 @@
 #include "base/container_iterator.hpp"
 #include "base/disjoint_sets.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/part_subsets.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"

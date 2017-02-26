@@ -1,15 +1,20 @@
 ﻿
 #pragma once
 
-#include "part.hpp"
+#include "ksp_plugin/part.hpp"
+
+#include "base/not_null.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
+using base::make_not_null_unique;
+
 Part::Part(PartId part_id, Mass const& mass)
     : part_id_(part_id),
-      mass_(mass) {}
+      mass_(mass),
+      subset_node_(make_not_null_unique<Subset<Part>::Node>()) {}
 
 PartId Part::part_id() const {
   return part_id_;
