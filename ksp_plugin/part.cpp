@@ -14,6 +14,7 @@ using base::make_not_null_unique;
 Part::Part(PartId const part_id, Mass const& mass)
     : part_id_(part_id),
       mass_(mass),
+      tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()) {}
 
 PartId Part::part_id() const {
@@ -51,16 +52,16 @@ void Part::set_degrees_of_freedom(
 }
 
 std::experimental::optional<DegreesOfFreedom<Bubble>> const&
-Part::degrees_of_freedom() {
+Part::degrees_of_freedom() const {
   return degrees_of_freedom_;
 }
 
 DiscreteTrajectory<Barycentric>& Part::tail() {
-  return tail_;
+  return *tail_;
 }
 
 DiscreteTrajectory<Barycentric> const& Part::tail() const {
-  return tail_;
+  return *tail_;
 }
 
 bool Part::tail_is_authoritative() const {
@@ -98,11 +99,37 @@ void Part::clear_pile_up() {
 }
 
 void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
-  // TODO(phl): fix.
+  message->set_part_id(part_id_);
+  mass_.WriteToMessage(message->mutable_mass());
+  intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
+  if (containing_pile_up_) {
+    // TODO(phl): Implement.
+  }
+  if (degrees_of_freedom_) {
+    degrees_of_freedom_->WriteToMessage(message->mutable_degrees_of_freedom());
+  }
+  tail_->WriteToMessage(message->mutable_tail(), /*forks=*/{});
+  message->set_tail_is_authoritative(tail_is_authoritative_);
 }
 
-Part Part::ReadFromMessage(serialization::Part const& message) {
-  // TODO(phl): fix.
+not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
+    serialization::Part const& message) {
+  not_null<std::unique_ptr<Part>> part =
+      make_not_null_unique<Part>(message.part_id(),
+                                 Mass::ReadFromMessage(message.mass()));
+  part->increment_intrinsic_force(
+      Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
+  if (message.has_containing_pile_up()) {
+    // TODO(phl): Implement.
+  }
+  if (message.has_degrees_of_freedom()) {
+    part->set_degrees_of_freedom(DegreesOfFreedom<Bubble>::ReadFromMessage(
+        message.degrees_of_freedom()));
+  }
+  part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
+                                                                 /*forks=*/{});
+  part->set_tail_is_authoritative(message.tail_is_authoritative());
+  return part;
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {

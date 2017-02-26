@@ -39,17 +39,17 @@ class Vessel {
       std::vector<
           not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
 
-  Vessel(Vessel const&) = delete;
-  Vessel(Vessel&&) = delete;
-  Vessel& operator=(Vessel const&) = delete;
-  Vessel& operator=(Vessel&&) = delete;
-
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
   Vessel(not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_adaptive_step_parameters);
+
+  Vessel(Vessel const&) = delete;
+  Vessel(Vessel&&) = delete;
+  Vessel& operator=(Vessel const&) = delete;
+  Vessel& operator=(Vessel&&) = delete;
 
   virtual ~Vessel() = default;
 
