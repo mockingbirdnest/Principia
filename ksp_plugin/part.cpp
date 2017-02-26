@@ -11,7 +11,7 @@ namespace internal_part {
 
 using base::make_not_null_unique;
 
-Part::Part(PartId part_id, Mass const& mass)
+Part::Part(PartId const part_id, Mass const& mass)
     : part_id_(part_id),
       mass_(mass),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()) {}
@@ -67,11 +67,11 @@ bool Part::tail_is_authoritative() const {
   return tail_is_authoritative_;
 }
 
-void Part::set_tail_is_authoritative(bool tail_is_authoritative) {
+void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
   tail_is_authoritative_ = tail_is_authoritative;
 }
 
-void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up) {
+void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
   CHECK(!is_piled_up());
   containing_pile_up_ = pile_up;
 }
@@ -98,20 +98,11 @@ void Part::clear_pile_up() {
 }
 
 void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
-  //TODO(phl): fix.
-  //degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
-  //mass_.WriteToMessage(message->mutable_mass());
-  //gravitational_acceleration_to_be_applied_by_ksp_.WriteToMessage(
-  //    message->mutable_gravitational_acceleration_to_be_applied_by_ksp());
+  // TODO(phl): fix.
 }
 
 Part Part::ReadFromMessage(serialization::Part const& message) {
-  //TODO(phl): fix.
-  //return Part(DegreesOfFreedom<Frame>::ReadFromMessage(
-  //                message.degrees_of_freedom()),
-  //            Mass::ReadFromMessage(message.mass()),
-  //            Vector<Acceleration, Frame>::ReadFromMessage(
-  //                message.gravitational_acceleration_to_be_applied_by_ksp()));
+  // TODO(phl): fix.
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {

@@ -65,7 +65,7 @@ class PileUp final {
 
   // Flows the history authoritatively as far as possible up to |t|, advances
   // the histories of the parts and updates the degrees of freedom of the parts
-  // if the pile-up is in the bubble.  After this call, the ??? (of |*this|)?
+  // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
   // and of its parts have a (possibly ahistorical) final point exactly at |t|.
   void AdvanceTime(
       Ephemeris<Barycentric>& ephemeris,
@@ -93,7 +93,7 @@ class PileUp final {
   // either an adaptive step instance (if the last call to AdvanceTime occurred
   // with nonzero intrinsic force), or a fixed step instance otherwise (with the
   // prolongation being computed by an instance local to the body of
-  // |AdvanceTime|.
+  // |AdvanceTime|).
   DiscreteTrajectory<Barycentric> psychohistory_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees

@@ -44,14 +44,14 @@ class Vessel {
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
 
-  virtual ~Vessel() = default;
-
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
   Vessel(not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_adaptive_step_parameters);
+
+  virtual ~Vessel() = default;
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
@@ -109,6 +109,7 @@ class Vessel {
 
   void FlowPrediction(Instant const& time);
 
+  // Returns the last authoritative point of the psychohistory.
   DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
 
   MasslessBody const body_;

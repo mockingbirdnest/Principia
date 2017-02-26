@@ -73,23 +73,25 @@ class Part final {
   virtual DiscreteTrajectory<Barycentric>& tail();
   virtual DiscreteTrajectory<Barycentric> const& tail() const;
 
+  // True if and only if the last point of the tail is authoritative, i.e.,
+  // corresponds to a point in the psychohistory of the enclosing vessel.
   virtual bool tail_is_authoritative() const;
   virtual void set_tail_is_authoritative(bool tail_is_authoritative);
 
   // Requires |!is_piled_up()|.
   virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
 
-  // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
+  // An iterator to the containing |PileUp|, if any.  Do not |Erase| this
   // iterator, use |clear_pile_up| instead, which will take care of letting all
   // parts know that their |PileUp| is gone.
   virtual std::experimental::optional<IteratorOn<std::list<PileUp>>>
   containing_pile_up() const;
 
-  // Whether |this| is in a |PileUp|.  Equivalent to |containing_pile_up()|.
+  // Whether this part is in a |PileUp|.  Equivalent to |containing_pile_up()|.
   virtual bool is_piled_up() const;
 
-  // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
-  // After this call, all parts in that |PileUp| are no longer piled up.
+  // If this part is in a |PileUp|, erases that |PileUp|.  After this call, all
+  // parts in that |PileUp| are no longer piled up.
   virtual void clear_pile_up();
 
   void WriteToMessage(not_null<serialization::Part*> message) const;
@@ -100,7 +102,6 @@ class Part final {
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 
-  // The |PileUp| containing |this|.
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
       containing_pile_up_;
 

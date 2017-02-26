@@ -27,13 +27,13 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts,
                DegreesOfFreedom<Barycentric> const& bubble_barycentre,
                Instant const& t)
     : parts_(std::move(parts)) {
-  BarycentreCalculator<DegreesOfFreedom<Bubble>, Mass> barycentre;
+  BarycentreCalculator<DegreesOfFreedom<Bubble>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
     total_intrinsic_force += part->intrinsic_force();
-    barycentre.Add(*part->degrees_of_freedom(), part->mass());
+    calculator.Add(*part->degrees_of_freedom(), part->mass());
   }
-  mass_ = barycentre.weight();
+  mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
 
   RigidMotion<Bubble, Barycentric> const bubble_to_barycentric =
@@ -44,15 +44,15 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts,
               OrthogonalMap<Barycentric, Bubble>::Identity()},
           AngularVelocity<Barycentric>{},
           bubble_barycentre.velocity()}.Inverse();
-  psychohistory_.Append(t, bubble_to_barycentric(barycentre.Get()));
+  psychohistory_.Append(t, bubble_to_barycentric(calculator.Get()));
 
-  RigidMotion<Bubble, RigidPileUp> bubble_to_pile_up{
+  RigidMotion<Bubble, RigidPileUp> const bubble_to_pile_up{
       RigidTransformation<Bubble, RigidPileUp>{
-          barycentre.Get().position(),
+          calculator.Get().position(),
           RigidPileUp::origin,
           OrthogonalMap<Bubble, RigidPileUp>::Identity()},
       AngularVelocity<Bubble>{},
-      barycentre.Get().velocity()};
+      calculator.Get().velocity()};
   for (not_null<Part*> const part : parts_) {
     actual_part_degrees_of_freedom_.emplace(
         part,
@@ -91,18 +91,15 @@ void PileUp::DeformPileUpIfNeeded() {
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
   // all the parts.
   CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
-  for (auto it = parts_.cbegin(); it != parts_.cend(); ++it) {
-    CHECK(apparent_part_degrees_of_freedom_.find(*it) !=
-          apparent_part_degrees_of_freedom_.cend());
+  for (not_null<Part*> const part : parts_) {
+    CHECK_GT(apparent_part_degrees_of_freedom_.count(part), 0);
   }
 
   // Compute the apparent centre of mass of the parts.
   BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto it = apparent_part_degrees_of_freedom_.cbegin();
-       it != apparent_part_degrees_of_freedom_.cend();
-       ++it) {
-    auto const part = it->first;
-    auto const apparent_part_degrees_of_freedom = it->second;
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& apparent_part_degrees_of_freedom = pair.second;
     calculator.Add(apparent_part_degrees_of_freedom, part->mass());
   }
   auto const apparent_centre_of_mass = calculator.Get();
@@ -122,14 +119,12 @@ void PileUp::DeformPileUpIfNeeded() {
 
   // Now update the positions of the parts in the pile-up frame.
   actual_part_degrees_of_freedom_.clear();
-  for (auto it = apparent_part_degrees_of_freedom_.cbegin();
-       it != apparent_part_degrees_of_freedom_.cend();
-       ++it) {
-    auto const part = it->first;
-    auto const apparent_part_degrees_of_freedom = it->second;
-    actual_part_degrees_of_freedom_.emplace(part,
-                                       apparent_bubble_to_pile_up_motion(
-                                           apparent_part_degrees_of_freedom));
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& apparent_part_degrees_of_freedom = pair.second;
+    actual_part_degrees_of_freedom_.emplace(
+        part,
+        apparent_bubble_to_pile_up_motion(apparent_part_degrees_of_freedom));
   }
   apparent_part_degrees_of_freedom_.clear();
 }

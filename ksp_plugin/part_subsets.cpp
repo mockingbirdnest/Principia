@@ -16,7 +16,7 @@ using physics::DegreesOfFreedom;
 
 namespace base {
 
-Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> part) {
+Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->iterator()->parts().size() - 1;
   }
