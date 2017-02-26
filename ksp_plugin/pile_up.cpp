@@ -5,7 +5,7 @@
 #include <map>
 
 #include "geometry/identity.hpp"
-#include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/part.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
@@ -23,35 +23,40 @@ using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 
-PileUp::PileUp(std::list<not_null<Vessel*>>&& vessels)
-    : vessels_(std::move(vessels)) {
-  BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> barycentre;
+PileUp::PileUp(std::list<not_null<Part*>>&& parts,
+               DegreesOfFreedom<Barycentric> const& bubble_barycentre,
+               Instant const& t)
+    : parts_(std::move(parts)) {
+  BarycentreCalculator<DegreesOfFreedom<Bubble>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
-  for (not_null<Vessel*> const vessel : vessels_) {
-    CHECK(vessel->psychohistory_is_authoritative());
-    total_intrinsic_force += vessel->intrinsic_force();
-    barycentre.Add(vessel->psychohistory().last().degrees_of_freedom(),
-                   vessel->mass());
+  for (not_null<Part*> const part : parts_) {
+    total_intrinsic_force += part->intrinsic_force();
+    calculator.Add(*part->degrees_of_freedom(), part->mass());
   }
-  mass_ = barycentre.weight();
+  mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
 
-  psychohistory_.Append(vessels_.front()->psychohistory().last().time(),
-                        barycentre.Get());
-  psychohistory_is_authoritative_ = true;
+  RigidMotion<Bubble, Barycentric> const bubble_to_barycentric =
+      RigidMotion<Barycentric, Bubble>{
+          RigidTransformation<Barycentric, Bubble>{
+              bubble_barycentre.position(),
+              Bubble::origin,
+              OrthogonalMap<Barycentric, Bubble>::Identity()},
+          AngularVelocity<Barycentric>{},
+          bubble_barycentre.velocity()}.Inverse();
+  psychohistory_.Append(t, bubble_to_barycentric(calculator.Get()));
 
-  RigidMotion<Barycentric, RigidPileUp> barycentric_to_pile_up{
-      RigidTransformation<Barycentric, RigidPileUp>{
-          barycentre.Get().position(),
+  RigidMotion<Bubble, RigidPileUp> const bubble_to_pile_up{
+      RigidTransformation<Bubble, RigidPileUp>{
+          calculator.Get().position(),
           RigidPileUp::origin,
-          OrthogonalMap<Barycentric, RigidPileUp>::Identity()},
-      AngularVelocity<Barycentric>{},
-      barycentre.Get().velocity()};
-  for (not_null<Vessel*> const vessel : vessels_) {
-    vessel_degrees_of_freedom_.emplace(
-        vessel,
-        barycentric_to_pile_up(
-            vessel->psychohistory().last().degrees_of_freedom()));
+          OrthogonalMap<Bubble, RigidPileUp>::Identity()},
+      AngularVelocity<Bubble>{},
+      calculator.Get().velocity()};
+  for (not_null<Part*> const part : parts_) {
+    actual_part_degrees_of_freedom_.emplace(
+        part,
+        bubble_to_pile_up(*part->degrees_of_freedom()));
   }
 }
 
@@ -64,45 +69,42 @@ void PileUp::set_intrinsic_force(
   intrinsic_force_ = intrinsic_force;
 }
 
-std::list<not_null<Vessel*>> const& PileUp::vessels() const {
-  return vessels_;
+std::list<not_null<Part*>> const& PileUp::parts() const {
+  return parts_;
 }
 
-void PileUp::SetVesselApparentDegreesOfFreedom(
-    not_null<Vessel*> const vessel,
+void PileUp::SetPartApparentDegreesOfFreedom(
+    not_null<Part*> const part,
     DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom) {
-  std::map<not_null<Vessel*>, DegreesOfFreedom<ApparentBubble>>::iterator it;
+  std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>::iterator it;
   bool inserted;
   std::tie(it, inserted) =
-      apparent_vessel_degrees_of_freedom_.emplace(vessel, degrees_of_freedom);
-  CHECK(inserted) << "Duplicate vessel " << vessel << " at "
+      apparent_part_degrees_of_freedom_.emplace(part, degrees_of_freedom);
+  CHECK(inserted) << "Duplicate part " << part << " at "
                   << degrees_of_freedom;
 }
 
-void PileUp::UpdateVesselsInPileUpIfUpdated() {
-  if (apparent_vessel_degrees_of_freedom_.empty()) {
+void PileUp::DeformPileUpIfNeeded() {
+  if (apparent_part_degrees_of_freedom_.empty()) {
     return;
   }
-  // A consistency check that |SetVesselApparentDegreesOfFreedom| was called for
-  // all the vessels.
-  CHECK_EQ(vessels_.size(), apparent_vessel_degrees_of_freedom_.size());
-  for (auto it = vessels_.cbegin(); it != vessels_.cend(); ++it) {
-    CHECK(apparent_vessel_degrees_of_freedom_.find(*it) !=
-          apparent_vessel_degrees_of_freedom_.cend());
+  // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
+  // all the parts.
+  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
+  for (not_null<Part*> const part : parts_) {
+    CHECK_GT(apparent_part_degrees_of_freedom_.count(part), 0);
   }
 
-  // Compute the apparent centre of mass of the vessels.
+  // Compute the apparent centre of mass of the parts.
   BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto it = apparent_vessel_degrees_of_freedom_.cbegin();
-       it != apparent_vessel_degrees_of_freedom_.cend();
-       ++it) {
-    auto const vessel = it->first;
-    auto const apparent_vessel_degrees_of_freedom = it->second;
-    calculator.Add(apparent_vessel_degrees_of_freedom, vessel->mass());
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& apparent_part_degrees_of_freedom = pair.second;
+    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
   }
   auto const apparent_centre_of_mass = calculator.Get();
 
-  // A motion that maps the apparent centre of mass of the vessels to the actual
+  // A motion that maps the apparent centre of mass of the parts to the actual
   // centre of mass of the pile-up.
   RigidTransformation<ApparentBubble, RigidPileUp> const
       apparent_bubble_to_pile_up_transformation(
@@ -115,22 +117,71 @@ void PileUp::UpdateVesselsInPileUpIfUpdated() {
           AngularVelocity<ApparentBubble>(),
           apparent_centre_of_mass.velocity());
 
-  // Now update the positions of the vessels in the pile-up frame.
-  vessel_degrees_of_freedom_.clear();
-  for (auto it = apparent_vessel_degrees_of_freedom_.cbegin();
-       it != apparent_vessel_degrees_of_freedom_.cend();
-       ++it) {
-    auto const vessel = it->first;
-    auto const apparent_vessel_degrees_of_freedom = it->second;
-    vessel_degrees_of_freedom_.emplace(vessel,
-                                       apparent_bubble_to_pile_up_motion(
-                                           apparent_vessel_degrees_of_freedom));
+  // Now update the positions of the parts in the pile-up frame.
+  actual_part_degrees_of_freedom_.clear();
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& apparent_part_degrees_of_freedom = pair.second;
+    actual_part_degrees_of_freedom_.emplace(
+        part,
+        apparent_bubble_to_pile_up_motion(apparent_part_degrees_of_freedom));
   }
-  apparent_vessel_degrees_of_freedom_.clear();
+  apparent_part_degrees_of_freedom_.clear();
 }
 
-DegreesOfFreedom<Bubble> PileUp::GetVesselActualDegreesOfFreedom(
-    not_null<Vessel*> const vessel,
+void PileUp::AdvanceTime(
+    Ephemeris<Barycentric>& ephemeris,
+    Instant const& t,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters) {
+  CHECK_EQ(psychohistory_.Size(), 1);
+
+  DiscreteTrajectory<Barycentric> prolongation;
+
+  if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
+    ephemeris.FlowWithFixedStep(
+        {&psychohistory_},
+        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+        t,
+        fixed_step_parameters);
+    if (psychohistory_.last().time() < t) {
+      prolongation.Append(prolongation.last().time(),
+                          prolongation.last().degrees_of_freedom());
+      ephemeris.FlowWithAdaptiveStep(
+          &prolongation,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          t,
+          adaptive_step_parameters,
+          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+          /*last_point_only=*/true);
+      CHECK_EQ(prolongation.Size(), 2);
+    }
+  } else {
+    auto const a = intrinsic_force_ / mass_;
+    auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
+    ephemeris.FlowWithAdaptiveStep(
+        &psychohistory_,
+        intrinsic_acceleration,
+        t,
+        adaptive_step_parameters,
+        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+        /*last_point_only=*/false);
+  }
+  auto it = psychohistory_.Begin();
+  ++it;
+  for (; it != psychohistory_.End(); ++it) {
+    AppendToPartTails(it, /*authoritative=*/true);
+  }
+  // TODO(phl): you have reinvented the map.  Now I want an empty :-p
+  if (prolongation.Size() != 0) {
+    CHECK_EQ(prolongation.Size(), 2);
+    AppendToPartTails(prolongation.last(), /*authoritative=*/false);
+  }
+  psychohistory_.ForgetBefore(psychohistory_.last().time());
+}
+
+void PileUp::NudgeParts(
     DegreesOfFreedom<Barycentric> const& bubble_barycentre) const {
   auto const actual_centre_of_mass =
       psychohistory_.last().degrees_of_freedom();
@@ -149,73 +200,31 @@ DegreesOfFreedom<Bubble> PileUp::GetVesselActualDegreesOfFreedom(
           Identity<Barycentric, Bubble>().Forget()},
       AngularVelocity<Barycentric>(),
       bubble_barycentre.velocity()};
-
-  auto const it = vessel_degrees_of_freedom_.find(vessel);
-  CHECK(it != vessel_degrees_of_freedom_.cend());
-  return (barycentric_to_bubble * barycentric_to_pile_up.Inverse())(it->second);
+  auto const pile_up_to_bubble =
+      barycentric_to_bubble * barycentric_to_pile_up.Inverse();
+  for (not_null<Part*> const part : parts_) {
+    part->set_degrees_of_freedom(
+        pile_up_to_bubble(FindOrDie(actual_part_degrees_of_freedom_, part)));
+  }
 }
 
-void PileUp::AdvanceTime(
-    Ephemeris<Barycentric>& ephemeris,
-    Instant const& t,
-    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
-  if (!psychohistory_is_authoritative_) {
-    CHECK_GT(psychohistory_.Size(), 1);
-    auto const penultimate = --psychohistory_.last();
-    psychohistory_.ForgetAfter(penultimate.time());
-    psychohistory_is_authoritative_ = true;
-  }
-  auto const last_preexisting_authoritative_point = psychohistory_.last();
-
-  if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
-    ephemeris.FlowWithFixedStep(
-        {&psychohistory_},
-        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-        t,
-        fixed_step_parameters);
-    if (psychohistory_.last().time() < t) {
-      ephemeris.FlowWithAdaptiveStep(
-          &psychohistory_,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          t,
-          adaptive_step_parameters,
-          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-          /*last_point_only=*/true);
-      psychohistory_is_authoritative_ = false;
-    }
-  } else {
-    auto const a = intrinsic_force_ / mass_;
-    auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    ephemeris.FlowWithAdaptiveStep(
-        &psychohistory_,
-        intrinsic_acceleration,
-        t,
-        adaptive_step_parameters,
-        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
-  }
-  auto it = last_preexisting_authoritative_point;
-  ++it;
-  for (; it != psychohistory_.End(); ++it) {
-    auto const& pile_up_dof = it.degrees_of_freedom();
-    RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
-        RigidTransformation<Barycentric, RigidPileUp>(
-            pile_up_dof.position(),
-            RigidPileUp::origin,
-            OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
-        AngularVelocity<Barycentric>{},
-        pile_up_dof.velocity());
-    auto const to_barycentric = from_barycentric.Inverse();
-    bool const authoritative =
-        psychohistory_is_authoritative_ || it != psychohistory_.last();
-    for (not_null<Vessel*> const vessel : vessels_)  {
-      vessel->AppendToPsychohistory(
-          it.time(),
-          to_barycentric(FindOrDie(vessel_degrees_of_freedom_, vessel)),
-          authoritative);
-    }
+void PileUp::AppendToPartTails(
+    DiscreteTrajectory<Barycentric>::Iterator const it,
+    bool const authoritative) const {
+  auto const& pile_up_dof = it.degrees_of_freedom();
+  RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
+      RigidTransformation<Barycentric, RigidPileUp>(
+          pile_up_dof.position(),
+          RigidPileUp::origin,
+          OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
+      AngularVelocity<Barycentric>{},
+      pile_up_dof.velocity());
+  auto const to_barycentric = from_barycentric.Inverse();
+  for (not_null<Part*> const part : parts_) {
+    part->tail().Append(
+        it.time(),
+        to_barycentric(FindOrDie(actual_part_degrees_of_freedom_, part)));
+    part->set_tail_is_authoritative(authoritative);
   }
 }
 
