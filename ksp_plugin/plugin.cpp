@@ -27,7 +27,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "ksp_plugin/vessel_subsets.hpp"
+#include "ksp_plugin/part_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
