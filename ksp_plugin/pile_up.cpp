@@ -36,6 +36,7 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts,
   mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
 
+  DegreesOfFreedom<Bubble> const barycentre = calculator.Get();
   RigidMotion<Bubble, Barycentric> const bubble_to_barycentric =
       RigidMotion<Barycentric, Bubble>{
           RigidTransformation<Barycentric, Bubble>{
@@ -44,15 +45,15 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts,
               OrthogonalMap<Barycentric, Bubble>::Identity()},
           AngularVelocity<Barycentric>{},
           bubble_barycentre.velocity()}.Inverse();
-  psychohistory_.Append(t, bubble_to_barycentric(calculator.Get()));
+  psychohistory_.Append(t, bubble_to_barycentric(barycentre));
 
   RigidMotion<Bubble, RigidPileUp> const bubble_to_pile_up{
       RigidTransformation<Bubble, RigidPileUp>{
-          calculator.Get().position(),
+          barycentre.position(),
           RigidPileUp::origin,
           OrthogonalMap<Bubble, RigidPileUp>::Identity()},
       AngularVelocity<Bubble>{},
-      calculator.Get().velocity()};
+      barycentre.velocity()};
   for (not_null<Part*> const part : parts_) {
     actual_part_degrees_of_freedom_.emplace(
         part,

@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
+#include "gtest/gtest_prod.h"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -111,6 +112,9 @@ class PileUp final {
       actual_part_degrees_of_freedom_;
   std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>
       apparent_part_degrees_of_freedom_;
+
+  FRIEND_TEST(PileUpTest, Lifecycle);
+  friend class PileUpTest;
 };
 
 }  // namespace internal_pile_up

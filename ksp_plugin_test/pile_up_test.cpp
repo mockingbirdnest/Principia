@@ -1,9 +1,10 @@
 #include "ksp_plugin/pile_up.hpp"
 
+#include "ksp_plugin/part.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin_test/mock_vessel.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -13,10 +14,14 @@ namespace ksp_plugin {
 namespace internal_pile_up {
 
 using geometry::Displacement;
+using geometry::R3Element;
 using geometry::Velocity;
-using quantities::si::Kilo;
-using quantities::si::Gram;
+using physics::DegreesOfFreedom;
+using quantities::Length;
+using quantities::Speed;
+using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -25,93 +30,104 @@ using ::testing::ReturnRef;
 
 class PileUpTest : public testing::Test {
  protected:
-  MockVessel v1_;
-  MockVessel v2_;
-};
+  PileUpTest()
+      : p1_(part_id1_, mass1_),
+        p2_(part_id2_, mass2_) {
+    p1_.increment_intrinsic_force(
+        Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
+    p2_.increment_intrinsic_force(
+        Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+    p1_.set_degrees_of_freedom(p1_dof_);
+    p2_.set_degrees_of_freedom(p2_dof_);
+  }
 
-TEST_F(PileUpTest, ApparentDegreesOfFreedom) {
-  Vector<Force, Barycentric> const null_intrinsic_force;
+  using RigidPileUp = PileUp::RigidPileUp;
 
-  Mass const mass1(1 * Kilo(Gram));
-  Mass const mass2(2 * Kilo(Gram));
-
-  DiscreteTrajectory<Barycentric> psychohistory1;
-  DiscreteTrajectory<Barycentric> psychohistory2;
-  psychohistory1.Append(
-      astronomy::J2000,
+  PartId const part_id1_ = 111;
+  PartId const part_id2_ = 222;
+  Mass const mass1_ = 1 * Kilogram;
+  Mass const mass2_ = 2 * Kilogram;
+  DegreesOfFreedom<Bubble> const p1_dof_ = DegreesOfFreedom<Bubble>(
+      Bubble::origin + Displacement<Bubble>({1 * Metre, 2 * Metre, 3 * Metre}),
+      Velocity<Bubble>(
+          {10 * Metre / Second, 20 * Metre / Second, 30 * Metre / Second}));
+  DegreesOfFreedom<Bubble> const p2_dof_ = DegreesOfFreedom<Bubble>(
+      Bubble::origin + Displacement<Bubble>({6 * Metre, 5 * Metre, 4 * Metre}),
+      Velocity<Bubble>(
+          {60 * Metre / Second, 50 * Metre / Second, 40 * Metre / Second}));
+  DegreesOfFreedom<Barycentric> const bubble_barycentre =
       DegreesOfFreedom<Barycentric>(
           Barycentric::origin +
               Displacement<Barycentric>({7 * Metre, 8 * Metre, 9 * Metre}),
-          Velocity<Barycentric>({70 * Metre / Second,
-                                 80 * Metre / Second,
-                                 90 * Metre / Second})));
-  psychohistory2.Append(
-      astronomy::J2000,
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin +
-              Displacement<Barycentric>({12 * Metre, 11 * Metre, 10 * Metre}),
-          Velocity<Barycentric>({100 * Metre / Second,
-                                 110 * Metre / Second,
-                                 120 * Metre / Second})));
+          Velocity<Barycentric>(
+              {70 * Metre / Second, 80 * Metre / Second, 90 * Metre / Second}));
 
-  EXPECT_CALL(v1_, psychohistory_is_authoritative())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(v1_, intrinsic_force())
-      .WillRepeatedly(ReturnRef(null_intrinsic_force));
-  EXPECT_CALL(v1_, psychohistory()).WillRepeatedly(ReturnRef(psychohistory1));
-  EXPECT_CALL(v1_, mass()).WillRepeatedly(ReturnRef(mass1));
+  Part p1_;
+  Part p2_;
+};
 
-  EXPECT_CALL(v2_, psychohistory_is_authoritative())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(v2_, intrinsic_force())
-      .WillRepeatedly(ReturnRef(null_intrinsic_force));
-  EXPECT_CALL(v2_, psychohistory()).WillRepeatedly(ReturnRef(psychohistory2));
-  EXPECT_CALL(v2_, mass()).WillRepeatedly(ReturnRef(mass2));
+TEST_F(PileUpTest, Lifecycle) {
+  PileUp pile_up({&p1_, &p2_}, bubble_barycentre, astronomy::J2000);
 
-  PileUp pile_up({&v1_, &v2_});
-
-  pile_up.SetVesselApparentDegreesOfFreedom(
-      &v1_,
-      DegreesOfFreedom<ApparentBubble>(
-          ApparentBubble::origin +
-              Displacement<ApparentBubble>({1 * Metre, 2 * Metre, 3 * Metre}),
-          Velocity<ApparentBubble>({10 * Metre / Second,
-                                    20 * Metre / Second,
-                                    30 * Metre / Second})));
-  pile_up.SetVesselApparentDegreesOfFreedom(
-      &v2_,
-      DegreesOfFreedom<ApparentBubble>(
-          ApparentBubble::origin +
-              Displacement<ApparentBubble>({6 * Metre, 5 * Metre, 4 * Metre}),
-          Velocity<ApparentBubble>({60 * Metre / Second,
-                                    50 * Metre / Second,
-                                    40 * Metre / Second})));
-
-  pile_up.UpdateVesselsInPileUpIfUpdated();
+  EXPECT_EQ(3 * Kilogram, pile_up.mass_);
+  EXPECT_THAT(pile_up.intrinsic_force_,
+              AlmostEquals(Vector<Force, Barycentric>(
+                  {12 * Newton, 23 * Newton, 34 * Newton}), 0));
 
   EXPECT_THAT(
-      pile_up.GetVesselActualDegreesOfFreedom(
-          &v1_, {Barycentric::origin, Velocity<Barycentric>{}}),
-      Componentwise(
-          AlmostEquals(Bubble::origin + Displacement<Bubble>(
-                                            {7 * Metre, 8 * Metre, 9 * Metre}),
-                       1),
-          AlmostEquals(Velocity<Bubble>({(170.0 / 3.0) * Metre / Second,
-                                         80 * Metre / Second,
-                                         (310.0 / 3.0) * Metre / Second}),
-                       1)));
+      pile_up.psychohistory_.last().degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {34.0 / 3.0 * Metre,
+                                          12.0 * Metre,
+                                          38.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {34.0 / 3.0 * Metre / Second,
+                                      12.0 * Metre / Second,
+                                      38.0 / 3.0 * Metre / Second}), 0)));
+
   EXPECT_THAT(
-      pile_up.GetVesselActualDegreesOfFreedom(
-          &v2_, {Barycentric::origin, Velocity<Barycentric>{}}),
-      Componentwise(
-          AlmostEquals(
-              Bubble::origin +
-                  Displacement<Bubble>({12 * Metre, 11 * Metre, 10 * Metre}),
-              0),
-          AlmostEquals(Velocity<Bubble>({(320.0 / 3.0) * Metre / Second,
-                                         110 * Metre / Second,
-                                         (340.0 / 3.0) * Metre / Second}),
-                       1)));
+      pile_up.actual_part_degrees_of_freedom_.at(&p1_),
+      Componentwise(AlmostEquals(RigidPileUp::origin +
+                                     Displacement<RigidPileUp>(
+                                         {-10.0 / 3.0 * Metre,
+                                          -2.0 * Metre,
+                                          -2.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<RigidPileUp>(
+                                     {-100.0 / 3.0 * Metre / Second,
+                                      -20.0 * Metre / Second,
+                                      -20.0 / 3.0 * Metre / Second}), 0)));
+  EXPECT_THAT(
+      pile_up.actual_part_degrees_of_freedom_.at(&p2_),
+      Componentwise(AlmostEquals(RigidPileUp::origin +
+                                     Displacement<RigidPileUp>(
+                                         {5.0 / 3.0 * Metre,
+                                          1.0 * Metre,
+                                          1.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<RigidPileUp>(
+                                     {-50.0 / 3.0 * Metre / Second,
+                                      10.0 * Metre / Second,
+                                      10.0 / 3.0 * Metre / Second}), 0)));
+
+  //pile_up.SetPartApparentDegreesOfFreedom(
+  //    &p1_,
+  //    DegreesOfFreedom<ApparentBubble>(
+  //        ApparentBubble::origin +
+  //            Displacement<ApparentBubble>({1 * Metre, 2 * Metre, 3 * Metre}),
+  //        Velocity<ApparentBubble>({10 * Metre / Second,
+  //                                  20 * Metre / Second,
+  //                                  30 * Metre / Second})));
+  //pile_up.SetPartApparentDegreesOfFreedom(
+  //    &p2_,
+  //    DegreesOfFreedom<ApparentBubble>(
+  //        ApparentBubble::origin +
+  //            Displacement<ApparentBubble>({6 * Metre, 5 * Metre, 4 * Metre}),
+  //        Velocity<ApparentBubble>({60 * Metre / Second,
+  //                                  50 * Metre / Second,
+  //                                  40 * Metre / Second})));
+
+  //pile_up.DeformPileUpIfNeeded();
+
 }
 
 }  // namespace internal_pile_up
