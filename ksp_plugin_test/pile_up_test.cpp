@@ -80,11 +80,11 @@ TEST_F(PileUpTest, Lifecycle) {
                                      Displacement<Barycentric>(
                                          {34.0 / 3.0 * Metre,
                                           12.0 * Metre,
-                                          38.0 / 3.0 * Metre}), 0),
+                                          38.0 / 3.0 * Metre}), 1),
                     AlmostEquals(Velocity<Barycentric>(
-                                     {34.0 / 3.0 * Metre / Second,
-                                      12.0 * Metre / Second,
-                                      38.0 / 3.0 * Metre / Second}), 0)));
+                                     {340.0 / 3.0 * Metre / Second,
+                                      120.0 * Metre / Second,
+                                      380.0 / 3.0 * Metre / Second}), 1)));
 
   EXPECT_THAT(
       pile_up.actual_part_degrees_of_freedom_.at(&p1_),
@@ -92,22 +92,22 @@ TEST_F(PileUpTest, Lifecycle) {
                                      Displacement<RigidPileUp>(
                                          {-10.0 / 3.0 * Metre,
                                           -2.0 * Metre,
-                                          -2.0 / 3.0 * Metre}), 0),
+                                          -2.0 / 3.0 * Metre}), 1),
                     AlmostEquals(Velocity<RigidPileUp>(
                                      {-100.0 / 3.0 * Metre / Second,
                                       -20.0 * Metre / Second,
-                                      -20.0 / 3.0 * Metre / Second}), 0)));
+                                      -20.0 / 3.0 * Metre / Second}), 3)));
   EXPECT_THAT(
       pile_up.actual_part_degrees_of_freedom_.at(&p2_),
       Componentwise(AlmostEquals(RigidPileUp::origin +
                                      Displacement<RigidPileUp>(
                                          {5.0 / 3.0 * Metre,
                                           1.0 * Metre,
-                                          1.0 / 3.0 * Metre}), 0),
+                                          1.0 / 3.0 * Metre}), 3),
                     AlmostEquals(Velocity<RigidPileUp>(
-                                     {-50.0 / 3.0 * Metre / Second,
+                                     {50.0 / 3.0 * Metre / Second,
                                       10.0 * Metre / Second,
-                                      10.0 / 3.0 * Metre / Second}), 0)));
+                                      10.0 / 3.0 * Metre / Second}), 5)));
 
   //pile_up.SetPartApparentDegreesOfFreedom(
   //    &p1_,
