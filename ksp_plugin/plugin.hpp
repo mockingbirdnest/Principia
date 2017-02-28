@@ -432,6 +432,8 @@ class Plugin {
       MassiveBody const& body);
 
   GUIDToOwnedVessel vessels_;
+  std::map<PartId, Part> parts_;
+  std::set<not_null<std::unique_ptr<Part>>> dummy_parts_;
   IndexToOwnedCelestial celestials_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.

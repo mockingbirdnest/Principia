@@ -49,6 +49,10 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
+std::vector<not_null<Part*>> const& Vessel::parts() const {
+  return parts_;
+}
+
 void Vessel::clear_parts() {
   parts_.clear();
 }
@@ -167,6 +171,44 @@ Vessel::Vessel()
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+
+not_null<std::unique_ptr<Part>>& Vessel::IdentifiableOrDummyPart::part() {
+  return part_;
+}
+
+Vessel::IdentifiableOrDummyPart::IdentifiableOrDummyPart(
+    not_null<std::unique_ptr<Part>> part)
+    : part_(std::move(part)) {}
+
+Vessel::DummyPart::DummyPart()
+    : IdentifiableOrDummyPart(make_not_null_unique<Part>(
+          /*part_id=*/std::numeric_limits<PartId>::max(),
+          1 * Kilogram)) {}
+
+void Vessel::IdentifiablePart::Insert(
+    not_null<std::unique_ptr<Part>> part,
+    not_null<Parts*> vessel_parts,
+    not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part){
+    PartId id = part->part_id();
+    auto* new_part = new IdentifiablePart(std::move(part), id_to_part);
+    vessel_parts->push_front(std::unique_ptr<IdentifiablePart>(new_part));
+    auto pair = id_to_part->emplace(
+        id, IteratorOn<Parts>(vessel_parts, vessel_parts->begin()));
+    auto map_it = pair.first;
+    bool inserted = pair.second;
+    new_part->identification_ =
+        IteratorOn<std::map<PartId, IteratorOn<Parts>>>(id_to_part, map_it);
+}
+
+Vessel::IdentifiablePart::~IdentifiablePart() {
+  identification_.Erase();
+}
+
+Vessel::IdentifiablePart::IdentifiablePart(
+    not_null<std::unique_ptr<Part>> part,
+    not_null<std::map<PartId, IteratorOn<Parts>>*> identifications)
+    : IdentifiableOrDummyPart(std::move(part)),
+      identification_(identifications, identifications->end()) {}
 
 void Vessel::AppendToPsychohistory(
     Instant const& time,

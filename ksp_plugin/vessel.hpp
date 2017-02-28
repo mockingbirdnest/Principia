@@ -20,6 +20,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::IteratorOn;
 using base::not_null;
 using base::Subset;
 using geometry::Instant;
@@ -59,6 +60,7 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
+  virtual std::vector<not_null<Part*>> const& parts() const;
   virtual void clear_parts();
   virtual void add_part(not_null<Part*> part);
 
@@ -102,6 +104,41 @@ class Vessel {
   Vessel();
 
  private:
+  class IdentifiableOrDummyPart;
+  using Parts = std::list<not_null<std::unique_ptr<IdentifiableOrDummyPart>>>;
+  // A hierarchy of RAII objects that remove themselves from an id-to-part map
+  // on deletion if applicable.
+  class IdentifiableOrDummyPart {
+   public:
+    IdentifiableOrDummyPart() = default;
+    not_null<std::unique_ptr<Part>>& part();
+   protected:
+    IdentifiableOrDummyPart(not_null<std::unique_ptr<Part>> part);
+
+   private:
+    not_null<std::unique_ptr<Part>> part_;
+  };
+
+  class DummyPart : public IdentifiableOrDummyPart {
+   public:
+    DummyPart();
+  };
+
+  class IdentifiablePart : public IdentifiableOrDummyPart {
+   public:
+    static void Insert(
+        not_null<std::unique_ptr<Part>> part,
+        not_null<Parts*> vessel_parts,
+        not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part);
+    ~IdentifiablePart();
+
+   private:
+    IdentifiablePart(
+        not_null<std::unique_ptr<Part>> part,
+        not_null<std::map<PartId, IteratorOn<Parts>>*> identifications);
+    IteratorOn<std::map<PartId, IteratorOn<Parts>>> identification_;
+  };
+
   void AppendToPsychohistory(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
