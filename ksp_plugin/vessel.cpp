@@ -53,13 +53,31 @@ std::vector<not_null<Part*>> const& Vessel::parts() const {
   return parts_;
 }
 
-void Vessel::clear_parts() {
-  parts_.clear();
+void Vessel::add_dummy_part() {
+  CHECK(parts_.empty());
 }
 
-void Vessel::add_part(not_null<Part*> part) {
-  parts_.push_back(part);
+void Vessel::add_part(
+    not_null<std::unique_ptr<Part>> part,
+    not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part) {
+  parts_.push_front(IdentifiablePart(std::move(part)));
+  not_null<Part const*> inserted_part = parts_.back().part_;
+  auto const pair = id_to_part->emplace(
+      inserted_part->part_id(), IteratorOn<Parts>(&parts_, parts_.begin()));
+  auto const map_it = pair.first;
+  bool const inserted  = pair.second;
+  CHECK(inserted);
+  parts_.back().identification_ =
+      IteratorOn<std::map<PartId, IteratorOn<Parts>>>(id_to_part, map_it);
+  kept_parts_.insert(inserted_part);
 }
+
+void Vessel::keep_or_transfer_part(IteratorOn<Parts> part,
+      not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part) {
+  if (FindOrDie())
+}
+
+void Vessel::free_parts() {}
 
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
   return *prediction_;
@@ -165,6 +183,16 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   return std::unique_ptr<Vessel>{};
 }
 
+Vessel::IdentifiablePart::~IdentifiablePart() {
+  if (identification_) {
+    identification_->Erase();
+  }
+}
+
+Vessel::IdentifiablePart::IdentifiablePart(
+    not_null<std::unique_ptr<Part>> part)
+    : IdentifiableOrDummyPart(std::move(part)) {}
+
 Vessel::Vessel()
     : body_(),
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
@@ -191,18 +219,6 @@ void Vessel::IdentifiablePart::Insert(
     new_part->identification_ =
         IteratorOn<std::map<PartId, IteratorOn<Parts>>>(id_to_part, map_it);
 }
-
-Vessel::IdentifiablePart::~IdentifiablePart() {
-  if (identification_) {
-    identification_->Erase();
-  }
-}
-
-Vessel::IdentifiablePart::IdentifiablePart(
-    not_null<std::unique_ptr<Part>> part,
-    not_null<std::map<PartId, IteratorOn<Parts>>*> identifications)
-    : IdentifiableOrDummyPart(std::move(part)),
-      identification_(identifications, identifications->end()) {}
 
 void Vessel::AppendToPsychohistory(
     Instant const& time,

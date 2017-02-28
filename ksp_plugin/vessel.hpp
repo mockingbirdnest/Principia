@@ -36,6 +36,9 @@ using quantities::Mass;
 // Represents a KSP |Vessel|.
 class Vessel {
  public:
+  class IdentifiablePart;
+  using Parts = std::list<IdentifiablePart>;
+
   using Manœuvres =
       std::vector<
           not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
@@ -60,9 +63,13 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  virtual std::vector<not_null<Part*>> const& parts() const;
-  virtual void clear_parts();
-  virtual void add_part(not_null<Part*> part);
+  virtual void add_dummy_part();
+  virtual void add_part(
+      not_null<std::unique_ptr<Part>> part,
+      not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part);
+  virtual void keep_or_transfer_part(IteratorOn<Parts> part,
+      not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part);
+  virtual void free_parts();
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
@@ -99,31 +106,25 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       not_null<Celestial const*> parent);
 
+  // An object that removes itself from an id-to-part map on deletion if
+  // applicable.
+  class IdentifiablePart {
+   public:
+    ~IdentifiablePart();
+
+   private:
+    IdentifiablePart(not_null<std::unique_ptr<Part>> part);
+    not_null<std::unique_ptr<Part>> part_;
+    std::experimental::optional<IteratorOn<std::map<PartId, IteratorOn<Parts>>>>
+        identification_;
+
+    friend class Vessel;
+  };
  protected:
   // For mocking.
   Vessel();
 
  private:
-  class IdentifiablePart;
-  using Parts = std::list<IdentifiablePart>;
-  // An object that removes itself from an id-to-part map on deletion if
-  // applicable.
-  class IdentifiablePart {
-   public:
-    static void InsertDummy(Parts& vessel_parts);
-    static void Insert(
-        not_null<std::unique_ptr<Part>> part,
-        not_null<Parts*> vessel_parts,
-        not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part);
-    ~IdentifiablePart();
-
-   private:
-    IdentifiablePart(not_null<std::unique_ptr<Part>> part);
-    not_null<std::unique_ptr<Part>> part;
-    std::experimental::optional<IteratorOn<std::map<PartId, IteratorOn<Parts>>>>
-        identification_;
-  };
-
   void AppendToPsychohistory(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
@@ -141,7 +142,8 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  std::vector<not_null<Part*>> parts_;
+  Parts parts_;
+  std::set<not_null<Part const*>> kept_parts_;
 
   // The new implementation of history, also encompasses the prolongation.
   DiscreteTrajectory<Barycentric> psychohistory_;
