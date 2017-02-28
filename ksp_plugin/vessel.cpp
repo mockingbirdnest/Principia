@@ -15,6 +15,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
 using geometry::Position;
@@ -49,35 +50,37 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-std::vector<not_null<Part*>> const& Vessel::parts() const {
-  return parts_;
+void Vessel::InitializeUnloaded() {}
+
+void Vessel::add_part(not_null<std::unique_ptr<Part>> part) {
+  PartId const id = part->part_id();
+  parts_.emplace(id, std::move(part));
+  kept_parts_.insert(part.get());
 }
 
-void Vessel::add_dummy_part() {
-  CHECK(parts_.empty());
+not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId id) {
+  auto const it = parts_.find(id);
+  CHECK(it != parts_.end());
+  auto result = std::move(it->second);
+  parts_.erase(it);
+  return result;
 }
 
-void Vessel::add_part(
-    not_null<std::unique_ptr<Part>> part,
-    not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part) {
-  parts_.push_front(IdentifiablePart(std::move(part)));
-  not_null<Part const*> inserted_part = parts_.back().part_;
-  auto const pair = id_to_part->emplace(
-      inserted_part->part_id(), IteratorOn<Parts>(&parts_, parts_.begin()));
-  auto const map_it = pair.first;
-  bool const inserted  = pair.second;
-  CHECK(inserted);
-  parts_.back().identification_ =
-      IteratorOn<std::map<PartId, IteratorOn<Parts>>>(id_to_part, map_it);
-  kept_parts_.insert(inserted_part);
+void Vessel::keep_part(PartId id) {
+  kept_parts_.insert(FindOrDie(parts_,id).get())
 }
 
-void Vessel::keep_or_transfer_part(IteratorOn<Parts> part,
-      not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part) {
-  if (FindOrDie())
+void Vessel::free_parts() {
+  for (auto it = parts_.begin(); it != parts_.end();) {
+    not_null<Part const*> part = it->second.get();
+    if (kept_parts_.count(part) == 0) {
+      it = parts_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  kept_parts_.clear();
 }
-
-void Vessel::free_parts() {}
 
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
   return *prediction_;
@@ -183,42 +186,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   return std::unique_ptr<Vessel>{};
 }
 
-Vessel::IdentifiablePart::~IdentifiablePart() {
-  if (identification_) {
-    identification_->Erase();
-  }
-}
-
-Vessel::IdentifiablePart::IdentifiablePart(
-    not_null<std::unique_ptr<Part>> part)
-    : IdentifiableOrDummyPart(std::move(part)) {}
-
 Vessel::Vessel()
     : body_(),
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
-
-void Vessel::IdentifiablePart::InsertDummy(Parts& vessel_parts) {
-  vessel_parts.push_back(make_not_null_unique<Part>(
-      /*part_id=*/std::numeric_limits<PartId>::max(), 1 * Kilogram));
-}
-
-void Vessel::IdentifiablePart::Insert(
-    not_null<std::unique_ptr<Part>> part,
-    not_null<Parts*> vessel_parts,
-    not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part){
-    PartId id = part->part_id();
-    auto* new_part = new IdentifiablePart(std::move(part), id_to_part);
-    vessel_parts->push_front(std::unique_ptr<IdentifiablePart>(new_part));
-    auto pair = id_to_part->emplace(
-        id, IteratorOn<Parts>(vessel_parts, vessel_parts->begin()));
-    auto map_it = pair.first;
-    bool inserted = pair.second;
-    new_part->identification_ =
-        IteratorOn<std::map<PartId, IteratorOn<Parts>>>(id_to_part, map_it);
-}
 
 void Vessel::AppendToPsychohistory(
     Instant const& time,

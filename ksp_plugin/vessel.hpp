@@ -36,12 +36,8 @@ using quantities::Mass;
 // Represents a KSP |Vessel|.
 class Vessel {
  public:
-  class IdentifiablePart;
-  using Parts = std::list<IdentifiablePart>;
-
-  using Manœuvres =
-      std::vector<
-          not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
+  using Manœuvres = std::vector<
+      not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
 
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
@@ -63,12 +59,11 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  virtual void add_dummy_part();
-  virtual void add_part(
-      not_null<std::unique_ptr<Part>> part,
-      not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part);
-  virtual void keep_or_transfer_part(IteratorOn<Parts> part,
-      not_null<std::map<PartId, IteratorOn<Parts>>*> id_to_part);
+  virtual void InitializeUnloaded(/*TODO args*/);
+
+  virtual void add_part(not_null<std::unique_ptr<Part>> part);
+  virtual not_null<std::unique_ptr<Part>> extract_part(PartId id);
+  virtual void keep_part(PartId id);
   virtual void free_parts();
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
@@ -106,20 +101,6 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       not_null<Celestial const*> parent);
 
-  // An object that removes itself from an id-to-part map on deletion if
-  // applicable.
-  class IdentifiablePart {
-   public:
-    ~IdentifiablePart();
-
-   private:
-    IdentifiablePart(not_null<std::unique_ptr<Part>> part);
-    not_null<std::unique_ptr<Part>> part_;
-    std::experimental::optional<IteratorOn<std::map<PartId, IteratorOn<Parts>>>>
-        identification_;
-
-    friend class Vessel;
-  };
  protected:
   // For mocking.
   Vessel();
@@ -142,7 +123,7 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  Parts parts_;
+  std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 
   // The new implementation of history, also encompasses the prolongation.
