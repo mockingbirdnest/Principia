@@ -2,6 +2,7 @@
 #pragma once
 
 #include <experimental/optional>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -40,7 +41,10 @@ using PartId = std::uint32_t;
 // Represents a KSP part.
 class Part final {
  public:
-  Part(PartId part_id, Mass const& mass);
+  Part(PartId part_id,
+       Mass const& mass,
+       std::function<void()> deletion_callback);
+  ~Part();
 
   virtual PartId part_id() const;
 
@@ -115,6 +119,9 @@ class Part final {
   // We will use union-find algorithms on |Part|s.
   not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;
   friend class Subset<Part>::Node;
+
+  // Called in the destructor.
+  std::function<void()> deletion_callback_;
 };
 
 std::ostream& operator<<(std::ostream& out, Part const& part);

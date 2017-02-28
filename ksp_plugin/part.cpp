@@ -11,10 +11,19 @@ namespace internal_part {
 
 using base::make_not_null_unique;
 
-Part::Part(PartId const part_id, Mass const& mass)
+Part::Part(PartId const part_id,
+           Mass const& mass,
+           std::function<void()> deletion_callback)
     : part_id_(part_id),
       mass_(mass),
-      subset_node_(make_not_null_unique<Subset<Part>::Node>()) {}
+      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
+      deletion_callback_(deletion_callback) {}
+
+Part::~Part() {
+  if (deletion_callback_ != nullptr) {
+    deletion_callback_();
+  }
+}
 
 PartId Part::part_id() const {
   return part_id_;
