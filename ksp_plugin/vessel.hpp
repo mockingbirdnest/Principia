@@ -104,28 +104,13 @@ class Vessel {
   Vessel();
 
  private:
-  class IdentifiableOrDummyPart;
-  using Parts = std::list<not_null<std::unique_ptr<IdentifiableOrDummyPart>>>;
-  // A hierarchy of RAII objects that remove themselves from an id-to-part map
-  // on deletion if applicable.
-  class IdentifiableOrDummyPart {
+  class IdentifiablePart;
+  using Parts = std::list<IdentifiablePart>;
+  // An object that removes itself from an id-to-part map on deletion if
+  // applicable.
+  class IdentifiablePart {
    public:
-    IdentifiableOrDummyPart() = default;
-    not_null<std::unique_ptr<Part>>& part();
-   protected:
-    IdentifiableOrDummyPart(not_null<std::unique_ptr<Part>> part);
-
-   private:
-    not_null<std::unique_ptr<Part>> part_;
-  };
-
-  class DummyPart : public IdentifiableOrDummyPart {
-   public:
-    DummyPart();
-  };
-
-  class IdentifiablePart : public IdentifiableOrDummyPart {
-   public:
+    static void InsertDummy(Parts& vessel_parts);
     static void Insert(
         not_null<std::unique_ptr<Part>> part,
         not_null<Parts*> vessel_parts,
@@ -133,10 +118,10 @@ class Vessel {
     ~IdentifiablePart();
 
    private:
-    IdentifiablePart(
-        not_null<std::unique_ptr<Part>> part,
-        not_null<std::map<PartId, IteratorOn<Parts>>*> identifications);
-    IteratorOn<std::map<PartId, IteratorOn<Parts>>> identification_;
+    IdentifiablePart(not_null<std::unique_ptr<Part>> part);
+    not_null<std::unique_ptr<Part>> part;
+    std::experimental::optional<IteratorOn<std::map<PartId, IteratorOn<Parts>>>>
+        identification_;
   };
 
   void AppendToPsychohistory(

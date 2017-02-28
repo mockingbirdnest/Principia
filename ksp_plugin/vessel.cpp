@@ -172,18 +172,10 @@ Vessel::Vessel()
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
-not_null<std::unique_ptr<Part>>& Vessel::IdentifiableOrDummyPart::part() {
-  return part_;
+void Vessel::IdentifiablePart::InsertDummy(Parts& vessel_parts) {
+  vessel_parts.push_back(make_not_null_unique<Part>(
+      /*part_id=*/std::numeric_limits<PartId>::max(), 1 * Kilogram));
 }
-
-Vessel::IdentifiableOrDummyPart::IdentifiableOrDummyPart(
-    not_null<std::unique_ptr<Part>> part)
-    : part_(std::move(part)) {}
-
-Vessel::DummyPart::DummyPart()
-    : IdentifiableOrDummyPart(make_not_null_unique<Part>(
-          /*part_id=*/std::numeric_limits<PartId>::max(),
-          1 * Kilogram)) {}
 
 void Vessel::IdentifiablePart::Insert(
     not_null<std::unique_ptr<Part>> part,
@@ -201,7 +193,9 @@ void Vessel::IdentifiablePart::Insert(
 }
 
 Vessel::IdentifiablePart::~IdentifiablePart() {
-  identification_.Erase();
+  if (identification_) {
+    identification_->Erase();
+  }
 }
 
 Vessel::IdentifiablePart::IdentifiablePart(
