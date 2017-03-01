@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
@@ -20,8 +19,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::IteratorOn;
 using base::not_null;
-using base::Subset;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
@@ -35,9 +34,8 @@ using quantities::Mass;
 // Represents a KSP |Vessel|.
 class Vessel {
  public:
-  using Manœuvres =
-      std::vector<
-          not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
+  using Manœuvres = std::vector<
+      not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
@@ -59,8 +57,26 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  virtual void clear_parts();
-  virtual void add_part(not_null<Part*> part);
+  // Adds a dummy part with the given degrees of freedom.  This part cannot be
+  // kept or extracted, and will be removed by the next call to |FreeParts|.
+  // A pointer to that part is returned.
+  // |parts_| must be empty; |InitializeUnloaded| may be called only once.
+  virtual not_null<Part*> InitializeUnloaded(
+      DegreesOfFreedom<Bubble> const& initial_state);
+
+  // Adds the given part to this vessel.
+  virtual void AddPart(not_null<std::unique_ptr<Part>> part);
+  // Removes and returns the part with the given ID.
+  virtual not_null<std::unique_ptr<Part>> extract_part(PartId id);
+  // Prevents the part with the given ID from being removed in the next call to
+  // |FreeParts|.
+  virtual void KeepPart(PartId id);
+  // Removes any part for which |AddPart| or |KeepPart| has not been called
+  // since the last call to |FreePart|, and removes the dummy part added by
+  // |InitializeUnloaded| if the latter has been called.  Checks that there are
+  // still parts left after the removals; thus a call to |AddParts| must occur
+  // before |FreeParts| is first called.
+  virtual void FreeParts();
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
@@ -119,7 +135,9 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  std::vector<not_null<Part*>> parts_;
+  std::unique_ptr<Part> dummy_part_;
+  std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
+  std::set<not_null<Part const*>> kept_parts_;
 
   // The new implementation of history, also encompasses the prolongation.
   DiscreteTrajectory<Barycentric> psychohistory_;

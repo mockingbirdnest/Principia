@@ -2,7 +2,6 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
-#include <limits>
 #include <list>
 #include <vector>
 
@@ -15,6 +14,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
 using geometry::Position;
@@ -49,12 +49,47 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-void Vessel::clear_parts() {
-  parts_.clear();
+not_null<Part*> Vessel::InitializeUnloaded(
+    DegreesOfFreedom<Bubble> const& initial_state) {
+  CHECK(parts_.empty());
+  CHECK(dummy_part_ == nullptr);
+  dummy_part_ = std::make_unique<Part>(DummyPartId,
+                                       1 * Kilogram,
+                                       /*deletion_callback=*/nullptr);
+  dummy_part_->set_degrees_of_freedom(initial_state);
+  return dummy_part_.get();
 }
 
-void Vessel::add_part(not_null<Part*> part) {
-  parts_.push_back(part);
+void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
+  PartId const id = part->part_id();
+  parts_.emplace(id, std::move(part));
+  kept_parts_.insert(part.get());
+}
+
+not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId const id) {
+  auto const it = parts_.find(id);
+  CHECK(it != parts_.end()) << id;
+  auto result = std::move(it->second);
+  parts_.erase(it);
+  return result;
+}
+
+void Vessel::KeepPart(PartId const id) {
+  kept_parts_.insert(FindOrDie(parts_, id).get());
+}
+
+void Vessel::FreeParts() {
+  dummy_part_.reset();
+  for (auto it = parts_.begin(); it != parts_.end();) {
+    not_null<Part const*> part = it->second.get();
+    if (kept_parts_.count(part) == 0) {
+      it = parts_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  CHECK(!parts_.empty());
+  kept_parts_.clear();
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
@@ -72,27 +107,31 @@ bool Vessel::has_flight_plan() const {
 
 void Vessel::AdvanceTime(Instant const& time) {
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
-  for (auto const part : parts_) {
-    its.push_back(part->tail().Begin());
+  for (auto const& pair : parts_) {
+    Part const& part = *pair.second;
+    its.push_back(part.tail().Begin());
   }
   for (;;) {
+    Part const& first_part = *parts_.begin()->second;
     Instant const time = its[0].time();
-    bool const at_end_of_tail = its[0] == parts_[0]->tail().last();
-    bool const tail_is_authoritative = parts_[0]->tail_is_authoritative();
+    bool const at_end_of_tail = its[0] == first_part.tail().last();
+    bool const tail_is_authoritative = first_part.tail_is_authoritative();
 
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
-    for (int i = 0; i < parts_.size(); ++i) {
-      auto const part = parts_[i];
+    int i = 0;
+    for (auto const& pair : parts_) {
+      Part& part = *pair.second;
       auto& it = its[i];
-      calculator.Add(it.degrees_of_freedom(), part->mass());
+      calculator.Add(it.degrees_of_freedom(), part.mass());
       CHECK_EQ(time, it.time());
-      CHECK_EQ(at_end_of_tail, it == part->tail().last());
-      CHECK_EQ(tail_is_authoritative, part->tail_is_authoritative());
+      CHECK_EQ(at_end_of_tail, it == part.tail().last());
+      CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
-        part->tail().ForgetBefore(astronomy::InfiniteFuture);
+        part.tail().ForgetBefore(astronomy::InfiniteFuture);
       } else {
         ++it;
       }
+      ++i;
     }
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();

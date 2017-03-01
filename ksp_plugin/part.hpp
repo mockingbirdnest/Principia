@@ -2,6 +2,8 @@
 #pragma once
 
 #include <experimental/optional>
+#include <functional>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -36,11 +38,17 @@ using quantities::Mass;
 // Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|
 // corresponds to |uint32_t|.
 using PartId = std::uint32_t;
+// An ID given to dummy parts used by vessels that appear unloaded.  Note that
+// nothing prevents an actual part from having this ID.
+constexpr PartId DummyPartId = std::numeric_limits<PartId>::max();
 
 // Represents a KSP part.
 class Part final {
  public:
-  Part(PartId part_id, Mass const& mass);
+  Part(PartId part_id,
+       Mass const& mass,
+       std::function<void()> deletion_callback);
+  ~Part();
 
   virtual PartId part_id() const;
 
@@ -116,6 +124,9 @@ class Part final {
   // We will use union-find algorithms on |Part|s.
   not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;
   friend class Subset<Part>::Node;
+
+  // Called in the destructor.
+  std::function<void()> deletion_callback_;
 };
 
 std::ostream& operator<<(std::ostream& out, Part const& part);
@@ -125,6 +136,7 @@ using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 
 }  // namespace internal_part
 
+using internal_part::DummyPartId;
 using internal_part::IdAndOwnedPart;
 using internal_part::Part;
 using internal_part::PartId;
