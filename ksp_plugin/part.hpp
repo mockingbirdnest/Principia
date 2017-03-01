@@ -69,7 +69,7 @@ class Part final {
   virtual void set_degrees_of_freedom(
       DegreesOfFreedom<Bubble> const& degrees_of_freedom);
   virtual std::experimental::optional<DegreesOfFreedom<Bubble>> const&
-  degrees_of_freedom();
+  degrees_of_freedom() const;
 
   // This temporarily holds the trajectory followed by the part during the call
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
@@ -99,7 +99,8 @@ class Part final {
   virtual void clear_pile_up();
 
   void WriteToMessage(not_null<serialization::Part*> message) const;
-  static Part ReadFromMessage(serialization::Part const& message);
+  static not_null<std::unique_ptr<Part>> ReadFromMessage(
+      serialization::Part const& message);
 
  private:
   PartId const part_id_;
@@ -110,8 +111,8 @@ class Part final {
       containing_pile_up_;
 
   std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
-  DiscreteTrajectory<Barycentric> tail_;
-  bool tail_is_authoritative_;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> tail_;
+  bool tail_is_authoritative_ = false;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
