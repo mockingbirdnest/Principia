@@ -25,6 +25,7 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::ReturnRef;
 
@@ -47,6 +48,9 @@ class PileUpTest : public testing::Test {
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
+
+  // Centre of mass of |p1_| and |p2_| in |Bubble|, in SI units:
+  //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
   DegreesOfFreedom<Bubble> const p1_dof_ = DegreesOfFreedom<Bubble>(
       Bubble::origin + Displacement<Bubble>({1 * Metre, 2 * Metre, 3 * Metre}),
       Velocity<Bubble>(
@@ -55,6 +59,7 @@ class PileUpTest : public testing::Test {
       Bubble::origin + Displacement<Bubble>({6 * Metre, 5 * Metre, 4 * Metre}),
       Velocity<Bubble>(
           {60 * Metre / Second, 50 * Metre / Second, 40 * Metre / Second}));
+
   DegreesOfFreedom<Barycentric> const bubble_barycentre =
       DegreesOfFreedom<Barycentric>(
           Barycentric::origin +
@@ -109,12 +114,14 @@ TEST_F(PileUpTest, Lifecycle) {
                                       10.0 * Metre / Second,
                                       10.0 / 3.0 * Metre / Second}), 5)));
 
+  // Centre of mass of |p1_| and |p2_| in |ApparentBubble|, in SI units:
+  //   {1 / 9, -1 / 3, -2 / 9} {10 / 9, -10 / 3, -20 / 9}
   pile_up.SetPartApparentDegreesOfFreedom(
       &p1_,
       DegreesOfFreedom<ApparentBubble>(
           ApparentBubble::origin +
-              Displacement<ApparentBubble>({-11 / 3.0 * Metre,
-                                            -1 * Metre,
+              Displacement<ApparentBubble>({-11.0 / 3.0 * Metre,
+                                            -1.0 * Metre,
                                             2.0 / 3.0 * Metre}),
           Velocity<ApparentBubble>({-110.0 / 3.0 * Metre / Second,
                                     -10.0 / 3.0 * Metre / Second,
@@ -123,19 +130,19 @@ TEST_F(PileUpTest, Lifecycle) {
       &p2_,
       DegreesOfFreedom<ApparentBubble>(
           ApparentBubble::origin +
-              Displacement<ApparentBubble>({2 * Metre,
-                                            0 * Metre,
+              Displacement<ApparentBubble>({2.0 * Metre,
+                                            0.0 * Metre,
                                             -2.0 / 3.0 * Metre}),
-          Velocity<ApparentBubble>({20 * Metre / Second,
-                                    0 * Metre / Second,
+          Velocity<ApparentBubble>({20.0 * Metre / Second,
+                                    0.0 * Metre / Second,
                                     -20.0 / 3.0 * Metre / Second})));
 
   EXPECT_THAT(
       pile_up.apparent_part_degrees_of_freedom_.at(&p1_),
       Componentwise(AlmostEquals(ApparentBubble::origin +
                                      Displacement<ApparentBubble>(
-                                         {-11 / 3.0 * Metre,
-                                          -1 * Metre,
+                                         {-11.0 / 3.0 * Metre,
+                                          -1.0 * Metre,
                                           2.0 / 3.0 * Metre}), 0),
                     AlmostEquals(Velocity<ApparentBubble>(
                                      {-110.0 / 3.0 * Metre / Second,
@@ -145,16 +152,39 @@ TEST_F(PileUpTest, Lifecycle) {
       pile_up.apparent_part_degrees_of_freedom_.at(&p2_),
       Componentwise(AlmostEquals(ApparentBubble::origin +
                                      Displacement<ApparentBubble>(
-                                         {2 * Metre,
-                                          0 * Metre,
+                                         {2.0 * Metre,
+                                          0.0 * Metre,
                                           -2.0 / 3.0 * Metre}), 0),
                     AlmostEquals(Velocity<ApparentBubble>(
-                                     {20 * Metre / Second,
-                                      0 * Metre / Second,
+                                     {20.0 * Metre / Second,
+                                      0.0 * Metre / Second,
                                       -20.0 / 3.0 * Metre / Second}), 0)));
 
-  //pile_up.DeformPileUpIfNeeded();
+  pile_up.DeformPileUpIfNeeded();
 
+  EXPECT_THAT(
+      pile_up.actual_part_degrees_of_freedom_.at(&p1_),
+      Componentwise(AlmostEquals(RigidPileUp::origin +
+                                     Displacement<RigidPileUp>(
+                                         {-34.0 / 9.0 * Metre,
+                                          -2.0 / 3.0 * Metre,
+                                          8.0 / 9.0 * Metre}), 0),
+                    AlmostEquals(Velocity<RigidPileUp>(
+                                     {-340.0 / 9.0 * Metre / Second,
+                                      -20.0 / 3.0 * Metre / Second,
+                                      80.0 / 9.0 * Metre / Second}), 0)));
+  EXPECT_THAT(
+      pile_up.actual_part_degrees_of_freedom_.at(&p2_),
+      Componentwise(AlmostEquals(RigidPileUp::origin +
+                                     Displacement<RigidPileUp>(
+                                         {17.0 / 9.0 * Metre,
+                                          1.0 / 3.0 * Metre,
+                                          -4.0 / 9.0 * Metre}), 0),
+                    AlmostEquals(Velocity<RigidPileUp>(
+                                     {170.0 / 9.0 * Metre / Second,
+                                      10.0 / 3.0 * Metre / Second,
+                                      -40.0 / 9.0 * Metre / Second}), 0)));
+  EXPECT_THAT(pile_up.apparent_part_degrees_of_freedom_, IsEmpty());
 }
 
 }  // namespace internal_pile_up
