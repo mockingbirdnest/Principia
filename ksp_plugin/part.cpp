@@ -11,11 +11,20 @@ namespace internal_part {
 
 using base::make_not_null_unique;
 
-Part::Part(PartId const part_id, Mass const& mass)
+Part::Part(PartId const part_id,
+           Mass const& mass,
+           std::function<void()> deletion_callback)
     : part_id_(part_id),
       mass_(mass),
       tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      subset_node_(make_not_null_unique<Subset<Part>::Node>()) {}
+      subset_node_(make_not_null_unique<Subset<Part>::Node>()),
+      deletion_callback_(std::move(deletion_callback)) {}
+
+Part::~Part() {
+  if (deletion_callback_ != nullptr) {
+    deletion_callback_();
+  }
+}
 
 PartId Part::part_id() const {
   return part_id_;
@@ -114,6 +123,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message) {
+  // TODO(phl): Serialize/Deserialize the deletion callback.
   not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
                                  Mass::ReadFromMessage(message.mass()));
