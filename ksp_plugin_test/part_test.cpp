@@ -77,7 +77,7 @@ TEST_F(PartTest, Serialization) {
   EXPECT_EQ(1, message.tail().timeline_size());
   EXPECT_FALSE(message.tail_is_authoritative());
 
-  auto const p = Part::ReadFromMessage(message);
+  auto const p = Part::ReadFromMessage(message, /*deletion_callback=*/nullptr);
   EXPECT_EQ(part_.mass(), p->mass());
   EXPECT_EQ(part_.intrinsic_force(), p->intrinsic_force());
   EXPECT_TRUE(p->degrees_of_freedom());
