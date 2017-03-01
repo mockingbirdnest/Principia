@@ -31,8 +31,8 @@ using ::testing::ReturnRef;
 class PileUpTest : public testing::Test {
  protected:
   PileUpTest()
-      : p1_(part_id1_, mass1_),
-        p2_(part_id2_, mass2_) {
+      : p1_(part_id1_, mass1_, /*deletion_callback=*/nullptr),
+        p2_(part_id2_, mass2_, /*deletion_callback=*/nullptr) {
     p1_.increment_intrinsic_force(
         Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
     p2_.increment_intrinsic_force(
@@ -109,22 +109,49 @@ TEST_F(PileUpTest, Lifecycle) {
                                       10.0 * Metre / Second,
                                       10.0 / 3.0 * Metre / Second}), 5)));
 
-  //pile_up.SetPartApparentDegreesOfFreedom(
-  //    &p1_,
-  //    DegreesOfFreedom<ApparentBubble>(
-  //        ApparentBubble::origin +
-  //            Displacement<ApparentBubble>({1 * Metre, 2 * Metre, 3 * Metre}),
-  //        Velocity<ApparentBubble>({10 * Metre / Second,
-  //                                  20 * Metre / Second,
-  //                                  30 * Metre / Second})));
-  //pile_up.SetPartApparentDegreesOfFreedom(
-  //    &p2_,
-  //    DegreesOfFreedom<ApparentBubble>(
-  //        ApparentBubble::origin +
-  //            Displacement<ApparentBubble>({6 * Metre, 5 * Metre, 4 * Metre}),
-  //        Velocity<ApparentBubble>({60 * Metre / Second,
-  //                                  50 * Metre / Second,
-  //                                  40 * Metre / Second})));
+  pile_up.SetPartApparentDegreesOfFreedom(
+      &p1_,
+      DegreesOfFreedom<ApparentBubble>(
+          ApparentBubble::origin +
+              Displacement<ApparentBubble>({-11 / 3.0 * Metre,
+                                            -1 * Metre,
+                                            2.0 / 3.0 * Metre}),
+          Velocity<ApparentBubble>({-110.0 / 3.0 * Metre / Second,
+                                    -10.0 / 3.0 * Metre / Second,
+                                    20.0 / 3.0 * Metre / Second})));
+  pile_up.SetPartApparentDegreesOfFreedom(
+      &p2_,
+      DegreesOfFreedom<ApparentBubble>(
+          ApparentBubble::origin +
+              Displacement<ApparentBubble>({2 * Metre,
+                                            0 * Metre,
+                                            -2.0 / 3.0 * Metre}),
+          Velocity<ApparentBubble>({20 * Metre / Second,
+                                    0 * Metre / Second,
+                                    -20.0 / 3.0 * Metre / Second})));
+
+  EXPECT_THAT(
+      pile_up.apparent_part_degrees_of_freedom_.at(&p1_),
+      Componentwise(AlmostEquals(ApparentBubble::origin +
+                                     Displacement<ApparentBubble>(
+                                         {-11 / 3.0 * Metre,
+                                          -1 * Metre,
+                                          2.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<ApparentBubble>(
+                                     {-110.0 / 3.0 * Metre / Second,
+                                      -10.0 / 3.0 * Metre / Second,
+                                      20.0 / 3.0 * Metre / Second}), 0)));
+  EXPECT_THAT(
+      pile_up.apparent_part_degrees_of_freedom_.at(&p2_),
+      Componentwise(AlmostEquals(ApparentBubble::origin +
+                                     Displacement<ApparentBubble>(
+                                         {2 * Metre,
+                                          0 * Metre,
+                                          -2.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<ApparentBubble>(
+                                     {20 * Metre / Second,
+                                      0 * Metre / Second,
+                                      -20.0 / 3.0 * Metre / Second}), 0)));
 
   //pile_up.DeformPileUpIfNeeded();
 

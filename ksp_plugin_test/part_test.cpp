@@ -18,7 +18,7 @@ using quantities::si::Second;
 
 class PartTest : public testing::Test {
  protected:
-  PartTest() : part_(part_id_, mass_) {
+  PartTest() : part_(part_id_, mass_, /*deletion_callback=*/nullptr) {
     part_.increment_intrinsic_force(intrinsic_force_);
     part_.set_degrees_of_freedom(degrees_of_freedom_);
     part_.tail().Append(
