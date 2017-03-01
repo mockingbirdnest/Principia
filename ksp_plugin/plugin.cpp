@@ -27,7 +27,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "ksp_plugin/part_subsets.hpp"
+#include "ksp_plugin/vessel_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -72,7 +72,6 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Force;
 using quantities::Length;
-using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
@@ -363,42 +362,29 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
-void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
-                                Index parent_index,
-                                bool loaded,
-                                bool& inserted) {
+bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
+                                Index const parent_index) {
   VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid) << '\n'
-          << NAMED(parent_index) << '\n'
-          << NAMED(loaded) << '\n';
+          << NAMED(vessel_guid) << '\n' << NAMED(parent_index);
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto pair =
+  auto inserted =
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(parent,
                                                     ephemeris_.get(),
                                                     history_parameters_,
                                                     prolongation_parameters_,
                                                     prediction_parameters_));
-  auto const& emplacement = pair.first;
-  inserted = pair.second;
-  not_null<Vessel*> const vessel = emplacement->second.get();
+  not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
   Subset<Vessel>::MakeSingleton(*vessel, vessel);
-  LOG_IF(INFO, inserted) << "Inserted vessel "
-                            "with GUID "
-                         << vessel_guid << " at " << vessel;
-  VLOG(1) << "Parent of vessel "
-             "with GUID "
-          << vessel_guid << " is at index " << parent_index;
-  if (!loaded && !inserted) {
-    auto dummy_part = std::make_unique<Part>(
-        );
-    vessel->add_part(dummy_part.get());
-    dummy_parts_.emplace(dummy_part);
-  }
+  LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
+                                << " at " << vessel;
+  VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
+          << parent_index;
+  return inserted.second;
 }
 
 void Plugin::SetVesselStateOffset(
