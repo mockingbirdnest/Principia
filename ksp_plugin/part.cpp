@@ -18,7 +18,7 @@ Part::Part(PartId const part_id,
       mass_(mass),
       tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
-      deletion_callback_(deletion_callback) {}
+      deletion_callback_(std::move(deletion_callback)) {}
 
 Part::~Part() {
   if (deletion_callback_ != nullptr) {

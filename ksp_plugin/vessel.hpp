@@ -58,25 +58,25 @@ class Vessel {
   virtual void set_parent(not_null<Celestial const*> parent);
 
   // Adds a dummy part with the given degrees of freedom.  This part cannot be
-  // kept or extracted, and will be removed by the next call to |free_parts|.
+  // kept or extracted, and will be removed by the next call to |FreeParts|.
   // A pointer to that part is returned.
-  // |parts_| must be empty.
-  // Since |free_parts| must not empty |parts_|, a call to |add_part| must occur
-  // before |free_parts| is called.
+  // |parts_| must be empty; |InitializeUnloaded| may be called only once.
   virtual not_null<Part*> InitializeUnloaded(
-      DegreesOfFreedom<Bubble> initial_state);
+      DegreesOfFreedom<Bubble> const& initial_state);
 
   // Adds the given part to this vessel.
-  virtual void add_part(not_null<std::unique_ptr<Part>> part);
+  virtual void AddPart(not_null<std::unique_ptr<Part>> part);
   // Removes and returns the part with the given ID.
   virtual not_null<std::unique_ptr<Part>> extract_part(PartId id);
   // Prevents the part with the given ID from being removed in the next call to
-  // |free_parts|.
-  virtual void keep_part(PartId id);
-  // Removes any part for which |add_part| or |keep_part| has not been called
-  // since the last call to |free_parts|.  Checks that there are still parts
-  // left after the removals.
-  virtual void free_parts();
+  // |FreeParts|.
+  virtual void KeepPart(PartId id);
+  // Removes any part for which |AddPart| or |KeepPart| has not been called
+  // since the last call to |FreePart|, and removes the dummy part added by
+  // |InitializeUnloaded| if the latter has been called.  Checks that there are
+  // still parts left after the removals; thus a call to |AddParts| must occur
+  // before |FreeParts| is first called.
+  virtual void FreeParts();
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
@@ -135,6 +135,7 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
+  std::unique_ptr<Part> dummy_part_;
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 

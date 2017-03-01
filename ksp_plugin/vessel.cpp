@@ -2,7 +2,6 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
-#include <limits>
 #include <list>
 #include <vector>
 
@@ -51,41 +50,36 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 not_null<Part*> Vessel::InitializeUnloaded(
-    DegreesOfFreedom<Bubble> initial_state) {
+    DegreesOfFreedom<Bubble> const& initial_state) {
   CHECK(parts_.empty());
-  PartId const id = std::numeric_limits<PartId>::max();
-  auto dummy_part =
-      make_not_null_unique<Part>(id,
-                                 1 * Kilogram,
-                                 /*deletion_callback=*/nullptr);
-  dummy_part->set_degrees_of_freedom(initial_state);
-  not_null<Part*> result = dummy_part.get();
-  parts_.emplace(id, std::move(dummy_part));
-  return result;
+  CHECK(dummy_part_ == nullptr);
+  dummy_part_ = std::make_unique<Part>(DummyPartId,
+                                       1 * Kilogram,
+                                       /*deletion_callback=*/nullptr);
+  dummy_part_->set_degrees_of_freedom(initial_state);
+  return dummy_part_.get();
 }
 
-void Vessel::add_part(not_null<std::unique_ptr<Part>> part) {
+void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
   PartId const id = part->part_id();
-  CHECK_NE(id, std::numeric_limits<PartId>::max());
   parts_.emplace(id, std::move(part));
   kept_parts_.insert(part.get());
 }
 
-not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId id) {
-  CHECK_NE(id, std::numeric_limits<PartId>::max());
+not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId const id) {
   auto const it = parts_.find(id);
-  CHECK(it != parts_.end());
+  CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
   parts_.erase(it);
   return result;
 }
 
-void Vessel::keep_part(PartId id) {
-  CHECK_NE(id, std::numeric_limits<PartId>::max());
+void Vessel::KeepPart(PartId const id) {
   kept_parts_.insert(FindOrDie(parts_, id).get());
 }
 
-void Vessel::free_parts() {
+void Vessel::FreeParts() {
+  dummy_part_.reset();
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part const*> part = it->second.get();
     if (kept_parts_.count(part) == 0) {
