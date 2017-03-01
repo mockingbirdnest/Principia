@@ -50,7 +50,8 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-void Vessel::InitializeUnloaded(DegreesOfFreedom<Bubble> initial_state) {
+not_null<Part*> Vessel::InitializeUnloaded(
+    DegreesOfFreedom<Bubble> initial_state) {
   CHECK(parts_.empty());
   PartId const id = std::numeric_limits<PartId>::max();
   auto dummy_part =
@@ -58,7 +59,9 @@ void Vessel::InitializeUnloaded(DegreesOfFreedom<Bubble> initial_state) {
                                  1 * Kilogram,
                                  /*deletion_callback=*/nullptr);
   dummy_part->set_degrees_of_freedom(initial_state);
+  not_null<Part*> result = dummy_part.get();
   parts_.emplace(id, std::move(dummy_part));
+  return result;
 }
 
 void Vessel::add_part(not_null<std::unique_ptr<Part>> part) {

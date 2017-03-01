@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
@@ -22,7 +21,6 @@ namespace internal_vessel {
 
 using base::IteratorOn;
 using base::not_null;
-using base::Subset;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
@@ -61,10 +59,12 @@ class Vessel {
 
   // Adds a dummy part with the given degrees of freedom.  This part cannot be
   // kept or extracted, and will be removed by the next call to |free_parts|.
+  // A pointer to that part is returned.
   // |parts_| must be empty.
   // Since |free_parts| must not empty |parts_|, a call to |add_part| must occur
   // before |free_parts| is called.
-  virtual void InitializeUnloaded(DegreesOfFreedom<Bubble> initial_state);
+  virtual not_null<Part*> InitializeUnloaded(
+      DegreesOfFreedom<Bubble> initial_state);
 
   // Adds the given part to this vessel.
   virtual void add_part(not_null<std::unique_ptr<Part>> part);
