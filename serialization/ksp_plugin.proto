@@ -26,9 +26,17 @@ message HistoryAndProlongation {
 }
 
 message Part {
-  required Pair degrees_of_freedom = 1;
+  required uint32 part_id = 4;
   required Quantity mass = 2;
-  required Multivector gravitational_acceleration_to_be_applied_by_ksp = 3;
+  required Multivector intrinsic_force = 5;
+  optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.
+  optional Pair degrees_of_freedom = 1;
+  required DiscreteTrajectory tail = 7;
+  required bool tail_is_authoritative = 8;
+
+  // Pre-Cardano.
+  reserved 3;
+  reserved "gravitational_acceleration_to_be_applied_by_ksp";
 }
 
 message Manoeuvre {
@@ -59,32 +67,6 @@ message FlightPlan {
   reserved "anomalous_segments", "max_steps";
 }
 
-message PhysicsBubble {
-  message FullState {
-    message GuidAndDegreesOfFreedom {
-      required string guid = 1;
-      required Pair degrees_of_freedom = 2;
-    }
-    message GuidAndPartIds {
-      required string guid = 1;
-      repeated int32 part_id = 2;
-    }
-    message PartIdAndPart {
-      required int32 part_id = 1;
-      required Part part = 2;
-    }
-    repeated PartIdAndPart part = 1;
-    repeated GuidAndPartIds vessel = 2;
-    required Pair centre_of_mass = 3;
-    required DiscreteTrajectory centre_of_mass_trajectory = 4;
-    repeated GuidAndDegreesOfFreedom from_centre_of_mass = 5;
-    required Multivector displacement_correction = 6;
-    required Multivector velocity_correction = 7;
-  }
-  required MasslessBody body = 1;
-  optional FullState current = 2;
-}
-
 message Plugin {
   message VesselAndProperties {
     required string guid = 1;
@@ -104,7 +86,6 @@ message Plugin {
   repeated VesselAndProperties vessel = 1;
   repeated CelestialAndProperties pre_bourbaki_celestial = 2;
   repeated CelestialParenthood celestial = 10;
-  required PhysicsBubble bubble = 3;
   optional Ephemeris ephemeris = 7;  // required
   required Quantity planetarium_rotation = 4;
   optional Point game_epoch = 15;  // required
@@ -120,6 +101,9 @@ message Plugin {
   // Pre-Буняковский.
   reserved 8, 9;
   reserved "prolongation_integrator", "prediction_integrator";
+  // Pre-Cardano.
+  reserved 3;
+  reserved "bubble";
 }
 
 message Vessel {

@@ -36,10 +36,10 @@
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_vessel.cpp" />
+    <ClCompile Include="..\ksp_plugin\part.cpp" />
     <ClCompile Include="..\ksp_plugin\pile_up.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
-    <ClCompile Include="..\ksp_plugin\vessel_subsets.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
