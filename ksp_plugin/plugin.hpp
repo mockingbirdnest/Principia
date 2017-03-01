@@ -83,7 +83,7 @@ class Plugin {
   Plugin(Plugin&&) = delete;
   Plugin& operator=(Plugin const&) = delete;
   Plugin& operator=(Plugin&&) = delete;
-  virtual ~Plugin();
+  virtual ~Plugin() = default;
 
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and

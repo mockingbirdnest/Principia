@@ -107,13 +107,6 @@ Plugin::Plugin(Instant const& game_epoch,
       game_epoch_(game_epoch),
       current_time_(solar_system_epoch) {}
 
-Plugin::~Plugin() {
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.clear_pile_up();
-  }
-}
-
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
