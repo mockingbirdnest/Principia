@@ -67,7 +67,7 @@ class Vessel {
   // Adds the given part to this vessel.
   virtual void AddPart(not_null<std::unique_ptr<Part>> part);
   // Removes and returns the part with the given ID.
-  virtual not_null<std::unique_ptr<Part>> extract_part(PartId id);
+  virtual not_null<std::unique_ptr<Part>> ExtractPart(PartId id);
   // Prevents the part with the given ID from being removed in the next call to
   // |FreeParts|.
   virtual void KeepPart(PartId id);

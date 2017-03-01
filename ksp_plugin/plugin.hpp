@@ -161,10 +161,10 @@ class Plugin {
                                   bool& inserted);
 
   // TODO(egg): comment. This will also clear the intrinsic force I think.
-  virtual void InsertOrKeepLoadedPart(PartId const part_id,
-                                            Mass const& mass,
-                                            Vessel& vessel,
-                                            bool& inserted);
+  virtual void InsertOrKeepLoadedPart(PartId part_id,
+                                      Mass const& mass,
+                                      not_null<Vessel*> vessel,
+                                      bool& inserted);
 
   // TODO(egg): comment;
   virtual void IncrementPartIntrinsicForce(
@@ -173,6 +173,7 @@ class Plugin {
 
   // TODO(egg): comment.
   virtual void SetPartInitialDegreesOfFreedom(
+      PartId const part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
@@ -432,8 +433,7 @@ class Plugin {
       MassiveBody const& body);
 
   GUIDToOwnedVessel vessels_;
-  std::map<PartId, Part> parts_;
-  std::set<not_null<std::unique_ptr<Part>>> dummy_parts_;
+  std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
@@ -490,7 +490,7 @@ class Plugin {
   // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
-  std::list<std::list<PileUp>::iterator> pile_ups_in_bubble_;
+  std::set<not_null<Vessel*>> pile_ups_in_bubble_;
   std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.

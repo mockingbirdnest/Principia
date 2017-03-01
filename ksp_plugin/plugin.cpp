@@ -393,11 +393,33 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   VLOG(1) << "Parent of vessel "
              "with GUID "
           << vessel_guid << " is at index " << parent_index;
-  if (!loaded && !inserted) {
-    auto dummy_part = std::make_unique<Part>(
-        );
-    vessel->add_part(dummy_part.get());
-    dummy_parts_.emplace(dummy_part);
+}
+
+void Plugin::InsertOrKeepLoadedPart(PartId const part_id,
+                                    Mass const& mass,
+                                    not_null<Vessel*> const vessel,
+                                    bool& inserted) {
+  auto it = part_id_to_vessel_.find(part_id);
+  inserted = it == part_id_to_vessel_.end();
+  if (inserted) {
+    auto const pair = part_id_to_vessel_.emplace(part_id, vessel);
+    auto const& it = pair.first;
+    bool const emplaced = pair.second;
+    CHECK(emplaced);
+    auto deletion_callback = [it, &map = part_id_to_vessel_] {
+      map.erase(it);
+    });
+    auto part =
+        make_not_null_unique<Part>(part_id, mass, std::move(deletion_callback));
+    vessel->AddPart(std::move(part));
+  } else {
+    not_null<Vessel*> current_vessel = it->second;
+    if (vessel == current_vessel) {
+     vessel->KeepPart(part_id);
+    } else {
+      FindOrDie(part_id_to_vessel_, part_id) = vessel;
+      vessel->AddPart(current_vessel->ExtractPart(part_id));
+    }
   }
 }
 

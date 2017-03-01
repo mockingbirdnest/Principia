@@ -66,7 +66,7 @@ void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
   kept_parts_.insert(part.get());
 }
 
-not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId const id) {
+not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
