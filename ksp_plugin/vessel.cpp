@@ -50,15 +50,26 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-void Vessel::InitializeUnloaded() {}
+void Vessel::InitializeUnloaded(DegreesOfFreedom<Bubble> initial_state) {
+  CHECK(parts_.empty());
+  PartId const id = std::numeric_limits<PartId>::max();
+  auto dummy_part =
+      make_not_null_unique<Part>(id,
+                                 1 * Kilogram,
+                                 /*deletion_callback=*/nullptr);
+  dummy_part->set_degrees_of_freedom(initial_state);
+  parts_.emplace(id, std::move(dummy_part));
+}
 
 void Vessel::add_part(not_null<std::unique_ptr<Part>> part) {
   PartId const id = part->part_id();
+  CHECK_NE(id, std::numeric_limits<PartId>::max());
   parts_.emplace(id, std::move(part));
   kept_parts_.insert(part.get());
 }
 
 not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId id) {
+  CHECK_NE(id, std::numeric_limits<PartId>::max());
   auto const it = parts_.find(id);
   CHECK(it != parts_.end());
   auto result = std::move(it->second);
@@ -67,7 +78,8 @@ not_null<std::unique_ptr<Part>> Vessel::extract_part(PartId id) {
 }
 
 void Vessel::keep_part(PartId id) {
-  kept_parts_.insert(FindOrDie(parts_,id).get());
+  CHECK_NE(id, std::numeric_limits<PartId>::max());
+  kept_parts_.insert(FindOrDie(parts_, id).get());
 }
 
 void Vessel::free_parts() {
@@ -79,6 +91,7 @@ void Vessel::free_parts() {
       ++it;
     }
   }
+  CHECK(!parts_.empty());
   kept_parts_.clear();
 }
 

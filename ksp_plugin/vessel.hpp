@@ -59,11 +59,23 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  virtual void InitializeUnloaded(/*TODO args*/);
+  // Adds a dummy part with the given degrees of freedom.  This part cannot be
+  // kept or extracted, and will be removed by the next call to |free_parts|.
+  // |parts_| must be empty.
+  // Since |free_parts| must not empty |parts_|, a call to |add_part| must occur
+  // before |free_parts| is called.
+  virtual void InitializeUnloaded(DegreesOfFreedom<Bubble> initial_state);
 
+  // Adds the given part to this vessel.
   virtual void add_part(not_null<std::unique_ptr<Part>> part);
+  // Removes and returns the part with the given ID.
   virtual not_null<std::unique_ptr<Part>> extract_part(PartId id);
+  // Prevents the part with the given ID from being removed in the next call to
+  // |free_parts|.
   virtual void keep_part(PartId id);
+  // Removes any part for which |add_part| or |keep_part| has not been called
+  // since the last call to |free_parts|.  Checks that there are still parts
+  // left after the removals.
   virtual void free_parts();
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
