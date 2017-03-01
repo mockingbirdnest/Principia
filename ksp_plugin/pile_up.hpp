@@ -57,9 +57,8 @@ class PileUp final {
   // matches that computed by integration.
   // |SetPartApparentDegreesOfFreedom| must have been called for each part in
   // the pile-up, or for none.
-  // The degrees of freedom set by |NudgePartsInPileUpIfNeeded| are used by
-  // |AdvanceTime|.
-  // NOTE(egg): Eventually, this will also nudge their velocities and angular
+  // The degrees of freedom set by this method are used by |NudgeParts|.
+  // NOTE(egg): Eventually, this will also change their velocities and angular
   // velocities so that the angular momentum matches that which has been
   // computed for |this| |PileUp|.
   void DeformPileUpIfNeeded();
@@ -76,8 +75,9 @@ class PileUp final {
           adaptive_step_parameters);
 
   // Adjusts the |Bubble| degrees of freedom of all parts in this pile up based
-  // on the origin of |Bubble| given in |Barycentric|, and on the |RigidPileUp|
-  // degrees of freedom of the parts (as set by |DeformPileUpIfNeeded|).
+  // on the position of the pile-up computed by |AdvanceTime|, on the origin of
+  // |Bubble| given in |Barycentric|, and on the |RigidPileUp| degrees of
+  // freedom of the parts, as set by |DeformPileUpIfNeeded|.
   void NudgeParts(DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
  private:

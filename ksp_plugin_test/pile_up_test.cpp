@@ -71,6 +71,8 @@ class PileUpTest : public testing::Test {
   Part p2_;
 };
 
+// Exercises the entire lifecycle of a |PileUp|.  This is an intrusive test that
+// checks the internal state of the class.
 TEST_F(PileUpTest, Lifecycle) {
   PileUp pile_up({&p1_, &p2_}, bubble_barycentre, astronomy::J2000);
 
@@ -124,7 +126,7 @@ TEST_F(PileUpTest, Lifecycle) {
                                             -1.0 * Metre,
                                             2.0 / 3.0 * Metre}),
           Velocity<ApparentBubble>({-110.0 / 3.0 * Metre / Second,
-                                    -10.0 / 3.0 * Metre / Second,
+                                    -10.0 * Metre / Second,
                                     20.0 / 3.0 * Metre / Second})));
   pile_up.SetPartApparentDegreesOfFreedom(
       &p2_,
@@ -146,7 +148,7 @@ TEST_F(PileUpTest, Lifecycle) {
                                           2.0 / 3.0 * Metre}), 0),
                     AlmostEquals(Velocity<ApparentBubble>(
                                      {-110.0 / 3.0 * Metre / Second,
-                                      -10.0 / 3.0 * Metre / Second,
+                                      -10.0 * Metre / Second,
                                       20.0 / 3.0 * Metre / Second}), 0)));
   EXPECT_THAT(
       pile_up.apparent_part_degrees_of_freedom_.at(&p2_),
@@ -168,11 +170,11 @@ TEST_F(PileUpTest, Lifecycle) {
                                      Displacement<RigidPileUp>(
                                          {-34.0 / 9.0 * Metre,
                                           -2.0 / 3.0 * Metre,
-                                          8.0 / 9.0 * Metre}), 0),
+                                          8.0 / 9.0 * Metre}), 1),
                     AlmostEquals(Velocity<RigidPileUp>(
                                      {-340.0 / 9.0 * Metre / Second,
                                       -20.0 / 3.0 * Metre / Second,
-                                      80.0 / 9.0 * Metre / Second}), 0)));
+                                      80.0 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
       pile_up.actual_part_degrees_of_freedom_.at(&p2_),
       Componentwise(AlmostEquals(RigidPileUp::origin +
