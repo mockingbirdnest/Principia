@@ -14,7 +14,7 @@ using base::make_not_null_unique;
 Part::Part(
     PartId const part_id,
     Mass const& mass,
-    DoublePrecision<DegreesOfFreedom<Barycentric>> const& degrees_of_freedom,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
       mass_(mass),
@@ -56,11 +56,11 @@ Vector<Force, Barycentric> const& Part::intrinsic_force() const {
 }
 
 void Part::set_degrees_of_freedom(
-    DoublePrecision<DegreesOfFreedom<Barycentric>> const& degrees_of_freedom) {
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   degrees_of_freedom_ = degrees_of_freedom;
 }
 
-DoublePrecision<DegreesOfFreedom<Barycentric>> const&
+DegreesOfFreedom<Barycentric> const&
 Part::degrees_of_freedom() const {
   return degrees_of_freedom_;
 }

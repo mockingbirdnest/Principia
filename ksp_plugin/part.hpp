@@ -13,7 +13,6 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "numerics/double_precision.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -31,7 +30,6 @@ using base::Subset;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
-using numerics::DoublePrecision;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Force;
@@ -49,7 +47,7 @@ class Part final {
  public:
   Part(PartId part_id,
        Mass const& mass,
-       DoublePrecision<DegreesOfFreedom<Barycentric>> const& degrees_of_freedom,
+       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
   // Calls the deletion callback passed at construction, if any.  Calls
   // |clear_pile_up|.
@@ -73,9 +71,8 @@ class Part final {
 
   // Clears, sets or returns the degrees of freedom of the part.
   virtual void set_degrees_of_freedom(
-      DoublePrecision<DegreesOfFreedom<Barycentric>> const& degrees_of_freedom);
-  virtual DoublePrecision<DegreesOfFreedom<Barycentric>> const&
-  degrees_of_freedom() const;
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+  virtual DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
 
   // This temporarily holds the trajectory followed by the part during the call
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
@@ -116,7 +113,7 @@ class Part final {
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
       containing_pile_up_;
 
-  DoublePrecision<DegreesOfFreedom<Barycentric>> degrees_of_freedom_;
+  DegreesOfFreedom<Barycentric> degrees_of_freedom_;
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> tail_;
   bool tail_is_authoritative_ = false;
 
