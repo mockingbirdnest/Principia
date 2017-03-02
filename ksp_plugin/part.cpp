@@ -114,37 +114,29 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
   if (containing_pile_up_) {
     // TODO(phl): Implement.
   }
-  // TODO(phl):
-  // if (degrees_of_freedom_) {
-  //   degrees_of_freedom_->WriteToMessage(message->mutable_degrees_of_freedom());
-  // }
+  degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
   tail_->WriteToMessage(message->mutable_tail(), /*forks=*/{});
   message->set_tail_is_authoritative(tail_is_authoritative_);
 }
 
-#if 0
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message) {
   // TODO(phl): Serialize/Deserialize the deletion callback.
-  not_null<std::unique_ptr<Part>> part =
-      make_not_null_unique<Part>(message.part_id(),
-                                 Mass::ReadFromMessage(message.mass()));
+  not_null<std::unique_ptr<Part>> part = make_not_null_unique<Part>(
+      message.part_id(),
+      Mass::ReadFromMessage(message.mass()),
+      DegreesOfFreedom<Barycentric>::ReadFromMessage(message.degrees_of_freedom()),
+      /*TODO=*/nullptr);
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (message.has_containing_pile_up()) {
     // TODO(phl): Implement.
-  }
-  if (message.has_degrees_of_freedom()) {
-    // TODO(phl): serialize in double precision.
-    part->set_degrees_of_freedom(DegreesOfFreedom<Bubble>::ReadFromMessage(
-        message.degrees_of_freedom()));
   }
   part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
                                                                  /*forks=*/{});
   part->set_tail_is_authoritative(message.tail_is_authoritative());
   return part;
 }
-#endif
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {
   return out << "{"
