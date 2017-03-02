@@ -83,7 +83,7 @@ class Plugin {
   Plugin(Plugin&&) = delete;
   Plugin& operator=(Plugin const&) = delete;
   Plugin& operator=(Plugin&&) = delete;
-  virtual ~Plugin() = default;
+  virtual ~Plugin();
 
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and
@@ -153,27 +153,7 @@ class Plugin {
   // vessel is known. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
-  // TODO(egg): update comment.  If |loaded| is false, calls
-  // |InsertOrKeepLoadedPart| for all parts in the vessel.
-  virtual void InsertOrKeepVessel(GUID const& vessel_guid,
-                                  Index parent_index,
-                                  bool loaded,
-                                  bool& inserted);
-
-  // TODO(egg): comment. This will also clear the intrinsic force I think.
-  virtual void InsertOrKeepLoadedPart(PartId part_id,
-                                      Mass const& mass,
-                                      not_null<Vessel*> vessel,
-                                      bool& inserted);
-
-  // TODO(egg): comment;
-  virtual void IncrementPartIntrinsicForce(PartId const part_id,
-                                           Vector<Force, World> const& force);
-
-  // TODO(egg): comment.
-  virtual void SetPartInitialDegreesOfFreedom(
-      PartId const part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+  virtual bool InsertOrKeepVessel(GUID const& vessel_guid, Index parent_index);
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| must only
@@ -181,8 +161,6 @@ class Plugin {
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id.ToString()|,
   // |{v.orbit.pos, v.orbit.vel}|.
-  // TODO(egg): Update comment; only used when |InsertOrKeepVessel| called with
-  // loaded=false returns with inserted=true.
   virtual void SetVesselStateOffset(
       GUID const& vessel_guid,
       RelativeDegreesOfFreedom<AliceSun> const& from_parent);
@@ -190,12 +168,9 @@ class Plugin {
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
   // since the last call to |FreeVesselsAndCollectPileUps|, and updates the list
   // of |pile_ups_| according to the reported collisions.
-  virtual void FreeVesselsAndPartsAndCollectPileUps();
+  virtual void FreeVesselsAndCollectPileUps();
 
-  // TODO(egg): comment.
-  virtual void SetPartApparentDegreesOfFreedom(
-      PartId const part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+  virtual void AddPileUpToBubble(std::list<PileUp>::iterator pile_up);
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
@@ -330,8 +305,7 @@ class Plugin {
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
   // Calls |UpdateVesselsInPileUpIfUpdated| on all the pile-ups.
-  // TODO(egg): Update comment.
-  virtual void DeformPileUpsIfNeeded();
+  virtual void UpdateAllVesselsInPileUps();
 
   // Coordinate transforms.
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
@@ -430,7 +404,6 @@ class Plugin {
       MassiveBody const& body);
 
   GUIDToOwnedVessel vessels_;
-  std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
@@ -487,7 +460,7 @@ class Plugin {
   // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
-  std::set<not_null<Vessel*>> loaded_vessels_;
+  std::list<std::list<PileUp>::iterator> pile_ups_in_bubble_;
   std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.
