@@ -197,8 +197,6 @@ class Plugin {
       PartId const part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  virtual void AddPileUpToBubble(std::list<PileUp>::iterator pile_up);
-
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.

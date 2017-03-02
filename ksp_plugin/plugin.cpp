@@ -463,9 +463,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   }
 }
 
-void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator const pile_up) {
-  pile_ups_in_bubble_.push_back(pile_up);
-}
+void Plugin::SetPartApparentDegreesOfFreedom(
+    PartId const part_id,
+    DegreesOfFreedom<World> const& degrees_of_freedom) {}
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__ << '\n'
