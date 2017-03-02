@@ -13,6 +13,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "numerics/double_precision.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -30,6 +31,7 @@ using base::Subset;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
+using numerics::DoublePrecision;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Force;
@@ -47,6 +49,7 @@ class Part final {
  public:
   Part(PartId part_id,
        Mass const& mass,
+       DoublePrecision<DegreesOfFreedom<Barycentric>> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
   // Calls the deletion callback passed at construction, if any.  Calls
   // |clear_pile_up|.
@@ -68,13 +71,10 @@ class Part final {
       Vector<Force, Barycentric> const& intrinsic_force);
   virtual Vector<Force, Barycentric> const& intrinsic_force() const;
 
-  // Clears, sets or returns the degrees of freedom of the part.  A part that is
-  // not in the bubble (i.e., that belongs to a pile-up that is not in the
-  // bubble) doesn't have degrees of freedom.
-  virtual void clear_degrees_of_freedom();
+  // Clears, sets or returns the degrees of freedom of the part.
   virtual void set_degrees_of_freedom(
-      DegreesOfFreedom<Bubble> const& degrees_of_freedom);
-  virtual std::experimental::optional<DegreesOfFreedom<Bubble>> const&
+      DoublePrecision<DegreesOfFreedom<Barycentric>> const& degrees_of_freedom);
+  virtual DoublePrecision<DegreesOfFreedom<Barycentric>> const&
   degrees_of_freedom() const;
 
   // This temporarily holds the trajectory followed by the part during the call
@@ -116,7 +116,7 @@ class Part final {
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
       containing_pile_up_;
 
-  std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
+  DoublePrecision<DegreesOfFreedom<Barycentric>> degrees_of_freedom_;
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> tail_;
   bool tail_is_authoritative_ = false;
 
