@@ -27,7 +27,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "ksp_plugin/vessel_subsets.hpp"
+#include "ksp_plugin/part_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -72,6 +72,7 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Force;
 using quantities::Length;
+using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
@@ -105,13 +106,6 @@ Plugin::Plugin(Instant const& game_epoch,
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
       current_time_(solar_system_epoch) {}
-
-Plugin::~Plugin() {
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.clear_pile_up();
-  }
-}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
@@ -362,29 +356,67 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
-bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
-                                Index const parent_index) {
+void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
+                                Index const parent_index,
+                                bool const loaded,
+                                bool& inserted) {
   VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid) << '\n' << NAMED(parent_index);
+          << NAMED(vessel_guid) << '\n'
+          << NAMED(parent_index) << '\n'
+          << NAMED(loaded) << '\n';
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto inserted =
+  auto pair =
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(parent,
                                                     ephemeris_.get(),
                                                     history_parameters_,
                                                     prolongation_parameters_,
                                                     prediction_parameters_));
-  not_null<Vessel*> const vessel = inserted.first->second.get();
+  auto const& it = pair.first;
+  inserted = pair.second;
+  not_null<Vessel*> const vessel = it->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
-  Subset<Vessel>::MakeSingleton(*vessel, vessel);
-  LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
-                                << " at " << vessel;
-  VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
+  if (loaded) {
+    loaded_vessels_.insert(vessel)
+  }
+  LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
+                         << " vessel with GUID " << vessel_guid << " at "
+                         << vessel;
+  VLOG(1) << "Parent of vessel with GUID " << vessel_guid << " is at index "
           << parent_index;
-  return inserted.second;
+}
+
+void Plugin::InsertOrKeepLoadedPart(PartId const part_id,
+                                    Mass const& mass,
+                                    not_null<Vessel*> const vessel,
+                                    bool& inserted) {
+  auto it = part_id_to_vessel_.find(part_id);
+  inserted = it == part_id_to_vessel_.end();
+  CHECK_GT(loaded_vessels_.count(vessel), 0);
+  if (inserted) {
+    auto const pair = part_id_to_vessel_.emplace(part_id, vessel);
+    auto const& it = pair.first;
+    bool const emplaced = pair.second;
+    CHECK(emplaced);
+    auto deletion_callback = [it, &map = part_id_to_vessel_] {
+      map.erase(it);
+    });
+    auto part =
+        make_not_null_unique<Part>(part_id, mass, std::move(deletion_callback));
+    vessel->AddPart(std::move(part));
+  } else {
+    not_null<Vessel*> current_vessel = it->second;
+    if (vessel == current_vessel) {
+     vessel->KeepPart(part_id);
+    } else {
+      FindOrDie(part_id_to_vessel_, part_id) = vessel;
+      vessel->AddPart(current_vessel->ExtractPart(part_id));
+    }
+  }
+  Subset<Part>::MakeSingleton(vessel->part(part_id))
 }
 
 void Plugin::SetVesselStateOffset(
@@ -408,18 +440,32 @@ void Plugin::SetVesselStateOffset(
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
 }
 
-void Plugin::FreeVesselsAndCollectPileUps() {
+void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   CHECK(!initializing_);
-  FreeVessels();
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
+
+  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
+    not_null<Vessel*> vessel = it->second.get();
+    if (kept_vessels_.erase(vessel)) {
+      ++it;
+    } else {
+      CHECK(loaded_vessels_.count(vessel) == 0);
+      LOG(INFO) << "Removing vessel with GUID " << it->first;
+      vessel->clear_pile_up();
+      it = vessels_.erase(it);
+    }
+  }
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->FreeParts();
+    // TODO(egg): Collect the parts somehow.  Thinking about this brought up an
+    // issue with the correctness of all those Bubble DOF, and frankly at this
+    // point I think we would be happier with just
+    // DoublePrecision<DegreesOfFreedom<Barycentric>> in Part...
   }
 }
 
-void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator const pile_up) {
-  pile_ups_in_bubble_.push_back(pile_up);
-}
+void Plugin::SetPartApparentDegreesOfFreedom(
+    PartId const part_id,
+    DegreesOfFreedom<World> const& degrees_of_freedom) {}
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__ << '\n'
@@ -1110,23 +1156,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
                planetarium_rotation_,
                Bivector<double, PlanetariumFrame>({0, 0, 1}),
                DefinesFrame<AliceSun>{}) * to_planetarium;
-  }
-}
-
-void Plugin::FreeVessels() {
-  VLOG(1) <<  __FUNCTION__;
-  // Remove the vessels which were not updated since last time.
-  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
-    // While we're going over the vessels, check invariants.
-    not_null<Vessel*> const vessel = it->second.get();
-    // Now do the cleanup.
-    if (kept_vessels_.erase(vessel)) {
-      ++it;
-    } else {
-      LOG(INFO) << "Removing vessel with GUID " << it->first;
-      vessel->clear_pile_up();
-      it = vessels_.erase(it);
-    }
   }
 }
 
