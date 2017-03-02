@@ -48,6 +48,8 @@ class Part final {
   Part(PartId part_id,
        Mass const& mass,
        std::function<void()> deletion_callback);
+  // Calls the deletion callback passed at construction, if any.  Calls
+  // |clear_pile_up|.
   ~Part();
 
   virtual PartId part_id() const;

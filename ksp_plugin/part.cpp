@@ -21,6 +21,7 @@ Part::Part(PartId const part_id,
       deletion_callback_(std::move(deletion_callback)) {}
 
 Part::~Part() {
+  clear_pile_up();
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
   }

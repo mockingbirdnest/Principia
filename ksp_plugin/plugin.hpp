@@ -167,9 +167,8 @@ class Plugin {
                                       bool& inserted);
 
   // TODO(egg): comment;
-  virtual void IncrementPartIntrinsicForce(
-      PartId const part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+  virtual void IncrementPartIntrinsicForce(PartId const part_id,
+                                           Vector<Force, World> const& force);
 
   // TODO(egg): comment.
   virtual void SetPartInitialDegreesOfFreedom(
@@ -490,7 +489,7 @@ class Plugin {
   // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
-  std::set<not_null<Vessel*>> pile_ups_in_bubble_;
+  std::set<not_null<Vessel*>> loaded_vessels_;
   std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.

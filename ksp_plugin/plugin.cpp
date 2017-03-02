@@ -357,8 +357,8 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
 }
 
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
-                                Index parent_index,
-                                bool loaded,
+                                Index const parent_index,
+                                bool const loaded,
                                 bool& inserted) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(vessel_guid) << '\n'
@@ -374,18 +374,19 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                                     history_parameters_,
                                                     prolongation_parameters_,
                                                     prediction_parameters_));
-  auto const& emplacement = pair.first;
+  auto const& it = pair.first;
   inserted = pair.second;
-  not_null<Vessel*> const vessel = emplacement->second.get();
+  not_null<Vessel*> const vessel = it->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
-  Subset<Vessel>::MakeSingleton(*vessel, vessel);
-  LOG_IF(INFO, inserted) << "Inserted vessel "
-                            "with GUID "
-                         << vessel_guid << " at " << vessel;
-  VLOG(1) << "Parent of vessel "
-             "with GUID "
-          << vessel_guid << " is at index " << parent_index;
+  if (loaded) {
+    loaded_vessels_.insert(vessel)
+  }
+  LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
+                         << " vessel with GUID " << vessel_guid << " at "
+                         << vessel;
+  VLOG(1) << "Parent of vessel with GUID " << vessel_guid << " is at index "
+          << parent_index;
 }
 
 void Plugin::InsertOrKeepLoadedPart(PartId const part_id,
@@ -394,6 +395,7 @@ void Plugin::InsertOrKeepLoadedPart(PartId const part_id,
                                     bool& inserted) {
   auto it = part_id_to_vessel_.find(part_id);
   inserted = it == part_id_to_vessel_.end();
+  CHECK_GT(loaded_vessels_.count(vessel), 0);
   if (inserted) {
     auto const pair = part_id_to_vessel_.emplace(part_id, vessel);
     auto const& it = pair.first;
@@ -414,6 +416,7 @@ void Plugin::InsertOrKeepLoadedPart(PartId const part_id,
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   }
+  Subset<Part>::MakeSingleton(vessel->part(part_id))
 }
 
 void Plugin::SetVesselStateOffset(
@@ -437,9 +440,23 @@ void Plugin::SetVesselStateOffset(
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
 }
 
-void Plugin::FreeVesselsAndCollectPileUps() {
+void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   CHECK(!initializing_);
-  FreeVessels();
+
+  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
+    not_null<Vessel*> vessel = it->second.get();
+    if (kept_vessels_.erase(vessel)) {
+      ++it;
+    } else {
+      CHECK(loaded_vessels_.count(vessel) == 0);
+      LOG(INFO) << "Removing vessel with GUID " << it->first;
+      vessel->clear_pile_up();
+      it = vessels_.erase(it);
+    }
+  }
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->FreeParts();
+  }
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
@@ -1139,23 +1156,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
                planetarium_rotation_,
                Bivector<double, PlanetariumFrame>({0, 0, 1}),
                DefinesFrame<AliceSun>{}) * to_planetarium;
-  }
-}
-
-void Plugin::FreeVessels() {
-  VLOG(1) <<  __FUNCTION__;
-  // Remove the vessels which were not updated since last time.
-  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
-    // While we're going over the vessels, check invariants.
-    not_null<Vessel*> const vessel = it->second.get();
-    // Now do the cleanup.
-    if (kept_vessels_.erase(vessel)) {
-      ++it;
-    } else {
-      LOG(INFO) << "Removing vessel with GUID " << it->first;
-      vessel->clear_pile_up();
-      it = vessels_.erase(it);
-    }
   }
 }
 
