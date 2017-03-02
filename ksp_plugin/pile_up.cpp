@@ -23,9 +23,7 @@ using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 
-PileUp::PileUp(std::list<not_null<Part*>>&& parts,
-               DegreesOfFreedom<Barycentric> const& bubble_barycentre,
-               Instant const& t)
+PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
     : parts_(std::move(parts)) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
@@ -171,8 +169,7 @@ void PileUp::AdvanceTime(
   psychohistory_.ForgetBefore(psychohistory_.last().time());
 }
 
-void PileUp::NudgeParts(
-    DegreesOfFreedom<Barycentric> const& bubble_barycentre) const {
+void PileUp::NudgeParts() const {
   auto const actual_centre_of_mass =
       psychohistory_.last().degrees_of_freedom();
 
