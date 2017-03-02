@@ -456,10 +456,10 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   }
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
-  }
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
+    // TODO(egg): Collect the parts somehow.  Thinking about this brought up an
+    // issue with the correctness of all those Bubble DOF, and frankly at this
+    // point I think we would be happier with just
+    // DoublePrecision<DegreesOfFreedom<Barycentric>> in Part...
   }
 }
 
