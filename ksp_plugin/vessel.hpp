@@ -62,7 +62,7 @@ class Vessel {
   // A pointer to that part is returned.
   // |parts_| must be empty; |InitializeUnloaded| may be called only once.
   virtual not_null<Part*> InitializeUnloaded(
-      DegreesOfFreedom<Bubble> const& initial_state);
+      DegreesOfFreedom<Barycentric> const& initial_state);
 
   // Adds the given part to this vessel.
   virtual void AddPart(not_null<std::unique_ptr<Part>> part);

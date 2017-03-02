@@ -50,13 +50,13 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 not_null<Part*> Vessel::InitializeUnloaded(
-    DegreesOfFreedom<Bubble> const& initial_state) {
+    DegreesOfFreedom<Barycentric> const& initial_state) {
   CHECK(parts_.empty());
   CHECK(dummy_part_ == nullptr);
   dummy_part_ = std::make_unique<Part>(DummyPartId,
                                        1 * Kilogram,
+                                       initial_state,
                                        /*deletion_callback=*/nullptr);
-  dummy_part_->set_degrees_of_freedom(initial_state);
   return dummy_part_.get();
 }
 
