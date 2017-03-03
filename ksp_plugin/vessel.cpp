@@ -92,7 +92,7 @@ void Vessel::FreeParts() {
   kept_parts_.clear();
 }
 
-not_null<Part*> Vessel::part(PartId id) const {
+not_null<Part*> Vessel::part(PartId const id) const {
   return FindOrDie(parts_, id).get();
 }
 

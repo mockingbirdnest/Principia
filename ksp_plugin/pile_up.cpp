@@ -33,6 +33,7 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
   }
   mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
+  psychohistory_.Append(t, calculator.Get());
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
