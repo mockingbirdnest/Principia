@@ -27,7 +27,6 @@ Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
 
 void Subset<ksp_plugin::Part>::Properties::Collect(
     not_null<PileUps*> const pile_ups,
-    DegreesOfFreedom<Barycentric> const& bubble_barycentre,
     Instant const& t) {
   if (collected_) {
     return;
@@ -37,7 +36,7 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
     if (StrictSubsetOfExistingPileUp()) {
       parts_.front()->clear_pile_up();
     }
-    pile_ups->emplace_front(std::move(parts_), bubble_barycentre, t);
+    pile_ups->emplace_front(std::move(parts_), t);
     auto const it = pile_ups->begin();
     for (not_null<Part*> const part : it->parts()) {
       part->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));

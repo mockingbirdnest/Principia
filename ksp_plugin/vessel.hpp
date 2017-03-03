@@ -62,12 +62,14 @@ class Vessel {
   // A pointer to that part is returned.
   // |parts_| must be empty; |InitializeUnloaded| may be called only once.
   virtual not_null<Part*> InitializeUnloaded(
-      DegreesOfFreedom<Bubble> const& initial_state);
+      DegreesOfFreedom<Barycentric> const& initial_state);
 
   // Adds the given part to this vessel.
   virtual void AddPart(not_null<std::unique_ptr<Part>> part);
-  // Removes and returns the part with the given ID.
-  virtual not_null<std::unique_ptr<Part>> extract_part(PartId id);
+  // Removes and returns the part with the given ID.  This may empty |parts_|,
+  // as happens when a vessel ceases to exist while loaded.  Note that in that
+  // case |FreeParts| must not be called.
+  virtual not_null<std::unique_ptr<Part>> ExtractPart(PartId id);
   // Prevents the part with the given ID from being removed in the next call to
   // |FreeParts|.
   virtual void KeepPart(PartId id);
@@ -77,6 +79,10 @@ class Vessel {
   // still parts left after the removals; thus a call to |AddParts| must occur
   // before |FreeParts| is first called.
   virtual void FreeParts();
+
+  // Returns the part with the given ID.  Such a part must have been added using
+  // |AddPart|.
+  virtual not_null<Part*> part(PartId id) const;
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
