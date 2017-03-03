@@ -61,6 +61,7 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
+using quantities::Force;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Time;

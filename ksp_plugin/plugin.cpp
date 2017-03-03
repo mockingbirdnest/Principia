@@ -380,7 +380,7 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
   if (loaded) {
-    loaded_vessels_.insert(vessel)
+    loaded_vessels_.insert(vessel);
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
                          << " vessel with GUID " << vessel_guid << " at "
@@ -410,14 +410,15 @@ void Plugin::InsertOrKeepLoadedPart(
     auto const& it = pair.first;
     bool const emplaced = pair.second;
     CHECK(emplaced);
-    auto deletion_callback = [ it, &map = part_id_to_vessel_ ] {
+    auto deletion_callback = [it, &map = part_id_to_vessel_] {
       map.erase(it);
-    });
+    };
     auto part = make_not_null_unique<Part>(
         part_id, mass, degrees_of_freedom, std::move(deletion_callback));
     vessel->AddPart(std::move(part));
   }
-  Subset<Part>::MakeSingleton(vessel->part(part_id))
+  not_null<Part*> part = vessel->part(part_id);
+  Subset<Part>::MakeSingleton(*part, part);
 }
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
@@ -446,7 +447,7 @@ void Plugin::SetVesselStateOffset(
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   Subset<Part>::MakeSingleton(
       *dummy_part,
-      dummy_part).mutable_properties().Collect(pile_ups_, current_time_);
+      dummy_part).mutable_properties().Collect(&pile_ups_, current_time_);
 }
 
 void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
