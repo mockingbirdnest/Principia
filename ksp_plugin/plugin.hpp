@@ -161,19 +161,17 @@ class Plugin {
                                   bool& inserted);
 
   // TODO(egg): comment. This will also clear the intrinsic force I think.
-  virtual void InsertOrKeepLoadedPart(PartId part_id,
-                                      Mass const& mass,
-                                      not_null<Vessel*> vessel,
-                                      bool& inserted);
+  // TODO(egg): pass DegreesOfFreedom<World>, together with the DOF of World's
+  // origin, or have a separate function for that.
+  virtual void InsertOrKeepLoadedPart(
+      PartId part_id,
+      Mass const& mass,
+      not_null<Vessel*> vessel,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // TODO(egg): comment;
   virtual void IncrementPartIntrinsicForce(PartId const part_id,
                                            Vector<Force, World> const& force);
-
-  // TODO(egg): comment.
-  virtual void SetPartInitialDegreesOfFreedom(
-      PartId const part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| must only

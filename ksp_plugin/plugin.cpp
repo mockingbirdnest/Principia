@@ -389,34 +389,42 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
           << parent_index;
 }
 
-void Plugin::InsertOrKeepLoadedPart(PartId const part_id,
-                                    Mass const& mass,
-                                    not_null<Vessel*> const vessel,
-                                    bool& inserted) {
+void Plugin::InsertOrKeepLoadedPart(
+    PartId const part_id,
+    Mass const& mass,
+    not_null<Vessel*> const vessel,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   auto it = part_id_to_vessel_.find(part_id);
-  inserted = it == part_id_to_vessel_.end();
+  bool const found = it != part_id_to_vessel_.end();
   CHECK_GT(loaded_vessels_.count(vessel), 0);
-  if (inserted) {
-    auto const pair = part_id_to_vessel_.emplace(part_id, vessel);
-    auto const& it = pair.first;
-    bool const emplaced = pair.second;
-    CHECK(emplaced);
-    auto deletion_callback = [it, &map = part_id_to_vessel_] {
-      map.erase(it);
-    });
-    auto part =
-        make_not_null_unique<Part>(part_id, mass, std::move(deletion_callback));
-    vessel->AddPart(std::move(part));
-  } else {
+  if (found) {
     not_null<Vessel*> current_vessel = it->second;
     if (vessel == current_vessel) {
-     vessel->KeepPart(part_id);
+      vessel->KeepPart(part_id);
     } else {
       FindOrDie(part_id_to_vessel_, part_id) = vessel;
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
+  } else {
+    auto const pair = part_id_to_vessel_.emplace(part_id, vessel);
+    auto const& it = pair.first;
+    bool const emplaced = pair.second;
+    CHECK(emplaced);
+    auto deletion_callback = [ it, &map = part_id_to_vessel_ ] {
+      map.erase(it);
+    });
+    auto part = make_not_null_unique<Part>(
+        part_id, mass, degrees_of_freedom, std::move(deletion_callback));
+    vessel->AddPart(std::move(part));
   }
   Subset<Part>::MakeSingleton(vessel->part(part_id))
+}
+
+void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
+                                         Vector<Force, World> const& force) {
+  FindOrDie(part_id_to_vessel_, part_id)
+      ->part(part_id)
+      ->increment_intrinsic_force(WorldToBarycentric()(force));
 }
 
 void Plugin::SetVesselStateOffset(
@@ -425,19 +433,20 @@ void Plugin::SetVesselStateOffset(
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(vessel_guid) << '\n' << NAMED(from_parent);
   CHECK(!initializing_);
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(!vessel->is_initialized())
-      << "Vessel with GUID " << vessel_guid << " already has a trajectory";
+  not_null<Vessel*> const vessel =
+      find_vessel_by_guid_or_die(vessel_guid).get();
+  CHECK_EQ(loaded_vessels_.count(vessel), 0);
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for vessel with GUID "
             << vessel_guid << ": " << from_parent;
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   ephemeris_->Prolong(current_time_);
-  vessel->CreateHistoryAndForkProlongation(
-      current_time_,
+  not_null<Part*> dummy_part = vessel->InitializeUnloaded(
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
+  Subset<Part>::MakeSingleton(
+      *dummy_part,
+      dummy_part).mutable_properties().Collect(pile_ups_, current_time_);
 }
 
 void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
