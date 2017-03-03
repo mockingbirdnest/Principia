@@ -314,7 +314,7 @@ class Plugin {
 
   // Notifies |this| that the given vessels are touching, and should gravitate
   // as part of a single rigid body.
-  virtual void ReportCollision(GUID const& vessel1, GUID const& vessel2) const;
+  virtual void ReportCollision(PartId const& part1, PartId const& part2) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(

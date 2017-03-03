@@ -461,17 +461,22 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       it = vessels_.erase(it);
     }
   }
+  // Free old parts, and bind vessels.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
+    Part& first_part = *vessel->parts().begin()->second;
     for (auto const& pair : vessel->parts()) {
       Part& part = *pair.second;
-      Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
-                                                            current_time_);
+      Subset<Part>::Unite(Subset<Part>::Find(first_part),
+                          Subset<Part>::Find(part));
     }
-    // TODO(egg): Collect the parts somehow.  Thinking about this brought up an
-    // issue with the correctness of all those Bubble DOF, and frankly at this
-    // point I think we would be happier with just
-    // DoublePrecision<DegreesOfFreedom<Barycentric>> in Part...
+  }
+  // We only need to collect one part per vessel, since the other parts are part
+  // of the same subset.
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    Part& first_part = *vessel->parts().begin()->second;
+    Subset<Part>::Find(first_part).mutable_properties().Collect(&pile_ups_,
+                                                                current_time_);
   }
 }
 
@@ -784,10 +789,10 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
 }
 
-void Plugin::ReportCollision(GUID const& vessel1, GUID const& vessel2) const {
-  Vessel& v1 = *FindOrDie(vessels_, vessel1);
-  Vessel& v2 = *FindOrDie(vessels_, vessel2);
-  Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
+void Plugin::ReportCollision(PartId const& part1, PartId const& part2) const {
+  Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
+  Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
+  Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
