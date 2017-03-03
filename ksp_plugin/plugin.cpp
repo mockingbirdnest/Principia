@@ -421,9 +421,10 @@ void Plugin::InsertOrKeepLoadedPart(
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
                                          Vector<Force, World> const& force) {
-  FindOrDie(part_id_to_vessel_, part_id)
-      ->part(part_id)
-      ->increment_intrinsic_force(WorldToBarycentric()(force));
+  CHECK(!initializing_);
+  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
+  CHECK_GT(loaded_vessels_.count(vessel), 0);
+  vessel->part(part_id)->increment_intrinsic_force(WorldToBarycentric()(force));
 }
 
 void Plugin::SetVesselStateOffset(
@@ -491,8 +492,9 @@ void Plugin::SetPartApparentDegreesOfFreedom(
               WorldToBarycentric()},
       AngularVelocity<World>{},
       Velocity<World>{}};
-  not_null<Part*> const part = 
-  FindOrDie(part_id_to_vessel_,part_id)->part(part_id);
+  not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_,part_id).get();
+  CHECK_GT(loaded_vessels_.count(vessel), 0);
+  not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
   part->containing_pile_up()->iterator()->SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
@@ -527,6 +529,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     for (not_null<Vessel*> const vessel : loaded_vessels_) {
       for (auto const& pair : vessel->parts()) {
         Part const& part = *pair.second;
+        part.clear_intrinsic_force();
         bubble_barycentre_calculator.Add(part.degrees_of_freedom(),
                                          part.mass());
       }
@@ -539,6 +542,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  loaded_vessels_.clear();
 }
 
 DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {

@@ -144,18 +144,16 @@ class Plugin {
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
-  // |AdvanceTime|. The parent body for the vessel is set to the one with index
-  // |parent_index|. It must already have been inserted using
-  // |InsertCelestial|.
-  // Returns true if a new vessel was inserted. In that case,
-  // |SetVesselStateOffset| must be called with the same GUID before the
-  // next call to |AdvanceTime|, |VesselDisplacementFromParent| or
-  // |VesselParentRelativeVelocity|, so that the initial state of the new
-  // vessel is known. Must be called after initialization.
-  // For a KSP |Vessel| |v|, the arguments correspond to
-  // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
-  // TODO(egg): update comment.  If |loaded| is false, calls
-  // |InsertOrKeepLoadedPart| for all parts in the vessel.
+  // |FreeVesselsAndPartsAndCollectPileUps|. The parent body for the vessel is
+  // set to the one with index |parent_index|, which must have been inserted
+  // during initialization.
+  // Sets |inserted| to true if a new vessel was inserted, to false otherwise.
+  // If |InsertOrKeepVessel| is called with |loaded=false|, and returns
+  // |inserted=true|, |SetVesselStateOffset| must be called with the same GUID
+  // before the call to |AdvanceTime|, giving the vessel an initial state (with
+  // a dummy part) even though its parts are unknown.
+  // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
+  // |v.orbit.referenceBody.flightGlobalsIndex|, |v.loaded|.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
                                   Index parent_index,
                                   bool loaded,
@@ -170,41 +168,37 @@ class Plugin {
       not_null<Vessel*> vessel,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // TODO(egg): comment;
+  // Calls |increment_intrinsic_force| on the relevant part, which must be in a
+  // loaded vessel.
   virtual void IncrementPartIntrinsicForce(PartId const part_id,
                                            Vector<Force, World> const& force);
 
-  // Set the position and velocity of the vessel with GUID |vessel_guid|
-  // relative to its parent at current time. |SetVesselStateOffset| must only
-  // be called once per vessel. Must be called after initialization.
-  // For a KSP |Vessel| |v|, the arguments correspond to
-  // |v.id.ToString()|,
-  // |{v.orbit.pos, v.orbit.vel}|.
-  // TODO(egg): Update comment; only used when |InsertOrKeepVessel| called with
-  // loaded=false returns with inserted=true.
+  // Calls |InitializeUnloaded| on the relevant vessel, and puts the resulting
+  // dummy part into a 1-part pile-up added to |pile_ups_|.
   virtual void SetVesselStateOffset(
       GUID const& vessel_guid,
       RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
-  // since the last call to |FreeVesselsAndCollectPileUps|, and updates the list
-  // of |pile_ups_| according to the reported collisions.
+  // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
+  // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
+  // and updates the list of |pile_ups_| according to the reported collisions.
   virtual void FreeVesselsAndPartsAndCollectPileUps();
 
-  // TODO(egg): comment.
+  // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
+  // relevant part.  This part must be in a loaded vessel.
   virtual void SetPartApparentDegreesOfFreedom(
       PartId const part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Simulates the system until instant |t|. All vessels that have not been
-  // refreshed by calling |InsertOrKeepVessel| since the last call to
-  // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
-  // Must be called after initialization.  |t| must be greater than
-  // |current_time_|.  |planetarium_rotation| is the value of KSP's
-  // |Planetarium.InverseRotAngle| at instant |t|, which provides the rotation
-  // between the |World| axes and the |Barycentric| axes (we don't use
-  // Planetarium.Rotation since it undergoes truncation to single-precision even
-  // though it's a double-precision value).  Note that KSP's
+  // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
+  // Must be called after initialization.
+  // Clears the intrinsic force on all loaded parts.
+  // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
+  // value of KSP's |Planetarium.InverseRotAngle| at instant |t|, which provides
+  // the rotation between the |World| axes and the |Barycentric| axes (we don't
+  // use Planetarium.Rotation since it undergoes truncation to single-precision
+  // even though it's a double-precision value).  Note that KSP's
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
