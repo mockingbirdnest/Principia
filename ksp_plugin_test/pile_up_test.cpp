@@ -212,8 +212,32 @@ TEST_F(PileUpTest, Lifecycle) {
                       DefaultHistoryParameters(),
                       DefaultProlongationParameters());
 
-  EXPECT_EQ(2, p1_.tail().Size());
-  EXPECT_EQ(2, p2_.tail().Size());
+  EXPECT_EQ(1, p1_.tail().Size());
+  EXPECT_TRUE(p1_.tail_is_authoritative());
+  EXPECT_THAT(
+      p1_.tail().last().degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {-25.0 / 9.0 * Metre,
+                                          40.0 / 3.0 * Metre,
+                                          101.0 / 9.0 * Metre}), 1),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {-250.0 / 9.0 * Metre / Second,
+                                      400.0 / 3.0 * Metre / Second,
+                                      1010.0 / 9.0 * Metre / Second}), 1)));
+  EXPECT_EQ(1, p2_.tail().Size());
+  EXPECT_TRUE(p2_.tail_is_authoritative());
+  EXPECT_THAT(
+      p2_.tail().last().degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {26.0 / 9.0 * Metre,
+                                          43.0 / 3.0 * Metre,
+                                          89.0 / 9.0 * Metre}), 0),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {260.0 / 9.0 * Metre / Second,
+                                      430.0 / 3.0 * Metre / Second,
+                                      890.0 / 9.0 * Metre / Second}), 0)));
   EXPECT_EQ(1, pile_up.psychohistory_.Size());
   EXPECT_THAT(
       pile_up.psychohistory_.last().degrees_of_freedom(),
