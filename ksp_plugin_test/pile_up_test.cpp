@@ -1,10 +1,12 @@
 #include "ksp_plugin/pile_up.hpp"
 
 #include "ksp_plugin/part.hpp"
+#include "ksp_plugin/vessel.hpp"  // For the Default...Parameters.
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -17,6 +19,7 @@ using geometry::Displacement;
 using geometry::R3Element;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using physics::MockEphemeris;
 using quantities::Length;
 using quantities::Speed;
 using quantities::si::Kilogram;
@@ -180,6 +183,12 @@ TEST_F(PileUpTest, Lifecycle) {
                                       10.0 / 3.0 * Metre / Second,
                                       -40.0 / 9.0 * Metre / Second}), 0)));
   EXPECT_THAT(pile_up.apparent_part_degrees_of_freedom_, IsEmpty());
+
+  MockEphemeris<Barycentric> ephemeris;
+  pile_up.AdvanceTime(ephemeris,
+                      astronomy::J2000 + 1 * Second,
+                      DefaultHistoryParameters(),
+                      DefaultProlongationParameters());
 }
 
 }  // namespace internal_pile_up
