@@ -394,7 +394,7 @@ void Plugin::InsertOrKeepLoadedPart(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   auto it = part_id_to_vessel_.find(part_id);
   bool const found = it != part_id_to_vessel_.end();
-  CHECK_GT(loaded_vessels_.count(vessel), 0);
+  CHECK(is_loaded(vessel));
   if (found) {
     not_null<Vessel*> current_vessel = it->second;
     if (vessel == current_vessel) {
@@ -423,7 +423,7 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
                                          Vector<Force, World> const& force) {
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
-  CHECK_GT(loaded_vessels_.count(vessel), 0);
+  CHECK(is_loaded(vessel));
   vessel->part(part_id)->increment_intrinsic_force(WorldToBarycentric()(force));
 }
 
@@ -435,7 +435,7 @@ void Plugin::SetVesselStateOffset(
   CHECK(!initializing_);
   not_null<Vessel*> const vessel =
       find_vessel_by_guid_or_die(vessel_guid).get();
-  CHECK_EQ(loaded_vessels_.count(vessel), 0);
+  CHECK(!is_loaded(vessel));
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for vessel with GUID "
             << vessel_guid << ": " << from_parent;
   RelativeDegreesOfFreedom<Barycentric> const relative =
@@ -457,7 +457,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     if (kept_vessels_.erase(vessel)) {
       ++it;
     } else {
-      CHECK(loaded_vessels_.count(vessel) == 0);
+      CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel with GUID " << it->first;
       it = vessels_.erase(it);
     }
@@ -493,7 +493,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       AngularVelocity<World>{},
       Velocity<World>{}};
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
-  CHECK_GT(loaded_vessels_.count(vessel), 0);
+  CHECK(is_loaded(vessel));
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
   part->containing_pile_up()->iterator()->SetPartApparentDegreesOfFreedom(
@@ -1260,6 +1260,10 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 
   const std::string serialized = message.SerializeAsString();
   return Fingerprint2011(serialized.c_str(), serialized.size());
+}
+
+bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
+  return loaded_vessels_.count(vessel) != 0;
 }
 
 }  // namespace internal_plugin

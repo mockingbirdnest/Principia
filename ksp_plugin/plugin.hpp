@@ -394,9 +394,6 @@ class Plugin {
 
   // Utilities for |AdvanceTime|.
 
-  // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
-  void FreeVessels();
-
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
       Vector<double, Frenet<Navigation>> const& vector) const;
@@ -417,6 +414,9 @@ class Plugin {
       std::experimental::optional<
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
       MassiveBody const& body);
+
+  // Whether |loaded_vessels_| contains |vessel|.
+  bool is_loaded(not_null<Vessel*> vessel) const;
 
   GUIDToOwnedVessel vessels_;
   std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
