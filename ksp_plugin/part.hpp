@@ -49,6 +49,7 @@ class Part final {
        Mass const& mass,
        DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
+
   // Calls the deletion callback passed at construction, if any.  Calls
   // |clear_pile_up|.
   ~Part();
@@ -69,7 +70,7 @@ class Part final {
       Vector<Force, Barycentric> const& intrinsic_force);
   virtual Vector<Force, Barycentric> const& intrinsic_force() const;
 
-  // Clears, sets or returns the degrees of freedom of the part.
+  // Sets or returns the degrees of freedom of the part.
   virtual void set_degrees_of_freedom(
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
   virtual DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
