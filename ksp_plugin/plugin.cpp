@@ -492,7 +492,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
               WorldToBarycentric()},
       AngularVelocity<World>{},
       Velocity<World>{}};
-  not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_,part_id).get();
+  not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK_GT(loaded_vessels_.count(vessel), 0);
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
@@ -527,8 +527,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass>
         bubble_barycentre_calculator;
     for (not_null<Vessel*> const vessel : loaded_vessels_) {
-      for (auto const& pair : vessel->parts()) {
-        Part const& part = *pair.second;
+      for (auto& pair : vessel->parts()) {
+        Part& part = *pair.second;
         part.clear_intrinsic_force();
         bubble_barycentre_calculator.Add(part.degrees_of_freedom(),
                                          part.mass());
