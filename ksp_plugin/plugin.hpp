@@ -328,10 +328,6 @@ class Plugin {
 
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
-  // Calls |UpdateVesselsInPileUpIfUpdated| on all the pile-ups.
-  // TODO(egg): Update comment.
-  virtual void DeformPileUpsIfNeeded();
-
   // Coordinate transforms.
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
   BarycentricToWorld(Position<World> const& sun_world_position) const;

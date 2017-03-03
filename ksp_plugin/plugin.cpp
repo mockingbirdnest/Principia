@@ -371,8 +371,6 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(parent,
                                                     ephemeris_.get(),
-                                                    history_parameters_,
-                                                    prolongation_parameters_,
                                                     prediction_parameters_));
   auto const& it = pair.first;
   inserted = pair.second;
@@ -479,7 +477,21 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
 
 void Plugin::SetPartApparentDegreesOfFreedom(
     PartId const part_id,
-    DegreesOfFreedom<World> const& degrees_of_freedom) {}
+    DegreesOfFreedom<World> const& degrees_of_freedom) {
+  RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
+      RigidTransformation<World, ApparentBubble>{
+          World::origin,
+          ApparentBubble::origin,
+          OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
+              WorldToBarycentric()},
+      AngularVelocity<World>{},
+      Velocity<World>{}};
+  not_null<Part*> const part = 
+  FindOrDie(part_id_to_vessel_,part_id)->part(part_id);
+  CHECK(part->is_piled_up());
+  part->containing_pile_up()->iterator()->SetPartApparentDegreesOfFreedom(
+      part, world_to_apparent_bubble(degrees_of_freedom));
+}
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__ << '\n'
@@ -489,6 +501,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 
   ephemeris_->Prolong(t);
   for (PileUp& pile_up : pile_ups_) {
+    pile_up.DeformPileUpIfNeeded();
     pile_up.AdvanceTime(*ephemeris_,
                         t,
                         DefaultHistoryParameters(),
@@ -871,12 +884,6 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
           plotting_frame_degrees_of_freedom.velocity())));
 }
 
-void Plugin::UpdateAllVesselsInPileUps() {
-  for (auto& pile_up : pile_ups_) {
-    pile_up.UpdateVesselsInPileUpIfUpdated();
-  }
-}
-
 AffineMap<Barycentric, World, Length, OrthogonalMap> Plugin::BarycentricToWorld(
     Position<World> const& sun_world_position) const {
   return AffineMap<Barycentric, World, Length, OrthogonalMap>(
@@ -949,7 +956,6 @@ void Plugin::WriteToMessage(
     vessel->WriteToMessage(vessel_message->mutable_vessel());
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_dirty(vessel->is_dirty());
   }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
@@ -1002,10 +1008,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                                    vessel_message.vessel(),
                                                    ephemeris.get(),
                                                    parent);
-    if (vessel_message.dirty()) {
-      vessel->set_dirty();
-    }
-    Subset<Vessel>::MakeSingleton(*vessel, vessel.get());
     auto const inserted =
         vessels.emplace(vessel_message.guid(), std::move(vessel));
     CHECK(inserted.second);
