@@ -72,11 +72,10 @@ class PileUp final {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters);
 
-  // Adjusts the |Bubble| degrees of freedom of all parts in this pile up based
-  // on the position of the pile-up computed by |AdvanceTime| and on the 
-  // |RigidPileUp| degrees of freedom of the parts, as set by
-  // |DeformPileUpIfNeeded|.
-  void NudgeParts(DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
+  // Adjusts the degrees of freedom of all parts in this pile up based on the
+  // position of the pile-up computed by |AdvanceTime| and on the |RigidPileUp|
+  // degrees of freedom of the parts, as set by |DeformPileUpIfNeeded|.
+  void NudgeParts() const;
 
  private:
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,

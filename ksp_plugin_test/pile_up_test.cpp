@@ -32,14 +32,12 @@ using ::testing::ReturnRef;
 class PileUpTest : public testing::Test {
  protected:
   PileUpTest()
-      : p1_(part_id1_, mass1_, /*deletion_callback=*/nullptr),
-        p2_(part_id2_, mass2_, /*deletion_callback=*/nullptr) {
+      : p1_(part_id1_, mass1_, p1_dof_, /*deletion_callback=*/nullptr),
+        p2_(part_id2_, mass2_, p2_dof_, /*deletion_callback=*/nullptr) {
     p1_.increment_intrinsic_force(
         Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
     p2_.increment_intrinsic_force(
         Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
-    p1_.set_degrees_of_freedom(p1_dof_);
-    p2_.set_degrees_of_freedom(p2_dof_);
   }
 
   using RigidPileUp = PileUp::RigidPileUp;
@@ -49,23 +47,18 @@ class PileUpTest : public testing::Test {
   Mass const mass1_ = 1 * Kilogram;
   Mass const mass2_ = 2 * Kilogram;
 
-  // Centre of mass of |p1_| and |p2_| in |Bubble|, in SI units:
+  // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
-  DegreesOfFreedom<Bubble> const p1_dof_ = DegreesOfFreedom<Bubble>(
-      Bubble::origin + Displacement<Bubble>({1 * Metre, 2 * Metre, 3 * Metre}),
-      Velocity<Bubble>(
+  DegreesOfFreedom<Barycentric> const p1_dof_ = DegreesOfFreedom<Barycentric>(
+      Barycentric::origin +
+          Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
+      Velocity<Barycentric>(
           {10 * Metre / Second, 20 * Metre / Second, 30 * Metre / Second}));
-  DegreesOfFreedom<Bubble> const p2_dof_ = DegreesOfFreedom<Bubble>(
-      Bubble::origin + Displacement<Bubble>({6 * Metre, 5 * Metre, 4 * Metre}),
-      Velocity<Bubble>(
+  DegreesOfFreedom<Barycentric> const p2_dof_ = DegreesOfFreedom<Barycentric>(
+      Barycentric::origin +
+          Displacement<Barycentric>({6 * Metre, 5 * Metre, 4 * Metre}),
+      Velocity<Barycentric>(
           {60 * Metre / Second, 50 * Metre / Second, 40 * Metre / Second}));
-
-  DegreesOfFreedom<Barycentric> const bubble_barycentre =
-      DegreesOfFreedom<Barycentric>(
-          Barycentric::origin +
-              Displacement<Barycentric>({7 * Metre, 8 * Metre, 9 * Metre}),
-          Velocity<Barycentric>(
-              {70 * Metre / Second, 80 * Metre / Second, 90 * Metre / Second}));
 
   Part p1_;
   Part p2_;
@@ -74,7 +67,7 @@ class PileUpTest : public testing::Test {
 // Exercises the entire lifecycle of a |PileUp|.  This is an intrusive test that
 // checks the internal state of the class.
 TEST_F(PileUpTest, Lifecycle) {
-  PileUp pile_up({&p1_, &p2_}, bubble_barycentre, astronomy::J2000);
+  PileUp pile_up({&p1_, &p2_}, astronomy::J2000);
 
   EXPECT_EQ(3 * Kilogram, pile_up.mass_);
   EXPECT_THAT(pile_up.intrinsic_force_,
@@ -85,13 +78,13 @@ TEST_F(PileUpTest, Lifecycle) {
       pile_up.psychohistory_.last().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
-                                         {34.0 / 3.0 * Metre,
-                                          12.0 * Metre,
-                                          38.0 / 3.0 * Metre}), 1),
+                                         {13.0 / 3.0 * Metre,
+                                          4.0 * Metre,
+                                          11.0 / 3.0 * Metre}), 1),
                     AlmostEquals(Velocity<Barycentric>(
-                                     {340.0 / 3.0 * Metre / Second,
-                                      120.0 * Metre / Second,
-                                      380.0 / 3.0 * Metre / Second}), 1)));
+                                     {130.0 / 3.0 * Metre / Second,
+                                      40.0 * Metre / Second,
+                                      110.0 / 3.0 * Metre / Second}), 1)));
 
   EXPECT_THAT(
       pile_up.actual_part_degrees_of_freedom_.at(&p1_),
