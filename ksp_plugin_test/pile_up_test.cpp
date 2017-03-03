@@ -250,6 +250,31 @@ TEST_F(PileUpTest, Lifecycle) {
                                      {10.0 * Metre / Second,
                                       140.0 * Metre / Second,
                                       310.0 / 3.0 * Metre / Second}), 0)));
+
+  pile_up.NudgeParts();
+
+  EXPECT_THAT(
+      p1_.degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {-25.0 / 9.0 * Metre,
+                                          40.0 / 3.0 * Metre,
+                                          101.0 / 9.0 * Metre}), 1),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {-250.0 / 9.0 * Metre / Second,
+                                      400.0 / 3.0 * Metre / Second,
+                                      1010.0 / 9.0 * Metre / Second}), 1)));
+  EXPECT_THAT(
+      p2_.degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {26.0 / 9.0 * Metre,
+                                          43.0 / 3.0 * Metre,
+                                          89.0 / 9.0 * Metre}), 0),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {260.0 / 9.0 * Metre / Second,
+                                      430.0 / 3.0 * Metre / Second,
+                                      890.0 / 9.0 * Metre / Second}), 0)));
 }
 
 }  // namespace internal_pile_up

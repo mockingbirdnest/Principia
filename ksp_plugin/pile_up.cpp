@@ -40,7 +40,7 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
       RigidTransformation<Barycentric, RigidPileUp>{
           barycentre.position(),
           RigidPileUp::origin,
-          OrthogonalMap<Barycentric, RigidPileUp>::Identity()},
+          Identity<Barycentric, RigidPileUp>().Forget()},
       AngularVelocity<Barycentric>{},
       barycentre.velocity()};
   for (not_null<Part*> const part : parts_) {
@@ -193,18 +193,18 @@ void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,
     bool const authoritative) const {
   auto const& pile_up_dof = it.degrees_of_freedom();
-  RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
+  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, RigidPileUp>(
           pile_up_dof.position(),
           RigidPileUp::origin,
-          OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
+          Identity<Barycentric, RigidPileUp>().Forget()),
       AngularVelocity<Barycentric>{},
       pile_up_dof.velocity());
-  auto const to_barycentric = from_barycentric.Inverse();
+  auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
-    part->tail().Append(
-        it.time(),
-        to_barycentric(FindOrDie(actual_part_degrees_of_freedom_, part)));
+    part->tail().Append(it.time(),
+                        pile_up_to_barycentric(
+                            FindOrDie(actual_part_degrees_of_freedom_, part)));
     part->set_tail_is_authoritative(authoritative);
   }
 }
