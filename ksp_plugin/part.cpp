@@ -11,16 +11,20 @@ namespace internal_part {
 
 using base::make_not_null_unique;
 
-Part::Part(PartId const part_id,
-           Mass const& mass,
-           std::function<void()> deletion_callback)
+Part::Part(
+    PartId const part_id,
+    Mass const& mass,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+    std::function<void()> deletion_callback)
     : part_id_(part_id),
       mass_(mass),
+      degrees_of_freedom_(degrees_of_freedom),
       tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {}
 
 Part::~Part() {
+  clear_pile_up();
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
   }
@@ -51,16 +55,12 @@ Vector<Force, Barycentric> const& Part::intrinsic_force() const {
   return intrinsic_force_;
 }
 
-void Part::clear_degrees_of_freedom() {
-  degrees_of_freedom_ = std::experimental::nullopt;
-}
-
 void Part::set_degrees_of_freedom(
-    DegreesOfFreedom<Bubble> const& degrees_of_freedom) {
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   degrees_of_freedom_ = degrees_of_freedom;
 }
 
-std::experimental::optional<DegreesOfFreedom<Bubble>> const&
+DegreesOfFreedom<Barycentric> const&
 Part::degrees_of_freedom() const {
   return degrees_of_freedom_;
 }
@@ -114,9 +114,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
   if (containing_pile_up_) {
     // TODO(phl): Implement.
   }
-  if (degrees_of_freedom_) {
-    degrees_of_freedom_->WriteToMessage(message->mutable_degrees_of_freedom());
-  }
+  degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
   tail_->WriteToMessage(message->mutable_tail(), /*forks=*/{});
   message->set_tail_is_authoritative(tail_is_authoritative_);
 }
@@ -126,16 +124,14 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     std::function<void()> deletion_callback) {
   not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
+                                 DegreesOfFreedom<Barycentric>::ReadFromMessage(
+                                     message.degrees_of_freedom()),
                                  Mass::ReadFromMessage(message.mass()),
                                  std::move(deletion_callback));
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (message.has_containing_pile_up()) {
     // TODO(phl): Implement.
-  }
-  if (message.has_degrees_of_freedom()) {
-    part->set_degrees_of_freedom(DegreesOfFreedom<Bubble>::ReadFromMessage(
-        message.degrees_of_freedom()));
   }
   part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
                                                                  /*forks=*/{});

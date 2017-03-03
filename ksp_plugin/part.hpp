@@ -47,7 +47,11 @@ class Part final {
  public:
   Part(PartId part_id,
        Mass const& mass,
+       DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
+
+  // Calls the deletion callback passed at construction, if any.  Calls
+  // |clear_pile_up|.
   ~Part();
 
   virtual PartId part_id() const;
@@ -66,14 +70,10 @@ class Part final {
       Vector<Force, Barycentric> const& intrinsic_force);
   virtual Vector<Force, Barycentric> const& intrinsic_force() const;
 
-  // Clears, sets or returns the degrees of freedom of the part.  A part that is
-  // not in the bubble (i.e., that belongs to a pile-up that is not in the
-  // bubble) doesn't have degrees of freedom.
-  virtual void clear_degrees_of_freedom();
+  // Sets or returns the degrees of freedom of the part.
   virtual void set_degrees_of_freedom(
-      DegreesOfFreedom<Bubble> const& degrees_of_freedom);
-  virtual std::experimental::optional<DegreesOfFreedom<Bubble>> const&
-  degrees_of_freedom() const;
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+  virtual DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
 
   // This temporarily holds the trajectory followed by the part during the call
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
@@ -115,7 +115,7 @@ class Part final {
   std::experimental::optional<IteratorOn<std::list<PileUp>>>
       containing_pile_up_;
 
-  std::experimental::optional<DegreesOfFreedom<Bubble>> degrees_of_freedom_;
+  DegreesOfFreedom<Barycentric> degrees_of_freedom_;
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> tail_;
   bool tail_is_authoritative_ = false;
 

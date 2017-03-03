@@ -36,9 +36,7 @@ using quantities::Mass;
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp final {
  public:
-  PileUp(std::list<not_null<Part*>>&& parts,
-         DegreesOfFreedom<Barycentric> const& bubble_barycentre,
-         Instant const& t);
+  PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
 
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
@@ -75,9 +73,9 @@ class PileUp final {
           adaptive_step_parameters);
 
   // Adjusts the |Bubble| degrees of freedom of all parts in this pile up based
-  // on the position of the pile-up computed by |AdvanceTime|, on the origin of
-  // |Bubble| given in |Barycentric|, and on the |RigidPileUp| degrees of
-  // freedom of the parts, as set by |DeformPileUpIfNeeded|.
+  // on the position of the pile-up computed by |AdvanceTime| and on the 
+  // |RigidPileUp| degrees of freedom of the parts, as set by
+  // |DeformPileUpIfNeeded|.
   void NudgeParts(DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
 
  private:

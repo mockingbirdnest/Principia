@@ -49,10 +49,7 @@ class Subset<ksp_plugin::Part>::Properties final {
   //   a new |PileUp| into |pile_ups| with the parts in |parts_|.
   // - if |!subset_of_existing_pile_up_|, inserts a new |PileUp| into |pile_ups|
   //   with the parts in |parts_|.
-  void Collect(not_null<PileUps*> pile_ups,
-               physics::DegreesOfFreedom<ksp_plugin::Barycentric> const&
-                   bubble_barycentre,
-               geometry::Instant const& t);
+  void Collect(not_null<PileUps*> pile_ups, geometry::Instant const& t);
 
  private:
   // Whether |left| and |right| are both subsets of the same existing |PileUp|.
