@@ -460,12 +460,16 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(loaded_vessels_.count(vessel) == 0);
       LOG(INFO) << "Removing vessel with GUID " << it->first;
-      vessel->clear_pile_up();
       it = vessels_.erase(it);
     }
   }
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
+    for (auto const& pair : vessel->parts()) {
+      Part& part = *pair.second;
+      Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
+                                                            current_time_);
+    }
     // TODO(egg): Collect the parts somehow.  Thinking about this brought up an
     // issue with the correctness of all those Bubble DOF, and frankly at this
     // point I think we would be happier with just
@@ -482,22 +486,35 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
-  ephemeris_->Prolong(t);
 
-  if (pile_ups_in_bubble_.empty()) {
+  ephemeris_->Prolong(t);
+  for (PileUp& pile_up : pile_ups_) {
+    pile_up.AdvanceTime(*ephemeris_,
+                        t,
+                        DefaultHistoryParameters(),
+                        DefaultProlongationParameters());
+    // NOTE(egg): now that |NudgeParts| doesn't need the bubble barycentre
+    // anymore, it could be part of |PileUp::AdvanceTime|.
+    pile_up.NudgeParts();
+  }
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.AdvanceTime(t);
+  }
+  if (loaded_vessels_.empty()) {
     bubble_barycentre_ = std::experimental::nullopt;
   } else {
-    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> bubble_barycentre;
-    for (auto const it : pile_ups_in_bubble_) {
-      for (not_null<Vessel*> const vessel : it->vessels()) {
-        bubble_barycentre.Add(
-            vessel->psychohistory().last().degrees_of_freedom(),
-            vessel->mass());
+    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass>
+        bubble_barycentre_calculator;
+    for (not_null<Vessel*> const vessel : loaded_vessels_) {
+      for (auto const& pair : vessel->parts()) {
+        Part const& part = *pair.second;
+        bubble_barycentre_calculator.Add(part.degrees_of_freedom(),
+                                         part.mass());
       }
     }
-    bubble_barycentre_ = bubble_barycentre.Get();
+    bubble_barycentre_ = bubble_barycentre_calculator.Get();
   }
-  pile_ups_in_bubble_.clear();
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
@@ -539,10 +556,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
-                                  << " was not given an initial state";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      vessel->prolongation().last().degrees_of_freedom() -
+      vessel->psychohistory().last().degrees_of_freedom() -
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
@@ -593,10 +608,9 @@ Plugin::RenderedVesselTrajectory(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
-  return RenderedTrajectoryFromIterators(vessel->history().Begin(),
-                                         vessel->history().End(),
+  return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
+                                         vessel->psychohistory().End(),
                                          sun_world_position);
 }
 
