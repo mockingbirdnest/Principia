@@ -83,8 +83,14 @@ class Vessel {
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;
+  virtual std::map<PartId, not_null<std::unique_ptr<Part>>> const& parts()
+      const;
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
+
+  virtual void Vessel::set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters);
 
   // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;
