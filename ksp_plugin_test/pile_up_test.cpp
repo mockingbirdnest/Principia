@@ -28,9 +28,20 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using ::testing::DoAll;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::_;
+
+namespace {
+
+// TODO(phl): Move to a common library.
+ACTION_P(AppendToDiscreteTrajectory, degrees_of_freedom) {
+  arg0->Append(arg2, degrees_of_freedom);
+}
+
+}  // namespace
 
 class PileUpTest : public testing::Test {
  protected:
@@ -185,10 +196,36 @@ TEST_F(PileUpTest, Lifecycle) {
   EXPECT_THAT(pile_up.apparent_part_degrees_of_freedom_, IsEmpty());
 
   MockEphemeris<Barycentric> ephemeris;
+  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillOnce(DoAll(
+          AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
+              Barycentric::origin +
+                  Displacement<Barycentric>({1.0 * Metre,
+                                             14.0 * Metre,
+                                             31.0 / 3.0 * Metre}),
+              Velocity<Barycentric>({10.0 * Metre / Second,
+                                     140.0 * Metre / Second,
+                                     310.0 / 3.0 * Metre / Second}))),
+          Return(true)));
   pile_up.AdvanceTime(ephemeris,
                       astronomy::J2000 + 1 * Second,
                       DefaultHistoryParameters(),
                       DefaultProlongationParameters());
+
+  EXPECT_EQ(2, p1_.tail().Size());
+  EXPECT_EQ(2, p2_.tail().Size());
+  EXPECT_EQ(1, pile_up.psychohistory_.Size());
+  EXPECT_THAT(
+      pile_up.psychohistory_.last().degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {1.0 * Metre,
+                                          14.0 * Metre,
+                                          31.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {10.0 * Metre / Second,
+                                      140.0 * Metre / Second,
+                                      310.0 / 3.0 * Metre / Second}), 0)));
 }
 
 }  // namespace internal_pile_up

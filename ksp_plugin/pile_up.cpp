@@ -138,25 +138,25 @@ void PileUp::AdvanceTime(
     if (psychohistory_.last().time() < t) {
       prolongation.Append(prolongation.last().time(),
                           prolongation.last().degrees_of_freedom());
-      ephemeris.FlowWithAdaptiveStep(
-          &prolongation,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          t,
-          adaptive_step_parameters,
-          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-          /*last_point_only=*/true);
+      CHECK(ephemeris.FlowWithAdaptiveStep(
+                &prolongation,
+                Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                t,
+                adaptive_step_parameters,
+                Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+                /*last_point_only=*/true));
       CHECK_EQ(prolongation.Size(), 2);
     }
   } else {
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    ephemeris.FlowWithAdaptiveStep(
-        &psychohistory_,
-        intrinsic_acceleration,
-        t,
-        adaptive_step_parameters,
-        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
+    CHECK(ephemeris.FlowWithAdaptiveStep(
+              &psychohistory_,
+              intrinsic_acceleration,
+              t,
+              adaptive_step_parameters,
+              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+              /*last_point_only=*/false));
   }
   auto it = psychohistory_.Begin();
   ++it;
